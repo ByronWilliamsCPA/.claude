@@ -1,0 +1,30 @@
+# Documentation - Calls Org-Level Reusable Workflow
+# This is a lightweight caller workflow that invokes the organization's
+# shared Python documentation workflow for MkDocs builds and deployments.
+name: Documentation
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'docs/**'
+      - 'mkdocs.yml'
+      - '.github/workflows/docs.yml'
+  pull_request:
+    paths:
+      - 'docs/**'
+      - 'mkdocs.yml'
+  workflow_dispatch:
+
+jobs:
+  docs:
+    name: Build & Deploy Docs
+    uses: ByronWilliamsCPA/.github/.github/workflows/python-docs.yml@main
+    with:
+      python-version: '3.12'
+      deploy-to-pages: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+
+permissions:
+  contents: write  # For GitHub Pages deployment
+  pages: write
+  id-token: write

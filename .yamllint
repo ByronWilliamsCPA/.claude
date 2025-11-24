@@ -1,0 +1,28 @@
+---
+# yamllint configuration for Claude Code Configuration
+extends: default
+
+rules:
+  line-length:
+    max: 120
+    level: warning
+
+  # Allow duplicate keys in GitHub Actions workflows (common for matrix strategies)
+  key-duplicates:
+    forbid-duplicated-merge-keys: true
+
+  # More lenient indentation for readability
+  indentation:
+    spaces: 2
+    indent-sequences: true
+
+  # Allow comments without space after #
+  comments:
+    require-starting-space: true
+    min-spaces-from-content: 1
+
+  # Allow longer lines in comments
+  comments-indentation: {}
+
+  # Disable document start requirement (---)
+  document-start: disable
