@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "serena-sse": {
+      "url": "http://localhost:8000/sse"
+    }
+  }
+}
+
+// Note: For SSE mode, you need to start Serena manually:
+// uv run --directory ${SERENA_INSTALL_PATH} serena-mcp-server --transport sse --port 8000

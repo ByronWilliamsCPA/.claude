@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "serena-auto": {
+      "command": "${HOME}/.claude/scripts/serena-wrapper.sh"
+    }
+  }
+}
