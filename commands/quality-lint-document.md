@@ -83,26 +83,26 @@ Perform comprehensive document linting and compliance checking with automatic co
 analyze_document() {
     local file="$1"
     local auto_fix="$2"
-    
+
     echo "📝 Analyzing document: $file"
-    
+
     # Detect document type
     local doc_type=$(detect_document_type "$file")
     echo "Document type: $doc_type"
-    
+
     # Check file exists and is readable
     if [ ! -f "$file" ]; then
         echo "❌ File not found: $file"
         return 1
     fi
-    
+
     # Basic file validation
     validate_basic_structure "$file" "$auto_fix"
     validate_yaml_frontmatter "$file" "$auto_fix"
     validate_heading_structure "$file" "$auto_fix"
     validate_markdown_formatting "$file" "$auto_fix"
     validate_links "$file"
-    
+
     # Type-specific validation
     case "$doc_type" in
         "readme") validate_readme_structure "$file" ;;
@@ -120,14 +120,14 @@ detect_document_type() {
     local file="$1"
     local filename=$(basename "$file")
     local dirname=$(dirname "$file")
-    
+
     # Check filename patterns
     case "$filename" in
         README.md|readme.md) echo "readme" ;;
         *config*.md|*Config*.md) echo "config" ;;
         *guide*.md|*Guide*.md|*tutorial*.md) echo "guide" ;;
         *api*.md|*API*.md) echo "api" ;;
-        *) 
+        *)
             # Check directory patterns
             case "$dirname" in
                 */docs/*|docs) echo "documentation" ;;
@@ -145,13 +145,13 @@ detect_document_type() {
 validate_yaml_frontmatter() {
     local file="$1"
     local auto_fix="$2"
-    
+
     if head -1 "$file" | grep -q "^---$"; then
         echo "✅ YAML front matter detected"
-        
+
         # Extract and validate YAML
         local yaml_content=$(sed -n '/^---$/,/^---$/p' "$file" | sed '1d;$d')
-        
+
         # Check required fields (configurable per project)
         if echo "$yaml_content" | grep -q "^title:"; then
             echo "✅ Title field present"
@@ -161,7 +161,7 @@ validate_yaml_frontmatter() {
                 add_yaml_title "$file"
             fi
         fi
-        
+
         # Validate YAML syntax
         if echo "$yaml_content" | python -c "import yaml, sys; yaml.safe_load(sys.stdin)" 2>/dev/null; then
             echo "✅ Valid YAML syntax"
@@ -183,12 +183,12 @@ validate_yaml_frontmatter() {
 validate_heading_structure() {
     local file="$1"
     local auto_fix="$2"
-    
+
     echo "🔍 Checking heading structure..."
-    
+
     # Extract headings
     local headings=$(grep '^#' "$file")
-    
+
     # Check for multiple H1s
     local h1_count=$(echo "$headings" | grep -c '^# ' || echo "0")
     if [ "$h1_count" -gt 1 ]; then
@@ -201,7 +201,7 @@ validate_heading_structure() {
     else
         echo "⚠️  No H1 heading found"
     fi
-    
+
     # Check for H4+ headings (often indicates over-nesting)
     local deep_headings=$(echo "$headings" | grep '^#### ' | wc -l)
     if [ "$deep_headings" -gt 0 ]; then
@@ -211,7 +211,7 @@ validate_heading_structure() {
             suggest_heading_restructure "$file"
         fi
     fi
-    
+
     # Check for heading level skipping
     check_heading_level_skipping "$file"
 }
@@ -223,15 +223,15 @@ validate_heading_structure() {
 validate_markdown_formatting() {
     local file="$1"
     local auto_fix="$2"
-    
+
     echo "🔍 Checking markdown formatting..."
-    
+
     # Use markdownlint if available
     if command -v markdownlint &> /dev/null; then
         if [ "$auto_fix" = "true" ]; then
             markdownlint --fix "$file" 2>/dev/null && echo "✅ Markdown formatting fixes applied"
         fi
-        
+
         # Check remaining issues
         local issues=$(markdownlint "$file" 2>&1 | wc -l)
         if [ "$issues" -eq 0 ]; then
@@ -252,18 +252,18 @@ validate_markdown_formatting() {
 ```bash
 validate_links() {
     local file="$1"
-    
+
     echo "🔗 Checking links..."
-    
+
     # Extract all markdown links
     local links=$(grep -o '\[.*\](.*' "$file" | grep -o '](.*' | sed 's/^](//' | sed 's/).*$//')
-    
+
     local broken_links=0
     local total_links=0
-    
+
     for link in $links; do
         total_links=$((total_links + 1))
-        
+
         if [[ "$link" =~ ^https?:// ]]; then
             # External link - would need network check
             echo "🌐 External link: $link (network check needed)"
@@ -281,7 +281,7 @@ validate_links() {
             fi
         fi
     done
-    
+
     echo "📊 Link summary: $total_links total, $broken_links broken"
 }
 ```
@@ -292,7 +292,7 @@ validate_links() {
 add_basic_frontmatter() {
     local file="$1"
     local title=$(basename "$file" .md | sed 's/-/ /g' | sed 's/\b\w/\U&/g')
-    
+
     # Create temporary file with front matter
     {
         echo "---"
@@ -303,16 +303,16 @@ add_basic_frontmatter() {
         echo ""
         cat "$file"
     } > "$file.tmp" && mv "$file.tmp" "$file"
-    
+
     echo "✅ Added basic YAML front matter"
 }
 
 fix_multiple_h1s() {
     local file="$1"
-    
+
     # Convert all H1s except the first to H2s
     awk '
-    /^# / { 
+    /^# / {
         if (h1_found) {
             sub(/^# /, "## ")
         } else {
@@ -321,20 +321,20 @@ fix_multiple_h1s() {
     }
     { print }
     ' "$file" > "$file.tmp" && mv "$file.tmp" "$file"
-    
+
     echo "✅ Fixed multiple H1 headings"
 }
 
 basic_markdown_checks() {
     local file="$1"
     local auto_fix="$2"
-    
+
     # Check line length
     local long_lines=$(awk 'length > 120 { count++ } END { print count+0 }' "$file")
     if [ "$long_lines" -gt 0 ]; then
         echo "⚠️  Long lines found: $long_lines (>120 chars)"
     fi
-    
+
     # Check for trailing whitespace
     if grep -q '[[:space:]]$' "$file"; then
         echo "⚠️  Trailing whitespace found"
@@ -343,7 +343,7 @@ basic_markdown_checks() {
             echo "✅ Removed trailing whitespace"
         fi
     fi
-    
+
     # Check for consistent list markers
     local dash_lists=$(grep -c '^[[:space:]]*-[[:space:]]' "$file" || echo "0")
     local star_lists=$(grep -c '^[[:space:]]*\*[[:space:]]' "$file" || echo "0")
@@ -360,14 +360,14 @@ generate_document_report() {
     local file="$1"
     local fixes_applied="$2"
     local issues_found="$3"
-    
+
     echo ""
     echo "=================== DOCUMENT LINT REPORT ==================="
     echo "File: $file"
     echo "Auto-fixes applied: $fixes_applied"
     echo "Issues requiring attention: $issues_found"
     echo ""
-    
+
     if [ "$issues_found" -eq 0 ]; then
         echo "✅ DOCUMENT READY: All checks passed"
     elif [ "$issues_found" -le 3 ]; then
@@ -375,7 +375,7 @@ generate_document_report() {
     else
         echo "⚠️  MAJOR ISSUES: Document needs attention"
     fi
-    
+
     echo "==========================================================="
 }
 ```

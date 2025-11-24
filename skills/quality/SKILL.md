@@ -89,7 +89,7 @@ For comprehensive code review, invoke the `code-reviewer` agent via Task tool.
 # Format
 poetry run black src tests
 
-# Lint  
+# Lint
 poetry run ruff check --fix src tests
 
 # Type check

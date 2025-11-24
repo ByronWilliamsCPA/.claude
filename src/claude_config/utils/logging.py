@@ -16,10 +16,9 @@ import structlog
 from rich.console import Console
 from rich.logging import RichHandler
 from structlog.stdlib import BoundLogger
-from structlog.types import Processor
 
 if TYPE_CHECKING:
-    from structlog.types import EventDict, WrappedLogger
+    from structlog.types import EventDict, Processor, WrappedLogger
 
 # Global console for rich output (stderr for proper output separation)
 console = Console(stderr=True)
@@ -73,8 +72,8 @@ def setup_logging(
 
     # Define a no-op processor for when timestamp is disabled
     def noop_processor(
-        logger: "WrappedLogger",
-        method_name: str,
+        _logger: "WrappedLogger",
+        _method_name: str,
         event_dict: "EventDict",
     ) -> "EventDict":
         """No-op processor that passes through the event dict unchanged."""

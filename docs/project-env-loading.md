@@ -80,7 +80,7 @@ Create a script that generates the appropriate configuration:
 # Function to set up project-specific MCP configuration
 setup_project_mcp() {
   local project_dir="${1:-$(pwd)}"
-  
+
   cat > .mcp.json << EOF
 {
   "mcpServers": {

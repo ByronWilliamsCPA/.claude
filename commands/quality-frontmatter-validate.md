@@ -81,7 +81,7 @@ purpose: [Single sentence ending with period]
 detect_file_type() {
     local file_path="$1"
     local dir_path=$(dirname "$file_path")
-    
+
     if [[ "$dir_path" =~ /knowledge/ ]]; then
         echo "knowledge"
     elif [[ "$dir_path" =~ /docs/ ]]; then
@@ -93,7 +93,7 @@ detect_file_type() {
 
 extract_agent_id_from_path() {
     local file_path="$1"
-    
+
     # Extract agent_id from knowledge/{agent_id}/file.md pattern
     if [[ "$file_path" =~ knowledge/([^/]+)/ ]]; then
         echo "${BASH_REMATCH[1]}"
@@ -106,7 +106,7 @@ extract_agent_id_from_path() {
 ```bash
 extract_frontmatter() {
     local file="$1"
-    
+
     if head -1 "$file" | grep -q "^---$"; then
         # Extract content between first two --- lines
         sed -n '/^---$/,/^---$/p' "$file" | sed '1d;$d'
@@ -117,7 +117,7 @@ extract_frontmatter() {
 
 extract_h1_title() {
     local file="$1"
-    
+
     # Find first H1 heading and extract title
     grep -m 1 "^# " "$file" | sed 's/^# *//' | sed 's/ *$//'
 }
@@ -125,7 +125,7 @@ extract_h1_title() {
 parse_yaml_field() {
     local yaml_content="$1"
     local field_name="$2"
-    
+
     echo "$yaml_content" | grep "^$field_name:" | sed "s/^$field_name: *//" | sed 's/^["'\'']//' | sed 's/["'\'']$//'
 }
 ```
@@ -136,7 +136,7 @@ parse_yaml_field() {
 validate_title_consistency() {
     local yaml_title="$1"
     local h1_title="$2"
-    
+
     if [[ "$yaml_title" == "$h1_title" ]]; then
         echo "✅ Title matches H1 heading"
         return 0
@@ -149,7 +149,7 @@ validate_title_consistency() {
 validate_agent_id_consistency() {
     local yaml_agent_id="$1"
     local path_agent_id="$2"
-    
+
     if [[ "$yaml_agent_id" == "$path_agent_id" ]]; then
         echo "✅ Agent ID matches directory"
         return 0
@@ -161,7 +161,7 @@ validate_agent_id_consistency() {
 
 validate_version_format() {
     local version="$1"
-    
+
     if [[ "$version" =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
         echo "✅ Valid semantic version format"
         return 0
@@ -173,7 +173,7 @@ validate_version_format() {
 
 validate_status_value() {
     local status="$1"
-    
+
     case "$status" in
         "draft"|"in-review"|"published")
             echo "✅ Valid status value"
@@ -189,27 +189,27 @@ validate_status_value() {
 validate_tags_format() {
     local tags="$1"
     local issues=()
-    
+
     # Parse array format
     local tag_list=$(echo "$tags" | sed "s/\[//" | sed "s/\]//" | sed "s/',*/' /g" | sed "s/'//g")
-    
+
     for tag in $tag_list; do
         # Check for uppercase letters
         if [[ "$tag" =~ [A-Z] ]]; then
             issues+=("Tag '$tag' contains uppercase (should be lowercase)")
         fi
-        
+
         # Check for spaces
         if [[ "$tag" =~ [[:space:]] ]]; then
             issues+=("Tag '$tag' contains spaces (use underscores)")
         fi
-        
+
         # Check for camelCase
         if [[ "$tag" =~ [a-z][A-Z] ]]; then
             issues+=("Tag '$tag' appears to be camelCase (use underscores)")
         fi
     done
-    
+
     if [[ ${#issues[@]} -eq 0 ]]; then
         echo "✅ Valid tag format"
         return 0
@@ -223,7 +223,7 @@ validate_tags_format() {
 
 validate_purpose_format() {
     local purpose="$1"
-    
+
     # Check if it's a single sentence ending with period
     if [[ "$purpose" =~ \.$ ]] && [[ $(echo "$purpose" | grep -o '\.' | wc -l) -eq 1 ]]; then
         echo "✅ Valid purpose format"
@@ -241,20 +241,20 @@ validate_purpose_format() {
 generate_missing_frontmatter() {
     local file_path="$1"
     local file_type="$2"
-    
+
     local h1_title=$(extract_h1_title "$file_path")
     local agent_id=$(extract_agent_id_from_path "$file_path")
     local filename=$(basename "$file_path" .md)
-    
+
     # Generate title from H1 or filename
     local title="${h1_title:-$(echo "$filename" | sed 's/-/ /g' | sed 's/\b\w/\U&/g')}"
-    
+
     # Generate tags from content analysis
     local tags=$(generate_content_tags "$file_path" "$file_type")
-    
+
     # Generate purpose from content
     local purpose=$(generate_content_purpose "$file_path" "$file_type")
-    
+
     case "$file_type" in
         "knowledge")
             cat << EOF
@@ -299,11 +299,11 @@ EOF
 generate_content_tags() {
     local file_path="$1"
     local file_type="$2"
-    
+
     # Analyze content for relevant keywords
     local content=$(cat "$file_path")
     local tags=()
-    
+
     # Common technical terms
     if echo "$content" | grep -qi "api\|endpoint\|rest"; then
         tags+=("api")
@@ -320,17 +320,17 @@ generate_content_tags() {
     if echo "$content" | grep -qi "test\|spec\|mock"; then
         tags+=("testing")
     fi
-    
+
     # File-type specific tags
     case "$file_type" in
         "knowledge")
             tags+=("knowledge_base")
             ;;
-        "documentation") 
+        "documentation")
             tags+=("documentation")
             ;;
     esac
-    
+
     # Format as YAML array
     if [[ ${#tags[@]} -gt 0 ]]; then
         printf "['%s']" "$(IFS="', '"; echo "${tags[*]}")"
@@ -342,10 +342,10 @@ generate_content_tags() {
 generate_content_purpose() {
     local file_path="$1"
     local file_type="$2"
-    
+
     # Extract first paragraph or section for purpose
     local first_para=$(sed -n '/^## /,$p' "$file_path" | head -n 10 | grep -v '^#' | grep -v '^$' | head -n 1)
-    
+
     if [[ -n "$first_para" ]]; then
         # Truncate and ensure period ending
         local purpose=$(echo "$first_para" | cut -c 1-80 | sed 's/[^.]*$//')
@@ -372,7 +372,7 @@ generate_content_purpose() {
 classify_doc_component() {
     local file_path="$1"
     local content=$(cat "$file_path" | tr '[:upper:]' '[:lower:]')
-    
+
     if echo "$content" | grep -q "architecture\|design\|system"; then
         echo "Architecture"
     elif echo "$content" | grep -q "plan\|strategy\|roadmap"; then
@@ -394,10 +394,10 @@ fix_frontmatter_issues() {
     local file_path="$1"
     local yaml_content="$2"
     local file_type="$3"
-    
+
     local corrected_yaml="$yaml_content"
     local fixes_applied=()
-    
+
     # Fix title consistency
     local yaml_title=$(parse_yaml_field "$yaml_content" "title")
     local h1_title=$(extract_h1_title "$file_path")
@@ -405,7 +405,7 @@ fix_frontmatter_issues() {
         corrected_yaml=$(echo "$corrected_yaml" | sed "s/^title:.*/title: $h1_title/")
         fixes_applied+=("Fixed title to match H1 heading")
     fi
-    
+
     # Fix agent_id for knowledge files
     if [[ "$file_type" == "knowledge" ]]; then
         local yaml_agent_id=$(parse_yaml_field "$yaml_content" "agent_id")
@@ -415,7 +415,7 @@ fix_frontmatter_issues() {
             fixes_applied+=("Fixed agent_id to match directory")
         fi
     fi
-    
+
     # Fix tag formatting
     local tags=$(parse_yaml_field "$yaml_content" "tags")
     if [[ -n "$tags" ]]; then
@@ -425,9 +425,9 @@ fix_frontmatter_issues() {
             fixes_applied+=("Fixed tag formatting")
         fi
     fi
-    
+
     echo "$corrected_yaml"
-    
+
     # Report fixes
     for fix in "${fixes_applied[@]}"; do
         echo "✅ $fix"
@@ -436,17 +436,17 @@ fix_frontmatter_issues() {
 
 fix_tag_format() {
     local tags="$1"
-    
+
     # Extract tags and fix format
     local tag_list=$(echo "$tags" | sed 's/\[//' | sed 's/\]//' | sed "s/',*/' /g" | sed "s/'//g")
     local fixed_tags=()
-    
+
     for tag in $tag_list; do
         # Convert to lowercase and replace spaces with underscores
         local fixed_tag=$(echo "$tag" | tr '[:upper:]' '[:lower:]' | sed 's/ /_/g')
         fixed_tags+=("$fixed_tag")
     done
-    
+
     # Format as YAML array
     printf "['%s']" "$(IFS="', '"; echo "${fixed_tags[*]}")"
 }
@@ -460,17 +460,17 @@ generate_frontmatter_report() {
     local file_type="$2"
     local validation_results="$3"
     local fixes_applied="$4"
-    
+
     echo ""
     echo "================ FRONTMATTER VALIDATION REPORT ================"
     echo "File: $(basename "$file_path")"
     echo "Type: $file_type"
     echo "Auto-fixes applied: $fixes_applied"
     echo ""
-    
+
     local issues_count=$(echo "$validation_results" | grep -c "❌" || echo "0")
     local valid_count=$(echo "$validation_results" | grep -c "✅" || echo "0")
-    
+
     if [[ $issues_count -eq 0 ]]; then
         echo "✅ FRONTMATTER VALID: All checks passed"
     elif [[ $issues_count -le 2 ]]; then
@@ -478,7 +478,7 @@ generate_frontmatter_report() {
     else
         echo "❌ MAJOR ISSUES: $issues_count fields require fixes"
     fi
-    
+
     echo "Valid fields: $valid_count"
     echo "Issues found: $issues_count"
     echo "================================================================"

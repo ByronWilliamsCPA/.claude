@@ -39,11 +39,11 @@ echo "Current Branch: $current_branch"
 remote_branch=$(git rev-parse --abbrev-ref @{upstream} 2>/dev/null || echo "none")
 if [ "$remote_branch" != "none" ]; then
     echo "Tracking: $remote_branch"
-    
+
     # Commits ahead/behind
     ahead=$(git rev-list --count @{upstream}..HEAD 2>/dev/null || echo "0")
     behind=$(git rev-list --count HEAD..@{upstream} 2>/dev/null || echo "0")
-    
+
     if [ "$ahead" -gt 0 ]; then
         echo "Ahead: $ahead commit(s)"
     fi
@@ -100,26 +100,26 @@ END {
         if (staged_deleted) printf "  Deleted:   %d file(s)\n", staged_deleted
         if (renamed) printf "  Renamed:   %d file(s)\n", renamed
     }
-    
+
     # Unstaged changes
     if (modified || deleted) {
         print "\nUnstaged Changes:"
         if (modified) printf "  Modified:  %d file(s)\n", modified
         if (deleted) printf "  Deleted:   %d file(s)\n", deleted
     }
-    
+
     # Untracked
     if (untracked) {
         printf "\nUntracked:  %d file(s)\n", untracked
     }
-    
+
     # Conflicts
     if (conflicted) {
         printf "\n❌ Conflicts: %d file(s)\n", conflicted
     }
-    
+
     # Clean status
-    if (!staged_modified && !staged_added && !staged_deleted && !renamed && 
+    if (!staged_modified && !staged_added && !staged_deleted && !renamed &&
         !modified && !deleted && !untracked && !conflicted) {
         print "\n✅ Working tree clean"
     }
@@ -237,11 +237,11 @@ echo "=== Branch Comparison ==="
 main_branch=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@' || echo "main")
 if [ "$current_branch" != "$main_branch" ]; then
     echo "Comparing $current_branch with $main_branch:"
-    
+
     # Files changed
     files_changed=$(git diff --name-only origin/$main_branch...HEAD 2>/dev/null | wc -l)
     echo "Files changed: $files_changed"
-    
+
     # Line statistics
     stats=$(git diff --shortstat origin/$main_branch...HEAD 2>/dev/null)
     if [ -n "$stats" ]; then

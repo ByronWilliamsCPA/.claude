@@ -67,22 +67,22 @@ echo "Last commit: $last_commit"
 # Validate format
 if [[ $last_commit =~ ^(feat|fix|docs|style|refactor|test|chore|ci|perf)(\(.+\))?: .+ ]]; then
     echo "✅ Commit message follows Conventional Commits"
-    
+
     # Extract components
     type=$(echo "$last_commit" | grep -oP '^[a-z]+')
     scope=$(echo "$last_commit" | grep -oP '(?<=\()[^)]+(?=\):)' || echo "none")
     description=$(echo "$last_commit" | sed 's/^[^:]*: //')
-    
+
     echo "   Type: $type"
     echo "   Scope: $scope"
     echo "   Description: $description"
-    
+
     # Check description length
     desc_length=${#description}
     if [ $desc_length -gt 72 ]; then
         echo "⚠️  Description is long ($desc_length chars > 72 recommended)"
     fi
-    
+
 else
     echo "❌ Commit should follow: type(scope): description"
     echo ""
@@ -118,7 +118,7 @@ fi
 commit_body=$(git log -1 --pretty=format:"%b")
 if [ -n "$commit_body" ]; then
     echo "✅ Commit has body text"
-    
+
     # Check for blank line after subject
     full_message=$(git log -1 --pretty=format:"%B")
     if echo "$full_message" | sed -n '2p' | grep -q "^$"; then

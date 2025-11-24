@@ -129,7 +129,7 @@ function processPayment(amount) {
     const timeout = 5000;
     return Promise.race([
         paymentGateway.charge(amount),
-        new Promise((_, reject) => 
+        new Promise((_, reject) =>
             setTimeout(() => reject(new Error('Payment timeout')), timeout)
         )
     ]);
