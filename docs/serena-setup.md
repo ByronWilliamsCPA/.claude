@@ -17,7 +17,7 @@ Serena is an AI-powered development assistant that integrates with Claude Code t
    ```bash
    # Path to your Serena installation
    SERENA_INSTALL_PATH=/home/your-username/dev/serena
-   
+
    # Default project path (can be overridden)
    SERENA_PROJECT_PATH=/home/your-username/dev/current-project
    ```

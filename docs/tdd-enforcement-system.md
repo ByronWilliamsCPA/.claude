@@ -122,7 +122,7 @@ To temporarily disable TDD enforcement, comment out the PreToolUse hook in setti
 ### Customizing File Patterns
 Edit `$HOME/.claude/scripts/tdd-enforcement-hook.sh` to modify:
 - File extensions subject to enforcement
-- Test file naming patterns  
+- Test file naming patterns
 - Directory exclusions
 
 ### Debug Mode
@@ -159,13 +159,13 @@ touch src/test_calculator.py
 ```
 
 #### Hook not triggering
-**Check**: 
+**Check**:
 1. Settings.json syntax is valid
 2. Hook script is executable (`chmod +x`)
 3. Script has Unix line endings (`dos2unix`)
 
 #### False positives blocking valid changes
-**Temporary bypass**: 
+**Temporary bypass**:
 1. Rename file to .txt extension
 2. Make changes
 3. Rename back to original extension

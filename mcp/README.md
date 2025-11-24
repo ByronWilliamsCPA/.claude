@@ -18,7 +18,7 @@ This directory contains Model Context Protocol (MCP) server configuration templa
 - `dev-tools-servers.json` - Development utilities (sequential-thinking, git, time)
 - `github-server.json` - GitHub API integration
 
-### Search & AI Servers  
+### Search & AI Servers
 
 - `common-servers.json` - External APIs (perplexity, tavily, context7, sentry)
 - `context7-http.json` / `context7-sse.json` - Context7 transport variants

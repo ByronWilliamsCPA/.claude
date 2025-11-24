@@ -31,7 +31,7 @@ description: Context-optimized agent system documentation and development guidel
 Essential expertise that applies across all projects:
 
 - **`code-reviewer`** - Code quality, standards compliance, best practices
-- **`test-engineer`** - Test strategy, test generation, quality assurance  
+- **`test-engineer`** - Test strategy, test generation, quality assurance
 - **`security-auditor`** - Vulnerability detection, security analysis, compliance
 - **`ai-engineer`** - LLM applications, RAG systems, prompt pipelines
 - **`prompt-engineer`** - Prompt optimization, framework implementation
@@ -90,7 +90,7 @@ context_refs:  # NEW: Reference shared context instead of repeating
 **Shared Context Files** (`/context/` directory):
 
 - **`shared-architecture.md`** - Common system architectures and patterns
-- **`development-standards.md`** - Universal coding standards and practices  
+- **`development-standards.md`** - Universal coding standards and practices
 - **`integration-patterns.md`** - Common integration and API patterns
 - **`project-context.md`** - Current project-specific context when needed
 

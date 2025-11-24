@@ -142,21 +142,21 @@ done
 validate_python_file() {
     local file="$1"
     echo "🐍 Validating Python file: $file"
-    
+
     # Auto-corrections
     if command -v black &> /dev/null; then
         black "$file" && echo "✅ Black formatting applied"
     fi
-    
+
     if command -v ruff &> /dev/null; then
         ruff check --fix "$file" && echo "✅ Ruff auto-fixes applied"
     fi
-    
+
     # Manual review items
     if command -v mypy &> /dev/null; then
         mypy "$file" || echo "⚠️  MyPy issues found - manual review needed"
     fi
-    
+
     if command -v bandit &> /dev/null; then
         bandit "$file" || echo "⚠️  Security issues found - manual review needed"
     fi
@@ -169,13 +169,13 @@ validate_python_file() {
 validate_markdown_file() {
     local file="$1"
     echo "📝 Validating Markdown file: $file"
-    
+
     # Auto-corrections
     if command -v markdownlint &> /dev/null; then
         markdownlint --fix "$file" 2>/dev/null && echo "✅ Markdown formatting applied"
         markdownlint "$file" || echo "⚠️  Markdown issues found - manual review needed"
     fi
-    
+
     # Check for broken links (basic)
     grep -n "](.*)" "$file" | while read -r line; do
         if echo "$line" | grep -q "](http"; then
@@ -195,20 +195,20 @@ validate_markdown_file() {
 validate_universal_rules() {
     local file="$1"
     echo "🔍 Validating universal rules for: $file"
-    
+
     # Remove trailing whitespace
     sed -i 's/[[:space:]]*$//' "$file" && echo "✅ Trailing whitespace removed"
-    
+
     # Ensure file ends with newline
     if [ -s "$file" ] && [ "$(tail -c1 "$file" | wc -l)" -eq 0 ]; then
         echo >> "$file" && echo "✅ End-of-file newline added"
     fi
-    
+
     # Check for private keys
     if grep -q "PRIVATE KEY" "$file"; then
         echo "❌ CRITICAL: Private key detected in $file"
     fi
-    
+
     # Check file size
     local size=$(stat -f%z "$file" 2>/dev/null || stat -c%s "$file" 2>/dev/null || echo 0)
     if [ "$size" -gt 1048576 ]; then
@@ -243,7 +243,7 @@ generate_final_report() {
     echo "Manual review items: $manual_review_count"
     echo "Critical issues: $critical_issues"
     echo ""
-    
+
     if [ "$critical_issues" -gt 0 ]; then
         echo "❌ COMMIT BLOCKED: Critical issues must be resolved"
         echo "   Review security alerts and fix before committing"
@@ -254,7 +254,7 @@ generate_final_report() {
         echo "✅ COMMIT READY: All validations passed"
         echo "   Safe to commit with confidence"
     fi
-    
+
     echo "=================================================================="
 }
 ```
@@ -275,7 +275,7 @@ universal_precommit:
     - "*.log"
     - "build/*"
     - "dist/*"
-  
+
   file_type_configs:
     python:
       line_length: 88

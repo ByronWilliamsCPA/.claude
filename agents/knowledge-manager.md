@@ -16,7 +16,7 @@ Knowledge management specialist for structured knowledge bases and RAG systems. 
 
 - **Knowledge Ingestion**: Process markdown files with YAML frontmatter into vector embeddings
 - **Semantic Search**: Optimize retrieval for query enhancement and agent responses
-- **Content Validation**: Ensure knowledge files follow structured standards  
+- **Content Validation**: Ensure knowledge files follow structured standards
 - **Vector Optimization**: Maintain high-quality embeddings for external Qdrant
 - **Knowledge Updates**: Handle versioning and updates to knowledge base content
 

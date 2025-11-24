@@ -128,11 +128,11 @@ analyze_naming_conventions() {
     local target="$1"
     local language="$2"
     local type="$3"
-    
+
     echo "🔍 Analyzing naming conventions in: $target"
     echo "Language: ${language:-auto-detect}"
     echo "Type: ${type:-all}"
-    
+
     # Detect files to analyze
     if [ -f "$target" ]; then
         analyze_single_file "$target" "$language"
@@ -148,25 +148,25 @@ analyze_directory() {
     local dir="$1"
     local language="$2"
     local type="$3"
-    
+
     local total_files=0
     local violations=0
-    
+
     # Find relevant files
     find "$dir" -type f \( -name "*.py" -o -name "*.js" -o -name "*.ts" -o -name "*.go" -o -name "*.rs" -o -name "*.md" \) | while read -r file; do
         total_files=$((total_files + 1))
-        
+
         # Auto-detect language if not specified
         local file_lang="$language"
         if [ -z "$file_lang" ]; then
             file_lang=$(detect_language "$file")
         fi
-        
+
         # Analyze file
         local file_violations=$(analyze_single_file "$file" "$file_lang")
         violations=$((violations + file_violations))
     done
-    
+
     echo "📊 Summary: $total_files files analyzed, $violations violations found"
 }
 ```
@@ -177,7 +177,7 @@ analyze_directory() {
 detect_language() {
     local file="$1"
     local extension="${file##*.}"
-    
+
     case "$extension" in
         py) echo "python" ;;
         js|jsx) echo "javascript" ;;
@@ -198,9 +198,9 @@ validate_file_naming() {
     local language="$2"
     local filename=$(basename "$file")
     local name_without_ext="${filename%.*}"
-    
+
     echo "📁 Checking file name: $filename"
-    
+
     case "$language" in
         python)
             if [[ "$name_without_ext" =~ ^[a-z][a-z0-9_]*$ ]]; then
@@ -262,9 +262,9 @@ validate_file_naming() {
 analyze_code_naming() {
     local file="$1"
     local language="$2"
-    
+
     echo "🔍 Analyzing code naming in: $(basename "$file")"
-    
+
     case "$language" in
         python)
             analyze_python_naming "$file"
@@ -284,7 +284,7 @@ analyze_code_naming() {
 analyze_python_naming() {
     local file="$1"
     local violations=0
-    
+
     # Check class names (should be PascalCase)
     grep -n "^class " "$file" | while read -r line; do
         local class_name=$(echo "$line" | sed -n 's/.*class \([A-Za-z_][A-Za-z0-9_]*\).*/\1/p')
@@ -295,7 +295,7 @@ analyze_python_naming() {
             violations=$((violations + 1))
         fi
     done
-    
+
     # Check function names (should be snake_case)
     grep -n "^def " "$file" | while read -r line; do
         local func_name=$(echo "$line" | sed -n 's/.*def \([A-Za-z_][A-Za-z0-9_]*\).*/\1/p')
@@ -306,7 +306,7 @@ analyze_python_naming() {
             violations=$((violations + 1))
         fi
     done
-    
+
     # Check constants (should be UPPER_SNAKE_CASE)
     grep -n "^[A-Z_][A-Z0-9_]* =" "$file" | while read -r line; do
         local const_name=$(echo "$line" | sed -n 's/^\([A-Z_][A-Z0-9_]*\) =.*/\1/p')
@@ -317,7 +317,7 @@ analyze_python_naming() {
             violations=$((violations + 1))
         fi
     done
-    
+
     return $violations
 }
 ```
@@ -328,23 +328,23 @@ analyze_python_naming() {
 suggest_python_filename() {
     local name="$1"
     local suggestion
-    
+
     # Convert PascalCase to snake_case
     suggestion=$(echo "$name" | sed 's/\([A-Z]\)/_\1/g' | sed 's/^_//' | tr '[:upper:]' '[:lower:]')
-    
+
     # Convert kebab-case to snake_case
     suggestion=$(echo "$suggestion" | tr '-' '_')
-    
+
     echo "💡 Suggested name: $suggestion.py"
 }
 
 suggest_js_filename() {
     local name="$1"
     local suggestion
-    
+
     # Convert snake_case to kebab-case
     suggestion=$(echo "$name" | tr '_' '-' | tr '[:upper:]' '[:lower:]')
-    
+
     echo "💡 Suggested name: $suggestion.js"
 }
 
@@ -352,7 +352,7 @@ suggest_class_name() {
     local name="$1"
     local language="$2"
     local suggestion
-    
+
     case "$language" in
         python|javascript|typescript|go|rust)
             # Convert to PascalCase
@@ -366,7 +366,7 @@ suggest_function_name() {
     local name="$1"
     local language="$2"
     local suggestion
-    
+
     case "$language" in
         python|rust)
             # Convert to snake_case
@@ -387,7 +387,7 @@ suggest_function_name() {
 ```bash
 load_naming_config() {
     local config_file="$1"
-    
+
     if [ -f "$config_file" ]; then
         echo "📋 Loading naming configuration from: $config_file"
         # Parse YAML config (simplified)
@@ -409,18 +409,18 @@ naming_conventions:
     functions: snake_case
     variables: snake_case
     constants: UPPER_SNAKE_CASE
-  
+
   javascript:
     files: kebab-case
     classes: PascalCase
     functions: camelCase
     variables: camelCase
     constants: UPPER_SNAKE_CASE
-  
+
   documentation:
     files: kebab-case
     sections: title-case
-  
+
   exceptions:
     files:
       - "README.md"

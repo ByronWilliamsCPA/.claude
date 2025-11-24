@@ -95,7 +95,7 @@ mcp__zen-core__pr_prepare --include_wtd=false
 **Example Safety Check**:
 ```
 ❌ ERROR: Cannot create PR from main branch
-   
+
 Branch Strategy Migration Required:
 1. Create feature branch: git checkout -b feature/123-description
 2. Cherry-pick commits: git cherry-pick <commit-hash>

@@ -72,7 +72,7 @@ branch_name="$1"  # From arguments
 
 if [[ $branch_name =~ ^(feature|fix|hotfix|chore)/[0-9]+-[a-z0-9-]+$ ]]; then
     echo "✅ Branch name is valid: $branch_name"
-    
+
     # Check if branch already exists
     if git rev-parse --verify "$branch_name" >/dev/null 2>&1; then
         echo "❌ Branch already exists: $branch_name"
@@ -81,7 +81,7 @@ if [[ $branch_name =~ ^(feature|fix|hotfix|chore)/[0-9]+-[a-z0-9-]+$ ]]; then
         # Create and checkout branch
         git checkout -b "$branch_name"
         echo "✅ Created and checked out: $branch_name"
-        
+
         # Show current status
         git status
     fi
@@ -105,7 +105,7 @@ fi
 # Check if on feature branch
 if [[ $(git branch --show-current) =~ ^feature/ ]]; then
     echo "✅ On feature branch"
-    
+
     # Check if tracking remote
     remote_branch=$(git rev-parse --abbrev-ref @{upstream} 2>/dev/null)
     if [ -n "$remote_branch" ]; then

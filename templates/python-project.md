@@ -7,7 +7,7 @@
 > **Reference**: Global standards from `~/.claude/standards/` apply unless overridden below.
 >
 > - **Python Standards**: See `~/.claude/standards/python.md`
-> - **Security Standards**: See `~/.claude/standards/security.md`  
+> - **Security Standards**: See `~/.claude/standards/security.md`
 > - **Git Workflow**: See `~/.claude/standards/git-workflow.md`
 > - **Linting Standards**: See `~/.claude/standards/linting.md`
 

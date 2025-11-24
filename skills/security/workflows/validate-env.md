@@ -15,7 +15,7 @@ Comprehensive validation of security requirements for safe development with sign
 - Verify key type and strength (256-bit minimum)
 - Validate key permissions
 
-### 2. Git Signing Configuration  
+### 2. Git Signing Configuration
 - Check if commit signing is enabled
 - Verify signing key configuration
 - Validate signing format (SSH or GPG)

@@ -1,3 +1,1 @@
-"""Financial utilities module.
-"""
-
+"""Financial utilities module."""
