@@ -1,0 +1,34 @@
+# OpenSSF Scorecard for Claude Code Configuration
+# Security posture assessment and supply chain security validation.
+#
+# This is a thin caller to the org-level reusable workflow.
+#
+# Dashboard: https://securityscorecards.dev/viewer/?uri=github.com/ByronWilliamsCPA/claude_config
+# Documentation: https://github.com/ossf/scorecard
+name: OpenSSF Scorecard
+
+on:
+  branch_protection_rule:
+  schedule:
+    # Weekly on Tuesdays at 21:21 UTC
+    - cron: '21 21 * * 2'
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+  id-token: write
+  actions: read
+
+jobs:
+  scorecard:
+    name: Scorecard Analysis
+    uses: ByronWilliamsCPA/.github/.github/workflows/python-scorecard.yml@main
+    with:
+      publish-results: true
+      upload-sarif: true
+      artifact-retention-days: 5
