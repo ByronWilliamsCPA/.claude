@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "serena": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--directory",
+        "${SERENA_INSTALL_PATH}",
+        "serena-mcp-server",
+        "--context",
+        "ide-assistant",
+        "--project",
+        "${SERENA_PROJECT_PATH}"
+      ]
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "zapier": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@zapier/mcp-server"
+      ],
+      "env": {
+        "ZAPIER_API_KEY": "${ZAPIER_API_KEY}"
+      }
+    }
+  }
+}
