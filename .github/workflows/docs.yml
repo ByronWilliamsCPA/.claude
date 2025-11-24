@@ -1,6 +1,10 @@
-# Documentation - Calls Org-Level Reusable Workflow
-# This is a lightweight caller workflow that invokes the organization's
-# shared Python documentation workflow for MkDocs builds and deployments.
+# Documentation Workflow for Claude Code Configuration
+# Builds and deploys MkDocs documentation to GitHub Pages.
+#
+# Features:
+#   - MkDocs Material theme build
+#   - GitHub Pages deployment on push to main
+#   - PR preview builds
 name: Documentation
 
 on:
@@ -16,15 +20,35 @@ on:
       - 'mkdocs.yml'
   workflow_dispatch:
 
-jobs:
-  docs:
-    name: Build & Deploy Docs
-    uses: ByronWilliamsCPA/.github/.github/workflows/python-docs.yml@main
-    with:
-      python-version: '3.12'
-      deploy-to-pages: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-
 permissions:
   contents: write  # For GitHub Pages deployment
   pages: write
   id-token: write
+
+jobs:
+  docs:
+    name: Build & Deploy Docs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: uv sync --all-extras
+
+      - name: Build documentation
+        run: uv run mkdocs build --strict
+
+      - name: Deploy to GitHub Pages
+        if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') }}
+        run: uv run mkdocs gh-deploy --force
