@@ -6,7 +6,7 @@
 >
 > Universal development standards and practices for Claude Code across all projects.
 >
-> **Token Optimized**: This streamlined file references detailed specifications in `/standards/` 
+> **Token Optimized**: This streamlined file references detailed specifications in `/standards/`
 > and `/commands/` directories for maximum efficiency while maintaining comprehensive coverage.
 
 ## Core Development Standards
@@ -33,12 +33,12 @@ When writing code, ALWAYS tag assumptions that could cause production failures:
 // #VERIFY: [defensive code required]
 // Example: Payment processing, auth flows, concurrent writes
 
-// #ASSUME: [category]: [assumption that could cause bugs]  
+// #ASSUME: [category]: [assumption that could cause bugs]
 // #VERIFY: [validation needed]
 // Example: UI state, form validation, API responses
 
 // #EDGE: [category]: [assumption about uncommon scenarios]
-// #VERIFY: [optional improvement]  
+// #VERIFY: [optional improvement]
 // Example: Browser compatibility, slow networks
 ```
 
@@ -120,7 +120,7 @@ poetry run pre-commit run --all-files
 ```bash
 # Simplified assumption verification commands (replaces complex tooling)
 /verify-assumptions              # Agent scans and verifies automatically
-/critical-assumptions           # Agent focuses on critical assumptions only  
+/critical-assumptions           # Agent focuses on critical assumptions only
 /apply-assumption-fixes         # Agent applies safe defensive patterns
 /assumption-report             # Generate comprehensive assumption analysis report
 ```
@@ -191,7 +191,7 @@ Projects create focused `CLAUDE.md` files that **extend** (not duplicate) these 
 ```markdown
 # Project Development Guide
 
-> This project extends the global CLAUDE.md standards. Only project-specific 
+> This project extends the global CLAUDE.md standards. Only project-specific
 > configurations and deviations are documented below.
 
 ## Project-Specific Standards
@@ -218,7 +218,7 @@ Projects create focused `CLAUDE.md` files that **extend** (not duplicate) these 
 # Always assign TODO items to appropriate agents:
 - Assumption verification → Assumption Verification Agent (via mcp__zen__assumption-verify)
 - Security tasks → Security Agent (via mcp__zen__secaudit)
-- Code reviews → Code Review Agent (via mcp__zen__codereview)  
+- Code reviews → Code Review Agent (via mcp__zen__codereview)
 - Testing → Test Engineer Agent (via mcp__zen__testgen)
 - Documentation → Documentation Agent (via mcp__zen__docgen)
 - Debugging → Debug Agent (via mcp__zen__debug)

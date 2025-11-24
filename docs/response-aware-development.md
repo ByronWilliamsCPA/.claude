@@ -228,6 +228,6 @@ Success will be measured by reduced production incidents, improved code quality,
 
 ---
 
-*Document Version: 1.0*  
-*Last Updated: 2025-01-31*  
+*Document Version: 1.0*
+*Last Updated: 2025-01-31*
 *Next Review: 30 days after implementation*

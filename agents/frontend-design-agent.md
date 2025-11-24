@@ -15,7 +15,7 @@ Specialized agent for frontend design and visual development. Focuses on creatin
 ## Core Responsibilities
 
 - **Component Design**: Create and refine React components with proper styling and responsive behavior
-- **Layout Implementation**: Build responsive layouts using CSS Grid, Flexbox, and modern CSS techniques  
+- **Layout Implementation**: Build responsive layouts using CSS Grid, Flexbox, and modern CSS techniques
 - **Design System Integration**: Implement and maintain design systems with consistent tokens and patterns
 - **Visual Validation**: Use browser automation to verify designs across different screen sizes and browsers
 - **Accessibility Design**: Ensure designs meet WCAG guidelines and accessibility best practices

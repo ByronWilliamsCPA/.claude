@@ -121,7 +121,7 @@ After formatting, automatically run appropriate linters to verify:
 poetry run black --check $ARGUMENTS
 poetry run ruff check $ARGUMENTS
 
-# Verify Markdown formatting  
+# Verify Markdown formatting
 markdownlint $ARGUMENTS
 
 # Verify YAML formatting

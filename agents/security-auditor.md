@@ -29,14 +29,14 @@ Execute systematic security analysis: threat landscape assessment → automated 
 
 - Security scanning: safety, bandit, semgrep for vulnerability detection
 - Environment validation: GPG/SSH key requirements, encrypted secrets
-- Code analysis for SQL injection, XSS, authentication bypass patterns  
+- Code analysis for SQL injection, XSS, authentication bypass patterns
 - Integration with CI/CD security pipelines and quality gates
 - Compliance frameworks: ASVS, PCI DSS, SOC 2, GDPR, HIPAA
 
 ## Output Standards
 
 - Security assessment reports with CVSS scoring
-- Categorized vulnerabilities by severity (Critical/High/Medium/Low)  
+- Categorized vulnerabilities by severity (Critical/High/Medium/Low)
 - Compliance status against applicable standards
 - Specific remediation recommendations with code examples
 - Security control effectiveness assessments

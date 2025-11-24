@@ -297,7 +297,7 @@ poetry run pytest --benchmark-compare=baseline
 strategy:
   matrix:
     python-version: [3.9, 3.10, 3.11]
-    
+
 steps:
   - name: Run tests
     run: poetry run pytest -v --cov=src
@@ -466,10 +466,10 @@ def test_user_creation_with_valid_email():
 ```python
 class TestUserAuthentication:
     """Group related tests in classes."""
-    
+
     def test_should_authenticate_with_valid_credentials(self):
         pass
-    
+
     def test_should_reject_invalid_credentials(self):
         pass
 ```

@@ -106,7 +106,7 @@ poetry run safety check --json
 # GPG key check
 gpg --list-secret-keys
 
-# SSH key check  
+# SSH key check
 ssh-add -l
 
 # Git signing check

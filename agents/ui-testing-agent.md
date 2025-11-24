@@ -51,7 +51,7 @@ Execute testing workflows: test scenario planning â†’ user journey automation â†
 
 ### **Validation & Assertion Testing**
 - Content verification and dynamic content loading
-- State management validation in React/Vue applications  
+- State management validation in React/Vue applications
 - API response integration and error handling
 - Visual regression testing with automated screenshot comparison
 

@@ -162,41 +162,41 @@ rules:
   line-length:
     max: 120
     level: error
-  
+
   indentation:
     spaces: 2
     indent-sequences: true
     check-multi-line-strings: false
-  
+
   comments:
     min-spaces-from-content: 1
-  
+
   comments-indentation: {}
-  
+
   empty-lines:
     max: 2
     max-start: 0
     max-end: 1
-  
+
   key-duplicates: {}
-  
+
   brackets:
     min-spaces-inside: 0
     max-spaces-inside: 1
-  
+
   colons:
     max-spaces-before: 0
     min-spaces-after: 1
     max-spaces-after: 1
-  
+
   commas:
     max-spaces-before: 0
     min-spaces-after: 1
     max-spaces-after: 1
-  
+
   hyphens:
     max-spaces-after: 1
-  
+
   truthy:
     allowed-values: ['true', 'false', 'yes', 'no']
 ```
@@ -389,29 +389,29 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
-      
+
       - name: Install dependencies
         run: |
           pip install poetry
           poetry install
-      
+
       - name: Lint with Black
         run: poetry run black --check .
-      
+
       - name: Lint with Ruff
         run: poetry run ruff check .
-      
+
       - name: Type check with BasedPyright
         run: poetry run basedpyright src
-      
+
       - name: Lint Markdown
         run: markdownlint **/*.md
-      
+
       - name: Lint YAML
         run: yamllint **/*.{yml,yaml}
 ```
@@ -476,7 +476,7 @@ ignore = [
 {
   "MD033": {
     "allowed_elements": [
-      "br", "sub", "sup", "details", "summary", 
+      "br", "sub", "sup", "details", "summary",
       "img", "a", "div", "span"
     ]
   },

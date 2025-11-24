@@ -26,8 +26,8 @@ Display all available universal slash commands organized by category: $ARGUMENTS
 
 #### `/universal:quality-format-code`
 
-**Purpose**: Format code files according to project standards  
-**Usage**: `/universal:quality-format-code src/main.py` or `/universal:quality-format-code *.md`  
+**Purpose**: Format code files according to project standards
+**Usage**: `/universal:quality-format-code src/main.py` or `/universal:quality-format-code *.md`
 **Description**: Detects file type and applies appropriate formatting:
 
 - Python: Black (88 char) + Ruff auto-fix
@@ -37,8 +37,8 @@ Display all available universal slash commands organized by category: $ARGUMENTS
 
 #### `/universal:quality-lint-check`
 
-**Purpose**: Run appropriate linter for any file type  
-**Usage**: `/universal:quality-lint-check src/` or `/universal:quality-lint-check README.md`  
+**Purpose**: Run appropriate linter for any file type
+**Usage**: `/universal:quality-lint-check src/` or `/universal:quality-lint-check README.md`
 **Description**: Automatically detects file types and runs:
 
 - Python: Black, Ruff, MyPy
@@ -48,8 +48,8 @@ Display all available universal slash commands organized by category: $ARGUMENTS
 
 #### `/universal:quality-lint-document`
 
-**Purpose**: Comprehensive document linting with automatic corrections  
-**Usage**: `/universal:quality-lint-document docs/` or `/universal:quality-lint-document file.md --auto-fix`  
+**Purpose**: Comprehensive document linting with automatic corrections
+**Usage**: `/universal:quality-lint-document docs/` or `/universal:quality-lint-document file.md --auto-fix`
 **Description**: Advanced markdown validation and correction:
 
 - YAML front matter validation and generation
@@ -60,8 +60,8 @@ Display all available universal slash commands organized by category: $ARGUMENTS
 
 #### `/universal:quality-naming-conventions`
 
-**Purpose**: Validate naming convention compliance across languages  
-**Usage**: `/universal:quality-naming-conventions src/` or `/universal:quality-naming-conventions . --auto-suggest`  
+**Purpose**: Validate naming convention compliance across languages
+**Usage**: `/universal:quality-naming-conventions src/` or `/universal:quality-naming-conventions . --auto-suggest`
 **Description**: Multi-language naming convention validation:
 
 - Python: snake_case files, PascalCase classes, snake_case functions
@@ -72,8 +72,8 @@ Display all available universal slash commands organized by category: $ARGUMENTS
 
 #### `/universal:quality-precommit-validate`
 
-**Purpose**: Comprehensive pre-commit validation for all file types  
-**Usage**: `/universal:quality-precommit-validate` or `/universal:quality-precommit-validate all --auto-fix`  
+**Purpose**: Comprehensive pre-commit validation for all file types
+**Usage**: `/universal:quality-precommit-validate` or `/universal:quality-precommit-validate all --auto-fix`
 **Description**: Complete pre-commit hook simulation:
 
 - Universal fixes: trailing whitespace, line endings, file size
@@ -84,8 +84,8 @@ Display all available universal slash commands organized by category: $ARGUMENTS
 
 #### `/universal:quality-frontmatter-validate`
 
-**Purpose**: Validate and fix YAML front matter in documentation  
-**Usage**: `/universal:quality-frontmatter-validate docs/` or `/universal:quality-frontmatter-validate file.md --auto-fix`  
+**Purpose**: Validate and fix YAML front matter in documentation
+**Usage**: `/universal:quality-frontmatter-validate docs/` or `/universal:quality-frontmatter-validate file.md --auto-fix`
 **Description**: Intelligent YAML front matter validation:
 
 - File type detection (knowledge, documentation, general)
@@ -100,8 +100,8 @@ Display all available universal slash commands organized by category: $ARGUMENTS
 
 #### `/universal:security-validate-env`
 
-**Purpose**: Validate security requirements for development environment  
-**Usage**: `/universal:security-validate-env`  
+**Purpose**: Validate security requirements for development environment
+**Usage**: `/universal:security-validate-env`
 **Description**: Comprehensive security validation:
 
 - GPG key presence for .env encryption
@@ -116,8 +116,8 @@ Display all available universal slash commands organized by category: $ARGUMENTS
 
 #### `/universal:workflow-git-helpers`
 
-**Purpose**: Git workflow validation and helpers  
-**Usage**: `/universal:workflow-git-helpers [branch-check|commit-check|pr-ready|status]`  
+**Purpose**: Git workflow validation and helpers
+**Usage**: `/universal:workflow-git-helpers [branch-check|commit-check|pr-ready|status]`
 **Description**: Git workflow assistance:
 
 - Branch naming convention validation
@@ -132,14 +132,14 @@ Display all available universal slash commands organized by category: $ARGUMENTS
 
 #### `/universal:meta-list-commands`
 
-**Purpose**: Display available commands organized by category  
-**Usage**: `/universal:meta-list-commands [all|quality|security|workflow|meta]`  
+**Purpose**: Display available commands organized by category
+**Usage**: `/universal:meta-list-commands [all|quality|security|workflow|meta]`
 **Description**: This command - shows all universal slash commands with usage examples and descriptions.
 
 #### `/universal:meta-fix-links`
 
-**Purpose**: Analyze and fix broken internal links in documentation  
-**Usage**: `/universal:meta-fix-links docs/` or `/universal:meta-fix-links file.md --fuzzy-match`  
+**Purpose**: Analyze and fix broken internal links in documentation
+**Usage**: `/universal:meta-fix-links docs/` or `/universal:meta-fix-links file.md --fuzzy-match`
 **Description**: Intelligent link validation and fixing:
 
 - Internal link detection (relative, absolute, anchor)
@@ -150,8 +150,8 @@ Display all available universal slash commands organized by category: $ARGUMENTS
 
 #### `/universal:meta-command-help`
 
-**Purpose**: Interactive command discovery and smart suggestions  
-**Usage**: `/universal:meta-command-help "I need to format code"` or `/universal:meta-command-help auto`  
+**Purpose**: Interactive command discovery and smart suggestions
+**Usage**: `/universal:meta-command-help "I need to format code"` or `/universal:meta-command-help auto`
 **Description**: AI-powered command assistance:
 
 - Natural language command discovery

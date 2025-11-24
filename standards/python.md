@@ -69,7 +69,7 @@ def process_data(input_data: list[str], limit: int = 100) -> dict[str, Any]:
 class DataProcessor:
     def __init__(self, config: dict[str, Any]) -> None:
         self.config = config
-    
+
     def process(self, data: list[str]) -> ProcessResult:
         """Process data and return results."""
         pass
@@ -115,7 +115,7 @@ def test_should_return_valid_result_when_given_valid_input():
 
 class TestDataProcessor:
     """Test class for DataProcessor."""
-    
+
     def test_should_process_data_correctly(self):
         """Test method with descriptive name."""
         pass

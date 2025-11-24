@@ -85,7 +85,7 @@ repos:
       - id: detect-private-key
       - id: check-added-large-files
       - id: check-merge-conflict
-  
+
   - repo: https://github.com/Yelp/detect-secrets
     rev: v1.4.0
     hooks:

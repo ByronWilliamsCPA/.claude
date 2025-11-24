@@ -246,28 +246,28 @@ After running the recommended command, you might want to:
 analyze_current_context() {
     local context=""
     local suggestions=()
-    
+
     # Check git status
     if git status --porcelain 2>/dev/null | grep -q .; then
         context="uncommitted_changes"
-        
+
         # Check staged files
         if git diff --cached --name-only | grep -q .; then
             suggestions+=("/universal:quality-precommit-validate staged")
         fi
-        
+
         # Check file types
         local modified_files=$(git status --porcelain | awk '{print $2}')
-        
+
         if echo "$modified_files" | grep -q '\.py$'; then
             suggestions+=("/universal:quality-format-code . --language python")
         fi
-        
+
         if echo "$modified_files" | grep -q '\.md$'; then
             suggestions+=("/universal:quality-lint-document .")
             suggestions+=("/universal:meta-fix-links .")
         fi
-        
+
         if echo "$modified_files" | grep -q '\.(yml|yaml)$'; then
             suggestions+=("/universal:quality-precommit-validate . --auto-fix")
         fi
@@ -276,7 +276,7 @@ analyze_current_context() {
         suggestions+=("/universal:security-validate-env")
         suggestions+=("/universal:quality-naming-conventions .")
     fi
-    
+
     echo "Context: $context"
     printf '%s\n' "${suggestions[@]}"
 }

@@ -102,7 +102,7 @@ from typing import List, TypeVar
 T = TypeVar('T')
 R = TypeVar('R')
 
-async def process_batch(items: List[T], processor: Callable[[T], Awaitable[R]], 
+async def process_batch(items: List[T], processor: Callable[[T], Awaitable[R]],
                        batch_size: int = 10) -> List[R]:
     """Process items in batches to avoid overwhelming external services."""
     results = []
@@ -153,7 +153,7 @@ class Settings(BaseSettings):
     qdrant_port: int = 6333
     api_key: Optional[str] = None
     debug: bool = False
-    
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
