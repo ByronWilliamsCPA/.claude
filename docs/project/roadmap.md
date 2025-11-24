@@ -9,8 +9,6 @@ tags:
   - roadmap
 ---
 
-# Roadmap
-
 Development roadmap for Claude Code Configuration.
 
 ## Current Version

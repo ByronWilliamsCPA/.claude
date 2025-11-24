@@ -60,10 +60,10 @@ class SonarQubeClient:
             print(f"Error: Invalid URL scheme '{parsed.scheme}'. Only http/https allowed.", file=sys.stderr)
             sys.exit(2)
 
-        request = Request(url, headers=self.headers)
+        request = Request(url, headers=self.headers)  # noqa: S310 - URL scheme validated above
 
         try:
-            with urlopen(request, timeout=30) as response:  # nosec B310 - URL scheme validated above
+            with urlopen(request, timeout=30) as response:  # noqa: S310 - URL scheme validated above
                 return json.loads(response.read().decode())
         except HTTPError as e:
             print(f"HTTP Error {e.code}: {e.reason}", file=sys.stderr)
@@ -130,7 +130,7 @@ class LLMGovernanceMapper:
     }
 
     @classmethod
-    def map_condition_to_tag(cls, metric_key: str, condition_status: str) -> Optional[str]:
+    def map_condition_to_tag(cls, metric_key: str, condition_status: str) -> str | None:
         """Map a quality gate condition to an LLM tag."""
         if condition_status == "OK":
             return None
@@ -142,7 +142,7 @@ class LLMGovernanceMapper:
         return None
 
     @classmethod
-    def map_issue_to_tag(cls, rule_key: str) -> Optional[str]:
+    def map_issue_to_tag(cls, rule_key: str) -> str | None:
         """Map a SonarQube rule to an LLM tag."""
         return cls.RULE_TO_TAG_MAP.get(rule_key)
 
