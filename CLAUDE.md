@@ -1,358 +1,573 @@
-# Claude Code Project Guidelines
+# Global Claude Development Standards
 
-> **Standard Guidelines**: See [.claude/standard/claude.md](.claude/standard/claude.md) for:
-> - Universal development standards and best practices
-> - Response-Aware Development (RAD) system and assumption tagging
-> - Agent assignment patterns and workflow
-> - Security requirements and pre-commit checks
-> - Git workflow and commit conventions
+> **Status**: ✅ Active | Core Standard
+> **Version**: 1.0.0
+> **Last Updated**: 2025-01-16
 >
-> **User Settings**: Global Claude configuration at `~/.claude/CLAUDE.md` (user-level)
+> Universal development standards and practices for Claude Code across all projects.
 >
-> This file contains **project-specific** configurations that extend the standard guidelines.
+> **Token Optimized**: This streamlined file references detailed specifications in `/standards/` 
+> and `/commands/` directories for maximum efficiency while maintaining comprehensive coverage.
 
----
+## Core Development Standards
 
-## Project Overview
+> **Detailed Specifications**: See `/standards/python.md`, `/standards/security.md`, `/standards/git-workflow.md`, `/standards/git-worktree.md`, `/standards/linting.md`
 
-**Name**: Claude Code Configuration
-**Description**: Global Claude Code development standards, commands, and configuration for all projects
-**Author**: Byron Williams <byronawilliams@gmail.com>
-**Repository**: https://github.com/ByronWilliamsCPA/.claude
-**Created**: 2025-11-23
+### Essential Requirements
+- **Code Quality**: Black formatting (88 chars), Ruff linting (PyStrict-aligned), BasedPyright type checking (strict mode)
+- **Security**: GPG/SSH key validation, dependency scanning, encrypted secrets
+- **Testing**: Minimum 80% coverage, tiered testing approach
+- **Git**: Conventional commits, signed commits, feature branch workflow
+- **Response-Aware Development**: Assumption tagging and verification (see `/docs/response-aware-development.md`)
 
-## Branch Workflow Requirement (CRITICAL)
+## Response-Aware Development (RAD)
 
-**NEVER work directly on the `main` branch.** Always create a feature branch before making any code changes.
+> **Full Documentation**: See `/docs/response-aware-development.md` for complete rationale and evaluation metrics
 
-### Before ANY Code Changes
+### Assumption Tagging Standards
+
+When writing code, ALWAYS tag assumptions that could cause production failures:
+
+```javascript
+// #CRITICAL: [category]: [assumption that could cause outages/data loss]
+// #VERIFY: [defensive code required]
+// Example: Payment processing, auth flows, concurrent writes
+
+// #ASSUME: [category]: [assumption that could cause bugs]  
+// #VERIFY: [validation needed]
+// Example: UI state, form validation, API responses
+
+// #EDGE: [category]: [assumption about uncommon scenarios]
+// #VERIFY: [optional improvement]  
+// Example: Browser compatibility, slow networks
+```
+
+### Critical Assumption Categories (MANDATORY tagging)
+- **Timing Dependencies**: State updates, async operations, race conditions
+- **External Resources**: API availability, file existence, network connectivity
+- **Data Integrity**: Type safety at boundaries, null/undefined handling
+- **Concurrency**: Shared state, transaction isolation, deadlock potential
+- **Security**: Authentication, authorization, input validation
+- **Payment/Financial**: Transaction integrity, retry logic, rollback handling
+
+### Verification Workflow (AUTOMATED with Agent Integration)
+1. **During Development**: Claude tags assumptions inline with risk level
+2. **On File Save**: Hook triggers assumption-verification-agent scan automatically
+3. **Agent Processing**: Agent categorizes, verifies, and suggests defensive fixes
+4. **Before Commit**: Agent validates critical assumptions are addressed
+5. **Mark Verified**: Agent adds verification timestamps automatically
+
+### File-Type Standards
+- **Python**: 88-char line length, comprehensive rule compliance
+- **Markdown**: 120-char line length, consistent formatting
+- **YAML**: 2-space indentation, 120-char line length
+- **Validation**: Pre-commit hooks enforce all standards
+
+### Type Checking with BasedPyright
+BasedPyright replaces MyPy as the standard type checker (3-5x faster, stricter analysis):
+- **Mode**: `strict` (recommended) - enables all strict type checking without excessive noise
+- **Strict Inference**: `strictListInference`, `strictDictionaryInference`, `strictSetInference` enabled
+- **Configuration**: In `pyproject.toml` under `[tool.basedpyright]`
+- **Reference**: https://docs.basedpyright.com
+
+### PyStrict-Aligned Ruff Rules
+Ruff configuration includes PyStrict-aligned rules for ultra-strict code quality:
+- **BLE**: Blind except detection (no bare `except:` or `except Exception:`)
+- **EM**: Error message best practices
+- **SLF**: Private member access violations
+- **INP**: Require `__init__.py` in packages
+- **ISC**: Implicit string concatenation
+- **PGH**: Deprecated type comments, blanket ignores
+- **RSE**: Raise statement best practices
+- **TID**: Banned imports, relative import rules
+- **YTT**: Python version checks
+- **FA**: Future annotations
+- **T10**: Debugger statements (no `breakpoint()`, `pdb`)
+- **G**: Logging format strings
+
+## Essential Commands
+
+> **Complete Command Reference**: See `/commands/quality.md`, `/commands/testing.md`, `/commands/security.md`
+
+### Code Quality & Formatting
+```bash
+# Format and lint (see /commands/quality.md for full details)
+poetry run black .
+poetry run ruff check --fix .
+poetry run basedpyright src  # Strict mode type checking (replaces mypy)
+markdownlint **/*.md
+yamllint **/*.{yml,yaml}
+```
+
+### Security Validation
+```bash
+# Key validation (see /commands/security.md for full details)
+gpg --list-secret-keys  # Must show GPG key for .env encryption
+ssh-add -l              # Must show SSH key for signed commits
+git config --get user.signingkey  # Must be configured for signed commits
+poetry run safety check
+poetry run bandit -r src
+```
+
+### Testing Standards
+```bash
+# Testing commands (see /commands/testing.md for full details)
+poetry run pytest -v --cov=src --cov-report=html --cov-report=term-missing
+poetry run pre-commit run --all-files
+```
+
+### Assumption Verification (Automated via Agent)
+```bash
+# Simplified assumption verification commands (replaces complex tooling)
+/verify-assumptions              # Agent scans and verifies automatically
+/critical-assumptions           # Agent focuses on critical assumptions only  
+/apply-assumption-fixes         # Agent applies safe defensive patterns
+/assumption-report             # Generate comprehensive assumption analysis report
+```
+
+**Agent-Driven Verification Process:**
+- **Automatic Detection**: Scans for #CRITICAL, #ASSUME, #EDGE tags in code
+- **Risk Categorization**: Routes to appropriate verification strategies
+- **Defensive Code Generation**: Creates validation and error handling patterns
+- **Hook Integration**: Triggers verification on file save and pre-commit
+
+## OpenSSF Best Practices Compliance
+
+> **Token Optimized**: Existing standards already satisfy most OpenSSF requirements. This section documents compliance mapping and additional requirements.
+
+### Automatic Compliance (Already Configured)
+Our existing standards satisfy core OpenSSF requirements:
+- ✅ **Testing**: 80% coverage requirement + automated test runs
+- ✅ **Static Analysis**: Ruff (PyStrict-aligned), BasedPyright, Bandit already configured
+- ✅ **Security Scanning**: Safety check for dependencies
+- ✅ **Version Control**: Signed commits, branch protection
+- ✅ **Secrets Management**: GPG-encrypted .env files
+
+### Required Project Files (Verify Presence)
+```bash
+# Check OpenSSF required files exist
+ls -1 LICENSE SECURITY.md CONTRIBUTING.md CHANGELOG.md README.md 2>/dev/null | wc -l
+# Should output: 5
+```
+
+### Release Checklist (Manual Verification)
+Before any release:
+- [ ] CHANGELOG.md updated with security fixes (if any)
+- [ ] No known vulnerabilities >60 days old (`poetry run safety check`)
+- [ ] All tests pass with coverage >80%
+- [ ] Version tag follows SemVer (vX.Y.Z)
+- [ ] Release notes include CVE fixes (if applicable)
+
+### New Feature Requirements
+When implementing new functionality:
+1. **Add tests first** (TDD when practical)
+2. **Document security implications** in docstrings
+3. **Update CHANGELOG.md** with user-facing changes
+4. **Use established libraries** (don't roll your own crypto)
+
+### Compliance Verification
+```bash
+# Quick compliance check (available in cookiecutter template)
+./scripts/check-openssf.sh
+
+# Weekly automated scorecard (GitHub Actions)
+# See .github/workflows/openssf-scorecard.yml in project templates
+```
+
+## Project Integration
+
+> **Project Templates**: Use `/templates/python-project.md` or `/templates/general-project.md` for new projects
+>
+> **Organization Guide**: See `PROJECT-ORGANIZATION-GUIDE.md` for comprehensive guidelines on what should live where in the configuration structure
+
+### Implementation Pattern
+Projects create focused `CLAUDE.md` files that **extend** (not duplicate) these global standards:
+
+1. **Reference Pattern**: Use `> Reference: /standards/[domain].md` for detailed requirements
+2. **Project Focus**: Include only project-specific configurations and deviations
+3. **Inheritance**: All universal standards automatically apply unless overridden
+
+### Example Project Structure
+```markdown
+# Project Development Guide
+
+> This project extends the global CLAUDE.md standards. Only project-specific 
+> configurations and deviations are documented below.
+
+## Project-Specific Standards
+> Reference: Global standards apply. Project-specific requirements below.
+
+- **Performance**: API response p95 < 2s
+- **Security**: Service account at `.gcp/service-account.json`
+- **Architecture**: External Qdrant at 192.168.1.16:6333
+```
+
+## Claude Code Supervisor Role (CRITICAL)
+
+**Claude Code acts as the SUPERVISOR for all development tasks and MUST:**
+
+1. **Always Use TodoWrite Tool**: Create and maintain TODO lists for ALL tasks to track progress
+2. **Assign Tasks to Agents**: Each TODO item should be assigned to a specialized agent via MCP Server
+3. **Review Agent Work**: Validate all agent outputs before proceeding to next steps
+4. **Use Temporary Reference Files**: Create `.tmp-` prefixed files in `tmp_cleanup/` folder to store detailed context that might be lost during compaction
+5. **Maintain Continuity**: Use reference files to preserve TODO details across conversation compactions
+
+### Agent Assignment Patterns
 
 ```bash
-# 1. Check current branch
-git branch --show-current
-
-# 2. If on main/master, create a feature branch FIRST
-git checkout -b feat/{descriptive-slug}
-
-# 3. Or for bug fixes
-git checkout -b fix/{issue-or-description}
+# Always assign TODO items to appropriate agents:
+- Assumption verification → Assumption Verification Agent (via mcp__zen__assumption-verify)
+- Security tasks → Security Agent (via mcp__zen__secaudit)
+- Code reviews → Code Review Agent (via mcp__zen__codereview)  
+- Testing → Test Engineer Agent (via mcp__zen__testgen)
+- Documentation → Documentation Agent (via mcp__zen__docgen)
+- Debugging → Debug Agent (via mcp__zen__debug)
+- Analysis → Analysis Agent (via mcp__zen__analyze)
+- Refactoring → Refactor Agent (via mcp__zen__refactor)
 ```
 
-### Branch Naming Convention
+### Temporary Reference Files (Anti-Compaction Strategy)
 
-| Task Type | Branch Prefix | Commit Type |
-|-----------|---------------|-------------|
-| New feature | `feat/` | `feat:` |
-| Bug fix | `fix/` | `fix:` |
-| Documentation | `docs/` | `docs:` |
-| Refactoring | `refactor/` | `refactor:` |
-| Performance | `perf/` | `perf:` |
-| Testing | `test/` | `test:` |
+**ALWAYS create temporary reference files when:**
+- TODO list contains >5 items
+- Complex implementation details need preservation
+- Multi-step workflows span multiple conversation turns
+- Agent assignments and progress need tracking
 
-**Note**: The primary branch is `main` (not `master`).
+**Naming Convention**: `tmp_cleanup/.tmp-{task-type}-{timestamp}.md` (e.g., `tmp_cleanup/.tmp-auth4-implementation-20250125.md`)
 
-## Security-First Development (CRITICAL)
+### Supervisor Workflow Patterns (MANDATORY)
 
-Claude MUST adopt a security-first approach in all development:
+**Every development task MUST follow this pattern:**
 
-### 1. Proactive Security Suggestions
+1. **Create TODO List**: Use TodoWrite tool to break down the task into specific, actionable items
+2. **Agent Assignment**: Assign each TODO item to the most appropriate specialized agent
+3. **Progress Tracking**: Mark items as in_progress when assigned, completed when validated
+4. **Reference File Creation**: For complex tasks, create `.tmp-` reference files immediately
+5. **Agent Output Validation**: Review all agent work before marking items complete
 
-When working on this project, always suggest appropriate security measures:
-- **Dependencies**: Suggest vulnerability scanning (`safety check`, `pip-audit`)
-- **APIs**: Suggest authentication, rate limiting, input validation
-- **Data**: Suggest encryption at rest and in transit, access controls
-### 2. Never Bypass Security Issues
+**For complex tasks requiring multiple agents:**
 
-- **ALL security findings** from scanners (Semgrep, SonarQube, Bandit, Checkov) should be addressed, not dismissed
-- If a finding is a false positive, document WHY with inline comments
-- Use baseline files only for truly unavoidable exceptions with justification
+1. **Sequential Dependencies**: Use TodoWrite to show dependencies between tasks
+2. **Parallel Execution**: Assign independent tasks to multiple agents simultaneously
+3. **Integration Points**: Create specific TODO items for integrating agent outputs
+4. **Quality Gates**: Assign review tasks to appropriate agents after implementation
 
-### 3. Code Quality Standards
+### PR Preparation Workflow (AUTOMATED)
 
-- Treat linting warnings as errors to fix, not ignore
-- Address ALL type checker warnings, not just errors
-- Don't accumulate technical debt by deferring quality issues
-
-### 4. Default to Strictest Settings
-
-- Security scanners: fail on HIGH/CRITICAL by default
-- Type checking: strict mode (already configured)
-- Linting: no ignored rules without documented reason
-
-## Project Planning Documents
-
-> **First-Time Setup**: If planning documents show "Awaiting Generation", see the [Project Setup Guide](docs/PROJECT_SETUP.md#project-planning-with-claude-code).
-
-**Planning Documents** (in `docs/planning/`):
-- [project-vision.md](docs/planning/project-vision.md) - Problem, solution, scope, success metrics
-- [tech-spec.md](docs/planning/tech-spec.md) - Architecture, data model, APIs, security
-- [roadmap.md](docs/planning/roadmap.md) - Phased implementation plan
-- [adr/](docs/planning/adr/) - Architecture decisions with rationale
-- [PROJECT-PLAN.md](docs/planning/PROJECT-PLAN.md) - Synthesized plan with git branches (after synthesis)
-
-**References**:
-- **Complete Workflow**: [Project Setup Guide](docs/PROJECT_SETUP.md#project-planning-with-claude-code)
-- **Skill Reference**: `.claude/skills/project-planning/`
-
-### Quick Start
+**ALWAYS use `mcp__zen-core__pr_prepare` tool for PR creation:**
 
 ```bash
-# 1. Generate planning documents
-/plan <your project description>
+# Standard PR creation with What the Diff integration
+mcp__zen-core__pr_prepare --include_wtd=true --target_branch=main
 
-# 2. Synthesize into project plan
-"Synthesize my planning documents into a project plan"
+# Force WTD even for large PRs
+mcp__zen-core__pr_prepare --include_wtd=true --force_wtd=true
 
-# 3. Review docs/planning/PROJECT-PLAN.md
-
-# 4. Start development
-/git/milestone start feat/phase-0-foundation
+# Custom parameters
+mcp__zen-core__pr_prepare \
+  --include_wtd=true \
+  --target_branch=main \
+  --change_type=feat \
+  --title="Add new feature"
 ```
 
-### Using Planning Documents
+**Branch Safety and PR Creation MUST follow this pattern:**
 
-```text
-# Load context for a task
-Load from project-vision.md sections 2-3 and adr/adr-001-*.md,
-then implement [feature] per tech-spec.md section [X].
+1. **Branch Strategy Validation**: Validate current branch strategy and proper targeting
+2. **Dependency Validation**: Update poetry.lock and regenerate requirements files automatically
+3. **Security Scanning**: Run dependency security checks before PR creation
+4. **What the Diff Integration**: Include `<!-- wtd:summary -->` shortcode in PR description
+5. **GitHub Integration**: Push branch and create draft PR with comprehensive description
+6. **Review Assignment**: Auto-assign reviewers based on CODEOWNERS and change patterns
 
-# Validate code against specs
-Review this code against tech-spec.md section 6 (security).
+**Branch Safety Checks:**
+- Prevents PRs from main branch (must use feature branches)
+- Validates branch naming conventions and targeting strategy
+- Provides branch migration assistance for incorrect strategies
+- Confirms user intent for main branch targeting
 
-# Check phase progress
-Review PROJECT-PLAN.md Phase 1 deliverables and update status.
-```
+**Automatic PR Generation:**
+- Analyzes git commit history and change patterns
+- Generates comprehensive PR descriptions with metrics
+- **ALWAYS includes What the Diff shortcode** (`<!-- wtd:summary -->`) unless `include_wtd=false`
+- Applies appropriate labels based on change types and size
+- Integrates with GitHub CLI for seamless workflow
 
-## Technology Stack
+**What the Diff Integration (CRITICAL):**
+- **Default behavior**: `include_wtd=true` - WTD shortcode automatically included
+- **Shortcode syntax**: `<!-- wtd:summary -->` (HTML comment format)
+- **Placement**: Inserted in PR description where AI-generated summary is desired
+- **Additional shortcodes**: `<!-- wtd:joke -->`, `<!-- wtd:poem -->` (optional)
+- **Large PRs**: Use `--force_wtd=true` to override size-based exclusion
+- **Disable WTD**: Set `--include_wtd=false` (rare, only for internal/draft PRs)
 
-- **Python**: 3.12
-- **Package Manager**: UV
-- **Code Quality**: Ruff (linter/formatter), BasedPyright (type checker)
-- **Testing**: pytest, coverage
-- **Security**: Bandit, Safety
-- **Documentation**: MkDocs Material
-## Project-Specific Requirements
+## Development Philosophy
 
-> **Standard Requirements**: See [.claude/standard/claude.md](.claude/standard/claude.md) for universal standards
+**Security First** → **Quality Standards** → **Documentation** → **Testing** → **Collaboration**
 
-**Coverage & Quality**:
-- Test coverage: Minimum 80%
-- All linters must pass: `uv run ruff check .`, `uv run basedpyright src/`
-- Security scans: `uv run bandit -r src`, `uv run safety check`
-
-## Quick Start Commands
-
-```bash
-# Initial setup
-uv sync --all-extras
-uv run pre-commit install
-
-# Development cycle
-uv run pytest -v                           # Run tests
-uv run pytest --cov=src --cov-report=html # With coverage
-uv run ruff format .                       # Format code
-uv run ruff check . --fix                  # Lint and fix
-uv run basedpyright src/                   # Type check
-
-# Before commit (all must pass)
-uv run pytest --cov=src --cov-fail-under=80
-uv run ruff check .
-uv run basedpyright src/
-uv run bandit -r src
-pre-commit run --all-files
-
-# Documentation
-uv run mkdocs serve                        # Local preview
-uv run mkdocs build                        # Build static site
-```
-
-## Project Structure
-
-```text
-src/claude_config/
-├── __init__.py              # Package initialization
-├── core/                    # Core business logic
-│   ├── __init__.py
-│   └── config.py           # Configuration (Pydantic Settings)
-├── middleware/              # Middleware components
-│   └── __init__.py
-└── utils/                   # Utilities
-    ├── __init__.py
-    ├── financial.py        # Financial utilities (Decimal precision)
-    └── logging.py          # Structured logging
-
-tests/
-├── unit/                   # Unit tests
-├── integration/            # Integration tests
-├── conftest.py            # Pytest fixtures
-└── test_example.py        # Example tests
-
-docs/                       # MkDocs documentation
-├── index.md               # Home page
-└── ...                    # Additional docs
-```
-
-## Code Conventions
-
-> **Standard Conventions**: See [.claude/standard/claude.md](.claude/standard/claude.md) for universal naming and style guidelines
-
-**Project-Specific Patterns**:
-- Configuration: Use Pydantic Settings with `.env` files
-- Logging: Structured logging via `src/claude_config/utils/logging.py`
-- Error Handling: Custom exceptions in `src/claude_config/core/exceptions.py`
-
-**Docstrings** (Google Style):
-```python
-def process_data(input_path: str, max_rows: int = 1000) -> dict[str, Any]:
-    """Process data from input file.
-
-    Args:
-        input_path: Path to input file
-        max_rows: Maximum rows to process (default: 1000)
-
-    Returns:
-        Dictionary with processing results
-
-    Raises:
-        FileNotFoundError: If input file doesn't exist
-        ValueError: If file format is invalid
-    """
-```
-
-## Configuration Management
-
-Use Pydantic Settings for environment-based configuration:
-
-```python
-from pydantic_settings import BaseSettings
-from pydantic import Field
-
-class Settings(BaseSettings):
-    project_name: str = "Claude Code Configuration"
-    log_level: str = Field(default="INFO", env="LOG_LEVEL")
-    debug: bool = Field(default=False, env="DEBUG")
-
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-
-settings = Settings()
-```
+### Core Principles
+1. **Security First**: Always validate keys, encrypt secrets, scan dependencies
+2. **Reuse First**: Check existing repositories for solutions before building new code
+3. **Configure, Don't Build**: Prefer configuration and orchestration over custom implementation
+4. **Quality Standards**: Maintain consistent code quality across all projects
+5. **Documentation**: Keep documentation current and well-formatted
+6. **Testing**: Maintain high test coverage and run tests before commits
+7. **Collaboration**: Use consistent Git workflows and clear commit messages
 
 ## Git Worktree Workflow
 
-> **Full Documentation**: See `~/.claude/CLAUDE.md` for complete worktree concepts, commands, and best practices.
+> **Full Documentation**: See `/standards/git-worktree.md` for complete worktree patterns, commands, and best practices.
 
-**Project-Specific Paths**:
+Git worktrees enable parallel development by maintaining multiple working directories from a single repository. Use for feature development, PR reviews, hotfixes, and experimentation.
+
+**Quick Reference**:
 ```bash
-# Worktree directory for this project
-../claude_config-worktrees/
+# Create worktree for new feature
+git worktree add ../{project}-worktrees/feature-name -b feature/feature-name
+cd ../{project}-worktrees/feature-name && uv sync --all-extras
 
-# Quick reference commands
-git worktree add ../claude_config-worktrees/feature-name -b feature/feature-name
-git worktree add ../claude_config-worktrees/pr-42 origin/feature/pr-branch
+# Create worktree for PR review
+git worktree add ../{project}-worktrees/pr-42 origin/feature/pr-branch
+
+# List and cleanup
 git worktree list
-git worktree remove ../claude_config-worktrees/feature-name
+git worktree remove ../{project}-worktrees/feature-name
+git worktree prune
 ```
 
-**Remember**: Each worktree needs `uv sync --all-extras` after creation (worktrees share git but not virtualenvs).
+**Key Points**:
+- Worktrees share git history but NOT virtualenvs - run `uv sync` in each
+- Use sibling directory: `../{project}-worktrees/`
+- Cleanup promptly after merging
 
-## Common Tasks
+**Note**: Worktrees are for parallel branch isolation. They do NOT replace `tmp_cleanup/` which serves as development history and anti-compaction storage.
 
-### Add Dependency
+## Automated Branch Creation Strategy (CRITICAL)
+
+> **Full Documentation**: See `/standards/git-workflow.md` and `/standards/git-worktree.md` for complete patterns and commands.
+
+Claude Code MUST automatically create branches and worktrees during project plan execution to maintain semantic release compatibility and git hygiene.
+
+### Branch Type Mapping (Semantic Release)
+
+| Task Type | Branch Prefix | Commit Type | Version Impact |
+|-----------|---------------|-------------|----------------|
+| New feature | `feat/` | `feat:` | Minor (0.X.0) |
+| Bug fix | `fix/` | `fix:` | Patch (0.0.X) |
+| Breaking change | `feat/` or `fix/` | `feat!:` or `fix!:` | Major (X.0.0) |
+| Documentation | `docs/` | `docs:` | No release |
+| Refactoring | `refactor/` | `refactor:` | No release |
+| Performance | `perf/` | `perf:` | Patch (0.0.X) |
+| Testing | `test/` | `test:` | No release |
+| Chore/maintenance | `chore/` | `chore:` | No release |
+| Hotfix (critical) | `hotfix/` | `fix:` | Patch (0.0.X) |
+
+### When to Create Branches (MANDATORY)
+
+**ALWAYS create a new branch when:**
+
+1. **Starting ANY implementation task** - Never commit directly to `main` or `develop`
+2. **TODO item involves code changes** - Each feature/fix TODO should have its own branch
+3. **Multiple independent features** - Create separate branches for parallel work
+4. **User explicitly requests a feature/fix** - Branch immediately before coding
+5. **PR review reveals issues** - Create fix branch from the PR branch
+
+**Branch Creation Command Pattern:**
 ```bash
-uv add package-name              # Production
-uv add --dev package-name        # Development
+# Standard feature branch (most common)
+git checkout main && git pull origin main
+git checkout -b feat/{descriptive-slug}
+
+# Bug fix branch
+git checkout -b fix/{issue-or-description}
+
+# Documentation branch
+git checkout -b docs/{topic}
+
+# Refactoring branch
+git checkout -b refactor/{component-name}
 ```
 
-### Update Dependencies
+### When to Use Worktrees vs Simple Branches
+
+| Scenario | Use Worktree | Reason |
+|----------|--------------|--------|
+| Simple single task | No | Branch is sufficient |
+| Long-running feature (>1 session) | **Yes** | Preserves state across sessions |
+| Parallel agent work | **Yes** | Isolated environments |
+| PR review while working | **Yes** | Don't disrupt current work |
+| Hotfix during feature work | **Yes** | Emergency isolation |
+| Multiple TODOs in same feature | No | Single branch, multiple commits |
+| Experimentation/spike | **Yes** | Safe to abandon |
+
+**Worktree Decision Rule**: Use worktree when you need to **preserve current work state** or **run parallel isolated operations**.
+
+### Project Plan Branch Strategy
+
+When executing a multi-step project plan:
+
+**Single Feature Implementation:**
 ```bash
-uv sync --upgrade                        # All packages
-uv sync --upgrade-package package-name   # Specific package
+# 1. Create feature branch at plan start
+git checkout -b feat/implement-{feature-name}
+
+# 2. Work through TODOs with conventional commits
+git commit -m "feat: add initial {component}"
+git commit -m "feat: implement {sub-feature}"
+git commit -m "test: add tests for {component}"
+git commit -m "docs: document {feature-name} usage"
+
+# 3. Single PR at plan completion
 ```
 
-### Run Specific Test
+**Multi-Feature Plan (Independent TODOs):**
 ```bash
-uv run pytest tests/unit/test_example.py::test_function_name -v
+# 1. Create branches for each independent feature
+git checkout -b feat/feature-a
+# ... work on feature A ...
+git checkout main
+git checkout -b feat/feature-b
+# ... work on feature B ...
+
+# 2. Or use worktrees for true parallelism
+git worktree add ../{project}-worktrees/feat-a -b feat/feature-a
+git worktree add ../{project}-worktrees/feat-b -b feat/feature-b
 ```
 
-## CI/CD Pipeline
-
-**GitHub Actions Workflows**:
-1. **CI** (`.github/workflows/ci.yml`): Tests, linting, type checking
-2. **Security** (`.github/workflows/security-analysis.yml`): CodeQL, Bandit, Safety
-3. **Docs** (`.github/workflows/docs.yml`): Build and deploy documentation
-4. **Publish** (`.github/workflows/publish-pypi.yml`): PyPI release automation
-
-**Quality Gates** (must pass):
-- ✅ All tests pass (80% coverage)
-- ✅ Ruff linting (no errors)
-- ✅ BasedPyright type checking
-- ✅ Security scans (no high/critical)
-- ✅ Pre-commit hooks
-## Third-Party Integrations
-
-### CodeRabbit (AI Code Reviews)
-
-CodeRabbit provides automated AI-powered code reviews on every pull request.
-
-**Configuration**: `.coderabbit.yaml`
-
-**Features**:
-- Automatic review on PR creation
-- Security vulnerability detection
-- Code quality suggestions
-- Path-specific review instructions
-
-**Commands**:
+**Phased Development (Dependent TODOs):**
 ```bash
-# In PR comments:
-@coderabbitai summary      # Get high-level summary
-@coderabbitai review       # Request re-review
-@coderabbitai help         # Show available commands
+# 1. Create branch for entire phase
+git checkout -b feat/phase-1-{description}
+
+# 2. Commit each step with appropriate type
+git commit -m "feat: phase 1 step 1 - {description}"
+git commit -m "feat: phase 1 step 2 - {description}"
+# ... continue through phase ...
+
+# 3. Single PR for complete phase
 ```
 
-**Setup**: Install the [CodeRabbit GitHub App](https://github.com/apps/coderabbitai)
+### Branch Naming Convention (ENFORCED)
 
-## Troubleshooting
+**Format**: `{type}/{descriptive-slug}`
 
-### Pre-commit Hooks Failing
+**Rules:**
+- **Lowercase only**: `feat/user-auth` not `feat/User-Auth`
+- **Hyphen-separated**: `feat/add-login-page` not `feat/add_login_page`
+- **Descriptive but concise**: `feat/oauth-google` not `feat/add-oauth-integration-with-google-identity-provider`
+- **No ticket numbers alone**: `feat/auth-ABC-123` not `ABC-123`
+
+**Examples:**
 ```bash
-pre-commit run --all-files           # Run manually
-pre-commit clean                     # Clean cache
-pre-commit install --install-hooks   # Reinstall
+# Good
+feat/user-authentication
+fix/null-pointer-api
+docs/installation-guide
+refactor/database-queries
+perf/image-optimization
+hotfix/critical-security-patch
+
+# Bad
+feature/UserAuthentication  # Wrong prefix, wrong case
+fix_null_pointer            # Underscores
+docs/update                 # Too vague
+ABC-123                     # Ticket number only
 ```
 
-### UV Lock Issues
+### Supervisor Branch Workflow (MANDATORY)
+
+**When Claude Code starts a development task:**
+
+1. **Check current branch**:
+   ```bash
+   git branch --show-current
+   git status
+   ```
+
+2. **If on main/develop, create appropriate branch FIRST**:
+   ```bash
+   git checkout -b {type}/{descriptive-slug}
+   ```
+
+3. **Update TODO list** with branch name:
+   ```
+   - [x] Create branch: feat/add-user-dashboard
+   - [ ] Implement dashboard component
+   - [ ] Add tests
+   - [ ] Create PR
+   ```
+
+4. **Commit frequently** with conventional commit messages matching branch type
+
+5. **Never merge directly** - Always use PR workflow via `mcp__zen__pr_prepare`
+
+### Integration with TodoWrite
+
+When creating TODO lists, include branch management:
+
+```markdown
+## TODO List: Implement User Dashboard
+
+### Setup
+- [ ] Create feature branch `feat/user-dashboard`
+- [ ] Set up worktree if parallel work needed
+
+### Implementation
+- [ ] Implement DashboardComponent
+- [ ] Add API endpoints
+- [ ] Write unit tests
+
+### Completion
+- [ ] Run pre-commit checks
+- [ ] Create PR via mcp__zen__pr_prepare
+- [ ] Clean up worktree (if used)
+```
+
+### Automatic Branch Validation
+
+Before ANY code changes, Claude Code MUST verify:
+
+1. **Not on protected branch**: `main`, `master`, `develop` require branch creation
+2. **Branch name matches work type**: `feat/` for features, `fix/` for bugs, etc.
+3. **Branch is up-to-date**: `git pull origin main` before branching
+4. **No uncommitted changes**: Commit or stash before switching
+
 ```bash
-uv lock                          # Regenerate lock
-uv sync --all-extras             # Reinstall dependencies (includes dev tools)
+# Validation check pattern
+CURRENT_BRANCH=$(git branch --show-current)
+if [[ "$CURRENT_BRANCH" == "main" || "$CURRENT_BRANCH" == "master" || "$CURRENT_BRANCH" == "develop" ]]; then
+    echo "ERROR: Cannot work directly on $CURRENT_BRANCH. Create a feature branch first."
+    exit 1
+fi
 ```
 
-### BasedPyright Type Errors
-```bash
-uv run basedpyright src/  # Show type errors
-# Add `# pyright: ignore[error-code]` for specific issues
-```
+## Pre-Commit Linting Checklist
 
-## Performance Targets
-
-| Metric | Target | Notes |
-|--------|--------|-------|
-| Test Suite | <30s | Full suite with coverage |
-| CI Pipeline | <5min | All checks |
-| Code Coverage | 80% | Enforced in CI |
-
-## Additional Resources
-
-- **Project README**: [README.md](README.md)
-- **Contributing Guide**: [CONTRIBUTING.md](CONTRIBUTING.md)
-- **Security Policy**: [SECURITY.md](SECURITY.md)
-- **Standard Claude Guidelines**: [.claude/standard/claude.md](.claude/standard/claude.md)
-- **UV Documentation**: https://docs.astral.sh/uv/
-- **Ruff Documentation**: https://docs.astral.sh/ruff/
+Before committing ANY changes, ensure:
+- [ ] **Branch Validation**: Working on appropriate feature branch (not main/develop)
+- [ ] **Branch Naming**: Branch follows `{type}/{descriptive-slug}` convention
+- [ ] **TODO Management**: Was TodoWrite used for task tracking?
+- [ ] **Agent Assignment**: Were tasks assigned to appropriate specialized agents?
+- [ ] **Reference Files**: Were temporary reference files created for complex tasks?
+- [ ] **Agent Validation**: Was all agent work reviewed and validated?
+- [ ] **Assumption Verification**: Agent automatically verified critical assumptions
+- [ ] **OpenSSF Compliance**: Required files present (LICENSE, SECURITY.md, CONTRIBUTING.md, CHANGELOG.md)
+- [ ] Environment validation passes (GPG and SSH keys present)
+- [ ] File-specific linter has been run and passes
+- [ ] Pre-commit hooks execute successfully (includes credential leak detection)
+- [ ] No linting warnings or errors remain
+- [ ] Code formatting is consistent with project standards
+- [ ] Commits are signed (Git signing key configured)
+- [ ] **Security Scanning**: No known vulnerabilities (`poetry run safety check`)
+- [ ] **Branch Safety**: PR preparation validates branch strategy if applicable
+- [ ] **Dependency Safety**: Requirements files updated if dependencies changed
+- [ ] **PR Creation**: If creating PR, use `mcp__zen-core__pr_prepare` with `--include_wtd=true`
 
 ---
 
-**Last Updated**: 2025-11-24
-**Template Version**: 1.0.0
+*This modular configuration is automatically loaded by Claude Code. For detailed specifications,
+see referenced files in `/standards/` and `/commands/` directories.*
+
+*Modularization complete! All detailed specifications are now available in domain-specific files
+for maximum token efficiency.*

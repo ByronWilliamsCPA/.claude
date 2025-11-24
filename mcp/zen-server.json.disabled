@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "zen-core": {
+      "command": "$HOME/dev/zen-mcp-server/.zen_venv/bin/python",
+      "args": ["$HOME/dev/zen-mcp-server/server.py"],
+      "env": {
+        "HYBRID_MODE": "true",
+        "CORE_TOOLS_ONLY": "true",
+        "DISABLED_TOOLS": "secaudit,codereview,debug,analyze,refactor,thinkdeep,docgen,testgen,planner,precommit,tracer,layered_consensus"
+      }
+    }
+  }
+}
