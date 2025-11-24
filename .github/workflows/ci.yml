@@ -1,12 +1,8 @@
-# CI/CD Pipeline - Calls Org-Level Reusable Workflow
-# This is a lightweight caller workflow that invokes the organization's
-# shared Python CI workflow with LLM governance integration.
+# CI/CD Pipeline for Claude Code Configuration
+# Runs tests, linting, type checking, and security scans.
 #
 # Features:
 #   - Standard quality checks (tests, linting, type checking)
-#   - LLM governance and assumption tag verification
-#   - Optional SonarCloud integration
-#   - Optional Codecov integration
 #   - Security scanning (Bandit, Safety)
 name: CI
 
@@ -29,17 +25,33 @@ permissions:
   checks: write
 
 jobs:
-  ci:
-    name: CI Pipeline
-    uses: ByronWilliamsCPA/.github/.github/workflows/python-ci.yml@main
-    with:
-      python-version: '3.12'
-      coverage-threshold: 80
-      source-directory: 'src'
-      test-directory: 'tests'
-      enable-sonarcloud: false
-      enable-codecov: false
-      run-integration-tests: true
-      run-security-tests: true
-      fail-on-llm-tags: false
-    secrets:
+  test:
+    name: Test (Python 3.12)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: uv sync --all-extras
+
+      - name: Run tests with coverage
+        run: |
+          uv run pytest -v --cov=src --cov-report=xml --cov-report=term-missing --cov-fail-under=80
+
+      - name: Run type checker
+        run: uv run basedpyright src/
+
+      - name: Run linter
+        run: uv run ruff check src/ tests/
+
+      - name: Run security scan (Bandit)
+        run: uv run bandit -r src/ -c pyproject.toml
