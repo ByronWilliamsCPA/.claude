@@ -30,6 +30,7 @@ allowed:
   # Documentation
   - front_matter
   - api_reference
+  - api
   - reference
   - taxonomy
   - coverage
@@ -42,6 +43,13 @@ allowed:
   - installation
   - adr
   - decisions
+  - home
+  - overview
+  - usage
+  - configuration
+  - project
+  - setup
+  - getting_started
   - mkdocs
   - pydantic
   - json_ld

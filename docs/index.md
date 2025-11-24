@@ -9,9 +9,7 @@ tags:
   - home
 ---
 
-# Claude Code Configuration
-
-Global Claude Code development standards, commands, and configuration for all projects
+Global Claude Code development standards, commands, and configuration for all projects.
 
 ## Quick Start
 

@@ -1,4 +1,14 @@
-# Project Organization Guide
+---
+title: "Project Organization Guide"
+schema_type: common
+status: published
+owner: core-maintainer
+purpose: "Comprehensive guide for organizing Claude Code configurations and documentation."
+tags:
+  - guide
+  - documentation
+  - architecture
+---
 
 > **Comprehensive guide for organizing Claude Code configurations, tools, and documentation**
 

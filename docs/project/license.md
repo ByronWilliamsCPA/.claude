@@ -9,8 +9,6 @@ tags:
   - license
 ---
 
-# License
-
 Claude Code Configuration is licensed under the **MIT** License.
 
 ## Summary
