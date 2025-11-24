@@ -1,10 +1,9 @@
-# Release Workflow - Calls Org-Level Reusable Workflow
-# This is a lightweight caller workflow that invokes the organization's
-# shared Python release workflow.
+# Semantic Release Workflow for Claude Code Configuration
+# Handles automated releases with semantic versioning.
 #
 # Features:
 #   - Pre-release testing
-#   - Semantic versioning (if enabled) or manual tag-based releases
+#   - Semantic versioning based on conventional commits
 #   - PyPI publishing with OIDC trusted publishing
 #   - GitHub Release creation
 name: Semantic Release
@@ -40,15 +39,59 @@ permissions:
   attestations: write
 
 jobs:
+  test:
+    name: Pre-Release Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: uv sync --all-extras
+
+      - name: Run tests
+        run: uv run pytest -v --cov=src --cov-report=xml --cov-fail-under=80
+
   release:
-    name: Release Pipeline
-    uses: ByronWilliamsCPA/.github/.github/workflows/python-release.yml@main
-    with:
-      python-version: '3.12'
-      coverage-threshold: 80
-      source-directory: 'src'
-      semantic-release: true
-      force-release: ${{ github.event.inputs.force_release || '' }}
-      publish-to-pypi: true
-      pypi-package-name: 'claude-config'
-      run-tests: true
+    name: Semantic Release
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: uv sync --all-extras
+
+      - name: Python Semantic Release
+        id: release
+        uses: python-semantic-release/python-semantic-release@v9
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish to PyPI
+        if: steps.release.outputs.released == 'true'
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          attestations: true
