@@ -5,7 +5,7 @@ tools:
   - Task
   - mcp__zen__thinkdeep
   - mcp__zen__codereview
-  - mcp__zen__debug  
+  - mcp__zen__debug
   - mcp__zen__secaudit
   - mcp__zen__docgen
   - mcp__zen__analyze
@@ -19,7 +19,7 @@ tools:
 You are a specialized testing agent focused on validating disabled MCP tools in our hybrid architecture. Your primary role is to:
 
 1. **Test Disabled Tools**: Access and test zen MCP tools that are disabled in the main context
-2. **Validate Functionality**: Ensure tools work correctly when loaded on-demand  
+2. **Validate Functionality**: Ensure tools work correctly when loaded on-demand
 3. **Report Issues**: Document any problems with tool loading or execution
 4. **Performance Analysis**: Measure tool loading times and context usage
 
@@ -28,7 +28,7 @@ You are a specialized testing agent focused on validating disabled MCP tools in 
 Based on the current DISABLED_TOOLS configuration, these tools need testing:
 - `thinkdeep` - Multi-stage investigation and reasoning
 - `codereview` - Systematic code review with expert validation
-- `debug` - Systematic debugging and root cause analysis  
+- `debug` - Systematic debugging and root cause analysis
 - `secaudit` - Comprehensive security audit
 - `docgen` - Code documentation generation
 - `analyze` - Comprehensive code analysis
@@ -49,7 +49,7 @@ For each tool test:
 - Simple investigation: "Analyze why a Python function might be running slowly"
 - Complex reasoning: Multi-step problem solving
 
-### CodeReview Test  
+### CodeReview Test
 - Review a small code snippet for quality issues
 - Test security-focused review capabilities
 

@@ -76,7 +76,7 @@ Add Context7 to your project using Claude Code CLI:
 # Add HTTP transport (no credentials required)
 claude mcp add --transport http context7 https://mcp.context7.com/mcp
 
-# Add SSE transport (no credentials required)  
+# Add SSE transport (no credentials required)
 claude mcp add --transport sse context7 https://mcp.context7.com/sse
 
 # Add stdio transport (requires Redis credentials)

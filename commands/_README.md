@@ -66,7 +66,7 @@ List all assumption tags in the project for review and cleanup.
 processPayment(amount);
 updateUserBalance(amount);
 
-// #ASSUME: state: React state update completes before navigation  
+// #ASSUME: state: React state update completes before navigation
 // #VERIFY: Use callback or useEffect dependency
 setUser(newUser);
 navigate('/profile');
@@ -233,5 +233,5 @@ Ensure Claude Code is loading slash commands:
 
 ---
 
-*Last Updated: 2025-01-31*  
+*Last Updated: 2025-01-31*
 *See `/docs/response-aware-development.md` for complete methodology*

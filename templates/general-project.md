@@ -6,7 +6,7 @@
 
 > **Reference**: Global standards from `~/.claude/standards/` apply unless overridden below.
 >
-> - **Security Standards**: See `~/.claude/standards/security.md`  
+> - **Security Standards**: See `~/.claude/standards/security.md`
 > - **Git Workflow**: See `~/.claude/standards/git-workflow.md`
 > - **Linting Standards**: See `~/.claude/standards/linting.md`
 > - **Python Standards**: See `~/.claude/standards/python.md` (if Python project)
@@ -345,21 +345,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Setup [Language]
         uses: [setup-action]
         with:
           [language-version]: [version]
-      
+
       - name: Install dependencies
         run: [install-command]
-      
+
       - name: Run tests
         run: [test-command]
-      
+
       - name: Run linting
         run: [lint-command]
-      
+
       - name: Security scan
         run: [security-command]
 ```

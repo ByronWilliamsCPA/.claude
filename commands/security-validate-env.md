@@ -36,7 +36,7 @@ gpg --list-secret-keys --with-colons | grep -q "^sec.*S" && echo "✅ Signing ca
 # If no keys found: Must set up GPG key for encryption
 ```
 
-### 2. SSH Key Validation  
+### 2. SSH Key Validation
 
 ```bash
 # Check for loaded SSH keys (required for signed commits)
@@ -85,7 +85,7 @@ Report the status of each security requirement:
 **✅ PASS Requirements**:
 
 - GPG key present and accessible
-- SSH key loaded and configured  
+- SSH key loaded and configured
 - Git signing properly configured
 - No obvious security issues found
 

@@ -15,7 +15,7 @@ Journey orchestration specialist managing four progressive user experience level
 ## Core Responsibilities
 
 - **Journey Assessment**: Determine appropriate journey level based on user needs and context
-- **Workflow Orchestration**: Coordinate between journey levels and manage transitions  
+- **Workflow Orchestration**: Coordinate between journey levels and manage transitions
 - **Context Preservation**: Maintain user state and preferences across journey interactions
 - **Experience Optimization**: Ensure smooth progression and appropriate complexity scaling
 - **Resource Management**: Optimize computational resources based on journey requirements

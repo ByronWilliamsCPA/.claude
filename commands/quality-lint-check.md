@@ -21,7 +21,7 @@ Detect file type and run the corresponding linter with appropriate configuration
 ```bash
 # Format and lint Python code
 poetry run black --check $ARGUMENTS
-poetry run ruff check $ARGUMENTS  
+poetry run ruff check $ARGUMENTS
 poetry run mypy $ARGUMENTS
 ```
 
