@@ -9,8 +9,6 @@ tags:
   - testing
 ---
 
-# Testing
-
 This guide covers the testing strategy and patterns for Claude Code Configuration.
 
 ## Running Tests

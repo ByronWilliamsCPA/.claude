@@ -9,9 +9,7 @@ tags:
   - overview
 ---
 
-# Overview
-
-Global Claude Code development standards, commands, and configuration for all projects
+Global Claude Code development standards, commands, and configuration for all projects.
 
 ## Key Features
 
