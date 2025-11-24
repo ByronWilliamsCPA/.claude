@@ -9,8 +9,6 @@ tags:
   - contributing
 ---
 
-# Contributing
-
 Thank you for your interest in contributing to Claude Code Configuration!
 
 ## Getting Started

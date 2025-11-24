@@ -9,8 +9,6 @@ tags:
   - quality
 ---
 
-# Code Quality
-
 This guide covers the code quality standards and tools for Claude Code Configuration.
 
 ## Tools

@@ -9,8 +9,6 @@ tags:
   - architecture
 ---
 
-# Architecture
-
 This document describes the architecture and design decisions for Claude Code Configuration.
 
 ## Project Structure

@@ -9,8 +9,6 @@ tags:
   - usage
 ---
 
-# Usage
-
 This guide covers common usage patterns for Claude Code Configuration.
 
 ## Installation
