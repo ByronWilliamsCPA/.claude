@@ -970,6 +970,436 @@ esac
 # 73: Equivalent mutation - same behavior
 ```
 
+## Test Compliance Verification
+
+Ensure testing standards are consistently applied across repositories.
+
+### Directory Structure Validation
+
+```python
+# scripts/verify_test_structure.py
+"""Verify test directory structure matches standards."""
+from pathlib import Path
+import sys
+
+REQUIRED_DIRS = ["unit", "integration", "fixtures"]
+RECOMMENDED_DIRS = ["e2e", "security", "benchmark", "api"]
+
+def verify_structure(tests_path: Path) -> tuple[list[str], list[str]]:
+    """Check for required and recommended test directories."""
+    missing_required = []
+    missing_recommended = []
+
+    for dir_name in REQUIRED_DIRS:
+        if not (tests_path / dir_name).is_dir():
+            missing_required.append(dir_name)
+
+    for dir_name in RECOMMENDED_DIRS:
+        if not (tests_path / dir_name).is_dir():
+            missing_recommended.append(dir_name)
+
+    return missing_required, missing_recommended
+
+if __name__ == "__main__":
+    tests_path = Path("tests")
+    missing_req, missing_rec = verify_structure(tests_path)
+
+    if missing_req:
+        print(f"ERROR: Missing required directories: {missing_req}")
+        sys.exit(1)
+    if missing_rec:
+        print(f"WARNING: Missing recommended directories: {missing_rec}")
+
+    print("✓ Test structure verification passed")
+```
+
+### Test Marker Coverage
+
+```python
+# conftest.py - Add to existing conftest
+import pytest
+from collections import Counter
+
+# Track marker usage
+_marker_counts: Counter[str] = Counter()
+_unmarked_tests: list[str] = []
+
+REQUIRED_MARKERS = {"unit", "integration", "e2e", "benchmark", "security"}
+
+def pytest_collection_finish(session):
+    """Analyze test marker distribution after collection."""
+    for item in session.items:
+        markers = {m.name for m in item.iter_markers()}
+        relevant = markers & REQUIRED_MARKERS
+
+        if relevant:
+            for marker in relevant:
+                _marker_counts[marker] += 1
+        else:
+            _unmarked_tests.append(item.nodeid)
+
+def pytest_terminal_summary(terminalreporter, exitstatus, config):
+    """Report marker coverage in test summary."""
+    if not _marker_counts and not _unmarked_tests:
+        return
+
+    terminalreporter.write_sep("=", "Test Marker Coverage")
+
+    total = sum(_marker_counts.values()) + len(_unmarked_tests)
+    for marker, count in sorted(_marker_counts.items()):
+        pct = (count / total) * 100
+        terminalreporter.write_line(f"  {marker}: {count} ({pct:.1f}%)")
+
+    if _unmarked_tests:
+        terminalreporter.write_line(
+            f"  UNMARKED: {len(_unmarked_tests)} ({len(_unmarked_tests)/total*100:.1f}%)"
+        )
+        if len(_unmarked_tests) <= 10:
+            for test in _unmarked_tests:
+                terminalreporter.write_line(f"    - {test}")
+```
+
+### Test Ratio Enforcement
+
+```python
+# scripts/check_test_ratios.py
+"""Enforce healthy test pyramid ratios."""
+import subprocess
+import json
+import sys
+
+# Target ratios (unit:integration:e2e)
+TARGET_RATIOS = {
+    "unit": 0.70,        # 70% unit tests
+    "integration": 0.20,  # 20% integration tests
+    "e2e": 0.10,         # 10% e2e tests
+}
+
+TOLERANCE = 0.10  # Allow 10% deviation
+
+def get_test_counts() -> dict[str, int]:
+    """Count tests by marker."""
+    result = subprocess.run(
+        ["uv", "run", "pytest", "--collect-only", "-q", "--no-header"],
+        capture_output=True, text=True
+    )
+
+    counts = {"unit": 0, "integration": 0, "e2e": 0, "other": 0}
+
+    # Run pytest with marker filter to count each type
+    for marker in ["unit", "integration", "e2e"]:
+        result = subprocess.run(
+            ["uv", "run", "pytest", "--collect-only", "-q", "-m", marker],
+            capture_output=True, text=True
+        )
+        # Count lines that look like test items
+        counts[marker] = len([
+            l for l in result.stdout.split("\n")
+            if "::" in l and "test_" in l
+        ])
+
+    return counts
+
+def check_ratios(counts: dict[str, int]) -> list[str]:
+    """Check if test ratios are within tolerance."""
+    total = sum(counts.values())
+    if total == 0:
+        return ["ERROR: No tests found"]
+
+    violations = []
+    for marker, target in TARGET_RATIOS.items():
+        actual = counts.get(marker, 0) / total
+        if actual < target - TOLERANCE:
+            violations.append(
+                f"{marker}: {actual:.1%} (target: {target:.0%}, need {int((target - actual) * total)} more)"
+            )
+
+    return violations
+
+if __name__ == "__main__":
+    counts = get_test_counts()
+    print(f"Test counts: {counts}")
+
+    violations = check_ratios(counts)
+    if violations:
+        print("\nTest ratio violations:")
+        for v in violations:
+            print(f"  ⚠ {v}")
+        sys.exit(1)
+
+    print("✓ Test ratios within acceptable range")
+```
+
+### Module Coverage Audit
+
+```python
+# scripts/audit_test_coverage.py
+"""Audit which source modules have corresponding tests."""
+from pathlib import Path
+import sys
+
+def find_untested_modules(src_path: Path, tests_path: Path) -> list[Path]:
+    """Find source modules without corresponding test files."""
+    untested = []
+
+    for src_file in src_path.rglob("*.py"):
+        if src_file.name.startswith("_"):
+            continue
+
+        # Expected test file patterns
+        relative = src_file.relative_to(src_path)
+        test_patterns = [
+            tests_path / "unit" / f"test_{relative}",
+            tests_path / "unit" / relative.parent / f"test_{relative.name}",
+            tests_path / f"test_{relative.stem}.py",
+        ]
+
+        if not any(p.exists() for p in test_patterns):
+            untested.append(src_file)
+
+    return untested
+
+def generate_report(untested: list[Path], src_path: Path) -> str:
+    """Generate coverage audit report."""
+    total_modules = len(list(src_path.rglob("*.py")))
+    tested = total_modules - len(untested)
+    coverage = (tested / total_modules) * 100 if total_modules else 0
+
+    report = [
+        "# Test Coverage Audit Report",
+        "",
+        f"**Module Coverage**: {tested}/{total_modules} ({coverage:.1f}%)",
+        "",
+    ]
+
+    if untested:
+        report.extend([
+            "## Untested Modules",
+            "",
+            *[f"- `{p}`" for p in sorted(untested)],
+        ])
+
+    return "\n".join(report)
+
+if __name__ == "__main__":
+    src_path = Path("src")
+    tests_path = Path("tests")
+
+    untested = find_untested_modules(src_path, tests_path)
+    report = generate_report(untested, src_path)
+    print(report)
+
+    # Fail if less than 80% modules have tests
+    total = len(list(src_path.rglob("*.py")))
+    if len(untested) / total > 0.20:
+        sys.exit(1)
+```
+
+### CI/CD Integration
+
+```yaml
+# .github/workflows/test-compliance.yml
+name: Test Compliance
+
+on: [push, pull_request]
+
+jobs:
+  verify-structure:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+
+      - name: Verify test structure
+        run: uv run python scripts/verify_test_structure.py
+
+      - name: Check test ratios
+        run: uv run python scripts/check_test_ratios.py
+
+      - name: Audit module coverage
+        run: uv run python scripts/audit_test_coverage.py
+
+  marker-coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+      - run: uv sync --all-extras
+
+      - name: Run tests with marker report
+        run: |
+          uv run pytest --tb=no -q 2>&1 | tee test-output.txt
+
+          # Check for unmarked tests
+          if grep -q "UNMARKED:" test-output.txt; then
+            UNMARKED=$(grep "UNMARKED:" test-output.txt | grep -oP '\d+')
+            if [ "$UNMARKED" -gt 10 ]; then
+              echo "ERROR: Too many unmarked tests ($UNMARKED)"
+              exit 1
+            fi
+          fi
+```
+
+### Pre-commit Hook
+
+```yaml
+# .pre-commit-config.yaml (add to existing)
+repos:
+  - repo: local
+    hooks:
+      - id: verify-test-structure
+        name: Verify test structure
+        entry: uv run python scripts/verify_test_structure.py
+        language: system
+        pass_filenames: false
+        stages: [pre-push]
+
+      - id: new-code-has-tests
+        name: New code has tests
+        entry: |
+          python -c "
+          import subprocess
+          import sys
+
+          # Get changed Python files
+          result = subprocess.run(
+              ['git', 'diff', '--cached', '--name-only', '--diff-filter=A'],
+              capture_output=True, text=True
+          )
+          new_files = [f for f in result.stdout.strip().split('\n')
+                       if f.startswith('src/') and f.endswith('.py')]
+
+          # Check each has a corresponding test
+          missing = []
+          for src_file in new_files:
+              test_file = src_file.replace('src/', 'tests/unit/test_')
+              if not Path(test_file).exists():
+                  missing.append(src_file)
+
+          if missing:
+              print('New files without tests:')
+              for f in missing:
+                  print(f'  - {f}')
+              sys.exit(1)
+          "
+        language: system
+        pass_filenames: false
+```
+
+### Weekly Audit Report
+
+```python
+# scripts/weekly_test_audit.py
+"""Generate weekly test health report."""
+import subprocess
+import json
+from datetime import datetime
+from pathlib import Path
+
+def run_audit() -> dict:
+    """Collect all test metrics."""
+    metrics = {
+        "timestamp": datetime.now().isoformat(),
+        "structure": {},
+        "ratios": {},
+        "coverage": {},
+        "mutation_score": None,
+    }
+
+    # Structure check
+    result = subprocess.run(
+        ["uv", "run", "python", "scripts/verify_test_structure.py"],
+        capture_output=True, text=True
+    )
+    metrics["structure"]["passed"] = result.returncode == 0
+
+    # Coverage
+    result = subprocess.run(
+        ["uv", "run", "pytest", "--cov=src", "--cov-report=json", "-q"],
+        capture_output=True, text=True
+    )
+    if Path("coverage.json").exists():
+        with open("coverage.json") as f:
+            cov_data = json.load(f)
+            metrics["coverage"] = {
+                "line": cov_data["totals"]["percent_covered"],
+                "branch": cov_data["totals"].get("branch_percent_covered", 0),
+            }
+
+    return metrics
+
+def format_report(metrics: dict) -> str:
+    """Format metrics as markdown report."""
+    return f"""# Weekly Test Audit Report
+
+**Generated**: {metrics['timestamp']}
+
+## Summary
+
+| Metric | Value | Status |
+|--------|-------|--------|
+| Structure Valid | {metrics['structure'].get('passed', 'N/A')} | {'✅' if metrics['structure'].get('passed') else '❌'} |
+| Line Coverage | {metrics['coverage'].get('line', 0):.1f}% | {'✅' if metrics['coverage'].get('line', 0) >= 80 else '❌'} |
+| Branch Coverage | {metrics['coverage'].get('branch', 0):.1f}% | {'✅' if metrics['coverage'].get('branch', 0) >= 80 else '❌'} |
+
+## Recommendations
+
+{generate_recommendations(metrics)}
+"""
+
+def generate_recommendations(metrics: dict) -> str:
+    """Generate actionable recommendations."""
+    recs = []
+
+    if metrics['coverage'].get('line', 0) < 80:
+        recs.append("- Increase line coverage to meet 80% minimum")
+    if metrics['coverage'].get('branch', 0) < 80:
+        recs.append("- Add tests for uncovered branches")
+    if not metrics['structure'].get('passed'):
+        recs.append("- Fix test directory structure")
+
+    return "\n".join(recs) if recs else "All checks passing!"
+
+if __name__ == "__main__":
+    metrics = run_audit()
+    report = format_report(metrics)
+
+    # Save report
+    Path("reports").mkdir(exist_ok=True)
+    report_path = Path(f"reports/test-audit-{datetime.now():%Y%m%d}.md")
+    report_path.write_text(report)
+    print(f"Report saved to {report_path}")
+    print(report)
+```
+
+### Minimum Test Requirements by Project Type
+
+| Project Type | Unit | Integration | E2E | Security | Benchmark |
+|--------------|------|-------------|-----|----------|-----------|
+| Library/SDK | 80% | 15% | 5% | Required | Optional |
+| API Service | 60% | 30% | 10% | Required | Required |
+| CLI Tool | 70% | 20% | 10% | Optional | Optional |
+| ML Pipeline | 50% | 30% | 20% | Optional | Required |
+
+### Quick Commands
+
+```bash
+# Verify test structure
+uv run python scripts/verify_test_structure.py
+
+# Check test ratios
+uv run python scripts/check_test_ratios.py
+
+# Audit module coverage
+uv run python scripts/audit_test_coverage.py
+
+# Generate weekly report
+uv run python scripts/weekly_test_audit.py
+
+# Run with marker coverage report
+uv run pytest --tb=short 2>&1 | grep -A 20 "Test Marker Coverage"
+```
+
 ---
 
 *This file contains comprehensive testing standards. For command references, see `/commands/testing.md`.*
