@@ -3,6 +3,19 @@ name: database-operations-agent
 description: Database operations specialist for query optimization, schema management, migration handling, and data integrity maintenance. Use PROACTIVELY when schema changes, query performance issues, or data integrity problems are detected.
 model: sonnet
 tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
+mcp_tools:
+  load:
+    postgres:
+      - explain_query
+      - get_top_queries
+      - analyze_workload_indexes
+      - analyze_query_indexes
+      - analyze_db_health
+  defer:
+    postgres:
+      - list_schemas      # Exploration only
+      - list_objects      # Exploration only
+      - execute_sql       # Manual override only
 context_refs:
   - /context/shared-architecture.md
   - /context/development-standards.md

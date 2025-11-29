@@ -236,6 +236,101 @@ Projects create focused `CLAUDE.md` files that **extend** (not duplicate) these 
 
 **Naming Convention**: `tmp_cleanup/.tmp-{task-type}-{timestamp}.md` (e.g., `tmp_cleanup/.tmp-auth4-implementation-20250125.md`)
 
+## MCP Tool Loading Strategy (CRITICAL)
+
+> **Reference**: Based on [Anthropic's Advanced Tool Use Guide](https://www.anthropic.com/engineering/advanced-tool-use)
+> **Configuration**: See `/mcp/mcp_config.yaml` for full configuration
+
+### Overview
+
+MCP tools are loaded using a **tiered strategy** to reduce context consumption by 85-95%:
+- **Before**: ~55K tokens consumed by 80+ tools at session start
+- **After**: ~3K tokens (Tier 1) + context-specific loading
+
+### Tier 1: Always Loaded (Core Tools)
+
+These 7 tools are loaded at every session start:
+
+| Server | Tools | Purpose |
+|--------|-------|---------|
+| zen | thinkdeep, codereview, tiered_consensus, chat | Deep analysis, reviews, decisions |
+| context7 | resolve_library_id, get_library_docs | Library documentation |
+| github | get_file_contents | Basic file access |
+
+### Tier 2: Agent/Skill-Bundled Tools
+
+Tools loaded automatically when specific agents are invoked via Task tool:
+
+| Agent | MCP Tools Loaded |
+|-------|------------------|
+| security-auditor | `zen.secaudit`, `sentry.*`, `github.code_security`, `postgres.analyze_db_health` |
+| code-reviewer | `zen.precommit`, `zen.challenge`, `github.pull_requests` |
+| test-engineer | `zen.testgen`, `playwright.*` |
+| documentation-writer | `zen.docgen`, `mermaid.*`, `uml-mcp-server.*` |
+| database-operations-agent | `postgres.*` |
+| devops-deployment-agent | `docker.*`, `github.actions`, `sentry.*` |
+| debug-agent | `zen.debug`, `sentry.*`, `postgres.explain_query` |
+
+### Tier 3: Keyword-Triggered Tools
+
+Tools loaded when keywords detected in user prompts:
+
+| Keywords | Tools Loaded |
+|----------|--------------|
+| dockerfile, container, docker, k8s | `docker.*` |
+| e2e, browser test, playwright, ui test | `playwright.*` |
+| database, sql, postgres, migration | `postgres.*` |
+| sentry, error monitoring, exception | `sentry.*` |
+| diagram, flowchart, mermaid, uml | `mermaid.*`, `uml-mcp-server.*` |
+
+### Removed Tools
+
+| Tool | Reason | Alternative |
+|------|--------|-------------|
+| sequentialthinking | Redundant with zen.thinkdeep | Use `zen.thinkdeep` |
+
+### Hook Scripts
+
+Tool loading is managed by these scripts in `/scripts/`:
+
+- **mcp-tool-loader.sh**: Load tools for specific agents or check keywords
+- **keyword-tool-trigger.sh**: PreToolUse hook for keyword detection
+- **track-mcp-usage.sh**: PostToolUse hook for usage analytics
+
+### Usage Commands
+
+```bash
+# Check which tools would load for an agent
+./scripts/mcp-tool-loader.sh --agent security-auditor
+
+# Check keyword triggers
+./scripts/mcp-tool-loader.sh --keywords "fix the database query"
+
+# View MCP usage report
+./scripts/track-mcp-usage.sh --report
+
+# Reset session tool state
+./scripts/keyword-tool-trigger.sh --reset
+```
+
+### Agent Definition Format
+
+Agents define their MCP tool bundles in frontmatter:
+
+```yaml
+---
+name: security-auditor
+mcp_tools:
+  load:
+    zen: [secaudit, challenge]
+    sentry: [search_errors, get_issue, analyze_issue]
+    github: [code_security]
+    postgres: [analyze_db_health]
+  defer:
+    sentry: [list_projects, create_dsn]
+---
+```
+
 ### Supervisor Workflow Patterns (MANDATORY)
 
 **Every development task MUST follow this pattern:**

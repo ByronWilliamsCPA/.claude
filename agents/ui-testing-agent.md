@@ -3,6 +3,11 @@ name: ui-testing-agent
 description: User interface testing specialist for end-to-end testing, user interaction validation, and automated UI quality assurance. Use PROACTIVELY when UI bugs, interaction failures, or accessibility issues are reported.
 model: sonnet
 tools: ["Read", "Write", "Edit", "Bash"]
+mcp_tools:
+  load:
+    playwright: ["*"]    # All browser automation tools
+    zen: [testgen]
+  defer: []
 context_refs:
   - /context/shared-architecture.md
   - /context/development-standards.md

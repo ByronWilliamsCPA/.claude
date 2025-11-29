@@ -1,0 +1,430 @@
+# MCP Tool Loading Configuration
+# Based on Anthropic's Advanced Tool Use Guide
+# https://www.anthropic.com/engineering/advanced-tool-use
+#
+# Strategy: Tiered loading to reduce context consumption by 85-95%
+# - Tier 1: Always loaded (core tools for every session)
+# - Tier 2: Agent/Skill bundled (loaded when specific agent invoked)
+# - Tier 3: Keyword triggered (loaded on detection of specific keywords)
+# - Removed: Redundant tools that duplicate functionality
+
+version: "1.0.0"
+last_updated: "2025-11-29"
+
+# =============================================================================
+# TIER 1: ALWAYS LOADED
+# These tools are needed frequently across all contexts (~3K tokens)
+# =============================================================================
+tier_1:
+  description: "Core tools loaded at session start"
+  estimated_tokens: 3000
+  tools:
+    zen:
+      - thinkdeep           # Deep analysis (any context)
+      - codereview          # Most common code task
+      - tiered_consensus    # Multi-model decisions (free tier available)
+      - chat                # Collaborative discussions
+    context7:
+      - resolve_library_id  # Library resolution
+      - get_library_docs    # Documentation fetching
+    github:
+      - get_file_contents   # Basic file access (from repos toolset)
+
+# =============================================================================
+# TIER 2: AGENT-BUNDLED TOOLS
+# Loaded when specific agents are invoked via Task tool
+# =============================================================================
+tier_2_agent_bundles:
+  description: "Tools loaded with specific agent invocations"
+
+  security-auditor:
+    estimated_tokens: 4500
+    tools:
+      zen:
+        - secaudit
+        - challenge
+      sentry:
+        - search_errors
+        - get_issue
+        - analyze_issue
+      github:
+        - code_security     # Toolset for security alerts
+      postgres:
+        - analyze_db_health
+    deferred:
+      sentry:
+        - list_projects     # Admin only
+        - create_dsn        # Rarely needed
+
+  code-reviewer:
+    estimated_tokens: 2500
+    tools:
+      zen:
+        - precommit
+        - challenge
+      github:
+        - pull_requests     # Toolset for PR operations
+    deferred:
+      github:
+        - issues            # Only if PR linked to issue
+
+  test-engineer:
+    estimated_tokens: 5000
+    tools:
+      zen:
+        - testgen
+      playwright:
+        - "*"               # All playwright tools for E2E testing
+    deferred: []
+
+  documentation-writer:
+    estimated_tokens: 3500
+    tools:
+      zen:
+        - docgen
+      mermaid:
+        - "*"               # All mermaid diagram tools
+      uml-mcp-server:
+        - "*"               # All UML tools (when formal diagrams needed)
+    deferred: []
+
+  database-operations-agent:
+    estimated_tokens: 3000
+    tools:
+      postgres:
+        - explain_query
+        - get_top_queries
+        - analyze_workload_indexes
+        - analyze_query_indexes
+        - analyze_db_health
+    deferred:
+      postgres:
+        - list_schemas      # Exploration only
+        - list_objects      # Exploration only
+        - execute_sql       # Manual override only
+
+  devops-deployment-agent:
+    estimated_tokens: 3500
+    tools:
+      docker:
+        - "*"               # All Docker Hub tools
+      github:
+        - actions           # GitHub Actions toolset
+    deferred: []
+
+  debug-agent:
+    estimated_tokens: 4000
+    tools:
+      zen:
+        - debug
+      sentry:
+        - search_errors
+        - get_issue
+        - analyze_issue
+      postgres:
+        - explain_query
+        - get_top_queries
+    deferred:
+      sentry:
+        - list_releases     # Only for release correlation
+
+  analyze-agent:
+    estimated_tokens: 3500
+    tools:
+      zen:
+        - analyze
+      postgres:
+        - analyze_workload_indexes
+        - analyze_query_indexes
+      github:
+        - repos             # Repository analysis toolset
+    deferred: []
+
+  refactor-agent:
+    estimated_tokens: 2000
+    tools:
+      zen:
+        - refactor
+        - analyze
+    deferred: []
+
+  assumption-verify:
+    estimated_tokens: 1500
+    tools:
+      zen:
+        - challenge
+        - thinkdeep         # Already in Tier 1, explicit for clarity
+    deferred: []
+
+# =============================================================================
+# TIER 2: SKILL-BUNDLED TOOLS
+# Loaded when specific skills are invoked
+# =============================================================================
+tier_2_skill_bundles:
+  description: "Tools loaded with specific skill invocations"
+
+  commit-prepare:
+    estimated_tokens: 1500
+    tools:
+      zen:
+        - precommit
+      github:
+        - repos
+    deferred: []
+
+  pr-prepare:
+    estimated_tokens: 3000
+    tools:
+      zen:
+        - codereview
+      github:
+        - pull_requests
+        - issues
+      sentry:
+        - list_releases     # For release notes context
+    deferred: []
+
+  project-planning:
+    estimated_tokens: 3500
+    tools:
+      zen:
+        - planner
+        - tiered_consensus  # Already Tier 1
+      mermaid:
+        - "*"               # Architecture diagrams
+    deferred: []
+
+# =============================================================================
+# TIER 3: KEYWORD-TRIGGERED TOOLS
+# Loaded when specific keywords detected in user prompt
+# =============================================================================
+tier_3_keyword_triggers:
+  description: "Tools loaded on keyword detection in user prompts"
+
+  docker:
+    keywords:
+      - dockerfile
+      - container
+      - image
+      - deploy
+      - docker
+      - kubernetes
+      - k8s
+    tools:
+      docker:
+        - "*"
+    estimated_tokens: 2000
+
+  playwright:
+    keywords:
+      - e2e
+      - end-to-end
+      - browser test
+      - ui test
+      - playwright
+      - selenium
+      - automation
+    tools:
+      playwright:
+        - "*"
+    estimated_tokens: 3000
+
+  postgres:
+    keywords:
+      - database
+      - sql
+      - query performance
+      - slow query
+      - index
+      - postgres
+      - postgresql
+      - migration
+      - schema
+    tools:
+      postgres:
+        - "*"
+    estimated_tokens: 2500
+
+  sentry:
+    keywords:
+      - error monitoring
+      - sentry
+      - exception
+      - crash
+      - stack trace
+      - production error
+    tools:
+      sentry:
+        - "*"
+    estimated_tokens: 3000
+
+  diagrams:
+    keywords:
+      - diagram
+      - flowchart
+      - architecture diagram
+      - sequence diagram
+      - uml
+      - mermaid
+      - visualize
+      - er diagram
+      - class diagram
+    tools:
+      mermaid:
+        - "*"
+      uml-mcp-server:
+        - "*"
+    estimated_tokens: 2500
+
+# =============================================================================
+# REMOVED TOOLS
+# Tools removed due to redundancy or low value
+# =============================================================================
+removed:
+  sequentialthinking:
+    reason: "Redundant with zen.thinkdeep - thinkdeep provides thinking depth modes, web search, and integrates with zen ecosystem continuation"
+    alternative: "zen.thinkdeep"
+
+# =============================================================================
+# MCP SERVER DEFINITIONS
+# Full server configurations for each MCP server
+# =============================================================================
+servers:
+  zen:
+    command: "/home/byron/dev/zen-mcp-server/zen-mcp-server"
+    args: []
+    cwd: "/home/byron/dev/zen-mcp-server"
+    env: {}
+    defer_loading: false
+    enabled_tools:
+      # Tier 1 (always enabled)
+      - thinkdeep
+      - codereview
+      - tiered_consensus
+      - chat
+      # Others deferred by default
+    deferred_tools:
+      - debug
+      - precommit
+      - secaudit
+      - testgen
+      - docgen
+      - refactor
+      - analyze
+      - planner
+      - challenge
+      - apilookup
+      - consensus
+      - clink
+      - tracer
+
+  context7:
+    command: "npx"
+    args: ["-y", "@upstash/context7-mcp"]
+    env: {}
+    defer_loading: false
+    enabled_tools:
+      - resolve_library_id
+      - get_library_docs
+
+  github:
+    command: "docker"
+    args:
+      - "run"
+      - "-i"
+      - "--rm"
+      - "-e"
+      - "GITHUB_PERSONAL_ACCESS_TOKEN"
+      - "ghcr.io/github/github-mcp-server"
+    env:
+      GITHUB_PERSONAL_ACCESS_TOKEN: "${GITHUB_PERSONAL_ACCESS_TOKEN}"
+    defer_loading: true
+    toolsets:
+      always_enabled:
+        - repos           # Basic file access
+      deferred:
+        - issues
+        - pull_requests
+        - actions
+        - code_security
+        - experiments
+
+  playwright:
+    command: "npx"
+    args: ["@playwright/mcp@latest"]
+    env:
+      PLAYWRIGHT_HEADLESS: "true"
+    defer_loading: true
+    load_on_keywords:
+      - e2e
+      - browser
+      - playwright
+      - ui test
+
+  docker:
+    command: "docker"
+    args:
+      - "run"
+      - "-i"
+      - "--rm"
+      - "mcp/docker-hub"
+    env: {}
+    defer_loading: true
+    load_on_keywords:
+      - dockerfile
+      - container
+      - docker
+
+  postgres:
+    command: "npx"
+    args: ["-y", "@crystaldba/postgres-mcp"]
+    env:
+      DATABASE_URL: "${DATABASE_URL}"
+    defer_loading: true
+    load_on_keywords:
+      - database
+      - sql
+      - postgres
+
+  sentry:
+    command: "npx"
+    args: ["-y", "@sentry/mcp-server"]
+    env:
+      SENTRY_AUTH_TOKEN: "${SENTRY_AUTH_TOKEN}"
+      SENTRY_ORG: "${SENTRY_ORG}"
+    defer_loading: true
+    load_on_keywords:
+      - sentry
+      - error monitoring
+      - exception
+
+  mermaid:
+    command: "npx"
+    args: ["-y", "mermaid-mcp-server"]
+    env: {}
+    defer_loading: true
+    load_on_keywords:
+      - diagram
+      - mermaid
+      - flowchart
+
+  uml-mcp-server:
+    command: "python"
+    args: ["-m", "uml_mcp_server"]
+    env:
+      UML_OUTPUT_DIR: "${HOME}/.claude/tmp_cleanup/diagrams"
+    defer_loading: true
+    load_on_keywords:
+      - uml
+      - plantuml
+      - class diagram
+
+# =============================================================================
+# METRICS & MONITORING
+# Track tool usage for optimization
+# =============================================================================
+metrics:
+  track_usage: true
+  log_file: "${HOME}/.claude/logs/mcp-usage.log"
+  report_interval: "weekly"
+  optimize_suggestions: true
