@@ -14,7 +14,7 @@
 > **Detailed Specifications**: See `/standards/python.md`, `/standards/security.md`, `/standards/git-workflow.md`, `/standards/git-worktree.md`, `/standards/linting.md`
 
 ### Essential Requirements
-- **Code Quality**: Black formatting (88 chars), Ruff linting (PyStrict-aligned), BasedPyright type checking (strict mode)
+- **Code Quality**: Ruff formatting & linting (88 chars, PyStrict-aligned), BasedPyright type checking (strict mode)
 - **Security**: GPG/SSH key validation, dependency scanning, encrypted secrets
 - **Testing**: Minimum 80% coverage, tiered testing approach
 - **Git**: Conventional commits, signed commits, feature branch workflow
@@ -85,6 +85,64 @@ Ruff configuration includes PyStrict-aligned rules for ultra-strict code quality
 - **T10**: Debugger statements (no `breakpoint()`, `pdb`)
 - **G**: Logging format strings
 
+## Code Generation Principles (MANDATORY)
+
+> **Tooling Enforcement**: Complexity limits enforced via Ruff (C901, PLR0912, PLR0915). See `pyproject.toml`.
+
+When generating code, Claude MUST follow these structural principles:
+
+### Function Structure
+- **Length**: Prefer **20-60 statements**; hard limit **100 statements** (PLR0915)
+- **Single Responsibility**: Each function performs ONE conceptual task—if you need "and" to describe it, split it
+- **Early Returns**: Exit early on error conditions; avoid deep else branches
+- **Nesting Depth**: Maximum **3 levels** of indentation inside function body
+
+### Complexity Controls
+- **Cyclomatic Complexity**: Target **≤10** (C901 enforced); refactor if approaching 15
+- **Branches**: Maximum **12 branches** per function (PLR0912)
+- **Cognitive Load**: If a function requires extensive comments to understand, it's too complex
+
+### Code Duplication
+- **Zero Tolerance**: Never duplicate logic; extract to shared functions immediately
+- **Rule of Three**: If you write similar code three times, refactor into a reusable function
+- **Template Patterns**: Use decorators, context managers, or base classes for repeated patterns
+
+### Data & State Design
+- **Immutability First**: Prefer immutable structures; use `frozen=True` dataclasses
+- **Pure Functions**: Minimize side effects; same inputs → same outputs
+- **No Global State**: Pass dependencies explicitly; avoid module-level mutable state
+- **Parameter Grouping**: When a function exceeds 4 parameters, group into a dataclass:
+
+```python
+# ❌ Too many parameters
+def create_user(name: str, email: str, age: int, role: str, dept: str, manager: str) -> User:
+    ...
+
+# ✅ Grouped into dataclass
+@dataclass(frozen=True)
+class UserCreationRequest:
+    name: str
+    email: str
+    age: int
+    role: str
+    department: str
+    manager_id: str
+
+def create_user(request: UserCreationRequest) -> User:
+    ...
+```
+
+### Naming Standards
+- **Variables**: Descriptive, **≥3 characters**, no abbreviations unless domain-standard
+- **Functions**: Verb-based names that describe behavior (`calculate_total`, not `total`)
+- **Booleans**: Use `is_`, `has_`, `can_`, `should_` prefixes
+- **Constants**: SCREAMING_SNAKE_CASE
+
+### Documentation Requirements
+- **Docstrings**: REQUIRED for all public functions—include purpose, args, returns, raises
+- **Inline Comments**: Only for non-obvious logic; never narrate what code does
+- **Type Hints**: Required on all function signatures (enforced by BasedPyright strict)
+
 ## Essential Commands
 
 > **Complete Command Reference**: See `/commands/quality.md`, `/commands/testing.md`, `/commands/security.md`
@@ -92,9 +150,9 @@ Ruff configuration includes PyStrict-aligned rules for ultra-strict code quality
 ### Code Quality & Formatting
 ```bash
 # Format and lint (see /commands/quality.md for full details)
-poetry run black .
-poetry run ruff check --fix .
-poetry run basedpyright src  # Strict mode type checking (replaces mypy)
+ruff format .                 # Format code (replaces black)
+ruff check --fix .            # Lint and auto-fix
+basedpyright src              # Strict mode type checking
 markdownlint **/*.md
 yamllint **/*.{yml,yaml}
 ```
