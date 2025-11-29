@@ -34,7 +34,27 @@
         ]
       }
     ],
-    "SessionStart": []
+    "UserPromptSubmit": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/scripts/keyword-tool-trigger.sh"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/scripts/keyword-tool-trigger.sh --reset"
+          }
+        ]
+      }
+    ]
   },
   "feedbackSurveyState": {
     "lastShownTime": 1754083719175
