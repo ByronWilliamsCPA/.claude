@@ -59,47 +59,35 @@ ignore = [
 known-first-party = ["your_package"]
 ```
 
-#### Black Configuration
+#### Ruff Format Configuration
 
 ```toml
 # pyproject.toml
-[tool.black]
-line-length = 88
-target-version = ["py311"]
-include = '\.pyi?$'
-exclude = '''
-/(
-    \.eggs
-  | \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | _build
-  | buck-out
-  | build
-  | dist
-)/
-'''
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+docstring-code-format = true
 ```
 
 #### Python Linting Commands
 
 ```bash
-# Format with Black
-poetry run black .
+# Format with Ruff (replaces Black)
+ruff format .
 
 # Check formatting
-poetry run black --check .
+ruff format --check .
 
 # Lint with Ruff
-poetry run ruff check .
+ruff check .
 
 # Auto-fix with Ruff
-poetry run ruff check --fix .
+ruff check --fix .
 
 # Type check with BasedPyright
-poetry run basedpyright src
+basedpyright src
 ```
 
 ### Markdown Files
@@ -289,17 +277,12 @@ repos:
       - id: check-added-large-files
       - id: detect-private-key
 
-  - repo: https://github.com/psf/black
-    rev: 23.7.0
-    hooks:
-      - id: black
-        language_version: python3.11
-
-  - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.0.287
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.0
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
+      - id: ruff-format
 
   # BasedPyright for type checking (faster than MyPy)
   # Note: Run via local hook or CI for better performance
@@ -307,7 +290,7 @@ repos:
   #   hooks:
   #     - id: basedpyright
   #       name: basedpyright
-  #       entry: poetry run basedpyright src
+  #       entry: basedpyright src
   #       language: system
   #       types: [python]
 
@@ -329,15 +312,17 @@ repos:
 
 ```json
 {
-  "python.formatting.provider": "black",
-  "python.linting.enabled": true,
-  "python.linting.ruffEnabled": true,
-  "python.analysis.typeCheckingMode": "strict",
-  "python.linting.lintOnSave": true,
-  "editor.formatOnSave": true,
-  "editor.codeActionsOnSave": {
-    "source.organizeImports": true
+  "[python]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "explicit",
+      "source.organizeImports": "explicit"
+    }
   },
+  "ruff.format.args": [],
+  "ruff.lint.args": [],
+  "python.analysis.typeCheckingMode": "strict",
   "markdownlint.config": {
     "MD013": {
       "line_length": 120
@@ -351,10 +336,10 @@ repos:
 
 ### PyCharm/IntelliJ Settings
 
-- Enable Black formatter
-- Configure Ruff as external tool
+- Install Ruff plugin for formatting and linting
 - Set line length to 88 for Python, 120 for Markdown
 - Enable format on save
+- Configure BasedPyright for type checking
 
 ## Linting Workflow
 
@@ -362,14 +347,14 @@ repos:
 
 ```bash
 # Before making changes
-poetry run pre-commit install
+pre-commit install
 
 # During development
-poetry run black .
-poetry run ruff check --fix .
+ruff format .
+ruff check --fix .
 
 # Before committing
-poetry run pre-commit run --all-files
+pre-commit run --all-files
 
 # If pre-commit fails, fix issues and retry
 git add .
@@ -389,29 +374,30 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
-      
+          python-version: '3.12'
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
       - name: Install dependencies
-        run: |
-          pip install poetry
-          poetry install
-      
-      - name: Lint with Black
-        run: poetry run black --check .
-      
+        run: uv sync --all-extras
+
+      - name: Format check with Ruff
+        run: ruff format --check .
+
       - name: Lint with Ruff
-        run: poetry run ruff check .
-      
+        run: ruff check .
+
       - name: Type check with BasedPyright
-        run: poetry run basedpyright src
-      
+        run: basedpyright src
+
       - name: Lint Markdown
         run: markdownlint **/*.md
-      
+
       - name: Lint YAML
         run: yamllint **/*.{yml,yaml}
 ```
@@ -422,13 +408,13 @@ jobs:
 
 ```bash
 # Fix import sorting
-poetry run ruff check --fix --select I .
+ruff check --fix --select I .
 
-# Fix code style
-poetry run black .
+# Fix code formatting
+ruff format .
 
 # Fix specific rule violations
-poetry run ruff check --fix --select F401 .  # Remove unused imports
+ruff check --fix --select F401 .  # Remove unused imports
 ```
 
 ### Common Markdown Issues
@@ -497,14 +483,14 @@ ignore = [
 ### Linting Performance
 
 ```bash
-# Run linting in parallel
-poetry run black . & poetry run ruff check . & wait
+# Run format and lint in parallel
+ruff format . & ruff check . & wait
 
-# Use file caching
-poetry run ruff check --cache-dir .ruff_cache .
+# Use file caching (enabled by default)
+ruff check --cache-dir .ruff_cache .
 
 # Lint only changed files
-git diff --name-only --cached | grep '\.py$' | xargs poetry run ruff check
+git diff --name-only --cached | grep '\.py$' | xargs ruff check
 ```
 
 ### Pre-commit Optimization
@@ -512,14 +498,12 @@ git diff --name-only --cached | grep '\.py$' | xargs poetry run ruff check
 ```yaml
 # .pre-commit-config.yaml - Optimized hooks
 repos:
-  - repo: local
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.0
     hooks:
       - id: ruff
-        name: ruff
-        entry: poetry run ruff check --fix
-        language: system
-        types: [python]
-        require_serial: false
+        args: [--fix, --exit-non-zero-on-fix]
+      - id: ruff-format
 ```
 
 ---

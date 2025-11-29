@@ -4,14 +4,14 @@
 
 ### Line Length and Formatting
 
-- **Maximum Line Length**: 88 characters (Black default)
-- **Formatter**: Black (mandatory for all Python files)
-- **Import Sorting**: Use Black's import handling or compatible isort configuration
+- **Maximum Line Length**: 88 characters (Ruff default, Black-compatible)
+- **Formatter**: Ruff format (mandatory for all Python files)
+- **Import Sorting**: Ruff isort rules (I) handle import organization
 
 ### Code Style Standards
 
 - **Indentation**: 4 spaces (never tabs)
-- **String Quotes**: Consistent quote style (Black will normalize)
+- **String Quotes**: Double quotes (Ruff format default)
 - **Trailing Commas**: Required in multi-line structures
 - **Function/Class Spacing**: 2 blank lines between top-level definitions
 
@@ -32,17 +32,17 @@
 ### Essential Commands
 
 ```bash
-# Format code
-poetry run black .
+# Format code (Ruff replaces Black)
+ruff format .
 
 # Auto-fix linting issues
-poetry run ruff check --fix .
+ruff check --fix .
 
 # Check for remaining issues
-poetry run ruff check .
+ruff check .
 
 # Verify formatting is correct
-poetry run black --check .
+ruff format --check .
 ```
 
 ## Type Checking
