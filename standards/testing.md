@@ -1,5 +1,15 @@
 # Testing Standards
 
+## Core Testing Philosophy
+
+> **Guiding Principles for All Tests**
+
+1. **Test behavior, not implementation**: Tests should verify what code does, not how it does it
+2. **Fast feedback loop**: Unit tests should complete in <30 seconds total
+3. **Clear test names**: Test names describe what is being tested (action + condition + expected result)
+4. **Isolated tests**: No dependencies between tests; each test runs independently
+5. **Automated execution**: All tests run in CI/CD without manual intervention
+
 ## Coverage Requirements
 
 ### Minimum Thresholds
@@ -48,10 +58,17 @@ tests/
 │   └── test_database.py
 ├── e2e/              # Full system tests (complete workflows)
 │   └── test_user_journeys.py
+├── security/         # Security validation tests
+│   └── test_codeql_validation.py
+├── benchmark/        # Performance and benchmarking tests
+│   └── test_performance.py
+├── api/              # API-specific tests
+│   └── test_endpoints.py
 ├── fixtures/         # Shared test data and factories
 │   ├── __init__.py
 │   ├── factories.py
-│   └── sample_data.py
+│   ├── sample_data.py
+│   └── expected/     # Expected outputs for comparison
 └── conftest.py       # Shared fixtures and configuration
 ```
 
@@ -279,6 +296,9 @@ markers = [
     "slow: Tests taking more than 5 seconds",
     "benchmark: Performance benchmarking tests",
     "e2e: End-to-end workflow tests",
+    "security: Security validation tests",
+    "requires_full_dataset: Tests needing large datasets (skip in CI)",
+    "real_data: Tests using real fixtures rather than synthetic data",
 ]
 ```
 
@@ -523,35 +543,432 @@ jobs:
           fail_ci_if_error: true
 ```
 
+## Security Testing
+
+Security tests validate that security tooling (CodeQL, Semgrep, Bandit) correctly identifies vulnerabilities.
+
+### Security Test Structure
+
+```python
+# tests/security/test_codeql_validation.py
+"""
+Intentional security vulnerabilities for CodeQL validation.
+
+This file contains DELIBERATE security issues to verify CodeQL detection.
+DO NOT use these patterns in production code.
+"""
+import pytest
+
+class TestCodeQLValidation:
+    """Verify CodeQL detects common vulnerability patterns."""
+
+    @pytest.mark.security
+    def test_sql_injection_detection(self, tmp_path):
+        """CodeQL should detect SQL injection (CWE-89)."""
+        # Intentional vulnerable pattern for validation
+        user_input = "'; DROP TABLE users; --"
+        query = f"SELECT * FROM users WHERE name = '{user_input}'"  # noqa: S608
+        # CodeQL should flag this as sql-injection
+
+    @pytest.mark.security
+    def test_command_injection_detection(self):
+        """CodeQL should detect command injection (CWE-78)."""
+        import subprocess
+        user_path = "/etc/passwd"
+        # Intentional vulnerable pattern
+        subprocess.run(f"cat {user_path}", shell=True)  # noqa: S602, S605
+
+    @pytest.mark.security
+    def test_path_traversal_detection(self, tmp_path):
+        """CodeQL should detect path traversal (CWE-22)."""
+        user_file = "../../../etc/passwd"
+        # Intentional vulnerable pattern
+        full_path = tmp_path / user_file  # noqa: S108
+```
+
+### CWE Mapping Reference
+
+| CWE | Vulnerability | Test Method |
+|-----|--------------|-------------|
+| CWE-78 | Command Injection | `test_command_injection_detection` |
+| CWE-89 | SQL Injection | `test_sql_injection_detection` |
+| CWE-22 | Path Traversal | `test_path_traversal_detection` |
+| CWE-327 | Weak Cryptography | `test_weak_crypto_detection` |
+| CWE-502 | Insecure Deserialization | `test_pickle_detection` |
+| CWE-95 | Unsafe Eval | `test_eval_detection` |
+
+## Performance Testing
+
+Performance tests validate execution speed and throughput meet requirements.
+
+### Environment-Aware Thresholds
+
+```python
+# tests/benchmark/test_performance.py
+import os
+import time
+import pytest
+
+def is_ci_environment() -> bool:
+    """Detect CI/container environments for relaxed thresholds."""
+    ci_indicators = [
+        os.getenv("CI") in ("true", "1", "yes"),
+        os.getenv("GITHUB_ACTIONS") == "true",
+        os.path.exists("/.dockerenv"),
+        os.getenv("RELAXED_PERF_TESTS") == "true",
+    ]
+    return any(ci_indicators)
+
+# Thresholds: (CI/relaxed, local/strict)
+PERF_THRESHOLDS = {
+    "operation_a": (500, 150),   # ms
+    "operation_b": (3000, 1000), # ms
+    "throughput": (0.3, 1.0),    # ops/sec
+}
+
+@pytest.fixture
+def performance_target():
+    """Return appropriate threshold based on environment."""
+    is_ci = is_ci_environment()
+    def get_target(operation: str) -> float:
+        ci_target, local_target = PERF_THRESHOLDS[operation]
+        return ci_target if is_ci else local_target
+    return get_target
+```
+
+### Timing Methodology
+
+```python
+@pytest.mark.benchmark
+def test_operation_performance(performance_target, sample_data):
+    """Verify operation completes within threshold."""
+    # Warm-up run (not measured)
+    _ = process_data(sample_data)
+
+    # Measured runs
+    iterations = 5
+    times = []
+    for _ in range(iterations):
+        start = time.perf_counter()
+        process_data(sample_data)
+        elapsed = (time.perf_counter() - start) * 1000  # ms
+        times.append(elapsed)
+
+    # Assertions
+    avg_time = sum(times) / len(times)
+    p95_time = sorted(times)[int(len(times) * 0.95)]
+
+    threshold = performance_target("operation_a")
+    assert avg_time < threshold, f"Avg {avg_time:.1f}ms exceeds {threshold}ms"
+    assert p95_time < threshold * 1.5, f"P95 {p95_time:.1f}ms exceeds limit"
+```
+
+### Performance Fixture Patterns
+
+```python
+@pytest.fixture(scope="session")
+def realistic_document_image():
+    """Create realistic test document (300 DPI letter size)."""
+    import numpy as np
+    # 2550x3300 = 300 DPI letter size
+    img = np.zeros((3300, 2550, 3), dtype=np.uint8)
+    img.fill(255)  # White background
+    # Add simulated text content
+    # ...
+    return img
+
+@pytest.fixture(scope="session")
+def batch_test_data(realistic_document_image):
+    """Generate batch of 10 documents for throughput testing."""
+    return [realistic_document_image.copy() for _ in range(10)]
+```
+
+## Test Data Management
+
+### Storage Strategy
+
+| File Size | Storage Method | Example |
+|-----------|----------------|---------|
+| <1 MB | Commit to repo | `tests/fixtures/sample.json` |
+| 1-100 MB | Git LFS | `tests/fixtures/large_dataset.parquet` |
+| >100 MB | External download | Document in `tests/fixtures/README.md` |
+
+### Fixture Organization
+
+```
+tests/fixtures/
+├── README.md           # Document data sources and generation
+├── small/              # Committed files (<1MB)
+│   ├── sample_input.json
+│   └── config.yaml
+├── expected/           # Expected outputs for comparison
+│   ├── processed_output.json
+│   └── report.html
+├── generated/          # .gitignored, created by scripts
+│   └── .gitkeep
+└── scripts/            # Data generation scripts
+    └── generate_test_data.py
+```
+
+### Data Generation Documentation
+
+```python
+# tests/fixtures/scripts/generate_test_data.py
+"""
+Test Data Generation Script
+
+Usage:
+    uv run python tests/fixtures/scripts/generate_test_data.py
+
+Generates:
+    - tests/fixtures/generated/large_dataset.parquet (50MB)
+    - tests/fixtures/generated/sample_images/ (100 images)
+
+Requirements:
+    - pandas, pillow (included in dev dependencies)
+"""
+```
+
+## Optional Dependency Handling
+
+Handle optional dependencies gracefully to allow partial test execution.
+
+### conftest.py Pattern
+
+```python
+# tests/conftest.py
+import sys
+from pathlib import Path
+
+import pytest
+
+# Check optional dependencies
+try:
+    import cv2
+    HAS_CV2 = True
+except ImportError:
+    HAS_CV2 = False
+
+try:
+    import torch
+    HAS_TORCH = True
+except ImportError:
+    HAS_TORCH = False
+
+# Modules requiring specific dependencies
+CV2_MODULES = {"test_image_processing", "test_detection"}
+TORCH_MODULES = {"test_ml_models", "test_inference"}
+
+def pytest_collection_modifyitems(config, items):
+    """Skip tests when optional dependencies are missing."""
+    skip_cv2 = pytest.mark.skip(reason="OpenCV (cv2) not installed")
+    skip_torch = pytest.mark.skip(reason="PyTorch not installed")
+
+    for item in items:
+        module_name = Path(item.fspath).stem
+        if not HAS_CV2 and module_name in CV2_MODULES:
+            item.add_marker(skip_cv2)
+        if not HAS_TORCH and module_name in TORCH_MODULES:
+            item.add_marker(skip_torch)
+```
+
+### Session-Scoped Dataset Fixtures
+
+```python
+@pytest.fixture(scope="session")
+def dataset_path() -> Path | None:
+    """Provide dataset path if available, skip otherwise."""
+    path = Path("tests/fixtures/large_dataset")
+    if not path.exists():
+        pytest.skip("Large dataset not available")
+    return path
+
+@pytest.fixture(scope="session")
+def sample_files(dataset_path: Path) -> list[Path]:
+    """Collect sample files with fallback skip logic."""
+    files = list(dataset_path.glob("*.json"))
+    if not files:
+        pytest.skip("No sample files found in dataset")
+    return files
+```
+
+## Troubleshooting
+
+### Local vs CI Failures
+
+| Symptom | Likely Cause | Solution |
+|---------|--------------|----------|
+| Tests pass locally, fail in CI | Environment differences | Check Python version, dependencies |
+| Timing assertions fail in CI | CI resource constraints | Use environment-aware thresholds |
+| Fixture not found | Path differences | Use `Path(__file__).parent` for relative paths |
+| Random test failures | Test isolation issues | Check for shared state, add `--randomly-seed` |
+
+### Coverage Gap Analysis
+
+```bash
+# Generate detailed HTML report
+uv run pytest --cov=src --cov-report=html
+
+# Open and analyze
+open htmlcov/index.html
+
+# Look for:
+# - Red lines (uncovered code)
+# - Yellow lines (partial branch coverage)
+# - Missing edge case tests
+```
+
+### Slow Test Profiling
+
+```bash
+# Find slowest tests
+uv run pytest --durations=20
+
+# Profile specific test
+uv run pytest tests/slow_test.py --profile
+
+# Run only fast tests during development
+uv run pytest -m "not slow and not benchmark"
+```
+
+### Debugging Flaky Tests
+
+```python
+# Add retry for known flaky tests (use sparingly)
+@pytest.mark.flaky(reruns=3, reruns_delay=1)
+def test_network_dependent_operation():
+    """Test that occasionally fails due to network."""
+    pass
+
+# Better: Fix the root cause
+@pytest.fixture
+def stable_mock_network():
+    """Mock network calls for deterministic tests."""
+    with responses.RequestsMock() as rsps:
+        rsps.add(responses.GET, "https://api.example.com", json={"status": "ok"})
+        yield rsps
+```
+
 ## Mutation Testing
 
 Mutation testing validates test quality by introducing small code changes (mutations) and verifying tests catch them.
+
+### Configuration
 
 ```toml
 # pyproject.toml
 [tool.mutmut]
 paths_to_mutate = "src/"
 tests_dir = "tests/"
-runner = "python -m pytest"
+backup = false
+runner = "uv run pytest -x --assert=plain -o addopts=''"
+dict_synonyms = "Struct, NamedStruct"
 ```
 
+### Mutation Status Reference
+
+| Status | Meaning | Action Required |
+|--------|---------|-----------------|
+| **killed** | Test detected the mutation | Test is effective |
+| **survived** | Test missed the mutation | Enhance test coverage |
+| **timeout** | Mutation caused infinite loop | Usually acceptable |
+| **suspicious** | Unexpected test behavior | Investigate |
+| **skipped** | Mutation excluded by config | Usually acceptable |
+
+### Score Calculation
+
+```
+Mutation Score = (killed / total) × 100
+```
+
+| Score | Quality | Action |
+|-------|---------|--------|
+| >80% | Excellent | Maintain |
+| 60-80% | Good | Improve critical paths |
+| <60% | Needs work | Prioritize test enhancement |
+
+### Module-Specific Targets
+
+| Module Type | Target Score | Priority |
+|-------------|--------------|----------|
+| Core/schema | >85% | High |
+| Business logic | >80% | High |
+| Ingestion/IO | >75% | Medium |
+| Utilities | >70% | Low |
+| Logging/formatting | >60% | Low |
+
+### Commands
+
 ```bash
-# Run mutation testing
+# Full mutation run
 uv run mutmut run
+
+# Specific module (faster)
+uv run mutmut run --paths-to-mutate=src/core/
 
 # View results
 uv run mutmut results
 
-# Show surviving mutants (tests missed these)
-uv run mutmut show <id>
+# Inspect specific mutant
+uv run mutmut show 42
+
+# Generate HTML report
+uv run mutmut html
+
+# Show statistics
+uv run mutmut show-stats
 ```
 
-### Target Metrics
+### Script-Based Execution
 
-| Metric | Minimum | Excellent |
-|--------|---------|-----------|
-| Mutation Score | 70% | 85%+ |
-| Surviving Mutants | <30% | <15% |
+```bash
+# scripts/run_mutation_tests.sh
+#!/bin/bash
+set -e
+
+case "${1:-}" in
+    --fast)
+        # Critical modules only
+        uv run mutmut run --paths-to-mutate=src/core/,src/schema.py
+        ;;
+    --module=*)
+        module="${1#--module=}"
+        uv run mutmut run --paths-to-mutate="src/${module}/"
+        ;;
+    --report)
+        uv run mutmut html
+        open html/index.html
+        ;;
+    *)
+        uv run mutmut run
+        ;;
+esac
+```
+
+### Prioritization Strategy
+
+**Focus mutation testing on:**
+1. Core business logic and validation
+2. Security-sensitive code paths
+3. Financial/payment processing
+4. Data transformation functions
+
+**Lower priority (acceptable survivors):**
+- Logging statements
+- Error message formatting
+- UI/display code
+- Debug utilities
+
+### Documenting Justified Survivors
+
+```python
+# .mutmut-allowlist
+# Format: mutant_id: reason
+
+# 42: Log message formatting - no business impact
+# 58: Debug-only code path - not in production
+# 73: Equivalent mutation - same behavior
+```
 
 ---
 
