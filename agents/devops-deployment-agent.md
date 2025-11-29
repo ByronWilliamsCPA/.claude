@@ -3,6 +3,14 @@ name: devops-deployment-agent
 description: DevOps and deployment specialist for CI/CD pipelines, infrastructure automation, deployment orchestration, and monitoring integration. Use PROACTIVELY when deployment issues, infrastructure problems, or monitoring alerts occur.
 model: sonnet
 tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
+mcp_tools:
+  load:
+    docker: ["*"]        # All Docker Hub tools
+    github: [actions]    # GitHub Actions toolset
+    sentry:
+      - search_errors    # Production error monitoring
+      - get_issue
+  defer: []
 context_refs:
   - /context/shared-architecture.md
   - /context/development-standards.md

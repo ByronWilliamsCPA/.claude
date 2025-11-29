@@ -3,6 +3,12 @@ name: documentation-writer
 description: Technical documentation specialist for comprehensive, clear, and maintainable documentation
 model: sonnet
 tools: ["Write", "Read", "Grep"]
+mcp_tools:
+  load:
+    zen: [docgen]
+    mermaid: ["*"]       # All diagram tools
+    uml-mcp-server: ["*"] # Formal UML when needed
+  defer: []
 context_refs:
   - /context/shared-architecture.md
   - /context/development-standards.md

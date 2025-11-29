@@ -3,6 +3,14 @@ name: security-auditor
 description: Security analysis specialist for vulnerability detection, threat assessment, and compliance validation. Use PROACTIVELY when security vulnerabilities, compliance issues, or suspicious code patterns are identified.
 model: sonnet
 tools: ["Read", "Grep", "Bash"]
+mcp_tools:
+  load:
+    zen: [secaudit, challenge]
+    sentry: [search_errors, get_issue, analyze_issue]
+    github: [code_security]
+    postgres: [analyze_db_health]
+  defer:
+    sentry: [list_projects, create_dsn]
 context_refs:
   - /context/shared-architecture.md
   - /context/development-standards.md

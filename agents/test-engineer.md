@@ -3,6 +3,11 @@ name: test-engineer
 description: Comprehensive testing specialist for test strategy, generation, and quality assurance with 80%+ coverage
 model: sonnet
 tools: ["Write", "Read", "Bash"]
+mcp_tools:
+  load:
+    zen: [testgen]
+    playwright: ["*"]  # All E2E testing tools
+  defer: []
 context_refs:
   - /context/shared-architecture.md
   - /context/development-standards.md

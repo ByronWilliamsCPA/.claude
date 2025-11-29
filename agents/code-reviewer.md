@@ -3,6 +3,12 @@ name: code-reviewer
 description: Automated code review specialist focused on code quality, standards compliance, and best practices
 model: sonnet
 tools: ["Read", "Grep", "Bash"]
+mcp_tools:
+  load:
+    zen: [precommit, challenge, codereview]
+    github: [pull_requests]
+  defer:
+    github: [issues]
 context_refs:
   - /context/shared-architecture.md
   - /context/development-standards.md
