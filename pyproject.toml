@@ -297,15 +297,6 @@ known-first-party = ["claude_config"]
     "C901",   # Complexity allowed in utility scripts
     "RUF012", # Class variable annotations (not needed in scripts)
     "SIM",    # Simplification suggestions (scripts prioritize clarity)
-    "F821",   # Allow dynamic imports
-    "G201",   # Logging patterns (scripts may use .error with exc_info)
-    # Security rules OK to skip in scripts (specific, not blanket S)
-    "S101",   # assert_used - scripts may use asserts for validation
-    "S104",   # hardcoded_bind_all_interfaces - dev scripts may bind 0.0.0.0
-    "S108",   # hardcoded_tmp_directory - scripts use /tmp intentionally
-    "S311",   # random - non-crypto random in scripts is fine
-    "S603",   # subprocess_without_shell_equals_true - scripts validate inputs
-    "S607",   # start_process_with_partial_path - scripts use PATH
 ]
 
 # Benchmarks (performance testing)
@@ -335,10 +326,12 @@ known-first-party = ["claude_config"]
     "ANN", "D", "TRY",
 ]
 
-# Claude skills and scripts
+# Claude skills and scripts (template files synced from cookiecutter)
 ".claude/**/*.py" = [
     "T20",    # Print allowed for CLI output
+    "T201",   # print allowed in template files
     "C901",   # Complexity allowed in utility scripts
+    "PLR0912",# Too many branches allowed in template utilities
     "ANN", "D", "TRY", "PLR",
     "INP",    # Not packages
 ]
