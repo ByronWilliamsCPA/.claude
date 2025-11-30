@@ -64,7 +64,9 @@ def enable_required_signatures(
         return True
     if response.status_code == 404:
         # Branch protection must be set up first
-        print("  ⚠️  Note: Required signatures requires branch protection to be set first")
+        print(
+            "  ⚠️  Note: Required signatures requires branch protection to be set first"
+        )
         return False
     print(f"  ⚠️  Could not enable required signatures: {response.status_code}")
     return False
@@ -139,9 +141,15 @@ def setup_branch_protection(
 
     if existing:
         print("⚠️  Branch protection already exists:")
-        print(f"  - Required reviews: {existing.get('required_pull_request_reviews', {}).get('required_approving_review_count', 0)}")
-        print(f"  - Dismiss stale reviews: {existing.get('required_pull_request_reviews', {}).get('dismiss_stale_reviews', False)}")
-        print(f"  - Enforce for admins: {existing.get('enforce_admins', {}).get('enabled', False)}")
+        print(
+            f"  - Required reviews: {existing.get('required_pull_request_reviews', {}).get('required_approving_review_count', 0)}"
+        )
+        print(
+            f"  - Dismiss stale reviews: {existing.get('required_pull_request_reviews', {}).get('dismiss_stale_reviews', False)}"
+        )
+        print(
+            f"  - Enforce for admins: {existing.get('enforce_admins', {}).get('enabled', False)}"
+        )
         print("\n❓ Overwrite existing protection? [y/N]: ", end="")
         if input().lower() != "y":
             print("✅ Keeping existing protection")
@@ -211,9 +219,7 @@ def setup_branch_protection(
     print("    ✅ Branch deletions blocked")
     print("    ✅ Conversation resolution required")
 
-    response = requests.put(
-        url, headers=headers, json=protection, timeout=10
-    )
+    response = requests.put(url, headers=headers, json=protection, timeout=10)
 
     if response.status_code in (200, 201):
         print("\n✅ Branch protection configured successfully!")
@@ -275,7 +281,9 @@ def main() -> None:
             print("  1. Edit this script's 'protection' dictionary")
             print("  2. Re-run the script")
             print("\n🔗 Documentation:")
-            print("  https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches")
+            print(
+                "  https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches"
+            )
             sys.exit(0)
         else:
             print("\n❌ Setup failed. See errors above.")

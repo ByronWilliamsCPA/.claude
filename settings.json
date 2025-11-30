@@ -56,6 +56,33 @@
       }
     ]
   },
+  "mcpServers": {
+    "zen": {
+      "command": "/home/byron/dev/zen-mcp-server/zen-mcp-server",
+      "args": [],
+      "cwd": "/home/byron/dev/zen-mcp-server",
+      "env": {}
+    },
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp"],
+      "env": {}
+    },
+    "github": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "-e",
+        "GITHUB_PERSONAL_ACCESS_TOKEN",
+        "ghcr.io/github/github-mcp-server"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"
+      }
+    }
+  },
   "feedbackSurveyState": {
     "lastShownTime": 1754083719175
   },

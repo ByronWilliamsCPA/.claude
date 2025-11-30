@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "mermaid": {
+      "command": "npx",
+      "args": ["-y", "mermaid-mcp-server"],
+      "env": {}
+    }
+  }
+}

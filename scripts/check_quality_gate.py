@@ -57,7 +57,10 @@ class SonarQubeClient:
         # Validate URL scheme to prevent file:// or custom scheme attacks (B310)
         parsed = urlparse(url)
         if parsed.scheme not in ALLOWED_SCHEMES:
-            print(f"Error: Invalid URL scheme '{parsed.scheme}'. Only http/https allowed.", file=sys.stderr)
+            print(
+                f"Error: Invalid URL scheme '{parsed.scheme}'. Only http/https allowed.",
+                file=sys.stderr,
+            )
             sys.exit(2)
 
         request = Request(url, headers=self.headers)  # noqa: S310 - URL scheme validated above
@@ -76,18 +79,14 @@ class SonarQubeClient:
     def get_quality_gate_status(self, project_key: str) -> dict:
         """Get quality gate status for a project."""
         return self._make_request(
-            "/api/qualitygates/project_status",
-            {"projectKey": project_key}
+            "/api/qualitygates/project_status", {"projectKey": project_key}
         )
 
     def get_measures(self, project_key: str, metrics: list[str]) -> dict:
         """Get project measures for specified metrics."""
         return self._make_request(
             "/api/measures/component",
-            {
-                "component": project_key,
-                "metricKeys": ",".join(metrics)
-            }
+            {"component": project_key, "metricKeys": ",".join(metrics)},
         )
 
     def get_issues(self, project_key: str, severities: list[str] | None = None) -> dict:
@@ -110,20 +109,16 @@ class LLMGovernanceMapper:
         "S2631": "#CRITICAL: Security (SQL Injection)",
         "S5131": "#CRITICAL: Security (XSS)",
         "S3330": "#CRITICAL: Security (HTTP without TLS)",
-
         # Hardcoded values -> #LLM-PLACEHOLDER
         "S1313": "#LLM-PLACEHOLDER (Hardcoded IP address)",
         "S1075": "#LLM-PLACEHOLDER (Hardcoded URI)",
         "S4784": "#LLM-PLACEHOLDER (Unsafe regex)",
-
         # Logic issues -> #LLM-LOGIC
         "S3776": "#LLM-LOGIC (Complex cognitive complexity)",
         "S1541": "#LLM-LOGIC (Complex cyclomatic complexity)",
-
         # Code duplications -> #LLM-SCAFFOLD
         "duplicated_blocks": "#LLM-SCAFFOLD (Code duplication)",
         "duplicated_lines_density": "#LLM-SCAFFOLD (Code duplication)",
-
         # Test coverage -> #LLM-TEST-FIRST
         "coverage": "#LLM-TEST-FIRST (Insufficient coverage)",
         "new_coverage": "#LLM-TEST-FIRST (New code not covered)",
@@ -148,10 +143,7 @@ class LLMGovernanceMapper:
 
 
 def format_report(
-    quality_gate_status: dict,
-    issues: dict,
-    rad_tags: int,
-    llm_tags: int
+    quality_gate_status: dict, issues: dict, rad_tags: int, llm_tags: int
 ) -> str:
     """Generate unified three-layer governance report."""
 
@@ -269,34 +261,31 @@ def main():
     parser.add_argument(
         "--project-key",
         default="ByronWilliamsCPA_claude_config",
-        help="SonarQube project key (default: ByronWilliamsCPA_claude_config)"
+        help="SonarQube project key (default: ByronWilliamsCPA_claude_config)",
     )
     parser.add_argument(
         "--token",
         default=os.environ.get("SONAR_TOKEN"),
-        help="SonarQube token (default: SONAR_TOKEN env var)"
+        help="SonarQube token (default: SONAR_TOKEN env var)",
     )
     parser.add_argument(
         "--host-url",
         default=os.environ.get("SONAR_HOST_URL", "https://sonarcloud.io"),
-        help="SonarQube server URL (default: https://sonarcloud.io)"
+        help="SonarQube server URL (default: https://sonarcloud.io)",
     )
     parser.add_argument(
         "--org",
         default=os.environ.get("SONAR_ORG", "ByronWilliamsCPA"),
-        help="SonarQube organization (default: ByronWilliamsCPA)"
+        help="SonarQube organization (default: ByronWilliamsCPA)",
     )
     parser.add_argument(
-        "--rad-tags",
-        type=int,
-        default=0,
-        help="Number of RAD tags found in codebase"
+        "--rad-tags", type=int, default=0, help="Number of RAD tags found in codebase"
     )
     parser.add_argument(
         "--llm-tags",
         type=int,
         default=0,
-        help="Number of LLM debt tags found in codebase"
+        help="Number of LLM debt tags found in codebase",
     )
 
     args = parser.parse_args()
@@ -332,10 +321,14 @@ def main():
         print("\nExiting with code 1: RAD tags found (PR blocked)", file=sys.stderr)
         sys.exit(1)
     elif project_status == "ERROR":
-        print("\nExiting with code 1: Quality gate failed (PR blocked)", file=sys.stderr)
+        print(
+            "\nExiting with code 1: Quality gate failed (PR blocked)", file=sys.stderr
+        )
         sys.exit(1)
     elif project_status == "WARN":
-        print("\nExiting with code 0: Quality gate passed with warnings", file=sys.stderr)
+        print(
+            "\nExiting with code 0: Quality gate passed with warnings", file=sys.stderr
+        )
         sys.exit(0)
     else:
         print("\nExiting with code 0: All checks passed", file=sys.stderr)

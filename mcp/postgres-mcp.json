@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "postgres": {
+      "command": "npx",
+      "args": ["-y", "@crystaldba/postgres-mcp"],
+      "env": {
+        "DATABASE_URL": "${DATABASE_URL}"
+      }
+    }
+  }
+}
