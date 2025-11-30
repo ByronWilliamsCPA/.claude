@@ -85,7 +85,9 @@ def setup_logging(
         structlog.stdlib.add_logger_name,
         structlog.stdlib.add_log_level,
         structlog.stdlib.PositionalArgumentsFormatter(),
-        structlog.processors.TimeStamper(fmt="iso") if include_timestamp else noop_processor,
+        structlog.processors.TimeStamper(fmt="iso")
+        if include_timestamp
+        else noop_processor,
         structlog.processors.StackInfoRenderer(),
         structlog.processors.format_exc_info,
         structlog.processors.UnicodeDecoder(),
@@ -162,7 +164,7 @@ def log_performance(
         ...     duration_ms=42.5,
         ...     success=True,
         ...     image_count=10,
-        ...     output_dir="/results"
+        ...     output_dir="/results",
         ... )
     """
     logger.info(

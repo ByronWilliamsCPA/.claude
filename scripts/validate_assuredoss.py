@@ -52,7 +52,10 @@ def setup_credentials() -> None:
     """
     # Check if credentials are already set via file path
     if os.environ.get("GOOGLE_APPLICATION_CREDENTIALS"):
-        print("✅ Using credentials from file:", os.environ["GOOGLE_APPLICATION_CREDENTIALS"])
+        print(
+            "✅ Using credentials from file:",
+            os.environ["GOOGLE_APPLICATION_CREDENTIALS"],
+        )
         return
 
     # Try to use base64-encoded credentials

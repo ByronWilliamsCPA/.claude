@@ -159,9 +159,11 @@ def add_future_import(file_path: Path) -> bool:
 
         # Skip module docstring
         tree = ast.parse(content)
-        if (tree.body and
-            isinstance(tree.body[0], ast.Expr) and
-            isinstance(tree.body[0].value, ast.Constant)):
+        if (
+            tree.body
+            and isinstance(tree.body[0], ast.Expr)
+            and isinstance(tree.body[0].value, ast.Constant)
+        ):
             # Find the line after the docstring
             docstring_end = tree.body[0].end_lineno or 0
             insert_index = max(insert_index, docstring_end)
@@ -186,7 +188,10 @@ def add_future_import(file_path: Path) -> bool:
 
         # Security: Validate file path is within expected directory
         if not file_path.resolve().is_relative_to(Path.cwd()):
-            print(f"Security: Path {file_path} is outside current directory", file=sys.stderr)
+            print(
+                f"Security: Path {file_path} is outside current directory",
+                file=sys.stderr,
+            )
             return False
 
         file_path.write_text("".join(lines), encoding="utf-8")
