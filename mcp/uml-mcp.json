@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "uml-mcp-server": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "/home/byron/dev/uml-mcp-server",
+        "run",
+        "uml_mcp_server.py"
+      ],
+      "env": {
+        "UML_OUTPUT_DIR": "${HOME}/.claude/tmp_cleanup/diagrams"
+      }
+    }
+  }
+}

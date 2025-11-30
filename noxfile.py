@@ -1,4 +1,3 @@
-
 """Nox-UV sessions for testing, documentation, and compliance workflows.
 
 Nox-UV uses UV for fast virtual environment creation and package installation.
@@ -32,15 +31,14 @@ Compliance Sessions:
     nox -s assuredoss      # Validate Google Assured OSS credentials
 """
 
+# nox-uv is imported but not explicitly registered.
+# In nox-uv 0.6.x+, registration happens automatically when using nox.options.default_venv_backend = "uv"
+import contextlib
+
 import nox
 
-# nox-uv is imported but not explicitly registered.
-# In nox-uv 0.6.x+, registration happens automatically when using
-# nox.options.default_venv_backend = "uv"
-try:
+with contextlib.suppress(ImportError):
     import nox_uv  # noqa: F401 - Required for uv backend support
-except ImportError:
-    pass  # nox-uv is optional; falls back to standard venv
 
 # Default sessions and options
 nox.options.sessions = ["test", "lint", "docs"]
@@ -214,6 +212,7 @@ def sbom(session: nox.Session) -> None:
 
     # Clean up temporary files
     import pathlib
+
     pathlib.Path("requirements-runtime.txt").unlink(missing_ok=True)
     pathlib.Path("requirements-all.txt").unlink(missing_ok=True)
 
