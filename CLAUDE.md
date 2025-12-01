@@ -7,7 +7,7 @@
 > Universal development standards and practices for Claude Code across all projects.
 >
 > **Token Optimized**: This streamlined file references detailed specifications in `/standards/`
-> and `/commands/` directories for maximum efficiency while maintaining comprehensive coverage.
+> and `/.claude/commands/` directories for maximum efficiency while maintaining comprehensive coverage.
 
 ## Core Development Standards
 
@@ -145,11 +145,11 @@ def create_user(request: UserCreationRequest) -> User:
 
 ## Essential Commands
 
-> **Complete Command Reference**: See `/commands/quality.md`, `/commands/testing.md`, `/commands/security.md`
+> **Complete Command Reference**: See `/.claude/commands/quality.md`, `/.claude/commands/testing.md`, `/.claude/commands/security.md`
 
 ### Code Quality & Formatting
 ```bash
-# Format and lint (see /commands/quality.md for full details)
+# Format and lint (see /.claude/commands/quality.md for full details)
 ruff format .                 # Format code (replaces black)
 ruff check --fix .            # Lint and auto-fix
 basedpyright src              # Strict mode type checking
@@ -159,7 +159,7 @@ yamllint **/*.{yml,yaml}
 
 ### Security Validation
 ```bash
-# Key validation (see /commands/security.md for full details)
+# Key validation (see /.claude/commands/security.md for full details)
 gpg --list-secret-keys  # Must show GPG key for .env encryption
 ssh-add -l              # Must show SSH key for signed commits
 git config --get user.signingkey  # Must be configured for signed commits
@@ -169,7 +169,7 @@ poetry run bandit -r src
 
 ### Testing Standards
 ```bash
-# Testing commands (see /commands/testing.md for full details)
+# Testing commands (see /.claude/commands/testing.md for full details)
 poetry run pytest -v --cov=src --cov-report=html --cov-report=term-missing
 poetry run pre-commit run --all-files
 ```
@@ -720,7 +720,7 @@ Before committing ANY changes, ensure:
 ---
 
 *This modular configuration is automatically loaded by Claude Code. For detailed specifications,
-see referenced files in `/standards/` and `/commands/` directories.*
+see referenced files in `/standards/` and `/.claude/commands/` directories.*
 
 *Modularization complete! All detailed specifications are now available in domain-specific files
 for maximum token efficiency.*
