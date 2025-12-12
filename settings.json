@@ -58,8 +58,8 @@
   },
   "mcpServers": {
     "zen": {
-      "command": "/home/byron/dev/zen-mcp-server/zen-mcp-server",
-      "args": [],
+      "command": "/home/byron/dev/zen-mcp-server/.pal_venv/bin/python",
+      "args": ["/home/byron/dev/zen-mcp-server/server.py"],
       "cwd": "/home/byron/dev/zen-mcp-server",
       "env": {}
     },
@@ -83,6 +83,8 @@
       }
     }
   },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": ["zen", "context7", "github", "playwright", "postgres", "sentry", "mermaid", "docker", "uml-mcp-server"],
   "feedbackSurveyState": {
     "lastShownTime": 1754083719175
   },
