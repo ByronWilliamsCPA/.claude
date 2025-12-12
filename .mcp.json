@@ -1,8 +1,8 @@
 {
   "mcpServers": {
     "zen": {
-      "command": "/home/byron/dev/zen-mcp-server/zen-mcp-server",
-      "args": [],
+      "command": "/home/byron/dev/zen-mcp-server/.pal_venv/bin/python",
+      "args": ["/home/byron/dev/zen-mcp-server/server.py"],
       "cwd": "/home/byron/dev/zen-mcp-server"
     },
     "context7": {
