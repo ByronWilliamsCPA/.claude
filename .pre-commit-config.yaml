@@ -57,10 +57,10 @@ repos:
   # Advanced secret detection beyond detect-private-key
   # Detects API keys, tokens, credentials, and other secrets
   - repo: https://github.com/trufflesecurity/trufflehog
-    rev: v3.63.11
+    rev: v3.92.3
     hooks:
       - id: trufflehog
-        entry: trufflehog filesystem --fail --no-update .
+        entry: trufflehog git file://. --since-commit HEAD --fail --no-update
         stages: [pre-commit]
 
   # ============================================================================
