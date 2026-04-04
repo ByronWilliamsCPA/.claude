@@ -76,18 +76,34 @@ uv run semgrep scan --config auto src/
 gitleaks detect --source .
 ```
 
-## OWASP Top 10 Focus Areas
+## OWASP Specialist Delegation
 
-1. **A01: Broken Access Control**
-2. **A02: Cryptographic Failures**
-3. **A03: Injection**
-4. **A04: Insecure Design**
-5. **A05: Security Misconfiguration**
-6. **A06: Vulnerable Components**
-7. **A07: Authentication Failures**
-8. **A08: Software/Data Integrity**
-9. **A09: Logging Failures**
-10. **A10: Server-Side Request Forgery**
+For deep domain-specific security analysis, delegate to OWASP specialist agents
+via the `owasp-dispatch` agent, which routes to the correct specialists based on
+codebase signals:
+
+- **owasp-web** — Web Applications Top 10 (2025): A01-A10
+- **owasp-api** — API Security Top 10 (2023): API01-API10
+- **owasp-llm** — LLM Applications Top 10 (2025): LLM01-LLM10
+- **owasp-agent** — Agentic Applications Top 10 (2026): AG01-AG10
+- **owasp-ml** — ML Security Top 10 (v0.3): ML01-ML10
+- **owasp-citizen** — Citizen Developer Top 10 (2025): CD01-CD10
+
+Use `owasp-dispatch` for comprehensive OWASP coverage. This agent handles general
+security auditing (SAST, dependency scanning, secret detection, compliance).
+
+## OWASP Top 10 Web (2025) Quick Reference
+
+1. **A01:2025: Broken Access Control**
+2. **A02:2025: Security Misconfiguration**
+3. **A03:2025: Software Supply Chain Failures**
+4. **A04:2025: Cryptographic Failures**
+5. **A05:2025: Injection**
+6. **A06:2025: Insecure Design**
+7. **A07:2025: Authentication Failures**
+8. **A08:2025: Software and Data Integrity Failures**
+9. **A09:2025: Security Logging and Alerting Failures**
+10. **A10:2025: Mishandling of Exceptional Conditions**
 
 ## Invocation
 
