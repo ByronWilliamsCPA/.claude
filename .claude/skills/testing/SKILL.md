@@ -4,7 +4,7 @@ Automated test generation, review, and execution for pytest-based projects.
 
 ## Activation
 
-Auto-activates on keywords: test, coverage, pytest, unittest, integration test, e2e, performance, benchmark, security testing
+Auto-activates on keywords: test, coverage, pytest, unittest, integration test, e2e, performance, benchmark, security testing, coverage gap, test generation, owasp
 
 ## Workflows
 
@@ -48,11 +48,20 @@ uv run mutmut run --paths-to-mutate=src/
 uv run pytest --hypothesis-show-statistics
 ```
 
-## Coverage Standards
+## Coverage Standards (v2.0)
 
-- **Minimum Coverage**: 80%
-- **Branch Coverage**: Enabled
+- **Line Coverage**: 80% minimum
+- **Branch Coverage**: 70% minimum
+- **Critical Modules**: 90% minimum
+- **Patch Coverage**: 90% minimum (new/changed code)
 - **Coverage Report**: HTML and terminal output
+
+## Advanced Workflows
+
+For automated coverage gap analysis, test generation, and enforcement,
+use the **test-coverage** skill (`/test-coverage`). It orchestrates
+the test-writer and test-reviewer subagents with an iterative
+generate->run->fix->review loop.
 
 ## Test Organization
 
