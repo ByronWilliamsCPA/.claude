@@ -125,6 +125,67 @@ def test_complex_operation():
     assert result is not None
 ```
 
+## AI/LLM Testing Patterns
+
+### Tier 1: Mocked LLM (unit tests)
+
+```python
+@pytest.fixture
+def mock_llm_response(mocker):
+    return mocker.patch(
+        "module.client.messages.create",
+        return_value=MockResponse(content="mocked output"),
+        spec=True,
+    )
+
+def test_prompt_assembly(mock_llm_response):
+    result = generate_summary("input text")
+    call_args = mock_llm_response.call_args
+    assert "input text" in call_args.kwargs["messages"][0]["content"]
+```
+
+### Tier 2: Recorded responses (integration tests)
+
+```python
+@pytest.mark.integration
+def test_with_recorded_response(recorded_responses):
+    """Uses VCR/responses library to replay API calls."""
+    result = analyze_document("test doc")
+    assert result.confidence > 0.8
+```
+
+### Tier 3: Live LLM evaluation
+
+```python
+@pytest.mark.llm_eval
+def test_output_quality():
+    """Behavioral test against live LLM — slow, non-deterministic."""
+    result = generate_summary(SAMPLE_TEXT)
+    assert len(result) < len(SAMPLE_TEXT)
+    assert key_concept in result
+```
+
+## Security Test Naming Patterns
+
+Security tests reference OWASP category IDs for traceability:
+
+```python
+class TestOWASPWebA01:
+    """Tests for A01:2025 Broken Access Control."""
+
+    def test_a01_horizontal_authz_user_cannot_access_other_user(self, client):
+        """A01:2025 — Verify horizontal access control."""
+        ...
+
+class TestOWASPLLM01:
+    """Tests for LLM01:2025 Prompt Injection."""
+
+    @pytest.mark.parametrize("payload", INJECTION_PAYLOADS)
+    def test_llm01_prompt_injection_rejected(self, payload):
+        """LLM01:2025 — Verify injection payloads are filtered."""
+        ...
+```
+
 ## Common Commands
 
 ```bash

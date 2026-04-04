@@ -1,0 +1,171 @@
+---
+name: test-coverage
+description: >
+  Analyze test coverage gaps, generate missing tests, enforce coverage
+  thresholds, and audit Codecov configuration. Supports pytest (Python)
+  and Vitest (JS/TS). Runs coverage measurement, identifies uncovered
+  functions ranked by criticality, generates idiomatic tests via iterative
+  refinement, validates quality through a reviewer subagent, and verifies
+  Codecov flags/components/Test Analytics align with testing standards.
+allowed-tools:
+  - Bash
+  - Read
+  - Write
+  - Edit
+  - Grep
+  - Glob
+  - Task
+---
+
+# Test Coverage Agent
+
+## Invocation Modes
+
+This skill supports three modes based on the arguments provided:
+
+### Mode 1: Analyze (default)
+
+When invoked with no arguments or `analyze`:
+
+1. Auto-detect framework by checking pyproject.toml, pytest.ini, package.json
+2. Run `pytest --cov=src --cov-report=json:coverage.json --cov-branch -q`
+3. Parse coverage.json using the bundled parser script
+4. Identify files below the project threshold (default: 80%)
+5. For each under-covered file, identify uncovered functions via AST analysis
+6. Rank gaps by: (a) zero-coverage functions first, (b) lowest coverage %,
+   (c) most recently modified (git log), (d) highest cyclomatic complexity
+7. Present a structured coverage report with actionable recommendations
+
+### Mode 2: Generate
+
+When invoked with `generate` or `generate <file_path>`:
+
+1. Run Mode 1 analysis if no current coverage.json exists
+2. For single-file targets, use annotate format for LLM-friendly context:
+   `pytest --cov=<source_module> --cov-report=annotate:cov_annotate --cov-branch`
+   Lines prefixed with `!` in the annotated output are uncovered.
+3. For each target file (or specified file):
+   a. Read the source file and any existing test file
+   b. Spawn the test-writer subagent with source, uncovered lines, and
+      existing test patterns as context
+   c. Writer generates tests following project conventions from CLAUDE.md
+   d. Run generated tests: `pytest <test_file> --cov=<source> -v`
+   e. If tests fail, feed errors back to writer (up to 3 iterations)
+   f. Once passing, spawn test-reviewer subagent for quality check
+   g. If reviewer returns NEEDS_WORK, send feedback to writer (up to 2 rounds)
+   h. If reviewer returns APPROVE, commit the test file
+4. Re-run full coverage and present before/after comparison
+
+### Mode 3: Enforce
+
+When invoked with `enforce` or as part of a hook:
+
+1. Run `pytest --cov=src --cov-report=json --cov-branch --cov-fail-under=80`
+2. Parse results and check against per-file thresholds if configured
+3. Apply quality gates (entry/exit criteria per ISO 25010):
+   - Entry: all dependencies installed, database migrations current
+   - Exit: coverage thresholds met, no CRITICAL security findings,
+     type checking passes, SAST scan clean
+4. Report pass/fail status with specific files that need attention
+5. Exit with non-zero status if thresholds are not met
+
+### Mode 4: Security Audit
+
+When invoked with `security` or `security <path>`:
+
+1. Run the OWASP dispatcher (owasp-dispatch agent) to detect
+   applicable Top 10 lists based on codebase signals
+2. For each applicable specialist, run review-code mode
+3. For each applicable specialist, run review-tests mode
+4. For CRITICAL/HIGH findings without test coverage, run generate mode
+5. Present unified security report with findings by OWASP category
+
+### Mode 5: Codecov Audit
+
+When invoked with `codecov` or `audit-codecov`:
+
+1. Check for `codecov.yaml` or `codecov.yml` at repository root
+2. If not found, report as FAIL and recommend creating one per §16
+3. If found, validate against Testing Standards §16 checklist:
+
+   **Flag Validation:**
+   a. List all directories under `tests/` (unit, integration, e2e, etc.)
+   b. For each test directory, check that a matching flag exists in YAML
+   c. For each flag, check that `coverage.status.project.<flag>` exists
+      with a target matching §16.2 thresholds
+   d. Check CI workflow files (`.github/workflows/*.yml`) for `-F <flag>`
+      upload arguments — each flag must have a matching CI upload
+
+   **Component Validation:**
+   e. List all directories under `src/`
+   f. For each source directory, check that a matching component exists
+   g. Check that `component_management.default_rules.statuses` sets
+      project=80% and patch=90%
+   h. Read `pyproject.toml` `[tool.test-coverage-agent].critical_modules`
+   i. For each critical module, verify the component has a 90% override
+
+   **Test Analytics Validation:**
+   j. Check CI workflows for `codecov/test-results-action@v5` usage
+   k. Check that pytest produces JUnit XML (`--junitxml` in CI commands)
+
+   **Status Configuration:**
+   l. Verify `coverage.status.patch.default.target` is 90%
+   m. Check for `coverage.status.changes` (at least informational)
+   n. Verify `github_checks.annotations: true`
+   o. Verify `comment.show_carryforward_flags: true`
+
+4. Present findings as a structured report:
+
+   ```
+   ## Codecov Audit Report
+
+   ### Flags
+   ✅ unit: flag defined, status check at 85%, CI uploads with -F unit
+   ❌ integration: flag defined but NO status check — add target 75%
+   ❌ e2e: test directory exists but NO flag defined
+
+   ### Components
+   ✅ core: component defined, default rules apply (80%/90%)
+   ❌ auth: critical module but component target is default 80% — override to 90%
+   ✅ utils: component defined, default rules apply
+
+   ### Test Analytics
+   ❌ No test-results-action found in CI — add JUnit XML upload
+
+   ### Status Checks
+   ✅ Patch target: 90%
+   ❌ Changes status: not configured — add informational check
+
+   ### Summary: 5/9 checks passing
+   ```
+
+5. If `--fix` argument provided, generate a corrected `codecov.yaml`
+   with all missing flags, components, targets, and Test Analytics config
+
+## Configuration
+
+The skill reads thresholds and preferences from pyproject.toml:
+
+```toml
+[tool.test-coverage-agent]
+default_threshold = 80
+patch_threshold = 90        # for new/changed code
+critical_modules = ["auth", "payment", "data_processing"]
+critical_threshold = 90
+exclude_patterns = ["*/migrations/*", "*/conftest.py"]
+test_command = "pytest"
+max_generation_iterations = 3
+max_review_iterations = 2
+```
+
+## Output Format
+
+Coverage reports use this structure:
+
+- Project summary: overall line%, branch%, file count
+- Files below threshold: sorted worst-first with missing line ranges
+- Uncovered functions: name, file, line range, current coverage %
+- Recommendations: prioritized list of what to test next
+- Before/after comparison (when generating)
+
+$ARGUMENTS

@@ -32,12 +32,30 @@ Design and implement test strategies, generate test cases, and ensure code quali
 - Implement test reporting
 - Configure coverage collection
 
+### Codecov Configuration
+- Audit `codecov.yaml` against Testing Standards §16
+- Ensure test-type flags mirror test directory structure
+- Validate component targets enforce graduated coverage model
+- Verify Test Analytics (JUnit XML) upload in CI workflows
+- Cross-reference critical modules with component overrides
+
+## Delegation
+
+For specialized tasks, this agent delegates to focused subagents:
+
+- **Coverage-driven test generation** -> `test-writer` agent (iterative generate->run->fix loop)
+- **Test quality validation** -> `test-reviewer` agent (checklist-based review, APPROVE/NEEDS_WORK)
+- **Orchestrated coverage workflows** -> `test-coverage` skill (analyze, generate, enforce modes)
+- **Security test coverage** -> `owasp-dispatch` agent (routes to OWASP specialist agents)
+- **Codecov config validation** -> `test-reviewer` agent (Codecov Configuration checklist)
+
 ## Testing Standards
 
-### Coverage Requirements
-- **Minimum Coverage**: 80%
-- **Branch Coverage**: Enabled
-- **Critical Paths**: 100% coverage
+### Coverage Requirements (v2.0)
+- **Line Coverage**: 80% minimum
+- **Branch Coverage**: 70% minimum
+- **Critical Modules**: 90% minimum (auth, payment, data processing)
+- **Patch Coverage**: 90% minimum (new/changed code)
 
 ### Test Organization
 ```
@@ -70,7 +88,26 @@ uv run pytest -m "integration"
 
 # Run mutation testing
 uv run mutmut run
+
+# Validate Codecov configuration
+curl --data-binary @codecov.yaml https://codecov.io/validate
 ```
+
+## Codecov Audit Workflow
+
+When reviewing or setting up a project's test infrastructure, validate
+the Codecov configuration against Testing Standards §16:
+
+1. **Check flag coverage**: Each `tests/<type>/` directory should have a
+   matching flag in `codecov.yaml` with its own status check target
+2. **Check component coverage**: Each `src/<module>/` should have a
+   component with `statuses` enforcing graduated thresholds
+3. **Check CI integration**: Workflow files should upload with `-F <flag>`
+   per test type and include `test-results-action@v5` for Test Analytics
+4. **Check target alignment**: Verify patch=90%, critical=90%, default=80%
+   match organizational standards
+5. **Report gaps**: Flag missing flags, components without targets, and
+   absent Test Analytics upload as findings
 
 ## Invocation
 
