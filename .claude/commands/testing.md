@@ -9,7 +9,7 @@ Run tests with coverage reporting and optional test generation.
 ```
 
 **Arguments:**
-- `action` (optional): `run`, `generate`, `review`, `coverage` (default: `run`)
+- `action` (optional): `run`, `generate`, `review`, `coverage`, `coverage analyze`, `coverage generate`, `coverage enforce`, `security` (default: `run`)
 - `scope` (optional): `all`, `unit`, `integration`, `e2e` (default: `all`)
 
 ## Workflow
@@ -61,11 +61,21 @@ uv run pytest tests/e2e/ -v --tb=short -m "e2e"
 uv run mutmut run --paths-to-mutate=src/
 ```
 
-## Coverage Standards
+## Coverage Standards (v2.0)
 
-- **Target**: 80%
-- **Branch Coverage**: Enabled
-- **Critical Paths**: 100%
+- **Line Coverage**: 80% minimum
+- **Branch Coverage**: 70% minimum
+- **Critical Modules**: 90% minimum
+- **Patch Coverage**: 90% minimum (new/changed code)
+
+## Advanced Workflows
+
+For automated coverage gap analysis and test generation, use the `test-coverage` skill:
+
+- `/test-coverage analyze` — Parse coverage and identify gaps ranked by criticality
+- `/test-coverage generate` — AI-powered test generation with iterative validation
+- `/test-coverage enforce` — Block merges when coverage drops below thresholds
+- `/test-coverage security` — OWASP specialist security test audit
 
 ## Test Organization
 
