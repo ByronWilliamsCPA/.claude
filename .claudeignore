@@ -1,0 +1,44 @@
+# Claude Code Ignore Patterns
+# Files and directories to exclude from Claude Code indexing
+
+# Temporary files and cleanup directory
+tmp_cleanup/
+tmp_cleanup
+
+# Large archive files
+*.zip
+*.tar.gz
+*.tar.bz2
+*.7z
+*.rar
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Git directory (already ignored by default, but explicit)
+.git/
+
+# DVC cache (if applicable)
+.dvc/
+
+# Data directories (if applicable)
+data/
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# IDE directories
+.vscode/
+.idea/
+
+# Node modules (if applicable)
+node_modules/

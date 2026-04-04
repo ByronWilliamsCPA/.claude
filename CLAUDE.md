@@ -9,6 +9,37 @@
 > **Token Optimized**: This streamlined file references detailed specifications in `/standards/`
 > and `/.claude/commands/` directories for maximum efficiency while maintaining comprehensive coverage.
 
+## Project Context
+
+For project context, always search project docs and markdown files first (especially files in docs/, initiatives/, or project root). Do not search memory or make assumptions about organizational priorities.
+
+## CI / Compatibility
+
+When fixing CI/test failures, always verify Python 3.10 compatibility. Do not use `datetime.UTC` (3.11+), use `datetime.timezone.utc` instead. Check all auto-fix tools (ruff, etc.) for version-incompatible changes before committing.
+
+## Code Quality
+
+When SonarCloud or linting tools flag issues, fix the actual issues rather than proposing exclusions. Only exclude files if explicitly approved by the user.
+
+## Git Workflow
+
+Always run pre-commit hooks (`pre-commit run --all-files`) before committing. Expect ruff-format, mypy, and lint checks to catch issues - fix them proactively rather than waiting for CI.
+
+## Testing
+
+When asked to fix or improve tests, clarify scope first: adding missing tests vs. fixing failing tests vs. improving test depth are different tasks. Do not start analyzing failures if the user wants new coverage added.
+
+When tests fail, investigate root causes in this order before modifying test assertions or application code:
+
+1. **Test fixtures/configuration**: Missing seed data, incorrect factory defaults, conftest issues
+2. **Environment mismatches**: SQLite vs Postgres differences (JSONB, UUID, pool_size), Python version
+3. **Dependency drift**: Updated library changed behavior, version constraint mismatch
+4. **Test isolation**: Shared state, ordering dependencies, missing teardown
+
+## System / Shell
+
+When commands fail due to permissions (e.g., mkdir, mount), try with sudo immediately rather than requiring the user to point it out.
+
 ## Core Development Standards
 
 > **Detailed Specifications**: See `/standards/python.md`, `/standards/security.md`, `/standards/git-workflow.md`, `/standards/git-worktree.md`, `/standards/linting.md`
@@ -16,7 +47,7 @@
 ### Essential Requirements
 - **Code Quality**: Ruff formatting & linting (88 chars, PyStrict-aligned), BasedPyright type checking (strict mode)
 - **Security**: GPG/SSH key validation, dependency scanning, encrypted secrets
-- **Testing**: Minimum 80% coverage, tiered testing approach
+- **Testing**: Graduated coverage (80% line / 70% branch / 90% critical / 90% patch), tiered testing approach
 - **Git**: Conventional commits, signed commits, feature branch workflow
 - **Response-Aware Development**: Assumption tagging and verification (see `/docs/response-aware-development.md`)
 
@@ -195,7 +226,7 @@ poetry run pre-commit run --all-files
 
 ### Automatic Compliance (Already Configured)
 Our existing standards satisfy core OpenSSF requirements:
-- ✅ **Testing**: 80% coverage requirement + automated test runs
+- ✅ **Testing**: Graduated coverage (80% line / 70% branch / 90% critical) + automated test runs
 - ✅ **Static Analysis**: Ruff (PyStrict-aligned), BasedPyright, Bandit already configured
 - ✅ **Security Scanning**: Safety check for dependencies
 - ✅ **Version Control**: Signed commits, branch protection
@@ -260,6 +291,91 @@ Projects create focused `CLAUDE.md` files that **extend** (not duplicate) these 
 - **Architecture**: External Qdrant at 192.168.1.16:6333
 ```
 
+## Global Resource Catalog
+
+> This repo (`~/.claude/`) provides shared agents, skills, commands, and standards.
+> Downstream projects inherit this CLAUDE.md automatically. To use the resources below,
+> sync them into your project's `.claude/` directory (see Sync Instructions).
+
+### Available Agents (`.claude/agents/`)
+
+| Agent | File | Purpose |
+| ----- | ---- | ------- |
+| Code Reviewer | `code-reviewer.md` | Code review with MCP integration |
+| Security Auditor | `security-auditor.md` | Security analysis and OWASP scanning |
+| Test Engineer | `test-engineer.md` | Test generation and review |
+| Test Writer | `test-writer.md` | Coverage-driven iterative test generation |
+| Test Reviewer | `test-reviewer.md` | Test quality validation (APPROVE/NEEDS_WORK) |
+| Phase Reviewer | `phase-reviewer.md` | Phase gate quality evaluation |
+| Plan Validator | `plan-validator.md` | Implementation plan validation |
+| Scope Analyzer | `scope-analyzer.md` | Scope completion analysis |
+| OWASP Dispatch | `owasp-dispatch.md` | Routes to 6 OWASP specialist agents |
+| OWASP Web | `owasp-web.md` | Web application security testing |
+| OWASP API | `owasp-api.md` | API security testing |
+| OWASP LLM | `owasp-llm.md` | LLM application security |
+| OWASP ML | `owasp-ml.md` | ML pipeline security |
+| OWASP Citizen | `owasp-citizen.md` | Citizen development security |
+| OWASP Agent | `owasp-agent.md` | Agentic AI security |
+
+### Available Skills (`.claude/skills/`)
+
+| Skill | Trigger | Purpose |
+| ----- | ------- | ------- |
+| `/commit-prepare` | commit, stage and commit | Conventional commit message preparation |
+| `/git` | git workflow tasks | Git workflow automation |
+| `/phase-gate` | phase review, phase status | Phase readiness evaluation with quality gates |
+| `/pr-prepare` | create PR, draft PR | PR description generation with WTD integration |
+| `/project-planning` | project plan, generate plan | PVS, ADR, Tech Spec, Roadmap generation |
+| `/quality` | quality check, lint | Code quality checks (ruff, basedpyright) |
+| `/security` | security check, scan | Security validation (bandit, safety, keys) |
+| `/test-coverage` | coverage analysis, coverage gaps | Coverage measurement, gap analysis, test generation |
+| `/testing` | run tests, test suite | Test execution with coverage reporting |
+| `/sonarcloud` | sonar, quality gate, sonar issues | SonarCloud issue review, triage, and fixing via MCP |
+
+### Available Commands (`.claude/commands/`)
+
+| Command | File | Purpose |
+| ------- | ---- | ------- |
+| Quality | `quality.md` | Format, lint, type-check workflow |
+| Testing | `testing.md` | Test execution with coverage targets |
+| Security | `security.md` | Security scanning and key validation |
+| Plan | `plan.md` | Project planning document generation |
+| PR | `pr.md` | Pull request preparation |
+| Handoff | `handoff.md` | Session continuity handoff document |
+| Debug Tests | `debug-tests.md` | Root-cause-first test failure analysis |
+
+### Standards Reference (`standards/`)
+
+| Standard | File | Covers |
+| -------- | ---- | ------ |
+| Python | `python.md` | Code quality, type checking, ruff config |
+| Security | `security.md` | GPG/SSH, dependency scanning, secrets |
+| Testing | `testing.md` | Coverage thresholds, tiered testing |
+| Linting | `linting.md` | Ruff rules, file-type standards |
+| Git Workflow | `git-workflow.md` | Conventional commits, branch strategy |
+| Git Worktree | `git-worktree.md` | Parallel development patterns |
+| MCP Minimal Bloat | `mcp-minimal-bloat.md` | Tiered MCP tool loading strategy |
+| OWASP Agents | `owasp-specialist-agents-spec.md` | OWASP specialist agent specifications |
+| Test Coverage | `test-coverage-agent-spec.md` | Coverage analysis agent specification |
+
+### Sync Instructions
+
+Downstream projects should sync from the source repository:
+
+```bash
+# Full sync (all resources)
+git clone --depth 1 https://github.com/ByronWilliamsCPA/.claude.git /tmp/.claude-update
+cp -r /tmp/.claude-update/.claude/agents/*.md .claude/agents/
+cp -r /tmp/.claude-update/.claude/commands/*.md .claude/commands/
+cp -r /tmp/.claude-update/.claude/skills/* .claude/skills/
+cp -r /tmp/.claude-update/.claude/context/*.md .claude/context/
+cp -r /tmp/.claude-update/standards/*.md .claude/standards/
+rm -rf /tmp/.claude-update
+
+# Selective sync (specific resources only)
+# Copy only the agents/skills you need for your project
+```
+
 ## Claude Code Supervisor Role (CRITICAL)
 
 **Claude Code acts as the SUPERVISOR for all development tasks and MUST:**
@@ -278,6 +394,10 @@ Projects create focused `CLAUDE.md` files that **extend** (not duplicate) these 
 - Security tasks → Security Agent (via mcp__zen__secaudit)
 - Code reviews → Code Review Agent (via mcp__zen__codereview)
 - Testing → Test Engineer Agent (via mcp__zen__testgen)
+- Test generation → test-writer Agent (coverage-driven iterative generation)
+- Test review → test-reviewer Agent (quality validation, APPROVE/NEEDS_WORK)
+- Coverage analysis → test-coverage Skill (analyze, generate, enforce modes)
+- OWASP security testing → owasp-dispatch Agent (routes to 6 OWASP specialists)
 - Documentation → Documentation Agent (via mcp__zen__docgen)
 - Debugging → Debug Agent (via mcp__zen__debug)
 - Analysis → Analysis Agent (via mcp__zen__analyze)
@@ -324,6 +444,9 @@ Tools loaded automatically when specific agents are invoked via Task tool:
 | security-auditor | `zen.secaudit`, `sentry.*`, `github.code_security`, `postgres.analyze_db_health` |
 | code-reviewer | `zen.precommit`, `zen.challenge`, `github.pull_requests` |
 | test-engineer | `zen.testgen`, `playwright.*` |
+| test-writer | `zen.testgen` |
+| test-reviewer | (read-only, no MCP tools) |
+| owasp-dispatch | `zen.secaudit`, `zen.challenge` |
 | documentation-writer | `zen.docgen`, `mermaid.*`, `uml-mcp-server.*` |
 | database-operations-agent | `postgres.*` |
 | devops-deployment-agent | `docker.*`, `github.actions`, `sentry.*` |

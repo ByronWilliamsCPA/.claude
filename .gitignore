@@ -279,5 +279,5 @@ output/
 
 # Temporary reference files (anti-compaction strategy)
 # Keep the directory, but ignore .tmp-* files inside it
-tmp_cleanup/.tmp-*
+tmp_cleanup/
 !tmp_cleanup/.gitkeep
