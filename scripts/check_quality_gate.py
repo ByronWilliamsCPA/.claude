@@ -260,7 +260,7 @@ def main():
     )
     parser.add_argument(
         "--project-key",
-        default="ByronWilliamsCPA_claude_config",
+        default="ByronWilliamsCPA_.claude",
         help="SonarQube project key (default: ByronWilliamsCPA_claude_config)",
     )
     parser.add_argument(

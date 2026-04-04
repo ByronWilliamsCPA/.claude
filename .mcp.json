@@ -10,20 +10,10 @@
       "args": ["-y", "@upstash/context7-mcp"]
     },
     "sonarqube": {
-      "command": "docker",
-      "args": [
-        "run",
-        "-i",
-        "--rm",
-        "-e",
-        "SONARQUBE_TOKEN",
-        "-e",
-        "SONARQUBE_ORG",
-        "mcp/sonarqube"
-      ],
-      "env": {
-        "SONARQUBE_ORG": "${SONARQUBE_ORG}",
-        "SONARQUBE_TOKEN": "${SONARQUBE_TOKEN}"
+      "type": "url",
+      "url": "http://localhost:8090/mcp",
+      "headers": {
+        "Authorization": "Bearer ${SONARQUBE_TOKEN}"
       }
     }
   }
