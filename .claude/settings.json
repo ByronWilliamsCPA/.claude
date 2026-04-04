@@ -1,0 +1,47 @@
+{
+  "extraKnownMarketplaces": {
+    "han": {
+      "source": {
+        "source": "github",
+        "repo": "thebushidocollective/han"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "bushido@han": true
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "pre-commit run --all-files",
+            "timeout": 120,
+            "statusMessage": "Running pre-commit hooks..."
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "grep -rn 'datetime.UTC' --include='*.py' $CLAUDE_PROJECT_DIR && echo 'WARNING: datetime.UTC is Python 3.11+ only, use datetime.timezone.utc' >&2 || true",
+            "timeout": 10,
+            "statusMessage": "Checking Python 3.10 compatibility..."
+          },
+          {
+            "type": "command",
+            "command": "cd $CLAUDE_PROJECT_DIR && ruff check --fix --target-version py310 $CLAUDE_FILE_PATH 2>/dev/null || true",
+            "timeout": 15,
+            "statusMessage": "Running ruff auto-fix..."
+          }
+        ]
+      }
+    ]
+  }
+}
