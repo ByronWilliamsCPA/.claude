@@ -1,3 +1,9 @@
+---
+name: plan-validator
+description: Validates a proposed action plan against phase scope boundaries to detect scope creep. Internal agent — invoked by phase-gate skill only.
+user-invocable: false
+---
+
 # Plan Validator Agent
 
 Validates a proposed action plan against phase scope boundaries to detect scope creep before implementation begins.

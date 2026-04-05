@@ -1,27 +1,15 @@
----
-name: commit-prepare
-description: "Prepare git commit messages following conventional commits. Activates on: commit, prepare commit, commit this, commit message, ready to commit, stage and commit"
----
+# Commit Workflow
 
-# Commit Preparation Skill
-
-Automatically prepare commit messages following conventional commits standard.
+Full conventional commit preparation workflow.
 
 ## Activation
 
-This skill activates on keywords:
-- "commit", "prepare commit", "commit this"
-- "commit message", "write commit"
-- "stage and commit", "commit changes"
-- "what should I commit", "ready to commit"
+Triggers on: commit, prepare commit, commit this, commit message, write commit,
+stage and commit, commit changes, what should I commit, ready to commit
 
 ## Workflow
 
-When activated, follow these steps:
-
 ### 1. Gather Context
-
-Run these commands to understand what's being committed:
 
 ```bash
 # See all changes
@@ -70,6 +58,8 @@ Follow conventional commits format:
 | `ci` | CI/CD changes | `ci: add caching to workflow` |
 | `style` | Formatting only | `style: fix indentation` |
 
+See `context/conventional-commits.md` for version impact per type.
+
 #### Rules
 
 - **Subject**: Imperative mood ("add" not "added"), no period, max 50 chars
@@ -85,14 +75,7 @@ If there are unstaged changes, ask:
 
 ### 5. Execute Commit
 
-After user confirms the message:
-
-```bash
-git add <files>
-git commit -m "<message>"
-```
-
-**Important**: Always use HEREDOC for multi-line commits:
+After user confirms the message, always use HEREDOC for multi-line commits:
 
 ```bash
 git commit -m "$(cat <<'EOF'
@@ -115,21 +98,77 @@ After successful commit:
 - Suggest `git push` if ready
 - Mention if more changes remain unstaged
 
+---
+
+## Breaking Changes
+
+Use `!` after type and add `BREAKING CHANGE:` footer:
+
+```
+feat(api)!: change response envelope format
+
+BREAKING CHANGE: API responses now use { data, meta, errors }
+envelope instead of flat response. Clients must update parsing.
+
+Migration: Update response handlers to access .data property.
+```
+
+---
+
+## Multiple Logical Changes
+
+If staged changes touch multiple unrelated areas, recommend splitting:
+
+> I see changes to multiple unrelated areas:
+> 1. Bug fix in `parser.py`
+> 2. New feature in `export.py`
+> 3. Updated docs
+>
+> Recommend splitting into separate commits:
+> 1. `fix(parser): handle empty input gracefully`
+> 2. `feat(export): add CSV export option`
+> 3. `docs: update export documentation`
+>
+> Want me to help stage and commit each separately?
+
+---
+
+## Attribution
+
+Always include Claude attribution for AI-assisted commits:
+
+```
+🤖 Generated with [Claude Code](https://claude.ai/code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```
+
+---
+
+## Safety Rules
+
+- **NEVER** use `git commit --amend` on pushed commits
+- **NEVER** skip hooks with `--no-verify` unless explicitly asked by the user
+- **ALWAYS** show the commit message before executing
+- **CHECK** staged files for secrets/credentials before committing
+- **WARN** about large binary files in the staged set
+
+---
+
 ## Example Interactions
 
 ### Simple Commit
 
 **User**: "commit these changes"
 
-**Claude**:
 ```bash
 git status
 git diff --cached
 ```
 
 Looking at your staged changes:
-- Modified `src/auth/oauth.py` - added token refresh logic
-- Modified `tests/test_auth.py` - added refresh tests
+- Modified `src/auth/oauth.py` — added token refresh logic
+- Modified `tests/test_auth.py` — added refresh tests
 
 **Suggested commit**:
 ```
@@ -147,7 +186,7 @@ Shall I commit with this message?
 
 **User**: "ready to commit"
 
-**Claude**: I see you've changed the API response format. This is a breaking change.
+I see you've changed the API response format. This is a breaking change.
 
 **Suggested commit**:
 ```
@@ -167,32 +206,9 @@ This marks it as a breaking change with `!`. Proceed?
 
 **User**: "commit this"
 
-**Claude**: I see changes to multiple unrelated areas:
+I see changes to multiple unrelated areas:
 1. Bug fix in `parser.py`
 2. New feature in `export.py`
 3. Updated docs
 
-Recommend splitting into separate commits:
-1. `fix(parser): handle empty input gracefully`
-2. `feat(export): add CSV export option`
-3. `docs: update export documentation`
-
-Want me to help stage and commit each separately?
-
-## Attribution
-
-Always include Claude attribution for AI-assisted commits:
-
-```
-🤖 Generated with [Claude Code](https://claude.ai/code)
-
-Co-Authored-By: Claude <noreply@anthropic.com>
-```
-
-## Safety Rules
-
-- **Never** use `git commit --amend` on pushed commits
-- **Never** skip hooks with `--no-verify` unless explicitly asked
-- **Always** show the commit message before executing
-- **Check** for secrets/credentials in staged files
-- **Warn** about large binary files
+Recommend splitting into 3 separate commits. Want me to help stage and commit each separately?
