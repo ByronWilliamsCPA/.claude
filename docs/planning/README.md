@@ -11,8 +11,6 @@ component: Context
 source: "Project initialization"
 ---
 
-# Project Planning Documents
-
 This directory contains the essential planning documents for Claude Code Configuration.
 
 ## Quick Start

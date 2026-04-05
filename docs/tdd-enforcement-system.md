@@ -1,4 +1,14 @@
-# TDD Enforcement System - Implementation Guide
+---
+schema_type: common
+title: "TDD Enforcement System"
+status: published
+owner: core-maintainer
+purpose: "Implementation guide for the TDD enforcement system using PreToolUse hooks."
+tags:
+  - testing
+  - automation
+  - tooling
+---
 
 ## System Overview
 

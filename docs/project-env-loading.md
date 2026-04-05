@@ -1,4 +1,14 @@
-# Project-Specific Environment Variable Loading
+---
+schema_type: common
+title: "Project-Specific Environment Variable Loading"
+status: published
+owner: core-maintainer
+purpose: "Guide for handling project-specific environment variables with global Claude Code configuration."
+tags:
+  - configuration
+  - setup
+  - guide
+---
 
 This guide explains how to handle project-specific environment variables when using global Claude Code configuration.
 

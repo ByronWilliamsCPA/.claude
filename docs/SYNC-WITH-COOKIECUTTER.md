@@ -1,4 +1,11 @@
-# Syncing with Cookiecutter Template
+---
+schema_type: common
+title: Syncing with Cookiecutter Template
+status: published
+owner: engineering
+tags: [documentation]
+purpose: Describes how to maintain consistency between this Claude configuration source repository and the downstream cookiecutter project template.
+---
 
 > **Purpose**: This repository is the **source** for Claude configuration files, not a project generated from the cookiecutter template. This document explains how to maintain consistency between this repo and the cookiecutter template.
 

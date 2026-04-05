@@ -1,4 +1,11 @@
-# Git-Trackable Claude Code Configuration
+---
+schema_type: common
+title: Git-Trackable Claude Code Configuration
+status: published
+owner: engineering
+tags: [documentation]
+purpose: Explains how to use the git-trackable Claude Code configuration directory with MCP server setups for version control and team sharing.
+---
 
 This directory contains a git-trackable Claude Code configuration that allows you to version control your MCP server setups and share them across team members.
 

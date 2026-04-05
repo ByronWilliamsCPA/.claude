@@ -1,4 +1,14 @@
-# Response-Aware Development (RAD) - Explanatory Document
+---
+schema_type: common
+title: "Response-Aware Development (RAD)"
+status: published
+owner: core-maintainer
+purpose: "Explains the rationale, implementation, and evaluation criteria for the Response-Aware Development system."
+tags:
+  - documentation
+  - development
+  - quality
+---
 
 ## Executive Summary
 
