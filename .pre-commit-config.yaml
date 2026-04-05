@@ -200,7 +200,7 @@ repos:
         language: system
         types: [python]
         stages: [pre-commit]
-        exclude: ^(tests|scripts|benchmarks|tools)/
+        exclude: ^(tests|scripts|benchmarks|tools|\.claude/skills/skill-creator)/
 
 # Exclude patterns
 exclude: |
