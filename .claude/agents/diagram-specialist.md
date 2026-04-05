@@ -1,0 +1,1 @@
+../../.submodules/image-generation/agents/diagram-specialist.md

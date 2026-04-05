@@ -1,0 +1,1 @@
+../../.submodules/reference-library/agents/document-drafter.md

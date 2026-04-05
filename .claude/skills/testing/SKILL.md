@@ -1,10 +1,18 @@
+---
+name: testing
+description: >
+  Automated test generation, review, and execution for pytest-based projects.
+  Use when users want to write new tests, run the test suite, set up test
+  infrastructure (fixtures, conftest, markers), review test quality, add
+  integration/e2e/property-based/mutation testing, or run pytest with specific
+  options. Covers test creation, execution, and review workflows — NOT coverage
+  gap analysis (use test-coverage), NOT debugging a specific failing test
+  (use debug-tests), NOT linting/formatting (use quality).
+---
+
 # Testing Skill
 
 Automated test generation, review, and execution for pytest-based projects.
-
-## Activation
-
-Auto-activates on keywords: test, coverage, pytest, unittest, integration test, e2e, performance, benchmark, security testing, coverage gap, test generation, owasp
 
 ## Workflows
 

@@ -1,92 +1,177 @@
 # Claude Configuration Directory
 
-This directory contains Claude Code configuration and standards for this project.
+This directory (`.claude/`) is the **deployable Claude config artifact** — the content Claude Code
+actually reads. It is symlinked into `~/.claude/` on each developer's machine via `setup.sh`.
 
-## Directory Structure
+---
 
+## How the Two-Layer Structure Works
+
+```text
+repo root  (/home/<user>/dev/.claude/)
+│
+├── .claude/                   ← THIS directory — Claude's deployable config
+│   ├── agents/                ← ~/.claude/agents  (via symlink from setup.sh)
+│   ├── skills/                ← ~/.claude/skills  (via symlink from setup.sh)
+│   ├── commands/              ← ~/.claude/commands (via symlink from setup.sh)
+│   └── settings.json
+│
+├── .submodules/               ← standalone repos, mounted as git submodules
+│   ├── reference-library/    ← github.com/ByronWilliamsCPA/reference-library
+│   └── image-generation/     ← github.com/williaby/image-generation
+│
+├── standards/                 ← standards docs (not read by Claude directly)
+├── scripts/                   ← maintenance scripts
+├── mcp/                       ← MCP server configs
+└── setup.sh                   ← run once after cloning to create ~/.claude/ symlinks
 ```
-.claude/
-├── README.md           # This file
-├── claude.md           # Project-specific Claude guidelines
-└── standard/           # Standard Claude configuration (git subtree)
-    ├── claude.md       # Base guidelines and standards
-    ├── commands/       # Custom slash commands
-    ├── skills/         # Reusable skills
-    └── agents/         # Specialized agents
+
+### The Symlink Chain (Local Setup)
+
+```text
+~/.claude/agents                        (dir symlink, machine-specific, created by setup.sh)
+    └── document-drafter.md             (relative file symlink, committed to git, portable)
+            ↓
+        ../../.submodules/reference-library/agents/document-drafter.md
+            ↓
+        .submodules/reference-library/agents/document-drafter.md  (real file in submodule)
 ```
 
-## Standard vs Project-Specific Configuration
+The outer dir symlink (`~/.claude/agents`) is created by `setup.sh` — it is machine-specific
+and never committed. The inner file symlinks (inside `agents/`) use relative paths and ARE
+committed to git, so they work on any machine without modification.
 
-### Standard Configuration (`standard/`)
+---
 
-This directory is managed as a **git subtree** from [williaby/.claude](https://github.com/williaby/.claude). It contains:
+## Invariants — Do Not Break
 
-- Universal Claude Code development standards
-- Best practices and coding guidelines
-- Reusable commands, skills, and agents
-- Security and quality requirements
+These constraints keep the local and repo approaches working simultaneously.
+Violating any of these breaks either `~/.claude/` resolution or cross-machine portability.
 
-**Do not edit files in `standard/` directly** - they will be overwritten when updating from the upstream repository.
+1. **`.claude/agents/`, `.claude/skills/`, `.claude/commands/` must stay at these exact paths.**
+   `~/.claude/` symlinks point here. Renaming or moving these directories breaks every project
+   on every machine that has run `setup.sh`.
 
-### Project-Specific Configuration (`claude.md`)
+2. **Symlinks inside `.claude/agents/` must use relative paths only.**
+   Form: `../../.submodules/<repo-name>/path/to/file.md`
+   Never use absolute paths — they are machine-specific and break on clone.
 
-The `claude.md` file in this directory contains **project-specific** guidelines that extend the standards:
+3. **All submodules live under `.submodules/` at the repo root.**
+   This keeps the relative depth from `.claude/agents/` consistent (`../../.submodules/`).
+   Adding a submodule anywhere else breaks the relative symlink pattern.
 
-- Project overview and architecture
-- Technology stack and dependencies
-- Project-specific conventions and patterns
-- Environment setup instructions
-- Common tasks and troubleshooting
+4. **Agents native to this repo are regular files in `.claude/agents/`.**
+   Only content owned by a standalone repo uses a submodule symlink.
 
-## Updating Standard Configuration
+5. **`setup.sh` is the only place machine-specific paths appear.**
+   Everything inside `.claude/` must be portable across machines.
 
-To pull the latest standards from the upstream repository:
+6. **Never substitute `{{LIBRARY_PATH}}` into source files.**
+   Agents in `.submodules/reference-library/agents/` use `{{LIBRARY_PATH}}` as a placeholder.
+   `setup.sh` resolves this by symlinking the submodule to `~/.claude/reference-library` — a
+   stable, predictable path on every machine. Substituting absolute paths into source files
+   breaks portability and will corrupt the submodule on the next `git restore`.
+
+---
+
+## Adding a New Agent
+
+### Native agent (owned by this repo)
 
 ```bash
-# Using the helper script
-./scripts/update-claude-standards.sh
-
-# Or manually
-git subtree pull --prefix .claude/standard \
-    https://github.com/williaby/.claude.git main --squash
+# Just add the file — immediately available globally after setup.sh has run
+touch .claude/agents/my-new-agent.md
 ```
 
-## Contributing Changes to Standards
-
-If you develop a pattern or guideline that would benefit all projects:
+### Agent from an existing submodule
 
 ```bash
-# Push changes back to the standard repository
-git subtree push --prefix .claude/standard \
-    https://github.com/williaby/.claude.git main
+cd .claude/agents
+ln -s ../../.submodules/reference-library/agents/new-agent.md new-agent.md
 ```
 
-**Note**: This requires write access to the upstream repository.
-
-## How Claude Code Uses These Files
-
-1. **Global Settings**: Claude Code first loads `~/.claude/CLAUDE.md` (user-level)
-2. **Standard Guidelines**: Then loads `.claude/standard/claude.md` (universal standards)
-3. **Project Overrides**: Finally loads `.claude/claude.md` (project-specific)
-
-This layered approach ensures:
-- Consistent standards across all projects
-- Project flexibility where needed
-- Easy updates to universal guidelines
-
-## First-Time Setup
-
-The git subtree is automatically configured during project generation via the `post_gen_project.py` hook. If you need to set it up manually:
+### Agent from a new standalone repo
 
 ```bash
-# Initialize git if not already done
-git init
+# 1. Add the submodule
+git submodule add https://github.com/org/repo.git .submodules/repo-name
 
-# Add the subtree
-git subtree add --prefix .claude/standard \
-    https://github.com/williaby/.claude.git main --squash
+# 2. Create the relative symlink
+cd .claude/agents
+ln -s ../../.submodules/repo-name/agents/agent-name.md agent-name.md
+
+# 3. Verify it resolves before committing
+ls -la .claude/agents/agent-name.md
 ```
 
 ---
 
-**Last Updated**: 2025-11-24
+## Adding a New Skill
+
+Skills are always native to this repo — no submodule pattern applies:
+
+```bash
+mkdir .claude/skills/my-skill
+touch .claude/skills/my-skill/SKILL.md
+```
+
+---
+
+## Updating Submodule Content
+
+```bash
+# Pull latest from all submodules
+git submodule update --remote
+
+# Pull latest from one submodule
+git submodule update --remote .submodules/reference-library
+
+# Commit the updated submodule reference
+git add .submodules/reference-library
+git commit -m "chore: update reference-library submodule"
+```
+
+## Editing Content in a Submodule
+
+Edits can be made directly inside the submodule directory and pushed back to the standalone repo:
+
+```bash
+cd .submodules/reference-library
+# edit files
+git add .
+git commit -m "feat: update agent"
+git push origin main
+
+# Record the new commit reference in the parent repo
+cd ../..
+git add .submodules/reference-library
+git commit -m "chore: update reference-library submodule"
+```
+
+---
+
+## New Developer Setup
+
+```bash
+git clone --recurse-submodules https://github.com/ByronWilliamsCPA/.claude.git ~/dev/.claude
+cd ~/dev/.claude
+./setup.sh
+```
+
+`setup.sh` creates three symlinks:
+
+- `~/.claude/agents`   → `~/dev/.claude/.claude/agents`
+- `~/.claude/skills`   → `~/dev/.claude/.claude/skills`
+- `~/.claude/commands` → `~/dev/.claude/.claude/commands`
+
+After that, every project on the machine has access to all agents and skills automatically —
+no project-level configuration required.
+
+---
+
+## Current Submodule Registry
+
+| Submodule         | Path                            | Standalone Repo                                                                             | Content                                             |
+| ----------------- | ------------------------------- | ------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| reference-library | `.submodules/reference-library` | [ByronWilliamsCPA/reference-library](https://github.com/ByronWilliamsCPA/reference-library) | 7 writing pipeline agents                           |
+| image-generation  | `.submodules/image-generation`  | [williaby/image-generation](https://github.com/williaby/image-generation)                   | diagram-specialist agent, IMAGE_GENERATION_GUIDE.md |

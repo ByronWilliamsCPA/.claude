@@ -1,0 +1,6 @@
+[submodule ".submodules/reference-library"]
+	path = .submodules/reference-library
+	url = https://github.com/ByronWilliamsCPA/reference-library.git
+[submodule ".submodules/image-generation"]
+	path = .submodules/image-generation
+	url = https://github.com/williaby/image-generation.git
