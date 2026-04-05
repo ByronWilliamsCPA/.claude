@@ -2,6 +2,14 @@
 
 Code quality validation, formatting, linting, and pre-commit checks.
 
+## Invocation
+
+```
+/quality [scope]
+```
+
+**Scope** (optional): `all` (default), `format`, `lint`, `types`
+
 ## Activation
 
 Auto-activates on keywords: quality, lint, format, precommit, naming, black, ruff, mypy, basedpyright, validation
@@ -20,20 +28,32 @@ Auto-activates on keywords: quality, lint, format, precommit, naming, black, ruf
 
 ## Commands
 
+### Check (non-destructive)
+
 ```bash
-# Format code
+# Format check only
+uv run black --check .
+uv run ruff format --check .
+
+# Lint check
+uv run ruff check .
+
+# Type check
+uv run basedpyright src/
+
+# All checks via pre-commit
+uv run pre-commit run --all-files
+```
+
+### Fix Issues
+
+```bash
+# Auto-fix formatting
 uv run black .
 uv run ruff format .
 
-# Lint code
-uv run ruff check .
+# Auto-fix lint issues
 uv run ruff check --fix .
-
-# Type checking
-uv run basedpyright src/
-
-# Run all pre-commit hooks
-uv run pre-commit run --all-files
 ```
 
 ## Quality Standards

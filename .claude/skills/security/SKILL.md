@@ -2,6 +2,14 @@
 
 Security validation, vulnerability scanning, and compliance checking.
 
+## Invocation
+
+```
+/security [scope]
+```
+
+**Scope** (optional): `all` (default), `env`, `scan`, `deps`
+
 ## Activation
 
 Auto-activates on keywords: security, vulnerability, audit, OWASP, encryption, GPG, SSH, signing, secrets, scan, bandit
@@ -17,27 +25,33 @@ Auto-activates on keywords: security, vulnerability, audit, OWASP, encryption, G
 ### Encryption
 - **encrypt.md**: Secret encryption and management
 
-## Commands
+## Workflow
 
+Execute in this order for a full `/security all` run:
+
+**Step 1 — Environment validation** (`/security env`)
 ```bash
-# Validate GPG key
 gpg --list-secret-keys
-
-# Validate SSH key
 ssh-add -l
-
-# Check git signing configuration
 git config --get user.signingkey
+```
 
-# Run Bandit security scanner
+**Step 2 — Code scanning** (`/security scan`)
+```bash
 uv run bandit -r src/ -c pyproject.toml
+uv run semgrep scan --config auto src/
+```
 
-# Check dependencies for vulnerabilities
+**Step 3 — Dependency audit** (`/security deps`)
+```bash
 uv run pip-audit
 uv run safety check
+```
 
-# Run Semgrep security rules
-uv run semgrep scan --config auto src/
+**Step 4 — Secrets detection**
+```bash
+gitleaks detect --source .
+trufflehog filesystem .
 ```
 
 ## Security Checklist

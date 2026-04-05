@@ -14,6 +14,17 @@ description: >
 
 Automated test generation, review, and execution for pytest-based projects.
 
+## Invocation
+
+```
+/testing [action] [scope]
+```
+
+**Actions** (optional): `run` (default), `generate`, `review`, `coverage analyze`,
+`coverage generate`, `coverage enforce`, `security`
+
+**Scopes** (optional): `all` (default), `unit`, `integration`, `e2e`
+
 ## Workflows
 
 ### Test Generation
@@ -41,9 +52,13 @@ uv run pytest
 # Run with coverage
 uv run pytest --cov=src/claude_config --cov-report=html --cov-report=term-missing
 
-# Run specific test categories
+# Run by scope
+uv run pytest tests/unit/ -v --tb=short
+uv run pytest tests/integration/ -v --tb=short -m "integration"
+uv run pytest tests/e2e/ -v --tb=short -m "e2e"
+
+# Run specific test categories (markers)
 uv run pytest -m "not slow"
-uv run pytest -m "integration"
 uv run pytest -m "unit"
 
 # Run with verbose output
