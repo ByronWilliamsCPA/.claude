@@ -200,7 +200,7 @@ repos:
         language: system
         types: [python]
         stages: [pre-commit]
-        exclude: ^(tests|scripts|benchmarks|tools|\.claude/skills/skill-creator)/
+        exclude: ^(tests|scripts|benchmarks|tools|noxfile\.py|\.claude/skills/)
 
 # Exclude patterns
 exclude: |
