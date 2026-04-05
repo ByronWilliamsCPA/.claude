@@ -1,3 +1,9 @@
+---
+name: scope-analyzer
+description: Analyzes a project phase against the implementation plan to produce a scope boundary document. Internal agent — invoked by phase-gate skill only.
+user-invocable: false
+---
+
 # Scope Analyzer Agent
 
 Analyzes a project phase against the implementation plan to produce a scope boundary document.
