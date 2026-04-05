@@ -1,4 +1,13 @@
-# Testing Guide
+---
+schema_type: common
+title: "Testing Guide"
+status: published
+owner: core-maintainer
+purpose: "Detailed explanations, examples, and rationale for every requirement in the Testing Standards."
+tags:
+  - testing
+  - guide
+---
 
 **Companion to:** [Testing Standards](../../standards/testing.md)
 **Version:** 2.0

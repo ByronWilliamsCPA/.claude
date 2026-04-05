@@ -9,9 +9,6 @@ tags:
   - installation
   - development
 ---
-
-# Project Setup Guide
-
 This guide covers everything you need to know after generating your project from the cookiecutter template. It includes manual setup steps, keeping your project updated, and managing your repository structure.
 
 ## Table of Contents

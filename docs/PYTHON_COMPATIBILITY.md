@@ -9,9 +9,6 @@ tags:
   - development
   - requirements
 ---
-
-# Python Version Compatibility Guide
-
 This project supports **Python 3.10, 3.11, 3.12, 3.13, and 3.14** with full testing across all versions.
 
 ## Version Support Matrix

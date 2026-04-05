@@ -1,4 +1,11 @@
-# Context7 MCP Server Setup
+---
+schema_type: common
+title: Context7 MCP Server Setup
+status: published
+owner: engineering
+tags: [documentation]
+purpose: Provides setup instructions for the Context7 MCP server, including available transports and Redis-powered knowledge base configuration.
+---
 
 Context7 provides intelligent documentation and library search capabilities through Redis-powered knowledge bases.
 

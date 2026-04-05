@@ -1,4 +1,14 @@
-# Serena MCP Server Setup Guide
+---
+schema_type: common
+title: "Serena MCP Server Setup Guide"
+status: published
+owner: core-maintainer
+purpose: "Setup and configuration guide for the Serena MCP server integration with Claude Code."
+tags:
+  - setup
+  - configuration
+  - integration
+---
 
 Serena is an AI-powered development assistant that integrates with Claude Code through the MCP protocol.
 

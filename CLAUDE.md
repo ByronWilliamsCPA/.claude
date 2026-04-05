@@ -302,6 +302,8 @@ Projects create focused `CLAUDE.md` files that **extend** (not duplicate) these 
 | Agent | File | Purpose |
 | ----- | ---- | ------- |
 | Code Reviewer | `code-reviewer.md` | Code review with MCP integration |
+| Diagram Maintenance | `diagram-maintenance-agent.md` | PlantUML maintenance, traceability, SVG generation, AI visuals |
+| Frontend Designer | `frontend-designer.md` | UI design, build, review, a11y audit, perf optimization |
 | Security Auditor | `security-auditor.md` | Security analysis and OWASP scanning |
 | Test Engineer | `test-engineer.md` | Test generation and review |
 | Test Writer | `test-writer.md` | Coverage-driven iterative test generation |
@@ -316,17 +318,32 @@ Projects create focused `CLAUDE.md` files that **extend** (not duplicate) these 
 | OWASP ML | `owasp-ml.md` | ML pipeline security |
 | OWASP Citizen | `owasp-citizen.md` | Citizen development security |
 | OWASP Agent | `owasp-agent.md` | Agentic AI security |
+| Documentation Writer | `documentation-writer.md` | API docs, user guides, architecture documentation lifecycle |
+| Database Operations | `database-operations-agent.md` | Schema management, query optimization, migrations, data integrity |
+| AI Engineer | `ai-engineer.md` | LLM apps, RAG systems, C.R.E.A.T.E. framework, multi-agent orchestration |
+| Git Workflow | `git-workflow-agent.md` | Branch strategy, release management, conventional commits |
+| GitHub Workflow | `github-workflow-agent.md` | PRs, issues, GitHub Actions, repository administration |
+| Modularization Assistant | `modularization-assistant.md` | Refactor monoliths, reduce complexity, improve separation of concerns |
+| Research Agent | `research-agent.md` | Technical research, library evaluation, documentation analysis |
+| DevOps Deployment | `devops-deployment-agent.md` | CI/CD pipelines, IaC, deployment orchestration, monitoring |
+| UI Testing | `ui-testing-agent.md` | Playwright e2e tests, accessibility audits, visual regression |
+| API Development | `api-development-agent.md` | REST/GraphQL design, OpenAPI specs, contract testing |
+
+> **Full catalog with descriptions**: See [AGENTS-AND-SKILLS.md](AGENTS-AND-SKILLS.md)
 
 ### Available Skills (`.claude/skills/`)
 
 | Skill | Trigger | Purpose |
 | ----- | ------- | ------- |
 | `/commit-prepare` | commit, stage and commit | Conventional commit message preparation |
+| `/diagram-maintenance` | update diagram, PUML, diagram audit, traceability check, regenerate SVG | Diagram updates, traceability audits, SVG generation, AI visuals |
+| `/frontend-design` | build UI, create component, design page | Creative direction, UX/a11y checklists, React perf patterns |
 | `/git` | git workflow tasks | Git workflow automation |
 | `/phase-gate` | phase review, phase status | Phase readiness evaluation with quality gates |
 | `/pr-prepare` | create PR, draft PR | PR description generation with WTD integration |
 | `/project-planning` | project plan, generate plan | PVS, ADR, Tech Spec, Roadmap generation |
 | `/quality` | quality check, lint | Code quality checks (ruff, basedpyright) |
+| `/rad` | assumption, verify assumptions, RAD, response-aware | Assumption tagging and multi-model verification |
 | `/security` | security check, scan | Security validation (bandit, safety, keys) |
 | `/test-coverage` | coverage analysis, coverage gaps | Coverage measurement, gap analysis, test generation |
 | `/testing` | run tests, test suite | Test execution with coverage reporting |

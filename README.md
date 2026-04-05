@@ -381,6 +381,11 @@ claude_config/
 └── LICENSE                               # License
 ```
 
+## Claude Code Resources
+
+- **[AGENTS-AND-SKILLS.md](AGENTS-AND-SKILLS.md)**: Complete catalog of all agents and skills with descriptions and when-to-use guidance
+- **[CLAUDE.md](CLAUDE.md)**: Global development standards, code quality rules, and configuration for all projects
+
 ## Documentation
 
 - **[CONTRIBUTING.md](CONTRIBUTING.md)**: How to contribute to the project

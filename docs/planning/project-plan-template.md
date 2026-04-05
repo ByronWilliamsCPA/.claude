@@ -1,17 +1,19 @@
 ---
 schema_type: planning
 title: "Claude Code Configuration - Project Plan"
-description: "Comprehensive project plan for Claude Code Configuration with detailed implementation roadmap, architecture overview, and phased development strategy"
+description: "Comprehensive project plan for Claude Code Configuration with detailed
+  implementation roadmap, architecture overview, and phased development strategy"
 tags:
-  - planning
-  - roadmap
-  - project
-  - strategy
+- planning
+- roadmap
+- project
+source: "Internal planning template"
 status: published
 owner: "core-maintainer"
 authors:
-  - name: "Byron Williams"
-purpose: "Document the complete implementation roadmap for Claude Code Configuration with detailed phases, milestones, and technical strategy"
+- name: "Byron Williams"
+purpose: "Document the complete implementation roadmap for Claude Code Configuration
+  with detailed phases, milestones, and technical strategy."
 component: "Strategy"
 ---
 
