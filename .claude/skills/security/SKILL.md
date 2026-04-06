@@ -50,7 +50,6 @@ uv run semgrep scan --config auto src/
 **Step 3 — Dependency audit** (`/security deps`)
 ```bash
 uv run pip-audit
-uv run safety check
 ```
 
 **Step 4 — Secrets detection**

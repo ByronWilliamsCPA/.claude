@@ -46,7 +46,7 @@ Always use `pytest.param(..., id="readable-id")` so failures identify which scen
 ```python
 @pytest.mark.parametrize("address,expected", [
     pytest.param("user@example.com", True, id="valid-standard"),
-    pytest.param("user+tag@sub.example.com", True, id="valid-plus-subomain"),
+    pytest.param("user+tag@sub.example.com", True, id="valid-plus-subdomain"),
     pytest.param("", False, id="empty-string"),
     pytest.param(None, False, id="none-value"),
     pytest.param("@nodomain", False, id="missing-local-part"),
