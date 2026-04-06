@@ -15,7 +15,7 @@ Global Claude Code development standards, commands, and configuration for all pr
 
 ```bash
 # Install the package
-pip install claude-config
+uv add claude-config
 
 # Or install with development dependencies
 uv sync --all-extras
