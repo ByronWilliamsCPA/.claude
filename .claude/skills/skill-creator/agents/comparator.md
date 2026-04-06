@@ -1,3 +1,10 @@
+---
+name: comparator
+description: Blind comparison agent that judges which of two skill outputs better accomplishes an eval task, without knowing which skill produced which output. Generates a rubric, scores both outputs, and declares a winner.
+model: sonnet
+tools: ["Read", "Write", "Bash", "Glob", "Grep"]
+---
+
 # Blind Comparator Agent
 
 Compare two outputs WITHOUT knowing which skill produced them.
