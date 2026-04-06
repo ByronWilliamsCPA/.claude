@@ -48,9 +48,9 @@ def parse_coverage(
         line_pct = summary.get("percent_covered", 100)
 
         results["summary"]["total_statements"] += summary.get("num_statements", 0)
-        results["summary"]["covered_statements"] += (
-            summary.get("num_statements", 0) - summary.get("missing_lines", 0)
-        )
+        results["summary"]["covered_statements"] += summary.get(
+            "num_statements", 0
+        ) - summary.get("missing_lines", 0)
 
         if line_pct < threshold:
             results["files_below_threshold"].append(
