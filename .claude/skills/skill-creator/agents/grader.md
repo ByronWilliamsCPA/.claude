@@ -1,3 +1,10 @@
+---
+name: grader
+description: Evaluate expectations against an execution transcript and outputs. Grades pass/fail for each expectation with cited evidence, extracts and verifies implicit claims, and critiques eval quality.
+model: sonnet
+tools: ["Read", "Write", "Bash", "Glob", "Grep"]
+---
+
 # Grader Agent
 
 Evaluate expectations against an execution transcript and outputs.

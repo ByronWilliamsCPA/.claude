@@ -1,7 +1,7 @@
 ---
 argument-hint: [--strategy=tiered] [--budget=balanced] [--scope=changed-files] [--explain] [--apply-fixes=review]
 description: Intelligent tiered verification of code assumptions using multiple AI models based on risk levels.
-allowed-tools: Bash(git:*), Read, Grep, mcp__zen-core__chat, mcp__zen-core__dynamic_model_selector
+allowed-tools: Bash(git:*), Read, Grep, mcp__pal__chat, mcp__pal__dynamic_model_selector
 ---
 
 # Assumption Verification Workflow
@@ -72,7 +72,7 @@ Search for assumption patterns:
 
 **Standard Assumptions (Dynamic Free Selection)**:
 
-Use `mcp__zen-core__dynamic_model_selector`:
+Use `mcp__pal__dynamic_model_selector`:
 ```json
 {
   "requirements": "Analyze code assumptions for [category]. Add defensive programming patterns and error handling.",
@@ -84,7 +84,7 @@ Use `mcp__zen-core__dynamic_model_selector`:
 
 **Edge Cases (Fast Free Models)**:
 
-Batch process with `mcp__zen-core__chat` using `gemini-2.0-flash-lite`.
+Batch process with `mcp__pal__chat` using `gemini-2.0-flash-lite`.
 
 ### 3. Execute Verification Strategy
 

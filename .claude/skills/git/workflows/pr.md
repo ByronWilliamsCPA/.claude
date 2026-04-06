@@ -85,11 +85,10 @@ Present the complete PR description ready to copy-paste into GitHub.
 
 Remind the user:
 - CodeRabbit will auto-fill `@coderabbitai summary` placeholder if present
-- Push and create PR with:
+- Push and create the PR using the `/git pr` skill (which handles push, description generation, and `gh pr create` automatically):
 
 ```bash
-git push -u origin HEAD
-gh pr create --fill
+/git pr
 ```
 
 ---
@@ -137,8 +136,7 @@ Follow-up: Add Microsoft provider support
 
 ---
 
-Ready to copy! Push with:
+Ready to copy! Create the PR using the `/git pr` skill:
 ```bash
-git push -u origin HEAD
-gh pr create --fill
+/git pr
 ```

@@ -97,7 +97,7 @@ Pulled together from various sources — goal is to verify each file has accurat
 | `[x]` | [skill-creator/SKILL.md](../.claude/skills/skill-creator/SKILL.md) | |
 | `[x]` | [diagram-maintenance/SKILL.md](../.claude/skills/diagram-maintenance/SKILL.md) | Fixed: added frontmatter |
 | `[x]` | [frontend-design/SKILL.md](../.claude/skills/frontend-design/SKILL.md) | |
-| `[x]` | [project-planning/SKILL.md](../.claude/skills/project-planning/SKILL.md) | |
+| `[~]` | [project-planning/SKILL.md](../.claude/skills/project-planning/SKILL.md) | Fixed (P3 sweep): mcp__zen__consensus→mcp__pal__consensus (6 occurrences) |
 | `[x]` | [sonarcloud/SKILL.md](../.claude/skills/sonarcloud/SKILL.md) | |
 | `[x]` | [test-coverage/SKILL.md](../.claude/skills/test-coverage/SKILL.md) | |
 
@@ -117,95 +117,95 @@ Pulled together from various sources — goal is to verify each file has accurat
 
 | Status | File | Issues / Notes |
 |--------|------|----------------|
-| `[ ]` | [quality/workflows/format.md](../.claude/skills/quality/workflows/format.md) | |
-| `[ ]` | [quality/workflows/lint.md](../.claude/skills/quality/workflows/lint.md) | Known: uses poetry, not uv |
-| `[ ]` | [quality/workflows/naming.md](../.claude/skills/quality/workflows/naming.md) | Known: PEP 8 only, no tooling guidance |
-| `[ ]` | [quality/workflows/precommit.md](../.claude/skills/quality/workflows/precommit.md) | Known: references black and mypy |
+| `[x]` | [quality/workflows/format.md](../.claude/skills/quality/workflows/format.md) | |
+| `[~]` | [quality/workflows/lint.md](../.claude/skills/quality/workflows/lint.md) | Fixed: poetry→uv in allowed-tools; mypy→basedpyright |
+| `[~]` | [quality/workflows/naming.md](../.claude/skills/quality/workflows/naming.md) | Fixed: updated allowed-tools; added Ruff N-rules enforcement section |
+| `[~]` | [quality/workflows/precommit.md](../.claude/skills/quality/workflows/precommit.md) | Fixed: black→ruff format; mypy→basedpyright; updated allowed-tools |
 
 ### Testing Workflows
 
 | Status | File | Issues / Notes |
 |--------|------|----------------|
-| `[ ]` | [testing/workflows/generate.md](../.claude/skills/testing/workflows/generate.md) | |
-| `[ ]` | [testing/workflows/review.md](../.claude/skills/testing/workflows/review.md) | |
-| `[ ]` | [testing/workflows/e2e.md](../.claude/skills/testing/workflows/e2e.md) | |
-| `[ ]` | [testing/workflows/performance.md](../.claude/skills/testing/workflows/performance.md) | |
-| `[ ]` | [testing/workflows/security.md](../.claude/skills/testing/workflows/security.md) | |
+| `[x]` | [testing/workflows/generate.md](../.claude/skills/testing/workflows/generate.md) | |
+| `[x]` | [testing/workflows/review.md](../.claude/skills/testing/workflows/review.md) | |
+| `[x]` | [testing/workflows/e2e.md](../.claude/skills/testing/workflows/e2e.md) | |
+| `[x]` | [testing/workflows/performance.md](../.claude/skills/testing/workflows/performance.md) | |
+| `[x]` | [testing/workflows/security.md](../.claude/skills/testing/workflows/security.md) | |
 
 ### Security Workflows
 
 | Status | File | Issues / Notes |
 |--------|------|----------------|
-| `[ ]` | [security/workflows/scan.md](../.claude/skills/security/workflows/scan.md) | |
-| `[ ]` | [security/workflows/validate-env.md](../.claude/skills/security/workflows/validate-env.md) | |
-| `[ ]` | [security/workflows/encrypt.md](../.claude/skills/security/workflows/encrypt.md) | |
+| `[~]` | [security/workflows/scan.md](../.claude/skills/security/workflows/scan.md) | Fixed: safety→pip-audit; bandit→ruff --select S; poetry→uv; added exit code docs |
+| `[x]` | [security/workflows/validate-env.md](../.claude/skills/security/workflows/validate-env.md) | |
+| `[x]` | [security/workflows/encrypt.md](../.claude/skills/security/workflows/encrypt.md) | |
 
 ### Git Workflows
 
 | Status | File | Issues / Notes |
 |--------|------|----------------|
-| `[ ]` | [git/workflows/commit.md](../.claude/skills/git/workflows/commit.md) | |
-| `[ ]` | [git/workflows/pr.md](../.claude/skills/git/workflows/pr.md) | |
+| `[~]` | [git/workflows/commit.md](../.claude/skills/git/workflows/commit.md) | Fixed: added git commit -S signing requirement |
+| `[~]` | [git/workflows/pr.md](../.claude/skills/git/workflows/pr.md) | Fixed: gh pr create → /git pr skill as primary method |
 
 ### RAD Workflows
 
 | Status | File | Issues / Notes |
 |--------|------|----------------|
-| `[ ]` | [rad/workflows/verify.md](../.claude/skills/rad/workflows/verify.md) | |
-| `[ ]` | [rad/workflows/list.md](../.claude/skills/rad/workflows/list.md) | |
-| `[ ]` | [rad/workflows/test.md](../.claude/skills/rad/workflows/test.md) | |
+| `[~]` | [rad/workflows/verify.md](../.claude/skills/rad/workflows/verify.md) | Fixed: mcp__zen-core__→mcp__pal__ in frontmatter and body |
+| `[x]` | [rad/workflows/list.md](../.claude/skills/rad/workflows/list.md) | |
+| `[x]` | [rad/workflows/test.md](../.claude/skills/rad/workflows/test.md) | |
 
 ### Skill Context Files
 
 | Status | File | Issues / Notes |
 |--------|------|----------------|
-| `[ ]` | [testing/context/pytest-commands.md](../.claude/skills/testing/context/pytest-commands.md) | |
-| `[ ]` | [testing/context/pytest-patterns.md](../.claude/skills/testing/context/pytest-patterns.md) | |
-| `[ ]` | [git/context/branch-strategy.md](../.claude/skills/git/context/branch-strategy.md) | |
-| `[ ]` | [git/context/conventional-commits.md](../.claude/skills/git/context/conventional-commits.md) | |
-| `[ ]` | [rad/context/methodology.md](../.claude/skills/rad/context/methodology.md) | |
-| `[ ]` | [rad/context/tagging-standards.md](../.claude/skills/rad/context/tagging-standards.md) | |
+| `[~]` | [testing/context/pytest-commands.md](../.claude/skills/testing/context/pytest-commands.md) | Fixed: bare pytest → uv run pytest |
+| `[x]` | [testing/context/pytest-patterns.md](../.claude/skills/testing/context/pytest-patterns.md) | |
+| `[x]` | [git/context/branch-strategy.md](../.claude/skills/git/context/branch-strategy.md) | |
+| `[x]` | [git/context/conventional-commits.md](../.claude/skills/git/context/conventional-commits.md) | |
+| `[x]` | [rad/context/methodology.md](../.claude/skills/rad/context/methodology.md) | |
+| `[x]` | [rad/context/tagging-standards.md](../.claude/skills/rad/context/tagging-standards.md) | |
 
 ### Skill-Creator Sub-Agents
 
 | Status | File | Issues / Notes |
 |--------|------|----------------|
-| `[ ]` | [skill-creator/agents/grader.md](../.claude/skills/skill-creator/agents/grader.md) | |
-| `[ ]` | [skill-creator/agents/comparator.md](../.claude/skills/skill-creator/agents/comparator.md) | |
-| `[ ]` | [skill-creator/agents/analyzer.md](../.claude/skills/skill-creator/agents/analyzer.md) | |
-| `[ ]` | [skill-creator/references/schemas.md](../.claude/skills/skill-creator/references/schemas.md) | |
+| `[~]` | [skill-creator/agents/grader.md](../.claude/skills/skill-creator/agents/grader.md) | Fixed: added missing frontmatter |
+| `[~]` | [skill-creator/agents/comparator.md](../.claude/skills/skill-creator/agents/comparator.md) | Fixed: added missing frontmatter |
+| `[~]` | [skill-creator/agents/analyzer.md](../.claude/skills/skill-creator/agents/analyzer.md) | Fixed: added missing frontmatter |
+| `[x]` | [skill-creator/references/schemas.md](../.claude/skills/skill-creator/references/schemas.md) | |
 
 ### Project-Planning Templates & Reference
 
 | Status | File | Issues / Notes |
 |--------|------|----------------|
-| `[ ]` | [project-planning/templates/pvs-template.md](../.claude/skills/project-planning/templates/pvs-template.md) | |
-| `[ ]` | [project-planning/templates/adr-template.md](../.claude/skills/project-planning/templates/adr-template.md) | |
-| `[ ]` | [project-planning/templates/tech-spec-template.md](../.claude/skills/project-planning/templates/tech-spec-template.md) | |
-| `[ ]` | [project-planning/templates/roadmap-template.md](../.claude/skills/project-planning/templates/roadmap-template.md) | |
-| `[ ]` | [project-planning/reference/document-guide.md](../.claude/skills/project-planning/reference/document-guide.md) | |
-| `[ ]` | [project-planning/reference/prompting-patterns.md](../.claude/skills/project-planning/reference/prompting-patterns.md) | |
-| `[ ]` | [project-planning/workflows/synthesize.md](../.claude/skills/project-planning/workflows/synthesize.md) | |
+| `[x]` | [project-planning/templates/pvs-template.md](../.claude/skills/project-planning/templates/pvs-template.md) | |
+| `[x]` | [project-planning/templates/adr-template.md](../.claude/skills/project-planning/templates/adr-template.md) | |
+| `[~]` | [project-planning/templates/tech-spec-template.md](../.claude/skills/project-planning/templates/tech-spec-template.md) | Fixed: Black→ruff format |
+| `[x]` | [project-planning/templates/roadmap-template.md](../.claude/skills/project-planning/templates/roadmap-template.md) | |
+| `[x]` | [project-planning/reference/document-guide.md](../.claude/skills/project-planning/reference/document-guide.md) | |
+| `[x]` | [project-planning/reference/prompting-patterns.md](../.claude/skills/project-planning/reference/prompting-patterns.md) | |
+| `[x]` | [project-planning/workflows/synthesize.md](../.claude/skills/project-planning/workflows/synthesize.md) | |
 
 ### Standards (referenced from CLAUDE.md)
 
 | Status | File | Issues / Notes |
 |--------|------|----------------|
-| `[ ]` | [standards/testing.md](../standards/testing.md) | Modified (git status) |
-| `[ ]` | [standards/python.md](../standards/python.md) | |
-| `[ ]` | [standards/linting.md](../standards/linting.md) | |
-| `[ ]` | [standards/security.md](../standards/security.md) | |
-| `[ ]` | [standards/git-workflow.md](../standards/git-workflow.md) | |
-| `[ ]` | [standards/git-worktree.md](../standards/git-worktree.md) | |
-| `[ ]` | [standards/mcp-minimal-bloat.md](../standards/mcp-minimal-bloat.md) | |
-| `[ ]` | [standards/owasp-specialist-agents-spec.md](../standards/owasp-specialist-agents-spec.md) | |
-| `[ ]` | [standards/test-coverage-agent-spec.md](../standards/test-coverage-agent-spec.md) | |
+| `[~]` | [standards/testing.md](../standards/testing.md) | Fixed: mypy→basedpyright; added BasedPyright config block; pip-audit bare→uv run |
+| `[~]` | [standards/python.md](../standards/python.md) | Fixed: poetry→uv throughout; mypy→basedpyright; black→ruff; Python range; coverage thresholds |
+| `[~]` | [standards/linting.md](../standards/linting.md) | Fixed: py311→py312; "handled by Black"→ruff format; removed "(faster than MyPy)" |
+| `[~]` | [standards/security.md](../standards/security.md) | Fixed: safety→pip-audit; bandit→uv run bandit; poetry→uv |
+| `[~]` | [standards/git-workflow.md](../standards/git-workflow.md) | Fixed: removed "for Poetry" from commit example |
+| `[~]` | [standards/git-worktree.md](../standards/git-worktree.md) | Fixed: removed poetry install fallback comments |
+| `[x]` | [standards/mcp-minimal-bloat.md](../standards/mcp-minimal-bloat.md) | |
+| `[x]` | [standards/owasp-specialist-agents-spec.md](../standards/owasp-specialist-agents-spec.md) | |
+| `[~]` | [standards/test-coverage-agent-spec.md](../standards/test-coverage-agent-spec.md) | Fixed: mypy→basedpyright; pip install→uv; pytest→uv run pytest |
 
 ### Key Docs (referenced from CLAUDE.md)
 
 | Status | File | Issues / Notes |
 |--------|------|----------------|
-| `[ ]` | [docs/response-aware-development.md](../docs/response-aware-development.md) | |
+| `[~]` | [docs/response-aware-development.md](../docs/response-aware-development.md) | Fixed: Zen MCP Server→PAL MCP Server; stale command names |
 
 ---
 
@@ -262,17 +262,13 @@ Pulled together from various sources — goal is to verify each file has accurat
 |----------|-------|-------------|--------------|----------------|-------------|
 | 1 — Very Critical | 6 | 0 | 6 | 0 | 0 |
 | 2 — Critical | 52 | 51 | 1 | 0 | 0 |
-| 3 — Important | 44 | 0 | 0 | 0 | 44 |
+| 3 — Important | 44 | 24 | 20 | 0 | 0 |
 | 4 — Supporting | 16 | 0 | 0 | 0 | 16 |
 | 5 — Not Critical | 15 | 0 | 0 | 0 | 15 |
-| **Total** | **133** | **50** | **7** | **1** | **75** |
+| **Total** | **133** | **75** | **27** | **0** | **31** |
 
 ---
 
-## Known Issues (pre-populated from initial analysis)
+## Known Issues (active)
 
-- [quality/workflows/lint.md](../.claude/skills/quality/workflows/lint.md) — uses `poetry` instead of `uv`; uses `mypy` instead of `basedpyright`
-- [quality/workflows/precommit.md](../.claude/skills/quality/workflows/precommit.md) — references `black` (should be `ruff format`) and `mypy` (should be `basedpyright`)
-- [quality/workflows/naming.md](../.claude/skills/quality/workflows/naming.md) — lists PEP 8 rules only; no tooling guidance (ruff N-rules handle this automatically)
-- [quality/SKILL.md](../.claude/skills/quality/SKILL.md) — missing frontmatter `---` block; no check-vs-fix decision tree; no toolchain specification
-- [standards/testing.md](../standards/testing.md) — has uncommitted modifications (check git diff)
+- [project-planning/SKILL.md](../.claude/skills/project-planning/SKILL.md) — P2 file marked `[x]`, but contains stale `mcp__zen__consensus` references (found during P3 review of adjacent files; fix pending)

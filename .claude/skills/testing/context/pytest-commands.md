@@ -125,7 +125,7 @@ uv run pytest -m "unit and not slow"
 ```bash
 # Match test name
 uv run pytest -k "test_user"
-pytest -k "not test_slow"
+uv run pytest -k "not test_slow"
 
 # Multiple patterns
 uv run pytest -k "test_user or test_admin"

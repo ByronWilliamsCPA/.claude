@@ -63,7 +63,7 @@ We classify assumptions by potential impact and route them to appropriate models
 
 ### Dynamic Model Selection
 
-Leverages Zen MCP Server's intelligent routing to:
+Leverages PAL MCP Server's intelligent routing to:
 
 - Select the best free model for each assumption type
 - Learn from patterns over time
@@ -176,7 +176,7 @@ To evaluate effectiveness after 30-60 days:
 
 ### Setup Requirements
 
-- [ ] Zen MCP Server configured and accessible
+- [ ] PAL MCP Server configured and accessible
 - [ ] User-level CLAUDE.md updated with RAD standards
 - [ ] Slash command added to user configuration
 - [ ] Pre-commit hooks configured (optional)
@@ -203,7 +203,7 @@ $ claude "implement user profile update"
 # Claude generates code with tagged assumptions
 
 # 2. Before commit, verify assumptions
-$ /verify-assumptions-smart --strategy tiered
+$ /rad/verify --strategy tiered
 # System routes assumptions to appropriate models
 
 # 3. Review and apply fixes
