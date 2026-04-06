@@ -17,13 +17,13 @@ Auto-activates on keywords: security, vulnerability, audit, OWASP, encryption, G
 ## Workflows
 
 ### Environment Validation
-- **validate-env.md**: GPG/SSH key validation
+- **workflows/validate-env.md**: GPG/SSH key validation
 
 ### Scanning
-- **scan.md**: Security vulnerability scanning
+- **workflows/scan.md**: Security vulnerability scanning
 
 ### Encryption
-- **encrypt.md**: Secret encryption and management
+- **workflows/encrypt.md**: Secret encryption and management
 
 ## Workflow
 

@@ -17,14 +17,14 @@ Auto-activates on keywords: quality, lint, format, precommit, naming, black, ruf
 ## Workflows
 
 ### Formatting
-- **format.md**: Code formatting with Black and Ruff
+- **workflows/format.md**: Code formatting with Black and Ruff
 
 ### Linting
-- **lint.md**: Linting checks with Ruff
-- **naming.md**: Naming convention validation
+- **workflows/lint.md**: Linting checks with Ruff
+- **workflows/naming.md**: Naming convention validation
 
 ### Pre-commit
-- **precommit.md**: Pre-commit hook validation
+- **workflows/precommit.md**: Pre-commit hook validation
 
 ## Commands
 
