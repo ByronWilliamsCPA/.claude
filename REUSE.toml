@@ -128,3 +128,30 @@ path = [
 ]
 SPDX-License-Identifier = "CC0-1.0"
 SPDX-FileCopyrightText = "2025 Byron Williams"
+
+# Claude Code configuration, skills, agents, standards, and MCP configs - MIT
+[[annotations]]
+path = [
+    ".claude/**",
+    "standards/**",
+    "mcp/**",
+    "tmp_cleanup/**",
+    "settings.json",
+    "skills-lock.json",
+    "uv.lock",
+    "setup.sh",
+    "setup-sonarlint.sh",
+    ".claudeignore",
+    ".env.example",
+    ".env.mcp.example",
+    ".gitmodules",
+    ".markdownlint.json",
+    ".mcp.json",
+    ".mutmut_config",
+    ".prettierrc",
+    ".shellcheckrc",
+    ".yamllint",
+    "scripts/README.md",
+]
+SPDX-License-Identifier = "MIT"
+SPDX-FileCopyrightText = "2025 Byron Williams <byronawilliams@gmail.com>"
