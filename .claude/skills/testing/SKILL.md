@@ -28,20 +28,20 @@ Automated test generation, review, and execution for pytest-based projects.
 ## Workflows
 
 ### Test Generation
-- **generate.md**: Generate test cases for code
+- **workflows/generate.md**: Generate test cases — naming, parametrize, spec=, AsyncMock, edge cases
 
 ### Test Review
-- **review.md**: Review existing tests for quality
+- **workflows/review.md**: Review existing tests — 6-item quality checklist with concrete fixes
 
 ### Specialized Testing
-- **e2e.md**: End-to-end testing patterns
-- **security.md**: Security testing patterns
-- **performance.md**: Performance testing patterns
+- **workflows/e2e.md**: End-to-end testing — CLI, API integration, pipeline, data integrity
+- **workflows/security.md**: Security testing — OWASP Top 10, injection, path traversal, DoS
+- **workflows/performance.md**: Performance testing — benchmarks, memory limits, latency SLAs
 
 ## Context Files
 
-- **pytest-commands.md**: Common pytest commands
-- **pytest-patterns.md**: Testing patterns and best practices
+- **context/pytest-commands.md**: Common pytest commands and configuration
+- **context/pytest-patterns.md**: Patterns reference — naming, parametrize, spec=, AsyncMock, fixtures
 
 ## Commands
 
