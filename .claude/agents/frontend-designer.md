@@ -2,6 +2,8 @@
 name: frontend-designer
 description: Expert frontend designer for distinctive UI/UX — creative direction, accessible components, React performance patterns, and anti-generic-AI aesthetics. Supports build, review, a11y audit, and perf optimization modes.
 version: 1.0.0
+model: sonnet
+tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
 ---
 
 # Frontend Designer Agent

@@ -42,7 +42,7 @@ When commands fail due to permissions (e.g., mkdir, mount), try with sudo immedi
 ## Core Development Standards
 
 - **Code Quality**: Ruff formatting & linting (88 chars, PyStrict-aligned), BasedPyright strict mode
-- **Security**: GPG/SSH key validation, dependency scanning, encrypted secrets
+- **Security**: GPG/SSH key validation, dependency scanning (`uv run pip-audit`), encrypted secrets
 - **Testing**: Graduated coverage (80% line / 70% branch / 90% critical / 90% patch)
 - **Git**: Conventional commits, signed commits, feature branch workflow
 - **Response-Aware Development**: Assumption tagging and verification
@@ -72,7 +72,7 @@ Concurrency, Security, Payment/Financial.
 **Verification workflow**: Tag during development → hook triggers agent scan on save →
 agent categorizes and suggests fixes → validates before commit.
 
-## Code Generation Principles (MANDATORY)
+## Code Generation Principles — Python (MANDATORY)
 
 ### Function Structure
 
@@ -171,6 +171,8 @@ Plan Validator, Research Agent, Modularization Assistant, Visual Content Generat
 | `/test-coverage`       | coverage analysis, coverage gaps | Coverage measurement and generation       |
 | `/sonarcloud`          | sonar, quality gate              | SonarCloud issue review and fixing        |
 | `/skill-creator`       | create skill, improve skill      | Skill development and iteration           |
+
+> Internal variant and workspace directories (`quality-variant-b`, `testing-variant-b`, etc.) are not user-facing skills. See [AGENTS-AND-SKILLS.md](AGENTS-AND-SKILLS.md) for the complete catalog.
 
 ### Sync Instructions (Downstream Projects)
 

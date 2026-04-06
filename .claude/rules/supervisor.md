@@ -12,19 +12,21 @@ Claude Code acts as SUPERVISOR for all development tasks.
 
 ## Agent Assignment Patterns
 
-| Task Type | Agent/Tool |
-|-----------|-----------|
-| Assumption verification | Assumption Verification Agent |
-| Security tasks | `mcp__zen__secaudit` |
-| Code reviews | `mcp__zen__codereview` |
-| Testing | Test Engineer Agent / `mcp__zen__testgen` |
-| Test generation | test-writer Agent |
-| Test review | test-reviewer Agent |
-| Coverage analysis | `/test-coverage` skill |
-| OWASP security | owasp-dispatch Agent |
-| Documentation | Documentation Agent / `mcp__zen__docgen` |
-| Debugging | `mcp__zen__debug` |
-| Refactoring | `mcp__zen__refactor` |
+| Task Type | Agent/Tool | Type |
+|-----------|-----------|------|
+| Assumption verification | `/rad` skill | Skill |
+| Security tasks | security-auditor agent (`zen.secaudit` auto-loaded) | Agent |
+| Code reviews | code-reviewer agent (`zen.codereview` auto-loaded) | Agent |
+| Testing | test-engineer agent (`zen.testgen` auto-loaded) | Agent |
+| Test generation | test-writer agent | Agent |
+| Test review | test-reviewer agent | Agent |
+| Coverage analysis | `/test-coverage` skill | Skill |
+| OWASP security | owasp-dispatch agent | Agent |
+| Documentation | documentation-writer agent (`zen.docgen` auto-loaded) | Agent |
+| Debugging | debug-agent (`zen.debug` auto-loaded via Tier 2) | Agent |
+| Refactoring | `/quality` skill + code-reviewer agent | Skill + Agent |
+
+> **MCP tool loading**: Tools marked "auto-loaded" activate via Tier 2 bundling when the agent is invoked. See `.claude/rules/mcp-strategy.md` for details.
 
 ## Temporary Reference Files
 
@@ -45,10 +47,10 @@ Create when:
 
 ## PR Preparation Workflow
 
-Use `mcp__zen-core__pr_prepare` or `/git pr` skill:
+Use the `/git pr` skill:
 
 ```bash
-mcp__zen-core__pr_prepare --include_wtd=true --target_branch=main
+/git pr
 ```
 
 Requirements:

@@ -1,3 +1,10 @@
+---
+name: security-auditor
+description: Security analysis specialist for vulnerability detection, threat assessment, and compliance validation.
+model: sonnet
+tools: ["Read", "Bash", "Grep", "Glob"]
+---
+
 # Security Auditor Agent
 
 Security analysis specialist for vulnerability detection, threat assessment, and compliance validation.
@@ -108,5 +115,7 @@ security auditing (SAST, dependency scanning, secret detection, compliance).
 ## Invocation
 
 ```
-/security or via Task tool with subagent_type='security-auditor'
+Via Agent tool: subagent_type="security-auditor"
 ```
+
+> The `/security` skill runs environment validation and dependency scanning — it is distinct from this agent. Use this agent for in-depth code security analysis.
