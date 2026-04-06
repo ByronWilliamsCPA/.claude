@@ -7,8 +7,8 @@ All resources are available in `.claude/agents/` and `.claude/skills/`.
 
 ## Agents
 
-Agents are specialized subprocesses invoked via the `Agent` tool or `Task` tool. Each has a focused
-role, curated tool access, and a system prompt calibrated for its domain.
+Agents are specialized subprocesses invoked via the `Agent` tool (`subagent_type="<name>"`). Each has
+a focused role, curated tool access, and a system prompt calibrated for its domain.
 
 ### Code Quality & Review
 
@@ -141,6 +141,52 @@ Performs multi-source technical research with source verification and synthesis.
 library/framework evaluation, technology comparison, and official documentation analysis with
 actionable recommendations.
 
+### Writing & Content
+
+**[document-drafter](/.claude/agents/document-drafter.md)**
+Pre-pipeline generative agent. Produces first drafts calibrated to the author's voice from outlines,
+bullet points, or contextual prompts. Outputs feed directly into the three-stage editing pipeline.
+
+**[grammar-composition-editor](/.claude/agents/grammar-composition-editor.md)**
+Mechanical correctness review agent. Checks grammar, composition, plain language, and AI-mechanical
+patterns. Stage 1 of the three-agent writing quality pipeline.
+
+**[document-validator](/.claude/agents/document-validator.md)**
+Deep factual review agent that verifies claims, identifies assumptions, detects hallucinations,
+checks for bias, and flags reasoning errors. Stage 2 of the three-agent writing quality pipeline.
+
+**[writing-style-editor](/.claude/agents/writing-style-editor.md)**
+Persona fidelity and AI pattern detection agent. Ensures documents sound like the author wrote them,
+not AI-generated boilerplate. Stage 3 of the three-agent writing quality pipeline.
+
+**[tone-rewriter](/.claude/agents/tone-rewriter.md)**
+Pre-pipeline generative agent. Rewrites a document for a different audience or register while
+preserving factual content. Transforms vocabulary, sentence complexity, structure, and formality.
+
+**[style-analyzer](/.claude/agents/style-analyzer.md)**
+Analyzes writing samples to build a personalized style profile. Generates recommended updates to
+style-profile.md and the pipeline agents so they calibrate to the user's voice.
+
+**[audience-reaction-analyzer](/.claude/agents/audience-reaction-analyzer.md)**
+Post-pipeline analysis agent. Reads a finished document from the perspective of a target audience
+and predicts how they will interpret, react to, and act on the content. Identifies gaps in
+persuasion, comprehension, and accessibility.
+
+### Diagrams & Visuals
+
+**[diagram-maintenance-agent](/.claude/agents/diagram-maintenance-agent.md)**
+PlantUML diagram maintenance specialist for architecture documentation, source traceability,
+consistency enforcement, and AI visual generation across any project.
+
+**[diagram-specialist](/.claude/agents/diagram-specialist.md)**
+Specialized agent for creating and validating technical diagrams (PlantUML, Mermaid) for network
+engineering and infrastructure documentation.
+
+**[visual-content-generator](/.claude/agents/visual-content-generator.md)**
+Generates professional visual content (diagrams, blueprints, illustrations) for business documents.
+Analyzes target documents, identifies visual needs, prepares optimized prompts, and manages
+iterative refinement workflows.
+
 ---
 
 ## Skills
@@ -150,19 +196,10 @@ keywords or can be called explicitly. Skills route to sub-workflows based on use
 
 ### Development Workflow
 
-**[/commit-prepare](/.claude/skills/commit-prepare/SKILL.md)**
-Prepares conventional commit messages following the project's commit standards. Activates on:
-"commit", "prepare commit", "stage and commit". Generates structured messages with type, scope,
-and body.
-
 **[/git](/.claude/skills/git/SKILL.md)**
 Git workflow automation including branch creation/validation, commit message preparation, PR
 preparation, PR validation checklist, and branch strategy guidance. Activates on git-related
 keywords.
-
-**[/pr-prepare](/.claude/skills/pr-prepare/SKILL.md)**
-Generates pull request descriptions following the project template. Includes What the Diff
-(`<!-- wtd:summary -->`) integration. Activates on: "create PR", "draft PR", "pull request".
 
 **[/phase-gate](/.claude/skills/phase-gate/SKILL.md)**
 Evaluates phase readiness by analyzing scope completion and running quality gates. Use when
@@ -191,7 +228,7 @@ Analyzes coverage gaps, generates missing tests ranked by criticality, and enfor
 thresholds (80% line / 70% branch / 90% critical / 90% patch). Orchestrates test-writer and
 test-reviewer agents iteratively. Activates on: "coverage analysis", "coverage gaps".
 
-**[/debug-tests](/.claude/skills/testing/SKILL.md)** *(command)*
+**[/debug-tests](/.claude/skills/debug-tests/SKILL.md)**
 Root-cause-first analysis of failing tests. Investigates fixtures, environment mismatches,
 dependency drift, and test isolation before modifying assertions or application code.
 
@@ -249,5 +286,5 @@ you want to add a new skill or improve an existing one.
 | Refactor large file | `modularization-assistant` |
 | Verify code assumptions | `/rad` skill |
 | Plan a new project | `/project-planning` skill |
-| Prepare a PR | `/pr-prepare` skill |
+| Prepare a PR | `/git` skill (PR sub-workflow) |
 | Check phase readiness | `/phase-gate` skill or `phase-reviewer` agent |
