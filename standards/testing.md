@@ -861,10 +861,11 @@ the chapters marked as required:
 
 - The CI test pipeline MUST execute in this order:
   1. Static type checking (`basedpyright` in strict mode)
-  2. SAST scanning (`bandit` or `uv run pip-audit` for dependency audits)
-  3. Unit tests (`pytest tests/unit/ --cov --junitxml=...`)
-  4. Integration tests (`pytest tests/integration/ -m integration`)
-  5. Coverage threshold enforcement (`--cov-fail-under=80`)
+  2. SAST scanning (`ruff check --select S src/` or `bandit -r src/`)
+  3. Dependency audit (`uv run pip-audit` — exit code 64 = advisory found)
+  4. Unit tests (`pytest tests/unit/ --cov --junitxml=...`)
+  5. Integration tests (`pytest tests/integration/ -m integration`)
+  6. Coverage threshold enforcement (`--cov-fail-under=80`)
 
 - Each phase MUST fail fast: if type checking fails, subsequent phases
   SHOULD NOT execute (unless the pipeline is configured for full reporting).

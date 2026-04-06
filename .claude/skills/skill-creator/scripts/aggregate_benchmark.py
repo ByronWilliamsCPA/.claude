@@ -38,7 +38,7 @@ import argparse
 import json
 import math
 import sys
-from datetime import UTC, datetime
+from datetime import datetime
 from pathlib import Path
 
 
@@ -278,7 +278,7 @@ def generate_benchmark(
             "skill_path": skill_path or "<path/to/skill>",
             "executor_model": "<model-name>",
             "analyzer_model": "<model-name>",
-            "timestamp": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
             "evals_run": eval_ids,
             "runs_per_configuration": 3,
         },

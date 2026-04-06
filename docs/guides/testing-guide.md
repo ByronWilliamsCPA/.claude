@@ -2151,7 +2151,7 @@ jobs:
           python-version: "3.12"
       - run: pip install uv && uv sync --all-extras
       - run: uv run bandit -r src/ -f json -o reports/bandit.json
-      - run: uv run pip-audit --output=json > reports/pip-audit.json
+      - run: uv run pip-audit --format json -o reports/pip-audit.json
 
   unit-tests:
     needs: [type-check]

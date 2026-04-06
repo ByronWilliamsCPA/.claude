@@ -1,13 +1,11 @@
 {
   "mcpServers": {
-    "zen": {
-      "command": "/home/byron/dev/zen-mcp-server/.pal_venv/bin/python",
-      "args": ["/home/byron/dev/zen-mcp-server/server.py"],
-      "cwd": "/home/byron/dev/zen-mcp-server"
-    },
     "context7": {
       "command": "npx",
-      "args": ["-y", "@upstash/context7-mcp"]
+      "args": [
+        "-y",
+        "@upstash/context7-mcp"
+      ]
     },
     "sonarqube": {
       "type": "url",
@@ -15,6 +13,13 @@
       "headers": {
         "Authorization": "Bearer ${SONARQUBE_TOKEN}"
       }
+    },
+    "pal": {
+      "command": "/home/byron/dev/zen-mcp-server/.pal_venv/bin/python",
+      "args": [
+        "/home/byron/dev/zen-mcp-server/server.py"
+      ],
+      "cwd": "/home/byron/dev/zen-mcp-server"
     }
   }
 }
