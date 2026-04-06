@@ -214,22 +214,22 @@ Pulled together from various sources — goal is to verify each file has accurat
 
 | Status | File | Issues / Notes |
 |--------|------|----------------|
-| `[ ]` | [AGENTS-AND-SKILLS.md](../AGENTS-AND-SKILLS.md) | |
-| `[ ]` | [.github/copilot-instructions.md](../.github/copilot-instructions.md) | |
-| `[ ]` | [.github/PULL_REQUEST_TEMPLATE.md](../.github/PULL_REQUEST_TEMPLATE.md) | |
-| `[ ]` | [mcp/README.md](../mcp/README.md) | |
-| `[ ]` | [docs/tdd-enforcement-system.md](../docs/tdd-enforcement-system.md) | |
-| `[ ]` | [docs/project-env-loading.md](../docs/project-env-loading.md) | |
-| `[ ]` | [docs/development/architecture.md](../docs/development/architecture.md) | |
-| `[ ]` | [docs/development/code-quality.md](../docs/development/code-quality.md) | |
-| `[ ]` | [docs/development/contributing.md](../docs/development/contributing.md) | |
-| `[ ]` | [docs/development/testing.md](../docs/development/testing.md) | |
-| `[ ]` | [docs/guides/configuration.md](../docs/guides/configuration.md) | |
-| `[ ]` | [docs/guides/usage.md](../docs/guides/usage.md) | |
-| `[ ]` | [docs/guides/testing-guide.md](../docs/guides/testing-guide.md) | |
-| `[ ]` | [docs/planning/project-vision.md](../docs/planning/project-vision.md) | |
-| `[ ]` | [docs/planning/roadmap.md](../docs/planning/roadmap.md) | |
-| `[ ]` | [docs/planning/tech-spec.md](../docs/planning/tech-spec.md) | |
+| `[~]` | [AGENTS-AND-SKILLS.md](../AGENTS-AND-SKILLS.md) | Fixed: Task tool→Agent tool; removed /commit-prepare and /pr-prepare (non-existent); fixed /debug-tests link; added 10 uncatalogued agents |
+| `[~]` | [.github/copilot-instructions.md](../.github/copilot-instructions.md) | Fixed: Black→ruff format (2 occurrences) |
+| `[x]` | [.github/PULL_REQUEST_TEMPLATE.md](../.github/PULL_REQUEST_TEMPLATE.md) | |
+| `[~]` | [mcp/README.md](../mcp/README.md) | Fixed: zen-server.json→disabled; Zen MCP Server→PAL MCP Server |
+| `[x]` | [docs/tdd-enforcement-system.md](../docs/tdd-enforcement-system.md) | |
+| `[x]` | [docs/project-env-loading.md](../docs/project-env-loading.md) | |
+| `[x]` | [docs/development/architecture.md](../docs/development/architecture.md) | |
+| `[~]` | [docs/development/code-quality.md](../docs/development/code-quality.md) | Fixed: "Black compatible"→ruff format default |
+| `[x]` | [docs/development/contributing.md](../docs/development/contributing.md) | |
+| `[~]` | [docs/development/testing.md](../docs/development/testing.md) | Fixed: coverage thresholds (85%/70%→80/70/90/90 canonical) |
+| `[x]` | [docs/guides/configuration.md](../docs/guides/configuration.md) | |
+| `[~]` | [docs/guides/usage.md](../docs/guides/usage.md) | Fixed: pip install→uv pip install |
+| `[~]` | [docs/guides/testing-guide.md](../docs/guides/testing-guide.md) | Fixed: mypy→basedpyright throughout; pip install→uv sync/uv add; 13 plugin entries fixed |
+| `[x]` | [docs/planning/project-vision.md](../docs/planning/project-vision.md) | |
+| `[x]` | [docs/planning/roadmap.md](../docs/planning/roadmap.md) | |
+| `[x]` | [docs/planning/tech-spec.md](../docs/planning/tech-spec.md) | |
 
 ---
 
@@ -238,21 +238,21 @@ Pulled together from various sources — goal is to verify each file has accurat
 
 | Status | File | Issues / Notes |
 |--------|------|----------------|
-| `[ ]` | [README.md](../README.md) | |
-| `[ ]` | [CHANGELOG.md](../CHANGELOG.md) | |
-| `[ ]` | [CONTRIBUTING.md](../CONTRIBUTING.md) | |
-| `[ ]` | [SECURITY.md](../SECURITY.md) | |
-| `[ ]` | [.claude/README.md](../.claude/README.md) | |
-| `[ ]` | [scripts/README.md](../scripts/README.md) | |
-| `[ ]` | [.github/workflows/README.md](../.github/workflows/README.md) | |
-| `[ ]` | [docs/ADRs/README.md](../docs/ADRs/README.md) | |
-| `[ ]` | [docs/index.md](../docs/index.md) | |
-| `[ ]` | [docs/api-reference.md](../docs/api-reference.md) | |
-| `[ ]` | [docs/OPENSSF_COMPLIANCE.md](../docs/OPENSSF_COMPLIANCE.md) | |
-| `[ ]` | [docs/context7-setup.md](../docs/context7-setup.md) | |
-| `[ ]` | [docs/serena-setup.md](../docs/serena-setup.md) | |
-| `[ ]` | [docs/PROJECT_SETUP.md](../docs/PROJECT_SETUP.md) | |
-| `[ ]` | [docs/PYTHON_COMPATIBILITY.md](../docs/PYTHON_COMPATIBILITY.md) | |
+| `[x]` | [README.md](../README.md) | |
+| `[x]` | [CHANGELOG.md](../CHANGELOG.md) | Historical Poetry reference in v1.0.0 entry exempt |
+| `[~]` | [CONTRIBUTING.md](../CONTRIBUTING.md) | Fixed: uv run safety check→uv run pip-audit |
+| `[x]` | [SECURITY.md](../SECURITY.md) | |
+| `[x]` | [.claude/README.md](../.claude/README.md) | |
+| `[x]` | [scripts/README.md](../scripts/README.md) | |
+| `[x]` | [.github/workflows/README.md](../.github/workflows/README.md) | |
+| `[x]` | [docs/ADRs/README.md](../docs/ADRs/README.md) | |
+| `[~]` | [docs/index.md](../docs/index.md) | Fixed: pip install→uv add |
+| `[x]` | [docs/api-reference.md](../docs/api-reference.md) | |
+| `[x]` | [docs/OPENSSF_COMPLIANCE.md](../docs/OPENSSF_COMPLIANCE.md) | |
+| `[x]` | [docs/context7-setup.md](../docs/context7-setup.md) | |
+| `[x]` | [docs/serena-setup.md](../docs/serena-setup.md) | |
+| `[x]` | [docs/PROJECT_SETUP.md](../docs/PROJECT_SETUP.md) | |
+| `[x]` | [docs/PYTHON_COMPATIBILITY.md](../docs/PYTHON_COMPATIBILITY.md) | |
 
 ---
 
@@ -263,9 +263,9 @@ Pulled together from various sources — goal is to verify each file has accurat
 | 1 — Very Critical | 6 | 0 | 6 | 0 | 0 |
 | 2 — Critical | 52 | 51 | 1 | 0 | 0 |
 | 3 — Important | 44 | 24 | 20 | 0 | 0 |
-| 4 — Supporting | 16 | 0 | 0 | 0 | 16 |
-| 5 — Not Critical | 15 | 0 | 0 | 0 | 15 |
-| **Total** | **133** | **75** | **27** | **0** | **31** |
+| 4 — Supporting | 16 | 9 | 7 | 0 | 0 |
+| 5 — Not Critical | 15 | 13 | 2 | 0 | 0 |
+| **Total** | **133** | **97** | **36** | **0** | **0** |
 
 ---
 

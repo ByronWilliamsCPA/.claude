@@ -16,7 +16,7 @@ This guide covers common usage patterns for Claude Code Configuration.
 ### From PyPI
 
 ```bash
-pip install claude-config
+uv pip install claude-config
 ```
 
 ### From Source
