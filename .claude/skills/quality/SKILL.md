@@ -1,3 +1,8 @@
+---
+description: Code quality checks — Ruff format + lint and BasedPyright type checking. Triggers on "quality, lint, format".
+tools: ["Read", "Bash", "Grep", "Glob"]
+---
+
 # Code Quality Skill
 
 Code quality validation, formatting, linting, and pre-commit checks.
@@ -12,12 +17,12 @@ Code quality validation, formatting, linting, and pre-commit checks.
 
 ## Activation
 
-Auto-activates on keywords: quality, lint, format, precommit, naming, black, ruff, mypy, basedpyright, validation
+Auto-activates on keywords: quality, lint, format
 
 ## Workflows
 
 ### Formatting
-- **workflows/format.md**: Code formatting with Black and Ruff
+- **workflows/format.md**: Code formatting with Ruff
 
 ### Linting
 - **workflows/lint.md**: Linting checks with Ruff
@@ -32,7 +37,6 @@ Auto-activates on keywords: quality, lint, format, precommit, naming, black, ruf
 
 ```bash
 # Format check only
-uv run black --check .
 uv run ruff format --check .
 
 # Lint check
@@ -49,7 +53,6 @@ uv run pre-commit run --all-files
 
 ```bash
 # Auto-fix formatting
-uv run black .
 uv run ruff format .
 
 # Auto-fix lint issues
@@ -59,7 +62,7 @@ uv run ruff check --fix .
 ## Quality Standards
 
 ### Python Standards
-- **Line Length**: 88 characters (Black default)
+- **Line Length**: 88 characters (Ruff format default)
 - **Type Checking**: BasedPyright strict mode
 - **Linting**: Ruff with PyStrict-aligned rules
 

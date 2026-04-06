@@ -10,7 +10,7 @@ paths:
 
 | File Type | Line Length | Notes |
 |-----------|-------------|-------|
-| Python | 88 chars | Black default |
+| Python | 88 chars | Ruff format default (replaces Black) |
 | Markdown | 120 chars | Consistent formatting |
 | YAML | 120 chars | 2-space indentation |
 
@@ -21,6 +21,18 @@ BasedPyright replaces MyPy (3-5x faster, stricter analysis):
 - **Strict Inference**: `strictListInference`, `strictDictionaryInference`, `strictSetInference` enabled
 - **Configuration**: `pyproject.toml` under `[tool.basedpyright]`
 - **Reference**: https://docs.basedpyright.com
+
+### Minimal `pyproject.toml` Configuration
+
+```toml
+[tool.basedpyright]
+pythonVersion = "3.12"
+pythonPlatform = "All"
+typeCheckingMode = "strict"
+strictListInference = true
+strictDictionaryInference = true
+strictSetInference = true
+```
 
 ## PyStrict-Aligned Ruff Rules
 
@@ -38,6 +50,38 @@ BasedPyright replaces MyPy (3-5x faster, stricter analysis):
 | **FA** | Future annotations |
 | **T10** | Debugger statements (no `breakpoint()`, `pdb`) |
 | **G** | Logging format strings |
+| **E** | pycodestyle errors |
+| **W** | pycodestyle warnings |
+| **F** | Pyflakes: unused imports, undefined names |
+| **I** | isort: import sorting |
+| **N** | pep8-naming: Google naming conventions |
+| **D** | Docstring conventions (pydocstyle, Google style) |
+| **UP** | Pyupgrade: modernize Python syntax |
+| **ANN** | Type annotation requirements |
+| **TCH** | flake8-type-checking: TYPE_CHECKING imports |
+| **C4** | Comprehension style improvements |
+| **C90** | McCabe cyclomatic complexity |
+| **PL** | Pylint rules (PLR refactor, PLC convention, PLW warning, PLE error) |
+| **B** | flake8-bugbear: likely bugs and design problems |
+| **SIM** | flake8-simplify: code simplification |
+| **ARG** | Unused function arguments |
+| **RET** | Return statement best practices |
+| **PIE** | Miscellaneous code improvements |
+| **S** | flake8-bandit: security checks |
+| **T20** | flake8-print: no print statements in production |
+| **PT** | flake8-pytest-style: pytest best practices |
+| **Q** | flake8-quotes: consistent quote style |
+| **PTH** | Use pathlib instead of os.path |
+| **A** | flake8-builtins: shadowing built-in names |
+| **DTZ** | Timezone-aware datetime enforcement |
+| **PERF** | Performance anti-patterns |
+| **FURB** | Refurb: modernization and idiomatic Python |
+| **LOG** | Logging best practices |
+| **TRY** | Try/except best practices |
+| **ERA** | Eradicate: commented-out code detection |
+| **FBT** | Boolean trap detection |
+| **ASYNC** | Async/await best practices |
+| **RUF** | Ruff-native rules |
 
 ## Code Generation — Python-Specific
 
@@ -74,6 +118,7 @@ def create_user(request: UserCreationRequest) -> User:
 
 ### CI / Compatibility
 
-Always verify Python 3.10 compatibility. Do not use `datetime.UTC` (3.11+); use
-`datetime.timezone.utc` instead. Check all auto-fix tools (ruff, etc.) for
-version-incompatible changes before committing.
+**Supported range**: Python 3.10–3.14 (`requires-python = ">=3.10,<3.15"`).
+**Ruff target**: `py312` — Ruff auto-fixes target 3.12 syntax.
+**Minimum compatibility**: Do not use `datetime.UTC` (3.11+); use `datetime.timezone.utc`.
+Check all auto-fix tools (ruff, etc.) for version-incompatible changes before committing.

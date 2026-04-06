@@ -1,3 +1,10 @@
+---
+name: code-reviewer
+description: Automated code review specialist focused on code quality, standards compliance, and best practices.
+model: sonnet
+tools: ["Read", "Write", "Bash", "Grep", "Glob"]
+---
+
 # Code Reviewer Agent
 
 Automated code review specialist focused on code quality, standards compliance, and best practices.
@@ -61,5 +68,5 @@ Review code changes for quality, maintainability, and adherence to project stand
 ## Invocation
 
 ```
-/review or via Task tool with subagent_type='code-reviewer'
+Via Agent tool: subagent_type="code-reviewer"
 ```

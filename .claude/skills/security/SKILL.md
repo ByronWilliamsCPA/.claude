@@ -1,3 +1,8 @@
+---
+description: Security validation — GPG/SSH key validation, dependency scanning, and encryption. Triggers on "security, scan, audit".
+tools: ["Read", "Bash", "Grep", "Glob"]
+---
+
 # Security Skill
 
 Security validation, vulnerability scanning, and compliance checking.

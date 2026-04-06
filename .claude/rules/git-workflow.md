@@ -1,7 +1,7 @@
 # Git Workflow Rules
 
 Always run pre-commit hooks (`pre-commit run --all-files`) before committing.
-Expect ruff-format, mypy, and lint checks to catch issues — fix proactively.
+Expect ruff-format, basedpyright, and lint checks to catch issues — fix proactively.
 
 ## Branch Strategy (MANDATORY)
 
@@ -24,6 +24,8 @@ git checkout -b {type}/{descriptive-slug}
 | `test/` | `test:` | No release | Tests |
 | `chore/` | `chore:` | No release | Maintenance |
 | `hotfix/` | `fix:` | Patch (0.0.X) | Critical fixes |
+
+> **Breaking changes**: Append `!` after the type for any breaking change (`feat!:`, `fix!:`, `refactor!:`). This triggers a Major version bump regardless of branch prefix. Document breaking changes in the commit footer with `BREAKING CHANGE: <description>`.
 
 ### Branch Naming Convention
 
@@ -100,3 +102,9 @@ When starting a development task:
 3. Add branch name to TodoWrite list
 4. Commit frequently with conventional commit messages matching branch type
 5. Never merge directly — always use PR workflow
+
+> **Detailed worktree lifecycle**: See `standards/git-worktree.md`
+>
+> **Canonical conventional commits reference**: See `.claude/skills/git/context/conventional-commits.md`
+>
+> **Full branch strategy detail**: See `.claude/skills/git/context/branch-strategy.md`
