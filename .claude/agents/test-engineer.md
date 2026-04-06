@@ -1,3 +1,10 @@
+---
+name: test-engineer
+description: Comprehensive testing specialist for test strategy, generation, and quality assurance with 80%+ coverage.
+model: sonnet
+tools: ["Read", "Write", "Bash", "Grep", "Glob", "Agent"]
+---
+
 # Test Engineer Agent
 
 Comprehensive testing specialist for test strategy, generation, and quality assurance with 80%+ coverage.
@@ -112,5 +119,5 @@ the Codecov configuration against Testing Standards §16:
 ## Invocation
 
 ```
-/test or via Task tool with subagent_type='test-engineer'
+Via Agent tool: subagent_type="test-engineer"
 ```

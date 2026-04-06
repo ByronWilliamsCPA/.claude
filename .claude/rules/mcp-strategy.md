@@ -33,12 +33,22 @@ Loaded automatically when specific agents are invoked:
 | devops-deployment-agent | `docker.*`, `github.actions`, `sentry.*` |
 | debug-agent | `zen.debug`, `sentry.*`, `postgres.explain_query` |
 
+### Skill Bundles
+
+Loaded automatically when specific skills are invoked:
+
+| Skill | MCP Tools Loaded |
+|-------|-----------------|
+| `/git` (commit prep) | `zen.precommit`, `github.repos` |
+| `/git` (PR prep) | `zen.codereview`, `github.pull_requests`, `github.issues`, `sentry.list_releases` |
+| `/project-planning` | `zen.planner`, `zen.tiered_consensus`, `mermaid.*` |
+
 ## Tier 3: Keyword-Triggered
 
 | Keywords | Tools Loaded |
 |----------|--------------|
-| dockerfile, container, docker, k8s | `docker.*` |
-| e2e, browser test, playwright, ui test | `playwright.*` |
+| dockerfile, container, image, deploy, docker, kubernetes, k8s | `docker.*` |
+| e2e, end-to-end, browser test, playwright, ui test, selenium, automation | `playwright.*` |
 | database, sql, postgres, migration | `postgres.*` |
 | sentry, error monitoring, exception | `sentry.*` |
 | diagram, flowchart, mermaid, uml | `mermaid.*`, `uml-mcp-server.*` |
@@ -57,14 +67,15 @@ Loaded automatically when specific agents are invoked:
 
 ## Agent Frontmatter Format
 
+Agent files use standard Claude Code frontmatter. The `tools` field controls which **built-in Claude Code tools** the agent can access (not MCP servers):
+
 ```yaml
 ---
 name: security-auditor
-mcp_tools:
-  load:
-    zen: [secaudit, challenge]
-    sentry: [search_errors, get_issue, analyze_issue]
-  defer:
-    sentry: [list_projects, create_dsn]
+description: Security audit specialist for vulnerability detection and hardening.
+model: sonnet
+tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
 ---
 ```
+
+MCP tool bundles for agents are configured in `mcp_config.yaml` under `tier_2_agent_bundles`, not in agent frontmatter. The loading infrastructure reads that config to determine which MCP tools to activate when a given agent is invoked.

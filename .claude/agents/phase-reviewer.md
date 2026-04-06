@@ -1,3 +1,11 @@
+---
+name: phase-reviewer
+description: Executes quality gates to determine whether a project phase is complete. Internal agent — invoked by phase-gate skill only.
+model: sonnet
+tools: ["Read", "Grep", "Glob"]
+user-invocable: false
+---
+
 # Phase Reviewer Agent
 
 Executes quality gates and smoke tests to determine whether a phase is ready for completion.

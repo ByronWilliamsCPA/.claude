@@ -13,18 +13,20 @@ Before committing ANY changes, verify all items:
 
 ## Code Quality
 - [ ] **OpenSSF Compliance**: Required files present (LICENSE, SECURITY.md, CONTRIBUTING.md, CHANGELOG.md)
-- [ ] Environment validation passes (GPG and SSH keys present)
-- [ ] File-specific linter has been run and passes (`/quality`)
+- [ ] **Tests Pass**: Test suite passes with required coverage (`/testing`)
+- [ ] **RAD Tagging**: Critical assumptions tagged where applicable (`#CRITICAL`, `#ASSUME`, `#EDGE`)
+- [ ] Environment validation passes — GPG and SSH keys present (run `/security` skill)
+- [ ] File-specific linter has been run and passes (`/quality`) — Ruff format + lint, BasedPyright strict type-check
 - [ ] Pre-commit hooks execute successfully (`pre-commit run --all-files`)
 - [ ] No linting warnings or errors remain
 - [ ] Code formatting is consistent with project standards
 - [ ] Commits are signed (Git signing key configured)
 
 ## Security
-- [ ] **Security Scanning**: No known vulnerabilities (`uv run pip-audit`)
+- [ ] **Security Scanning**: No known vulnerabilities — medium+ severity blocks commit (`uv run pip-audit`; exit code 64 = advisory found)
 - [ ] **Dependency Safety**: Requirements files updated if dependencies changed
 - [ ] No secrets or credentials in staged files
 
 ## PR (if creating PR)
 - [ ] **Branch Safety**: PR preparation validates branch strategy
-- [ ] **PR Creation**: Use `/git pr` or `mcp__zen-core__pr_prepare` with `--include_wtd=true`
+- [ ] **PR Creation**: Use `/git pr` skill with `--include_wtd=true`
