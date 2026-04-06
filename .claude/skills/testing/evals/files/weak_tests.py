@@ -26,6 +26,7 @@ def get_user(db: object, user_id: int) -> dict:  # type: ignore[type-arg]
 
 # --- Weak tests below ---
 
+
 def test_add_positive() -> None:
     assert add(2, 3) == 5
 

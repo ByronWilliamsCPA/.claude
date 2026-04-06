@@ -5,9 +5,7 @@ from __future__ import annotations
 import re
 
 # Simplified RFC 5321 pattern (covers the common case without full RFC complexity)
-_EMAIL_RE = re.compile(
-    r"^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$"
-)
+_EMAIL_RE = re.compile(r"^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$")
 
 # RFC 5321 length limits
 _MAX_LOCAL_LEN = 64
