@@ -589,8 +589,8 @@ SHOULD reference specific technique IDs for traceability:
 - Static type checking MUST be treated as a testing phase, not an optional
   linting step. Type errors represent the same class of defect as a
   failing unit test.
-- All projects MUST pass `mypy --strict` (or `pyright` in strict mode)
-  in CI before the runtime test suite executes.
+- All projects MUST pass `basedpyright` in strict mode in CI before the
+  runtime test suite executes.
 - Type checking failures MUST block PR merges with the same authority as
   test failures.
 
@@ -599,21 +599,16 @@ SHOULD reference specific technique IDs for traceability:
 - Projects MUST configure type checking in `pyproject.toml`:
 
   ```toml
-  [tool.mypy]
-  python_version = "3.12"
-  strict = true
-  warn_return_any = true
-  warn_unused_configs = true
-  disallow_untyped_defs = true
-  disallow_any_generics = true
-  no_implicit_reexport = true
-
-  [[tool.mypy.overrides]]
-  module = ["tests.*"]
-  disallow_untyped_defs = false
+  [tool.basedpyright]
+  pythonVersion = "3.12"
+  pythonPlatform = "All"
+  typeCheckingMode = "strict"
+  strictListInference = true
+  strictDictionaryInference = true
+  strictSetInference = true
   ```
 
-- Test code SHOULD have type annotations but MAY relax `disallow_untyped_defs`
+- Test code SHOULD have type annotations but MAY relax strict inference
   for test functions, as the assertion patterns in pytest often resist
   precise typing.
 
@@ -865,8 +860,8 @@ the chapters marked as required:
 ### 15.2 Test Execution in CI
 
 - The CI test pipeline MUST execute in this order:
-  1. Static type checking (`mypy --strict` or `pyright`)
-  2. SAST scanning (`bandit`)
+  1. Static type checking (`basedpyright` in strict mode)
+  2. SAST scanning (`bandit` or `uv run pip-audit` for dependency audits)
   3. Unit tests (`pytest tests/unit/ --cov --junitxml=...`)
   4. Integration tests (`pytest tests/integration/ -m integration`)
   5. Coverage threshold enforcement (`--cov-fail-under=80`)
@@ -1106,12 +1101,18 @@ duration monitoring.
           informational: true
   ```
 
-- GitHub check annotations MUST be enabled:
+- GitHub check annotations MUST be disabled when flags or components are
+  configured (which is required by §16.2 and §16.3). The GitHub API cannot
+  clear annotations once posted, so stale annotations persist across pushes
+  and actively conflict with flag/component coverage data:
 
   ```yaml
   github_checks:
-    annotations: true
+    annotations: false
   ```
+
+  Projects that use neither flags nor components (rare, non-standard) MAY
+  enable annotations, but this is not the expected configuration.
 
 ### 16.7 Coverage Ignore Patterns (MUST)
 
@@ -1147,7 +1148,7 @@ When reviewing a project's Codecov setup, verify:
 - [ ] JUnit XML generated with `--junitxml` and `junit_family=legacy`
 - [ ] `changes` status enabled (at least informational)
 - [ ] `show_carryforward_flags: true` in comment config
-- [ ] `github_checks.annotations: true`
+- [ ] `github_checks.annotations: false` (required when flags/components are configured — see §16.6)
 - [ ] Ignore patterns exclude non-production code
 
 ---
@@ -1220,9 +1221,9 @@ standard vocabulary for this organization:
 | Run OWASP LLM tests | `pytest -m owasp_llm` |
 | Parallel execution | `pytest -n auto --dist=worksteal` |
 | Last failed only | `pytest --lf` |
-| Type checking | `mypy --strict src/` |
+| Type checking | `uv run basedpyright src/` |
 | SAST scan | `bandit -r src/ -c pyproject.toml` |
-| Dependency audit | `pip-audit` |
+| Dependency audit | `uv run pip-audit` |
 
 | Assertion Pattern | Usage |
 |-------------------|-------|

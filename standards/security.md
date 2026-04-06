@@ -97,7 +97,7 @@ repos:
 
 ### Vulnerability Scanning
 
-- **Safety**: Check Python dependencies for known vulnerabilities
+- **pip-audit**: Check Python dependencies for known vulnerabilities (`uv run pip-audit`)
 - **Bandit**: Static security analysis for Python code
 - **Audit**: Regular dependency audits (monthly minimum)
 
@@ -105,29 +105,29 @@ repos:
 
 ```bash
 # Python dependency vulnerability check
-poetry run safety check
+uv run pip-audit
 
 # Static security analysis
-poetry run bandit -r src
+uv run bandit -r src
 
 # Generate security report
-poetry run bandit -r src -f json -o security-report.json
+uv run bandit -r src -f json -o security-report.json
 
 # Audit with detailed output
-poetry run safety check --full-report
+uv run pip-audit --output=json
 ```
 
 ### Dependency Management
 
 ```bash
 # Update dependencies to latest secure versions
-poetry update
+uv sync --upgrade
 
 # Check for outdated packages
-poetry show --outdated
+uv tree --outdated
 
 # Add dependencies with version constraints
-poetry add "requests>=2.28.0,<3.0.0"
+uv add "requests>=2.28.0,<3.0.0"
 ```
 
 ## Secrets Management

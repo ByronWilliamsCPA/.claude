@@ -1,7 +1,7 @@
 ---
 argument-hint: [--type=all]
-description: Scans project for security vulnerabilities using safety (dependencies) and bandit (code analysis).
-allowed-tools: Bash(poetry:*, safety:*, bandit:*), Read
+description: Scans project for security vulnerabilities using pip-audit (dependencies) and ruff (code analysis).
+allowed-tools: Bash(uv:*, ruff:*, git:*), Read
 ---
 
 # Security Vulnerability Scanning
@@ -10,22 +10,25 @@ Comprehensive security scanning for Python projects using industry-standard tool
 
 ## Scan Types
 
-### 1. Dependency Scanning (safety)
+### 1. Dependency Scanning (pip-audit)
+
 - Check for known vulnerabilities in dependencies
 - Report CVEs with severity ratings
 - Provide upgrade recommendations
+- Exit codes: 0 = clean, 64 = advisory found (medium+ severity blocks commit), 1 = tool error
 
 ```bash
-uv run safety check --full-report
+uv run pip-audit
 ```
 
-### 2. Static Code Analysis (bandit)
+### 2. Static Code Analysis (ruff — bandit rules)
+
 - Scan for security issues in source code
 - Detect SQL injection, XSS, command injection
 - Identify insecure configurations
 
 ```bash
-uv run bandit -r src -ll
+ruff check --select S src/
 ```
 
 ### 3. Comprehensive Scan (all)

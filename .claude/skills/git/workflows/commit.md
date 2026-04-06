@@ -75,10 +75,10 @@ If there are unstaged changes, ask:
 
 ### 5. Execute Commit
 
-After user confirms the message, always use HEREDOC for multi-line commits:
+After user confirms the message, always use HEREDOC for multi-line commits. Commits must be signed (`-S`):
 
 ```bash
-git commit -m "$(cat <<'EOF'
+git commit -S -m "$(cat <<'EOF'
 feat: add user authentication
 
 Implement OAuth2 flow with Google and GitHub providers.
@@ -149,6 +149,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 
 - **NEVER** use `git commit --amend` on pushed commits
 - **NEVER** skip hooks with `--no-verify` unless explicitly asked by the user
+- **ALWAYS** sign commits with `-S` (`git commit -S`)
 - **ALWAYS** show the commit message before executing
 - **CHECK** staged files for secrets/credentials before committing
 - **WARN** about large binary files in the staged set

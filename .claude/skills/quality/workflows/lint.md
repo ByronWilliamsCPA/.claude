@@ -1,7 +1,7 @@
 ---
 argument-hint: [path]
 description: Lint code using Ruff for Python with auto-fix capabilities.
-allowed-tools: Bash(poetry:*, ruff:*), Read
+allowed-tools: Bash(uv:*, ruff:*), Read
 ---
 
 # Code Linting
@@ -24,6 +24,7 @@ uv run ruff check --output-format=full path/
 ## Auto-fixable Issues
 
 Ruff can automatically fix:
+
 - Unused imports
 - Import sorting
 - Line length issues
@@ -32,7 +33,7 @@ Ruff can automatically fix:
 
 ## Manual Review Required
 
-- Type errors → Use MyPy
+- Type errors → Use BasedPyright (`uv run basedpyright src`)
 - Complex refactoring
 - Security issues → Use Bandit
 
