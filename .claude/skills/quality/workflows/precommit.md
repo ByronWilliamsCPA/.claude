@@ -1,7 +1,7 @@
 ---
 argument-hint: [--fix]
 description: Comprehensive pre-commit validation with formatting, linting, type checking, security scanning, and test execution.
-allowed-tools: Bash(uv:*, ruff:*, basedpyright:*, bandit:*, safety:*, pytest:*), Read
+allowed-tools: Bash(uv:*, ruff:*, basedpyright:*, bandit:*, pytest:*), Read
 ---
 
 # Pre-commit Validation
@@ -30,10 +30,10 @@ Comprehensive validation before committing code. Runs all quality checks in sequ
 - Check: `uv run bandit -r src`
 - Report security issues with severity
 
-### 5. Dependency Security (Safety)
+### 5. Dependency Security (pip-audit)
 
-- Check: `uv run safety check`
-- Report vulnerable packages
+- Check: `uv run pip-audit`
+- Report vulnerable packages (exit code 64 = advisory found, 1 = error)
 
 ### 6. Test Suite
 

@@ -114,7 +114,7 @@ uv run bandit -r src
 uv run bandit -r src -f json -o security-report.json
 
 # Audit with detailed output
-uv run pip-audit --output=json
+uv run pip-audit --format json
 ```
 
 ### Dependency Management

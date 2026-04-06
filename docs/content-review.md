@@ -271,4 +271,4 @@ Pulled together from various sources — goal is to verify each file has accurat
 
 ## Known Issues (active)
 
-- [project-planning/SKILL.md](../.claude/skills/project-planning/SKILL.md) — P2 file marked `[x]`, but contains stale `mcp__zen__consensus` references (found during P3 review of adjacent files; fix pending)
+No active issues — all known issues resolved.
