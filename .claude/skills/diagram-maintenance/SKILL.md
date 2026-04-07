@@ -1,3 +1,9 @@
+---
+name: diagram-maintenance
+description: Update, create, and audit PlantUML diagrams — SVG regeneration, traceability checking, and diagram index maintenance. Triggers on "diagram, PUML, SVG".
+tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
+---
+
 # Diagram Maintenance Skill
 
 > **Triggers**: "update diagram", "add diagram", "diagram audit", "PUML", "plantuml",

@@ -9,7 +9,7 @@ tags:
   - guide
 ---
 
-**Companion to:** [Testing Standards](../../standards/testing.md)
+**Companion to:** Testing Standards (`standards/testing.md`)
 **Version:** 2.0
 **Date:** 2026-03-16
 
@@ -1607,7 +1607,7 @@ class TestModelCalibrationIntegrity:
 
 ### Why Elevate Type Checking?
 
-A strict mypy configuration eliminates entire categories of runtime errors
+A strict basedpyright configuration eliminates entire categories of runtime errors
 before tests even execute. Consider this function:
 
 ```python
@@ -1617,38 +1617,29 @@ def process_scores(scores: list[float]) -> float:
 
 Without type checking, you need unit tests for: passing a string instead
 of a list, passing a list of strings instead of floats, passing None,
-passing an empty list (ZeroDivisionError). With `mypy --strict`, the
-first three are caught statically — you only need runtime tests for the
+passing an empty list (ZeroDivisionError). With `basedpyright --strict`,
+the first three are caught statically — you only need runtime tests for the
 empty list and the happy path. Type checking doesn't replace testing, but
 it dramatically narrows what runtime tests need to cover.
 
-### Practical mypy Configuration
+### Practical basedpyright Configuration
 
 ```toml
-[tool.mypy]
-python_version = "3.12"
-strict = true
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = true
-disallow_any_generics = true
-no_implicit_reexport = true
-check_untyped_defs = true
+[tool.basedpyright]
+pythonVersion = "3.12"
+typeCheckingMode = "strict"
+reportMissingImports = true
+reportMissingTypeStubs = false
 
 # Per-library overrides for untyped third-party packages
-[[tool.mypy.overrides]]
-module = [
-    "pandas.*",
-    "sklearn.*",
-    "factory.*",
-]
-ignore_missing_imports = true
+[tool.basedpyright.defineConstant]
+# Use pyrightconfig.json for per-path ignores if needed
 
 # Relax for test files — pytest's dynamic nature resists full typing
-[[tool.mypy.overrides]]
-module = ["tests.*"]
-disallow_untyped_defs = false
-disallow_untyped_calls = false
+[[tool.basedpyright.executionEnvironments]]
+root = "tests"
+reportUnknownMemberType = false
+reportUnknownArgumentType = false
 ```
 
 ### Annotations That Pay Off
@@ -2148,8 +2139,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install -e ".[dev]"
-      - run: mypy --strict src/
+      - run: pip install uv && uv sync --all-extras
+      - run: uv run basedpyright src/
 
   security-scan:
     runs-on: ubuntu-latest
@@ -2158,9 +2149,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install bandit pip-audit
-      - run: bandit -r src/ -f json -o reports/bandit.json
-      - run: pip-audit --output=json > reports/pip-audit.json
+      - run: pip install uv && uv sync --all-extras
+      - run: uv run bandit -r src/ -f json -o reports/bandit.json
+      - run: uv run pip-audit --format json -o reports/pip-audit.json
 
   unit-tests:
     needs: [type-check]
@@ -2173,7 +2164,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - run: pip install -e ".[test]"
+      - run: pip install uv && uv sync --all-extras
       - name: Run unit tests
         run: |
           pytest tests/unit/ \
@@ -2206,7 +2197,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install -e ".[test]"
+      - run: pip install uv && uv sync --all-extras
       - run: |
           pytest tests/integration/ \
             -m integration \
@@ -2227,7 +2218,7 @@ multiple CI runners:
         shard: [1, 2, 3, 4]
     steps:
       - uses: actions/checkout@v4
-      - run: pip install -e ".[test]" pytest-split
+      - run: pip install uv && uv sync --all-extras
       - run: |
           pytest tests/unit/ \
             --splits 4 \
@@ -2406,19 +2397,19 @@ available at: https://github.com/OWASP/ASVS/tree/v5.0.0
 
 | Plugin | Purpose | Install |
 |--------|---------|---------|
-| pytest-cov | Coverage measurement and reporting | `pip install pytest-cov` |
-| pytest-mock | `mocker` fixture wrapping unittest.mock | `pip install pytest-mock` |
-| pytest-randomly | Randomize test order to detect hidden dependencies | `pip install pytest-randomly` |
-| pytest-xdist | Parallel test execution across CPU cores | `pip install pytest-xdist` |
-| pytest-asyncio | Support for async test functions and fixtures | `pip install pytest-asyncio` |
-| pytest-timeout | Kill tests that exceed a time limit | `pip install pytest-timeout` |
-| freezegun | Freeze or fake datetime for time-dependent tests | `pip install freezegun` |
-| time-machine | Faster C-extension alternative to freezegun | `pip install time-machine` |
-| hypothesis | Property-based testing with automatic shrinking | `pip install hypothesis` |
-| mutmut | Mutation testing to validate test quality | `pip install mutmut` |
-| syrupy | Snapshot testing for complex output | `pip install syrupy` |
-| responses | Mock HTTP calls made with `requests` | `pip install responses` |
-| pytest-httpx | Mock HTTP calls made with `httpx` | `pip install pytest-httpx` |
+| pytest-cov | Coverage measurement and reporting | `uv add pytest-cov` |
+| pytest-mock | `mocker` fixture wrapping unittest.mock | `uv add pytest-mock` |
+| pytest-randomly | Randomize test order to detect hidden dependencies | `uv add pytest-randomly` |
+| pytest-xdist | Parallel test execution across CPU cores | `uv add pytest-xdist` |
+| pytest-asyncio | Support for async test functions and fixtures | `uv add pytest-asyncio` |
+| pytest-timeout | Kill tests that exceed a time limit | `uv add pytest-timeout` |
+| freezegun | Freeze or fake datetime for time-dependent tests | `uv add freezegun` |
+| time-machine | Faster C-extension alternative to freezegun | `uv add time-machine` |
+| hypothesis | Property-based testing with automatic shrinking | `uv add hypothesis` |
+| mutmut | Mutation testing to validate test quality | `uv add mutmut` |
+| syrupy | Snapshot testing for complex output | `uv add syrupy` |
+| responses | Mock HTTP calls made with `requests` | `uv add responses` |
+| pytest-httpx | Mock HTTP calls made with `httpx` | `uv add pytest-httpx` |
 
 ---
 
@@ -2448,8 +2439,8 @@ available at: https://github.com/OWASP/ASVS/tree/v5.0.0
 | `sentence-transformers` | Semantic similarity for LLM output evaluation | §11 |
 | `editdistance` | CER computation for OCR evaluation | §11 |
 | `pydantic` | Response schema contracts and runtime validation | §11, §12 |
-| `mypy` | Static type checking | §12 |
-| `pyright` | Alternative static type checker | §12 |
+| `basedpyright` | Static type checking (strict mode) | §12 |
+| `mypy` | Alternative static type checker | §12 |
 | `beartype` | Runtime type enforcement | §12 |
 | `factory_boy` | Declarative test data generation | §13 |
 | `faker` | Realistic fake data provider | §13 |

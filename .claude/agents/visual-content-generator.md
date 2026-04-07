@@ -1,10 +1,8 @@
 ---
 name: visual-content-generator
 description: Specialized agent for generating professional visual content (diagrams, blueprints, illustrations) for business documents using Gemini's Nano Banana Pro. Analyzes target documents, identifies visual needs, prepares optimized prompts, and manages iterative refinement workflows.
-mcp_tools:
-  load:
-    zen: [thinkdeep, analyze]
-  defer: []
+model: sonnet
+tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
 ---
 
 # Visual Content Generator Agent

@@ -1,34 +1,21 @@
----
-name: pr-prepare
-description: "Prepare pull request descriptions following project template. Activates on: prepare PR, create PR, pull request, ready for PR, draft PR, write PR"
----
+# PR Preparation Workflow
 
-# PR Preparation Skill
-
-Automatically prepare pull request descriptions following project standards.
+Full pull request description generation workflow.
 
 ## Activation
 
-This skill activates on keywords:
-- "prepare PR", "prepare the PR", "prepare a PR"
-- "create PR", "create pull request"
-- "PR description", "pull request description"
-- "ready for PR", "ready to PR"
-- "draft PR", "write PR"
+Triggers on: prepare PR, prepare the PR, prepare a PR, create PR, create pull request,
+PR description, pull request description, ready for PR, ready to PR, draft PR, write PR
 
 ## Workflow
 
-When activated, follow these steps:
-
 ### 1. Gather Context
-
-Run these commands to understand the changes:
 
 ```bash
 # Current state
 git status
 
-# Branch comparison (adjust 'main' if different base branch)
+# Commits on this branch vs main
 git log $(git merge-base HEAD main)..HEAD --oneline
 
 # Files changed
@@ -37,6 +24,8 @@ git diff $(git merge-base HEAD main)..HEAD --stat
 # Actual diff (for smaller changes)
 git diff $(git merge-base HEAD main)..HEAD
 ```
+
+> If the base branch is not `main`, substitute the correct base (e.g., `develop`).
 
 ### 2. Analyze Changes
 
@@ -48,7 +37,7 @@ Identify:
 
 ### 3. Generate PR Description
 
-Use this template format:
+Use this template:
 
 ```markdown
 ## Summary
@@ -78,7 +67,7 @@ Use this template format:
 
 ### 4. Suggest PR Title
 
-Follow conventional commits format:
+Follow conventional commits format (see `context/conventional-commits.md`):
 
 | Type | When to Use |
 |------|-------------|
@@ -90,22 +79,27 @@ Follow conventional commits format:
 | `perf:` | Performance improvement |
 | `chore:` | Maintenance, dependencies |
 
-### 6. Output
+### 5. Output
 
 Present the complete PR description ready to copy-paste into GitHub.
 
 Remind the user:
-- CodeRabbit will auto-fill `@coderabbitai summary` placeholder
-- They can push and create PR with `gh pr create`
+- CodeRabbit will auto-fill `@coderabbitai summary` placeholder if present
+- Push and create the PR using the `/git pr` skill (which handles push, description generation, and `gh pr create` automatically):
+
+```bash
+/git pr
+```
+
+---
 
 ## Example Interaction
 
 **User**: "Can you prepare the PR for this branch?"
 
-**Claude**:
-1. Runs git commands to gather context
-2. Analyzes the changes
-3. Outputs:
+1. Run git commands to gather context
+2. Analyze the changes
+3. Output:
 
 ---
 
@@ -142,8 +136,7 @@ Follow-up: Add Microsoft provider support
 
 ---
 
-Ready to copy! Push with:
+Ready to copy! Create the PR using the `/git pr` skill:
 ```bash
-git push -u origin HEAD
-gh pr create --fill
+/git pr
 ```
