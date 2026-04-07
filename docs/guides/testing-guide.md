@@ -9,7 +9,7 @@ tags:
   - guide
 ---
 
-**Companion to:** [Testing Standards](../../standards/testing.md)
+**Companion to:** Testing Standards (`standards/testing.md`)
 **Version:** 2.0
 **Date:** 2026-03-16
 
