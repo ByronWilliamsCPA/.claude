@@ -43,6 +43,18 @@ Automated test generation, review, and execution for pytest-based projects.
 - **context/pytest-commands.md**: Common pytest commands and configuration
 - **context/pytest-patterns.md**: Patterns reference — naming, parametrize, spec=, AsyncMock, fixtures
 
+## Context Loading Guide
+
+Based on the user's request, proactively note these requirements before generating:
+
+| Request type | Pre-generate checklist |
+|-------------|----------------------|
+| Async functions | Remind: AsyncMock for coroutines, `@pytest.mark.asyncio`, `.await_count` not `.call_count`; `spec=` must target the actual injected dependency (e.g. `spec=FragranceService` if routes receive a service via `Depends`, not always `spec=AsyncSession`) |
+| File I/O | First check whether the module actually performs file I/O; if yes: `tmp_path` fixture, no hardcoded paths; if no file I/O: omit `tmp_path` — do not add it mechanically |
+| HTTP clients | Remind: `spec=httpx.AsyncClient`, AsyncMock for `.get`/`.post` methods |
+| Pydantic models | Remind: parametrize valid + missing-required + wrong-type scenarios |
+| Review request | Reference: 6-item checklist in workflows/review.md by number |
+
 ## Commands
 
 ```bash
