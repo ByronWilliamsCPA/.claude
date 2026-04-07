@@ -5,7 +5,7 @@ Standards and patterns for Python development in this project.
 ## Code Style
 
 ### Formatting
-- **Formatter**: Black (88 character line length)
+- **Formatter**: Ruff (88 character line length — replaces Black)
 - **Import Sorting**: Ruff isort rules
 - **Docstrings**: Google style
 

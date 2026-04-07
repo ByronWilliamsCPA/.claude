@@ -181,6 +181,14 @@ nav:
       - Changelog: project/changelog.md
       - License: project/license.md
 
+# Exclude internal audit/admin docs that link outside the docs/ directory
+exclude_docs: |
+  content-review.md
+  content_reviews/*
+  ADRs/adr-template.md
+  planning/project-plan-template.md
+  planning/adr/README.md
+
 # Validation
 # strict mode disabled to allow links to repo root files
 # These files are valid but outside docs/ directory

@@ -14,23 +14,34 @@ description: >
 
 Automated test generation, review, and execution for pytest-based projects.
 
+## Invocation
+
+```
+/testing [action] [scope]
+```
+
+**Actions** (optional): `run` (default), `generate`, `review`, `coverage analyze`,
+`coverage generate`, `coverage enforce`, `security`
+
+**Scopes** (optional): `all` (default), `unit`, `integration`, `e2e`
+
 ## Workflows
 
 ### Test Generation
-- **generate.md**: Generate test cases for code
+- **workflows/generate.md**: Generate test cases — naming, parametrize, spec=, AsyncMock, edge cases
 
 ### Test Review
-- **review.md**: Review existing tests for quality
+- **workflows/review.md**: Review existing tests — 6-item quality checklist with concrete fixes
 
 ### Specialized Testing
-- **e2e.md**: End-to-end testing patterns
-- **security.md**: Security testing patterns
-- **performance.md**: Performance testing patterns
+- **workflows/e2e.md**: End-to-end testing — CLI, API integration, pipeline, data integrity
+- **workflows/security.md**: Security testing — OWASP Top 10, injection, path traversal, DoS
+- **workflows/performance.md**: Performance testing — benchmarks, memory limits, latency SLAs
 
 ## Context Files
 
-- **pytest-commands.md**: Common pytest commands
-- **pytest-patterns.md**: Testing patterns and best practices
+- **context/pytest-commands.md**: Common pytest commands and configuration
+- **context/pytest-patterns.md**: Patterns reference — naming, parametrize, spec=, AsyncMock, fixtures
 
 ## Commands
 
@@ -41,9 +52,13 @@ uv run pytest
 # Run with coverage
 uv run pytest --cov=src/claude_config --cov-report=html --cov-report=term-missing
 
-# Run specific test categories
+# Run by scope
+uv run pytest tests/unit/ -v --tb=short
+uv run pytest tests/integration/ -v --tb=short -m "integration"
+uv run pytest tests/e2e/ -v --tb=short -m "e2e"
+
+# Run specific test categories (markers)
 uv run pytest -m "not slow"
-uv run pytest -m "integration"
 uv run pytest -m "unit"
 
 # Run with verbose output

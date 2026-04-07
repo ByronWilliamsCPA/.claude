@@ -49,9 +49,10 @@ tests/
 
 ## Coverage Requirements
 
-- **Target**: 80% overall coverage
-- **Unit tests**: 85%+ coverage
-- **Integration tests**: 70%+ coverage
+- **Line coverage**: 80% minimum overall
+- **Branch coverage**: 70% minimum
+- **Critical modules**: 90% (auth, payment, data pipelines)
+- **Patch coverage**: 90% (new code)
 
 ## Writing Tests
 

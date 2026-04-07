@@ -4,7 +4,7 @@
 
 ### Line Length and Formatting
 
-- **Maximum Line Length**: 88 characters (Ruff default, Black-compatible)
+- **Maximum Line Length**: 88 characters (Ruff format default)
 - **Formatter**: Ruff format (mandatory for all Python files)
 - **Import Sorting**: Ruff isort rules (I) handle import organization
 
@@ -79,20 +79,20 @@ class DataProcessor:
 
 ```bash
 # Type check entire project
-poetry run basedpyright src
+uv run basedpyright src
 
 # Type check specific files
-poetry run basedpyright src/module.py
-
-# For UV-based projects
-uv run basedpyright src
+uv run basedpyright src/module.py
 ```
 
 ## Testing Standards
 
 ### Coverage Requirements
 
-- **Minimum Coverage**: 80% overall
+- **Line Coverage**: 80% minimum (all projects)
+- **Branch Coverage**: 70% minimum (all projects)
+- **Critical Modules**: 90% line coverage (auth, payment, data processing)
+- **Patch Coverage**: 90% on new/changed lines in PRs
 - **Branch Coverage**: Required (not just line coverage)
 - **Missing Coverage Reports**: Must identify uncovered areas
 
@@ -125,57 +125,60 @@ class TestDataProcessor:
 
 ```bash
 # Run all tests with coverage
-poetry run pytest -v --cov=src --cov-report=html --cov-report=term-missing
+uv run pytest -v --cov=src --cov-report=html --cov-report=term-missing
 
 # Run specific test categories
-poetry run pytest tests/unit/
-poetry run pytest tests/integration/
+uv run pytest tests/unit/
+uv run pytest tests/integration/
 
 # Run tests with specific markers
-poetry run pytest -m "slow"
-poetry run pytest -m "not integration"
+uv run pytest -m "slow"
+uv run pytest -m "not integration"
 ```
 
 ## Dependency Management
 
-### Poetry Configuration
+### UV Configuration
 
 - **Dependency Specification**: Use semantic versioning constraints
-- **Development Dependencies**: Separate from production dependencies
-- **Lock File**: Always commit `poetry.lock`
+- **Development Dependencies**: Separate from production dependencies in `[dependency-groups]`
+- **Lock File**: Always commit `uv.lock`
 
 ### Version Constraints
 
 ```toml
-[tool.poetry.dependencies]
-python = "^3.11"
-requests = "^2.28.0"
-pydantic = "^2.0.0"
+[project]
+requires-python = ">=3.10,<3.15"
+dependencies = [
+    "requests>=2.28.0,<3.0.0",
+    "pydantic>=2.0.0",
+]
 
-[tool.poetry.group.dev.dependencies]
-pytest = "^7.4.0"
-black = "^23.0.0"
-ruff = "^0.1.0"
-basedpyright = "^1.28.0"
+[dependency-groups]
+dev = [
+    "pytest>=7.4.0",
+    "ruff>=0.1.0",
+    "basedpyright>=1.28.0",
+]
 ```
 
 ### Essential Commands
 
 ```bash
 # Install dependencies
-poetry install
+uv sync --all-extras
 
 # Add new dependency
-poetry add package-name
+uv add package-name
 
 # Add development dependency
-poetry add --group dev package-name
+uv add --dev package-name
 
 # Update dependencies
-poetry update
+uv sync --upgrade
 
 # Show dependency tree
-poetry show --tree
+uv tree
 ```
 
 ## Project Structure
@@ -207,20 +210,20 @@ project/
 ### Code Security
 
 - **Bandit Scanning**: Required for all security-sensitive code
-- **Dependency Scanning**: Use Safety to check for vulnerabilities
+- **Dependency Scanning**: Use `pip-audit` to check for vulnerabilities
 - **Secret Detection**: No hardcoded secrets or API keys
 
 ### Essential Commands
 
 ```bash
 # Security scanning
-poetry run bandit -r src
+uv run bandit -r src
 
 # Dependency vulnerability check
-poetry run safety check
+uv run pip-audit
 
 # Check for secrets (if pre-commit configured)
-poetry run pre-commit run detect-private-key --all-files
+pre-commit run detect-private-key --all-files
 ```
 
 ## Performance Guidelines
@@ -239,22 +242,23 @@ poetry run pre-commit run detect-private-key --all-files
 python -m cProfile -s cumulative script.py
 
 # Memory profiling
-pip install memory_profiler
-python -m memory_profiler script.py
+uv add --dev memory_profiler
+uv run python -m memory_profiler script.py
 ```
 
 ## Environment Setup
 
 ### Python Version
 
-- **Minimum**: Python 3.11+
-- **Recommended**: Latest stable Python version
-- **Virtual Environment**: Always use Poetry or similar
+- **Minimum**: Python 3.10
+- **Recommended**: Python 3.12 (Ruff target version)
+- **Maximum**: Python 3.14 (`requires-python = ">=3.10,<3.15"`)
+- **Virtual Environment**: Always use `uv`
 
 ### IDE Configuration
 
 - **VS Code**: Recommended extensions and settings
-- **PyCharm**: Configuration for Black, Ruff, MyPy integration
+- **PyCharm**: Configuration for Ruff, BasedPyright integration
 - **Editor Config**: Consistent formatting across editors
 
 ---

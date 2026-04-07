@@ -60,7 +60,7 @@ uv run pre-commit run --all-files
 
 ### Code Style
 
-- **Line length**: 88 characters (Black compatible)
+- **Line length**: 88 characters (ruff format default)
 - **Docstrings**: Google style
 - **Type hints**: Required for all public APIs
 
