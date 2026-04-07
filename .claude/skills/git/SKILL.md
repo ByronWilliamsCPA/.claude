@@ -1,60 +1,57 @@
+---
+name: git
+description: >
+  Git workflow management: branch creation/validation, conventional commit message
+  preparation, and PR description generation. Auto-activates on: git, branch, commit,
+  pull request, PR, merge, rebase, conventional commits, stage and commit, ready to
+  commit, commit message, commit this, prepare commit, write commit, prepare PR,
+  create PR, draft PR, write PR, ready for PR
+---
+
 # Git Workflow Skill
 
-Git workflow management including branch validation, commit conventions, PR preparation, and repository health checks.
+Git workflow management including branch validation, conventional commit preparation,
+PR description generation, and repository health checks.
 
-## Activation
+## Routing
 
-Auto-activates on keywords: git, branch, commit, pull request, PR, merge, rebase, workflow, conventional commits, branch strategy
+| Activation Context | Workflow File |
+|--------------------|---------------|
+| Commit-related (`commit`, `stage and commit`, `commit message`, etc.) | `workflows/commit.md` |
+| PR-related (`prepare PR`, `create PR`, `draft PR`, `pull request`, etc.) | `workflows/pr.md` |
+| Branch-related (`branch`, `checkout`, `branch strategy`) | `context/branch-strategy.md` |
 
-## Workflows
+## Reference Files
 
-### Branch Management
-- **branch.md**: Branch creation, validation, and naming conventions
-- **status.md**: Repository status and health checks
+- **`context/conventional-commits.md`**: Full type table with version impact
+- **`context/branch-strategy.md`**: Branch naming format, semantic release mapping, validation
 
-### Commit Management
-- **commit.md**: Conventional commit message preparation
+## Quick Reference
 
-### PR Workflow
-- **pr-prepare.md**: Pull request description generation
-- **pr-check.md**: PR validation and checklist
-
-## Context Files
-
-- **conventional-commits.md**: Commit message format standards
-- **branch-strategies.md**: Branch naming and workflow patterns
-
-## Commands
+### Branch Status
 
 ```bash
-# Check branch status
 git branch --show-current
 git status
-
-# Validate branch naming
-# Branch format: {type}/{descriptive-slug}
-# Types: feat, fix, docs, refactor, perf, test, chore, hotfix
-
-# Create conventional commit
-git commit -m "$(cat <<'EOF'
-{type}({scope}): {description}
-
-{body}
-
-{footer}
-EOF
-)"
 ```
 
-## Semantic Release Mapping
+### Semantic Release Mapping
 
 | Branch Prefix | Commit Type | Version Impact |
 |---------------|-------------|----------------|
-| feat/         | feat:       | Minor (0.X.0)  |
-| fix/          | fix:        | Patch (0.0.X)  |
-| docs/         | docs:       | No release     |
-| refactor/     | refactor:   | No release     |
-| perf/         | perf:       | Patch (0.0.X)  |
-| test/         | test:       | No release     |
-| chore/        | chore:      | No release     |
-| hotfix/       | fix:        | Patch (0.0.X)  |
+| `feat/` | `feat:` | Minor (0.X.0) |
+| `fix/` | `fix:` | Patch (0.0.X) |
+| `docs/` | `docs:` | No release |
+| `refactor/` | `refactor:` | No release |
+| `perf/` | `perf:` | Patch (0.0.X) |
+| `test/` | `test:` | No release |
+| `chore/` | `chore:` | No release |
+| `hotfix/` | `fix:` | Patch (0.0.X) |
+
+### Branch Format
+
+```
+{type}/{descriptive-slug}
+```
+
+Examples: `feat/user-authentication`, `fix/null-pointer-api`, `docs/installation-guide`

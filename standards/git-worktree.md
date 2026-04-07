@@ -69,7 +69,7 @@ git worktree add ../{project}-worktrees/feature-name -b feature/feature-name
 cd ../{project}-worktrees/feature-name
 
 # 3. Install dependencies (worktrees share git but not venv)
-uv sync --all-extras  # or: poetry install
+uv sync --all-extras
 
 # 4. Work on feature with Claude Code
 # ... development happens here ...
@@ -178,7 +178,6 @@ Each worktree needs its own dependency installation:
 
 # Always run after creating worktree:
 uv sync --all-extras  # Python/UV
-poetry install        # Python/Poetry
 npm install          # Node.js
 ```
 

@@ -1,7 +1,7 @@
 # GitHub Copilot Code Review Instructions
 
 > These instructions guide Copilot code reviews to focus on issues that automated checks cannot catch.
-> Pre-commit hooks and CI/CD already validate: formatting (Black), linting (Ruff), type checking
+> Pre-commit hooks and CI/CD already validate: formatting (ruff format), linting (Ruff), type checking
 > (BasedPyright), security scanning (Bandit/Safety), and test coverage (pytest).
 
 ## Review Focus Areas
@@ -97,7 +97,7 @@ When providing feedback:
 
 These are handled by CI/CD and pre-commit hooks:
 
-- Code formatting (Black)
+- Code formatting (ruff format)
 - Import sorting (Ruff/isort)
 - Basic linting violations (Ruff)
 - Type annotation presence (BasedPyright)

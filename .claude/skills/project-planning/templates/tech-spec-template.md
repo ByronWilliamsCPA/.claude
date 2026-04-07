@@ -21,7 +21,7 @@
 ### Code Quality
 - **Linter**: Ruff
 - **Type Checker**: BasedPyright
-- **Formatter**: Black (88 chars)
+- **Formatter**: ruff format (88 chars)
 - **Testing**: pytest
 
 ### Data Layer

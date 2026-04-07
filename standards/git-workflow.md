@@ -76,7 +76,7 @@ git commit -m "feat!: change API response format
 BREAKING CHANGE: API now returns data in camelCase instead of snake_case"
 
 # Documentation update
-git commit -m "docs: update installation instructions for Poetry"
+git commit -m "docs: update installation instructions"
 
 # Refactoring
 git commit -m "refactor(database): extract query logic into separate module"

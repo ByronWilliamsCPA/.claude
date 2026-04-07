@@ -10,7 +10,7 @@
 # pyproject.toml
 [tool.ruff]
 line-length = 88
-target-version = "py311"
+target-version = "py312"
 
 [tool.ruff.lint]
 select = [
@@ -45,7 +45,7 @@ select = [
 ]
 
 ignore = [
-    "E501",   # Line too long (handled by Black)
+    "E501",   # Line too long (handled by ruff format)
     "S101",   # Use of assert (allowed in tests)
     "PLR0913", # Too many arguments
     "PLR0915", # Too many statements
@@ -74,7 +74,7 @@ docstring-code-format = true
 #### Python Linting Commands
 
 ```bash
-# Format with Ruff (replaces Black)
+# Format with Ruff
 ruff format .
 
 # Check formatting
@@ -284,7 +284,7 @@ repos:
         args: [--fix, --exit-non-zero-on-fix]
       - id: ruff-format
 
-  # BasedPyright for type checking (faster than MyPy)
+  # BasedPyright for type checking (strict mode)
   # Note: Run via local hook or CI for better performance
   # - repo: local
   #   hooks:

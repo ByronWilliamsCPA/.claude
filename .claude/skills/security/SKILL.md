@@ -1,6 +1,19 @@
+---
+description: Security validation — GPG/SSH key validation, dependency scanning, and encryption. Triggers on "security, scan, audit".
+tools: ["Read", "Bash", "Grep", "Glob"]
+---
+
 # Security Skill
 
 Security validation, vulnerability scanning, and compliance checking.
+
+## Invocation
+
+```
+/security [scope]
+```
+
+**Scope** (optional): `all` (default), `env`, `scan`, `deps`
 
 ## Activation
 
@@ -9,35 +22,40 @@ Auto-activates on keywords: security, vulnerability, audit, OWASP, encryption, G
 ## Workflows
 
 ### Environment Validation
-- **validate-env.md**: GPG/SSH key validation
+- **workflows/validate-env.md**: GPG/SSH key validation
 
 ### Scanning
-- **scan.md**: Security vulnerability scanning
+- **workflows/scan.md**: Security vulnerability scanning
 
 ### Encryption
-- **encrypt.md**: Secret encryption and management
+- **workflows/encrypt.md**: Secret encryption and management
 
-## Commands
+## Workflow
 
+Execute in this order for a full `/security all` run:
+
+**Step 1 — Environment validation** (`/security env`)
 ```bash
-# Validate GPG key
 gpg --list-secret-keys
-
-# Validate SSH key
 ssh-add -l
-
-# Check git signing configuration
 git config --get user.signingkey
+```
 
-# Run Bandit security scanner
+**Step 2 — Code scanning** (`/security scan`)
+```bash
 uv run bandit -r src/ -c pyproject.toml
-
-# Check dependencies for vulnerabilities
-uv run pip-audit
-uv run safety check
-
-# Run Semgrep security rules
 uv run semgrep scan --config auto src/
+```
+
+**Step 3 — Dependency audit** (`/security deps`)
+```bash
+uv run pip-audit
+```
+
+**Step 4 — Secrets detection**
+```bash
+gitleaks detect --source .
+trufflehog filesystem .
 ```
 
 ## Security Checklist

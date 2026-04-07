@@ -629,8 +629,8 @@ This block should be added to every project's CLAUDE.md to configure the agent's
 - Coverage JSON (for tooling): `pytest --cov=src --cov-report=json:coverage.json --cov-branch`
 - Coverage annotated (LLM-friendly): `pytest --cov=src --cov-report=annotate:cov_annotate --cov-branch`
 - Mutation testing: `mutmut run --paths-to-mutate=src/module.py`
-- Type checking: `mypy --strict src/`
-- Security scan: `bandit -r src/`
+- Type checking: `uv run basedpyright src/`
+- Security scan: `uv run pip-audit`
 
 ### Test Writing Rules
 - Framework: pytest with pytest-cov, pytest-mock, monkeypatch
@@ -684,11 +684,11 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install -e ".[test]"
+          uv sync --all-extras
 
       - name: Run tests with coverage
         run: |
-          pytest --cov=src --cov-report=json:coverage.json \
+          uv run pytest --cov=src --cov-report=json:coverage.json \
                  --cov-report=xml:coverage.xml \
                  --cov-report=term-missing \
                  --cov-branch \
@@ -729,8 +729,8 @@ jobs:
 
       - name: Run mutation testing
         run: |
-          pip install mutmut
-          mutmut run --paths-to-mutate=src/auth,src/data_processing \
+          uv add --dev mutmut
+          uv run mutmut run --paths-to-mutate=src/auth,src/data_processing \
                      --tests-dir=tests/ \
                      --runner="pytest -x -q"
           mutmut results
@@ -924,7 +924,7 @@ cp /tmp/tdd-guard/.claude/settings.json .claude/settings.json
 # 6. Add agent config to pyproject.toml (see Section 8)
 
 # 7. Install Python testing dependencies
-pip install pytest pytest-cov pytest-mock pytest-randomly pytest-xdist mutmut
+uv add --dev pytest pytest-cov pytest-mock pytest-randomly pytest-xdist mutmut
 ```
 
 ---

@@ -14,7 +14,7 @@ This directory contains Model Context Protocol (MCP) server configuration templa
 
 ### Core Servers
 
-- `zen-server.json` - Central orchestration server
+- `zen-server.json.disabled` - Legacy orchestration server (replaced by PAL MCP server)
 - `dev-tools-servers.json` - Development utilities (sequential-thinking, git, time)
 - `github-server.json` - GitHub API integration
 
@@ -66,15 +66,11 @@ export SENTRY_PROJECT="your-project"
 
 ## Installation Requirements
 
-### Zen MCP Server
+### PAL MCP Server
 
-The zen-server.json configuration points to the zen-mcp-server installation at:
-
-```
-$HOME/dev/zen-mcp-server/.zen_venv/bin/python
-```
-
-The path has been updated to match the actual installation location.
+The zen MCP server has been replaced by the PAL MCP server. MCP tools are now invoked with the
+`mcp__pal__*` prefix (e.g., `mcp__pal__codereview`, `mcp__pal__chat`). The legacy
+`zen-server.json` has been renamed to `zen-server.json.disabled`.
 
 ### Docker-based Servers
 
