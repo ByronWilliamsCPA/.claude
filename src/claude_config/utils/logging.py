@@ -1,5 +1,6 @@
 """Structured logging utilities using structlog."""
 
+import logging
 from typing import Any
 
 import structlog
@@ -17,6 +18,8 @@ def setup_logging(
         json_logs: If True, use JSON renderer; otherwise use console renderer.
         include_timestamp: If True, include ISO timestamp in log records.
     """
+    logging.basicConfig(level=getattr(logging, level, logging.INFO))
+
     processors: list[Any] = [
         structlog.stdlib.add_log_level,
         structlog.stdlib.PositionalArgumentsFormatter(),
