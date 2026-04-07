@@ -282,8 +282,4 @@ output/
 tmp_cleanup/
 !tmp_cleanup/.gitkeep
 
-# Skill testing workspace (eval runs, variants, iterations)
-.claude/skills/testing-workspace/
-.claude/skills/testing-variant-b/
-
 docs/content_reviews/
