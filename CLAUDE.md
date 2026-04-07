@@ -48,6 +48,8 @@ When commands fail due to permissions (e.g., mkdir, mount), try with sudo immedi
 - **Response-Aware Development**: Assumption tagging and verification
 
 > **Python linting, BasedPyright config, Ruff rules**: See `.claude/rules/python.md`
+>
+> **Canonical package choices, override policy**: See `.claude/standards/packages.md`
 
 ## Response-Aware Development (RAD)
 
@@ -100,14 +102,14 @@ agent categorizes and suggests fixes → validates before commit.
 
 ## Essential Skills
 
-| Skill        | Invocation      | Purpose                        |
-| ------------ | --------------- | ------------------------------ |
-| `/git`       | commit, PR, branch | Full git workflow           |
-| `/quality`   | quality, lint   | Format + lint + type-check     |
-| `/testing`   | run tests       | Test execution with coverage   |
-| `/security`  | security scan   | Env validation + scanning      |
-| `/debug-tests` | failing test  | Root-cause test debugging      |
-| `/handoff`   | session end     | Session continuity document    |
+| Skill          | Invocation         | Purpose                      |
+| -------------- | ------------------ | ---------------------------- |
+| `/git`         | commit, PR, branch | Full git workflow            |
+| `/quality`     | quality, lint      | Format + lint + type-check   |
+| `/testing`     | run tests          | Test execution with coverage |
+| `/security`    | security scan      | Env validation + scanning    |
+| `/debug-tests` | failing test       | Root-cause test debugging    |
+| `/handoff`     | session end        | Session continuity document  |
 
 > **Supervisor patterns, agent assignment, PR workflow**: See `.claude/rules/supervisor.md`
 >
@@ -182,7 +184,7 @@ cp -r /tmp/.claude-update/.claude/agents/*.md .claude/agents/
 cp -r /tmp/.claude-update/.claude/skills/* .claude/skills/
 cp -r /tmp/.claude-update/.claude/rules/*.md .claude/rules/
 cp -r /tmp/.claude-update/.claude/context/*.md .claude/context/
-cp -r /tmp/.claude-update/standards/*.md .claude/standards/
+cp -r /tmp/.claude-update/.claude/standards/*.md .claude/standards/
 rm -rf /tmp/.claude-update
 ```
 
