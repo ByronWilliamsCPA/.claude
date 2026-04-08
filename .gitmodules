@@ -4,3 +4,6 @@
 [submodule ".submodules/image-generation"]
 	path = .submodules/image-generation
 	url = https://github.com/williaby/image-generation.git
+[submodule ".submodules/superpowers"]
+	path = .submodules/superpowers
+	url = https://github.com/obra/superpowers.git
