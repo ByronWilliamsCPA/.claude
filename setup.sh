@@ -54,6 +54,18 @@ else
     echo "  [ok]   ~/.claude/reference-library -> ${RL_SOURCE}"
 fi
 
+# Symlink scripts/ so $HOME/.claude/scripts/... hook paths resolve correctly.
+SCRIPTS_TARGET="${CLAUDE_DIR}/scripts"
+SCRIPTS_SOURCE="${REPO_DIR}/scripts"
+if [ -L "${SCRIPTS_TARGET}" ]; then
+    echo "  [skip] ~/.claude/scripts already symlinked"
+elif [ -d "${SCRIPTS_TARGET}" ]; then
+    echo "  [warn] ~/.claude/scripts exists as a real directory — back it up and re-run to replace"
+else
+    ln -s "${SCRIPTS_SOURCE}" "${SCRIPTS_TARGET}"
+    echo "  [ok]   ~/.claude/scripts -> ${SCRIPTS_SOURCE}"
+fi
+
 echo ""
 echo "Done. Verify with: ls -la ~/.claude/"
 echo ""
