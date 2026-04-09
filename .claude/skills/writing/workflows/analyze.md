@@ -35,7 +35,7 @@ that are missing:
 - **Reading context**: How will this be read? Printed memo at a board meeting, email
   on a phone, submitted brief in a case file?
 
-All five are required. The analyzer cannot predict audience response without knowing
+All six are required. The analyzer cannot predict audience response without knowing
 who the audience is and what success looks like.
 
 ## Step 2: One Audience at a Time
