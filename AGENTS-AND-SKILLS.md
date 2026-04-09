@@ -276,6 +276,17 @@ Activates on: "sonar", "quality gate", "sonar issues".
 Creates new skills, modifies existing ones, runs evals, and benchmarks skill performance. Use when
 you want to add a new skill or improve an existing one.
 
+### Writing
+
+**[/writing](/.claude/skills/writing/SKILL.md)**
+Orchestrates the seven-agent reference library writing pipeline. Handles document editing,
+drafting from outlines, register transformation for different audiences, audience readiness
+analysis, and style profile calibration. Modes: `edit` (Stage 1→2→3), `draft` (drafter→pipeline),
+`rewrite` (tone-rewriter→pipeline), `analyze` (audience-reaction-analyzer), `calibrate`
+(style-analyzer). Activates on: "edit this document", "improve this draft", "draft a memo",
+"rewrite for [audience]", "check my writing", "style review", "grammar check", "does this sound
+like me", "writing pipeline", "AI patterns", "will this land".
+
 ---
 
 ## Superpowers Skills (Community-Maintained)
@@ -389,6 +400,10 @@ default system prompt.
 | Debug failing tests | `/debug-tests` skill |
 | Prepare a PR | `/git` skill or `finishing-a-development-branch` skill |
 | Set up isolated branch | `using-git-worktrees` skill |
+| Edit a document / run writing pipeline | `/writing` skill |
+| Draft from outline or bullets | `/writing draft` |
+| Rewrite for a different audience | `/writing rewrite` |
+| Check if document will land with its audience | `/writing analyze` |
 | Check phase readiness | `/phase-gate` skill or `phase-reviewer` agent |
 | Respond to a code review | `receiving-code-review` skill |
 | Confirm work is done | `verification-before-completion` skill |
