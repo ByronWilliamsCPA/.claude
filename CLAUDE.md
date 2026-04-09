@@ -204,12 +204,26 @@ Plan Validator, Research Agent, Modularization Assistant, Visual Content Generat
 
 ### Install / Update
 
-```bash
-# Fresh install (user-level, one-time per machine)
-git clone https://github.com/ByronWilliamsCPA/.claude.git ~/.claude
-cd ~/.claude && git submodule update --init --recursive
+**Option A: Two-layer setup (recommended)** — repo lives at `~/dev/.claude`, setup.sh symlinks
+subdirectories into `~/.claude/`. This is the canonical layout; see `README.md` for details.
 
-# Update existing install
+```bash
+# Fresh install
+git clone --recurse-submodules https://github.com/ByronWilliamsCPA/.claude.git ~/dev/.claude
+cd ~/dev/.claude && ./setup.sh
+
+# Update
+cd ~/dev/.claude && git pull origin main && git submodule update --remote --merge
+```
+
+**Option B: Direct clone to `~/.claude`** — simpler but `$HOME/.claude/scripts/` hook paths
+and submodule references resolve differently. Only use if you are not running `setup.sh`.
+
+```bash
+# Fresh install
+git clone --recurse-submodules https://github.com/ByronWilliamsCPA/.claude.git ~/.claude
+
+# Update
 cd ~/.claude && git pull origin main && git submodule update --remote --merge
 ```
 

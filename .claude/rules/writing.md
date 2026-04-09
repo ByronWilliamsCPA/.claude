@@ -17,25 +17,25 @@ Good: "The system (which runs nightly) processes 40K records."
 Never use these terms in any output. They signal unrevised AI-generated text and carry no
 information.
 
-**Vague qualifiers** — replace with a specific number or remove:
+**Vague qualifiers** (replace with a specific number or remove):
 `significantly`, `substantially`, `considerably`, `greatly`, `highly`, `markedly`
 
-**Corporate buzzwords** — replace with what you actually mean:
+**Corporate buzzwords** (replace with what you actually mean):
 `leverage`, `synergies`, `optimize`, `streamline`, `empower`, `enable` (when used as filler)
 
-**Hype words** — describe the specific capability instead:
+**Hype words** (describe the specific capability instead):
 `best-in-class`, `cutting-edge`, `game-changer`, `innovative`, `revolutionary`,
 `transformative`, `state-of-the-art`, `groundbreaking`
 
-**AI filler phrases** — delete or restate directly:
+**AI filler phrases** (delete or restate directly):
 `delve into`, `it's important to note`, `in conclusion`, `in summary`, `to summarize`,
 `moving forward`, `in today's landscape`, `at the end of the day`
 
-**Puffery** — replace with specific evidence:
+**Puffery** (replace with specific evidence):
 `crucial`, `robust`, `seamless`, `holistic`, `comprehensive`, `pivotal`, `vital`,
 `testament`, `unwavering`, `unparalleled`, `exemplary`
 
-**Empty gerund phrases** — name the mechanism or quantify:
+**Empty gerund phrases** (name the mechanism or quantify):
 "ensuring reliability," "fostering collaboration," "driving growth," "delivering value,"
 "enabling success," "enhancing performance"
 
@@ -83,8 +83,8 @@ full list of EoS/CMS/PCP divergences.
 
 For document editing tasks, use the three-stage pipeline:
 
-1. `grammar-composition-editor` (Stage 1) — grammar, composition, plain language
-2. `document-validator` (Stage 2) — factual accuracy, assumptions, hallucinations, bias
-3. `writing-style-editor` (Stage 3) — voice alignment, AI pattern detection, stylometry
+1. `grammar-composition-editor` (Stage 1): grammar, composition, plain language
+2. `document-validator` (Stage 2): factual accuracy, assumptions, hallucinations, bias
+3. `writing-style-editor` (Stage 3): voice alignment, AI pattern detection, stylometry
 
-Always run in order. See `standards/writing-quality.md` for thresholds and sequencing rules.
+Always run in order. See `../standards/writing-quality.md` for thresholds and sequencing rules.

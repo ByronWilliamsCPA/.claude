@@ -58,7 +58,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude/.submodules/superpowers/hooks/session-start"
+            "command": "$HOME/.claude/scripts/run-superpowers-session-start.sh"
           }
         ]
       }
