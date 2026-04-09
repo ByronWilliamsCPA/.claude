@@ -7,3 +7,9 @@
 [submodule ".submodules/superpowers"]
 	path = .submodules/superpowers
 	url = https://github.com/obra/superpowers.git
+[submodule ".submodules/anthropics-skills"]
+	path = .submodules/anthropics-skills
+	url = https://github.com/anthropics/skills.git
+[submodule ".submodules/anthropics-plugins"]
+	path = .submodules/anthropics-plugins
+	url = https://github.com/anthropics/claude-plugins-official.git
