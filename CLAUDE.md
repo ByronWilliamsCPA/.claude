@@ -50,6 +50,10 @@ When commands fail due to permissions (e.g., mkdir, mount), try with sudo immedi
 > **Python linting, BasedPyright config, Ruff rules**: See `.claude/rules/python.md`
 >
 > **Canonical package choices, override policy**: See `.claude/standards/packages.md`
+>
+> **Writing rules (no em-dashes, AI pattern blacklist, grammar authority)**: See `.claude/rules/writing.md`
+>
+> **Writing quality thresholds (pipeline stages, stylometry targets, pass/fail)**: See `.claude/standards/writing-quality.md`
 
 ## Response-Aware Development (RAD)
 
@@ -157,6 +161,8 @@ Plan Validator, Research Agent, Modularization Assistant, Visual Content Generat
 
 ### Available Skills (`.claude/skills/`)
 
+**Custom skills** (this repo):
+
 | Skill                  | Trigger                          | Purpose                                   |
 | ---------------------- | -------------------------------- | ----------------------------------------- |
 | `/git`                 | commit, PR, branch               | Full git workflow (commit + PR + branch)  |
@@ -173,19 +179,52 @@ Plan Validator, Research Agent, Modularization Assistant, Visual Content Generat
 | `/test-coverage`       | coverage analysis, coverage gaps | Coverage measurement and generation       |
 | `/sonarcloud`          | sonar, quality gate              | SonarCloud issue review and fixing        |
 | `/skill-creator`       | create skill, improve skill      | Skill development and iteration           |
+| `/writing`             | edit document, draft memo, rewrite, writing quality | Writing pipeline orchestration |
 
-> Internal variant and workspace directories (`quality-variant-b`, `testing-variant-b`, etc.) are not user-facing skills. See [AGENTS-AND-SKILLS.md](AGENTS-AND-SKILLS.md) for the complete catalog.
+**Superpowers skills** (via `.submodules/superpowers` — community-maintained):
 
-### Sync Instructions (Downstream Projects)
+| Skill                            | Trigger                              | Purpose                                        |
+| -------------------------------- | ------------------------------------ | ---------------------------------------------- |
+| `brainstorming`                  | design, plan, before implementation  | Socratic pre-implementation design             |
+| `writing-plans`                  | write a plan, implementation plan    | Granular task-level plan generation            |
+| `executing-plans`                | execute plan, implement plan         | Plan execution with sequential task tracking   |
+| `subagent-driven-development`    | implement with agents, parallel impl | Three-subagent review pattern per task         |
+| `requesting-code-review`         | request code review                  | Structured code review with SHA context        |
+| `receiving-code-review`          | received review, review feedback     | Adversarial verification of review feedback    |
+| `test-driven-development`        | TDD, write tests first               | TDD discipline enforcement (red/green/refactor)|
+| `systematic-debugging`           | debug, investigate bug               | Root-cause-first debugging framework           |
+| `verification-before-completion` | done, complete, finished             | Evidence gate before claiming completion       |
+| `dispatching-parallel-agents`    | parallel, multiple problems          | Parallel subagent dispatch for independent work|
+| `using-git-worktrees`            | worktree, isolated branch            | Safe worktree setup with baseline verification |
+| `finishing-a-development-branch` | finish branch, merge, done coding    | Branch completion with merge/PR/discard options|
+| `writing-skills`                 | author SKILL.md, write SKILL.md      | TDD-based skill authorship                     |
+| `using-superpowers`              | *(auto-injected at session start)*   | Meta-skill enforcing skill-first discipline    |
+
+> Full catalog with agent descriptions: See [AGENTS-AND-SKILLS.md](AGENTS-AND-SKILLS.md)
+
+### Install / Update
+
+**Option A: Two-layer setup (recommended)** — repo lives at `~/dev/.claude`, setup.sh symlinks
+subdirectories into `~/.claude/`. This is the canonical layout; see `README.md` for details.
 
 ```bash
-git clone --depth 1 https://github.com/ByronWilliamsCPA/.claude.git /tmp/.claude-update
-cp -r /tmp/.claude-update/.claude/agents/*.md .claude/agents/
-cp -r /tmp/.claude-update/.claude/skills/* .claude/skills/
-cp -r /tmp/.claude-update/.claude/rules/*.md .claude/rules/
-cp -r /tmp/.claude-update/.claude/context/*.md .claude/context/
-cp -r /tmp/.claude-update/.claude/standards/*.md .claude/standards/
-rm -rf /tmp/.claude-update
+# Fresh install
+git clone --recurse-submodules https://github.com/ByronWilliamsCPA/.claude.git ~/dev/.claude
+cd ~/dev/.claude && ./setup.sh
+
+# Update
+cd ~/dev/.claude && git pull origin main && git submodule update --remote --merge
+```
+
+**Option B: Direct clone to `~/.claude`** — simpler but `$HOME/.claude/scripts/` hook paths
+and submodule references resolve differently. Only use if you are not running `setup.sh`.
+
+```bash
+# Fresh install
+git clone --recurse-submodules https://github.com/ByronWilliamsCPA/.claude.git ~/.claude
+
+# Update
+cd ~/.claude && git pull origin main && git submodule update --remote --merge
 ```
 
 ## Development Philosophy

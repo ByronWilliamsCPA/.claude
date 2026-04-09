@@ -53,6 +53,14 @@
             "command": "$HOME/.claude/scripts/keyword-tool-trigger.sh --reset"
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/scripts/run-superpowers-session-start.sh"
+          }
+        ]
       }
     ]
   },
