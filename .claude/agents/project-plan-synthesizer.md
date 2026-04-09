@@ -18,19 +18,19 @@ four planning outputs into a single structured project plan with git branch stra
 
 All four documents must exist and contain substantive content (not placeholders):
 
-- `docs/planning/project-vision.md` — Project Vision & Scope (PVS)
-- `docs/planning/tech-spec.md` — Technical Specification
-- `docs/planning/roadmap.md` — Development Roadmap
-- `docs/planning/adr/` — At least one Architecture Decision Record
+- `docs/planning/project-vision.md`: Project Vision & Scope (PVS)
+- `docs/planning/tech-spec.md`: Technical Specification
+- `docs/planning/roadmap.md`: Development Roadmap
+- `docs/planning/adr/`: At least one Architecture Decision Record
 
 ## Synthesis Process
 
-### Step 1 — Validate Source Documents
+### Step 1: Validate Source Documents
 
 Confirm each required document exists and is populated. Abort with a clear error if any are
 missing or placeholder-only. List which documents are ready and which need completion.
 
-### Step 2 — Extract Key Information
+### Step 2: Extract Key Information
 
 From each document, extract:
 
@@ -39,13 +39,13 @@ From each document, extract:
 - **Roadmap**: Phase structure, phase dependencies, milestone definitions, timeline estimates
 - **ADRs**: Key architectural decisions and their rationale (reference by ADR number)
 
-### Step 3 — Research Best Practices
+### Step 3: Research Best Practices
 
 Use Context7 (`mcp__context7__resolve-library-id` + `mcp__context7__get-library-docs`) to look
 up framework-specific patterns for the primary technology stack identified in the Tech Spec.
 Apply relevant patterns to the phase implementation guidance.
 
-### Step 4 — Map Phases to Git Branches
+### Step 4: Map Phases to Git Branches
 
 Assign a semantic release-compatible branch type to each phase following the convention in
 `.claude/rules/git-workflow.md`:
@@ -61,25 +61,25 @@ Assign a semantic release-compatible branch type to each phase following the con
 | Performance work     | `perf/`       |
 | Bug/stabilisation    | `fix/`        |
 
-### Step 5 — Populate Project Plan
+### Step 5: Populate Project Plan
 
 Generate `docs/planning/PROJECT-PLAN.md` with the following sections:
 
-1. **Executive Summary** — synthesised from PVS
-2. **Scope** — boundaries and out-of-scope items from PVS
-3. **Architecture Overview** — key decisions from ADRs with ADR references
-4. **Technology Stack** — from Tech Spec
-5. **Phased Development** — one subsection per phase containing:
+1. **Executive Summary**: synthesised from PVS
+2. **Scope**: boundaries and out-of-scope items from PVS
+3. **Architecture Overview**: key decisions from ADRs with ADR references
+4. **Technology Stack**: from Tech Spec
+5. **Phased Development**: one subsection per phase containing:
    - Phase goal and deliverables
    - Git branch name
    - Acceptance criteria (verbatim from roadmap where present)
    - Quality gates (80% test coverage, pre-commit validation, security scan)
    - Dependencies on prior phases
-6. **Risk Register** — risks identified across all source documents
-7. **Success Metrics** — from PVS
-8. **TodoWrite Phase 0 Checklist** — environment setup tasks for immediate execution
+6. **Risk Register**: risks identified across all source documents
+7. **Success Metrics**: from PVS
+8. **TodoWrite Phase 0 Checklist**: environment setup tasks for immediate execution
 
-### Step 6 — Expert Validation
+### Step 6: Expert Validation
 
 Use zen-mcp tiered consensus (`mcp__zen__consensus`) with a Level 2 review assessing:
 
@@ -90,7 +90,7 @@ Use zen-mcp tiered consensus (`mcp__zen__consensus`) with a Level 2 review asses
 
 Incorporate feedback and re-validate until consensus returns an approval.
 
-### Step 7 — Confirm with User
+### Step 7: Confirm with User
 
 Present the generated plan summary (phase list, branch names, key risks). Do not proceed to
 Phase 0 execution without explicit user confirmation.
@@ -100,7 +100,7 @@ Phase 0 execution without explicit user confirmation.
 - Reuse existing patterns over custom solutions
 - Configuration over building new tooling
 - Security validation embedded in every phase's quality gates
-- No speculative phases — only what the roadmap defines
+- No speculative phases: only what the roadmap defines
 - Plan is the source of truth; never add scope not present in source documents
 
 ## Output

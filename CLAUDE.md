@@ -50,6 +50,10 @@ When commands fail due to permissions (e.g., mkdir, mount), try with sudo immedi
 > **Python linting, BasedPyright config, Ruff rules**: See `.claude/rules/python.md`
 >
 > **Canonical package choices, override policy**: See `.claude/standards/packages.md`
+>
+> **Writing rules (no em-dashes, AI pattern blacklist, grammar authority)**: See `.claude/rules/writing.md`
+>
+> **Writing quality thresholds (pipeline stages, stylometry targets, pass/fail)**: See `.claude/standards/writing-quality.md`
 
 ## Response-Aware Development (RAD)
 
@@ -175,6 +179,7 @@ Plan Validator, Research Agent, Modularization Assistant, Visual Content Generat
 | `/test-coverage`       | coverage analysis, coverage gaps | Coverage measurement and generation       |
 | `/sonarcloud`          | sonar, quality gate              | SonarCloud issue review and fixing        |
 | `/skill-creator`       | create skill, improve skill      | Skill development and iteration           |
+| `/writing`             | edit document, draft memo, rewrite, writing quality | Writing pipeline orchestration |
 
 **Superpowers skills** (via `.submodules/superpowers` — community-maintained):
 
@@ -192,7 +197,7 @@ Plan Validator, Research Agent, Modularization Assistant, Visual Content Generat
 | `dispatching-parallel-agents`    | parallel, multiple problems          | Parallel subagent dispatch for independent work|
 | `using-git-worktrees`            | worktree, isolated branch            | Safe worktree setup with baseline verification |
 | `finishing-a-development-branch` | finish branch, merge, done coding    | Branch completion with merge/PR/discard options|
-| `writing-skills`                 | create skill, write skill            | TDD-based skill authorship                     |
+| `writing-skills`                 | author SKILL.md, write SKILL.md      | TDD-based skill authorship                     |
 | `using-superpowers`              | *(auto-injected at session start)*   | Meta-skill enforcing skill-first discipline    |
 
 > Full catalog with agent descriptions: See [AGENTS-AND-SKILLS.md](AGENTS-AND-SKILLS.md)

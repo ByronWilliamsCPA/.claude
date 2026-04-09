@@ -1,7 +1,14 @@
-# Handoff: Remove Claude Configuration from Cookiecutter Template
+---
+schema_type: common
+title: "Handoff: Remove Claude Configuration from Cookiecutter Template"
+status: published
+owner: core-maintainer
+tags: [documentation]
+purpose: "Decision and task handoff for removing Claude config from cookiecutter-python-template."
+---
 
 > **For**: cookiecutter-python-template maintainers
-> **From**: ByronWilliamsCPA/.claude session — 2026-04-08
+> **From**: ByronWilliamsCPA/.claude session: 2026-04-08
 > **Branch to use**: `chore/remove-claude-config`
 > **Repo**: `ByronWilliamsCPA/cookiecutter-python-template`
 
@@ -20,7 +27,7 @@ aligns with how the superpowers community plugin works.
 **New install story for developers**:
 1. Install superpowers from the Claude marketplace (or `npm install -g @obra/superpowers`)
 2. Clone `https://github.com/ByronWilliamsCPA/.claude` to `~/.claude`
-3. Done — all projects on the machine inherit the full agent/skill suite automatically
+3. Done: all projects on the machine inherit the full agent/skill suite automatically
 
 ---
 
@@ -63,23 +70,23 @@ This is what gets generated into new projects. Delete entirely:
 ```
 
 > **Note on `merge-standards.md`**: This agent handles merging `cruft update` changes without
-> clobbering project customizations. Its logic should be **preserved** — either document it
+> clobbering project customizations. Its logic should be **preserved**: either document it
 > in the cruft update runbook or move the merge guidance into a `docs/cruft-update-guide.md`
 > in the template before deleting the agent file.
 
-### 3. `hooks/post_gen_project.py` — Claude setup functions
+### 3. `hooks/post_gen_project.py`: Claude setup functions
 
 Remove or stub out these two functions:
 
-- `setup_claude_subtree()` — cloned `.claude` as a git subtree into `.claude/standard/`
-- `setup_claude_user_settings()` — optionally cloned to `~/.claude`
+- `setup_claude_subtree()`: cloned `.claude` as a git subtree into `.claude/standard/`
+- `setup_claude_user_settings()`: optionally cloned to `~/.claude`
 
 Also remove any calls to these functions in the `main()` entrypoint. The rest of the hook
 (virtualenv setup, git init, dependency install, etc.) is unaffected.
 
 ### 4. `scripts/update-claude-standards.sh` (if present)
 
-Delete — this script updated the `.claude/standard` subtree. No longer needed.
+Delete: this script updated the `.claude/standard` subtree. No longer needed.
 
 ### 5. `CLAUDE.md` at the template repo root
 
@@ -93,7 +100,7 @@ Extends global CLAUDE.md standards at ~/.claude/CLAUDE.md.
 
 ## Project-Specific Notes
 
-- Template variables use `{{cookiecutter.x}}` syntax — treat these as literals when editing
+- Template variables use `{{cookiecutter.x}}` syntax: treat these as literals when editing
 - Test template generation with: `cookiecutter . --no-input`
 - Post-gen hook is at `hooks/post_gen_project.py`
 ```
@@ -173,7 +180,7 @@ Suggest adding this as `docs/cruft-update-guide.md` in the template.
 
 1. **The template repo's own development**: Does the cookiecutter team want to keep using
    Claude Code for template maintenance? If yes, they just need `~/.claude` set up at the
-   user level like everyone else — no special per-repo config needed.
+   user level like everyone else: no special per-repo config needed.
 
 2. **`settings.local.json.example`**: This was in `{{cookiecutter.project_slug}}/.claude/`.
    If it contained useful local settings guidance (editor paths, model overrides), that
