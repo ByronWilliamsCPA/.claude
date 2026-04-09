@@ -17,14 +17,19 @@ Claude Code acts as SUPERVISOR for all development tasks.
 | Assumption verification | `/rad` skill | Skill |
 | Security tasks | security-auditor agent (`zen.secaudit` auto-loaded) | Agent |
 | Code reviews | code-reviewer agent (`zen.codereview` auto-loaded) | Agent |
+| Requesting a structured review | `requesting-code-review` skill | Skill |
+| Responding to review feedback | `receiving-code-review` skill | Skill |
 | Testing | test-engineer agent (`zen.testgen` auto-loaded) | Agent |
 | Test generation | test-writer agent | Agent |
 | Test review | test-reviewer agent | Agent |
 | Coverage analysis | `/test-coverage` skill | Skill |
 | OWASP security | owasp-dispatch agent | Agent |
 | Documentation | documentation-writer agent (`zen.docgen` auto-loaded) | Agent |
-| Debugging | debug-agent (`zen.debug` auto-loaded via Tier 2) | Agent |
+| Debugging | `systematic-debugging` skill | Skill |
+| Debugging failing tests | `/debug-tests` skill | Skill |
 | Refactoring | `/quality` skill + code-reviewer agent | Skill + Agent |
+| Multiple independent problems | `dispatching-parallel-agents` skill | Skill |
+| Implement task with review loop | `subagent-driven-development` skill | Skill |
 
 > **MCP tool loading**: Tools marked "auto-loaded" activate via Tier 2 bundling when the agent is invoked. See `.claude/rules/mcp-strategy.md` for details.
 

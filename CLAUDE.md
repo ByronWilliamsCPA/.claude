@@ -157,6 +157,8 @@ Plan Validator, Research Agent, Modularization Assistant, Visual Content Generat
 
 ### Available Skills (`.claude/skills/`)
 
+**Custom skills** (this repo):
+
 | Skill                  | Trigger                          | Purpose                                   |
 | ---------------------- | -------------------------------- | ----------------------------------------- |
 | `/git`                 | commit, PR, branch               | Full git workflow (commit + PR + branch)  |
@@ -174,18 +176,36 @@ Plan Validator, Research Agent, Modularization Assistant, Visual Content Generat
 | `/sonarcloud`          | sonar, quality gate              | SonarCloud issue review and fixing        |
 | `/skill-creator`       | create skill, improve skill      | Skill development and iteration           |
 
-> Internal variant and workspace directories (`quality-variant-b`, `testing-variant-b`, etc.) are not user-facing skills. See [AGENTS-AND-SKILLS.md](AGENTS-AND-SKILLS.md) for the complete catalog.
+**Superpowers skills** (via `.submodules/superpowers` — community-maintained):
 
-### Sync Instructions (Downstream Projects)
+| Skill                            | Trigger                              | Purpose                                        |
+| -------------------------------- | ------------------------------------ | ---------------------------------------------- |
+| `brainstorming`                  | design, plan, before implementation  | Socratic pre-implementation design             |
+| `writing-plans`                  | write a plan, implementation plan    | Granular task-level plan generation            |
+| `executing-plans`                | execute plan, implement plan         | Plan execution with sequential task tracking   |
+| `subagent-driven-development`    | implement with agents, parallel impl | Three-subagent review pattern per task         |
+| `requesting-code-review`         | request code review                  | Structured code review with SHA context        |
+| `receiving-code-review`          | received review, review feedback     | Adversarial verification of review feedback    |
+| `test-driven-development`        | TDD, write tests first               | TDD discipline enforcement (red/green/refactor)|
+| `systematic-debugging`           | debug, investigate bug               | Root-cause-first debugging framework           |
+| `verification-before-completion` | done, complete, finished             | Evidence gate before claiming completion       |
+| `dispatching-parallel-agents`    | parallel, multiple problems          | Parallel subagent dispatch for independent work|
+| `using-git-worktrees`            | worktree, isolated branch            | Safe worktree setup with baseline verification |
+| `finishing-a-development-branch` | finish branch, merge, done coding    | Branch completion with merge/PR/discard options|
+| `writing-skills`                 | create skill, write skill            | TDD-based skill authorship                     |
+| `using-superpowers`              | *(auto-injected at session start)*   | Meta-skill enforcing skill-first discipline    |
+
+> Full catalog with agent descriptions: See [AGENTS-AND-SKILLS.md](AGENTS-AND-SKILLS.md)
+
+### Install / Update
 
 ```bash
-git clone --depth 1 https://github.com/ByronWilliamsCPA/.claude.git /tmp/.claude-update
-cp -r /tmp/.claude-update/.claude/agents/*.md .claude/agents/
-cp -r /tmp/.claude-update/.claude/skills/* .claude/skills/
-cp -r /tmp/.claude-update/.claude/rules/*.md .claude/rules/
-cp -r /tmp/.claude-update/.claude/context/*.md .claude/context/
-cp -r /tmp/.claude-update/.claude/standards/*.md .claude/standards/
-rm -rf /tmp/.claude-update
+# Fresh install (user-level, one-time per machine)
+git clone https://github.com/ByronWilliamsCPA/.claude.git ~/.claude
+cd ~/.claude && git submodule update --init --recursive
+
+# Update existing install
+cd ~/.claude && git pull origin main && git submodule update --remote --merge
 ```
 
 ## Development Philosophy
