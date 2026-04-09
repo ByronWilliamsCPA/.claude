@@ -89,6 +89,12 @@ incorrect assumptions, and architectural concerns before work begins.
 Analyzes how much of a defined scope has been completed. Compares planned deliverables against
 actual implementation and reports completion percentages with gap analysis.
 
+**[project-plan-synthesizer](/.claude/agents/project-plan-synthesizer.md)**
+Synthesizes the four initial planning documents (PVS, ADR, Tech Spec, Roadmap) into a comprehensive
+`docs/planning/PROJECT-PLAN.md` with semantic release-aligned phase branches, quality gates per
+phase, and a Phase 0 TodoWrite checklist. Invoke after `/project-planning` generates source docs
+and before Phase 1 development begins. Uses zen-mcp consensus for expert validation.
+
 ### API & Backend Development
 
 **[api-development-agent](/.claude/agents/api-development-agent.md)**
@@ -272,11 +278,100 @@ you want to add a new skill or improve an existing one.
 
 ---
 
+## Superpowers Skills (Community-Maintained)
+
+Superpowers skills are sourced from [obra/superpowers](https://github.com/obra/superpowers) via
+`.submodules/superpowers` and symlinked into `.claude/skills/`. They are community-maintained and
+auto-injected at session start via the `using-superpowers` meta-skill. Update with:
+`git submodule update --remote --merge`
+
+### Design & Planning
+
+**[brainstorming](/.submodules/superpowers/skills/brainstorming/SKILL.md)**
+Socratic pre-implementation design workflow. Explores context, asks one clarifying question at a
+time, proposes 2-3 architectural approaches, generates a spec document, and chains to
+`writing-plans`. Hard rule: no code until design is approved.
+
+**[writing-plans](/.submodules/superpowers/skills/writing-plans/SKILL.md)**
+Creates granular task-by-task implementation plans. Each task targets 2-5 minutes, follows TDD,
+includes exact file paths and complete code blocks. Plan is saved to
+`docs/superpowers/plans/` and committed before implementation begins.
+
+### Execution
+
+**[executing-plans](/.submodules/superpowers/skills/executing-plans/SKILL.md)**
+Loads a written plan, creates a TodoWrite task list, and executes tasks sequentially. Stops
+immediately on blockers and chains to `finishing-a-development-branch` on completion.
+
+**[subagent-driven-development](/.submodules/superpowers/skills/subagent-driven-development/SKILL.md)**
+Three-subagent review pattern per task: (1) Implementer executes and self-reviews, (2) Spec-compliance
+reviewer independently verifies against spec with adversarial skepticism, (3) Code-quality reviewer
+validates cleanliness. Never skips review loops.
+
+**[dispatching-parallel-agents](/.submodules/superpowers/skills/dispatching-parallel-agents/SKILL.md)**
+Assigns independent tasks to parallel subagents when 3+ independent problems exist simultaneously.
+One agent per independent problem domain.
+
+### Code Review
+
+**[requesting-code-review](/.submodules/superpowers/skills/requesting-code-review/SKILL.md)**
+Dispatches the `code-reviewer` subagent with structured context: what was implemented, plan
+reference, base SHA, head SHA. Mandates addressing Critical issues immediately.
+
+**[receiving-code-review](/.submodules/superpowers/skills/receiving-code-review/SKILL.md)**
+Enforces technical verification before acting on any review feedback. Five verification checks per
+suggestion. Explicitly prohibits performative agreement. Permits pushback when reviewer is incorrect
+or has insufficient context.
+
+### Testing & Quality
+
+**[test-driven-development](/.submodules/superpowers/skills/test-driven-development/SKILL.md)**
+Enforces red-green-refactor discipline. Iron Law: no production code without a failing test first.
+Any pre-existing production code must be deleted and re-implemented test-first.
+
+**[verification-before-completion](/.submodules/superpowers/skills/verification-before-completion/SKILL.md)**
+Universal evidence gate. No completion claim without running verification commands and reading their
+output. Prevents optimistic "it should work" declarations.
+
+### Debugging
+
+**[systematic-debugging](/.submodules/superpowers/skills/systematic-debugging/SKILL.md)**
+Four-phase framework: root cause investigation → pattern analysis → hypothesis testing →
+implementation. No fixes without root cause first. Escalates to architectural review after 3 failed
+fixes.
+
+### Git Workflow
+
+**[using-git-worktrees](/.submodules/superpowers/skills/using-git-worktrees/SKILL.md)**
+Safe worktree setup: detects correct directory, verifies worktree is git-ignored, installs
+dependencies, and runs baseline tests before any work begins.
+
+**[finishing-a-development-branch](/.submodules/superpowers/skills/finishing-a-development-branch/SKILL.md)**
+Branch completion workflow presenting four options: merge locally / create PR / keep branch / discard
+work. Runs full test suite first. Cleans up worktrees only for merge and discard. Requires typed
+confirmation before discarding.
+
+### Skill Development
+
+**[writing-skills](/.submodules/superpowers/skills/writing-skills/SKILL.md)**
+TDD-based skill authorship. RED phase: establish baseline failures without the skill. GREEN phase:
+write minimal documentation to address failures. REFACTOR phase: close loopholes. YAML frontmatter
+required; description must start with "Use when...".
+
+### Meta
+
+**[using-superpowers](/.submodules/superpowers/skills/using-superpowers/SKILL.md)**
+Meta-skill injected at session start via the SessionStart hook. Instructs Claude to invoke relevant
+skills before any response or action. Priority: explicit user instructions > superpowers skills >
+default system prompt.
+
+---
+
 ## Quick Reference: When to Use What
 
 | Need | Use |
 |------|-----|
-| Review code before merging | `code-reviewer` agent |
+| Review code before merging | `code-reviewer` agent or `requesting-code-review` skill |
 | Write missing tests | `test-writer` agent or `/test-coverage` skill |
 | Security scan a PR | `security-auditor` agent or `/security` skill |
 | Design a REST API | `api-development-agent` |
@@ -285,6 +380,15 @@ you want to add a new skill or improve an existing one.
 | Build LLM/RAG feature | `ai-engineer` |
 | Refactor large file | `modularization-assistant` |
 | Verify code assumptions | `/rad` skill |
-| Plan a new project | `/project-planning` skill |
-| Prepare a PR | `/git` skill (PR sub-workflow) |
+| Plan a new project | `/project-planning` skill → `project-plan-synthesizer` agent |
+| Design before coding | `brainstorming` skill |
+| Write an implementation plan | `writing-plans` skill |
+| Execute a written plan | `executing-plans` skill |
+| Implement with review loop | `subagent-driven-development` skill |
+| Debug any issue | `systematic-debugging` skill |
+| Debug failing tests | `/debug-tests` skill |
+| Prepare a PR | `/git` skill or `finishing-a-development-branch` skill |
+| Set up isolated branch | `using-git-worktrees` skill |
 | Check phase readiness | `/phase-gate` skill or `phase-reviewer` agent |
+| Respond to a code review | `receiving-code-review` skill |
+| Confirm work is done | `verification-before-completion` skill |
