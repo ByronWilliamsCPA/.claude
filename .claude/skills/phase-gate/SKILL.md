@@ -75,7 +75,31 @@ Combine both agent reports into a single summary for the user:
 
 #### Step 4: Wait for User Approval
 
-**CRITICAL**: Do not begin any work on the next phase until the user explicitly approves. If the verdict is NOT READY, offer to help address the blockers.
+**CRITICAL**: Do not begin any work on the next phase until the user explicitly approves.
+
+**If NOT READY:**
+- List the specific blockers from the phase-reviewer and scope-analyzer reports
+- Offer to help address them: "Would you like help fixing these blockers?"
+- Stop. Do not advance.
+
+**If READY and user approves:**
+
+1. **Invoke `finishing-a-development-branch` skill**
+   - This presents the user with merge/PR/keep/discard options
+   - Wait for the skill to complete fully (user has made and executed their choice)
+
+2. **Offer phase N+1 transition** (only after finishing completes):
+   ```
+   Phase {N} complete. Ready to start Phase {N+1}?
+
+   This will run: /phase-gate phase {N+1} plan
+   (validates the Phase {N+1} implementation plan and sets up a new worktree)
+
+   Start Phase {N+1}? (yes / no)
+   ```
+   - If yes: invoke `/phase-gate phase {N+1} plan`
+   - If no: stop — the user will start Phase {N+1} manually when ready
+   - **Never auto-advance** — the offer must be dismissed explicitly
 
 ### Mode: Scope Only (`scope-only`)
 
@@ -87,12 +111,40 @@ Run only the phase-reviewer agent. Useful when scope is already confirmed and yo
 
 ### Mode: Plan Validation (`plan`)
 
-For pre-implementation validation. Instead of checking what's done, validate a proposed plan:
+For pre-implementation validation and workspace setup. Validates the phase plan against scope, sets up an isolated worktree, then hands off to the execution skill.
 
-1. Launch the **plan-validator** agent with the phase number and the current TodoWrite items (or ask the user for the plan)
-2. Present the traceability matrix showing which plan items map to acceptance criteria
-3. Flag scope creep candidates and coverage gaps
-4. Get user approval of the plan before implementation begins
+1. **Locate the phase implementation plan:**
+   - Check `docs/superpowers/plans/` for a plan file matching phase N (e.g. `*phase-{N}*` or `*phase{N}*`)
+   - If not found, ask the user: "What is the path to the Phase {N} implementation plan?"
+
+2. **Check for PROJECT-PLAN.md** (optional — large project path only):
+   - If `docs/planning/PROJECT-PLAN.md` exists: read the Phase {N} acceptance criteria and branch name from it
+   - If it does not exist: ask user for the phase description and use branch name `feat/phase-{N}-work`
+
+3. **Launch plan-validator agent:**
+   - Task: "Validate the implementation plan at {plan_path} against Phase {N} acceptance criteria. Check traceability — every plan task should map to a deliverable. Flag scope creep candidates and coverage gaps."
+   - Present the traceability matrix to the user
+   - Flag any scope creep or gaps
+
+4. **Get user approval of the plan** before proceeding. If the user requests changes, update the plan and re-validate.
+
+5. **Set up isolated worktree** (invoke `using-git-worktrees` skill):
+   - Branch name: use the branch name from PROJECT-PLAN.md if available, otherwise `feat/phase-{N}-{slug}` where slug is derived from the phase name
+   - After worktree is ready, confirm: "Worktree ready at {path}. Tests passing."
+
+6. **Ask execution preference:**
+   ```
+   Workspace ready. How would you like to execute Phase {N}?
+
+   1. Subagent-Driven (recommended) — fresh subagent per task, two-stage review
+   2. Inline Execution — execute tasks in this session with checkpoints
+
+   Which approach?
+   ```
+
+7. **Invoke chosen skill** with the phase implementation plan path:
+   - Option 1: invoke `subagent-driven-development` with the plan
+   - Option 2: invoke `executing-plans` with the plan
 
 ## Examples
 

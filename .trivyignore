@@ -1,0 +1,15 @@
+# Trivy vulnerability ignore list
+# Format: CVE-ID [expiration] # reason
+#
+# Each entry here has been reviewed and accepted. Document:
+#   - Which package introduces it
+#   - Why it cannot be fixed upstream
+#   - Why the risk is acceptable in this project
+
+# CVE-2022-42969: ReDoS in py.path.svnwc (py 1.11.0)
+# Introduced by: interrogate (dev-only dependency for docstring coverage checks)
+# Upstream status: py is abandoned; no fix version available
+# Risk: py.path.svnwc is only reachable when traversing SVN working-copy paths.
+#        This project does not use SVN. The vulnerable code path is never exercised.
+#        Dev-dependency only — not present in production builds.
+CVE-2022-42969
