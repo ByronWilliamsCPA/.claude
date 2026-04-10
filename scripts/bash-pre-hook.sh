@@ -15,6 +15,9 @@
 # =============================================================================
 
 set -uo pipefail
+# Note: -e is intentionally omitted. This is a PreToolUse hook that must never
+# exit non-zero unexpectedly (exit 2 is reserved for the block signal). Any
+# unhandled error must fall through to the allow path.
 
 LOG_FILE="${HOME}/.claude/logs/bash-pre-hook.log"
 mkdir -p "$(dirname "$LOG_FILE")"
@@ -26,7 +29,7 @@ log() {
 # Require jq for JSON parsing
 if ! command -v jq &>/dev/null; then
     log "ERROR: jq not found; cannot parse hook context — passing through"
-    date +%s > /tmp/claude-bash-start
+    printf '%s' "$(date +%s)" > /tmp/claude-bash-start.tmp && mv /tmp/claude-bash-start.tmp /tmp/claude-bash-start
     exit 0
 fi
 
@@ -34,7 +37,7 @@ fi
 CONTEXT=$(cat)
 
 if [[ -z "$CONTEXT" ]]; then
-    date +%s > /tmp/claude-bash-start
+    printf '%s' "$(date +%s)" > /tmp/claude-bash-start.tmp && mv /tmp/claude-bash-start.tmp /tmp/claude-bash-start
     exit 0
 fi
 
@@ -42,43 +45,41 @@ fi
 CMD=$(jq -r '.tool_input.command // empty' 2>/dev/null <<< "$CONTEXT")
 
 if [[ -z "$CMD" ]]; then
-    date +%s > /tmp/claude-bash-start
+    printf '%s' "$(date +%s)" > /tmp/claude-bash-start.tmp && mv /tmp/claude-bash-start.tmp /tmp/claude-bash-start
     exit 0
 fi
 
 # ---------------------------------------------------------------------------
 # Force-push guard
-# Block: git push with --force, -f, or --force-with-lease targeting main/master
+# Block: git push with --force, -f, or --force-with-lease when:
+#   (a) the explicit branch target is main or master, OR
+#   (b) no branch target is present at all (bare force push)
 #
-# Two patterns cover argument ordering variations:
-#   Pattern A: force flag appears before branch name
-#     e.g. git push --force origin main
-#   Pattern B: branch name appears before force flag (uncommon but possible)
-#     e.g. git push origin main --force
+# Logic: detect force flag first, then extract the branch token by stripping
+# "git push", the force flag(s), and the remote name from the command string.
+# If no branch token remains, the push is bare (could target any tracking
+# branch including main) and must be blocked.
 # ---------------------------------------------------------------------------
 
-is_force_push=false
-if echo "$CMD" | grep -qE 'git\s+push\s+(.*\s)?(--force|-f|--force-with-lease)'; then
-    is_force_push=true
-fi
+if echo "$CMD" | grep -qE '(--force|--force-with-lease|-f)(\s|$)'; then
+    # Extract the branch portion: strip git push, force flags, remote name
+    BRANCH_TOKEN=$(echo "$CMD" | \
+        sed -E 's/git\s+push\s+//' | \
+        sed -E 's/(--force|--force-with-lease|-f)\s*//' | \
+        sed -E 's/[a-zA-Z0-9_-]+\s+//' | \
+        awk '{print $1}')
 
-if $is_force_push; then
-    targets_protected=false
-    # Check for main or master as a standalone word (branch name)
-    if echo "$CMD" | grep -qE '\b(main|master)\b'; then
-        targets_protected=true
-    fi
-
-    if $targets_protected; then
-        log "BLOCKED force-push to protected branch: ${CMD}"
-        echo "BLOCKED: Force-pushing to main or master is not allowed. Use a feature branch or open a PR. Command was: ${CMD}"
+    # Block if: no branch token present (bare force push), or branch is main/master
+    if [[ -z "$BRANCH_TOKEN" ]] || echo "$BRANCH_TOKEN" | grep -qE '^(main|master)$'; then
+        log "BLOCKED force-push: CMD=${CMD}"
+        echo "BLOCKED: force-push to main/master (or bare force-push) is prohibited. Use a PR instead."
         exit 2
     fi
 fi
 
 # ---------------------------------------------------------------------------
-# Command is allowed — write timing start timestamp
+# Command is allowed — write timing start timestamp (atomic write)
 # ---------------------------------------------------------------------------
-date +%s > /tmp/claude-bash-start
+printf '%s' "$(date +%s)" > /tmp/claude-bash-start.tmp && mv /tmp/claude-bash-start.tmp /tmp/claude-bash-start
 log "Allowed: ${CMD}"
 exit 0
