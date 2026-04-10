@@ -333,9 +333,16 @@ def _actual_counts(repo_root: str) -> dict[str, int]:
     """
     root = Path(repo_root)
 
-    agents_count = len(list((root / ".claude" / "agents").glob("*.md")))
-    skills_count = len(list((root / ".claude" / "skills").glob("*/SKILL.md")))
-    docs_count = len(list((root / "docs").rglob("*.md")))
+    agents_dir = root / ".claude" / "agents"
+    agents_count = len(list(agents_dir.glob("*.md"))) if agents_dir.exists() else 0
+
+    skills_dir = root / ".claude" / "skills"
+    skills_count = (
+        len(list(skills_dir.glob("*/SKILL.md"))) if skills_dir.exists() else 0
+    )
+
+    docs_dir = root / "docs"
+    docs_count = len(list(docs_dir.rglob("*.md"))) if docs_dir.exists() else 0
 
     hooks_count = 0
     settings_path = Path.home() / ".claude" / "settings.json"
@@ -380,6 +387,18 @@ def check_counts(scope: str, *, repo_root: str = ".") -> list[Finding]:
                 claimed = int(match.group(1))
                 category_key = _COUNT_WORD_MAP.get(match.group(2).lower(), "")
                 if not category_key:
+                    findings.append(
+                        Finding(
+                            category="counts",
+                            severity="INFO",
+                            file=str(md_file),
+                            line=line_no,
+                            message=(
+                                f"count claim '{match.group(2)}' — "
+                                "unrecognized category, flagged for manual review"
+                            ),
+                        )
+                    )
                     continue
                 real = actual.get(category_key, 0)
                 if claimed != real:
@@ -404,6 +423,7 @@ def check_counts(scope: str, *, repo_root: str = ".") -> list[Finding]:
 
 _PYTHON_VER_RE = re.compile(r"Python\s+3\.(\d+)")
 _MODEL_RE = re.compile(r"claude-[a-z]+-\d[\w-]*")
+_SCHEMA_VER_RE = re.compile(r"schema_version\s+\d+")
 
 
 def _parse_python_range(
@@ -445,55 +465,120 @@ def _load_python_range(
     return _parse_python_range(match.group(1))
 
 
+def _check_python_version(
+    line: str,
+    file_path: str,
+    line_no: int,
+    python_range: tuple[tuple[int, int], tuple[int, int]] | None,
+) -> list[Finding]:
+    """Check a single line for out-of-range Python version references.
+
+    Args:
+        line: Source line text.
+        file_path: Path string of the file being scanned.
+        line_no: 1-based line number.
+        python_range: Parsed (min, max) version tuples from pyproject.toml.
+
+    Returns:
+        List of WARN findings for each out-of-range reference.
+    """
+    if python_range is None:
+        return []
+    lo, hi = python_range
+    return [
+        Finding(
+            category="versions",
+            severity="WARN",
+            file=file_path,
+            line=line_no,
+            message=(
+                f"Python 3.{int(m.group(1))} is outside declared range "
+                f">=3.{lo[1]},<3.{hi[1]} in pyproject.toml"
+            ),
+        )
+        for m in _PYTHON_VER_RE.finditer(line)
+        if (3, int(m.group(1))) < lo or (3, int(m.group(1))) >= hi
+    ]
+
+
+def _check_model_names(line: str, file_path: str, line_no: int) -> list[Finding]:
+    """Check a single line for unknown Claude model name references.
+
+    Args:
+        line: Source line text.
+        file_path: Path string of the file being scanned.
+        line_no: 1-based line number.
+
+    Returns:
+        List of WARN findings for each unrecognized model name.
+    """
+    return [
+        Finding(
+            category="versions",
+            severity="WARN",
+            file=file_path,
+            line=line_no,
+            message=f"model '{m.group(0)}' may be outdated",
+        )
+        for m in _MODEL_RE.finditer(line)
+        if m.group(0) not in KNOWN_CURRENT_MODELS
+    ]
+
+
+def _check_schema_version_refs(
+    line: str, file_path: str, line_no: int
+) -> list[Finding]:
+    """Check a single line for schema_version references flagged for manual review.
+
+    Args:
+        line: Source line text.
+        file_path: Path string of the file being scanned.
+        line_no: 1-based line number.
+
+    Returns:
+        List of INFO findings for each schema_version reference.
+    """
+    return [
+        Finding(
+            category="versions",
+            severity="INFO",
+            file=file_path,
+            line=line_no,
+            message=(
+                f"schema_version reference '{m.group(0)}' — flagged for manual review"
+            ),
+        )
+        for m in _SCHEMA_VER_RE.finditer(line)
+    ]
+
+
 def check_versions(scope: str, *, repo_root: str = ".") -> list[Finding]:
     """Flag stale Python version references and unknown model names.
 
     Python version: any 'Python 3.X' outside pyproject.toml range is WARN.
     Model names: any claude-*-* not in KNOWN_CURRENT_MODELS is WARN.
+    Schema version references: flagged as INFO for manual review.
 
     Args:
         scope: Directory to scan recursively for .md files.
         repo_root: Repository root used to locate pyproject.toml.
 
     Returns:
-        List of Finding dicts with severity WARN for each stale reference.
+        List of Finding dicts for each stale or flagged reference.
     """
     findings: list[Finding] = []
     python_range = _load_python_range(repo_root)
 
     for md_file in sorted(Path(scope).rglob("*.md")):
-        content = md_file.read_text(encoding="utf-8")
-        for line_no, line in enumerate(content.splitlines(), start=1):
-            for match in _PYTHON_VER_RE.finditer(line):
-                minor = int(match.group(1))
-                if python_range is not None:
-                    lo, hi = python_range
-                    if (3, minor) < lo or (3, minor) >= hi:
-                        findings.append(
-                            Finding(
-                                category="versions",
-                                severity="WARN",
-                                file=str(md_file),
-                                line=line_no,
-                                message=(
-                                    f"Python 3.{minor} is outside declared range "
-                                    f">=3.{lo[1]},<3.{hi[1]} in pyproject.toml"
-                                ),
-                            )
-                        )
-
-            for match in _MODEL_RE.finditer(line):
-                model_name = match.group(0)
-                if model_name not in KNOWN_CURRENT_MODELS:
-                    findings.append(
-                        Finding(
-                            category="versions",
-                            severity="WARN",
-                            file=str(md_file),
-                            line=line_no,
-                            message=f"model '{model_name}' may be outdated",
-                        )
-                    )
+        file_path = str(md_file)
+        for line_no, line in enumerate(
+            md_file.read_text(encoding="utf-8").splitlines(), start=1
+        ):
+            findings.extend(
+                _check_python_version(line, file_path, line_no, python_range)
+            )
+            findings.extend(_check_model_names(line, file_path, line_no))
+            findings.extend(_check_schema_version_refs(line, file_path, line_no))
 
     return findings
 
