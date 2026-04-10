@@ -85,13 +85,14 @@ EOF
 out=$(hook_json /tmp/t1_floor.py | bash "$SCRIPT" 2>/dev/null)
 check "floor violation (datetime.UTC)" "found" "$out"
 
-# Test 2: ceiling violation — datetime.utcnow()
+# Test 2: ceiling violation — datetime.datetime.utcnow() (fully-qualified form)
+# The pattern matches both datetime.utcnow() and datetime.datetime.utcnow() as a substring.
 cat > /tmp/t2_ceiling.py << 'EOF'
 import datetime
 now = datetime.datetime.utcnow()
 EOF
 out=$(hook_json /tmp/t2_ceiling.py | bash "$SCRIPT" 2>/dev/null)
-check "ceiling violation (utcnow)" "found" "$out"
+check "ceiling violation (datetime.datetime.utcnow)" "found" "$out"
 
 # Test 3: clean Python file
 cat > /tmp/t3_clean.py << 'EOF'
@@ -108,17 +109,18 @@ EOF
 out=$(hook_json /tmp/t4_readme.md | bash "$SCRIPT" 2>/dev/null)
 check "non-Python file (no output)" "silent" "$out"
 
-# Test 5: AST pattern — match statement
-cat > /tmp/t5_match.py << 'EOF'
-def handle(command):
-    match command:
-        case "quit":
-            return False
-        case _:
-            return True
+# Test 5: AST pattern — except* (exception groups, Python 3.11+)
+# Note: match/case is NOT flagged — it is valid Python 3.10+ syntax and the project
+# floor is 3.10. Only except* (TryStar) is flagged by the AST tier.
+cat > /tmp/t5_except_star.py << 'EOF'
+async def handle():
+    try:
+        pass
+    except* ValueError as eg:
+        pass
 EOF
-out=$(hook_json /tmp/t5_match.py | bash "$SCRIPT" 2>/dev/null)
-check "AST pattern (match statement)" "found" "$out"
+out=$(hook_json /tmp/t5_except_star.py | bash "$SCRIPT" 2>/dev/null)
+check "AST pattern (except* requires 3.11+)" "found" "$out"
 
 echo ""
 echo "Results: ${PASS} passed, ${FAIL} failed"
@@ -355,17 +357,18 @@ bash /tmp/py310_hook_tests.sh
 Expected output:
 ```text
 PASS: floor violation (datetime.UTC)
-PASS: ceiling violation (utcnow)
+PASS: ceiling violation (datetime.datetime.utcnow)
 PASS: clean Python file (no output)
 PASS: non-Python file (no output)
-PASS: AST pattern (match statement)
+PASS: AST pattern (except* requires 3.11+)
 
 Results: 5 passed, 0 failed
 ```
 
-If Test 5 fails, check the Python version: `python3 --version`. The `ast.Match` node
-exists in Python 3.10+. If `python3` is 3.9, Test 5 will fail — the AST tier will skip
-match detection, which is expected degradation behaviour (not a bug).
+If Test 5 fails, check the Python version: `python3 --version`. The `TryStar` AST node
+(for `except*`) exists in Python 3.11+. If `python3` is 3.10 or older, Test 5 may fail
+because the test fixture itself is a syntax error on those versions — the script will
+emit a parse-failure log entry, which is expected degradation behavior (not a bug).
 
 - [ ] **Step 4: Verify the output format for a floor violation looks correct**
 
@@ -532,7 +535,7 @@ Expected: line count identical before and after.
 
 ```bash
 rm -f /tmp/t1_floor.py /tmp/t2_ceiling.py /tmp/t3_clean.py \
-       /tmp/t4_readme.md /tmp/t5_match.py /tmp/smoke_test.py \
+       /tmp/t4_readme.md /tmp/t5_except_star.py /tmp/smoke_test.py \
        /tmp/py310_hook_tests.sh
 ```
 

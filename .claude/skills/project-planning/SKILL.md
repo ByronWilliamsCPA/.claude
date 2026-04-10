@@ -22,7 +22,7 @@ maintain context coherence across coding sessions and prevent architectural drif
 
 ## Modes
 
-This skill operates in two modes depending on where you are in the planning flow.
+This skill operates in three modes depending on where you are in the planning flow.
 
 ### Entry Mode (`/project-planning entry`)
 

@@ -19,7 +19,16 @@ mkdir -p "$(dirname "$LOG_FILE")"
 
 log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" >> "$LOG_FILE"
+    return 0
 }
+
+# ---- jq guard ----------------------------------------------------------------
+# jq is required to parse the hook's JSON context. Fail open (exit 0) if absent
+# so a missing dependency never blocks PreToolUse execution.
+if ! command -v jq &>/dev/null; then
+    log "WARN jq not found — planning bridge gate skipped"
+    exit 0
+fi
 
 # Read JSON context from stdin
 CONTEXT=$(cat)

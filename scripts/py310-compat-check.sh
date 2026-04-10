@@ -21,12 +21,23 @@ mkdir -p "$(dirname "$LOG_FILE")"
 
 log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" >> "$LOG_FILE"
+    return 0
 }
 
-# ---- jq guard ----------------------------------------------------------------
+# ---- Tool guards -------------------------------------------------------------
 if ! command -v jq &>/dev/null; then
     log "WARN jq not found — py310 compat check skipped"
     exit 0
+fi
+
+# grep -P (PCRE) is required for the patterns below.
+# GNU grep supports -P; macOS/BSD grep does not.
+# Fall back silently when PCRE is unavailable so the hook never blocks Claude.
+if ! echo "" | grep -qP "" 2>/dev/null; then
+    log "WARN grep -P (PCRE) not available — py310 Tier 1 grep scan skipped"
+    GREP_PCRE_AVAILABLE=false
+else
+    GREP_PCRE_AVAILABLE=true
 fi
 
 # ---- Read hook context from stdin --------------------------------------------
@@ -49,6 +60,7 @@ FILE_PATH=$(jq -r '.tool_input.file_path // empty' 2>/dev/null <<< "$CONTEXT")
 FINDINGS=()
 
 # run_grep <label> <pcre_pattern> <description> <fix>
+# No-ops silently when PCRE is unavailable on the current system.
 run_grep() {
     local label="$1"
     local pattern="$2"
@@ -56,6 +68,8 @@ run_grep() {
     local fix="$4"
     local indent
     indent=$(printf "%26s" '')
+
+    [[ "$GREP_PCRE_AVAILABLE" == false ]] && return 0
 
     while IFS=: read -r linenum _; do
         [[ -z "$linenum" ]] && continue
@@ -72,7 +86,7 @@ run_grep "[FLOOR 3.11+]" \
     "use \`datetime.timezone.utc\` or a compat layer"
 
 run_grep "[FLOOR 3.11+]" \
-    '^(import tomllib|from tomllib\b)' \
+    '^\s*(import tomllib|from tomllib\b)' \
     "\`tomllib\` — stdlib module requires Python 3.11+" \
     "use \`import tomli as tomllib\` inside try/except ImportError"
 
@@ -87,13 +101,14 @@ run_grep "[FLOOR 3.11+]" \
     "normalize first: replace trailing Z with +00:00 before calling fromisoformat"
 
 # Ceiling — deprecated 3.12, removed 3.14
+# Patterns match both calling styles: datetime.utcnow() and datetime.datetime.utcnow()
 run_grep "[CEILING 3.14]" \
-    'datetime\.utcnow\(\)' \
+    '(datetime\.)?datetime\.utcnow\(\)' \
     "\`datetime.utcnow()\` — deprecated in 3.12, removed in 3.14" \
     "use \`datetime.datetime.now(datetime.timezone.utc)\`"
 
 run_grep "[CEILING 3.14]" \
-    'datetime\.utcfromtimestamp\(' \
+    '(datetime\.)?datetime\.utcfromtimestamp\(' \
     "\`datetime.utcfromtimestamp()\` — deprecated in 3.12, removed in 3.14" \
     "use \`datetime.datetime.fromtimestamp(ts, datetime.timezone.utc)\`"
 
@@ -120,10 +135,9 @@ except Exception:
     sys.exit(0)
 
 for node in ast.walk(tree):
-    # match/case — structural pattern matching, Python 3.10+ syntax node
-    if type(node).__name__ == "Match":
-        print(f"FLOOR_MATCH:{node.lineno}")
     # except* — exception groups, Python 3.11+ TryStar node
+    # Note: match/case (ast.Match) is NOT flagged — it is valid Python 3.10+ syntax
+    # and the project floor is 3.10, so match statements are permitted.
     if type(node).__name__ == "TryStar":
         print(f"FLOOR_EXCEPT_STAR:{node.lineno}")
 
@@ -145,12 +159,6 @@ PYEOF
         while IFS= read -r line; do
             [[ -z "$line" ]] && continue
             case "$line" in
-                FLOOR_MATCH:*)
-                    lineno="${line#FLOOR_MATCH:}"
-                    FINDINGS+=("  [FLOOR 3.10+] line ${lineno}: \`match\` statement — requires Python 3.10+ syntax")
-                    FINDINGS+=("$(printf "%26s" '')Fix: rewrite as if/elif chain for 3.10 floor compatibility")
-                    log "FINDING FLOOR_MATCH line=${lineno} file=${FILE_PATH}"
-                    ;;
                 FLOOR_EXCEPT_STAR:*)
                     lineno="${line#FLOOR_EXCEPT_STAR:}"
                     FINDINGS+=("  [FLOOR 3.11+] line ${lineno}: \`except*\` — requires Python 3.11+")

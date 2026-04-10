@@ -1,7 +1,7 @@
 ---
 schema_type: common
 title: "Python Version Compatibility Hook — Design Spec"
-status: draft
+status: published
 owner: core-maintainer
 purpose: "Design specification for a PostToolUse hook that detects Python 3.10 floor and 3.14 ceiling compatibility violations immediately after Edit or Write tool calls."
 tags:
@@ -120,18 +120,21 @@ Add `PostToolUse` array to the existing `hooks` object:
 | `[FLOOR 3.11+]` | `from typing import.*\bLiteralString\b` | Requires 3.11+ | `typing_extensions.LiteralString` |
 | `[FLOOR 3.11+]` | `fromisoformat.*Z["']` | Z suffix requires 3.11+ (best-effort: matches literal Z strings only) | Normalize to `+00:00` first |
 | `[CEILING 3.14]` | `datetime\.utcnow\(\)` | Deprecated 3.12, removed 3.14 | `datetime.now(timezone.utc)` |
-| `[CEILING 3.14]` | `datetime\.utcfromtimestamp\(` | Deprecated 3.12, removed 3.14 | `datetime.fromtimestamp(ts, UTC)` |
+| `[CEILING 3.14]` | `datetime\.utcfromtimestamp\(` | Deprecated 3.12, removed 3.14 | `datetime.fromtimestamp(ts, datetime.timezone.utc)` |
 
 ### Tier 2 — Python AST patterns
 
 | Label | AST node | Boundary | Recommended fix |
 | ----- | -------- | -------- | --------------- |
-| `[FLOOR 3.10+]` | `ast.Match` | Requires 3.10+ syntax | Rewrite as `if`/`elif` chain |
-| `[FLOOR 3.11+]` | `ExceptHandler` with `*` (except*) | Requires 3.11+ | Restructure error handling |
-| `[FLOOR 3.10+]` | Parenthesized `With` items | Requires 3.10+ | Single `with` or nested `with` |
+| `[FLOOR 3.11+]` | `TryStar` (`except*`) | Requires 3.11+ | Restructure error handling |
+| `[FLOOR 3.11+]` | `typing.Self` / `typing.LiteralString` | Requires 3.11+ | Use `typing_extensions` |
 
-Note: The AST parser itself requires Python 3.10+ to recognise `match` nodes. If the system
-`python3` is older, those nodes are skipped and a log entry is written.
+Note: `match/case` (`ast.Match`) is **not** flagged. Structural pattern matching was
+introduced in Python 3.10, which is the project's floor. `match` statements are valid
+throughout the supported range (3.10–3.14).
+
+Note: Parenthesized `with` statements are not detectable via AST alone (both
+`with (a, b):` and `with a, b:` produce identical AST nodes), so this pattern is omitted.
 
 ## Output Format
 
@@ -146,10 +149,8 @@ Note: The AST parser itself requires Python 3.10+ to recognise `match` nodes. If
                           Fix: use `import tomli as tomllib` with a try/except
   [FLOOR 3.11+] line 42: `datetime.UTC` — requires Python 3.11+
                           Fix: use `datetime.timezone.utc` or a compat layer
-  [FLOOR 3.10+] line 67: `match` statement — requires Python 3.10+ syntax
-                          Fix: rewrite as if/elif chain for 3.10 floor compatibility
   [CEILING 3.14] line 88: `datetime.utcnow()` — deprecated 3.12, removed 3.14
-                           Fix: use `datetime.now(datetime.timezone.utc)`
+                           Fix: use `datetime.datetime.now(datetime.timezone.utc)`
 
 Fix all items above before committing. Python 3.10 (floor) and 3.14 (ceiling) compatibility required.
 ```
@@ -186,11 +187,13 @@ Five test cases to verify before shipping:
 
 1. **Floor violation**: Edit a `.py` file to include `datetime.UTC` — hook should print the
    floor warning with correct line number
-2. **Ceiling violation**: Edit a `.py` file to include `datetime.utcnow()` — hook should print
-   the ceiling warning
+2. **Ceiling violation**: Edit a `.py` file to include `datetime.datetime.utcnow()` — hook
+   should print the ceiling warning (pattern matches both `datetime.utcnow()` and
+   `datetime.datetime.utcnow()` as a substring)
 3. **Clean file**: Edit a `.py` file with no violations — hook should produce no output
 4. **Non-Python file**: Edit a `.md` file — hook should produce no output
-5. **AST pattern**: Edit a `.py` file to include a `match` statement — Tier 2 should detect it
+5. **AST pattern**: Edit a `.py` file to include `except*` — Tier 2 should detect it as
+   a 3.11+ floor violation (`match/case` is intentionally not flagged — valid at 3.10 floor)
 
 ## File Locations
 
