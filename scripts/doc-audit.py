@@ -66,6 +66,8 @@ KNOWN_CURRENT_MODELS: frozenset[str] = frozenset(
     }
 )
 
+_CLAUDE_SUBDIR = ".claude"
+
 _COUNT_WORD_MAP: dict[str, str] = {
     "agent": "agents",
     "agents": "agents",
@@ -103,6 +105,30 @@ def _parse_frontmatter(content: str) -> dict[str, object] | None:
     return _parse_simple_yaml(yaml_block)
 
 
+def _parse_yaml_scalar_line(
+    line: str,
+    result: dict[str, object],
+) -> tuple[str | None, list[str]]:
+    """Parse a top-level YAML key: value line and update result in place.
+
+    Args:
+        line: A single YAML line (not a list item).
+        result: Dict being built; updated in place for scalar values.
+
+    Returns:
+        (list_key, []) when the line starts a new list value; (None, []) otherwise.
+    """
+    if ":" not in line or line.startswith(" "):
+        return None, []
+    key, _, value = line.partition(":")
+    key = key.strip()
+    value = value.strip()
+    if value in ("", ">", "|"):
+        return key, []
+    result[key] = value.strip("\"'")
+    return None, []
+
+
 def _parse_simple_yaml(yaml_text: str) -> dict[str, object]:
     """Parse a minimal YAML subset: scalars and indented lists.
 
@@ -127,15 +153,10 @@ def _parse_simple_yaml(yaml_text: str) -> dict[str, object]:
             current_list_key = None
             current_list = []
 
-        if ":" in line and not line.startswith(" "):
-            key, _, value = line.partition(":")
-            key = key.strip()
-            value = value.strip()
-            if value in ("", ">", "|"):
-                current_list_key = key
-                current_list = []
-            else:
-                result[key] = value.strip("\"'")
+        new_key, new_list = _parse_yaml_scalar_line(line, result)
+        if new_key is not None:
+            current_list_key = new_key
+            current_list = new_list
 
     if current_list_key is not None and current_list:
         result[current_list_key] = list(current_list)
@@ -274,6 +295,56 @@ def check_frontmatter(scope: str, *, repo_root: str = ".") -> list[Finding]:
 _LINK_RE = re.compile(r"\[([^\]]+)\]\(([^)]+)\)")
 
 
+def _extract_local_path(target: str) -> str | None:
+    """Return the local file path portion of a link target, or None to skip.
+
+    Skips external links (http/https), anchor-only links (#section), and
+    empty path parts.
+
+    Args:
+        target: Raw link target string from a markdown link.
+
+    Returns:
+        Local path string, or None if the link should be skipped.
+    """
+    if target.startswith(("http://", "https://")):
+        return None
+    if target.startswith("#"):
+        return None
+    path_part = target.split("#", maxsplit=1)[0]
+    return path_part or None
+
+
+def _check_links_in_file(md_file: Path) -> list[Finding]:
+    """Check all internal links in a single markdown file.
+
+    Args:
+        md_file: Path to the markdown file to check.
+
+    Returns:
+        List of Finding dicts with severity ERROR for each broken link.
+    """
+    findings: list[Finding] = []
+    content = md_file.read_text(encoding="utf-8")
+    for line_no, line in enumerate(content.splitlines(), start=1):
+        for match in _LINK_RE.finditer(line):
+            path_part = _extract_local_path(match.group(2))
+            if path_part is None:
+                continue
+            resolved = (md_file.parent / path_part).resolve()
+            if not resolved.exists():
+                findings.append(
+                    Finding(
+                        category="links",
+                        severity="ERROR",
+                        file=str(md_file),
+                        line=line_no,
+                        message=f"broken link: '{path_part}' does not exist",
+                    )
+                )
+    return findings
+
+
 def check_links(scope: str) -> list[Finding]:
     """Detect broken internal markdown links in all files within scope.
 
@@ -287,31 +358,8 @@ def check_links(scope: str) -> list[Finding]:
         List of Finding dicts with severity ERROR for each broken link.
     """
     findings: list[Finding] = []
-
     for md_file in sorted(Path(scope).rglob("*.md")):
-        content = md_file.read_text(encoding="utf-8")
-        for line_no, line in enumerate(content.splitlines(), start=1):
-            for match in _LINK_RE.finditer(line):
-                target = match.group(2)
-                if target.startswith(("http://", "https://")):
-                    continue
-                if target.startswith("#"):
-                    continue
-                path_part = target.split("#")[0]
-                if not path_part:
-                    continue
-                resolved = (md_file.parent / path_part).resolve()
-                if not resolved.exists():
-                    findings.append(
-                        Finding(
-                            category="links",
-                            severity="ERROR",
-                            file=str(md_file),
-                            line=line_no,
-                            message=f"broken link: '{path_part}' does not exist",
-                        )
-                    )
-
+        findings.extend(_check_links_in_file(md_file))
     return findings
 
 
@@ -333,10 +381,10 @@ def _actual_counts(repo_root: str) -> dict[str, int]:
     """
     root = Path(repo_root)
 
-    agents_dir = root / ".claude" / "agents"
+    agents_dir = root / _CLAUDE_SUBDIR / "agents"
     agents_count = len(list(agents_dir.glob("*.md"))) if agents_dir.exists() else 0
 
-    skills_dir = root / ".claude" / "skills"
+    skills_dir = root / _CLAUDE_SUBDIR / "skills"
     skills_count = (
         len(list(skills_dir.glob("*/SKILL.md"))) if skills_dir.exists() else 0
     )
@@ -345,7 +393,7 @@ def _actual_counts(repo_root: str) -> dict[str, int]:
     docs_count = len(list(docs_dir.rglob("*.md"))) if docs_dir.exists() else 0
 
     hooks_count = 0
-    settings_path = Path.home() / ".claude" / "settings.json"
+    settings_path = Path.home() / _CLAUDE_SUBDIR / "settings.json"
     if settings_path.exists():
         try:
             settings = json.loads(settings_path.read_text(encoding="utf-8"))
