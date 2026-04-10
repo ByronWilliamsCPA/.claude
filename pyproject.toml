@@ -241,6 +241,9 @@ ignore = [
     "PLR2004", # magic value comparison - too noisy
     "PLW2901", # outer loop variable overwritten - sometimes intentional
 
+    # Python 3.10 compatibility (project supports >=3.10,<3.15)
+    "UP017",  # datetime.UTC alias is 3.11+ only; datetime.timezone.utc required
+
     # Practical exceptions
     "B008",   # function calls in defaults (Pydantic/FastAPI pattern)
     "S101",   # assert (pytest uses assert statements)

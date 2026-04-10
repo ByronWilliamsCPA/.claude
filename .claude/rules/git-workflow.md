@@ -37,6 +37,27 @@ Format: `{type}/{descriptive-slug}`
 - Hyphens: `feat/add-login-page` not `feat/add_login_page`
 - Descriptive but concise: `feat/oauth-google` not `feat/add-oauth-integration-with-google-identity-provider`
 
+## Gate System
+
+Two layers of automated gates enforce quality throughout the workflow:
+
+**Layer 1 — Development gates (fire automatically):**
+- `security-guidance` hook: PreToolUse on file edits — blocks writes containing known dangerous code patterns (XSS vectors, unsafe shell invocations, dangerous deserialization, GitHub Actions injection, etc.). Warning shows once per file per session.
+- `py310-compat-check` hook: PostToolUse on file edits — catches Python 3.10 incompatibilities immediately after each write.
+- `hookify` hooks: fire on every tool use — enforces any project-level rules defined in `.claude/hookify.*.local.md` files.
+
+**Layer 2 — PR gates (run manually after PR creation):**
+- `/code-review`: runs 5 parallel agents (CLAUDE.md compliance x2, bug scan, git-history context, comment compliance), scores each issue 0-100, and posts only issues ≥80 confidence as a PR comment.
+
+**Creating new gates with hookify:**
+Use `/hookify <instruction>` to add a rule instantly, or `/hookify` with no args to analyze the current conversation for repeated corrections. Rules live in `.claude/hookify.*.local.md` and take effect on the next tool call — no restart required.
+
+```bash
+/hookify Don't delete files without asking me first
+/hookify-list          # view all active rules
+/hookify-configure     # enable/disable rules interactively
+```
+
 ## Git Worktrees
 
 Use the `using-git-worktrees` superpowers skill to set up worktrees safely. It handles directory

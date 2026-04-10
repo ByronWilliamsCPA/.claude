@@ -28,5 +28,7 @@ Before committing ANY changes, verify all items:
 - [ ] No secrets or credentials in staged files
 
 ## PR (if creating PR)
+- [ ] **CI gates**: `/ci-fix` run and all gates green (or blockers documented in the PR)
 - [ ] **Branch Safety**: PR preparation validates branch strategy
 - [ ] **PR Creation**: Use `/git pr` skill with `--include_wtd=true`
+- [ ] **Automated Review**: Run `/code-review` after PR is created to get AI review feedback (CLAUDE.md compliance + bug detection + git history analysis)
