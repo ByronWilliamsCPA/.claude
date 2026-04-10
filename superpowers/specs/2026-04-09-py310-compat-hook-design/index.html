@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.0">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
@@ -29,7 +29,7 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.618322db.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
       
         
         <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -1436,7 +1436,7 @@ immediately after the edit and can fix all violations before proceeding.</p>
 <td><code>[CEILING 3.14]</code></td>
 <td><code>datetime\.utcfromtimestamp\(</code></td>
 <td>Deprecated 3.12, removed 3.14</td>
-<td><code>datetime.fromtimestamp(ts, UTC)</code></td>
+<td><code>datetime.fromtimestamp(ts, datetime.timezone.utc)</code></td>
 </tr>
 </tbody>
 </table>
@@ -1452,27 +1452,24 @@ immediately after the edit and can fix all violations before proceeding.</p>
 </thead>
 <tbody>
 <tr>
-<td><code>[FLOOR 3.10+]</code></td>
-<td><code>ast.Match</code></td>
-<td>Requires 3.10+ syntax</td>
-<td>Rewrite as <code>if</code>/<code>elif</code> chain</td>
-</tr>
-<tr>
 <td><code>[FLOOR 3.11+]</code></td>
-<td><code>ExceptHandler</code> with <code>*</code> (except*)</td>
+<td><code>TryStar</code> (<code>except*</code>)</td>
 <td>Requires 3.11+</td>
 <td>Restructure error handling</td>
 </tr>
 <tr>
-<td><code>[FLOOR 3.10+]</code></td>
-<td>Parenthesized <code>With</code> items</td>
-<td>Requires 3.10+</td>
-<td>Single <code>with</code> or nested <code>with</code></td>
+<td><code>[FLOOR 3.11+]</code></td>
+<td><code>typing.Self</code> / <code>typing.LiteralString</code></td>
+<td>Requires 3.11+</td>
+<td>Use <code>typing_extensions</code></td>
 </tr>
 </tbody>
 </table>
-<p>Note: The AST parser itself requires Python 3.10+ to recognise <code>match</code> nodes. If the system
-<code>python3</code> is older, those nodes are skipped and a log entry is written.</p>
+<p>Note: <code>match/case</code> (<code>ast.Match</code>) is <strong>not</strong> flagged. Structural pattern matching was
+introduced in Python 3.10, which is the project's floor. <code>match</code> statements are valid
+throughout the supported range (3.10–3.14).</p>
+<p>Note: Parenthesized <code>with</code> statements are not detectable via AST alone (both
+<code>with (a, b):</code> and <code>with a, b:</code> produce identical AST nodes), so this pattern is omitted.</p>
 <h2 id="output-format">Output Format<a class="headerlink" href="#output-format" title="Permanent link">&para;</a></h2>
 <p><strong>No findings</strong> — no output, no log entry. Hook is invisible.</p>
 <p><strong>Findings present:</strong></p>
@@ -1482,12 +1479,10 @@ immediately after the edit and can fix all violations before proceeding.</p>
 </span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>                          Fix: use `import tomli as tomllib` with a try/except
 </span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>  [FLOOR 3.11+] line 42: `datetime.UTC` — requires Python 3.11+
 </span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>                          Fix: use `datetime.timezone.utc` or a compat layer
-</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>  [FLOOR 3.10+] line 67: `match` statement — requires Python 3.10+ syntax
-</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>                          Fix: rewrite as if/elif chain for 3.10 floor compatibility
-</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>  [CEILING 3.14] line 88: `datetime.utcnow()` — deprecated 3.12, removed 3.14
-</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>                           Fix: use `datetime.now(datetime.timezone.utc)`
-</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>
-</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>Fix all items above before committing. Python 3.10 (floor) and 3.14 (ceiling) compatibility required.
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>  [CEILING 3.14] line 88: `datetime.utcnow()` — deprecated 3.12, removed 3.14
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>                           Fix: use `datetime.datetime.now(datetime.timezone.utc)`
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>Fix all items above before committing. Python 3.10 (floor) and 3.14 (ceiling) compatibility required.
 </span></code></pre></div>
 <h2 id="error-handling">Error Handling<a class="headerlink" href="#error-handling" title="Permanent link">&para;</a></h2>
 <table>
@@ -1538,11 +1533,13 @@ infrastructure failures by Claude Code.</p>
 <ol>
 <li><strong>Floor violation</strong>: Edit a <code>.py</code> file to include <code>datetime.UTC</code> — hook should print the
    floor warning with correct line number</li>
-<li><strong>Ceiling violation</strong>: Edit a <code>.py</code> file to include <code>datetime.utcnow()</code> — hook should print
-   the ceiling warning</li>
+<li><strong>Ceiling violation</strong>: Edit a <code>.py</code> file to include <code>datetime.datetime.utcnow()</code> — hook
+   should print the ceiling warning (pattern matches both <code>datetime.utcnow()</code> and
+   <code>datetime.datetime.utcnow()</code> as a substring)</li>
 <li><strong>Clean file</strong>: Edit a <code>.py</code> file with no violations — hook should produce no output</li>
 <li><strong>Non-Python file</strong>: Edit a <code>.md</code> file — hook should produce no output</li>
-<li><strong>AST pattern</strong>: Edit a <code>.py</code> file to include a <code>match</code> statement — Tier 2 should detect it</li>
+<li><strong>AST pattern</strong>: Edit a <code>.py</code> file to include <code>except*</code> — Tier 2 should detect it as
+   a 3.11+ floor violation (<code>match/case</code> is intentionally not flagged — valid at 3.10 floor)</li>
 </ol>
 <h2 id="file-locations">File Locations<a class="headerlink" href="#file-locations" title="Permanent link">&para;</a></h2>
 <table>
@@ -1593,7 +1590,7 @@ infrastructure failures by Claude Code.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 10, 2026 14:06:28 UTC">April 10, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 10, 2026 19:37:21 UTC">April 10, 2026</span>
   </span>
 
     
@@ -1680,10 +1677,10 @@ infrastructure failures by Claude Code.</p>
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.e71a0d61.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
     
   </body>
