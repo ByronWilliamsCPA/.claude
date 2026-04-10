@@ -37,6 +37,17 @@
     ],
     "PostToolUse": [
       {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash $HOME/.claude/scripts/bash-notify.sh",
+            "timeout": 15,
+            "statusMessage": ""
+          }
+        ]
+      },
+      {
         "matcher": "Edit|Write",
         "hooks": [
           {
