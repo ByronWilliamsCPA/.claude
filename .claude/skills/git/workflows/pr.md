@@ -9,6 +9,18 @@ PR description, pull request description, ready for PR, ready to PR, draft PR, w
 
 ## Workflow
 
+### 0. Confirm CI gates are green
+
+Before creating the PR, confirm `/ci-fix` has been run and all gates are green. If not,
+run it now:
+
+```
+/ci-fix
+```
+
+Do not proceed with PR creation until all blockers are resolved. pip-audit findings
+should be documented in the PR description if they cannot be resolved immediately.
+
 ### 1. Gather Context
 
 ```bash
