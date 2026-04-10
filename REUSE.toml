@@ -137,6 +137,7 @@ path = [
     "mcp/**",
     "tmp_cleanup/**",
     "settings.json",
+    "hooks.json",
     "skills-lock.json",
     "uv.lock",
     "setup.sh",
