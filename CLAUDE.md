@@ -1,6 +1,6 @@
 # Global Claude Development Standards
 
-> **Status**: ✅ Active | Core Standard | **Version**: 1.0.0 | **Last Updated**: 2025-01-16
+> **Status**: ✅ Active | Core Standard | **Version**: 1.1.0 | **Last Updated**: 2026-04-09
 >
 > Universal development standards and practices for Claude Code across all projects.
 
@@ -10,10 +10,20 @@ For project context, always search project docs and markdown files first (especi
 docs/, initiatives/, or project root). Do not search memory or make assumptions about
 organizational priorities.
 
+When asked about business priorities, organizational strategy, or project decisions, read the
+relevant project files before answering. If no file covers the topic, state what was searched
+and answer from training knowledge, prefixed with: `[Not in project docs — answer from training knowledge only]`.
+
 ## Code Quality
 
 When SonarCloud or linting tools flag issues, fix the actual issues rather than proposing
 exclusions. Only exclude files if explicitly approved by the user.
+
+This applies to all quality gates: never propose `# noqa` comments, `# type: ignore`,
+`pytest.mark.skip`, `--no-verify`, or CI bypass flags as solutions. Fix the root cause.
+Exceptions: vendored or third-party code that cannot be changed, or suppression paired with an
+open tracking reference (ticket number, open GitHub issue, or TODO with link) that is expected
+to result in a proper fix.
 
 ## Git Workflow
 
@@ -38,6 +48,10 @@ When tests fail, investigate root causes in this order:
 ## System / Shell
 
 When commands fail due to permissions (e.g., mkdir, mount), try with sudo immediately.
+
+When a connection error, socket failure, or service-unreachable symptom appears, check
+platform-level causes first: WSL2 port forwarding rules, Docker bridge networking, Unix socket
+paths, and container health. Do not exhaust code-level fixes before ruling out the environment.
 
 ## Core Development Standards
 
@@ -104,17 +118,6 @@ agent categorizes and suggests fixes → validates before commit.
 - **No Global State**: Pass dependencies explicitly
 - **Parameter Grouping**: >4 params → dataclass (see `.claude/rules/python.md`)
 
-## Essential Skills
-
-| Skill          | Invocation         | Purpose                      |
-| -------------- | ------------------ | ---------------------------- |
-| `/git`         | commit, PR, branch | Full git workflow            |
-| `/quality`     | quality, lint      | Format + lint + type-check   |
-| `/testing`     | run tests          | Test execution with coverage |
-| `/security`    | security scan      | Env validation + scanning    |
-| `/debug-tests` | failing test       | Root-cause test debugging    |
-| `/handoff`     | session end        | Session continuity document  |
-
 > **Supervisor patterns, agent assignment, PR workflow**: See `.claude/rules/supervisor.md`
 >
 > **MCP tool loading strategy**: See `.claude/rules/mcp-strategy.md`
@@ -157,29 +160,41 @@ Code Reviewer, Security Auditor, Test Engineer, Test Writer, Test Reviewer,
 Frontend Designer, Diagram Maintenance, Documentation Writer, Database Operations,
 AI Engineer, Git Workflow, GitHub Workflow, DevOps Deployment, UI Testing,
 API Development, OWASP Dispatch (+6 specialists), Phase Reviewer, Scope Analyzer,
-Plan Validator, Research Agent, Modularization Assistant, Visual Content Generator
+Plan Validator, Project Plan Synthesizer, Research Agent, Modularization Assistant, Visual Content Generator
 
 ### Available Skills (`.claude/skills/`)
 
 **Custom skills** (this repo):
 
-| Skill                  | Trigger                          | Purpose                                   |
-| ---------------------- | -------------------------------- | ----------------------------------------- |
-| `/git`                 | commit, PR, branch               | Full git workflow (commit + PR + branch)  |
-| `/quality`             | quality, lint, format            | Code quality checks                       |
-| `/testing`             | run tests, test suite            | Test execution with coverage              |
-| `/security`            | security, scan, audit            | Security validation                       |
-| `/debug-tests`         | failing test, test error         | Root-cause test debugging                 |
-| `/handoff`             | handoff, session end             | Session continuity document               |
-| `/diagram-maintenance` | diagram, PUML, SVG               | PlantUML updates and SVG generation       |
-| `/frontend-design`     | build UI, create component       | Creative direction, UX/a11y               |
-| `/phase-gate`          | phase review, phase status       | Phase readiness evaluation                |
-| `/project-planning`    | project plan, generate plan      | PVS, ADR, Tech Spec, Roadmap              |
-| `/rad`                 | assumption, verify assumptions   | Assumption tagging and verification       |
-| `/test-coverage`       | coverage analysis, coverage gaps | Coverage measurement and generation       |
-| `/sonarcloud`          | sonar, quality gate              | SonarCloud issue review and fixing        |
-| `/skill-creator`       | create skill, improve skill      | Skill development and iteration           |
-| `/writing`             | edit document, draft memo, rewrite, writing quality | Writing pipeline orchestration |
+| Skill                            | Trigger                          | Purpose                                   |
+| -------------------------------- | -------------------------------- | ----------------------------------------- |
+| `/git`                           | commit, PR, branch               | Full git workflow (commit + PR + branch)  |
+| `/quality`                       | quality, lint, format            | Code quality checks                       |
+| `/testing`                       | run tests, test suite            | Test execution with coverage              |
+| `/security`                      | security, scan, audit            | Security validation                       |
+| `/debug-tests`                   | failing test, test error         | Root-cause test debugging                 |
+| `/handoff`                       | handoff, session end             | Session continuity document               |
+| `/diagram-maintenance`           | diagram, PUML, SVG               | PlantUML updates and SVG generation       |
+| `/frontend-design`               | build UI, create component       | Creative direction, UX/a11y               |
+| `/phase-gate`                    | phase review, phase status       | Phase readiness evaluation                |
+| `/project-planning`              | project plan, generate plan      | PVS, ADR, Tech Spec, Roadmap              |
+| `/rad`                           | assumption, verify assumptions   | Assumption tagging and verification       |
+| `/test-coverage`                 | coverage analysis, coverage gaps | Coverage measurement and generation       |
+| `/sonarcloud`                    | sonar, quality gate              | SonarCloud issue review and fixing        |
+| `/skill-creator`                 | create skill, improve skill      | Skill development and iteration           |
+| `/writing`                       | writing pipeline, edit, rewrite  | Writing pipeline orchestration            |
+| `/code-review`                   | review PR, PR review             | 5-agent PR review with confidence scoring |
+| `/hookify`                       | create hook, prevent behavior    | Author project-level gate rules           |
+| `/hookify-list`                  | list hooks, list rules           | Show all active hookify rules             |
+| `/hookify-configure`             | enable hook, disable hook        | Enable or disable hookify rules           |
+| `/auto-dream`                    | memory consolidation, dream      | Memory consolidation across sessions      |
+| `/session-report`                | session report, usage report     | HTML session usage and cost report        |
+| `/claude-md-improver`            | CLAUDE.md audit and improvement  | CLAUDE.md quality audit and updates       |
+| `/claude-automation-recommender` | automation recommendations       | Scan codebase, recommend automations      |
+| `/docx`                          | Word doc, .docx                  | Read, create, and edit Word documents     |
+| `/pdf`                           | PDF, extract PDF                 | Read, extract, and combine PDF files      |
+| `/pptx`                          | PowerPoint, slides, .pptx        | Read, create, edit PowerPoint files       |
+| `/xlsx`                          | spreadsheet, .xlsx, .csv         | Read, create, and edit spreadsheets       |
 
 **Superpowers skills** (via `.submodules/superpowers` — community-maintained):
 
@@ -204,27 +219,11 @@ Plan Validator, Research Agent, Modularization Assistant, Visual Content Generat
 
 ### Install / Update
 
-**Option A: Two-layer setup (recommended)** — repo lives at `~/dev/.claude`, setup.sh symlinks
-subdirectories into `~/.claude/`. This is the canonical layout; see `README.md` for details.
+See `README.md` for install options (two-layer `~/dev/.claude` + `setup.sh` vs. direct clone to `~/.claude`).
 
 ```bash
-# Fresh install
-git clone --recurse-submodules https://github.com/ByronWilliamsCPA/.claude.git ~/dev/.claude
-cd ~/dev/.claude && ./setup.sh
-
-# Update
+# Update (two-layer setup)
 cd ~/dev/.claude && git pull origin main && git submodule update --remote --merge
-```
-
-**Option B: Direct clone to `~/.claude`** — simpler but `$HOME/.claude/scripts/` hook paths
-and submodule references resolve differently. Only use if you are not running `setup.sh`.
-
-```bash
-# Fresh install
-git clone --recurse-submodules https://github.com/ByronWilliamsCPA/.claude.git ~/.claude
-
-# Update
-cd ~/.claude && git pull origin main && git submodule update --remote --merge
 ```
 
 ## Development Philosophy
