@@ -75,10 +75,10 @@ SETTINGS="${CLAUDE_DIR}/settings.json"
 if ! command -v jq &>/dev/null; then
     echo "  [warn] jq not found — install it and re-run to apply hooks"
     echo "         Or manually copy .hooks from ${HOOKS_SOURCE} into ${SETTINGS}"
-elif [ ! -f "${HOOKS_SOURCE}" ]; then
+elif [[ ! -f "${HOOKS_SOURCE}" ]]; then
     echo "  [warn] hooks.json not found at ${HOOKS_SOURCE}"
 else
-    if [ -f "${SETTINGS}" ]; then
+    if [[ -f "${SETTINGS}" ]]; then
         jq --slurpfile h "${HOOKS_SOURCE}" '.hooks = $h[0]' "${SETTINGS}" > "${SETTINGS}.tmp" \
             && mv "${SETTINGS}.tmp" "${SETTINGS}"
         echo "  [ok]   ~/.claude/settings.json hooks updated from hooks.json"
