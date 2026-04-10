@@ -1,6 +1,125 @@
 # CHANGELOG
 
 
+## v0.3.0 (2026-04-10)
+
+### Bug Fixes
+
+- Add hooks.json to REUSE.toml and mark S5332 hotspot safe
+  ([`5684dca`](https://github.com/ByronWilliamsCPA/.claude/commit/5684dca1f223844a0972ef15202c97921ace6ee4))
+
+- Add hooks.json to MIT annotation in REUSE.toml — file was missing SPDX coverage, causing REUSE
+  compliance check failure - The python:S5332 security hotspot in scripts/doc-audit.py line 310 is a
+  false positive (checking string prefix to skip URLs, not making HTTP connections); marked SAFE in
+  SonarCloud
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- Add missing spec behaviors (schema_version INFO, count INFO, directory guards), reduce
+  check_versions complexity
+  ([`f406847`](https://github.com/ByronWilliamsCPA/.claude/commit/f406847ca32fc9ea7fcc6bf364490d003def3c43))
+
+- Address quality review issues in /ci-fix skill — retry limit, pip-audit status, nosec format,
+  bandit root detection
+  ([`bd328ce`](https://github.com/ByronWilliamsCPA/.claude/commit/bd328ce7fc81b438d8e53e8ec4d73f81099b8a51))
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- Clarify flag format and tighten suppression exception in CLAUDE.md rules
+  ([`623296d`](https://github.com/ByronWilliamsCPA/.claude/commit/623296d8e862bbed86edcc59527de8ec1c895034))
+
+- Replace type:ignore with importlib.abc.Loader assert, use typing.TypedDict
+  ([`17bb0ce`](https://github.com/ByronWilliamsCPA/.claude/commit/17bb0ce4aadd3bfacff88a39c726939fd0debf2c))
+
+- Resolve SonarCloud issues in doc-audit.py and setup.sh
+  ([`99136a8`](https://github.com/ByronWilliamsCPA/.claude/commit/99136a8224460bcd42083be4c02b7feba71a6270))
+
+- Extract _parse_yaml_scalar_line helper to reduce _parse_simple_yaml cognitive complexity from 18
+  to 13 (S3776) - Extract _extract_local_path and _check_links_in_file helpers to reduce check_links
+  cognitive complexity from 22 to 1 (S3776) - Add _CLAUDE_SUBDIR constant to eliminate repeated
+  ".claude" literals (S1192) - Use [[ ]] instead of [ ] for conditionals in setup.sh (S7688)
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+### Chores
+
+- Add docs/audit-report.md to .gitignore (generated artifact)
+  ([`b5eeeb3`](https://github.com/ByronWilliamsCPA/.claude/commit/b5eeeb3285ef2ccc62a4d9a610e7a04ad416bf16))
+
+### Documentation
+
+- Add /ci-fix skill design spec and fix plan H1
+  ([`48d6f17`](https://github.com/ByronWilliamsCPA/.claude/commit/48d6f1780c77054fc124f029a846c44a07a052ef))
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- Add /ci-fix skill implementation plan
+  ([`5549c94`](https://github.com/ByronWilliamsCPA/.claude/commit/5549c94a922921fdae4751e77fd135bf2b220c00))
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- Add /doc-audit skill design spec
+  ([`fad94a9`](https://github.com/ByronWilliamsCPA/.claude/commit/fad94a950088c181ecfce4e7eff5d4d48d46d23e))
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- Add /doc-audit skill implementation plan — TDD, 4-task structure
+  ([`98ee3db`](https://github.com/ByronWilliamsCPA/.claude/commit/98ee3db47fcd058495c11781c248535e72798e59))
+
+- Add CLAUDE.md additions design spec and fix four-hooks frontmatter
+  ([`5a0c083`](https://github.com/ByronWilliamsCPA/.claude/commit/5a0c083c21317c71d6f8808befbac7a95831496b))
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+### Features
+
+- Add /ci-fix gate check to PR pre-commit checklist
+  ([`dd18b06`](https://github.com/ByronWilliamsCPA/.claude/commit/dd18b062e8bf291e91b35ec73c4cbd5c46bddc2e))
+
+- Add /ci-fix prerequisite to git PR workflow
+  ([`b93c60e`](https://github.com/ByronWilliamsCPA/.claude/commit/b93c60eec7843dcb66a04cea80cb33c096d3bb46))
+
+- Add /ci-fix skill — 7-gate CI fix loop with auto-fix and commit offer
+  ([`e8cf3a4`](https://github.com/ByronWilliamsCPA/.claude/commit/e8cf3a439701a2e32bf260618069217d059a82fa))
+
+- Add /doc-audit skill — terminal summary and audit-report.md writer
+  ([`2f82ffb`](https://github.com/ByronWilliamsCPA/.claude/commit/2f82ffbc4b0ee89cf71ac28d0f95ba68f47db03a))
+
+- Add environment debugging, no-workaround, and project-docs-over-memory rules to CLAUDE.md
+  ([`f514654`](https://github.com/ByronWilliamsCPA/.claude/commit/f51465446aee3ecf6322994374409eb077021bfb))
+
+- Implement doc-audit.py — four-category documentation health audit script
+  ([`70104f4`](https://github.com/ByronWilliamsCPA/.claude/commit/70104f429494dbb95e5888b96d04d18dedfb3aad))
+
+- Integrate hookify, code-review, and security-guidance plugins
+  ([`1f63382`](https://github.com/ByronWilliamsCPA/.claude/commit/1f63382aee5c361188ff816b097132eb116e963f))
+
+Symlinks: writing-rules skill, /code-review command, /hookify and subcommands (list, configure,
+  help).
+
+Hooks wired in settings.json (now tracked via hooks.json): - security-guidance: PreToolUse on file
+  edits, blocks dangerous code patterns once per session (XSS, shell injection, unsafe
+  deserialization) - hookify: PreToolUse, PostToolUse, Stop, UserPromptSubmit — enforces
+  .claude/hookify.*.local.md rules with no restart required
+
+Workflow integration: - git/workflows/pr.md: /code-review runs automatically after gh pr create,
+  before the PR URL is reported (5-agent review with confidence scoring) - pre-commit.md:
+  /code-review added as a PR gate checklist item - git-workflow.md: Gate System section documents
+  both layers
+
+Portability: hooks.json added as source of truth for global ~/.claude/ settings.json hooks; setup.sh
+  now merges hooks.json on each run via jq.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+### Testing
+
+- Add failing test harness for doc-audit.py — 6 scenarios, 14 tests
+  ([`1d0b819`](https://github.com/ByronWilliamsCPA/.claude/commit/1d0b819ac59d71706966d5a8ebba7326a8450939))
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+
 ## v0.2.0 (2026-04-10)
 
 ### Bug Fixes
