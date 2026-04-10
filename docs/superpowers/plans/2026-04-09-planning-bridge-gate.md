@@ -5,7 +5,7 @@ status: draft
 owner: core-maintainer
 purpose: "Implementation plan for the PreToolUse hook that gates writing-plans until the project-planning bridge mode has generated ADR and Roadmap documents."
 component: Development-Tools
-source: "docs/superpowers/specs/"
+source: "inline — design is documented in the Architecture section of this plan"
 tags:
   - automation
   - planning
