@@ -77,6 +77,7 @@ fi
 if [[ -n "$CMD" ]]; then
     CMD="${CMD:0:80}"
     # Strip characters that could break PowerShell string embedding
+    # shellcheck disable=SC2016  # single quotes intentional: prevent shell expansion in tr arg
     CMD=$(printf '%s' "$CMD" | tr -d '"`$\`')
     MSG="Task complete (${DURATION}s): ${CMD}"
 else
