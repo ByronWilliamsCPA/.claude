@@ -22,6 +22,17 @@
             "statusMessage": "Running pre-commit hooks..."
           }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash $HOME/.claude/scripts/bash-pre-hook.sh",
+            "timeout": 10,
+            "statusMessage": "Checking Bash command safety..."
+          }
+        ]
       }
     ],
     "PostToolUse": [
