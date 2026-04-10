@@ -15,6 +15,8 @@
 # =============================================================================
 
 set -uo pipefail
+# Note: -e is intentionally omitted. This is a PostToolUse hook that must never
+# exit non-zero unexpectedly. Any unhandled error must fall through to exit 0.
 
 NOTIFY_THRESHOLD_SECONDS=30
 LOG_FILE="${HOME}/.claude/logs/bash-notify.log"
@@ -47,6 +49,13 @@ fi
 NOW=$(date +%s)
 DURATION=$(( NOW - START ))
 
+# Reject implausible durations (stale file from crashed session, clock skew)
+MAX_SANE_DURATION=3600
+if [[ $DURATION -lt 0 ]] || [[ $DURATION -gt $MAX_SANE_DURATION ]]; then
+    log "WARN: implausible duration ${DURATION}s (START=${START}, NOW=${NOW}) — stale file discarded"
+    exit 0
+fi
+
 if [[ $DURATION -le $NOTIFY_THRESHOLD_SECONDS ]]; then
     exit 0
 fi
@@ -67,6 +76,8 @@ fi
 # Truncate command to 80 chars
 if [[ -n "$CMD" ]]; then
     CMD="${CMD:0:80}"
+    # Strip characters that could break PowerShell string embedding
+    CMD=$(printf '%s' "$CMD" | tr -d '"`$\`')
     MSG="Task complete (${DURATION}s): ${CMD}"
 else
     MSG="Task complete (${DURATION}s)"
@@ -81,7 +92,11 @@ PS_MSG="${MSG//\'/\'\'}"
 
 PS_CMD="Add-Type -AssemblyName System.Windows.Forms; \$n = New-Object System.Windows.Forms.NotifyIcon; \$n.Icon = [System.Drawing.SystemIcons]::Application; \$n.BalloonTipTitle = 'Claude Code'; \$n.BalloonTipText = '${PS_MSG}'; \$n.Visible = \$true; \$n.ShowBalloonTip(5000); Start-Sleep -Milliseconds 5500; \$n.Dispose()"
 
-powershell.exe -NonInteractive -command "$PS_CMD" &>/dev/null & disown 2>/dev/null || true
+if command -v powershell.exe &>/dev/null; then
+    powershell.exe -NonInteractive -command "$PS_CMD" &>/dev/null & disown 2>/dev/null || true
+else
+    log "WARN: powershell.exe not found — balloon notification skipped"
+fi
 
 # ---------------------------------------------------------------------------
 # Emit NOTIFY line (visible to Claude and captured by tests)
