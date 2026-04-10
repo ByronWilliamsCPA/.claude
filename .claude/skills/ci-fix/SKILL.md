@@ -23,7 +23,8 @@ No arguments. Always runs the full gate sequence.
 ## Gate Sequence
 
 Run gates in this fixed order. After each fix attempt, re-run the gate before advancing.
-Never skip a gate. Never change the order.
+Never skip a gate. Never change the order. If the same gate fails after two consecutive fix
+attempts, mark it `❌ BLOCKER` and advance to the next gate.
 
 | # | Gate | Command | Auto-fix strategy |
 |---|------|---------|-------------------|
@@ -32,8 +33,12 @@ Never skip a gate. Never change the order.
 | 3 | qlty check | `qlty check` | No auto-fix — refactor functions exceeding complexity/nesting thresholds |
 | 4 | pre-commit | `pre-commit run --all-files` | Re-run after ruff fixes; remaining failures: fix and re-run |
 | 5 | pytest | `uv run pytest` | Read failure output, fix test or implementation issues, re-run |
-| 6 | bandit | `uv run bandit -r src/ -c pyproject.toml` | Fix code issues; false positives: add `# nosec` with an open tracking reference |
+| 6 | bandit | `uv run bandit -r src/ -c pyproject.toml` | Fix code issues; false positives: add `# nosec BXXX -- tracked: <URL or ticket>` with an open tracking reference |
 | 7 | pip-audit | `uv run pip-audit` | Report only — dependency upgrades require user decision |
+
+> **Bandit source root**: Before running bandit, check `pyproject.toml` for a `[tool.bandit]`
+> `targets` field. If present, use that path. If absent, use `src/` if it exists, otherwise
+> use `.` as the scan root.
 
 ## Status Table
 
@@ -69,16 +74,17 @@ When a gate fails and cannot be resolved in one fix attempt:
 - Do not stop early
 
 pip-audit findings are always reported but never count as a blocker for the commit offer.
+pip-audit status is always `✅ PASS` or `✅ PASS (advisories found — see notes)` — never `❌ BLOCKER`. List any advisories in the Notes column regardless of exit code.
 
 ## Completion
 
 **All non-pip-audit gates green:**
 
 ```
-All 7 gates green. Commit now? (yes/no)
+All 6 required gates green (pip-audit findings noted above). Commit now? (yes/no)
 ```
 
-- **Yes**: invoke the `/git` skill to prepare a conventional commit
+- **Yes**: invoke the `/git` skill with commit intent. Provide the gate summary (which gates passed, what was fixed) as context so it can generate an accurate conventional commit message.
 - **No**: stop — present the green status table and hand back
 
 **Any blocker remains:**
