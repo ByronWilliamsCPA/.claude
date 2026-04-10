@@ -11,6 +11,13 @@
 
 set -uo pipefail
 
+LOG_FILE="${HOME}/.claude/logs/validate-frontmatter.log"
+
+log() {
+    mkdir -p "$(dirname "$LOG_FILE")"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" >> "$LOG_FILE"
+}
+
 # ---- jq guard ----------------------------------------------------------------
 if ! command -v jq &>/dev/null; then
     exit 0
@@ -24,11 +31,11 @@ FILE_PATH=$(jq -r '.tool_input.file_path // empty' 2>/dev/null <<< "$CONTEXT")
 [[ -z "$FILE_PATH" ]] && exit 0
 
 # ---- Guards: only check SKILL.md and agents/*.md files ----------------------
-# Match */SKILL.md or any path containing "agents" ending in .md
+# Match */SKILL.md or a literal agents/ directory ending in .md
 is_target=0
 if [[ "$FILE_PATH" == */SKILL.md ]]; then
     is_target=1
-elif [[ "$FILE_PATH" == */agents*/*.md ]]; then
+elif [[ "$FILE_PATH" == */agents/*.md ]]; then
     is_target=1
 fi
 
@@ -38,35 +45,32 @@ fi
 [[ ! -f "$FILE_PATH" ]] && exit 0
 
 # ---- Extract frontmatter (content between first two --- delimiters) ----------
-# Read the file and check for frontmatter block
-CONTENT=$(<"$FILE_PATH")
-
-# Check if file starts with ---
-if ! echo "$CONTENT" | head -1 | grep -q '^---'; then
+# Check file starts with ---
+FIRST_LINE=$(head -1 "$FILE_PATH" | tr -d '\r')
+if [[ "$FIRST_LINE" != "---" ]]; then
+    log "WARN no frontmatter found in ${FILE_PATH}"
     echo "WARN: no frontmatter found in $FILE_PATH"
     exit 0
 fi
 
-# Extract lines between first and second --- delimiter
-FRONTMATTER=$(awk '
-    /^---/ { count++; if (count == 1) { next } if (count == 2) { exit } }
-    count == 1 { print }
-' "$FILE_PATH") || true
+# Extract content between first and second --- delimiters
+FRONTMATTER=$(awk 'NR==1{next} /^---/{exit} {print}' "$FILE_PATH" | tr -d '\r')
 
-# If we only found one --- (no closing ---), no valid frontmatter block
-DASH_COUNT=$(grep -c '^---' "$FILE_PATH" 2>/dev/null || true)
-if [[ "$DASH_COUNT" -lt 2 ]]; then
+if [[ -z "$FRONTMATTER" ]]; then
+    log "WARN no frontmatter found in ${FILE_PATH}"
     echo "WARN: no frontmatter found in $FILE_PATH"
     exit 0
 fi
 
 # ---- Check required fields --------------------------------------------------
 if ! echo "$FRONTMATTER" | grep -q '^name:'; then
-    echo "WARN: missing 'name:' in frontmatter of $FILE_PATH"
+    log "WARN missing name: ${FILE_PATH}"
+    echo "WARN: missing 'name:' in frontmatter of $FILE_PATH — add: name: <slug>"
 fi
 
 if ! echo "$FRONTMATTER" | grep -q '^description:'; then
-    echo "WARN: missing 'description:' in frontmatter of $FILE_PATH"
+    log "WARN missing description: ${FILE_PATH}"
+    echo "WARN: missing 'description:' in frontmatter of $FILE_PATH — add: description: <one-line summary>"
 fi
 
 exit 0
