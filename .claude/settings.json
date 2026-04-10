@@ -45,6 +45,12 @@
             "command": "if [[ \"$CLAUDE_FILE_PATH\" == *.sh ]]; then shellcheck \"$CLAUDE_FILE_PATH\" 2>&1 || true; fi",
             "timeout": 15,
             "statusMessage": "Running shellcheck..."
+          },
+          {
+            "type": "command",
+            "command": "bash $HOME/.claude/scripts/validate-frontmatter.sh",
+            "timeout": 10,
+            "statusMessage": "Validating skill/agent frontmatter..."
           }
         ]
       }
