@@ -66,6 +66,28 @@ else
     echo "  [ok]   ~/.claude/scripts -> ${SCRIPTS_SOURCE}"
 fi
 
+# Merge canonical hooks into ~/.claude/settings.json
+# hooks.json is the source of truth for global Claude Code hooks.
+# Running setup.sh is idempotent — it replaces the hooks key each time.
+HOOKS_SOURCE="${REPO_DIR}/hooks.json"
+SETTINGS="${CLAUDE_DIR}/settings.json"
+
+if ! command -v jq &>/dev/null; then
+    echo "  [warn] jq not found — install it and re-run to apply hooks"
+    echo "         Or manually copy .hooks from ${HOOKS_SOURCE} into ${SETTINGS}"
+elif [[ ! -f "${HOOKS_SOURCE}" ]]; then
+    echo "  [warn] hooks.json not found at ${HOOKS_SOURCE}"
+else
+    if [[ -f "${SETTINGS}" ]]; then
+        jq --slurpfile h "${HOOKS_SOURCE}" '.hooks = $h[0]' "${SETTINGS}" > "${SETTINGS}.tmp" \
+            && mv "${SETTINGS}.tmp" "${SETTINGS}"
+        echo "  [ok]   ~/.claude/settings.json hooks updated from hooks.json"
+    else
+        jq -n --slurpfile h "${HOOKS_SOURCE}" '{hooks: $h[0]}' > "${SETTINGS}"
+        echo "  [ok]   ~/.claude/settings.json created with hooks"
+    fi
+fi
+
 echo ""
 echo "Done. Verify with: ls -la ~/.claude/"
 echo ""
