@@ -79,17 +79,26 @@ Follow conventional commits format (see `context/conventional-commits.md`):
 | `perf:` | Performance improvement |
 | `chore:` | Maintenance, dependencies |
 
-### 5. Output
+### 5. Create the PR
 
-Present the complete PR description ready to copy-paste into GitHub.
-
-Remind the user:
-- CodeRabbit will auto-fill `@coderabbitai summary` placeholder if present
-- Push and create the PR using the `/git pr` skill (which handles push, description generation, and `gh pr create` automatically):
+Push the branch and create the PR:
 
 ```bash
-/git pr
+git push -u origin HEAD
+gh pr create --title "<title>" --body "<description>"
 ```
+
+### 6. Run automated code review
+
+Immediately after `gh pr create` succeeds, invoke the `/code-review` command to run the 5-agent review against the new PR:
+
+```
+/code-review
+```
+
+This runs before notifying the user the PR is ready. The review posts a comment on the PR with any issues scoring ≥80 confidence (CLAUDE.md compliance, bug scan, git history context, comment compliance). If no issues are found, it posts a clean confirmation.
+
+Only present the final PR URL to the user after the review completes.
 
 ---
 
