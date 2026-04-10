@@ -9,7 +9,7 @@
 # Exit codes: always 0 — PostToolUse hooks must never fail
 # =============================================================================
 
-set -euo pipefail
+set -uo pipefail
 
 # ---- jq guard ----------------------------------------------------------------
 if ! command -v jq &>/dev/null; then
@@ -28,7 +28,7 @@ FILE_PATH=$(jq -r '.tool_input.file_path // empty' 2>/dev/null <<< "$CONTEXT")
 is_target=0
 if [[ "$FILE_PATH" == */SKILL.md ]]; then
     is_target=1
-elif [[ "$FILE_PATH" == *agents*.md ]]; then
+elif [[ "$FILE_PATH" == */agents*/*.md ]]; then
     is_target=1
 fi
 
@@ -51,7 +51,7 @@ fi
 FRONTMATTER=$(awk '
     /^---/ { count++; if (count == 1) { next } if (count == 2) { exit } }
     count == 1 { print }
-' "$FILE_PATH")
+' "$FILE_PATH") || true
 
 # If we only found one --- (no closing ---), no valid frontmatter block
 DASH_COUNT=$(grep -c '^---' "$FILE_PATH" 2>/dev/null || true)
