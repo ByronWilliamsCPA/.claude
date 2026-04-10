@@ -45,12 +45,17 @@ basedpyright src
 
 # Tests with coverage — adapt to project's package manager (uv/poetry/pip)
 pytest -v --cov --cov-report=term-missing
-
-# Security scan — delegated to owasp-dispatch
-# Dispatch the owasp-dispatch agent: "Run security review for this project. Detect applicable OWASP domains and route to specialist agents. Return a unified findings table with severity and gate recommendation (PASS/FAIL)."
-# If owasp-dispatch is not available (agent not found), fall back to: bandit -r src/ -c pyproject.toml
-# Record the gate result as: PASS (no HIGH/CRITICAL findings), FAIL (any HIGH or CRITICAL), or SKIPPED (tool unavailable)
 ```
+
+**Security scan** — delegate to the `owasp-dispatch` agent: "Run security review for this project. Detect applicable OWASP domains and route to specialist agents. Return a unified findings table with severity and gate recommendation (PASS/FAIL)."
+
+If `owasp-dispatch` is not available, fall back to:
+
+```bash
+bandit -r src/ -c pyproject.toml
+```
+
+Record the gate result as: PASS (no HIGH/CRITICAL findings), FAIL (any HIGH or CRITICAL), or SKIPPED (tool unavailable).
 
 **Frontend checks** (run if `frontend/` has changes for this phase):
 
@@ -72,7 +77,7 @@ docker compose config --quiet    # Validate compose file
 Delegate to the `test-coverage` skill in enforce mode:
 - Invoke: `/test-coverage enforce`
 - Use its output as the Coverage gate result
-- Pass threshold: 80% overall, 90% for files marked critical in CLAUDE.md
+- Pass threshold: use thresholds defined in CLAUDE.md (defaults: 80% overall, 90% for critical files)
 - If `test-coverage` skill is not available, fall back to extracting coverage from the pytest output already captured in step 1
 
 ### 3. RAD Assumption Scan
@@ -80,18 +85,12 @@ Delegate to the `test-coverage` skill in enforce mode:
 Scan for unverified `#CRITICAL` assumption tags in source files:
 
 ```bash
-grep -r "#CRITICAL" src/ 2>/dev/null | grep -v "VERIFY:.*DONE"
+grep -r "#CRITICAL" src/ 2>/dev/null
 ```
 
 - If any results: gate = **FAIL**. List each unverified tag with its file and line number.
 - If no results: gate = **PASS**
 - If `src/` does not exist, scan the project's primary source directory instead
-
-Add to the Quality Gates table:
-
-```
-| RAD assumptions | PASS/FAIL | {count unverified #CRITICAL tags, or "none found"} |
-```
 
 ### 4. Smoke Test Execution
 
