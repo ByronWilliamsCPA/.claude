@@ -39,6 +39,12 @@
             "command": "cd $CLAUDE_PROJECT_DIR && ruff check --fix --target-version py310 $CLAUDE_FILE_PATH 2>/dev/null || true",
             "timeout": 15,
             "statusMessage": "Running ruff auto-fix..."
+          },
+          {
+            "type": "command",
+            "command": "if [[ \"$CLAUDE_FILE_PATH\" == *.sh ]]; then shellcheck \"$CLAUDE_FILE_PATH\" 2>&1 || true; fi",
+            "timeout": 15,
+            "statusMessage": "Running shellcheck..."
           }
         ]
       }
