@@ -12,15 +12,15 @@ Sixth scenario: CLI produces valid JSON and exits 0.
 
 from __future__ import annotations
 
+import importlib.abc
 import importlib.util
 import json
 import subprocess
 import sys
 from pathlib import Path
-from typing import Protocol, cast
+from typing import Protocol, TypedDict, cast
 
 import pytest
-from typing_extensions import TypedDict
 
 
 class Finding(TypedDict):
@@ -60,7 +60,8 @@ def doc_audit_module() -> DocAuditModule:
     spec = importlib.util.spec_from_file_location("doc_audit", _SCRIPT_PATH)
     assert spec is not None, f"Script not found: {_SCRIPT_PATH}"
     module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)  # type: ignore[union-attr]
+    assert isinstance(spec.loader, importlib.abc.Loader)
+    spec.loader.exec_module(module)
     return cast("DocAuditModule", module)
 
 
@@ -164,8 +165,8 @@ class TestCleanRepo:
             str(docs_root), repo_root=str(repo_root)
         )
 
-        warn_or_error = [f for f in findings if f["severity"] in ("ERROR", "WARN")]
-        assert warn_or_error == []
+        error_or_warn = [f for f in findings if f["severity"] in ("ERROR", "WARN")]
+        assert error_or_warn == []
 
     @pytest.mark.unit
     def test_versions_clean(
