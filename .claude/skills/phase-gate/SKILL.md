@@ -75,7 +75,31 @@ Combine both agent reports into a single summary for the user:
 
 #### Step 4: Wait for User Approval
 
-**CRITICAL**: Do not begin any work on the next phase until the user explicitly approves. If the verdict is NOT READY, offer to help address the blockers.
+**CRITICAL**: Do not begin any work on the next phase until the user explicitly approves.
+
+**If NOT READY:**
+- List the specific blockers from the phase-reviewer and scope-analyzer reports
+- Offer to help address them: "Would you like help fixing these blockers?"
+- Stop. Do not advance.
+
+**If READY and user approves:**
+
+1. **Invoke `finishing-a-development-branch` skill**
+   - This presents the user with merge/PR/keep/discard options
+   - Wait for the skill to complete fully (user has made and executed their choice)
+
+2. **Offer phase N+1 transition** (only after finishing completes):
+   ```
+   Phase {N} complete. Ready to start Phase {N+1}?
+
+   This will run: /phase-gate phase {N+1} plan
+   (validates the Phase {N+1} implementation plan and sets up a new worktree)
+
+   Start Phase {N+1}? (yes / no)
+   ```
+   - If yes: invoke `/phase-gate phase {N+1} plan`
+   - If no: stop — the user will start Phase {N+1} manually when ready
+   - **Never auto-advance** — the offer must be dismissed explicitly
 
 ### Mode: Scope Only (`scope-only`)
 
