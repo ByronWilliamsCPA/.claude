@@ -59,14 +59,26 @@ This skill operates in two modes depending on where you are in the planning flow
    - Use template at `templates/roadmap-template.md`
    - Run `mcp__pal__consensus` review; revise until READY
 4. **Commit** both documents
-5. Tell Claude: "Bridge complete. ADR and Roadmap are in `docs/planning/`. Proceed to writing-plans."
+5. **Run project-plan-synthesizer** (skip if `docs/planning/PROJECT-PLAN.md` already exists):
+   - Dispatch the `project-plan-synthesizer` agent with: "Synthesize docs/planning/project-vision.md, docs/planning/adr/, and docs/planning/roadmap.md into docs/planning/PROJECT-PLAN.md. Use semantic release-aligned phase branches and include quality gate thresholds per phase."
+   - Wait for agent to complete and confirm `docs/planning/PROJECT-PLAN.md` was written
+6. **Present phase list to user:**
+   - Read the phases from `docs/planning/PROJECT-PLAN.md`
+   - Display them: "Project plan complete. Phases defined:\n  Phase 0: {name}\n  Phase 1: {name}\n  ..."
+   - Ask: "Which phase are you starting with? (usually Phase 0)"
+   - Wait for user response
+7. **Invoke writing-plans with phase scope:**
+   - Do NOT simply unblock the auto-queued writing-plans from brainstorming
+   - Invoke writing-plans explicitly with this context prepended to the spec:
+     > "Scope this implementation plan to **Phase {N}: {phase name}** only. The brainstorming spec is at `{spec_path}`. The full project roadmap is at `docs/planning/PROJECT-PLAN.md`. Do not plan work beyond Phase {N} deliverables: {list deliverables from PROJECT-PLAN.md for phase N}."
 
 **Skipping already-complete documents:**
-- If `docs/planning/adr/adr-001-*.md` exists: log "ADR already exists, skipping" and move to Roadmap step
-- If `docs/planning/roadmap.md` exists: log "Roadmap already exists, skipping" and move to commit step
-- If both exist: tell Claude "Bridge already complete" and immediately proceed to writing-plans
+- If `docs/planning/adr/adr-001-*.md` exists: skip ADR generation, move to Roadmap step
+- If `docs/planning/roadmap.md` exists: skip Roadmap generation, move to synthesizer step
+- If `docs/planning/PROJECT-PLAN.md` exists: skip synthesizer, move to phase selection step
+- If all three exist: skip directly to phase selection step
 
-**Output:** `docs/planning/adr/adr-001-*.md` and `docs/planning/roadmap.md`
+**Output:** `docs/planning/adr/adr-001-*.md`, `docs/planning/roadmap.md`, and `docs/planning/PROJECT-PLAN.md`
 
 ---
 
