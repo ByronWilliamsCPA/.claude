@@ -1,6 +1,66 @@
 # CHANGELOG
 
 
+## v0.2.0 (2026-04-10)
+
+### Bug Fixes
+
+- Bash-notify stale timestamp ceiling, PS injection sanitization, powershell guard
+  ([`c98ccdd`](https://github.com/ByronWilliamsCPA/.claude/commit/c98ccdde8ee284096f4eb9268a7f75b11a453910))
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- Scope force-push detection to git push only, detect force-with-lease=ref form, suppress SC2016
+  ([`03aaa33`](https://github.com/ByronWilliamsCPA/.claude/commit/03aaa33c13bc63a1a3e5a42454e9a0b126aba591))
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- Tighten force-push detection (bare push, path match, atomic timestamp)
+  ([`1e5a042`](https://github.com/ByronWilliamsCPA/.claude/commit/1e5a042cdcc600896044981e230925f44af5c5cf))
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- Tighten set -e and agents path pattern in validate-frontmatter.sh
+  ([`d4c1148`](https://github.com/ByronWilliamsCPA/.claude/commit/d4c11481854c4aa7c75fa8292179f6aaf85a3a03))
+
+- Replace set -euo pipefail with set -uo pipefail so the advisory-only hook always exits 0 even when
+  grep or awk return non-zero; add || true guard to awk frontmatter extraction - Tighten agents path
+  match from *agents*.md (matches filenames) to */agents*/*.md (requires agents to appear as a
+  directory name component, not just in the filename)
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- Validate-frontmatter robustness, CRLF, path pattern, log file, WARN hints
+  ([`4c31765`](https://github.com/ByronWilliamsCPA/.claude/commit/4c317652e4508f946958923ca3b067654727b782))
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+### Features
+
+- Add force-push guard and timing start PreToolUse hook for Bash
+  ([`d081b76`](https://github.com/ByronWilliamsCPA/.claude/commit/d081b76dcbcd8b55ab40dcea2c3ed45153479cbd))
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- Add frontmatter validator PostToolUse hook for skills and agents
+  ([`1e3c62c`](https://github.com/ByronWilliamsCPA/.claude/commit/1e3c62c17f22fc3c77a2fde773c8cd6be73cc541))
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- Add shellcheck PostToolUse hook for .sh edits
+  ([`c07953c`](https://github.com/ByronWilliamsCPA/.claude/commit/c07953caf41a215d61c6e0d0fe13f0f8cb0f943c))
+
+- Add WSL2 toast notification PostToolUse hook for long Bash tasks
+  ([`c37cd15`](https://github.com/ByronWilliamsCPA/.claude/commit/c37cd15dd9dd5343a42e1563cee6f732f7eb4110))
+
+Introduces bash-notify.sh, which reads the /tmp/claude-bash-start timestamp written by
+  bash-pre-hook.sh, computes command duration, and fires a non-blocking Windows balloon notification
+  via powershell.exe when the duration exceeds 30 seconds. Wired as a PostToolUse Bash hook in
+  settings.json. All 6 unit tests pass.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+
 ## v0.1.0 (2026-04-10)
 
 ### Bug Fixes
