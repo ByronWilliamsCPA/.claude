@@ -14,10 +14,77 @@ maintain context coherence across coding sessions and prevent architectural drif
 
 ## When to Use This Skill
 
-- User describes a project concept and asks for planning documents
-- Files in `docs/planning/` show "Awaiting Generation" status
-- User invokes `/plan` command with project description
-- Starting development on a new feature requiring architectural decisions
+| Invocation | When |
+|---|---|
+| `/project-planning entry` | Starting a new project — generates PVS only and hands off to brainstorming |
+| `/project-planning bridge` | After brainstorming spec is approved — generates ADR + Roadmap before writing-plans |
+| `/project-planning` | Default: generates all four documents for projects not using the brainstorming flow |
+
+## Modes
+
+This skill operates in three modes depending on where you are in the planning flow.
+
+### Entry Mode (`/project-planning entry`)
+
+**When to use:** At the very start of a new project, before brainstorming.
+
+**What it does:**
+1. Collect the project description from the user
+2. Read `pyproject.toml` and existing project structure for technical constraints
+3. Generate `docs/planning/project-vision.md` (PVS only — no ADR, Tech Spec, or Roadmap yet)
+4. Run `mcp__pal__consensus` review on the PVS; revise until READY
+5. Commit the PVS to version control
+6. Tell Claude: "PVS saved to `docs/planning/project-vision.md`. Invoke the brainstorming skill now — it will read the PVS as existing project context in step 1 and skip re-discovering scope."
+
+**Output:** `docs/planning/project-vision.md` only.
+
+---
+
+### Bridge Mode (`/project-planning bridge`)
+
+**When to use:** After brainstorming has completed and the user has approved the spec, before writing-plans. The planning-bridge-gate hook will redirect Claude here automatically when needed.
+
+**What it does (idempotent — safe to run twice):**
+
+1. **Find the approved spec:** Locate the most recent file in `docs/superpowers/specs/*.md`
+2. **Generate ADR** (skip if `docs/planning/adr/adr-001-*.md` already exists):
+   - Read the "Proposed 2-3 approaches" section from the spec
+   - Formalize the chosen approach as `docs/planning/adr/adr-001-<decision-slug>.md`
+   - Use template at `templates/adr-template.md`
+   - Run `mcp__pal__consensus` review; revise until READY
+3. **Generate Roadmap** (skip if `docs/planning/roadmap.md` already exists):
+   - Read the approved spec's architecture and component sections
+   - Build a phased roadmap aligned to spec deliverables
+   - Save to `docs/planning/roadmap.md`
+   - Use template at `templates/roadmap-template.md`
+   - Run `mcp__pal__consensus` review; revise until READY
+4. **Commit** both documents
+5. **Run project-plan-synthesizer** (skip if `docs/planning/PROJECT-PLAN.md` already exists):
+   - Dispatch the `project-plan-synthesizer` agent with: "Synthesize docs/planning/project-vision.md, docs/planning/adr/, and docs/planning/roadmap.md into docs/planning/PROJECT-PLAN.md. Use semantic release-aligned phase branches and include quality gate thresholds per phase."
+   - Wait for agent to complete and confirm `docs/planning/PROJECT-PLAN.md` was written
+6. **Present phase list to user:**
+   - Read the phases from `docs/planning/PROJECT-PLAN.md`
+   - Display them: "Project plan complete. Phases defined:\n  Phase 0: {name}\n  Phase 1: {name}\n  ..."
+   - Ask: "Which phase are you starting with? (usually Phase 0)"
+   - Wait for user response
+7. **Invoke writing-plans with phase scope:**
+   - Do NOT simply unblock the auto-queued writing-plans from brainstorming
+   - Invoke writing-plans explicitly with this context prepended to the spec:
+     > "Scope this implementation plan to **Phase {N}: {phase name}** only. The brainstorming spec is at `{spec_path}`. The full project roadmap is at `docs/planning/PROJECT-PLAN.md`. Do not plan work beyond Phase {N} deliverables: {list deliverables from PROJECT-PLAN.md for phase N}."
+
+**Skipping already-complete documents:**
+- If `docs/planning/adr/adr-001-*.md` exists: skip ADR generation, move to Roadmap step
+- If `docs/planning/roadmap.md` exists: skip Roadmap generation, move to synthesizer step
+- If `docs/planning/PROJECT-PLAN.md` exists: skip synthesizer, move to phase selection step
+- If all three exist: skip directly to phase selection step
+
+**Output:** `docs/planning/adr/adr-001-*.md`, `docs/planning/roadmap.md`, and `docs/planning/PROJECT-PLAN.md`
+
+---
+
+### Default Mode (`/project-planning`)
+
+Generates all four documents sequentially as documented in the Generation Process section below. Use for projects that are not using the brainstorming flow.
 
 ## Output Documents
 

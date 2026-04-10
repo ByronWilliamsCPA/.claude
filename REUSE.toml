@@ -150,6 +150,7 @@ path = [
     ".mutmut_config",
     ".prettierrc",
     ".shellcheckrc",
+    ".trivyignore",
     ".yamllint",
     "scripts/README.md",
 ]
