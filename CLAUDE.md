@@ -12,8 +12,7 @@ organizational priorities.
 
 When asked about business priorities, organizational strategy, or project decisions, read the
 relevant project files before answering. If no file covers the topic, state what was searched
-and answer from general knowledge with an explicit flag that the answer may not reflect current
-project priorities.
+and answer from training knowledge, prefixed with: `[Not in project docs — answer from training knowledge only]`.
 
 ## Code Quality
 
@@ -22,8 +21,9 @@ exclusions. Only exclude files if explicitly approved by the user.
 
 This applies to all quality gates: never propose `# noqa` comments, `# type: ignore`,
 `pytest.mark.skip`, `--no-verify`, or CI bypass flags as solutions. Fix the root cause.
-Exceptions: vendored or third-party code that cannot be changed, or suppression paired with a
-tracking reference (ticket number, GitHub issue, or TODO with link).
+Exceptions: vendored or third-party code that cannot be changed, or suppression paired with an
+open tracking reference (ticket number, open GitHub issue, or TODO with link) that is expected
+to result in a proper fix.
 
 ## Git Workflow
 
