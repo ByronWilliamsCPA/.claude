@@ -283,6 +283,7 @@ tmp_cleanup/
 !tmp_cleanup/.gitkeep
 
 docs/content_reviews/
+docs/audit-report.md
 
 # Skill workspace and A/B test variant directories (not user-facing skills)
 .claude/skills/*-workspace/
