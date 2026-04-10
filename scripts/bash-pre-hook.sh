@@ -61,11 +61,18 @@ fi
 # branch including main) and must be blocked.
 # ---------------------------------------------------------------------------
 
-if echo "$CMD" | grep -qE '(--force|--force-with-lease|-f)(\s|$)'; then
+# Only check force-push for git push commands
+if ! echo "$CMD" | grep -qE 'git\s+push'; then
+    printf '%s' "$(date +%s)" > /tmp/claude-bash-start.tmp && mv /tmp/claude-bash-start.tmp /tmp/claude-bash-start
+    exit 0
+fi
+
+# Now check for force flags (we know it's a git push command)
+if echo "$CMD" | grep -qE '(--force|--force-with-lease(=[^\s]+)?|-f)(\s|$)'; then
     # Extract the branch portion: strip git push, force flags, remote name
     BRANCH_TOKEN=$(echo "$CMD" | \
         sed -E 's/git\s+push\s+//' | \
-        sed -E 's/(--force|--force-with-lease|-f)\s*//' | \
+        sed -E 's/(--force|--force-with-lease(=[^\s]+)?|-f)\s*//' | \
         sed -E 's/[a-zA-Z0-9_-]+\s+//' | \
         awk '{print $1}')
 
