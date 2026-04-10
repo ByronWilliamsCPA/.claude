@@ -1,0 +1,86 @@
+{
+  "PreToolUse": [
+    {
+      "matcher": "Edit|Write",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "if [[ \"$CLAUDE_FILE_PATH\" == *'.env'* || \"$CLAUDE_FILE_PATH\" == *'settings.local.json'* ]]; then echo 'BLOCKED: editing secrets file requires explicit confirmation' >&2; exit 2; fi",
+          "timeout": 5,
+          "statusMessage": "Checking for sensitive file edits..."
+        }
+      ]
+    },
+    {
+      "matcher": "Skill",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "bash $HOME/.claude/scripts/planning-bridge-gate.sh"
+        }
+      ]
+    },
+    {
+      "matcher": "Edit|Write|MultiEdit",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "python3 $HOME/dev/.claude/.submodules/anthropics-plugins/plugins/security-guidance/hooks/security_reminder_hook.py",
+          "timeout": 10,
+          "statusMessage": "Checking for security patterns..."
+        }
+      ]
+    },
+    {
+      "hooks": [
+        {
+          "type": "command",
+          "command": "CLAUDE_PLUGIN_ROOT=$HOME/dev/.claude/.submodules/anthropics-plugins/plugins/hookify python3 $HOME/dev/.claude/.submodules/anthropics-plugins/plugins/hookify/hooks/pretooluse.py",
+          "timeout": 10
+        }
+      ]
+    }
+  ],
+  "PostToolUse": [
+    {
+      "matcher": "(Edit|Write)",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "bash $HOME/.claude/scripts/py310-compat-check.sh"
+        }
+      ]
+    },
+    {
+      "hooks": [
+        {
+          "type": "command",
+          "command": "CLAUDE_PLUGIN_ROOT=$HOME/dev/.claude/.submodules/anthropics-plugins/plugins/hookify python3 $HOME/dev/.claude/.submodules/anthropics-plugins/plugins/hookify/hooks/posttooluse.py",
+          "timeout": 10
+        }
+      ]
+    }
+  ],
+  "Stop": [
+    {
+      "hooks": [
+        {
+          "type": "command",
+          "command": "CLAUDE_PLUGIN_ROOT=$HOME/dev/.claude/.submodules/anthropics-plugins/plugins/hookify python3 $HOME/dev/.claude/.submodules/anthropics-plugins/plugins/hookify/hooks/stop.py",
+          "timeout": 10
+        }
+      ]
+    }
+  ],
+  "UserPromptSubmit": [
+    {
+      "hooks": [
+        {
+          "type": "command",
+          "command": "CLAUDE_PLUGIN_ROOT=$HOME/dev/.claude/.submodules/anthropics-plugins/plugins/hookify python3 $HOME/dev/.claude/.submodules/anthropics-plugins/plugins/hookify/hooks/userpromptsubmit.py",
+          "timeout": 10
+        }
+      ]
+    }
+  ]
+}
