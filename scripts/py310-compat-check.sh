@@ -55,7 +55,7 @@ run_grep() {
     local description="$3"
     local fix="$4"
     local indent
-    indent=$(printf "%$((${#label} + 11))s" '')
+    indent=$(printf "%26s" '')
 
     while IFS=: read -r linenum _; do
         [[ -z "$linenum" ]] && continue
@@ -78,18 +78,8 @@ run_grep "[FLOOR 3.11+]" \
 
 run_grep "[FLOOR 3.11+]" \
     '\b(ExceptionGroup|BaseExceptionGroup)\b' \
-    "\`ExceptionGroup\` / \`BaseExceptionGroup\` — requires Python 3.11+" \
+    "\`ExceptionGroup\` / \`BaseExceptionGroup\` — requires Python 3.11+ (check is best-effort)" \
     "install and use the \`exceptiongroup\` backport package"
-
-run_grep "[FLOOR 3.11+]" \
-    'from typing import[^#\n]*\bSelf\b' \
-    "\`Self\` from \`typing\` — requires Python 3.11+" \
-    "use \`from typing_extensions import Self\`"
-
-run_grep "[FLOOR 3.11+]" \
-    'from typing import[^#\n]*\bLiteralString\b' \
-    "\`LiteralString\` from \`typing\` — requires Python 3.11+" \
-    "use \`from typing_extensions import LiteralString\`"
 
 run_grep "[FLOOR 3.11+]" \
     "fromisoformat\(.*Z['\"]" \
@@ -136,6 +126,14 @@ for node in ast.walk(tree):
     # except* — exception groups, Python 3.11+ TryStar node
     if type(node).__name__ == "TryStar":
         print(f"FLOOR_EXCEPT_STAR:{node.lineno}")
+
+for node in ast.walk(tree):
+    if isinstance(node, ast.ImportFrom) and node.module == 'typing':
+        for alias in (node.names or []):
+            if alias.name == 'Self':
+                print(f"FLOOR_TYPING_SELF:{node.lineno}")
+            if alias.name == 'LiteralString':
+                print(f"FLOOR_TYPING_LITERALSTRING:{node.lineno}")
 PYEOF
     )
 
@@ -159,6 +157,18 @@ PYEOF
                     FINDINGS+=("$(printf "%26s" '')Fix: restructure to standard try/except handlers")
                     log "FINDING FLOOR_EXCEPT_STAR line=${lineno} file=${FILE_PATH}"
                     ;;
+                FLOOR_TYPING_SELF:*)
+                    lineno="${line#FLOOR_TYPING_SELF:}"
+                    FINDINGS+=("  [FLOOR 3.11+] line ${lineno}: \`Self\` from \`typing\` — requires Python 3.11+")
+                    FINDINGS+=("$(printf "%26s" '')Fix: use \`from typing_extensions import Self\`")
+                    log "FINDING FLOOR_TYPING_SELF line=${lineno} file=${FILE_PATH}"
+                    ;;
+                FLOOR_TYPING_LITERALSTRING:*)
+                    lineno="${line#FLOOR_TYPING_LITERALSTRING:}"
+                    FINDINGS+=("  [FLOOR 3.11+] line ${lineno}: \`LiteralString\` from \`typing\` — requires Python 3.11+")
+                    FINDINGS+=("$(printf "%26s" '')Fix: use \`from typing_extensions import LiteralString\`")
+                    log "FINDING FLOOR_TYPING_LITERALSTRING line=${lineno} file=${FILE_PATH}"
+                    ;;
             esac
         done <<< "$AST_OUTPUT"
     fi
@@ -181,6 +191,7 @@ done
 if [[ -n "$AST_SKIP_REASON" ]]; then
     echo ""
     echo "  Note: AST scan skipped (${AST_SKIP_REASON}) — syntactic patterns not checked"
+    echo "  Note: Self/LiteralString detection from \`typing\` requires python3 (AST scan)"
 fi
 
 echo ""
