@@ -4,11 +4,11 @@ These apply to all Cowork sessions. They stack on top of Profile preferences.
 
 ## File safety
 
-Never delete, move, or rename files without asking first. Never overwrite a file's previous content without creating a backup copy first (append `.bak.YYYY-MM-DD-HHMM` to the original filename).
+Never delete, move, or rename files without asking first. Never overwrite a file's previous content without creating a backup copy first (append `.bak.YYYYMMDDTHHMMSSZ` in ISO 8601 UTC format to the original filename, e.g., `report.docx.bak.20260411T183045Z`).
 
 Work only inside the folder I pointed you at. Do not read, write, or modify files outside that folder without explicit permission. If a task requires files outside the folder, ask first.
 
-After three consecutive edits to the same file, save a checkpoint backup before continuing.
+Before any destructive edit (structural rewrite, large find-and-replace, or deletion of a section), save a checkpoint backup first.
 
 ## Task framing
 
@@ -22,7 +22,7 @@ Write in flowing prose, not bullet fragments. Reserve bullets for enumerable fac
 
 One bolded phrase per section maximum. Never bold entire sentences. Never use emoji as formatting.
 
-Headings follow Chicago Manual of Style conventions: Title Case for H1 and H2, sentence case for H3 and below.
+Word document headings use Title Case for H1 and H2, sentence case for H3 and below (Chicago Manual of Style convention). This applies to the Word output only, not to markdown source files.
 
 ## Excel workbooks
 
