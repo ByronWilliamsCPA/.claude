@@ -72,12 +72,12 @@ Record this as a comment in the commit message footer:
 
 Two layers of automated gates enforce quality throughout the workflow:
 
-**Layer 1 — Development gates (fire automatically):**
+**Layer 1 - Development gates (fire automatically):**
 - `security-guidance` hook: PreToolUse on file edits — blocks writes containing known dangerous code patterns (XSS vectors, unsafe shell invocations, dangerous deserialization, GitHub Actions injection, etc.). Warning shows once per file per session.
 - `py310-compat-check` hook: PostToolUse on file edits — catches Python 3.10 incompatibilities immediately after each write.
 - `hookify` hooks: fire on every tool use — enforces any project-level rules defined in `.claude/hookify.*.local.md` files.
 
-**Layer 2 — PR gates (automatic and manual, after PR creation):**
+**Layer 2 - PR gates (automatic and manual, after PR creation):**
 - `CodeRabbit`: fires automatically on every PR targeting `main`, `master`, or `develop`.
   Profile: assertive. Provides high-level summary, file-by-file walkthrough, inline
   comments, and suggested labels. Runs ruff, gitleaks, markdownlint, and yamllint as
