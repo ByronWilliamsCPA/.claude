@@ -52,8 +52,8 @@ Create when:
 
 ## Scope Tracing (Phased Projects)
 
-When working inside a phase of a formal project (one with a `PROJECT-PLAN.md` and
-phase acceptance criteria), every task in the TodoWrite list must map to a specific
+When working inside a phase of a project that has a `PROJECT-PLAN.md` and phase
+acceptance criteria, every task in the TodoWrite list must map to a specific
 acceptance criterion in the current phase.
 
 Before adding a task to the list, ask: which acceptance criterion does this serve?
@@ -64,7 +64,7 @@ Before adding a task to the list, ask: which acceptance criterion does this serv
 - If the phase has no acceptance criteria: the project plan is incomplete; surface this
   before proceeding
 
-Use `/phase-gate` at the end of each phase to confirm all criteria are met before
+Use `/phase-gate` at the end of each phase to verify all criteria are met before
 closing.
 
 ## PR Preparation Workflow
