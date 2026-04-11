@@ -34,3 +34,7 @@ Before committing ANY changes, verify all items:
 - [ ] **Branch Safety**: PR preparation validates branch strategy
 - [ ] **PR Creation**: Use `/git pr` skill with `--include_wtd=true`
 - [ ] **Automated Review**: Run `/code-review` after PR is created to get AI review feedback (CLAUDE.md compliance + bug detection + git history analysis)
+- [ ] **CodeRabbit review**: fires automatically on PR creation; address inline comments
+      before merging and use `@coderabbitai` in PR comments to ask follow-up questions
+- [ ] **Copilot review** (optional): for complex logic changes, request from the
+      Reviewers menu on GitHub; review instructions are in `.github/copilot-instructions.md`
