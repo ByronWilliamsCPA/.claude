@@ -319,6 +319,28 @@ tree, the project `CLAUDE.md` loads in addition to the global standards from
 `~/.claude/CLAUDE.md`, so project overrides augment rather than replace the
 baseline. Per-project tool permissions go in `.claude/settings.local.json`.
 
+#### Open follow-up: PR URL auto-trigger for `/code-review`
+
+The `/code-review` plugin at
+`.submodules/anthropics-plugins/plugins/code-review/commands/code-review.md`
+is a Claude Code **command**, not a **skill**. Commands are only invoked via
+the explicit slash syntax (`/code-review <PR URL>`) and do not have
+auto-activation triggers like skills do. So prose phrasings such as
+"review this PR" or "look at PR #14" will not reliably invoke the structured
+5-agent review pipeline without the slash command.
+
+Proposed fix (not implemented): add a thin wrapper skill at
+`.claude/skills/code-review-pr/SKILL.md` with a `description:` listing PR URL
+keywords and triggering patterns (`review PR`, `review pull request`, GitHub
+PR URL regex), where the skill body instructs Claude to invoke the
+`/code-review` command with the detected URL as the argument. This preserves
+the submodule-owned command as the execution engine while adding a
+natural-language entry point.
+
+Constraint: the wrapper skill must live in the local `.claude/skills/`
+directory so it is not owned by any submodule, and its body should not
+duplicate the review logic from the command file — only route to it.
+
 ### Running Tests
 
 ```bash
