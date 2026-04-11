@@ -100,13 +100,13 @@ def _read_event() -> dict:
     """
     try:
         data = sys.stdin.read()
-    except (OSError, ValueError):
+    except OSError:
         return {}
     if not data.strip():
         return {}
     try:
         parsed = json.loads(data)
-    except (json.JSONDecodeError, ValueError):
+    except ValueError:
         return {}
     if not isinstance(parsed, dict):
         return {}
@@ -159,15 +159,11 @@ def _should_remind(prompt: str) -> bool:
     return False
 
 
-def main() -> int:
-    """Run the hook. Always exits 0; never blocks the prompt.
-
-    Returns:
-        Always 0.
-    """
+def main() -> None:
+    """Run the hook. Always exits 0; never blocks the prompt."""
     if os.environ.get("PR_REVIEW_REMINDER_DISABLED") == "1":
         print(json.dumps({}))
-        return 0
+        return
 
     event = _read_event()
     prompt = _extract_prompt(event)
@@ -176,8 +172,7 @@ def main() -> int:
         print(json.dumps({"systemMessage": REMINDER_MESSAGE}))
     else:
         print(json.dumps({}))
-    return 0
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()
