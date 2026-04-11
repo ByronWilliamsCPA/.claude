@@ -21,6 +21,8 @@ Before committing ANY changes, verify all items:
 - [ ] No linting warnings or errors remain
 - [ ] Code formatting is consistent with project standards
 - [ ] Commits are signed (Git signing key configured)
+- [ ] **Docstring Coverage**: `interrogate` passes at 85% threshold for `scripts/` — add missing docstrings rather than suppressing
+- [ ] **Docstring Arguments**: `darglint` passes — documented `Args`/`Returns`/`Raises` match signatures
 
 ## Security
 - [ ] **Security Scanning**: No known vulnerabilities — medium+ severity blocks commit (`uv run pip-audit`; exit code 64 = advisory found)
