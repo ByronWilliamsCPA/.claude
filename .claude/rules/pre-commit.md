@@ -23,7 +23,7 @@ Before committing ANY changes, verify all items:
 - [ ] Commits are signed (Git signing key configured)
 
 ## Security
-- [ ] **Security Scanning**: pip-audit runs automatically on pre-push when dependency files change (pyproject.toml, requirements*.txt, uv.lock). Exit code 64 = advisory found — medium+ severity blocks push. For manual audit: `uv run pip-audit`
+- [ ] **Security Scanning**: pip-audit runs automatically on pre-push when dependency files change (pyproject.toml, requirements*.txt, uv.lock). Exit code 64 = advisory found; medium+ severity blocks push. For manual audit: `uv run pip-audit`
 - [ ] **Dependency Safety**: Requirements files updated if dependencies changed
 - [ ] No secrets or credentials in staged files
 
