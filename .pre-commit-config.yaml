@@ -94,6 +94,7 @@ repos:
   # ============================================================================
   # Runs on pre-push, scoped to dep file changes only, to avoid per-commit overhead.
   # Exit code 64 = advisory found. Medium+ severity blocks push.
+  # Audits the active virtualenv — ensure 'uv sync' has been run before push.
   - repo: local
     hooks:
       - id: pip-audit
