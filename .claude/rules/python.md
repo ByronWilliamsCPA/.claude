@@ -34,6 +34,27 @@ strictDictionaryInference = true
 strictSetInference = true
 ```
 
+## FIPS 140-2/3 Compliance
+
+Do not use these algorithms in any security context:
+
+| Category | Prohibited | Approved Alternative |
+|----------|-----------|---------------------|
+| Hash | MD5, SHA-1 | SHA-256, SHA-384, SHA-512 |
+| Symmetric | Blowfish, RC4, RC2, DES, 3DES | AES-128, AES-256 |
+| Key exchange | RSA < 2048-bit, DH < 2048-bit | RSA-2048+, Curve25519, X25519 |
+
+When using hashlib for non-security purposes (checksums, caching),
+pass `usedforsecurity=False`:
+
+```python
+# OK: cache key or checksum, not cryptographic
+hashlib.md5(data, usedforsecurity=False)
+```
+
+Never pass `usedforsecurity=False` for: password hashing, HMAC, signatures,
+or token generation.
+
 ## PyStrict-Aligned Ruff Rules
 
 | Rule | What It Catches |
