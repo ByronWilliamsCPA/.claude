@@ -45,6 +45,20 @@ When tests fail, investigate root causes in this order:
 3. **Dependency drift**: Updated library changed behavior, version constraint mismatch
 4. **Test isolation**: Shared state, ordering dependencies, missing teardown
 
+## Golden File Protection
+
+When tests use golden files (reference snapshots in `tests/golden/`, `tests/fixtures/`,
+or `*.snap` files), never edit those files manually to make a failing test pass. Golden
+files represent the verified correct output. Changing them to match broken behavior
+destroys the test's value.
+
+To update golden files legitimately (behavior changed intentionally):
+
+1. Confirm the new output is correct by inspection
+2. Regenerate using the project's snapshot update command
+   (e.g., `pytest --snapshot-update`, `cargo test -- --nocapture`)
+3. Commit the updated golden file with a message explaining why the expected output changed
+
 ## System / Shell
 
 When commands fail due to permissions (e.g., mkdir, mount), try with sudo immediately.
