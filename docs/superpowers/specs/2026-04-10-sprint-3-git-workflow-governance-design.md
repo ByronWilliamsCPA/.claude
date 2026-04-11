@@ -3,7 +3,7 @@ schema_type: common
 title: "Sprint 3: Git Workflow and Process Governance"
 status: draft
 owner: core-maintainer
-purpose: "Design spec for adding remote verification, branch override pattern, scope tracing principle, and CodeRabbit integration documentation to the global Claude implementation."
+purpose: "Design spec for adding remote verification, branch override pattern, scope tracing principle, AI review integration documentation, and cookiecutter AI review config sync to the global Claude implementation."
 tags:
   - documentation
   - tooling
@@ -12,12 +12,13 @@ tags:
 
 ## Overview
 
-This sprint adds four workflow governance patterns to the global Claude implementation,
-closing gaps identified in the 2026-04-09 cross-project CLAUDE.md audit. All four items
-appeared in 3+ project CLAUDE.md files but were absent from the global standard.
+This sprint adds five workflow governance patterns to the global Claude implementation,
+closing gaps identified in the 2026-04-09 cross-project CLAUDE.md audit. Items 1-4
+appeared in 3+ project CLAUDE.md files but were absent from the global standard. Item 5
+syncs the cookiecutter template's AI review configuration with current tooling.
 
-**Approach**: Documentation-only. All tooling (CodeRabbit, phase-gate) is already wired.
-No hook changes needed.
+**Approach**: Documentation-only. All tooling (CodeRabbit, GitHub Copilot, phase-gate)
+is already wired. No hook changes needed.
 
 ---
 
@@ -168,8 +169,8 @@ review tools: CodeRabbit (automatic), GitHub Copilot (manual, configured), and
   inline tools. No action required to trigger it.
 - `GitHub Copilot`: request manually from the Reviewers menu on GitHub. Configured via
   `.github/copilot-instructions.md` to focus on business logic, error handling, edge
-  cases, concurrency, and security logic flaws — the issues automated linters cannot
-  catch. Leaves advisory comments only; does not block merge.
+  cases, concurrency, and security logic flaws that automated linters cannot catch.
+  Leaves advisory comments only; does not block merge.
 - `/code-review`: runs 5 parallel agents (CLAUDE.md compliance x2, bug scan,
   git-history context, comment compliance), scores each issue 0-100, and posts only
   issues ≥80 confidence as a PR comment. Run manually after PR creation.
@@ -186,11 +187,67 @@ line: one for CodeRabbit (automatic), one for Copilot (optional manual request).
 **Items to add:**
 
 ```markdown
-- [ ] **CodeRabbit review**: fires automatically on PR creation — address inline comments
-      before merging; use `@coderabbitai` in PR comments to ask follow-up questions
+- [ ] **CodeRabbit review**: fires automatically on PR creation; address inline comments
+      before merging and use `@coderabbitai` in PR comments to ask follow-up questions
 - [ ] **Copilot review** (optional): for complex logic changes, request from the
-      Reviewers menu on GitHub; instructions are in `.github/copilot-instructions.md`
+      Reviewers menu on GitHub; review instructions are in `.github/copilot-instructions.md`
 ```
+
+---
+
+## Item 5: Cookiecutter AI Review Configuration Sync
+
+**Problem**: The cookiecutter template already contains
+`{{cookiecutter.project_slug}}/.github/copilot-instructions.md` and
+`{{cookiecutter.project_slug}}/.coderabbit.yaml`, but the copilot file is stale. It
+references "Black" for formatting in two places, while projects generated from this
+template now use `ruff format`. The instructions also list "Code formatting (Black)"
+in the "What NOT to Review" section, creating a false expectation.
+
+**Solution**: Add a `### AI Review Configuration` subsection to the `## What to Update`
+section in `docs/handoff-cookiecutter-claude-removal.md`, and add two Definition of Done
+checklist items.
+
+### 5a: New subsection in `docs/handoff-cookiecutter-claude-removal.md`
+
+Insert after `### DEVELOPMENT.md` and before `### cookiecutter.json`.
+
+**Content to add:**
+
+    ### AI Review Configuration
+
+    Two AI review config files exist in `{{cookiecutter.project_slug}}/.github/` and need
+    to be updated before merging the cleanup PR.
+
+    **`.github/copilot-instructions.md`**
+
+    The file references Black in two places that describe what automated checks handle so
+    Copilot should skip them:
+
+    - Line 4 (introductory note): `formatting (Black)` -- change to `formatting (ruff format)`
+    - Line 110 ("What NOT to Review" list): `Code formatting (Black)` -- change to
+      `Code formatting (ruff format)`
+
+    No other changes are needed. The nine review focus areas are accurate and should not
+    be modified.
+
+    **`.coderabbit.yaml`**
+
+    Compare this file with `.coderabbit.yaml` at the root of the `.claude` repo (the global
+    baseline). Update the template's file if the baseline has changed. The key sections to
+    compare: `language_instructions`, `path_instructions`, and `tools` block. Profile and
+    auto-review settings are intentionally the same and should stay in sync.
+
+### 5b: Two new Definition of Done items
+
+Add to the end of the `## Definition of Done` checklist in
+`docs/handoff-cookiecutter-claude-removal.md`:
+
+    - [ ] `{{cookiecutter.project_slug}}/.github/copilot-instructions.md` updated: "Black"
+          replaced with "ruff format" in both the introductory note and the "What NOT to
+          Review" list
+    - [ ] `{{cookiecutter.project_slug}}/.coderabbit.yaml` compared against `.claude` repo
+          baseline; divergences either resolved or documented as intentional
 
 ---
 
@@ -199,9 +256,10 @@ line: one for CodeRabbit (automatic), one for Copilot (optional manual request).
 | File | Change Type | Description |
 | --- | --- | --- |
 | `.claude/rules/git-workflow.md` | Documentation | Add Remote Verification section; add Branch Workflow Override section; expand Layer 2 Gate System entry |
-| `CLAUDE.md` | Documentation | Add scope tracing item to Development Philosophy numbered list |
+| `CLAUDE.md` | Documentation | Add scope tracing item 7 to Development Philosophy numbered list |
 | `.claude/rules/supervisor.md` | Documentation | Add Scope Tracing section after Every Development Task Pattern |
-| `.claude/rules/pre-commit.md` | Documentation | Add CodeRabbit checklist item to PR section |
+| `.claude/rules/pre-commit.md` | Documentation | Add CodeRabbit and Copilot checklist items to PR section |
+| `docs/handoff-cookiecutter-claude-removal.md` | Documentation | Add AI Review Configuration subsection and two DoD items |
 
 ---
 
@@ -216,13 +274,16 @@ line: one for CodeRabbit (automatic), one for Copilot (optional manual request).
 7. **Copilot in Gate System**: `grep "Copilot" .claude/rules/git-workflow.md` returns match in Layer 2 block
 8. **CodeRabbit in pre-commit.md**: `grep "CodeRabbit" .claude/rules/pre-commit.md` returns one match
 9. **Copilot in pre-commit.md**: `grep "Copilot" .claude/rules/pre-commit.md` returns one match
-10. **All pre-commit hooks pass**: `pre-commit run --all-files`
+10. **Handoff doc AI section present**: `grep "AI Review Configuration" docs/handoff-cookiecutter-claude-removal.md` returns one match
+11. **Handoff DoD updated**: `grep "ruff format" docs/handoff-cookiecutter-claude-removal.md` returns matches
+12. **All pre-commit hooks pass**: `pre-commit run --all-files`
 
 ---
 
 ## Out of Scope
 
 - Enforcing scope tracing via a hook (documentation-only; the phase-gate skill handles verification)
-- Modifying `.coderabbit.yaml` configuration
-- Adding CodeRabbit to the CI pipeline documentation (out of sprint scope)
+- Modifying `.coderabbit.yaml` in this repo
+- Executing the cookiecutter cleanup work (Item 5 updates the handoff doc only; the
+  actual template changes happen in the `cookiecutter-python-template` repo)
 - Documenting the `@coderabbitai` command set beyond the basic usage note
