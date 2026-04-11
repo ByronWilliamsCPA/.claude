@@ -12,7 +12,6 @@
     "deny": [],
     "ask": [
       "Bash(rm:*)",
-      "Bash(rm -rf:*)",
       "Bash(chmod:*)",
       "Bash(chown:*)",
       "Bash(mv:*)",
@@ -31,7 +30,7 @@
       "Bash(npm uninstall:*)",
       "Bash(pip uninstall:*)",
       "Bash(firebase deploy:*)",
-      "Bash(gcloud *:*)",
+      "Bash(gcloud:*)",
       "Bash(git push --force:*)"
     ]
   },
