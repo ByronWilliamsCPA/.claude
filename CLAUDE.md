@@ -48,15 +48,15 @@ When tests fail, investigate root causes in this order:
 ## Golden File Protection
 
 When tests use golden files (reference snapshots in `tests/golden/`, `tests/fixtures/`,
-or `*.snap` files), never edit those files manually to make a failing test pass. Golden
+or `*.snap` files), do not edit those files directly to make a failing test pass. Golden
 files represent the verified correct output. Changing them to match broken behavior
 destroys the test's value.
 
-To update golden files legitimately (behavior changed intentionally):
+To update golden files when behavior changes intentionally:
 
 1. Confirm the new output is correct by inspection
 2. Regenerate using the project's snapshot update command
-   (e.g., `pytest --snapshot-update`, `cargo test -- --nocapture`)
+   (e.g., `pytest --snapshot-update`, `cargo insta update`)
 3. Commit the updated golden file with a message explaining why the expected output changed
 
 ## System / Shell
