@@ -191,3 +191,42 @@ When darglint flags a mismatch, fix the docstring. Do not add a `# noqa` suppres
 **Ruff target**: `py312` — Ruff auto-fixes target 3.12 syntax.
 **Minimum compatibility**: Do not use `datetime.UTC` (3.11+); use `datetime.timezone.utc`.
 Check all auto-fix tools (ruff, etc.) for version-incompatible changes before committing.
+
+## Function Quality Gates (MANDATORY)
+
+These gates apply to every Python function Claude writes or modifies. They
+encode the PLR (Pylint refactor) and C901 (complexity) rules already enabled
+in Ruff.
+
+### Function Structure
+
+- **Length**: prefer 20-60 statements; hard limit 100 (PLR0915)
+- **Single Responsibility**: one conceptual task per function
+- **Early Returns**: exit early on errors; avoid deep else branches
+- **Nesting Depth**: maximum 3 levels inside the function body
+
+### Complexity Controls
+
+- **Cyclomatic Complexity**: target 10 or lower (C901 enforced)
+- **Branches**: maximum 12 per function (PLR0912)
+- **Arguments**: maximum 4 positional before grouping; use a dataclass for
+  5 or more parameters (PLR0913). This matches the Parameter Grouping rule
+  earlier in this file, which specifies dataclass refactoring at 5+ params.
+
+### Code Duplication
+
+- **Zero Tolerance**: extract shared functions immediately when the same logic
+  appears twice
+- **Rule of Three**: three similar blocks trigger refactoring to a reusable
+  function or class
+
+### Data and State Design
+
+- **Immutability First**: use `@dataclass(frozen=True)` for value objects;
+  prefer tuples to lists when the collection is not mutated
+- **Pure Functions**: minimize side effects; functions that compute values
+  should not mutate external state
+- **No Global State**: pass dependencies explicitly through constructor or
+  function arguments; avoid module-level mutable globals
+- **Parameter Grouping**: see the dataclass example earlier in this file for
+  the greater than 4 parameter refactor pattern
