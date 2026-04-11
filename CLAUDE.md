@@ -1,6 +1,6 @@
 # Global Claude Development Standards
 
-> **Status**: ✅ Active | Core Standard | **Version**: 1.1.0 | **Last Updated**: 2026-04-09
+> **Status**: ✅ Active | Core Standard | **Version**: 1.2.0 | **Last Updated**: 2026-04-10
 >
 > Universal development standards and practices for Claude Code across all projects.
 
@@ -47,10 +47,12 @@ When tests fail, investigate root causes in this order:
 
 ## Golden File Protection
 
-When tests use golden files (reference snapshots in `tests/golden/`, `tests/fixtures/`,
-or `*.snap` files), do not edit those files directly to make a failing test pass. Golden
-files represent the verified correct output. Changing them to match broken behavior
-destroys the test's value.
+When tests use golden files or output snapshots (files in `tests/golden/` or `*.snap` files),
+do not edit those files directly to make a failing test pass. Golden files represent the
+verified correct output. Changing them to match broken behavior destroys the test's value.
+
+Note: `tests/fixtures/` files are often test inputs, not output snapshots. Editing an input
+fixture to correct wrong test data is legitimate; this rule targets output snapshot files.
 
 To update golden files when behavior changes intentionally:
 

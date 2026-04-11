@@ -20,9 +20,9 @@ Before committing ANY changes, verify all items:
 - [ ] Pre-commit hooks execute successfully (`pre-commit run --all-files`)
 - [ ] No linting warnings or errors remain
 - [ ] Code formatting is consistent with project standards
-- [ ] Commits are signed (Git signing key configured)
 - [ ] **Docstring Coverage**: `interrogate` passes at 85% threshold for `scripts/` — add missing docstrings rather than suppressing
 - [ ] **Docstring Arguments**: `darglint` passes — `Args`/`Returns`/`Raises` sections match function signatures (excludes `tests/`, `scripts/`, `benchmarks/`, `tools/`); update the docstring to fix mismatches
+- [ ] Commits are signed (Git signing key configured)
 
 ## Security
 - [ ] **Security Scanning**: No known vulnerabilities — medium+ severity blocks commit (`uv run pip-audit`; exit code 64 = advisory found)
