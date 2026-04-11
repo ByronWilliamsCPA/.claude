@@ -53,9 +53,16 @@ run_or_dry() {
 }
 
 # ---------- Preflight ----------
+# Hard requirements (needed for symlink install): ln, git. Without these,
+# setup.sh cannot run at all.
+# Soft requirement (needed only for settings.json merge steps): jq. If jq
+# is absent, the symlinks are still created, but the hooks and
+# claudeMdExcludes merge steps are skipped with a warning. This matches the
+# pre-refactor behavior and avoids a regression where jq-less systems
+# couldn't bootstrap symlinks.
 preflight() {
     local missing=()
-    for cmd in jq ln git; do
+    for cmd in ln git; do
         if ! command -v "$cmd" &>/dev/null; then
             missing+=("$cmd")
         fi
@@ -64,6 +71,12 @@ preflight() {
         log_error "Missing required commands: ${missing[*]}"
         log_error "Install them and re-run setup.sh"
         exit 3
+    fi
+    if ! command -v jq &>/dev/null; then
+        log_warn "jq not found. Symlinks will be created, but hooks and"
+        log_warn "claudeMdExcludes merges into ~/.claude/settings.json will be"
+        log_warn "skipped. Install jq (apt install jq / brew install jq) and"
+        log_warn "re-run to finish the install."
     fi
 }
 
@@ -95,12 +108,19 @@ doctor() {
         if [[ -L "$link" ]]; then
             local actual
             actual="$(readlink "$link")"
-            if [[ "$actual" == "$expected" ]]; then
-                printf "  [ok]   %-40s -> %s\n" "${link/#$HOME/~}" "${expected/#$HOME/~}"
-            else
+            if [[ "$actual" != "$expected" ]]; then
                 printf "  [drift] %-40s -> %s (expected %s)\n" \
                     "${link/#$HOME/~}" "${actual/#$HOME/~}" "${expected/#$HOME/~}"
                 broken=$((broken + 1))
+            elif [[ ! -e "$link" ]]; then
+                # Symlink points at the expected path, but that path does
+                # not exist (dangling). Common cause: submodules not
+                # initialized or a referenced directory was removed.
+                printf "  [dangle] %-40s -> %s (target missing)\n" \
+                    "${link/#$HOME/~}" "${expected/#$HOME/~}"
+                broken=$((broken + 1))
+            else
+                printf "  [ok]   %-40s -> %s\n" "${link/#$HOME/~}" "${expected/#$HOME/~}"
             fi
         elif [[ -e "$link" ]]; then
             printf "  [real]  %-40s (regular file, not symlink)\n" "${link/#$HOME/~}"
@@ -179,6 +199,11 @@ merge_hooks() {
     local hooks_source="${REPO_DIR}/hooks.json"
     local settings="${CLAUDE_DIR}/settings.json"
 
+    if ! command -v jq &>/dev/null; then
+        log_warn "jq not found, skipping hooks merge"
+        return 0
+    fi
+
     if [[ ! -f "$hooks_source" ]]; then
         log_warn "hooks.json not found at ${hooks_source}"
         return 0
@@ -199,8 +224,18 @@ merge_hooks() {
     fi
 }
 
+# Merge repo-specific claudeMdExcludes into the existing array, preserving
+# any user-defined excludes already present and deduplicating the result.
+# Uses jq to: normalize the existing key to an array (default to empty if
+# missing or wrong type), append the two repo-specific patterns, then pass
+# the combined array through `unique` so duplicates collapse.
 merge_claude_md_excludes() {
     local settings="${CLAUDE_DIR}/settings.json"
+
+    if ! command -v jq &>/dev/null; then
+        log_warn "jq not found, skipping claudeMdExcludes merge"
+        return 0
+    fi
 
     if [[ ! -f "$settings" ]]; then
         log_warn "settings.json missing, skipping claudeMdExcludes merge"
@@ -208,15 +243,19 @@ merge_claude_md_excludes() {
     fi
 
     if (( DRY_RUN )); then
-        echo "  [dry]  jq set .claudeMdExcludes = [\"${REPO_DIR}/CLAUDE.md\", \"${REPO_DIR}/.claude/**\"]"
+        echo "  [dry]  jq merge .claudeMdExcludes += [\"${REPO_DIR}/CLAUDE.md\", \"${REPO_DIR}/.claude/**\"] (dedupe)"
         return 0
     fi
 
     jq --arg repo "$REPO_DIR" \
-        '.claudeMdExcludes = [$repo + "/CLAUDE.md", $repo + "/.claude/**"]' \
+        '.claudeMdExcludes = (
+            (((.claudeMdExcludes // []) | if type == "array" then . else [] end)
+             + [$repo + "/CLAUDE.md", $repo + "/.claude/**"])
+            | unique
+        )' \
         "$settings" > "${settings}.tmp" \
         && mv "${settings}.tmp" "$settings"
-    log_ok "settings.json claudeMdExcludes set for ${REPO_DIR/#$HOME/~}"
+    log_ok "settings.json claudeMdExcludes merged for ${REPO_DIR/#$HOME/~}"
 }
 
 # ---------- Main ----------

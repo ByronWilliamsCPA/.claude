@@ -35,16 +35,42 @@ PR_URL_RE = re.compile(
     re.IGNORECASE,
 )
 
-# Natural-language review-intent phrases. Each pattern is a regex intended
-# to catch how a user would verbally ask for a PR review without invoking
-# the slash command. Keep these narrow to minimize false positives.
-PR_PHRASE_PATTERNS = [
-    re.compile(r"\breview\s+(this\s+|the\s+)?(pull\s+request|pr\b)", re.IGNORECASE),
-    re.compile(r"\blook\s+at\s+(this\s+|the\s+)?(pull\s+request|pr\s*#?\s*\d+)", re.IGNORECASE),
-    re.compile(r"\bcheck\s+(this\s+|the\s+)?(pull\s+request|pr\s*#?\s*\d+)", re.IGNORECASE),
-    re.compile(r"\breview\s+pr\s*#?\s*\d+", re.IGNORECASE),
-    re.compile(r"\bpr\s+review\b", re.IGNORECASE),
-]
+# Natural-language review-intent phrases. Stored as plain lowercase
+# substrings rather than regex patterns to eliminate any ReDoS
+# (catastrophic backtracking) concern: substring matching is strictly
+# linear. The prompt is normalized via ``.lower()`` before checking, and
+# the list is checked against normalized whitespace so that variable
+# spacing ("review  the  PR") still matches the intended phrase.
+#
+# Previous revision used regexes with ``\s+(this\s+|the\s+)?`` which
+# SonarQube python:S5852 flagged for polynomial backtracking risk. The
+# substring form is both safer and faster.
+PR_PHRASES = (
+    "review pr",
+    "review the pr",
+    "review this pr",
+    "review pull request",
+    "review the pull request",
+    "review this pull request",
+    "look at pr",
+    "look at the pr",
+    "look at this pr",
+    "look at pull request",
+    "look at the pull request",
+    "look at this pull request",
+    "check pr",
+    "check the pr",
+    "check this pr",
+    "check pull request",
+    "check the pull request",
+    "check this pull request",
+    "pr review",
+)
+
+# Whitespace normalizer: collapse runs of whitespace to a single space so
+# ``review   the    PR`` matches ``review the pr``. Single \s+ with a
+# single-character replacement is linear and ReDoS-safe.
+_WHITESPACE_RUN = re.compile(r"\s+")
 
 # If the user already typed the slash command, stay silent. This matches
 # ``/code-review`` optionally followed by arguments. Word-boundary anchored
@@ -124,7 +150,11 @@ def _should_remind(prompt: str) -> bool:
         return False
     if PR_URL_RE.search(prompt):
         return True
-    if any(pat.search(prompt) for pat in PR_PHRASE_PATTERNS):
+    # Normalize to lowercase with collapsed whitespace, then substring-match
+    # against the phrase tuple. No regex over user input beyond the PR URL
+    # check above, so no ReDoS surface.
+    normalized = _WHITESPACE_RUN.sub(" ", prompt.lower())
+    if any(phrase in normalized for phrase in PR_PHRASES):
         return True
     return False
 
