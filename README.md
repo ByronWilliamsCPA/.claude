@@ -38,6 +38,15 @@ This project provides:
 - Well-documented API and architecture
 - Security-first development practices
 
+## Docs Site (mkdocs)
+
+Full docs live under `docs/` and build with `uv run mkdocs serve`. The site has two audience tracks:
+
+- **Getting Started** (`docs/getting-started/`) — for new developers: clone, `setup.sh`, run your first agent, trigger your first skill, troubleshoot.
+- **Architecture** (`docs/architecture/`) — for maintainers: mental model, hook pipeline, agent dispatch, MCP tiered loading, plus a numbered [ADR log](docs/architecture/adr/index.md) and committed [PUML diagrams](docs/architecture/diagrams/index.md) explaining *why* load-bearing decisions were made.
+
+See [`docs/index.md`](docs/index.md) for the role-based landing page.
+
 ## Features
 
 - **High Quality**: 80%+ test coverage enforced via CI
