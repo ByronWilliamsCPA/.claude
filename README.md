@@ -319,7 +319,7 @@ tree, the project `CLAUDE.md` loads in addition to the global standards from
 `~/.claude/CLAUDE.md`, so project overrides augment rather than replace the
 baseline. Per-project tool permissions go in `.claude/settings.local.json`.
 
-#### Open follow-up: PR URL auto-trigger for `/code-review`
+#### PR review intent reminder
 
 The `/code-review` plugin at
 `.submodules/anthropics-plugins/plugins/code-review/commands/code-review.md`
@@ -329,17 +329,26 @@ auto-activation triggers like skills do. So prose phrasings such as
 "review this PR" or "look at PR #14" will not reliably invoke the structured
 5-agent review pipeline without the slash command.
 
-Proposed fix (not implemented): add a thin wrapper skill at
-`.claude/skills/code-review-pr/SKILL.md` with a `description:` listing PR URL
-keywords and triggering patterns (`review PR`, `review pull request`, GitHub
-PR URL regex), where the skill body instructs Claude to invoke the
-`/code-review` command with the detected URL as the argument. This preserves
-the submodule-owned command as the execution engine while adding a
-natural-language entry point.
+To catch this class of user intent, `scripts/pr-review-reminder.py` is
+registered as a UserPromptSubmit hook in `hooks.json`. On every user
+prompt, the hook checks for a GitHub PR URL or review-intent phrasing and,
+if found without an explicit `/code-review` invocation, injects a system
+message telling Claude to ask the user whether they want the structured
+command run.
 
-Constraint: the wrapper skill must live in the local `.claude/skills/`
-directory so it is not owned by any submodule, and its body should not
-duplicate the review logic from the command file; only route to it.
+Triggers (case-insensitive):
+
+- GitHub PR URL regex: `https?://github\.com/[^/]+/[^/]+/pull/\d+`
+- Phrase: `review (this|the)? (PR|pull request)`
+- Phrase: `look at (this|the)? (PR|pull request #\d+)`
+- Phrase: `check (this|the)? (PR|pull request #\d+)`
+- Phrase: `review PR #\d+`
+- Phrase: `PR review`
+
+Short-circuits when `/code-review` is already present in the prompt, or
+when the environment variable `PR_REVIEW_REMINDER_DISABLED=1` is set. The
+hook always exits 0 and never blocks the prompt. Test scenarios are in
+the script's docstring.
 
 ### Running Tests
 
