@@ -58,6 +58,28 @@ Use `/hookify <instruction>` to add a rule instantly, or `/hookify` with no args
 /hookify-configure     # enable/disable rules interactively
 ```
 
+## Security Practices
+
+### GitHub Actions: Pin to Commit SHAs
+
+Never reference GitHub Actions by mutable version tags. Tags can be rewritten by the action
+author after the fact, enabling supply chain attacks via tag mutation.
+
+Always pin to the full commit SHA:
+
+    # Bad — tag is mutable, can be rewritten after you reference it
+    - uses: actions/checkout@v4
+
+    # Good — SHA is immutable
+    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+To find the SHA: navigate to the action's releases page on GitHub, click the commit link for
+the version you want, and copy the full 40-character SHA. Add the version as a comment so the
+pin stays human-readable.
+
+Dependabot keeps SHA pins current when configured in `.github/dependabot.yml` with
+`package-ecosystem: github-actions`.
+
 ## Git Worktrees
 
 Use the `using-git-worktrees` superpowers skill to set up worktrees safely. It handles directory

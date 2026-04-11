@@ -12,7 +12,7 @@
 ci:
   autoupdate_schedule: monthly
   autofix_prs: true
-  skip: [validate-front-matter, qlty-check, qlty-full, trufflehog, darglint, bandit, bandit-full]  # Skip local-only hooks
+  skip: [validate-front-matter, qlty-check, qlty-full, trufflehog, darglint, bandit, bandit-full, pip-audit]  # Skip local-only hooks
 
 repos:
   # ============================================================================
@@ -88,6 +88,22 @@ repos:
         pass_filenames: false
         stages: [pre-push]
         always_run: true
+
+  # ============================================================================
+  # Dependency Vulnerability Scanning - pip-audit
+  # ============================================================================
+  # Runs on pre-push, scoped to dep file changes only, to avoid per-commit overhead.
+  # Exit code 64 = advisory found. Medium+ severity blocks push.
+  # Audits the active virtualenv — ensure 'uv sync' has been run before push.
+  - repo: local
+    hooks:
+      - id: pip-audit
+        name: pip-audit (dependency vulnerability scan)
+        entry: uv run pip-audit
+        language: system
+        pass_filenames: false
+        stages: [pre-push]
+        files: ^(pyproject\.toml|requirements.*\.txt|uv\.lock)$
 
   # ============================================================================
   # Conventional Commits Enforcement
