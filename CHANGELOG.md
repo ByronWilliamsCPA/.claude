@@ -1,6 +1,471 @@
 # CHANGELOG
 
 
+## v0.4.0 (2026-04-11)
+
+### Bug Fixes
+
+- **quality**: Resolve remaining SonarQube code smells on branch
+  ([`75e1a5a`](https://github.com/ByronWilliamsCPA/.claude/commit/75e1a5a2347c56252c8e2c227efec51b55986e0c))
+
+setup.sh (shelldre:S7682): added explicit `return 0` to log helpers (log_info/ok/skip/warn/error),
+  run_or_dry, preflight, doctor, ensure_submodules, and backup_settings so each function ends with
+  an explicit return statement under `set -euo pipefail`.
+
+scripts/pr-review-reminder.py: - S5713: removed redundant json.JSONDecodeError from except tuple
+  (JSONDecodeError is a ValueError subclass, already caught) - S5713: removed redundant ValueError
+  from os.read except tuple (only OSError is raised by sys.stdin.read) - S3516: refactored main() to
+  return None instead of always returning 0; caller changed from sys.exit(main()) to main()
+
+Verified: bash -n setup.sh, python compile, ./setup.sh --doctor, ./setup.sh --dry-run, and hook
+  smoke tests with PR and non-PR prompts all pass.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- **review**: Address Copilot comments and SonarQube hotspots on PR #14
+  ([`f928aad`](https://github.com/ByronWilliamsCPA/.claude/commit/f928aad8114300a3808179e36abf55de64143715))
+
+Fixes all 4 Copilot inline review comments and all 3 SonarQube security hotspots surfaced on PR #14.
+  My own /code-review pipeline only ran its internal 5-agent review and did not read other
+  reviewers' findings, so these were missed until explicitly fetched.
+
+## Copilot comment fixes
+
+1. setup.sh preflight: softened jq requirement (Copilot comment on setup.sh:67) Previously,
+  preflight exited 3 if jq was missing, blocking even the symlink creation on jq-less systems. This
+  was a regression vs the pre-refactor behavior. Now preflight hard-requires only `ln` and `git`
+  (needed for symlinks), and treats `jq` as soft with a warning. `merge_hooks` and
+  `merge_claude_md_excludes` each check for `jq` independently and skip with a warning if absent.
+
+2. setup.sh doctor: dangling symlink detection (Copilot comment on setup.sh:104) Previously, doctor
+  marked any symlink whose readlink output matched the expected path as [ok], even if the target
+  path did not exist (dangling link, common when submodules are not initialized). Added a [[ -e
+  "$link" ]] check so dangling links are reported as [dangle] and counted as broken.
+
+3. setup.sh merge_claude_md_excludes: preserve user-defined excludes (Copilot comment on
+  setup.sh:219) Previously, `.claudeMdExcludes = [...]` replaced the entire array, clobbering any
+  user-added patterns. Now uses `.claudeMdExcludes = ((existing // []) + [repo patterns]) | unique`
+  so repo-specific entries are appended and the result is deduplicated. User-defined excludes are
+  preserved across setup.sh runs.
+
+4. rules/python.md argument count wording (Copilot comment on python.md:212) Previously, the earlier
+  "Parameter Grouping" rule said ">4 params -> dataclass" (5+) while the new Function Quality Gates
+  said "maximum 5 positional (PLR0913); use dataclass grouping above that" (6+). These conflicted.
+  Aligned to "maximum 4 positional before grouping; use dataclass for 5 or more" per Copilot's
+  suggestion, matching the established Parameter Grouping rule.
+
+## SonarQube hotspot fixes
+
+5-7. scripts/pr-review-reminder.py ReDoS risk (python:S5852) Three hotspots on lines 43-45 flagged
+  the regex patterns for `\breview\s+(this\s+|the\s+)?(pull\s+request|pr\b)` and similar shapes as
+  vulnerable to polynomial backtracking due to nested `\s+` with optional groups.
+
+Replaced the PR_PHRASE_PATTERNS regex list with a PR_PHRASES tuple of plain lowercase substrings.
+  The prompt is normalized via `.lower()` and collapsed-whitespace substitution before matching.
+  Substring matching is strictly linear, eliminating the ReDoS surface entirely.
+
+Also expanded phrase coverage: the previous 5 regex patterns are now 19 explicit substrings
+  (review/look-at/check + pr/pull request + this /the/bare). Added a new whitespace normalization so
+  inputs like "review the PR" still match the intended phrase.
+
+Kept two regex patterns: PR_URL_RE (bounded character classes, no ReDoS risk) and
+  EXPLICIT_COMMAND_RE (anchored literal, no risk).
+
+## Verification
+
+- bash -n setup.sh: clean - shellcheck setup.sh: clean - ./setup.sh --doctor: all 8 symlinks OK,
+  hooks present, claudeMdExcludes present - ./setup.sh --dry-run: shows correct jq merge+dedupe plan
+  - ./setup.sh (live run): idempotent, claudeMdExcludes deduped correctly - pr-review-reminder.py: 6
+  test cases pass including new whitespace case
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- **ruff**: Stop auto-correcting files inside .submodules/
+  ([`f67d66a`](https://github.com/ByronWilliamsCPA/.claude/commit/f67d66a7d9aaf9b8b0dd7fb5a6fc66b08a997e23))
+
+The PostToolUse ruff hook was modifying files inside git submodules every time Claude ran, producing
+  spurious "modified content" reports and accidentally drifting vendored code.
+
+Root cause: ruff's exclude list in pyproject.toml did not include .submodules/, and force-exclude
+  was not set. When ruff is invoked with an explicit file path (e.g., from the Claude Code
+  PostToolUse hook running ruff check --fix on a file inside a submodule), exclude rules are
+  bypassed by default unless force-exclude = true.
+
+Fix: - Add .submodules/ and .submodules/** to [tool.ruff] exclude - Set force-exclude = true so
+  exclude applies to explicit file arguments too - Add \.submodules/ to .pre-commit-config.yaml
+  top-level exclude pattern as defense-in-depth against pre-commit hooks reaching into vendored
+  trees
+
+Verified: `ruff check --fix .submodules/anthropics-plugins/plugins/hookify/hooks/pretooluse.py` now
+  reports "No Python files found under the given path(s)" and leaves the file untouched.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- **writing**: Remove em-dashes introduced in this PR
+  ([`91cbd64`](https://github.com/ByronWilliamsCPA/.claude/commit/91cbd649293773b6da81b4cd091b3e215f3d706a))
+
+Self-review caught 14 em-dashes introduced across the three files modified by this PR. The
+  no-em-dashes rule is a Tier 3 user preference codified in .claude/rules/writing.md and explicitly
+  referenced from CLAUDE.md.
+
+- CLAUDE.md: 12 em-dashes replaced with commas (in Development philosophy numbered list, Compact
+  Instructions bullets, and Project context note) - README.md: 1 em-dash replaced with semicolon in
+  the wrapper-skill follow-up note - setup.sh: 1 em-dash replaced with a period in the
+  ensure_symlink warning message
+
+Pre-existing em-dash in setup.sh line 2 (the script's header comment) is left alone because it was
+  not introduced by this PR and modifying it would expand the diff beyond scope.
+
+Identified by self-run of /code-review via 5-agent Sonnet parallel review.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+### Chores
+
+- Add pip-audit pre-push hook for dependency vulnerability scanning
+  ([`3c17eeb`](https://github.com/ByronWilliamsCPA/.claude/commit/3c17eeb023428f218fd1d454e318f6677f40d383))
+
+- **deps**: Reconcile uv.lock with pyproject.toml version
+  ([`63bab66`](https://github.com/ByronWilliamsCPA/.claude/commit/63bab6650382874bad08bf8b9eb5d35ff52f10eb))
+
+The uv.lock file carried claude-config version 1.0.0 from the initial cookiecutter commit, but
+  pyproject.toml has been bumped through 0.1.0, 0.2.0, and 0.3.0 without the lock file being
+  regenerated. Running uv lock now corrects the recorded version to 0.3.0.
+
+Also tightens the transitive typing-extensions marker on exceptiongroup from python_full_version <
+  '3.13' to < '3.11', which more accurately reflects that exceptiongroup is a backport only relevant
+  on Python 3.10 within our >=3.10,<3.15 supported range.
+
+No dependency versions change; this is a lock-file accuracy fix.
+
+### Documentation
+
+- Add AI review configuration sync guidance to cookiecutter handoff doc
+  ([`0ad029b`](https://github.com/ByronWilliamsCPA/.claude/commit/0ad029b9fa1120a14705aa72ea332e69ee2579e5))
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- Add CodeRabbit and Copilot review checklist items to pre-commit rules
+  ([`d0f6814`](https://github.com/ByronWilliamsCPA/.claude/commit/d0f68148bc70271951d852a7b9be809cd95f2516))
+
+- Add docstring coverage and argument validation checklist items
+  ([`f50a329`](https://github.com/ByronWilliamsCPA/.claude/commit/f50a329e4c526270d8808a6e03f01a4aaf57f26b))
+
+- Add exception hierarchy guidance and expand documentation section in python rules
+  ([`4918834`](https://github.com/ByronWilliamsCPA/.claude/commit/4918834f07c4c7a24d2791d8e05a7a78af95fbd4))
+
+- Add FIPS 140-2/3 compliance requirements to python rules
+  ([`38b1b0d`](https://github.com/ByronWilliamsCPA/.claude/commit/38b1b0d102d2e5c3aecbcc796fc214ad3df42a57))
+
+- Add GitHub Actions SHA pinning guidance to git workflow rules
+  ([`121edb6`](https://github.com/ByronWilliamsCPA/.claude/commit/121edb6ef9943172198123123c8d14c2e4951482))
+
+- Add golden file protection guidance to CLAUDE.md Testing section
+  ([`96f853a`](https://github.com/ByronWilliamsCPA/.claude/commit/96f853a2e2077bc0cbab4633a5ee96846aae85ba))
+
+- Add known vulnerability template and CVE policy reference to CLAUDE.md
+  ([`33e6f32`](https://github.com/ByronWilliamsCPA/.claude/commit/33e6f327adb89e1d6a78005048ce86f0136d16c8))
+
+- Add remote verification, branch override, and AI review gate documentation
+  ([`11edf1f`](https://github.com/ByronWilliamsCPA/.claude/commit/11edf1f7b182bb3620901ab7446158a0c2b21ebc))
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- Add scope tracing principle to CLAUDE.md and supervisor rules
+  ([`beb421a`](https://github.com/ByronWilliamsCPA/.claude/commit/beb421ae2acd8cf7912bb2a6d9583ca3693befb4))
+
+- Add Sprint 2 code quality patterns design spec
+  ([`7c2aeeb`](https://github.com/ByronWilliamsCPA/.claude/commit/7c2aeebafab5cd9544f65395bb190223fa1a1a64))
+
+Covers exception hierarchy guidance, golden test protection, and docstring coverage gate
+  documentation for rules/python.md, CLAUDE.md, and rules/pre-commit.md.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- Add Sprint 3 git workflow governance design spec
+  ([`014494d`](https://github.com/ByronWilliamsCPA/.claude/commit/014494d8f13adf292205221c872e1ee0c3b1dd79))
+
+Covers remote verification, branch override pattern, scope tracing principle, and AI review
+  integration (CodeRabbit + GitHub Copilot).
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- Add Sprint 3 git workflow governance implementation plan
+  ([`a12daee`](https://github.com/ByronWilliamsCPA/.claude/commit/a12daee57b12c218f0e849a1a5253b2c9f5a3b30))
+
+Five tasks: update git-workflow.md (remote verification, branch override, Layer 2 AI review
+  expansion), add scope tracing to CLAUDE.md and supervisor.md, add AI review checklist items to
+  pre-commit.md, update cookiecutter handoff doc with AI review config sync guidance.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- Address code review findings from PR #10
+  ([`c4cb49f`](https://github.com/ByronWilliamsCPA/.claude/commit/c4cb49f5fdb6feb7fd69a1c0aee760c940c892d9))
+
+- Fix BLE/TRY enforcement claim: TRY002 and BLE001 catch specific anti-patterns but do not validate
+  the full AppError hierarchy; code review is the enforcement mechanism for hierarchy structure -
+  Fix to_dict() return type from dict[str, str] to dict[str, object] to avoid breakage when
+  subclasses add non-string fields - Add note that subclass ... bodies are minimal when no extra
+  attributes are needed; show examples in inline comments - Explain interrogate/darglint scope
+  asymmetry: scripts/ excluded from darglint due to *args/**kwargs false-positive patterns - Add
+  darglint long-strictness definition (multi-line docstrings only) - Bridge global docstring
+  standard to scripts/-scoped gate via Ruff D rules - Move Docstring Coverage and Docstring
+  Arguments checklist items to sit adjacent to linter checks (before Commits are signed) - Scope
+  Golden File Protection to output snapshots (tests/golden/, *.snap); clarify tests/fixtures/ may
+  contain input data, not snapshots - Bump CLAUDE.md to v1.2.0, update Last Updated to 2026-04-10
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- Address PR review findings — FIPS, CVE policy, pip-audit hook
+  ([`5de48ab`](https://github.com/ByronWilliamsCPA/.claude/commit/5de48abe57f4f0cd5ba03df0ebd04312109289d4))
+
+- Align CVE reassessment window to 60 days (was 90) to match the OpenSSF release gate; add
+  cross-reference note to CLAUDE.md blockquote - Update known-vulnerabilities-template.md to reflect
+  60-day window - Add virtualenv assumption comment to pip-audit pre-push hook - Rename FIPS table
+  row 'Key exchange' to 'Asymmetric / Key Exchange' - Promote Curve25519/X25519 FIPS 140-3 qualifier
+  from table parenthetical to standalone explanatory note below the table - Group GitHub Actions SHA
+  pinning under a 'Security Practices' heading in git-workflow.md for easier navigation as the file
+  grows
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- Clarify darglint scope and remediation in pre-commit checklist
+  ([`01a5d71`](https://github.com/ByronWilliamsCPA/.claude/commit/01a5d71c728a441d91a6c3a422ce38d9b292ab54))
+
+- Expand sprint-3 spec to five items and fix em-dashes
+  ([`82a95f5`](https://github.com/ByronWilliamsCPA/.claude/commit/82a95f59d7285a21f908adb2aaa20e2c76b23938))
+
+Adds Item 5 (cookiecutter AI review config sync), updates overview count, fixes three em-dashes in
+  Items 4a and 4b, and updates Files Modified, Verification, and Out of Scope sections accordingly.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- Fix em-dash in pre-commit security scanning checklist item
+  ([`f50578c`](https://github.com/ByronWilliamsCPA/.claude/commit/f50578c7dd41b6ccab0ed3aa40721870e9161d20))
+
+- Fix em-dashes and code block style in python rules exception section
+  ([`91019fa`](https://github.com/ByronWilliamsCPA/.claude/commit/91019fa9c7d5bba53219a67521ba2c7a80ed1c67))
+
+- Fix FIPS key exchange qualifier and add AES mode guidance
+  ([`f69b6cb`](https://github.com/ByronWilliamsCPA/.claude/commit/f69b6cb0e2bb9f0b3c9996a1b92bc18bb8c53cab))
+
+- Fix frontmatter in sprint-1 plan and spec files
+  ([`a599c3e`](https://github.com/ByronWilliamsCPA/.claude/commit/a599c3e5341cd4543050f34c650ef93972039bf1))
+
+Add planning frontmatter to plan file and remove redundant H1. Replace invalid pre-commit tag with
+  tooling in spec file.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- Fix golden file protection wording and cargo snapshot command
+  ([`8e57c9e`](https://github.com/ByronWilliamsCPA/.claude/commit/8e57c9ed685af4df5e84ae5a03d7a3740bad7f37))
+
+- Replace em-dashes in Layer 1 and Layer 2 gate headings
+  ([`d9c3131`](https://github.com/ByronWilliamsCPA/.claude/commit/d9c3131000577e48745b252f5da89861d9a9dbbc))
+
+- Replace puffery word in gate system summary line
+  ([`09eec0a`](https://github.com/ByronWilliamsCPA/.claude/commit/09eec0ac7f1b19d00ffad204452a8e146f5b02f3))
+
+- Tighten scope tracing wording and add tagline entry
+  ([`c1b4ac7`](https://github.com/ByronWilliamsCPA/.claude/commit/c1b4ac7b8392e9c632ef5de492c926374442f18e))
+
+- **cowork**: Add paste-in instructions and remove bushido plugin
+  ([`106301f`](https://github.com/ByronWilliamsCPA/.claude/commit/106301f64216eb3aff2a0594e57ca18bd9c3d1aa))
+
+Add .claude/cowork/ with paste-in content for Claude Cowork and Desktop:
+
+- profile.md (~275 words): universal writing rules and communication style - cowork.md (~340 words):
+  file safety, Word/Excel conventions, citations - folder-template.md: per-folder project context
+  with placeholders - sources.md: traceability from paste-in sections to source rule files -
+  README.md: paste workflow and future migration notes
+
+All paste-in files stay under the 500-word per-field ceiling per Anthropic custom instructions best
+  practice. Covers the Word and Excel use case; browser research remains in Claude for Chrome and
+  coding in Claude Code.
+
+Remove bushido@han plugin and han marketplace from .claude/settings.json; the SessionStart injection
+  is no longer used.
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+- **cowork**: Apply PR #13 review feedback
+  ([`19002d1`](https://github.com/ByronWilliamsCPA/.claude/commit/19002d12821aed77649ee766d9000380645d9bcb))
+
+- sources.md: replace em-dashes in external reference link titles with parenthetical source
+  attribution (the no-em-dash rule the PR itself enforces must apply here too) - cowork.md: scope
+  the Title Case heading rule explicitly to Word document output so it does not imply markdown
+  source files - profile.md: restore dropped banned terms (groundbreaking, to summarize, at the end
+  of the day, exemplary, enhancing performance) and add pointer to extended structural tells list -
+  cowork.md: replace .bak.YYYY-MM-DD-HHMM with ISO 8601 UTC basic format (.bak.YYYYMMDDTHHMMSSZ) for
+  lexical sortability and collision safety; replace the unenforceable "three consecutive edits" rule
+  with an observable trigger (before destructive edits) - README.md: update word count targets to
+  reflect new content (profile.md ~300, cowork.md ~350, folder-template.md ~220)
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+- **readme**: Note wrapper-skill follow-up for /code-review PR URL triggers
+  ([`bc4efa3`](https://github.com/ByronWilliamsCPA/.claude/commit/bc4efa3b9c9ba9bebc14ef58a947a37a23f04848))
+
+Adds a subsection to the Claude Code Standards section of README.md capturing the architectural note
+  that surfaced during PR #14: the /code-review plugin is a command, not a skill, so prose phrasings
+  like "review this PR" do not reliably invoke the structured 5-agent review pipeline. Only the
+  explicit /code-review slash command does.
+
+Documents the proposed fix (thin wrapper skill in .claude/skills/code-review-pr/ that routes
+  natural-language PR review requests to the underlying command) so the idea is not lost between
+  sessions. The fix itself is not implemented here; this is a documented backlog item.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- **readme**: Replace aspirational subtree docs with actual symlink topology
+  ([`ec8394a`](https://github.com/ByronWilliamsCPA/.claude/commit/ec8394a06e3ee95f3a9527f5502d07724e9811b0))
+
+The old "Claude Code Standards" section described a git subtree pattern (.claude/standard/ with `git
+  subtree pull`) that no project actually uses. monte_carlo, cookiecutter-python-template, and other
+  consumer projects keep their own project-local CLAUDE.md and inherit the global config via the
+  user-scope ~/.claude/ symlinks created by setup.sh.
+
+Replaced with accurate documentation of the real two-layer install pattern:
+
+1. ASCII topology diagram showing the symlink map from ~/.claude/ (runtime that Claude Code reads)
+  into ~/dev/.claude/ (repo source of truth in git) 2. Install command (clone + ./setup.sh) 3.
+  Verify command (./setup.sh --doctor) introduced in the companion commit 4. Dry-run command
+  (./setup.sh --dry-run) introduced in the same commit 5. Rationale for symlinks over
+  subtree/submodule (clean runtime, instant propagation, no copy step, claudeMdExcludes prevents
+  double-load) 6. Note on per-project CLAUDE.md and .claude/settings.local.json overrides
+
+Completes the documentation side of the consensus-recommended refinements.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+### Features
+
+- **hooks**: Add pr-review-reminder UserPromptSubmit hook
+  ([`a2bceaf`](https://github.com/ByronWilliamsCPA/.claude/commit/a2bceaf31daa3c8d71980f9093bb64d26ca97326))
+
+Addresses the auto-activation gap for /code-review. Because /code-review is a Claude Code plugin
+  command (not a skill), prose phrasings like "review this PR" do not auto-invoke the structured
+  5-agent pipeline. This hook closes that gap by detecting PR review intent in user prompts and
+  injecting a system message telling Claude to ask the user whether they want the structured command
+  run.
+
+Implementation: - scripts/pr-review-reminder.py: standalone Python hook, reads JSON event from
+  stdin, extracts user_prompt field, matches against GitHub PR URL regex and natural-language
+  review-intent phrases, short-circuits if /code-review is already present or if
+  PR_REVIEW_REMINDER_DISABLED=1 is set in the environment. Always exits 0, never blocks the prompt.
+  - hooks.json: new UserPromptSubmit entry running the script with a 5s timeout, placed after the
+  existing hookify entry so both fire. The script is referenced from $HOME/.claude/scripts/ which
+  resolves via the setup.sh symlink to $HOME/dev/.claude/scripts/. - README.md: updated the
+  wrapper-skill follow-up section to reflect the implemented hook, listing the trigger patterns and
+  the opt-out environment variable.
+
+Tested 5 scenarios locally: - Empty event -> no reminder (correct) - No PR mention ("what time is
+  it") -> no reminder (correct) - GitHub PR URL -> reminder fires (correct) - "review this PR and
+  tell me what you think" -> reminder fires (correct) - Explicit /code-review invocation -> no
+  reminder (correct short-circuit)
+
+Ran setup.sh to merge into ~/.claude/settings.json. Doctor passes.
+
+Global hook vs hookify rule choice: hookify rules load from .claude/hookify.*.local.md relative to
+  cwd, so they are project-scoped and would only fire when working inside specific projects. A
+  standalone hook entry in hooks.json fires on every UserPromptSubmit regardless of cwd, which
+  matches the user's stated goal of reminding them globally.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- **setup**: Harden setup.sh with dry-run, doctor, backups, claudeMdExcludes
+  ([`35ecc2c`](https://github.com/ByronWilliamsCPA/.claude/commit/35ecc2ce68c3571217db8f6d5d3d0f312dba76dd))
+
+Adds operational safety and observability to the bootstrap script per the consensus refinement
+  recommendations. Every change is backwards compatible: existing users running the new script get
+  the same symlinks and hook merge behavior they had before, plus the new doctor command and
+  stronger safety.
+
+Added features: - `set -euo pipefail` at the top so errors halt execution instead of silently
+  continuing - Flag parsing: `--dry-run` shows what would change without applying, `--doctor` prints
+  the resolved symlink topology and flags broken links, `--help` shows usage from the script header
+  comment - Preflight check: verifies jq, ln, and git are available before any operation, exits with
+  a clear error if not - `ln -sfn` used consistently so symlink updates are atomic - Timestamped
+  backup of ~/.claude/settings.json (format settings.json.bak.YYYYMMDD-HHMMSS) before any jq merge,
+  so settings can be rolled back if a merge corrupts them - New symlinks for CLAUDE.md, rules, and
+  standards directories (these were symlinked manually in the existing install but setup.sh did not
+  create them, which broke reproducibility for new clones) - New merge step: `claudeMdExcludes` is
+  populated in settings.json with paths derived from $REPO_DIR, so the repo's own CLAUDE.md and
+  .claude/**/* are excluded from directory-walk discovery when working inside the repo itself. This
+  solves the double-load edge case identified by the 5-model consensus. Uses --arg for path
+  injection so the excludes work correctly regardless of where the repo is cloned. - Doctor mode:
+  verifies each expected symlink points where it should, flags drift (wrong target), real (regular
+  file instead of symlink), or miss (not present). Also checks whether hooks and claudeMdExcludes
+  are present in settings.json.
+
+Verified: - `bash -n setup.sh` passes syntax check - `shellcheck setup.sh` exits 0 with no warnings
+  - `./setup.sh --doctor` reports all symlinks OK and settings present - `./setup.sh --dry-run`
+  shows correct action plan without modifying files
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+### Refactoring
+
+- **claude-md**: Trim to 141 lines, add Compact Instructions
+  ([`424f8f8`](https://github.com/ByronWilliamsCPA/.claude/commit/424f8f89bece2cc58d013d51c04257ea86cfcbd4))
+
+Executes the CLAUDE.md refactor recommended by the 5-model PAL consensus. Target size was under 200
+  lines per Claude Code's documented guidance; the previous 265-line file consumed ~3.5k tokens on
+  every session start with significant duplicated content.
+
+Content removed (moved to path-scoped rules or deleted as duplication): - Testing scope, root-cause
+  order, Golden File Protection -> now in .claude/rules/testing.md (path-scoped to test files) -
+  Python Code Generation Principles (function structure, complexity, code duplication, immutability)
+  -> now in .claude/rules/python.md as "Function Quality Gates (MANDATORY)" (path-scoped to **/*.py)
+  - Global Resource Catalog tables (~65 lines of agent and skill tables) -> already duplicated in
+  AGENTS-AND-SKILLS.md at repo root; CLAUDE.md now just points there - Install / Update section ->
+  README.md covers this - Project Integration example -> removed (was an example, not a rule)
+
+Content condensed: - Project Context: 9 lines -> 6 lines - Code Quality: 10 lines -> 6 lines (with
+  new pointers to rules/python.md and rules/testing.md) - Core Development Standards + references:
+  22 lines -> 20 lines (consolidated into single pointer block) - Response-Aware Development full
+  example: 22 lines -> 8 lines (trigger syntax stays inline, full workflow moves to
+  docs/response-aware-development.md) - Development Philosophy: 14 lines -> 10 lines (numbered
+  decision order) - OpenSSF Best Practices: 12 lines -> 7 lines
+
+Content added: - Compact Instructions section (~20 lines): tells the compaction summarizer what to
+  preserve (file paths with line numbers, error messages verbatim, architecture decisions, current
+  test state, branch state, decision rationale, user-specific corrections) and what to drop (tool
+  logs, exploratory detours, request restatements). Per the compaction research, CLAUDE.md is the
+  only component guaranteed to survive compaction intact, so explicit instructions here shape
+  summarizer behavior.
+
+Version bumped 1.2.0 -> 1.3.0. Live ~/.claude/CLAUDE.md picks up the change automatically via the
+  symlink to this file.
+
+Expected savings: ~1.7-2k tokens unconditional per session, plus ~600 tokens saved when not working
+  on Python files (Python gates now path-scoped).
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- **rules**: Extract testing rules and Python function gates from CLAUDE.md
+  ([`ce3ed16`](https://github.com/ByronWilliamsCPA/.claude/commit/ce3ed1651a152323b7d07cb1ecbdcfcfd041411f))
+
+Part of the CLAUDE.md refactor recommended by the 5-model PAL consensus. Moves operating rules from
+  the always-loaded ~/.claude/CLAUDE.md into path-scoped rules/*.md files that only load when Claude
+  works on matching files, reducing unconditional context cost per session.
+
+New file: .claude/rules/testing.md - Path-scoped to test files, fixtures, and snapshot files -
+  Contains the testing scope-clarification rule, root-cause investigation order, and golden file
+  protection rule - Does not duplicate coverage thresholds or framework choice (those live in
+  .claude/standards/testing.md, which is intentionally unconditional)
+
+Updated: .claude/rules/python.md - Appends "Function Quality Gates (MANDATORY)" section with
+  function structure, complexity controls, code duplication, and immutability rules - This content
+  was previously inline in CLAUDE.md. Python.md is already path-scoped to **/*.py and
+  pyproject.toml, so these principles now only load when Claude works on Python files.
+
+Follow-up commits will: remove the duplicated content from CLAUDE.md, path-scope the remaining
+  unconditional rules files where appropriate, and harden setup.sh.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+
 ## v0.3.0 (2026-04-10)
 
 ### Bug Fixes
