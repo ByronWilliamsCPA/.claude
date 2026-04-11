@@ -30,6 +30,6 @@ Traceability between Cowork paste-in files and their source rules. When a source
 
 Sections marked "Anthropic Cowork research" are not drawn from this repo. They come from Anthropic's Cowork documentation and community guides. When Anthropic updates Cowork guidance, review these sections separately. Primary references:
 
-- [Get started with Claude Cowork — Anthropic Help Center](https://support.claude.com/en/articles/13345190-get-started-with-claude-cowork)
-- [Use Skills in Claude — Anthropic Help Center](https://support.claude.com/en/articles/12512180-use-skills-in-claude)
-- [Claude Cowork product page — Anthropic](https://www.anthropic.com/product/claude-cowork)
+- [Get started with Claude Cowork](https://support.claude.com/en/articles/13345190-get-started-with-claude-cowork) (Anthropic Help Center)
+- [Use Skills in Claude](https://support.claude.com/en/articles/12512180-use-skills-in-claude) (Anthropic Help Center)
+- [Claude Cowork product page](https://www.anthropic.com/product/claude-cowork) (Anthropic)
