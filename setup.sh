@@ -148,7 +148,7 @@ ensure_symlink() {
     fi
 
     if [[ -e "$target" && ! -L "$target" ]]; then
-        log_warn "${rel_target} exists as a real file/dir — back it up and re-run to replace"
+        log_warn "${rel_target} exists as a real file/dir. Back it up and re-run to replace"
         return 1
     fi
 
