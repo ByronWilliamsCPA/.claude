@@ -339,7 +339,7 @@ natural-language entry point.
 
 Constraint: the wrapper skill must live in the local `.claude/skills/`
 directory so it is not owned by any submodule, and its body should not
-duplicate the review logic from the command file — only route to it.
+duplicate the review logic from the command file; only route to it.
 
 ### Running Tests
 

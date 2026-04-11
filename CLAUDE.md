@@ -14,7 +14,7 @@ When asked about business priorities, organizational strategy, or project
 decisions, read the project files first. Search `docs/`, `initiatives/`,
 project root, and `CLAUDE.md` before answering. If no file covers the topic,
 state what was searched and answer from training knowledge, prefixed with:
-`[Not in project docs — answer from training knowledge only]`.
+`[Not in project docs, answer from training knowledge only]`.
 
 Do not assume organizational priorities without verifying them in the
 project tree.
@@ -105,27 +105,27 @@ write tests first, document security implications, update CHANGELOG.
 
 Decision order when priorities conflict:
 
-1. **Security first** — validate keys, encrypt secrets, scan dependencies
-2. **Reuse first** — check existing repositories and skills before building new code
-3. **Configure, don't build** — prefer configuration over custom implementation
-4. **Quality standards** — maintain consistent code quality across projects
-5. **Testing** — maintain graduated coverage, run tests before commits
-6. **Scope tracing** *(phased projects only)* — every task must trace to a
+1. **Security first**, validate keys, encrypt secrets, scan dependencies
+2. **Reuse first**, check existing repositories and skills before building new code
+3. **Configure, don't build**, prefer configuration over custom implementation
+4. **Quality standards**, maintain consistent code quality across projects
+5. **Testing**, maintain graduated coverage, run tests before commits
+6. **Scope tracing** *(phased projects only)*, every task must trace to a
    phase acceptance criterion; use `/phase-gate` to verify phase readiness
 
 ## Compact Instructions
 
 This section guides the summarization step when context is compacted. CLAUDE.md
-is the only component guaranteed to survive compaction intact — content
+is the only component guaranteed to survive compaction intact, content
 explicitly listed here is what the summarizer should preserve.
 
 When compacting, always preserve:
 
 - **File paths with line numbers** for any files mentioned in the current task
-- **Error messages verbatim** — do not paraphrase error text
-- **Architecture decisions with reasoning** — not just "we chose X" but why
-- **Current test state** — pass/fail counts and specific failing test names
-- **Active branch and uncommitted changes** — branch name, staged files, notable unstaged work
+- **Error messages verbatim**, do not paraphrase error text
+- **Architecture decisions with reasoning**, not just "we chose X" but why
+- **Current test state**, pass/fail counts and specific failing test names
+- **Active branch and uncommitted changes**, branch name, staged files, notable unstaged work
 - **Decision rationale** for anything where "we chose X over Y" was discussed
 - **User-specific corrections** the user made during the session ("no, do it this way instead")
 
