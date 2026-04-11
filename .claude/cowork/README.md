@@ -25,9 +25,9 @@ Dense content (writing rules, Word and Excel conventions) will eventually move i
 
 Profile and Cowork target under 500 words per field, per Anthropic best practice for custom instructions. Current targets:
 
-- profile.md: about 275 words
-- cowork.md: about 340 words
-- folder-template.md: about 210 words (most of which are placeholders)
+- profile.md: about 300 words
+- cowork.md: about 350 words
+- folder-template.md: about 220 words (most of which are placeholders)
 
 ## Scope of this v1
 

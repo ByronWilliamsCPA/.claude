@@ -16,10 +16,10 @@ Never use these. They signal unrevised AI text and carry no information.
 
 - Vague qualifiers: significantly, substantially, considerably, greatly, highly, markedly
 - Corporate buzzwords: leverage, synergies, optimize, streamline, empower, enable (as filler)
-- Hype: best-in-class, cutting-edge, game-changer, innovative, revolutionary, transformative, state-of-the-art
-- Filler: delve into, it's important to note, in conclusion, in summary, moving forward, in today's landscape
-- Puffery: crucial, robust, seamless, holistic, comprehensive, pivotal, vital, testament, unwavering, unparalleled
-- Empty gerunds: ensuring reliability, fostering collaboration, driving growth, delivering value, enabling success
+- Hype: best-in-class, cutting-edge, game-changer, innovative, revolutionary, transformative, state-of-the-art, groundbreaking
+- Filler: delve into, it's important to note, in conclusion, in summary, to summarize, moving forward, in today's landscape, at the end of the day
+- Puffery: crucial, robust, seamless, holistic, comprehensive, pivotal, vital, testament, unwavering, unparalleled, exemplary
+- Empty gerunds: ensuring reliability, fostering collaboration, driving growth, delivering value, enabling success, enhancing performance
 
 ## Structural tells to avoid
 
@@ -28,6 +28,8 @@ Never use these. They signal unrevised AI text and carry no information.
 - Furthermore or Moreover more than once per page
 - More than one bolded phrase per section
 - Emoji as formatting in professional documents
+
+See `.claude/rules/writing.md` § Structural Tells to Avoid for the extended list.
 
 ## Quantification
 
