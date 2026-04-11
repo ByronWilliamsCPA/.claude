@@ -90,7 +90,7 @@ Two layers of automated gates enforce quality throughout the workflow:
   git-history context, comment compliance), scores each issue 0-100, and posts only
   issues ≥80 confidence as a PR comment. Run manually after PR creation.
 
-Use CodeRabbit for holistic structural review, GitHub Copilot for deep logic review on
+Use CodeRabbit for structural and file-level review, GitHub Copilot for deep logic review on
 complex PRs, and `/code-review` for project-standards enforcement.
 
 **Creating new gates with hookify:**
