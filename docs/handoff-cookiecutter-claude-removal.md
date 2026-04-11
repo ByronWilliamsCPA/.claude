@@ -135,6 +135,30 @@ Configure once at the user level and all projects inherit it automatically.
 Remove any instructions referencing `.claude/standard/` subtree updates or per-project
 Claude config management.
 
+### AI Review Configuration
+
+Two AI review config files exist in `{{cookiecutter.project_slug}}/.github/` and need
+to be updated before merging the cleanup PR.
+
+**`.github/copilot-instructions.md`**
+
+The file references Black in two places that describe what automated checks handle so
+Copilot should skip them:
+
+- Line 4 (introductory note): `formatting (Black)` - change to `formatting (ruff format)`
+- Line 110 ("What NOT to Review" list): `Code formatting (Black)` - change to
+  `Code formatting (ruff format)`
+
+No other changes are needed. The nine review focus areas are accurate and should not
+be modified.
+
+**`.coderabbit.yaml`**
+
+Compare this file with `.coderabbit.yaml` at the root of the `.claude` repo (the global
+baseline). Update the template's file if the baseline has changed. The key sections to
+compare: `language_instructions`, `path_instructions`, and `tools` block. Profile and
+auto-review settings are intentionally the same and should stay in sync.
+
 ### `cookiecutter.json`
 
 Check for any variables related to Claude config options (e.g., `include_claude_config`,
@@ -173,6 +197,11 @@ Suggest adding this as `docs/cruft-update-guide.md` in the template.
 - [ ] `cookiecutter . --no-input` runs clean with no errors
 - [ ] Generated project has no `.claude/` directory
 - [ ] PR reviewed and merged to main
+- [ ] `{{cookiecutter.project_slug}}/.github/copilot-instructions.md` updated: "Black"
+      replaced with "ruff format" in both the introductory note and the "What NOT to
+      Review" list
+- [ ] `{{cookiecutter.project_slug}}/.coderabbit.yaml` compared against `.claude` repo
+      baseline; divergences either resolved or documented as intentional
 
 ---
 
