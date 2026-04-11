@@ -10,7 +10,7 @@ tags:
 ---
 
 > Tracks CVEs that cannot be immediately resolved. Review quarterly.
-> No entry may age past 90 days without reassessment — escalate or resolve.
+> No entry may age past 60 days without reassessment — escalate or resolve.
 
 <!-- Copy the entry below for each new CVE. Delete this comment in your project's file. -->
 
@@ -23,7 +23,7 @@ tags:
 | **Affected package** | package-name >= X.Y, < X.Z |
 | **Patched version** | X.Z (not yet released / available but breaks X) |
 | **Date documented** | YYYY-MM-DD |
-| **Reassessment due** | YYYY-MM-DD (90 days max) |
+| **Reassessment due** | YYYY-MM-DD (60 days max) |
 
 **Exploitation scenario**: Describe what an attacker needs to exploit this in your context.
 

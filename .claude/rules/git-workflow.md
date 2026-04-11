@@ -58,7 +58,9 @@ Use `/hookify <instruction>` to add a rule instantly, or `/hookify` with no args
 /hookify-configure     # enable/disable rules interactively
 ```
 
-## GitHub Actions: Pin to Commit SHAs
+## Security Practices
+
+### GitHub Actions: Pin to Commit SHAs
 
 Never reference GitHub Actions by mutable version tags. Tags can be rewritten by the action
 author after the fact, enabling supply chain attacks via tag mutation.

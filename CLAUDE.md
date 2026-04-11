@@ -72,7 +72,9 @@ paths, and container health. Do not exhaust code-level fixes before ruling out t
 > **Unfixed CVEs**: When pip-audit finds a vulnerability that cannot be immediately resolved,
 > document it in `docs/known-vulnerabilities.md` using the template at
 > `docs/known-vulnerabilities-template.md`. Never suppress pip-audit output without a
-> documented entry. Review quarterly; no entry ages past 90 days without reassessment.
+> documented entry. Review quarterly; no entry ages past 60 days without reassessment.
+> Note: the OpenSSF release gate below blocks releases for any vulnerability older than 60 days,
+> regardless of reassessment status.
 
 ## Response-Aware Development (RAD)
 
