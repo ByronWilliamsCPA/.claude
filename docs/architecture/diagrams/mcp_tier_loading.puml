@@ -1,0 +1,66 @@
+@startuml mcp_tier_loading
+' Tiered MCP Loading — backs ADR-003.
+' State diagram of how the context budget pool gains MCP tools over a session.
+
+title Tiered MCP Loading
+
+skinparam shadowing false
+skinparam defaultFontName Roboto
+
+[*] --> SessionStart
+
+state "Session Start" as SessionStart {
+  SessionStart : Load Tier 1 tools\n(always-on minimum set)
+  SessionStart : Context budget: base
+}
+
+state "Tier 1 Loaded" as T1 {
+  T1 : Tools available: core MCP set
+  T1 : Budget used: ~5-10%
+}
+
+state "Tier 2 Bundled" as T2 {
+  T2 : Tools available: T1 + agent bundle
+  T2 : Budget used: ~20-40%
+}
+
+state "Tier 3 Activated" as T3 {
+  T3 : Tools available: T1 + T2 + matched
+  T3 : Budget used: up to ~60%
+}
+
+SessionStart --> T1 : SessionStart\nhooks complete
+
+T1 --> T2 : Agent invoked\n(agent's Tier 2 bundle loads)
+T1 --> T3 : Keyword match\n(Tier 3 tool triggered)
+
+T2 --> T3 : Additional keyword\nmatch during agent call
+T3 --> T2 : Agent returns\n(T3 tools stay loaded)
+
+T2 --> T1 : Agent returns\n(T2 unloads)
+
+state "Usage Tracked" as Tracked
+T1 --> Tracked : every turn
+T2 --> Tracked : every turn
+T3 --> Tracked : every turn
+Tracked : scripts/track-mcp-usage.sh
+Tracked : records which tools fired
+Tracked --> T1 : telemetry written
+
+note right of SessionStart
+  The tier split is defined in
+  .claude/rules/mcp-strategy.md.
+  Loading all tools unconditionally
+  would consume 85-95% of the
+  context budget before the model
+  sees the user's first prompt.
+end note
+
+note right of Tracked
+  Usage telemetry informs tier
+  promotion decisions: a heavily
+  used Tier 3 tool may graduate
+  to Tier 2, and so on.
+end note
+
+@enduml

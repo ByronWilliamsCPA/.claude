@@ -8,7 +8,7 @@
       ]
     },
     "sonarqube": {
-      "type": "url",
+      "type": "http",
       "url": "http://localhost:8090/mcp",
       "headers": {
         "Authorization": "Bearer ${SONARQUBE_TOKEN}"

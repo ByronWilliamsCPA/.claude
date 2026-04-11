@@ -96,3 +96,18 @@ allowed:
   - scope
   - boundaries
   - content_review
+
+  # Dual-Audience Documentation (new-dev + technical tracks)
+  - new_dev
+  - technical
+  - hooks
+  - mcp_strategy
+  - symlinks
+  - submodules
+  - dispatch
+  - rules
+  - standards
+  - install
+  - agents
+  - skills
+  - onboarding
