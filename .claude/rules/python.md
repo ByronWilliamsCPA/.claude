@@ -112,9 +112,41 @@ def create_user(request: UserCreationRequest) -> User:
 - **Booleans**: `is_`, `has_`, `can_`, `should_` prefixes
 - **Constants**: `SCREAMING_SNAKE_CASE`
 
+### Exception Hierarchy
+
+Never raise bare `Exception` or `BaseException`. Define a typed exception hierarchy
+rooted at a project-level base class:
+
+    class AppError(Exception):
+        def __init__(self, message: str, code: str) -> None:
+            super().__init__(message)
+            self.code = code
+
+        def to_dict(self) -> dict[str, str]:
+            return {"error": str(self), "code": self.code}
+
+    class ValidationError(AppError): ...
+    class NotFoundError(AppError): ...
+
+- `to_dict()` enables consistent API error serialization without leaking tracebacks
+- One base class per project; typed subclasses per error category
+- The `BLE` and `TRY` Ruff rules enforce this at lint time
+
 ### Documentation
-- **Docstrings**: REQUIRED on all public functions — purpose, args, returns, raises
+
+- **Docstrings**: Required on all public functions — purpose, args, returns, raises
+  (Google style)
 - **Type Hints**: Required on all function signatures (BasedPyright strict enforces this)
+
+**Docstring coverage gate**: `interrogate` runs at pre-commit and requires 85% docstring
+coverage in `scripts/`. Functions missing docstrings block the commit.
+
+**Docstring argument validation**: `darglint` runs at pre-commit and validates that
+documented `Args`, `Returns`, and `Raises` sections match the actual function signature.
+Strictness: `long` — all parameters must be documented. Excluded: `tests/`, `scripts/`,
+`benchmarks/`, `tools/`.
+
+When darglint flags a mismatch, fix the docstring — do not add a `# noqa` suppression.
 
 ### CI / Compatibility
 
