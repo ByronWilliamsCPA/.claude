@@ -251,7 +251,7 @@ cd ~/dev/.claude && git pull origin main && git submodule update --remote --merg
 
 ## Development Philosophy
 
-**Security First** → **Quality Standards** → **Documentation** → **Testing** → **Collaboration**
+**Security First** → **Quality Standards** → **Documentation** → **Testing** → **Collaboration** → **Scope Tracing** *(phased projects)*
 
 1. **Security First**: Always validate keys, encrypt secrets, scan dependencies
 2. **Reuse First**: Check existing repositories before building new code
@@ -259,3 +259,7 @@ cd ~/dev/.claude && git pull origin main && git submodule update --remote --merg
 4. **Quality Standards**: Maintain consistent code quality across all projects
 5. **Testing**: Maintain high test coverage and run tests before commits
 6. **Collaboration**: Use consistent Git workflows and clear commit messages
+7. **Scope Tracing**: In phased projects, every task must trace to a phase acceptance
+   criterion defined in the project plan. Work that cannot be traced requires a scope
+   amendment before starting, not after. Use the `/phase-gate` skill to verify phase
+   readiness before closing a phase.

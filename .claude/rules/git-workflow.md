@@ -37,17 +37,61 @@ Format: `{type}/{descriptive-slug}`
 - Hyphens: `feat/add-login-page` not `feat/add_login_page`
 - Descriptive but concise: `feat/oauth-google` not `feat/add-oauth-integration-with-google-identity-provider`
 
+## Remote Verification
+
+Before pushing to a remote you have not used in this session, verify you are targeting
+the correct organization:
+
+    git remote -v
+
+Check that the `origin` URL matches the expected GitHub org and repo before running
+`git push`. Wrong-org pushes are difficult to retract once a PR or CI run is triggered.
+
+If the remote URL is wrong:
+
+    git remote set-url origin git@github.com:correct-org/repo-name.git
+
+## Branch Workflow Override
+
+The branch-first rule (never commit directly to `main`) applies in all standard cases.
+When a legitimate exception exists (hotfix to an unprotected repo, solo maintenance
+commit, CI config tweak), document the override with three elements before proceeding:
+
+1. **Rule overridden**: which rule is being bypassed (e.g., "branch-first commit rule")
+2. **Reason**: why the exception applies in this specific context
+3. **Compensating control**: what replaces the protection the rule normally provides
+   (e.g., "PR is not required; commit is reviewed via pair programming before push")
+
+Record this as a comment in the commit message footer:
+
+    Override: branch-first commit rule
+    Reason: hotfix to unprotected solo repo, no CI gating
+    Compensating control: manual review of diff before push
+
 ## Gate System
 
 Two layers of automated gates enforce quality throughout the workflow:
 
-**Layer 1 — Development gates (fire automatically):**
+**Layer 1 - Development gates (fire automatically):**
 - `security-guidance` hook: PreToolUse on file edits — blocks writes containing known dangerous code patterns (XSS vectors, unsafe shell invocations, dangerous deserialization, GitHub Actions injection, etc.). Warning shows once per file per session.
 - `py310-compat-check` hook: PostToolUse on file edits — catches Python 3.10 incompatibilities immediately after each write.
 - `hookify` hooks: fire on every tool use — enforces any project-level rules defined in `.claude/hookify.*.local.md` files.
 
-**Layer 2 — PR gates (run manually after PR creation):**
-- `/code-review`: runs 5 parallel agents (CLAUDE.md compliance x2, bug scan, git-history context, comment compliance), scores each issue 0-100, and posts only issues ≥80 confidence as a PR comment.
+**Layer 2 - PR gates (automatic and manual, after PR creation):**
+- `CodeRabbit`: fires automatically on every PR targeting `main`, `master`, or `develop`.
+  Profile: assertive. Provides high-level summary, file-by-file walkthrough, inline
+  comments, and suggested labels. Runs ruff, gitleaks, markdownlint, and yamllint as
+  inline tools. No action required to trigger it.
+- `GitHub Copilot`: request manually from the Reviewers menu on GitHub. Configured via
+  `.github/copilot-instructions.md` to focus on business logic, error handling, edge
+  cases, concurrency, and security logic flaws that automated linters cannot catch.
+  Leaves advisory comments only; does not block merge.
+- `/code-review`: runs 5 parallel agents (CLAUDE.md compliance x2, bug scan,
+  git-history context, comment compliance), scores each issue 0-100, and posts only
+  issues ≥80 confidence as a PR comment. Run manually after PR creation.
+
+Use CodeRabbit for structural and file-level review, GitHub Copilot for deep logic review on
+complex PRs, and `/code-review` for project-standards enforcement.
 
 **Creating new gates with hookify:**
 Use `/hookify <instruction>` to add a rule instantly, or `/hookify` with no args to analyze the current conversation for repeated corrections. Rules live in `.claude/hookify.*.local.md` and take effect on the next tool call — no restart required.

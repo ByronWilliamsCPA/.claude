@@ -50,6 +50,23 @@ Create when:
 4. **Reference Files**: create `.tmp-` files for complex tasks immediately
 5. **Validate** all agent output before marking complete
 
+## Scope Tracing (Phased Projects)
+
+When working inside a phase of a project that has a `PROJECT-PLAN.md` and phase
+acceptance criteria, every task in the TodoWrite list must map to a specific
+acceptance criterion in the current phase.
+
+Before adding a task to the list, ask: which acceptance criterion does this serve?
+
+- If it traces clearly: add the task normally
+- If it does not trace: it is out-of-scope work; either defer it or initiate a scope
+  amendment before starting
+- If the phase has no acceptance criteria: the project plan is incomplete; surface this
+  before proceeding
+
+Use `/phase-gate` at the end of each phase to verify all criteria are met before
+closing.
+
 ## PR Preparation Workflow
 
 Use the `/git pr` skill:
