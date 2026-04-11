@@ -140,9 +140,50 @@ def create_user(request: UserCreationRequest) -> User:
 - **Booleans**: `is_`, `has_`, `can_`, `should_` prefixes
 - **Constants**: `SCREAMING_SNAKE_CASE`
 
+### Exception Hierarchy
+
+Never raise bare `Exception` or `BaseException`. Define a typed exception hierarchy
+rooted at a project-level base class:
+
+```python
+class AppError(Exception):
+    def __init__(self, message: str, code: str) -> None:
+        super().__init__(message)
+        self.code = code
+
+    def to_dict(self) -> dict[str, object]:
+        return {"error": str(self), "code": self.code}
+
+class ValidationError(AppError): ...  # add fields as needed
+class NotFoundError(AppError): ...    # e.g. resource_id: str
+```
+
+- `to_dict()` enables consistent API error serialization without leaking tracebacks; adjust
+  the return type when subclasses add non-string fields
+- One base class per project; typed subclasses per error category; subclasses are minimal when
+  no additional attributes are needed
+- `TRY002` flags `raise Exception(...)` directly; `BLE001` flags overly broad except clauses;
+  neither validates the full hierarchy — that enforcement comes from code review
+
 ### Documentation
-- **Docstrings**: REQUIRED on all public functions — purpose, args, returns, raises
+
+- **Docstrings**: Required on all public functions: purpose, args, returns, raises
+  (Google style)
 - **Type Hints**: Required on all function signatures (BasedPyright strict enforces this)
+
+**Docstring coverage gate**: `interrogate` runs at pre-commit and requires 85% docstring
+coverage in `scripts/`. Functions missing docstrings block the commit. The `scripts/` scope
+reflects the pre-commit gate; the "Required on all public functions" standard applies globally
+and is checked by Ruff `D` rules at lint time.
+
+**Docstring argument validation**: `darglint` runs at pre-commit and validates that
+documented `Args`, `Returns`, and `Raises` sections match the actual function signature.
+Strictness: `long` (validates `Args`/`Returns`/`Raises` when a full multi-line docstring is
+present; single-line docstrings are not checked); all parameters must be documented. Excluded:
+`tests/`, `scripts/`, `benchmarks/`, `tools/`. The `scripts/` exclusion is intentional:
+utility scripts often use `*args`/`**kwargs` patterns where darglint produces false positives.
+
+When darglint flags a mismatch, fix the docstring. Do not add a `# noqa` suppression.
 
 ### CI / Compatibility
 

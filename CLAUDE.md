@@ -1,6 +1,6 @@
 # Global Claude Development Standards
 
-> **Status**: ✅ Active | Core Standard | **Version**: 1.1.0 | **Last Updated**: 2026-04-09
+> **Status**: ✅ Active | Core Standard | **Version**: 1.2.0 | **Last Updated**: 2026-04-10
 >
 > Universal development standards and practices for Claude Code across all projects.
 
@@ -44,6 +44,22 @@ When tests fail, investigate root causes in this order:
 2. **Environment mismatches**: SQLite vs Postgres differences (JSONB, UUID, pool_size), Python version
 3. **Dependency drift**: Updated library changed behavior, version constraint mismatch
 4. **Test isolation**: Shared state, ordering dependencies, missing teardown
+
+## Golden File Protection
+
+When tests use golden files or output snapshots (files in `tests/golden/` or `*.snap` files),
+do not edit those files directly to make a failing test pass. Golden files represent the
+verified correct output. Changing them to match broken behavior destroys the test's value.
+
+Note: `tests/fixtures/` files are often test inputs, not output snapshots. Editing an input
+fixture to correct wrong test data is legitimate; this rule targets output snapshot files.
+
+To update golden files when behavior changes intentionally:
+
+1. Confirm the new output is correct by inspection
+2. Regenerate using the project's snapshot update command
+   (e.g., `pytest --snapshot-update`, `cargo insta update`)
+3. Commit the updated golden file with a message explaining why the expected output changed
 
 ## System / Shell
 
