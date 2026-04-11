@@ -42,7 +42,9 @@ Do not use these algorithms in any security context:
 |----------|-----------|---------------------|
 | Hash | MD5, SHA-1 | SHA-256, SHA-384, SHA-512 |
 | Symmetric | Blowfish, RC4, RC2, DES, 3DES | AES-128, AES-256 |
-| Key exchange | RSA < 2048-bit, DH < 2048-bit | RSA-2048+, Curve25519, X25519 |
+| Key exchange | RSA < 2048-bit, DH < 2048-bit | RSA-2048+, ECDH P-256/P-384/P-521; Curve25519/X25519 (FIPS 140-3 only) |
+
+For AES: use GCM or CBC mode. ECB mode is prohibited regardless of key length.
 
 When using hashlib for non-security purposes (checksums, caching),
 pass `usedforsecurity=False`:
