@@ -34,6 +34,34 @@ strictDictionaryInference = true
 strictSetInference = true
 ```
 
+## FIPS 140-2/3 Compliance
+
+Do not use these algorithms in any security context:
+
+| Category | Prohibited | Approved Alternative |
+|----------|-----------|---------------------|
+| Hash | MD5, SHA-1 | SHA-256, SHA-384, SHA-512 |
+| Symmetric | Blowfish, RC4, RC2, DES, 3DES | AES-128, AES-256 |
+| Asymmetric / Key Exchange | RSA < 2048-bit, DH < 2048-bit | RSA-2048+, ECDH P-256/P-384/P-521 |
+
+For AES: use GCM or CBC mode. ECB mode is prohibited regardless of key length.
+
+Curve25519/X25519 is approved under FIPS 140-3 only (NIST SP 800-186, 2023). Many Python
+deployments use OpenSSL builds validated under FIPS 140-2, where Curve25519 remains
+non-compliant. Verify your OpenSSL build's validation level before using these curves in a
+FIPS context.
+
+When using hashlib for non-security purposes (checksums, caching),
+pass `usedforsecurity=False`:
+
+```python
+# OK: cache key or checksum, not cryptographic
+hashlib.md5(data, usedforsecurity=False)
+```
+
+Never pass `usedforsecurity=False` for: password hashing, HMAC, signatures,
+or token generation.
+
 ## PyStrict-Aligned Ruff Rules
 
 | Rule | What It Catches |
