@@ -136,6 +136,10 @@ packages = ["src/claude_config"]
 [tool.ruff]
 line-length = 88
 target-version = "py312"
+# force-exclude ensures the exclude list is respected even when Ruff is invoked
+# with explicit file arguments (e.g., from editor hooks or pre-commit). Without
+# this, Ruff would modify files inside .submodules/ when passed by path.
+force-exclude = true
 exclude = [
     ".git",
     ".mypy_cache",
@@ -144,6 +148,8 @@ exclude = [
     "__pycache__",
     "dist",
     "build",
+    ".submodules",
+    ".submodules/**",
 ]
 
 [tool.ruff.format]
