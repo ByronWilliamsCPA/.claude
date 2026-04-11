@@ -209,7 +209,9 @@ in Ruff.
 
 - **Cyclomatic Complexity**: target 10 or lower (C901 enforced)
 - **Branches**: maximum 12 per function (PLR0912)
-- **Arguments**: maximum 5 positional (PLR0913); use dataclass grouping above that
+- **Arguments**: maximum 4 positional before grouping; use a dataclass for
+  5 or more parameters (PLR0913). This matches the Parameter Grouping rule
+  earlier in this file, which specifies dataclass refactoring at 5+ params.
 
 ### Code Duplication
 
