@@ -293,3 +293,7 @@ docs/audit-report.md
 
 # Skill eval artifacts (r2 iteration files)
 .claude/skills/**/evals/evals-r2.json
+
+# PlantUML runtime artifacts (Java font cache written by plantuml CLI)
+# The '?' pattern matches any single-char dir name that plantuml creates
+docs/architecture/diagrams/?/
