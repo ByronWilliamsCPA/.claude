@@ -235,39 +235,89 @@ This project uses **PyStrict-aligned Ruff rules** for stricter code quality enfo
 
 These rules catch bugs that standard linting misses and enforce production-quality code patterns.
 
-### Claude Code Standards
+### Claude Code Standards: two-layer install
 
-This project includes standardized Claude Code configuration via git subtree:
+This repository is the source of truth for a global Claude Code configuration
+that applies across every project on your machine. It uses a **two-layer
+install pattern**: the repo lives in a development location (typically
+`~/dev/.claude/`) while the live runtime state Claude Code reads lives at
+`~/.claude/`. The two are connected by symlinks created by `setup.sh`, so
+edits to tracked files propagate immediately without a copy step.
 
-**Directory Structure**:
+**Topology**:
+
 ```
-.claude/
-├── claude.md          # Project-specific Claude guidelines
-└── standard/          # Standard Claude configuration (git subtree)
-    ├── CLAUDE.md      # Universal development standards
-    ├── commands/      # Custom slash commands
-    ├── skills/        # Reusable skills
-    └── agents/        # Specialized agents
+~/.claude/  (runtime, what Claude Code reads)
+├── CLAUDE.md           --sym-->  ~/dev/.claude/CLAUDE.md
+├── agents/             --sym-->  ~/dev/.claude/.claude/agents/
+├── skills/             --sym-->  ~/dev/.claude/.claude/skills/
+├── commands/           --sym-->  ~/dev/.claude/.claude/commands/
+├── rules/              --sym-->  ~/dev/.claude/.claude/rules/
+├── standards/          --sym-->  ~/dev/.claude/.claude/standards/
+├── scripts/            --sym-->  ~/dev/.claude/scripts/
+├── reference-library/  --sym-->  ~/dev/.claude/.submodules/reference-library/
+├── settings.json         (regular file, hooks merged from repo hooks.json
+│                          + claudeMdExcludes merged from repo path)
+├── projects/             (Claude Code runtime state, NOT tracked)
+├── sessions/             (Claude Code runtime state, NOT tracked)
+└── cache/, logs/, etc.   (Claude Code runtime state, NOT tracked)
+
+~/dev/.claude/  (repo source of truth, tracked in git)
+├── CLAUDE.md             Universal dev standards, re-loaded after compaction
+├── hooks.json            Canonical hooks merged into runtime settings.json
+├── setup.sh              Idempotent bootstrap (creates symlinks, merges hooks)
+├── .claude/
+│   ├── agents/           Specialized agents
+│   ├── skills/           Custom slash commands (each a SKILL.md)
+│   ├── commands/         Command definitions
+│   ├── rules/            Cross-cutting operating rules (some path-scoped)
+│   └── standards/        Specifications, thresholds, reference material
+├── .submodules/
+│   ├── reference-library/  External reference agents and prompts
+│   ├── superpowers/        Community skills (read-only)
+│   ├── anthropics-skills/  Anthropic first-party skills
+│   └── anthropics-plugins/ Anthropic plugins (hookify, etc.)
+└── docs/                 Project documentation for this repo
 ```
 
-**Updating Standards**:
+**Install**:
+
 ```bash
-# Pull latest standards from upstream
-./scripts/update-claude-standards.sh
-
-# Or manually
-git subtree pull --prefix .claude/standard \
-    https://github.com/williaby/.claude.git main --squash
+git clone --recurse-submodules https://github.com/ByronWilliamsCPA/.claude.git ~/dev/.claude
+cd ~/dev/.claude && ./setup.sh
 ```
 
-**What's Included**:
-- Universal development best practices
-- Response-Aware Development (RAD) system for assumption tagging
-- Agent assignment patterns and workflow
-- Security requirements and pre-commit standards
-- Git workflow and commit conventions
+**Verify install**:
 
-**Project-Specific Overrides**: Edit `.claude/claude.md` for project-specific guidelines. See [`.claude/README.md`](.claude/README.md) for details.
+```bash
+./setup.sh --doctor
+```
+
+Doctor mode prints the resolved symlink topology, flags any broken or drifted
+links, and checks that `hooks` and `claudeMdExcludes` are present in
+`~/.claude/settings.json`.
+
+**Dry-run before applying changes**:
+
+```bash
+./setup.sh --dry-run
+```
+
+**Why symlinks instead of a subtree or submodule**: the dev-vs-runtime split
+keeps the runtime directory clean of git state and lets you edit tracked
+files directly from your normal working tree. Symlinks make every change
+propagate instantly without a copy step, and `~/.claude/` stays free of the
+session history, logs, and caches that Claude Code writes during use. The
+`claudeMdExcludes` setting injected by `setup.sh` prevents the repo's own
+CLAUDE.md and `.claude/**/*` files from being discovered twice (once via the
+user-scope symlink, once via directory walk) when you work inside the repo
+itself.
+
+**Project-specific overrides**: any project under `~/dev/*` can ship its own
+`CLAUDE.md` at the project root. When Claude Code walks up the directory
+tree, the project `CLAUDE.md` loads in addition to the global standards from
+`~/.claude/CLAUDE.md`, so project overrides augment rather than replace the
+baseline. Per-project tool permissions go in `.claude/settings.local.json`.
 
 ### Running Tests
 
