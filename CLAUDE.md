@@ -251,7 +251,7 @@ cd ~/dev/.claude && git pull origin main && git submodule update --remote --merg
 
 ## Development Philosophy
 
-**Security First** → **Quality Standards** → **Documentation** → **Testing** → **Collaboration**
+**Security First** → **Quality Standards** → **Documentation** → **Testing** → **Collaboration** → **Scope Tracing** *(phased projects)*
 
 1. **Security First**: Always validate keys, encrypt secrets, scan dependencies
 2. **Reuse First**: Check existing repositories before building new code
