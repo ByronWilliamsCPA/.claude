@@ -158,23 +158,53 @@ extra:
     provider: google
     property: !ENV GOOGLE_ANALYTICS_KEY
 
-# Navigation
+# Navigation — persona-first (see ADR-007)
 nav:
   - Home: index.md
 
-  - User Guide:
-      - Overview: guides/overview.md
-      - Configuration: guides/configuration.md
-      - Usage: guides/usage.md
+  - Getting Started:
+      - Overview: getting-started/index.md
+      - 1. Install: getting-started/install.md
+      - 2. Your First Agent: getting-started/first-agent.md
+      - 3. Your First Skill: getting-started/first-skill.md
+      - Picking Agents vs Skills: getting-started/picking.md
+      - Troubleshooting: getting-started/troubleshooting.md
 
-  - API Reference:
-      - Overview: api-reference.md
+  - Architecture:
+      - Overview: architecture/index.md
+      - Install Model: architecture/install-model.md
+      - Hook Pipeline: architecture/hook-pipeline.md
+      - Agent Dispatch: architecture/agent-dispatch.md
+      - MCP Tiered Loading: architecture/mcp-tiered-loading.md
+      - Submodule Strategy: architecture/submodule-strategy.md
+      - Rules vs Standards: architecture/rules-vs-standards.md
+      - Diagrams: architecture/diagrams/index.md
+      - Decisions (ADRs):
+          - Index: architecture/adr/index.md
+          - ADR-001 Two-Layer Symlink Install: architecture/adr/ADR-001-two-layer-symlink-install.md
+          - ADR-002 Hook Composition: architecture/adr/ADR-002-hook-composition.md
+          - ADR-003 Tiered MCP Loading: architecture/adr/ADR-003-tiered-mcp-loading.md
+          - ADR-004 Skill vs Agent Boundary: architecture/adr/ADR-004-skill-vs-agent-boundary.md
+          - ADR-005 Submodule Extension Model: architecture/adr/ADR-005-submodule-extension-model.md
+          - ADR-006 Rules vs Standards: architecture/adr/ADR-006-rules-vs-standards.md
+          - ADR-007 Dual-Audience Docs: architecture/adr/ADR-007-dual-audience-docs.md
 
-  - Development:
-      - Architecture: development/architecture.md
-      - Testing: development/testing.md
-      - Code Quality: development/code-quality.md
-      - Contributing: development/contributing.md
+  - Reference:
+      - Overview: reference/index.md
+      - Agents Catalog: reference/agents.md
+      - Skills Catalog: reference/skills.md
+      - Hooks: reference/hooks.md
+      - MCP Strategy: reference/mcp.md
+      - API: api-reference.md
+
+  - Contributing:
+      - Overview: contributing/index.md
+      - Adding an Agent: contributing/adding-agents.md
+      - Adding a Skill: contributing/adding-skills.md
+      - Adding a Hook: contributing/adding-hooks.md
+      - Writing ADRs: contributing/writing-adrs.md
+      - Writing Diagrams: contributing/writing-diagrams.md
+      - Frontmatter Standard: frontmatter-standard.md
 
   - Project:
       - Roadmap: project/roadmap.md
@@ -188,6 +218,8 @@ exclude_docs: |
   ADRs/adr-template.md
   planning/project-plan-template.md
   planning/adr/README.md
+  architecture/adr/_template.md
+  architecture/diagrams/*.puml
 
 # Validation
 # strict mode disabled to allow links to repo root files

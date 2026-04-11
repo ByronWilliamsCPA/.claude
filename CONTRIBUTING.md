@@ -185,6 +185,9 @@ def process_data(
 - **Comments**: Explain *why*, not *what* (code should be self-documenting)
 - **README Updates**: Update README.md for significant feature additions
 - **Architecture Docs**: Add/update ADRs for architectural changes
+- **Frontmatter**: Every markdown file under `docs/` carries YAML frontmatter validated by `tools/validate_front_matter.py`. See [`docs/frontmatter-standard.md`](docs/frontmatter-standard.md) for the schema.
+- **New ADRs**: Start from the slim template at [`docs/architecture/adr/_template.md`](docs/architecture/adr/_template.md). The verbose reference variant at `docs/ADRs/adr-template.md` is retained for unusually consequential decisions. See [`docs/contributing/writing-adrs.md`](docs/contributing/writing-adrs.md) for when to write one.
+- **New diagrams**: Store PlantUML sources under `docs/architecture/diagrams/` and commit the rendered `.svg` sibling. Use `./scripts/render_diagrams.sh` to regenerate. See [`docs/contributing/writing-diagrams.md`](docs/contributing/writing-diagrams.md).
 
 ## Testing Requirements
 

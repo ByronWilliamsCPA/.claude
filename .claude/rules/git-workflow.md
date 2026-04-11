@@ -135,3 +135,35 @@ PR / keep / discard options and handles worktree cleanup.
 > **Canonical conventional commits reference**: See `.claude/skills/git/context/conventional-commits.md`
 >
 > **Full branch strategy detail**: See `.claude/skills/git/context/branch-strategy.md`
+
+## Session Forking
+
+Claude Code supports two mechanisms for exploration that should not contaminate
+the main session:
+
+### `/branch` (in-session fork)
+
+`/branch` creates a new session branch from the current conversation state. Use
+when exploring a speculative approach, testing a hypothesis that may dead-end, or
+preserving the current session state before a risky refactor.
+
+The fork starts with the current conversation context and cache warm. If the
+exploration fails, discard the fork. If it succeeds, the findings return as a
+message in the parent.
+
+### `--fork-session` (CLI flag)
+
+`claude --fork-session <session-id>` creates a detached session from an existing
+session ID. Use when parallelising two independent directions from the same starting
+point, or running a long background investigation without blocking the parent.
+
+### When to use worktree vs. fork
+
+| Need | Use |
+| --- | --- |
+| Filesystem isolation (different branch, different files) | `git worktree` |
+| Conversation-state preservation (same files, different direction) | `/branch` |
+| Full isolation (new files AND new conversation) | worktree + new session |
+
+Source: Boris Cherny, 15 hidden features (Mar 30 2026):
+<https://x.com/bcherny/status/2038454336355999749>
