@@ -38,11 +38,16 @@ for arg in "$@"; do
 done
 
 # ---------- Logging helpers ----------
-log_info()  { echo "  [info] $*"; }
-log_ok()    { echo "  [ok]   $*"; }
-log_skip()  { echo "  [skip] $*"; }
-log_warn()  { echo "  [warn] $*" >&2; }
-log_error() { echo "  [err]  $*" >&2; }
+# Each function ends with `return 0` to satisfy SonarQube shelldre:S7682
+# ("Add an explicit return statement at the end of the function"). The
+# explicit return also prevents a false non-zero exit status from bubbling
+# up under `set -e` when an `echo` is the last command in a pipeline that
+# somewhere fails.
+log_info()  { echo "  [info] $*"; return 0; }
+log_ok()    { echo "  [ok]   $*"; return 0; }
+log_skip()  { echo "  [skip] $*"; return 0; }
+log_warn()  { echo "  [warn] $*" >&2; return 0; }
+log_error() { echo "  [err]  $*" >&2; return 0; }
 
 run_or_dry() {
     if (( DRY_RUN )); then
@@ -50,6 +55,7 @@ run_or_dry() {
     else
         "$@"
     fi
+    return 0
 }
 
 # ---------- Preflight ----------
@@ -78,6 +84,7 @@ preflight() {
         log_warn "skipped. Install jq (apt install jq / brew install jq) and"
         log_warn "re-run to finish the install."
     fi
+    return 0
 }
 
 # ---------- Doctor mode ----------
@@ -154,6 +161,7 @@ doctor() {
         exit 1
     fi
     log_ok "All checks passed."
+    return 0
 }
 
 # ---------- Symlink management ----------
@@ -182,6 +190,7 @@ ensure_submodules() {
         log_info "Initializing submodules"
         run_or_dry git -C "${REPO_DIR}" submodule update --init --recursive
     fi
+    return 0
 }
 
 # ---------- Settings merge ----------
@@ -193,6 +202,7 @@ backup_settings() {
         run_or_dry cp "$settings" "$backup"
         log_ok "backup -> ${backup/#$HOME/~}"
     fi
+    return 0
 }
 
 merge_hooks() {
