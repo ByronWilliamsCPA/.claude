@@ -1210,6 +1210,45 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#item-5-cookiecutter-ai-review-configuration-sync" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Item 5: Cookiecutter AI Review Configuration Sync
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Item 5: Cookiecutter AI Review Configuration Sync">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#5a-new-subsection-in-docshandoff-cookiecutter-claude-removalmd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5a: New subsection in docs/handoff-cookiecutter-claude-removal.md
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5b-two-new-definition-of-done-items" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5b: Two new Definition of Done items
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#files-modified" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1265,11 +1304,12 @@
   <h1>Sprint 3: Git Workflow and Process Governance</h1>
 
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
-<p>This sprint adds four workflow governance patterns to the global Claude implementation,
-closing gaps identified in the 2026-04-09 cross-project CLAUDE.md audit. All four items
-appeared in 3+ project CLAUDE.md files but were absent from the global standard.</p>
-<p><strong>Approach</strong>: Documentation-only. All tooling (CodeRabbit, phase-gate) is already wired.
-No hook changes needed.</p>
+<p>This sprint adds five workflow governance patterns to the global Claude implementation,
+closing gaps identified in the 2026-04-09 cross-project CLAUDE.md audit. Items 1-4
+appeared in 3+ project CLAUDE.md files but were absent from the global standard. Item 5
+syncs the cookiecutter template's AI review configuration with current tooling.</p>
+<p><strong>Approach</strong>: Documentation-only. All tooling (CodeRabbit, GitHub Copilot, phase-gate)
+is already wired. No hook changes needed.</p>
 <hr />
 <h2 id="item-1-git-remote-verification">Item 1: Git Remote Verification<a class="headerlink" href="#item-1-git-remote-verification" title="Permanent link">&para;</a></h2>
 <p><strong>Problem</strong>: Developers can push to the wrong GitHub organization when multiple remotes
@@ -1381,8 +1421,8 @@ review tools: CodeRabbit (automatic), GitHub Copilot (manual, configured), and
 </span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>  inline tools. No action required to trigger it.
 </span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>- `GitHub Copilot`: request manually from the Reviewers menu on GitHub. Configured via
 </span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>  `.github/copilot-instructions.md` to focus on business logic, error handling, edge
-</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>  cases, concurrency, and security logic flaws — the issues automated linters cannot
-</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>  catch. Leaves advisory comments only; does not block merge.
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>  cases, concurrency, and security logic flaws that automated linters cannot catch.
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>  Leaves advisory comments only; does not block merge.
 </span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>- `/code-review`: runs 5 parallel agents (CLAUDE.md compliance x2, bug scan,
 </span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>  git-history context, comment compliance), scores each issue 0-100, and posts only
 </span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>  issues ≥80 confidence as a PR comment. Run manually after PR creation.
@@ -1394,11 +1434,58 @@ review tools: CodeRabbit (automatic), GitHub Copilot (manual, configured), and
 <p>Add two items to the <code>## PR (if creating PR)</code> section, after the existing <code>/code-review</code>
 line: one for CodeRabbit (automatic), one for Copilot (optional manual request).</p>
 <p><strong>Items to add:</strong></p>
-<div class="language-markdown highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">- [ ]</span> <span class="gs">**CodeRabbit review**</span>: fires automatically on PR creation — address inline comments
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>      before merging; use <span class="sb">`@coderabbitai`</span> in PR comments to ask follow-up questions
+<div class="language-markdown highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">- [ ]</span> <span class="gs">**CodeRabbit review**</span>: fires automatically on PR creation; address inline comments
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>      before merging and use <span class="sb">`@coderabbitai`</span> in PR comments to ask follow-up questions
 </span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="k">- [ ]</span> <span class="gs">**Copilot review**</span> (optional): for complex logic changes, request from the
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>      Reviewers menu on GitHub; instructions are in <span class="sb">`.github/copilot-instructions.md`</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>      Reviewers menu on GitHub; review instructions are in <span class="sb">`.github/copilot-instructions.md`</span>
 </span></code></pre></div>
+<hr />
+<h2 id="item-5-cookiecutter-ai-review-configuration-sync">Item 5: Cookiecutter AI Review Configuration Sync<a class="headerlink" href="#item-5-cookiecutter-ai-review-configuration-sync" title="Permanent link">&para;</a></h2>
+<p><strong>Problem</strong>: The cookiecutter template already contains
+<code>{{cookiecutter.project_slug}}/.github/copilot-instructions.md</code> and
+<code>{{cookiecutter.project_slug}}/.coderabbit.yaml</code>, but the copilot file is stale. It
+references "Black" for formatting in two places, while projects generated from this
+template now use <code>ruff format</code>. The instructions also list "Code formatting (Black)"
+in the "What NOT to Review" section, creating a false expectation.</p>
+<p><strong>Solution</strong>: Add a <code>### AI Review Configuration</code> subsection to the <code>## What to Update</code>
+section in <code>docs/handoff-cookiecutter-claude-removal.md</code>, and add two Definition of Done
+checklist items.</p>
+<h3 id="5a-new-subsection-in-docshandoff-cookiecutter-claude-removalmd">5a: New subsection in <code>docs/handoff-cookiecutter-claude-removal.md</code><a class="headerlink" href="#5a-new-subsection-in-docshandoff-cookiecutter-claude-removalmd" title="Permanent link">&para;</a></h3>
+<p>Insert after <code>### DEVELOPMENT.md</code> and before <code>### cookiecutter.json</code>.</p>
+<p><strong>Content to add:</strong></p>
+<div class="language-text highlight"><pre><span></span><code>### AI Review Configuration
+
+Two AI review config files exist in `{{cookiecutter.project_slug}}/.github/` and need
+to be updated before merging the cleanup PR.
+
+**`.github/copilot-instructions.md`**
+
+The file references Black in two places that describe what automated checks handle so
+Copilot should skip them:
+
+- Line 4 (introductory note): `formatting (Black)` -- change to `formatting (ruff format)`
+- Line 110 (&quot;What NOT to Review&quot; list): `Code formatting (Black)` -- change to
+  `Code formatting (ruff format)`
+
+No other changes are needed. The nine review focus areas are accurate and should not
+be modified.
+
+**`.coderabbit.yaml`**
+
+Compare this file with `.coderabbit.yaml` at the root of the `.claude` repo (the global
+baseline). Update the template&#39;s file if the baseline has changed. The key sections to
+compare: `language_instructions`, `path_instructions`, and `tools` block. Profile and
+auto-review settings are intentionally the same and should stay in sync.
+</code></pre></div>
+<h3 id="5b-two-new-definition-of-done-items">5b: Two new Definition of Done items<a class="headerlink" href="#5b-two-new-definition-of-done-items" title="Permanent link">&para;</a></h3>
+<p>Add to the end of the <code>## Definition of Done</code> checklist in
+<code>docs/handoff-cookiecutter-claude-removal.md</code>:</p>
+<div class="language-text highlight"><pre><span></span><code>- [ ] `{{cookiecutter.project_slug}}/.github/copilot-instructions.md` updated: &quot;Black&quot;
+      replaced with &quot;ruff format&quot; in both the introductory note and the &quot;What NOT to
+      Review&quot; list
+- [ ] `{{cookiecutter.project_slug}}/.coderabbit.yaml` compared against `.claude` repo
+      baseline; divergences either resolved or documented as intentional
+</code></pre></div>
 <hr />
 <h2 id="files-modified">Files Modified<a class="headerlink" href="#files-modified" title="Permanent link">&para;</a></h2>
 <table>
@@ -1418,7 +1505,7 @@ line: one for CodeRabbit (automatic), one for Copilot (optional manual request).
 <tr>
 <td><code>CLAUDE.md</code></td>
 <td>Documentation</td>
-<td>Add scope tracing item to Development Philosophy numbered list</td>
+<td>Add scope tracing item 7 to Development Philosophy numbered list</td>
 </tr>
 <tr>
 <td><code>.claude/rules/supervisor.md</code></td>
@@ -1428,7 +1515,12 @@ line: one for CodeRabbit (automatic), one for Copilot (optional manual request).
 <tr>
 <td><code>.claude/rules/pre-commit.md</code></td>
 <td>Documentation</td>
-<td>Add CodeRabbit checklist item to PR section</td>
+<td>Add CodeRabbit and Copilot checklist items to PR section</td>
+</tr>
+<tr>
+<td><code>docs/handoff-cookiecutter-claude-removal.md</code></td>
+<td>Documentation</td>
+<td>Add AI Review Configuration subsection and two DoD items</td>
 </tr>
 </tbody>
 </table>
@@ -1444,14 +1536,17 @@ line: one for CodeRabbit (automatic), one for Copilot (optional manual request).
 <li><strong>Copilot in Gate System</strong>: <code>grep "Copilot" .claude/rules/git-workflow.md</code> returns match in Layer 2 block</li>
 <li><strong>CodeRabbit in pre-commit.md</strong>: <code>grep "CodeRabbit" .claude/rules/pre-commit.md</code> returns one match</li>
 <li><strong>Copilot in pre-commit.md</strong>: <code>grep "Copilot" .claude/rules/pre-commit.md</code> returns one match</li>
+<li><strong>Handoff doc AI section present</strong>: <code>grep "AI Review Configuration" docs/handoff-cookiecutter-claude-removal.md</code> returns one match</li>
+<li><strong>Handoff DoD updated</strong>: <code>grep "ruff format" docs/handoff-cookiecutter-claude-removal.md</code> returns matches</li>
 <li><strong>All pre-commit hooks pass</strong>: <code>pre-commit run --all-files</code></li>
 </ol>
 <hr />
 <h2 id="out-of-scope">Out of Scope<a class="headerlink" href="#out-of-scope" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Enforcing scope tracing via a hook (documentation-only; the phase-gate skill handles verification)</li>
-<li>Modifying <code>.coderabbit.yaml</code> configuration</li>
-<li>Adding CodeRabbit to the CI pipeline documentation (out of sprint scope)</li>
+<li>Modifying <code>.coderabbit.yaml</code> in this repo</li>
+<li>Executing the cookiecutter cleanup work (Item 5 updates the handoff doc only; the
+  actual template changes happen in the <code>cookiecutter-python-template</code> repo)</li>
 <li>Documenting the <code>@coderabbitai</code> command set beyond the basic usage note</li>
 </ul>
 
@@ -1476,7 +1571,7 @@ line: one for CodeRabbit (automatic), one for Copilot (optional manual request).
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 11, 2026 02:56:20 UTC">April 11, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 11, 2026 03:35:13 UTC">April 11, 2026</span>
   </span>
 
     
