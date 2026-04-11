@@ -1,265 +1,141 @@
 # Global Claude Development Standards
 
-> **Status**: ✅ Active | Core Standard | **Version**: 1.2.0 | **Last Updated**: 2026-04-10
+> **Status**: Active | Core Standard | **Version**: 1.3.0 | **Last Updated**: 2026-04-11
 >
 > Universal development standards and practices for Claude Code across all projects.
 
-## Project Context
+Project-specific rules that do not fit here belong in `.claude/rules/*.md`
+(path-scoped where possible) or a project-local `CLAUDE.md`. Cross-cutting
+reference material lives in `.claude/standards/*.md`.
 
-For project context, always search project docs and markdown files first (especially files in
-docs/, initiatives/, or project root). Do not search memory or make assumptions about
-organizational priorities.
+## Project context
 
-When asked about business priorities, organizational strategy, or project decisions, read the
-relevant project files before answering. If no file covers the topic, state what was searched
-and answer from training knowledge, prefixed with: `[Not in project docs — answer from training knowledge only]`.
+When asked about business priorities, organizational strategy, or project
+decisions, read the project files first. Search `docs/`, `initiatives/`,
+project root, and `CLAUDE.md` before answering. If no file covers the topic,
+state what was searched and answer from training knowledge, prefixed with:
+`[Not in project docs — answer from training knowledge only]`.
 
-## Code Quality
+Do not assume organizational priorities without verifying them in the
+project tree.
 
-When SonarCloud or linting tools flag issues, fix the actual issues rather than proposing
-exclusions. Only exclude files if explicitly approved by the user.
+## Code quality
 
-This applies to all quality gates: never propose `# noqa` comments, `# type: ignore`,
-`pytest.mark.skip`, `--no-verify`, or CI bypass flags as solutions. Fix the root cause.
-Exceptions: vendored or third-party code that cannot be changed, or suppression paired with an
-open tracking reference (ticket number, open GitHub issue, or TODO with link) that is expected
-to result in a proper fix.
+When SonarCloud or linting tools flag issues, fix the actual issue. Never
+propose `# noqa`, `# type: ignore`, `pytest.mark.skip`, `--no-verify`, or CI
+bypass flags as the solution. The exceptions are vendored or third-party code
+that cannot be changed, and suppressions paired with a tracking reference
+(ticket number or open issue) expected to result in a proper fix.
 
-## Git Workflow
-
-Always run pre-commit hooks (`pre-commit run --all-files`) before committing.
-
-> **Branch rules, worktree patterns, naming conventions**: See `.claude/rules/git-workflow.md`
+> Python linting and function quality gates: see `.claude/rules/python.md`
+> (path-scoped to Python files)
 >
-> **Pre-commit checklist**: See `.claude/rules/pre-commit.md`
+> Testing scope, root-cause order, and golden file protection:
+> see `.claude/rules/testing.md` (path-scoped to test files)
 
-## Testing
+## Git workflow
 
-When asked to fix or improve tests, clarify scope first: adding missing tests vs. fixing
-failing tests vs. improving test depth are different tasks.
+Always run `pre-commit run --all-files` before committing.
 
-When tests fail, investigate root causes in this order:
-
-1. **Test fixtures/configuration**: Missing seed data, incorrect factory defaults, conftest issues
-2. **Environment mismatches**: SQLite vs Postgres differences (JSONB, UUID, pool_size), Python version
-3. **Dependency drift**: Updated library changed behavior, version constraint mismatch
-4. **Test isolation**: Shared state, ordering dependencies, missing teardown
-
-## Golden File Protection
-
-When tests use golden files or output snapshots (files in `tests/golden/` or `*.snap` files),
-do not edit those files directly to make a failing test pass. Golden files represent the
-verified correct output. Changing them to match broken behavior destroys the test's value.
-
-Note: `tests/fixtures/` files are often test inputs, not output snapshots. Editing an input
-fixture to correct wrong test data is legitimate; this rule targets output snapshot files.
-
-To update golden files when behavior changes intentionally:
-
-1. Confirm the new output is correct by inspection
-2. Regenerate using the project's snapshot update command
-   (e.g., `pytest --snapshot-update`, `cargo insta update`)
-3. Commit the updated golden file with a message explaining why the expected output changed
-
-## System / Shell
-
-When commands fail due to permissions (e.g., mkdir, mount), try with sudo immediately.
-
-When a connection error, socket failure, or service-unreachable symptom appears, check
-platform-level causes first: WSL2 port forwarding rules, Docker bridge networking, Unix socket
-paths, and container health. Do not exhaust code-level fixes before ruling out the environment.
-
-## Core Development Standards
-
-- **Code Quality**: Ruff formatting & linting (88 chars, PyStrict-aligned), BasedPyright strict mode
-- **Security**: GPG/SSH key validation, dependency scanning (`uv run pip-audit`), encrypted secrets
-- **Testing**: Graduated coverage (80% line / 70% branch / 90% critical / 90% patch)
-- **Git**: Conventional commits, signed commits, feature branch workflow
-- **Response-Aware Development**: Assumption tagging and verification
-
-> **Python linting, BasedPyright config, Ruff rules**: See `.claude/rules/python.md`
+> Branch rules, worktree patterns, naming conventions:
+> see `.claude/rules/git-workflow.md`
 >
-> **Canonical package choices, override policy**: See `.claude/standards/packages.md`
+> Pre-commit checklist: see `.claude/rules/pre-commit.md`
+
+## System and shell
+
+When commands fail due to permissions (e.g., mkdir, mount), try with sudo
+immediately.
+
+When a connection error, socket failure, or service-unreachable symptom
+appears, check platform-level causes first: WSL2 port forwarding rules,
+Docker bridge networking, Unix socket paths, and container health. Do not
+exhaust code-level fixes before ruling out the environment.
+
+## Core development standards
+
+- **Code quality**: Ruff format and lint (88 chars, PyStrict-aligned),
+  BasedPyright strict mode
+- **Security**: GPG/SSH key validation, `uv run pip-audit` for dependency
+  scanning, encrypted secrets
+- **Testing**: graduated coverage (80% line, 70% branch, 90% critical, 90% patch)
+- **Git**: conventional commits, signed commits, feature branch workflow
+- **Response-Aware Development**: assumption tagging and verification
+
+> Canonical package choices: see `.claude/standards/packages.md`
 >
-> **Writing rules (no em-dashes, AI pattern blacklist, grammar authority)**: See `.claude/rules/writing.md`
+> Writing rules (no em-dashes, AI pattern blacklist, grammar authority):
+> see `.claude/rules/writing.md`
 >
-> **Writing quality thresholds (pipeline stages, stylometry targets, pass/fail)**: See `.claude/standards/writing-quality.md`
+> Writing quality thresholds: see `.claude/standards/writing-quality.md`
 >
-> **Unfixed CVEs**: When pip-audit finds a vulnerability that cannot be immediately resolved,
-> document it in `docs/known-vulnerabilities.md` using the template at
-> `docs/known-vulnerabilities-template.md`. Never suppress pip-audit output without a
-> documented entry. Review quarterly; no entry ages past 60 days without reassessment.
-> Note: the OpenSSF release gate below blocks releases for any vulnerability older than 60 days,
-> regardless of reassessment status.
+> MCP tool loading strategy: see `.claude/rules/mcp-strategy.md`
+>
+> Supervisor patterns and agent assignment: see `.claude/rules/supervisor.md`
+
+## Unfixed CVEs
+
+When `pip-audit` finds a vulnerability that cannot be immediately resolved,
+document it in `docs/known-vulnerabilities.md` using the template at
+`docs/known-vulnerabilities-template.md`. Never suppress pip-audit output
+without a documented entry. Review quarterly. No entry ages past 60 days
+without reassessment. The OpenSSF release gate blocks releases for any
+vulnerability older than 60 days regardless of reassessment status.
 
 ## Response-Aware Development (RAD)
 
-> **Full Documentation**: See `/docs/response-aware-development.md`
+Tag assumptions that could cause production failures using `#CRITICAL`,
+`#ASSUME`, and `#EDGE` comment markers paired with `#VERIFY` instructions.
+Mandatory categories: timing dependencies, external resources, data integrity,
+concurrency, security, payment/financial.
 
-When writing code, ALWAYS tag assumptions that could cause production failures:
+> Full tagging syntax, verification workflow, and examples:
+> see `docs/response-aware-development.md`
 
-```javascript
-// #CRITICAL: [category]: [assumption that could cause outages/data loss]
-// #VERIFY: [defensive code required]
+## OpenSSF baseline
 
-// #ASSUME: [category]: [assumption that could cause bugs]
-// #VERIFY: [validation needed]
+Required files in every project: `LICENSE`, `SECURITY.md`, `CONTRIBUTING.md`,
+`CHANGELOG.md`, `README.md`.
 
-// #EDGE: [category]: [assumption about uncommon scenarios]
-// #VERIFY: [optional improvement]
-```
+Before any release: CHANGELOG updated, no vulnerabilities older than 60 days,
+tests pass above 80% coverage, version tag follows SemVer. New features:
+write tests first, document security implications, update CHANGELOG.
 
-**Mandatory tagging categories**: Timing Dependencies, External Resources, Data Integrity,
-Concurrency, Security, Payment/Financial.
+## Development philosophy
 
-**Verification workflow**: Tag during development → hook triggers agent scan on save →
-agent categorizes and suggests fixes → validates before commit.
+Decision order when priorities conflict:
 
-## Code Generation Principles — Python (MANDATORY)
+1. **Security first** — validate keys, encrypt secrets, scan dependencies
+2. **Reuse first** — check existing repositories and skills before building new code
+3. **Configure, don't build** — prefer configuration over custom implementation
+4. **Quality standards** — maintain consistent code quality across projects
+5. **Testing** — maintain graduated coverage, run tests before commits
+6. **Scope tracing** *(phased projects only)* — every task must trace to a
+   phase acceptance criterion; use `/phase-gate` to verify phase readiness
 
-### Function Structure
+## Compact Instructions
 
-- **Length**: Prefer 20-60 statements; hard limit 100 (PLR0915)
-- **Single Responsibility**: One conceptual task per function
-- **Early Returns**: Exit early on errors; avoid deep else branches
-- **Nesting Depth**: Maximum 3 levels inside function body
+This section guides the summarization step when context is compacted. CLAUDE.md
+is the only component guaranteed to survive compaction intact — content
+explicitly listed here is what the summarizer should preserve.
 
-### Complexity Controls
+When compacting, always preserve:
 
-- **Cyclomatic Complexity**: Target ≤10 (C901 enforced)
-- **Branches**: Maximum 12 per function (PLR0912)
+- **File paths with line numbers** for any files mentioned in the current task
+- **Error messages verbatim** — do not paraphrase error text
+- **Architecture decisions with reasoning** — not just "we chose X" but why
+- **Current test state** — pass/fail counts and specific failing test names
+- **Active branch and uncommitted changes** — branch name, staged files, notable unstaged work
+- **Decision rationale** for anything where "we chose X over Y" was discussed
+- **User-specific corrections** the user made during the session ("no, do it this way instead")
 
-### Code Duplication
+Do not preserve:
 
-- **Zero Tolerance**: Extract shared functions immediately
-- **Rule of Three**: Three similar blocks → refactor to reusable function
+- Tool call logs or raw output (summarize the conclusion)
+- Exploratory detours that did not inform the final approach
+- Generic restatements of the user's request
 
-### Data & State Design
+## Global resources
 
-- **Immutability First**: Use `frozen=True` dataclasses
-- **Pure Functions**: Minimize side effects
-- **No Global State**: Pass dependencies explicitly
-- **Parameter Grouping**: >4 params → dataclass (see `.claude/rules/python.md`)
-
-> **Supervisor patterns, agent assignment, PR workflow**: See `.claude/rules/supervisor.md`
->
-> **MCP tool loading strategy**: See `.claude/rules/mcp-strategy.md`
-
-## OpenSSF Best Practices
-
-Required files in every project: `LICENSE`, `SECURITY.md`, `CONTRIBUTING.md`, `CHANGELOG.md`
-
-```bash
-ls -1 LICENSE SECURITY.md CONTRIBUTING.md CHANGELOG.md README.md 2>/dev/null | wc -l
-# Should output: 5
-```
-
-Before any release: CHANGELOG updated, no vulnerabilities >60 days old, tests pass (>80%),
-version tag follows SemVer. New features: add tests first, document security implications,
-update CHANGELOG.
-
-## Project Integration
-
-Projects create focused `CLAUDE.md` files that **extend** (not duplicate) these global standards:
-
-```markdown
-# Project Development Guide
-
-> This project extends the global CLAUDE.md standards.
-
-## Project-Specific Standards
-
-- **Performance**: API response p95 < 2s
-- **Architecture**: External Qdrant at 192.168.1.16:6333
-```
-
-## Global Resource Catalog
-
-> Full catalog with descriptions: See [AGENTS-AND-SKILLS.md](AGENTS-AND-SKILLS.md)
-
-### Key Agents (`.claude/agents/`)
-
-Code Reviewer, Security Auditor, Test Engineer, Test Writer, Test Reviewer,
-Frontend Designer, Diagram Maintenance, Documentation Writer, Database Operations,
-AI Engineer, Git Workflow, GitHub Workflow, DevOps Deployment, UI Testing,
-API Development, OWASP Dispatch (+6 specialists), Phase Reviewer, Scope Analyzer,
-Plan Validator, Project Plan Synthesizer, Research Agent, Modularization Assistant, Visual Content Generator
-
-### Available Skills (`.claude/skills/`)
-
-**Custom skills** (this repo):
-
-| Skill                            | Trigger                          | Purpose                                   |
-| -------------------------------- | -------------------------------- | ----------------------------------------- |
-| `/git`                           | commit, PR, branch               | Full git workflow (commit + PR + branch)  |
-| `/quality`                       | quality, lint, format            | Code quality checks                       |
-| `/testing`                       | run tests, test suite            | Test execution with coverage              |
-| `/security`                      | security, scan, audit            | Security validation                       |
-| `/debug-tests`                   | failing test, test error         | Root-cause test debugging                 |
-| `/handoff`                       | handoff, session end             | Session continuity document               |
-| `/diagram-maintenance`           | diagram, PUML, SVG               | PlantUML updates and SVG generation       |
-| `/frontend-design`               | build UI, create component       | Creative direction, UX/a11y               |
-| `/phase-gate`                    | phase review, phase status       | Phase readiness evaluation                |
-| `/project-planning`              | project plan, generate plan      | PVS, ADR, Tech Spec, Roadmap              |
-| `/rad`                           | assumption, verify assumptions   | Assumption tagging and verification       |
-| `/test-coverage`                 | coverage analysis, coverage gaps | Coverage measurement and generation       |
-| `/sonarcloud`                    | sonar, quality gate              | SonarCloud issue review and fixing        |
-| `/skill-creator`                 | create skill, improve skill      | Skill development and iteration           |
-| `/writing`                       | writing pipeline, edit, rewrite  | Writing pipeline orchestration            |
-| `/code-review`                   | review PR, PR review             | 5-agent PR review with confidence scoring |
-| `/hookify`                       | create hook, prevent behavior    | Author project-level gate rules           |
-| `/hookify-list`                  | list hooks, list rules           | Show all active hookify rules             |
-| `/hookify-configure`             | enable hook, disable hook        | Enable or disable hookify rules           |
-| `/auto-dream`                    | memory consolidation, dream      | Memory consolidation across sessions      |
-| `/session-report`                | session report, usage report     | HTML session usage and cost report        |
-| `/claude-md-improver`            | CLAUDE.md audit and improvement  | CLAUDE.md quality audit and updates       |
-| `/claude-automation-recommender` | automation recommendations       | Scan codebase, recommend automations      |
-| `/docx`                          | Word doc, .docx                  | Read, create, and edit Word documents     |
-| `/pdf`                           | PDF, extract PDF                 | Read, extract, and combine PDF files      |
-| `/pptx`                          | PowerPoint, slides, .pptx        | Read, create, edit PowerPoint files       |
-| `/xlsx`                          | spreadsheet, .xlsx, .csv         | Read, create, and edit spreadsheets       |
-
-**Superpowers skills** (via `.submodules/superpowers` — community-maintained):
-
-| Skill                            | Trigger                              | Purpose                                        |
-| -------------------------------- | ------------------------------------ | ---------------------------------------------- |
-| `brainstorming`                  | design, plan, before implementation  | Socratic pre-implementation design             |
-| `writing-plans`                  | write a plan, implementation plan    | Granular task-level plan generation            |
-| `executing-plans`                | execute plan, implement plan         | Plan execution with sequential task tracking   |
-| `subagent-driven-development`    | implement with agents, parallel impl | Three-subagent review pattern per task         |
-| `requesting-code-review`         | request code review                  | Structured code review with SHA context        |
-| `receiving-code-review`          | received review, review feedback     | Adversarial verification of review feedback    |
-| `test-driven-development`        | TDD, write tests first               | TDD discipline enforcement (red/green/refactor)|
-| `systematic-debugging`           | debug, investigate bug               | Root-cause-first debugging framework           |
-| `verification-before-completion` | done, complete, finished             | Evidence gate before claiming completion       |
-| `dispatching-parallel-agents`    | parallel, multiple problems          | Parallel subagent dispatch for independent work|
-| `using-git-worktrees`            | worktree, isolated branch            | Safe worktree setup with baseline verification |
-| `finishing-a-development-branch` | finish branch, merge, done coding    | Branch completion with merge/PR/discard options|
-| `writing-skills`                 | author SKILL.md, write SKILL.md      | TDD-based skill authorship                     |
-| `using-superpowers`              | *(auto-injected at session start)*   | Meta-skill enforcing skill-first discipline    |
-
-> Full catalog with agent descriptions: See [AGENTS-AND-SKILLS.md](AGENTS-AND-SKILLS.md)
-
-### Install / Update
-
-See `README.md` for install options (two-layer `~/dev/.claude` + `setup.sh` vs. direct clone to `~/.claude`).
-
-```bash
-# Update (two-layer setup)
-cd ~/dev/.claude && git pull origin main && git submodule update --remote --merge
-```
-
-## Development Philosophy
-
-**Security First** → **Quality Standards** → **Documentation** → **Testing** → **Collaboration** → **Scope Tracing** *(phased projects)*
-
-1. **Security First**: Always validate keys, encrypt secrets, scan dependencies
-2. **Reuse First**: Check existing repositories before building new code
-3. **Configure, Don't Build**: Prefer configuration over custom implementation
-4. **Quality Standards**: Maintain consistent code quality across all projects
-5. **Testing**: Maintain high test coverage and run tests before commits
-6. **Collaboration**: Use consistent Git workflows and clear commit messages
-7. **Scope Tracing**: In phased projects, every task must trace to a phase acceptance
-   criterion defined in the project plan. Work that cannot be traced requires a scope
-   amendment before starting, not after. Use the `/phase-gate` skill to verify phase
-   readiness before closing a phase.
+Full agent catalog, skill catalog, and install instructions:
+see `AGENTS-AND-SKILLS.md` and `README.md` at the repo root.
