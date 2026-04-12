@@ -1,6 +1,170 @@
 # CHANGELOG
 
 
+## v0.5.0 (2026-04-12)
+
+### Bug Fixes
+
+- **docs**: Correct relative link to ADR-004 in supervisor.md
+  ([`3a67295`](https://github.com/ByronWilliamsCPA/.claude/commit/3a672951ceb8f22eac7ec3c1a9e2edb3bec6c222))
+
+Link was ../docs/architecture/... which resolves to .claude/docs/ (does not exist). Correct path
+  from .claude/rules/ to repo-root docs/ is ../../docs/architecture/...
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- **hooks**: Read tool input from stdin in rad-strict-hook.sh
+  ([`a9c9f68`](https://github.com/ByronWilliamsCPA/.claude/commit/a9c9f68c61ee4f088b4d5417c06afc927c3bf45d))
+
+CLAUDE_TOOL_INPUT env var does not exist. Claude Code hooks receive tool input via stdin as JSON.
+  Read with cat and parse with jq to get the command field, matching the pattern used by other hooks
+  in this repo.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- **review**: Address Copilot code review findings on PR #15
+  ([`74487af`](https://github.com/ByronWilliamsCPA/.claude/commit/74487af01d28e73fcf07d74486339b986e60eb8a))
+
+Critical fixes: - settings-and-permissions.md: correct scope hierarchy order (managed policy is
+  highest/5, ~/.claude/settings.json is lowest/1; previously inverted) - stop-pre-commit-hook.sh:
+  remove set -e to prevent abort before timing code runs; capture pre-commit exit with || RC=$?
+  pattern - rad-strict-hook.sh: use exit 2 (block tool call) not exit 1 (hook error); add set -euo
+  pipefail and activation log line; add registration comment - CLAUDE.md: add references for
+  settings-and-permissions.md and loop-recipes.md so rule files inject into sessions (orphaned rules
+  fix)
+
+Important fixes: - .claude/settings.json: tighten FileChanged matcher from \\.env to
+  (^|/)\\.env[^/]*$ to avoid false positives on .environment.py etc. - settings.json: fix
+  Bash(gcloud:*) format (was Bash(gcloud *:*) with literal asterisk); remove redundant Bash(rm
+  -rf:*) covered by Bash(rm:*) - on-demand-skill-hooks.md: add Registration requirement section with
+  settings.json JSON example and explanation of why registration is needed
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+- **settings**: Use portable path for plansDirectory
+  ([`0391164`](https://github.com/ByronWilliamsCPA/.claude/commit/039116403b69453b6d397ab12e7b4aaa7b6f60db))
+
+Hard-coded /home/byron/.claude/plans breaks for any other user who clones this repo. Using ~ which
+  most path-aware tools expand to the current user's home directory.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- **tools**: Use uv run python in check_docs.sh for reproducibility
+  ([`e78cf29`](https://github.com/ByronWilliamsCPA/.claude/commit/e78cf29a97f91ea4abf0772dba466ce759068882))
+
+Bare python call would use whatever python is on PATH, which may not match the project's managed
+  virtualenv. uv run python ensures the project toolchain is used.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+### Chores
+
+- **docs**: Exclude PlantUML font cache from git
+  ([`566950e`](https://github.com/ByronWilliamsCPA/.claude/commit/566950e0bf7eb6c6e9c4097c1890cf7761a97f3e))
+
+The plantuml CLI writes a Java font cache to a directory named `?` under the diagram output
+  directory during SVG rendering. This directory is an artifact and not part of the project; exclude
+  it with a wildcard gitignore pattern that matches any single-character subdirectory.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+### Documentation
+
+- Correct Python version requirement from 3.12+ to 3.10+
+  ([`4221f95`](https://github.com/ByronWilliamsCPA/.claude/commit/4221f9503bbd01f3f2bfb0846c9ee71fea147d02))
+
+pyproject.toml declares requires-python = ">=3.10,<3.15". Both getting-started docs incorrectly
+  stated Python 3.12+ as the minimum requirement.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- Implement best-practice adoptions (items 1-13) and architecture docs
+  ([`720b024`](https://github.com/ByronWilliamsCPA/.claude/commit/720b024907287ea50edb87e49a0cab3fa3abed20))
+
+Add 13 items from the best-practice review consensus-adjusted short list:
+
+- rules/settings-and-permissions.md: five-scope hierarchy, evaluation order, and sandbox layer
+  documentation - settings.json: 22-entry permissions.ask 7-day trial, outputStyle, plansDirectory,
+  CLAUDE_AUTOCOMPACT_PCT_OVERRIDE, SessionStart hook - .claude/settings.json: FileChanged .env*
+  audit hook, Stop pre-commit trial - rules/git-workflow.md: /branch and --fork-session session
+  forking docs - rules/supervisor.md: Explore/Plan built-in subagent rows, two-pattern skill
+  architecture section, pre-planning codebase discovery checklist - rules/loop-recipes.md: /loop
+  recipes with cost circuit-breaker safeguards - standards/on-demand-skill-hooks.md: on-demand hook
+  convention with RAD_STRICT_MODE reference implementation - scripts/env-file-audit.sh,
+  stop-pre-commit-hook.sh, session-start-rules.sh: companion hook scripts for the three new hooks -
+  skills/rad/workflows/rad-strict-hook.sh: reference impl for on-demand hooks
+
+Also fixes pre-existing frontmatter issues in docs/development/best-practice-review/ and includes
+  architecture docs, ADRs, contributing guides, getting-started guides, and reference docs
+  previously staged from prior sessions.
+
+Source: docs/development/best-practice-review/synthesis-report.md
+
+🤖 Generated with [Claude Code](https://claude.ai/code)
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+- **claude-md**: Elevate em-dash rule and add worktree path constraint
+  ([`7fb8273`](https://github.com/ByronWilliamsCPA/.claude/commit/7fb82733ef017ae3c17f2b00ac5ca33ad52a8ec0))
+
+Move the em-dash ban from the writing rules reference to a top-level section in CLAUDE.md so it is
+  visible at all times, not only when reading the full writing rules. Add the worktree path
+  constraint (project-local .worktrees/<branch-slug> only) alongside the git workflow entry. Add
+  .worktrees/ to .gitignore with a clarifying comment.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- **diagram**: Regenerate hook_pipeline.svg from updated PUML source
+  ([`bf12104`](https://github.com/ByronWilliamsCPA/.claude/commit/bf12104564eb2d260b04199445c67c74330a1352))
+
+The PUML source was rewritten in a prior commit to show the actual hook scripts from both settings
+  files. Regenerate the SVG to match using the plantuml.jar from the image_detection tools
+  directory.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- **diagram**: Update hook_pipeline.puml to match actual hook config
+  ([`3f9e7ec`](https://github.com/ByronWilliamsCPA/.claude/commit/3f9e7ec00584b728784d077f89e95e64248ed875))
+
+Previous diagram referenced hookify dispatch, planning-bridge-gate, secrets scan, and other scripts
+  that are not in settings.json. Updated to show the scripts that are actually wired:
+  tdd-enforcement-hook.sh, bash-pre-hook.sh, stop-pre-commit-hook.sh, bash-notify.sh,
+  track-mcp-usage.sh, env-file-audit.sh, validate-frontmatter.sh, and the keyword-tool-trigger.sh /
+  SessionStart scripts.
+
+Note: SVG needs regeneration via plantuml to match updated source.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- **git**: Update review workflow references to /pr-review
+  ([`23a7025`](https://github.com/ByronWilliamsCPA/.claude/commit/23a70257e454ad28b2ebb58ea53737b73935209d))
+
+Replace /code-review references with /pr-review throughout the PR workflow documentation. /pr-review
+  supersedes /code-review: it triggers Copilot automatically, adds SonarQube PR findings, runs 8
+  agents instead of 5, and reports all findings in tiers rather than filtering at 80 confidence.
+  Update git-workflow.md and the git/pr skill to reflect the new primary review command.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+### Features
+
+- **skills**: Add pr-review and pr-fix orchestration skills
+  ([`1068e64`](https://github.com/ByronWilliamsCPA/.claude/commit/1068e64f618a26d05f5e68d363277ec4f043b9d7))
+
+Add the /pr-review skill: a full PR review pipeline that triggers GitHub Copilot immediately,
+  fetches SonarQube PR findings, runs up to 8 parallel agents (CLAUDE.md compliance, bug scan,
+  git-history context, prior PR comments, comment accuracy, silent failures, test coverage, type
+  design), confidence-scores every finding, and outputs a tiered report.
+
+Add the pr-fix sub-workflow: executes mechanical fixes from the review output in an isolated
+  worktree. Handles shell script bugs (stdin pattern, uv run python), documentation accuracy,
+  em-dash replacement, SonarQube shell findings, configuration portability, pre-commit config gaps,
+  Python antipatterns, docstring accuracy, and bare exception handling. Categorizes non-mechanical
+  findings (test gaps, type design, security, complex logic) as requiring manual fix.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+
 ## v0.4.0 (2026-04-11)
 
 ### Bug Fixes
