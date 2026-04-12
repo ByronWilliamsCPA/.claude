@@ -127,7 +127,7 @@ the output before proceeding (e.g., `/commit`, `/quality`, `/git pr`).
 | **Skill** | Stateless output generator; called once per invocation | owasp-dispatch |
 
 Commands invoke agents; agents invoke skills. Skills do not invoke agents. See
-[ADR-004](../docs/architecture/adr/ADR-004-skill-vs-agent-boundary.md) for the
+[ADR-004](../../docs/architecture/adr/ADR-004-skill-vs-agent-boundary.md) for the
 full classification rubric.
 
 ### Current adoption status (2026-04-11)
