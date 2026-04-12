@@ -1,6 +1,45 @@
 # CHANGELOG
 
 
+## v0.6.1 (2026-04-12)
+
+### Bug Fixes
+
+- **pr-fix**: Expand sonar rule table, shell bug categories, and doc accuracy patterns
+  ([`609311a`](https://github.com/ByronWilliamsCPA/.claude/commit/609311a20a0379051862ac8d5347d70dd47bb0cd))
+
+Adds 12 new SonarQube rules to the Priority 2 table (shelldre:S7688, S1066, S131, S7677, S1481,
+  S7679; python:S5914, S1244, S1066, S1192; githubactions:S8234, S8233), four new shell bug
+  categories to Priority 3 (jq presence guard, hook message direction, grep -nP portability,
+  PowerShell escaping), a Documentation accuracy sub-category table with seven doc drift patterns,
+  and two new Always-skip entries (pythonsecurity:S2083, force-push guard bypass).
+
+Note: TruffleHog skipped (SKIP=trufflehog) due to known incompatibility with git worktrees (.git is
+  a file pointer, not a directory).
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- **review**: Address Copilot and agent findings on PR #17
+  ([`8e31667`](https://github.com/ByronWilliamsCPA/.claude/commit/8e31667ddc26c8acd5099df70b819e408df7c77a))
+
+- Scope shelldre:S7688 fix to bash shebang only; skip POSIX sh scripts - Add errexit caveat to
+  shelldre:S1066 nested-if merge guidance - Fix python:S5914: assertIsNotNone is not the generic
+  replacement for constant boolean assertions; clarify correct fix approach - Tighten
+  githubactions:S8234: specify reading job steps to identify required permissions rather than vague
+  "what the workflow needs" - Resolve stdout/stderr contradiction between jq guard and hook block
+  message rows; add context distinguishing hook vs general shell scripts - Fix spec frontmatter
+  sub-category: frontmatter status is schema-validated; body blockquote follows frontmatter, not the
+  reverse - Replace undefined "Cowork doc" with "Collaboration document (e.g., COWORK.md)" for
+  clarity
+
+Reconcile uv.lock version to match pyproject.toml 0.6.0 from main.
+
+TruffleHog skipped: git worktree incompatibility (index file is not a directory); TruffleHog will
+  run normally against the full repo on push.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+
 ## v0.6.0 (2026-04-12)
 
 ### Bug Fixes
