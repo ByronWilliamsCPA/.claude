@@ -24,6 +24,31 @@
         ]
       }
     ],
+    "FileChanged": [
+      {
+        "matcher": "(^|/)\\.env[^/]*$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash $HOME/.claude/scripts/env-file-audit.sh",
+            "timeout": 10,
+            "statusMessage": "Auditing .env file change..."
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash $HOME/.claude/scripts/stop-pre-commit-hook.sh",
+            "timeout": 120,
+            "statusMessage": "Running pre-commit on touched files..."
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "Bash",
