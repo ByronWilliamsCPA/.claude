@@ -14,7 +14,7 @@ PR description, pull request description, ready for PR, ready to PR, draft PR, w
 Before creating the PR, confirm `/ci-fix` has been run and all gates are green. If not,
 run it now:
 
-```
+```text
 /ci-fix
 ```
 
@@ -42,6 +42,7 @@ git diff $(git merge-base HEAD main)..HEAD
 ### 2. Analyze Changes
 
 Identify:
+
 - **Components modified**: Which files/modules changed
 - **Purpose**: Why these changes were made
 - **Impact**: Benefits, risks, breaking changes
@@ -82,7 +83,7 @@ Use this template:
 Follow conventional commits format (see `context/conventional-commits.md`):
 
 | Type | When to Use |
-|------|-------------|
+| ---- | ----------- |
 | `feat:` | New feature |
 | `fix:` | Bug fix |
 | `docs:` | Documentation only |
@@ -102,13 +103,17 @@ gh pr create --title "<title>" --body "<description>"
 
 ### 6. Run automated code review
 
-Immediately after `gh pr create` succeeds, invoke the `/code-review` command to run the 5-agent review against the new PR:
+Immediately after `gh pr create` succeeds, invoke `/pr-review` with the new PR URL:
 
-```
-/code-review
+```text
+/pr-review <PR URL returned by gh pr create>
 ```
 
-This runs before notifying the user the PR is ready. The review posts a comment on the PR with any issues scoring ≥80 confidence (CLAUDE.md compliance, bug scan, git history context, comment compliance). If no issues are found, it posts a clean confirmation.
+This triggers GitHub Copilot review, fetches SonarQube PR-specific findings, and runs
+up to 8 parallel agents (CLAUDE.md compliance, bug scan, git-history context, prior PR
+comments, comment accuracy, silent failures, test coverage, type design). All findings
+are reported in tiers (Critical / Important / Suggested / Informational) — nothing is
+filtered. Optionally posts a consolidated comment to the PR.
 
 Only present the final PR URL to the user after the review completes.
 
@@ -158,6 +163,7 @@ Follow-up: Add Microsoft provider support
 ---
 
 Ready to copy! Create the PR using the `/git pr` skill:
+
 ```bash
 /git pr
 ```
