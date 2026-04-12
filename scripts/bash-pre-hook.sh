@@ -76,8 +76,15 @@ if echo "$CMD" | grep -qE '(--force|--force-with-lease(=[^\s]+)?|-f)(\s|$)'; the
         sed -E 's/[a-zA-Z0-9_-]+\s+//' | \
         awk '{print $1}')
 
-    # Block if: no branch token present (bare force push), or branch is main/master
-    if [[ -z "$BRANCH_TOKEN" ]] || echo "$BRANCH_TOKEN" | grep -qE '^(main|master)$'; then
+    # Extract destination ref from refspec forms (HEAD:main, :main, src:dest).
+    # ${BRANCH_TOKEN##*:} strips the source ref; if no colon, returns BRANCH_TOKEN.
+    DEST_TOKEN="${BRANCH_TOKEN##*:}"
+
+    # Block if: no branch token (bare force push), explicit branch is main/master,
+    # or destination ref extracted from a refspec is main/master.
+    if [[ -z "$BRANCH_TOKEN" ]] || \
+       echo "$BRANCH_TOKEN" | grep -qE '^(main|master)$' || \
+       echo "$DEST_TOKEN" | grep -qE '^(main|master)$'; then
         log "BLOCKED force-push: CMD=${CMD}"
         echo "BLOCKED: force-push to main/master (or bare force-push) is prohibited. Use a PR instead."
         exit 2
