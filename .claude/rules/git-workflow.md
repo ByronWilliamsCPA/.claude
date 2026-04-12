@@ -93,15 +93,21 @@ Two layers of automated gates enforce quality throughout the workflow:
   compliance, bug scan, git-history context, prior PR comments, comment accuracy,
   silent failures, test coverage, type design), scores every finding, and outputs a
   tiered report (Critical / Important / Suggested / Informational). Nothing is
-  filtered — all findings are categorized and reported. Optionally posts a consolidated
+  filtered, all findings are categorized and reported. Optionally posts a consolidated
   comment back to the PR.
-- `/code-review`: legacy command. Runs 5 parallel agents and posts only issues ≥80
+- `/pr-fix <url>`: **PR remediation command.** Independently gathers all open
+  issues on a PR (CI failures, review comments from Copilot/CodeRabbit/humans,
+  SonarQube findings, Codecov gaps, and pr-review agent findings), fixes them
+  in an isolated worktree, verifies locally, pushes, and replies to addressed
+  review comments. Can run standalone or as a follow-up to `/pr-review`.
+- `/code-review`: legacy command. Runs 5 parallel agents and posts only issues >=80
   confidence. Use `/pr-review` instead for new reviews; retain `/code-review` for
   quick spot-checks on simple PRs where full pipeline overhead is unnecessary.
 
 Use CodeRabbit for structural review (automatic), `/pr-review` as the primary review
-command for all PRs (triggers Copilot + SonarQube + 8 agents in one pass), and
-`/code-review` only for lightweight spot-checks.
+command for all PRs (triggers Copilot + SonarQube + 8 agents in one pass),
+`/pr-fix` to resolve all identified issues, and `/code-review` only for lightweight
+spot-checks.
 
 **Creating new gates with hookify:**
 Use `/hookify <instruction>` to add a rule instantly, or `/hookify` with no args to analyze the current conversation for repeated corrections. Rules live in `.claude/hookify.*.local.md` and take effect on the next tool call — no restart required.

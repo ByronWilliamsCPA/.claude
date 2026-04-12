@@ -1,297 +1,379 @@
 # PR Fix Workflow
 
-Fixes identified review findings on the PR branch in an isolated worktree.
-Called from `pr-review.md` Step 10 after the user chooses to fix issues.
+Gathers all open issues on a PR from every source and resolves them.
+Can run standalone (`/pr-fix <URL>`) or as a follow-up from `pr-review.md` Step 10.
 
 ## Input
 
-Expects these values from the calling workflow:
+**Standalone mode**: `$ARGUMENTS` contains the GitHub PR URL.
+If empty, detect from the current branch via GitHub MCP `pull_request_read`
+method `get`, or `gh pr view --json url`.
 
-- `OWNER`, `REPO`, `PR_NUMBER` — from the review
-- `HEAD_BRANCH` — the PR's head branch (branch to check out)
-- `FINDINGS` — deduplicated, scored findings list from the review (in context)
-
----
-
-## Step F1 — Announce and categorize
-
-Announce: "Starting PR fix workflow for {OWNER}/{REPO}#{PR_NUMBER}."
-
-### SonarQube findings — always fix, no prompt
-
-SonarQube findings are deterministic with prescribed remediation. Add all
-`SONAR_FINDINGS` from the review workflow directly to the top of the fix
-queue. Do not ask the user whether to include them.
-
-### Agent findings — scope prompt
-
-Split agent findings into tiers:
-
-| Tier | Includes | Default |
-| --- | --- | --- |
-| **Tier A** | Critical + Important | Always fix |
-| **Tier B** | Suggested | Ask |
-| **Tier C** | Informational | Never auto-fix |
-
-Present the scope prompt:
-
-```text
-Ready to fix review findings on branch {HEAD_BRANCH}.
-
-Automatic ({N_sonar} SonarQube findings — always included)
-
-Agent finding scope:
-1. Critical + Important only  ({N_A} agent findings — recommended)
-2. Critical + Important + Suggested  ({N_A + N_B} agent findings)
-
-Which scope?
-```
-
-Record the choice as `FIX_SCOPE`. Build `FIX_LIST` in this order:
-
-1. All SonarQube findings (by file, line order)
-2. Critical agent findings
-3. Important agent findings
-4. Suggested agent findings (only if scope 2)
+**From pr-review**: `FINDINGS`, `SONAR_FINDINGS`, `OWNER`, `REPO`,
+`PR_NUMBER`, and `HEAD_BRANCH` are already in context from the review.
 
 ---
 
-## Step F2 — Set up worktree
+## Step 0 -- Parse URL and fetch metadata
 
-Create an isolated worktree on the PR branch. The worktree directory is
-always project-local per CLAUDE.md.
+Extract owner, repo, and PR number from the URL:
 
 ```bash
-# Fetch the latest state of the PR branch
-git fetch origin {HEAD_BRANCH}
+PR_URL="$ARGUMENTS"
+OWNER=$(echo "$PR_URL" | sed 's|https://github.com/||' | cut -d'/' -f1)
+REPO=$(echo "$PR_URL" | sed 's|https://github.com/||' | cut -d'/' -f2)
+PR_NUMBER=$(echo "$PR_URL" | grep -oE '[0-9]+$')
+```
 
-# Create the worktree at the project-local path
+If values came from the calling pr-review workflow, skip parsing.
+
+Fetch PR metadata via GitHub MCP `pull_request_read` method `get`:
+
+```
+owner: OWNER, repo: REPO, pullNumber: PR_NUMBER
+```
+
+Store `HEAD_BRANCH`, `BASE_BRANCH`, `PR_TITLE`, `PR_BODY`.
+
+Abort if: PR is closed, or metadata fetch fails.
+
+---
+
+## Step 1 -- Gather all issues (run sources in parallel)
+
+Each source is independent. Launch them simultaneously.
+
+### 1a. CI check failures
+
+Use GitHub MCP `pull_request_read` method `get_check_runs`.
+
+For each check with `conclusion` not `success` and not `neutral`:
+- Record: check name, conclusion, run URL
+- Fetch failed job logs: `gh run view {RUN_ID} --repo {OWNER}/{REPO} --log-failed`
+  (truncate to last 100 lines per job)
+- Classify by check name pattern:
+
+| Pattern in check name | Type | Fix approach |
+|---|---|---|
+| Test, pytest | Test failure | Read output, fix test or impl |
+| ruff, lint, Quality | Lint | `ruff check --fix`; manual for unfixable |
+| format | Format | `ruff format` |
+| basedpyright, type | Type-check | Fix annotations |
+| Bandit, Security, security-analysis | Security | Fix flagged patterns |
+| Dead Code, vulture | Dead code | Remove (confidence >= 90%) |
+| Changelog | Changelog | Add entry from PR title |
+| Link, lychee | Links | Fix broken doc links |
+| REUSE, License | License | Add/fix headers |
+| Compatibility | Py version | Fix 3.10+ incompatibilities |
+| SBOM | SBOM | Fix dependency declarations |
+| SonarCloud | Quality gate | Defer to Step 1c |
+| GitGuardian | Secrets | Alert user only, never auto-fix |
+| Docs, Build & Deploy | Doc build | Fix markdown/config |
+| Core Validation, PR Validation | PR rules | Fix commits, description, etc. |
+
+### 1b. Review comments
+
+Use GitHub MCP `pull_request_read` with these methods (page with `perPage: 100`):
+- `get_review_comments` -- inline review threads
+- `get_reviews` -- top-level review verdicts
+- `get_comments` -- conversation-level comments
+
+For each item, record: author, body, file path, line, is_resolved,
+is_outdated, thread/comment ID.
+
+**Classify by author:**
+- `copilot-pull-request-reviewer` --> Copilot
+- `coderabbitai` or CodeRabbit markers --> CodeRabbit
+- Contains `Generated with [Claude Code]` --> pr-review bot
+- All others --> Human
+
+**Filter out (non-actionable):**
+- Resolved threads (`is_resolved: true`)
+- Bot summary comments without inline suggestions (CodeRabbit walkthrough, etc.)
+- Pure praise or acknowledgment
+
+**Keep (actionable):**
+- Unresolved threads with change requests
+- Copilot suggestions (code blocks with `suggestion` markers)
+- CodeRabbit inline suggestions
+- Human change requests
+- Bug reports, mismatch callouts, missing item flags
+
+### 1c. SonarQube findings
+
+Same detection as pr-review Step 4:
+
+1. Detect org from `.sonarlint/connectedMode.json` `sonarCloudOrganization`
+   or `sonar-project.properties` `sonar.organization`
+2. Route: `byronwilliamscpa` --> `mcp__sonarqube__`,
+   `williaby` --> `mcp__sonarqube-williaby__`
+3. Resolve project key from config files or `search_my_sonarqube_projects`
+4. Fetch: `search_sonar_issues_in_projects(projects: [KEY], pullRequest: PR_NUMBER)`
+5. Fall back to branch issues if PR not analyzed
+
+If `SONAR_FINDINGS` already in context from pr-review, skip this step.
+
+For each finding, record: file, line, rule key, message, severity.
+Call `show_rule` for any unfamiliar key to get remediation guidance.
+
+### 1d. Codecov / coverage status
+
+1. Check repo root for `codecov.yml` or `.codecov.yml`
+2. Check CI check runs for "codecov" in the name
+3. If present and failing: note coverage delta and affected files
+4. If not configured: record "not configured", skip
+
+### 1e. pr-review agent findings
+
+If `FINDINGS` from the calling pr-review workflow exists in context,
+incorporate directly (already scored and tiered).
+If standalone invocation, this source is empty.
+
+---
+
+## Step 2 -- Classify and present
+
+Build the unified issue list. Present:
+
+```
+PR Fix: {OWNER}/{REPO}#{PR_NUMBER}
+Branch: {HEAD_BRANCH}
+
+Issues found:
+
+  CI Failures:        {N} ({list of failing check names})
+  Review Comments:    {N} unresolved ({N_copilot} Copilot, {N_coderabbit} CodeRabbit, {N_human} human)
+  SonarQube:          {N} findings
+  Coverage:           {status or "not configured"}
+  Agent Findings:     {N} from pr-review (if available)
+
+Fixability:
+  Auto-fixable:       {N}
+  Needs judgment:     {N} (will be skipped, listed at end)
+
+Proceed? (yes / review details / cancel)
+```
+
+If the user asks to review details, expand each category.
+Wait for confirmation before proceeding.
+
+## Step 3 -- Set up worktree
+
+Create an isolated worktree on the PR branch:
+
+```bash
+git fetch origin {HEAD_BRANCH}
 git worktree add .worktrees/fix-pr{PR_NUMBER} {HEAD_BRANCH}
 ```
 
 Record `WORKTREE_PATH=.worktrees/fix-pr{PR_NUMBER}`.
 
-All subsequent file edits happen inside `WORKTREE_PATH`. Never touch the
-main working tree.
+All file edits happen inside `WORKTREE_PATH`. Never touch the main working tree.
 
 **Error handling:**
-
-- If `.worktrees/fix-pr{PR_NUMBER}` already exists: remove it first with
-  `git worktree remove --force .worktrees/fix-pr{PR_NUMBER}` and re-create.
-- If the branch is not found locally: ensure `git fetch origin` ran first.
+- If `.worktrees/fix-pr{PR_NUMBER}` exists: `git worktree remove --force` first
+- If branch not found: ensure `git fetch origin` ran
 
 ---
 
-## Step F3 — Execute fixes
+## Step 4 -- Execute fixes in priority order
 
-Work through `FIX_LIST` in order. For each finding:
+Work through issues in this order. CI failures first because they block merge
+and may cause cascading issues.
 
-1. Announce: "Fixing [{tier}] `{file}:{line}` — {description}"
-2. Read the file in the worktree before editing.
-3. Apply the fix using the Edit tool (path: `{WORKTREE_PATH}/{file}`).
-4. Do not fix anything outside the stated finding. Do not refactor
-   surrounding code. Do not add comments beyond what the fix requires.
+### Priority 1: CI failures
 
-### Fix guidelines by finding type
+For each failing check, apply the fix strategy from the Step 1a table.
+After each category, verify locally before moving on:
 
-**Shell script bugs** (CLAUDE_TOOL_INPUT, stdin patterns, unquoted variables,
-missing `set -e`, unsafe echo, bare python calls, etc.)
+- Lint fixes: `cd {WORKTREE_PATH} && uv run ruff check .`
+- Format fixes: `cd {WORKTREE_PATH} && uv run ruff format --check .`
+- Test fixes: `cd {WORKTREE_PATH} && uv run pytest -x`
+- Type fixes: `cd {WORKTREE_PATH} && uv run basedpyright src/`
 
-- Read the surrounding 20 lines for context before editing.
-- Match the stdin-reading pattern used by existing scripts in `scripts/`:
-  `CONTEXT=$(cat); FIELD=$(jq -r '.field // empty' <<< "$CONTEXT")`.
-- Bare `python` or `python3` calls in projects that use `uv` → `uv run python`.
-  Check for a `pyproject.toml` or `uv.lock` before applying this fix.
-- Do not rewrite the whole script — fix the specific line(s) identified.
+**Changelog enforcement:** Generate entry from PR title, commit messages, and
+file changes. Place under `[Unreleased]` in CHANGELOG.md.
 
-**Documentation accuracy** (wrong counts, undocumented hook types, wrong
-paths, unsourced claims)
+**Python version compatibility:** Check for `datetime.UTC` (use
+`datetime.timezone.utc`), `tomllib` without fallback, `match/case` syntax,
+`ExceptionGroup` without backport. Apply 3.10-compatible equivalent.
 
-- Fix only the specific claim or field identified.
-- For ADR amendments: append an `## Amendment` section at the end of the ADR
-  rather than editing the original context section. ADRs are append-only.
-- For frontmatter field fixes (`status: draft` → `status: published`): edit
-  the frontmatter block only.
+### Priority 2: SonarQube findings
 
-**Em-dashes** (if present in FIX_LIST)
+Deterministic fixes; no user prompt needed:
 
-- Replace each `—` with the contextually appropriate alternative:
-  - Parenthetical aside: comma or parentheses
-  - Clause separator: semicolon or period
-  - Colon-like introduction: colon
-- Process em-dashes file by file, not with a global search-replace that
-  might produce incorrect substitutions.
+| SonarQube pattern | Fix |
+|---|---|
+| Missing explicit `return` (shelldre:S7682) | Add `return 0` or `return` |
+| Redundant exception type (python:S5713) | Remove subclass from tuple |
+| Cognitive complexity (python:S3776) | Extract helper functions |
+| ReDoS regex (python:S5852) | Replace with substring match or anchored pattern |
+| Security hotspot | Apply prescribed remediation; call `show_rule` for guidance |
 
-**SonarQube shell findings** (missing `default *` case, missing `return`,
-nested if merge)
+### Priority 3: Review comments
 
-- Apply the minimal fix: add the `*) ;;` case, add `return`, or flatten the
-  nested `if`. Do not restructure control flow beyond what is required.
+For each unresolved actionable comment:
 
-**Configuration fixes** (`permissions.ask` count, hook type documentation,
-hard-coded absolute paths)
+1. Read the referenced file in the worktree (20 lines of surrounding context)
+2. Apply the requested change
+3. Record: thread ID, file, description of fix (for reply in Step 7)
+4. Do not fix anything outside the stated finding
 
-- Edit only the specific field or line identified.
-- Hard-coded absolute paths (e.g., `/home/username/...`) in shared JSON
-  settings → use `~` or `$HOME` portable equivalents. Check that the tool
-  consuming the value supports `~` expansion before applying this fix.
+**Handling by finding category:**
 
-**Pre-commit config issues** (missing `types:` filter, wrong `stages:`,
-conflicting hook settings)
+| Category | Fix approach |
+|---|---|
+| Shell script error handling (`set -e` before `$?`, wrong exit code) | Fix specific line; match repo hook contract |
+| Bare python calls (`python` vs `uv run python`) | Replace; check pyproject.toml/uv.lock first |
+| Hard-coded absolute paths (`/home/user/...`) | Replace with `~`, `$HOME`, or relative path |
+| Version mismatches (docs vs pyproject.toml) | Read pyproject.toml, update docs to match |
+| Broken relative links | Compute correct path from source to target |
+| Diagram/config drift (PUML vs actual settings) | Read actual config, update diagram source |
+| Markdown table formatting (double `||`, etc.) | Fix table syntax |
+| Closure scope capture (implicit outer vars) | Make parameter explicit |
+| Assert in production (`assert x is not None`) | Replace with `if x is None: raise RuntimeError(...)` |
+| Em-dash violations | Replace with comma, semicolon, colon, or restructured sentence |
+| `== None` / `!= None` | Replace with `is None` / `is not None` |
+| Bare `except:` | Replace with `except Exception:` |
+| Docstring parameter mismatch | Update docstring to match function signature |
 
-- Add missing `types: [python]` (or other language filter) to hooks that are
-  language-specific but lack a filter.
-- Add missing `stages:` entries when the config uses stages elsewhere and
-  the hook's absence from a stage is clearly an oversight.
-- Do not reorganize the hook order or add new hooks — fix only the specific
-  field identified.
-
-**Python code antipatterns** (Agent B simple, unambiguous findings)
-
-- `x == None` / `x != None` → `x is None` / `x is not None`.
-- Comparison of incompatible types when the fix is obvious from the
-  surrounding code (e.g., `if count == "0"` → `if count == 0`).
-- Only fix patterns where the correct code is unambiguous from context.
-  Do not attempt fixes that require understanding business logic.
-
-**Docstring and comment accuracy** (Agent E mechanical findings)
-
-- Update a parameter name in a docstring when the function signature changed
-  and the old name is clearly wrong.
-- Remove documented parameters that no longer exist in the function signature.
-- Fix a stated return type that demonstrably does not match the actual return.
-- Do NOT add entirely new docstrings to functions — that is new content
-  requiring judgment. Mark those as "requires manual fix" and skip.
-
-**Bare exception handling** (Agent F mechanical findings only)
-
-- `except:` (bare) → `except Exception` — always wrong, always fix.
-- `except Exception: pass` — add a minimal `logger.exception(...)` call
-  before the pass if a logger is already imported in the file. If no logger
-  exists, mark as "requires manual fix" and skip rather than introducing a
-  new dependency.
-- Do not change the broader error-handling strategy. Deciding whether to
-  retry, re-raise, or suppress is a design decision — skip those findings.
-
-### Findings that always require manual fix
-
-Mark the following finding types as "requires manual fix", skip them, and
-include them in the completion summary for the user to address:
+**Always skip (mark "requires manual fix"):**
 
 | Finding type | Reason |
-| --- | --- |
-| Test coverage gaps (Agent G) | Writing new tests requires understanding intent |
-| Type design issues (Agent H) | Architectural judgment, not mechanical edits |
-| Complex logic bugs (Agent B) | Algorithm or business logic errors need human review |
-| Security vulnerabilities (Agent B) | Security fixes must not be auto-patched |
-| Silent failures needing new error infrastructure (Agent F) | Error strategy is a design decision |
-| Prior PR comment findings (Agent D) | Often unresolved design debates |
-| PlantUML diagram accuracy | Requires cross-referencing multiple settings files and SVG regeneration |
+|---|---|
+| Test coverage gaps | Writing tests requires understanding intent |
+| Type design issues | Architectural judgment |
+| Complex logic bugs | Algorithm/business logic needs human review |
+| Security vulnerabilities | Must not be auto-patched without review |
+| Design debates from prior PRs | Unresolved architectural decisions |
+| SVG regeneration | Requires plantuml.jar; note source was updated |
+
+### Priority 4: Coverage gaps
+
+If Codecov is failing:
+- Identify uncovered new/modified lines from coverage report
+- Use test-writer agent pattern to generate minimal tests
+- Run tests in worktree to verify
+
+If no Codecov integration, skip.
+
+### Priority 5: Agent findings (from pr-review)
+
+If `FINDINGS` from pr-review are in context, apply fixes using the same
+category rules from Priority 3 above. The "requires manual fix" skip list
+is the same.
 
 ---
 
-## Step F4 — Run pre-commit
+## Step 5 -- Verify
 
-After all fixes are applied, run pre-commit from inside the worktree:
+Run the ci-fix gate sequence inside the worktree:
 
 ```bash
-cd {WORKTREE_PATH} && pre-commit run --all-files 2>&1
+cd {WORKTREE_PATH}
+uv run ruff format --check .
+uv run ruff check .
+pre-commit run --all-files
+uv run pytest          # if tests exist
+uv run bandit -r src/ -c pyproject.toml  # if configured
 ```
 
-If pre-commit fails:
+If any gate fails: fix the regression and re-run. Up to 3 retry cycles.
 
-- Read the failure output.
-- Fix only the issues pre-commit identifies — do not expand scope.
-- Re-run until clean or until 3 attempts have been made.
-- If still failing after 3 attempts: report the remaining failures and ask
-  the user whether to commit with known pre-commit issues or stop.
+If still failing after 3 attempts: report remaining failures and ask the
+user whether to commit with known issues or stop.
 
 ---
 
-## Step F5 — Commit in logical batches
+## Step 6 -- Commit and present options
 
-Group the fixed findings into logical commits. Use conventional commit format.
-Each commit message must describe *why*, not just *what*.
+Group fixes into logical commits using conventional commit format.
+One concern per commit. Sign each: `git -C {WORKTREE_PATH} commit -S -m "..."`.
 
-Suggested groupings (combine if small, split if large):
+| Group | Type | Example message |
+|---|---|---|
+| CI lint/format fixes | `fix(lint)` | `fix(lint): resolve ruff violations and format issues` |
+| Shell script bugs | `fix(hooks)` | `fix(hooks): correct exit codes and stdin reading pattern` |
+| SonarQube findings | `fix(quality)` | `fix(quality): add explicit returns, remove redundant exceptions` |
+| Review comment fixes | `fix(review)` | `fix(review): address Copilot findings on PR #{N}` |
+| Documentation fixes | `docs` | `docs: correct Python version and fix broken links` |
+| Test additions | `test` | `test: add coverage for uncovered functions` |
+| Config portability | `fix(config)` | `fix(config): replace hard-coded paths with portable alternatives` |
+| Em-dash removal | `fix(writing)` | `fix(writing): replace em-dashes per project style rules` |
 
-| Group | Commit type | Example message |
-| --- | --- | --- |
-| Shell script bugs | `fix(hooks)` | `fix(hooks): read tool input from stdin in rad-strict-hook.sh` |
-| Hook config issues | `fix(settings)` | `fix(settings): lower Stop hook timeout; add -e flag comment` |
-| Documentation accuracy | `docs` | `docs: correct hook type count and permissions.ask entry count` |
-| Em-dash removal | `fix(writing)` | `fix(writing): replace em-dashes in ADRs and narrative pages` |
-| SonarQube shell fixes | `fix` | `fix: add default case and explicit return to shell scripts` |
-| Pre-commit config | `fix(ci)` | `fix(ci): add types filter to vulture hook in pre-commit config` |
-| Python code antipatterns | `fix(code)` | `fix(code): replace == None comparisons with is None` |
-| Docstring accuracy | `docs` | `docs: update parameter names in docstrings after signature changes` |
-| Bare exception handling | `fix(errors)` | `fix(errors): replace bare except clauses with except Exception` |
-
-Do not bundle unrelated changes into a single commit. One logical concern
-per commit.
-
-Sign each commit:
-
-```bash
-git -C {WORKTREE_PATH} commit -S -m "..."
-```
-
----
-
-## Step F6 — Present completion options
-
-Once all commits are clean, present exactly these options:
+Present completion options:
 
 ```text
-Fixes applied. {N} commits on {HEAD_BRANCH} in {WORKTREE_PATH}.
+Fixes applied. {N_fixed} of {N_total} issues resolved.
+{N_skipped} items require manual review.
 
-What would you like to do?
+Skipped (manual review needed):
+- {item}: {reason}
 
-1. Push fixes and add a comment to the PR
-2. Push fixes only (no PR comment)
-3. Keep worktree — I will review and push manually
+Options:
+1. Push, reply to review comments, and post PR summary
+2. Push only (no PR interaction)
+3. Keep worktree for manual review
 4. Discard all fixes
 
 Which option?
 ```
 
-### Option 1 — Push and comment
+---
+
+## Step 7 -- Execute chosen option
+
+### Option 1 -- Push, reply, and summarize
+
+**Push:**
 
 ```bash
 git -C {WORKTREE_PATH} push origin {HEAD_BRANCH}
 ```
 
-Then post a follow-up comment on the PR:
+**Reply to addressed comments:**
 
-```bash
-gh pr comment {PR_NUMBER} --repo {OWNER}/{REPO} --body "$(cat <<'EOF'
-### Fixes Applied
+For each review comment that was fixed, post a concise reply (one sentence)
+via GitHub MCP `add_reply_to_pull_request_comment` explaining what was done.
 
-Addressed {N} findings from the review above:
+Resolve addressed review threads via GitHub MCP `resolve_review_thread`.
 
-{bullet list of each fix: `[{tier}] {file}:{line} — {one-line description}`}
+**Post summary comment** via GitHub MCP `add_issue_comment`:
 
-Pre-commit passing. Ready for re-review.
+```markdown
+### PR Fix Summary
 
-🤖 Generated with [Claude Code](https://claude.ai/code)
-EOF
-)"
+Addressed {N} findings:
+
+**CI Fixes**: {bullet list}
+**Review Comments**: {bullet list with thread refs}
+**SonarQube**: {bullet list}
+
+**Remaining (manual review needed)**:
+- {items with reasons}
+
+Pre-commit passing locally. CI re-run triggered by push.
 ```
 
-Then clean up the worktree:
+**Offer to watch for results:**
 
-```bash
-git worktree remove {WORKTREE_PATH}
+```text
+Push complete. Watch for CI results and new review comments? (yes/no)
 ```
 
-### Option 2 — Push only
+If yes: use `subscribe_pr_activity`. When CI results arrive, if any fail,
+offer to run another pr-fix pass.
+
+Clean up: `git worktree remove {WORKTREE_PATH}`.
+
+### Option 2 -- Push only
 
 ```bash
 git -C {WORKTREE_PATH} push origin {HEAD_BRANCH}
 git worktree remove {WORKTREE_PATH}
 ```
 
-### Option 3 — Keep worktree
+### Option 3 -- Keep worktree
 
 Report:
 
@@ -300,34 +382,30 @@ Worktree preserved at {WORKTREE_PATH} on branch {HEAD_BRANCH}.
 Push when ready: git -C {WORKTREE_PATH} push origin {HEAD_BRANCH}
 ```
 
-Do not clean up the worktree.
+Do not clean up.
 
-### Option 4 — Discard
+### Option 4 -- Discard
 
-Confirm before discarding:
-
-```text
-This will permanently delete all {N} fix commits. Type 'discard' to confirm.
-```
-
-Wait for the exact word "discard". If confirmed:
+Confirm: ask the user to type "discard". If confirmed:
 
 ```bash
 git worktree remove --force {WORKTREE_PATH}
-git branch -D {HEAD_BRANCH}-fixes 2>/dev/null || true
 ```
 
-Do not delete `{HEAD_BRANCH}` itself — that is the original PR branch.
+Do not delete `{HEAD_BRANCH}` itself.
 
 ---
 
 ## Error Handling
 
 | Situation | Action |
-| --- | --- |
-| `git fetch` fails | Stop. Check network and `gh auth status`. |
+|---|---|
+| `gh` / GitHub MCP not authenticated | Stop. Print auth instructions. |
+| PR not found or closed | Stop with clear message. |
 | Worktree already exists | Remove with `--force` and re-create. |
-| Pre-commit fails after 3 attempts | Report failures, ask whether to commit anyway or stop. |
-| A finding cannot be auto-fixed (needs design judgment) | Note it as "requires manual fix", skip it, continue with others. Report skipped findings in the completion summary. |
-| Push rejected (branch protected or diverged) | Report the error. Offer Option 3 (keep worktree for manual push). |
-| User picks Option 4 but does not type 'discard' | Do nothing. Re-present the options. |
+| Pre-commit fails after 3 attempts | Report failures, ask commit anyway or stop. |
+| Finding cannot be auto-fixed | Mark "requires manual fix", skip, continue. |
+| Push rejected (protected/diverged) | Report error. Offer Option 3 (keep worktree). |
+| SonarQube MCP unreachable | Log "SonarQube: MCP offline", continue without. |
+| No Codecov configured | Log "Coverage: not configured", continue. |
+| GitGuardian secret detected | Alert user immediately, never auto-fix. |
