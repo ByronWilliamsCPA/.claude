@@ -78,11 +78,10 @@ def has_future_annotations_import(content: str) -> bool:
         return False
 
     for node in ast.walk(tree):
-        if isinstance(node, ast.ImportFrom):
-            if node.module == "__future__":
-                for alias in node.names:
-                    if alias.name == "annotations":
-                        return True
+        if isinstance(node, ast.ImportFrom) and node.module == "__future__":
+            for alias in node.names:
+                if alias.name == "annotations":
+                    return True
     return False
 
 
@@ -194,7 +193,7 @@ def add_future_import(file_path: Path) -> bool:
             )
             return False
 
-        file_path.write_text("".join(lines), encoding="utf-8")
+        file_path.write_text("".join(lines), encoding="utf-8")  # VERIFY: path constructed from user input — validate/sanitize before use (pythonsecurity:S2083)
         return True
     except Exception as e:
         print(f"Error adding import to {file_path}: {e}", file=sys.stderr)
