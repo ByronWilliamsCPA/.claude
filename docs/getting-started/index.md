@@ -20,7 +20,7 @@ If you are a technical maintainer who needs to understand the architectural deci
 Before you start, make sure you have:
 
 - **Git** — for cloning and submodule management
-- **Python 3.12 or higher** — required by the repo's toolchain (`uv`, `pre-commit`, `pytest`)
+- **Python 3.10 or higher** — required by the repo's toolchain (`uv`, `pre-commit`, `pytest`)
 - **uv** — Python package and project manager ([install instructions](https://docs.astral.sh/uv/getting-started/installation/))
 - **jq** — command-line JSON processor used by `setup.sh` to merge hooks (`apt install jq` / `brew install jq`)
 - **Claude Code** — a working Claude Code installation (CLI, IDE extension, or web app)
