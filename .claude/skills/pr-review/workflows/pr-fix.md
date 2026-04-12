@@ -214,17 +214,17 @@ Deterministic fixes; no user prompt needed:
 | Redundant exception type (python:S5713) | Remove subclass from tuple |
 | ReDoS regex (python:S5852) | Replace with substring match or anchored pattern |
 | Security hotspot | Apply prescribed remediation; call `show_rule` for guidance |
-| Single-bracket conditional (shelldre:S7688) | Replace `[ ... ]` with `[[ ... ]]` for all conditional tests in bash |
-| Nested `if` in shell (shelldre:S1066) | Merge nested `if` into enclosing `if` with `&&` |
+| Single-bracket conditional (shelldre:S7688) | Replace `[ ... ]` with `[[ ... ]]` only if the script shebang is `#!/bin/bash` or `#!/usr/bin/env bash`; skip if `#!/bin/sh` or no shebang |
+| Nested `if` in shell (shelldre:S1066) | Merge nested `if` into enclosing `if` with `&&`; in scripts with `set -e`/`errexit`, verify the merged condition preserves intended error-handling behavior |
 | Missing default case in `case` (shelldre:S131) | Add `*) ;;` default case to `case` statements |
 | Error message to stdout (shelldre:S7677) | Redirect error messages to stderr: `echo "..." >&2` |
 | Unused local variable (shelldre:S1481) | Remove the unused local variable |
 | Positional parameter not named (shelldre:S7679) | Assign positional parameters to named local variables at function start |
-| Constant boolean expression in test (python:S5914) | Replace `assertTrue(True)` / `assertFalse(False)` with `assertIsNotNone` or restructure the test |
+| Constant boolean expression in test (python:S5914) | Remove the trivially-true assertion or replace with a meaningful assertion for what the test actually verifies; use `assertIsNotNone` only when the test intent is specifically a non-None check |
 | Float equality check (python:S1244) | Replace float equality check with `pytest.approx()` |
 | Nested `if` in Python (python:S1066) | Merge nested `if` with enclosing `if` using `and` |
 | Repeated string literal (python:S1192) | Extract string appearing 3+ times to a named constant at module level |
-| Broad workflow permissions (githubactions:S8234) | Replace `permissions: read-all` with explicit minimal permissions listing only what the workflow needs |
+| Broad workflow permissions (githubactions:S8234) | Read each job's steps to identify GitHub API calls, then replace `permissions: read-all` with the exact set required (e.g., `contents: read`, `pull-requests: write`) |
 | Workflow-level permissions (githubactions:S8233) | Move permissions block from workflow level down to individual job level |
 
 ### Priority 3: Review comments
@@ -253,8 +253,8 @@ For each unresolved actionable comment:
 | `== None` / `!= None` | Replace with `is None` / `is not None` |
 | Bare `except:` | Replace with `except Exception:` |
 | Docstring parameter mismatch | Update docstring to match function signature |
-| `jq` invoked without presence guard (with `set -euo pipefail`) | Add `command -v jq >/dev/null 2>&1 \|\| { echo "jq not found" >&2; exit 1; }` before first `jq` call |
-| Hook block message written to stderr instead of stdout | Change `>&2` redirect to stdout so Claude surfaces the block reason |
+| `jq` invoked without presence guard (with `set -euo pipefail`) | Add `command -v jq >/dev/null 2>&1 \|\| { echo "jq not found" >&2; exit 1; }` before first `jq` call; in Claude Code hooks, omit `>&2` so Claude can surface the error (see hook block message row) |
+| Hook block message written to stderr instead of stdout | Change `>&2` redirect to stdout so Claude surfaces the block reason; this applies to hook scripts only, not general shell scripts |
 | `grep -nP` used (requires GNU grep / PCRE) | Replace with POSIX-compatible `grep -n` plus equivalent pattern, or note BSD incompatibility inline |
 | PowerShell single-quote escaping in bash | Mark "requires manual fix": escaping logic is error-prone to auto-patch |
 
@@ -264,11 +264,11 @@ For each unresolved actionable comment:
 | --- | --- |
 | Docs reference wrong Python version | Read `requires-python` from `pyproject.toml`, update docs to match |
 | Docs describe wrong pre-commit hook exclude list | Read `.pre-commit-config.yaml`, update docs to match actual excludes |
-| Spec frontmatter `status` conflicts with body `Status:` blockquote | Align both fields to the same value; prefer the body blockquote as the authoritative source |
+| Spec frontmatter `status` conflicts with body `Status:` blockquote | Frontmatter `status` is schema-validated (`draft \| in-review \| published`); update the body blockquote to be consistent in spirit with the frontmatter value; never change frontmatter to a non-schema value |
 | Architecture section asserts a hook is wired in `settings.json` but it is not | Update doc to say "not yet wired" rather than asserting it is wired |
 | Design spec missing required metadata blockquote (Date / Status / Scope) | Add the blockquote using the same format as other specs in the same directory |
 | Skill SKILL.md intro says "N modes" but body documents N+1 modes | Count the documented modes and update the intro sentence to match |
-| Cowork doc says filename is "or similar" but README specifies exact filename | Align to the exact filename from the README |
+| Collaboration document (e.g., `COWORK.md`) says filename is "or similar" but README specifies exact filename | Read the README for the canonical filename and update the collaboration document to match |
 
 **Always skip (mark "requires manual fix"):**
 
