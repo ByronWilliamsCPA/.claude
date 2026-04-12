@@ -18,7 +18,7 @@ For the design rationale behind this two-layer approach, see [Architecture → I
 ## Prerequisites
 
 - **Git** with SSH or HTTPS access to GitHub
-- **Python 3.12+** (`python3 --version`)
+- **Python 3.10+** (`python3 --version`)
 - **uv** (`uv --version` — if missing, see [uv install docs](https://docs.astral.sh/uv/getting-started/installation/))
 - **jq** (`jq --version` — if missing: `apt install jq` or `brew install jq`)
 - A working Claude Code installation
