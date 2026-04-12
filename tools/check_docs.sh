@@ -47,7 +47,7 @@ NEW_DOC_DIRS=(
     docs/contributing
     docs/frontmatter-standard.md
 )
-fm_out=$(python tools/validate_front_matter.py "${NEW_DOC_DIRS[@]}" 2>&1)
+fm_out=$(uv run python tools/validate_front_matter.py "${NEW_DOC_DIRS[@]}" 2>&1)
 fm_errors=$(echo "$fm_out" | grep -v ": OK$" | grep -v "^$" || true)
 if [[ -z "$fm_errors" ]]; then
     check "frontmatter schema (new dirs)" "ok"
