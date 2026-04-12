@@ -11,7 +11,8 @@
 # Both tiers always run. Output goes to stdout (Claude reads it). Findings
 # also appended to ~/.claude/logs/py310-compat-check.log.
 #
-# Exit codes: always 0 — PostToolUse hooks must never fail
+# Exit codes: exits 0 on normal completion; may exit non-zero if tooling
+# commands fail unexpectedly (set -euo pipefail is active)
 # =============================================================================
 
 set -euo pipefail
@@ -30,15 +31,9 @@ if ! command -v jq &>/dev/null; then
     exit 0
 fi
 
-# grep -P (PCRE) is required for the patterns below.
-# GNU grep supports -P; macOS/BSD grep does not.
-# Fall back silently when PCRE is unavailable so the hook never blocks Claude.
-if ! echo "" | grep -qP "" 2>/dev/null; then
-    log "WARN grep -P (PCRE) not available — py310 Tier 1 grep scan skipped"
-    GREP_PCRE_AVAILABLE=false
-else
-    GREP_PCRE_AVAILABLE=true
-fi
+# grep -E (extended regex) is used for patterns below.
+# -E is POSIX-compliant and works on macOS/BSD and GNU grep.
+GREP_PCRE_AVAILABLE=true
 
 # ---- Read hook context from stdin --------------------------------------------
 CONTEXT=$(cat)
@@ -76,12 +71,12 @@ run_grep() {
         FINDINGS+=("  ${label} line ${linenum}: ${description}")
         FINDINGS+=("${indent}Fix: ${fix}")
         log "FINDING ${label} line=${linenum} file=${FILE_PATH}"
-    done < <(grep -nP "$pattern" "$FILE_PATH" 2>/dev/null || true)
+    done < <(grep -nE "$pattern" "$FILE_PATH" 2>/dev/null || true)
 }
 
 # Floor — Python 3.11+ required, breaks 3.10 floor
 run_grep "[FLOOR 3.11+]" \
-    'datetime\.UTC\b|from datetime import[^#\n]*\bUTC\b' \
+    'datetime\.UTC\b|from datetime import[^#]*\bUTC\b' \
     "\`datetime.UTC\` — requires Python 3.11+" \
     "use \`datetime.timezone.utc\` or a compat layer"
 
