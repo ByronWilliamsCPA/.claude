@@ -25,6 +25,7 @@ confirm() {
     read -p "$(echo -e ${YELLOW}${prompt}${NC}) (y/N): " -n 1 -r
     echo
     [[ $REPLY =~ ^[Yy]$ ]]
+    return 0
 }
 
 # Function to create backup
@@ -33,6 +34,7 @@ create_backup() {
     echo -e "${GREEN}Creating backup at: $backup_dir${NC}"
     mkdir -p "$backup_dir"
     echo "$backup_dir"
+    return 0
 }
 
 # Phase 1: Safe deletions (cache/generated files)
@@ -81,7 +83,7 @@ phase2_template_artifacts() {
 
     cd "$REPO_ROOT"
 
-    if [ -f "CONFIG_TEMPLATES_SUMMARY.md" ]; then
+    if [[ -f "CONFIG_TEMPLATES_SUMMARY.md" ]]; then
         echo "Removing CONFIG_TEMPLATES_SUMMARY.md..."
         rm -f CONFIG_TEMPLATES_SUMMARY.md
     fi
@@ -115,7 +117,7 @@ phase3_root_duplicates() {
 
     # Backup before deletion
     for dir in agents commands context skills templates; do
-        if [ -d "$dir" ]; then
+        if [[ -d "$dir" ]]; then
             echo "Backing up $dir/ to $backup_dir/$dir/"
             cp -r "$dir" "$backup_dir/"
             echo "Removing $dir/..."
@@ -141,12 +143,12 @@ phase4_package_source() {
 
     cd "$REPO_ROOT"
 
-    if [ -d "src/claude_config" ]; then
+    if [[ -d "src/claude_config" ]]; then
         echo "Removing src/claude_config/..."
         rm -rf src/claude_config/
 
         # Check if src/ is now empty
-        if [ -z "$(ls -A src/)" ]; then
+        if [[ -z "$(ls -A src/)" ]]; then
             echo "Removing empty src/ directory..."
             rm -rf src/
         fi
@@ -169,12 +171,12 @@ phase5_fuzzing() {
 
     cd "$REPO_ROOT"
 
-    if [ -d ".clusterfuzzlite" ]; then
+    if [[ -d ".clusterfuzzlite" ]]; then
         echo "Removing .clusterfuzzlite/..."
         rm -rf .clusterfuzzlite/
     fi
 
-    if [ -d "fuzz" ]; then
+    if [[ -d "fuzz" ]]; then
         echo "Removing fuzz/..."
         rm -rf fuzz/
     fi
@@ -200,7 +202,7 @@ phase6_ci_workflows() {
     cd "$REPO_ROOT/.github/workflows"
 
     for workflow in publish-pypi.yml mutation-testing.yml slsa-provenance.yml; do
-        if [ -f "$workflow" ]; then
+        if [[ -f "$workflow" ]]; then
             echo "Removing $workflow..."
             rm -f "$workflow"
         fi
@@ -264,6 +266,7 @@ show_summary() {
     echo ""
     echo "4. Sync any missing files from cookiecutter template (see .tmp-template-cleanup-plan.md)"
     echo ""
+    return 0
 }
 
 # Main execution
@@ -291,6 +294,7 @@ main() {
     show_summary
 
     echo -e "${GREEN}Cleanup script complete!${NC}"
+    return 0
 }
 
 # Run main
