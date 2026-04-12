@@ -11,12 +11,15 @@ Traceability between Cowork paste-in files and their source rules. When a source
 | profile.md | Banned terms | `.claude/rules/writing.md` § AI Pattern Avoidance |
 | profile.md | Structural tells to avoid | `.claude/rules/writing.md` § Structural Tells to Avoid |
 | profile.md | Quantification | `.claude/rules/writing.md` § Quantification Over Vagueness |
-| profile.md | Communication | `~/.claude/CLAUDE.md` global + session-level style guidance |
+| profile.md | Communication | `CLAUDE.md` (repo root) global + session-level style guidance |
 | cowork.md | File safety | Anthropic Cowork research (external) |
 | cowork.md | Task framing | Anthropic Cowork research (external) |
 | cowork.md | Word documents | `.claude/rules/writing.md` § Structural Tells + Anthropic Cowork research |
 | cowork.md | Excel workbooks | Anthropic Cowork research + general best practice |
 | cowork.md | Citations | `.claude/standards/writing-quality.md` § Stage 2 factual accuracy |
+| folder-template.md | All sections | Anthropic Cowork research (external); placeholder structure for project-specific context |
+| README.md | All sections | Canonical reference for this directory structure and update workflow |
+| sources.md | All sections | Self-referential traceability table for this directory |
 
 ## Update workflow
 

@@ -21,7 +21,7 @@ Before committing ANY changes, verify all items:
 - [ ] No linting warnings or errors remain
 - [ ] Code formatting is consistent with project standards
 - [ ] **Docstring Coverage**: `interrogate` passes at 85% threshold for `scripts/` — add missing docstrings rather than suppressing
-- [ ] **Docstring Arguments**: `darglint` passes — `Args`/`Returns`/`Raises` sections match function signatures (excludes `tests/`, `scripts/`, `benchmarks/`, `tools/`); update the docstring to fix mismatches
+- [ ] **Docstring Arguments**: `darglint` passes — `Args`/`Returns`/`Raises` sections match function signatures (excludes `tests/`, `scripts/`, `benchmarks/`, `tools/`, `noxfile.py`, `.claude/skills/`); update the docstring to fix mismatches
 - [ ] Commits are signed (Git signing key configured)
 
 ## Security

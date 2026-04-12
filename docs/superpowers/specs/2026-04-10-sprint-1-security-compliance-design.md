@@ -11,6 +11,10 @@ tags:
   - documentation
 ---
 
+> **Date**: 2026-04-10
+> **Status**: Draft
+> **Scope**: Global `~/.claude` standards (dev repo at `~/dev/.claude`)
+
 ## Overview
 
 This sprint adds four security and compliance standards to the global Claude implementation,
