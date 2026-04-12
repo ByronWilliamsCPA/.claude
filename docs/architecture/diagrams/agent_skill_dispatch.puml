@@ -1,0 +1,62 @@
+@startuml agent_skill_dispatch
+' Agent vs Skill Dispatch — backs ADR-004.
+' Activity diagram of the runtime flow from user prompt to tool call.
+
+title Agent vs Skill Dispatch
+
+skinparam activityDiamondBackgroundColor #fefefe
+skinparam shadowing false
+skinparam defaultFontName Roboto
+
+start
+
+:User prompt arrives;
+
+if (Explicit /skill invocation\nor matching skill trigger?) then (yes)
+  :Skill matcher fires;
+  :Load SKILL.md from\n.claude/skills/<name>/;
+  :Inject skill prompt\ninto system context;
+  :Skill runs against\nlive tool set;
+  note right
+    Skills are auto-triggered
+    by keyword matchers or
+    explicitly invoked via
+    /name. They compose with
+    the current session's tools.
+  end note
+else (no)
+  if (Model decides to call\nAgent tool with subagent_type?) then (yes)
+    :Agent tool invocation;
+    :Look up agent file\n.claude/agents/<type>.md;
+    :Spawn sub-session with\nagent-specific tool set;
+    note right
+      Agents are explicitly
+      invoked — they get a
+      fresh context and their
+      own tool restrictions.
+      The parent session
+      continues independently.
+    end note
+    :Sub-session runs\nagent prompt;
+    :Return structured\nresult to parent;
+  else (no)
+    :Model uses default\ntool set directly;
+  endif
+endif
+
+:Tool calls fire;
+
+:PreToolUse hooks\n(secrets, py310, planning-bridge);
+if (Hooks allow?) then (yes)
+  :Tool executes;
+  :PostToolUse hooks\n(track-mcp, frontmatter);
+  :Result to session;
+else (no)
+  :Tool blocked;
+  stop
+endif
+
+:Response to user;
+stop
+
+@enduml

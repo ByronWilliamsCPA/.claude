@@ -37,6 +37,9 @@ that cannot be changed, and suppressions paired with a tracking reference
 
 Always run `pre-commit run --all-files` before committing.
 
+Always create worktrees inside the project at `.worktrees/<branch-slug>`. Never
+create them at global or user-config paths (e.g., `~/.config/...`).
+
 > Branch rules, worktree patterns, naming conventions:
 > see `.claude/rules/git-workflow.md`
 >
@@ -52,6 +55,19 @@ appears, check platform-level causes first: WSL2 port forwarding rules,
 Docker bridge networking, Unix socket paths, and container health. Do not
 exhaust code-level fixes before ruling out the environment.
 
+## Writing style
+
+**Never use em-dashes (`—`) in any output.** This covers documentation, code
+comments, commit messages, ADRs, rules files, standards, scripts, and all
+other text. This is a hard rule, not a preference. Replace with a comma,
+semicolon, colon, or restructured sentence. Pre-commit does not yet enforce
+this automatically, so it must be applied manually before every commit.
+
+> Full writing rules (AI pattern blacklist, grammar authority):
+> see `.claude/rules/writing.md`
+>
+> Writing quality thresholds: see `.claude/standards/writing-quality.md`
+
 ## Core development standards
 
 - **Code quality**: Ruff format and lint (88 chars, PyStrict-aligned),
@@ -64,14 +80,13 @@ exhaust code-level fixes before ruling out the environment.
 
 > Canonical package choices: see `.claude/standards/packages.md`
 >
-> Writing rules (no em-dashes, AI pattern blacklist, grammar authority):
-> see `.claude/rules/writing.md`
->
-> Writing quality thresholds: see `.claude/standards/writing-quality.md`
->
 > MCP tool loading strategy: see `.claude/rules/mcp-strategy.md`
 >
 > Supervisor patterns and agent assignment: see `.claude/rules/supervisor.md`
+>
+> Settings scope hierarchy and permissions evaluation: see `.claude/rules/settings-and-permissions.md`
+>
+> Approved `/loop` recipes and cost safeguards: see `.claude/rules/loop-recipes.md`
 
 ## Unfixed CVEs
 

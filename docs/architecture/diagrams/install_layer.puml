@@ -1,0 +1,73 @@
+@startuml install_layer
+' Two-Layer Symlink Install — backs ADR-001 and ADR-002.
+' Shows repo at ~/dev/.claude, symlinks into ~/.claude/,
+' and the jq-merge of hooks.json into settings.json.
+
+title Two-Layer Symlink Install
+
+skinparam componentStyle rectangle
+skinparam shadowing false
+skinparam defaultFontName Roboto
+
+package "~/dev/.claude (repo layer)" as Repo {
+  folder ".claude/agents/" as RepoAgents
+  folder ".claude/skills/" as RepoSkills
+  folder ".claude/commands/" as RepoCommands
+  folder ".claude/rules/" as RepoRules
+  folder ".claude/standards/" as RepoStandards
+  folder ".submodules/" as Submodules {
+    [reference-library]
+    [superpowers]
+    [anthropics-skills]
+    [anthropics-plugins]
+    [image-generation]
+  }
+  folder "scripts/" as RepoScripts
+  file "hooks.json" as HooksJson
+  file "setup.sh" as SetupSh
+}
+
+package "~/.claude/ (user layer — symlinks)" as User {
+  folder "agents/" as UserAgents
+  folder "skills/" as UserSkills
+  folder "commands/" as UserCommands
+  folder "reference-library/" as UserRefLib
+  folder "scripts/" as UserScripts
+  file "settings.json" as SettingsJson
+}
+
+' Symlinks created by setup.sh
+RepoAgents ..> UserAgents : symlink
+RepoSkills ..> UserSkills : symlink
+RepoCommands ..> UserCommands : symlink
+Submodules ..> UserRefLib : symlink\n(reference-library)
+RepoScripts ..> UserScripts : symlink
+
+' jq merge
+HooksJson -[#blue]-> SettingsJson : jq merge\n(hooks section only)
+
+SetupSh ..> UserAgents : creates
+SetupSh ..> UserSkills : creates
+SetupSh ..> UserCommands : creates
+SetupSh ..> UserRefLib : creates
+SetupSh ..> UserScripts : creates
+SetupSh ..> SettingsJson : merges
+
+note right of SettingsJson
+  Claude Code reads from
+  ~/.claude/settings.json.
+  Direct edits to hook blocks
+  are overwritten on the next
+  setup.sh run — always edit
+  hooks.json at the repo root.
+end note
+
+note right of Submodules
+  Five git submodules provide
+  reference-library templates,
+  community skills, official
+  Anthropic skills and plugins,
+  and image generation utilities.
+end note
+
+@enduml
