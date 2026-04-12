@@ -54,7 +54,7 @@ class TestLogging:
         call_args = mock_logger.info.call_args
         assert call_args[0][0] == "performance"
         assert call_args[1]["operation"] == "test_operation"
-        assert call_args[1]["duration_ms"] == 123.46  # Rounded to 2 decimals
+        assert call_args[1]["duration_ms"] == pytest.approx(123.46, rel=1e-6)  # Rounded to 2 decimals
         assert call_args[1]["success"] is True
         assert call_args[1]["extra_metric"] == 42
 
@@ -101,7 +101,9 @@ class TestLoggingJSON:
         setup_logging(level="INFO", json_logs=True)
 
         # Should complete without errors
-        assert True
+        from claude_config.utils.logging import get_logger
+        logger = get_logger("json_test")
+        assert logger is not None
 
     @pytest.mark.unit
     def test_setup_logging_without_timestamp(self) -> None:
@@ -115,4 +117,6 @@ class TestLoggingJSON:
         setup_logging(level="DEBUG", json_logs=False, include_timestamp=False)
 
         # Should complete without errors
-        assert True
+        from claude_config.utils.logging import get_logger
+        logger = get_logger("no_ts_test")
+        assert logger is not None
