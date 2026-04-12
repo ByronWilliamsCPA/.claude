@@ -1,6 +1,7 @@
 @startuml hook_pipeline
 ' Hook Pipeline — backs ADR-002.
-' Shows the 5 hook types firing across a single conversation turn.
+' Shows the 6 hook types firing across a single conversation turn.
+' Scripts listed match the current settings.json + .claude/settings.json configuration.
 
 title Hook Pipeline — One Conversation Turn
 
@@ -10,17 +11,17 @@ skinparam defaultFontName Roboto
 
 actor User
 participant "Claude Code" as CC
-participant "hooks.json\n(via settings.json)" as Hooks
-participant "hookify" as Hookify
-participant "Project Gates\n(planning-bridge,\npy310-compat,\ntdd-enforce,\ntrack-mcp)" as Gates
+participant "settings.json\nhooks dispatch" as Hooks
+participant "PreToolUse\nScripts" as Pre
 participant "Tools\n(Edit/Write/Bash/...)" as Tools
+participant "PostToolUse\nScripts" as Post
+participant "Stop Script" as Stop
 
 User -> CC : prompt
 activate CC
 
 CC -> Hooks : UserPromptSubmit
-Hooks -> Hookify : dispatch
-Hooks -> Gates : keyword-tool-trigger.sh
+Hooks -> Hooks : keyword-tool-trigger.sh
 Hooks --> CC : continue
 
 CC -> CC : model turn
@@ -28,36 +29,38 @@ note right : Model reasons\nand decides tool calls
 
 loop each tool call (Write, Edit, Bash, ...)
   CC -> Hooks : PreToolUse
-  Hooks -> Gates : secrets scan
-  Hooks -> Gates : py310-compat-check
-  Hooks -> Gates : planning-bridge-gate
-  Hooks -> Gates : tdd-enforcement
-  Hooks -> Hookify : dispatch pretooluse
+  Hooks -> Pre : tdd-enforcement-hook.sh\n(Write | Edit | MultiEdit)
+  Hooks -> Pre : bash-pre-hook.sh safety check\n(Bash)
+  Hooks -> Pre : pre-commit run --all-files\n(Bash)
   Hooks --> CC : allow / block
 
-  alt gates allow
+  alt hooks allow
     CC -> Tools : execute
     Tools --> CC : result
     CC -> Hooks : PostToolUse
-    Hooks -> Gates : track-mcp-usage
-    Hooks -> Hookify : dispatch posttooluse
+    Hooks -> Post : bash-notify.sh (Bash)
+    Hooks -> Post : py310-compat check, ruff auto-fix,\nshellcheck, validate-frontmatter.sh\n(Edit | Write)
+    Hooks -> Post : track-mcp-usage.sh (mcp__*)
     Hooks --> CC : continue
-  else gate blocks
+  else hook blocks
     CC --> User : blocked (with reason)
   end
 end
 
 CC --> User : response
 CC -> Hooks : Stop
-Hooks -> Hookify : dispatch stop
+Hooks -> Stop : stop-pre-commit-hook.sh
 deactivate CC
 
 note right of Hooks
-  SessionStart fires once
-  per session (not per turn),
-  running keyword-tool-trigger
-  --reset plus hookify
-  sessionstart dispatch.
+  SessionStart fires once per session
+  (not per turn):
+  keyword-tool-trigger.sh --reset,
+  run-superpowers-session-start.sh,
+  session-start-rules.sh.
+
+  FileChanged fires on .env* files:
+  env-file-audit.sh.
 end note
 
 @enduml
