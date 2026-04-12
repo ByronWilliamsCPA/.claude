@@ -136,5 +136,5 @@
     "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "80"
   },
   "outputStyle": "explanatory",
-  "plansDirectory": "/home/byron/.claude/plans"
+  "plansDirectory": "~/.claude/plans"
 }
