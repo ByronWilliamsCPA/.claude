@@ -45,7 +45,7 @@ class TestSettingsLoggingIntegration:
 
         # Should be able to log without errors
         logger.debug("Test debug message", test_key="test_value")
-        assert True
+        assert callable(logger.debug)
 
 
 class TestPackageImports:
