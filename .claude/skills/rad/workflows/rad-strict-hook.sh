@@ -8,7 +8,8 @@ set -euo pipefail
 
 echo "[rad-strict-hook] active: RAD_STRICT_MODE=1" >&2
 
-COMMAND="${CLAUDE_TOOL_INPUT:-}"
+CONTEXT=$(cat)
+COMMAND=$(jq -r '.tool_input.command // empty' <<< "$CONTEXT")
 if echo "$COMMAND" | grep -q 'git commit'; then
   if grep -rn '#VERIFY' "${CLAUDE_PROJECT_DIR:-.}" --include='*.py' --include='*.ts' 2>/dev/null | grep -q .; then
     echo "ERROR: Unresolved #VERIFY annotations exist. Resolve before committing." >&2
