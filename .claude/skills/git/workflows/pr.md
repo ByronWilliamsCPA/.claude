@@ -94,12 +94,15 @@ Follow conventional commits format (see `context/conventional-commits.md`):
 
 ### 5. Create the PR
 
-Push the branch and create the PR:
+Use the `/git pr` skill to push and create the PR. This keeps the workflow consistent with
+the documented path and ensures all PR safeguards are applied:
 
-```bash
-git push -u origin HEAD
-gh pr create --title "<title>" --body "<description>"
+```text
+/git pr
 ```
+
+The skill handles `git push -u origin HEAD` and `gh pr create` with the correct title and
+body generated in the steps above.
 
 ### 6. Run automated code review
 
