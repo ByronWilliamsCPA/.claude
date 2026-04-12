@@ -1,0 +1,3386 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Global Claude Code development standards, commands, and configuration for all projects">
+      
+      
+        <meta name="author" content="Byron Williams">
+      
+      
+        <link rel="canonical" href="https://.claude.readthedocs.io/development/best-practice-review/synthesis-report/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Synthesis: Best-Practice Repo Review - Claude Code Configuration</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+  
+
+
+  
+  
+
+<script id="__analytics">function __md_analytics(){function e(){dataLayer.push(arguments)}window.dataLayer=window.dataLayer||[],e("js",new Date),e("config",""),document.addEventListener("DOMContentLoaded",(function(){document.forms.search&&document.forms.search.query.addEventListener("blur",(function(){this.value&&e("event","search",{search_term:this.value})}));document$.subscribe((function(){var t=document.forms.feedback;if(void 0!==t)for(var a of t.querySelectorAll("[type=submit]"))a.addEventListener("click",(function(a){a.preventDefault();var n=document.location.pathname,d=this.getAttribute("data-md-value");e("event","feedback",{page:n,data:d}),t.firstElementChild.disabled=!0;var r=t.querySelector(".md-feedback__note [data-md-value='"+d+"']");r&&(r.hidden=!1)})),t.hidden=!1})),location$.subscribe((function(t){e("config","",{page_path:t.pathname})}))}));var t=document.createElement("script");t.async=!0,t.src="https://www.googletagmanager.com/gtag/js?id=",document.getElementById("__analytics").insertAdjacentElement("afterEnd",t)}</script>
+  
+    <script>"undefined"!=typeof __md_analytics&&__md_analytics()</script>
+  
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#executive-summary" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Claude Code Configuration" class="md-header__button md-logo" aria-label="Claude Code Configuration" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Claude Code Configuration
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Synthesis: Best-Practice Repo Review
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/ByronWilliamsCPA/.claude" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    ByronWilliamsCPA/claude_config
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../getting-started/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../architecture/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../reference/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../contributing/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Contributing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../project/roadmap/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Project
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Claude Code Configuration" class="md-nav__button md-logo" aria-label="Claude Code Configuration" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Claude Code Configuration
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/ByronWilliamsCPA/.claude" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    ByronWilliamsCPA/claude_config
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--published"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../getting-started/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../getting-started/install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1. Install
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../getting-started/first-agent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2. Your First Agent
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../getting-started/first-skill/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3. Your First Skill
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../getting-started/picking/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Picking Agents vs Skills
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../getting-started/troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../architecture/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../architecture/install-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Install Model
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../architecture/hook-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hook Pipeline
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../architecture/agent-dispatch/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent Dispatch
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../architecture/mcp-tiered-loading/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MCP Tiered Loading
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../architecture/submodule-strategy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Submodule Strategy
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../architecture/rules-vs-standards/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rules vs Standards
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../architecture/diagrams/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Diagrams
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_9" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../architecture/adr/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Decisions (ADRs)
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3_9" id="__nav_3_9_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Decisions (ADRs)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../architecture/adr/ADR-001-two-layer-symlink-install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-001 Two-Layer Symlink Install
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../architecture/adr/ADR-002-hook-composition/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-002 Hook Composition
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../architecture/adr/ADR-003-tiered-mcp-loading/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-003 Tiered MCP Loading
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../architecture/adr/ADR-004-skill-vs-agent-boundary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-004 Skill vs Agent Boundary
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../architecture/adr/ADR-005-submodule-extension-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-005 Submodule Extension Model
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../architecture/adr/ADR-006-rules-vs-standards/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-006 Rules vs Standards
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../architecture/adr/ADR-007-dual-audience-docs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-007 Dual-Audience Docs
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../reference/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/agents/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agents Catalog
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/skills/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Skills Catalog
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/hooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hooks
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/mcp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MCP Strategy
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--published"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../contributing/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contributing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../contributing/adding-agents/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding an Agent
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../contributing/adding-skills/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding a Skill
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../contributing/adding-hooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding a Hook
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../contributing/writing-adrs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writing ADRs
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../contributing/writing-diagrams/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writing Diagrams
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../frontmatter-standard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontmatter Standard
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--published"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Project
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../project/roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--published"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../project/changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--published"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../project/license/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    License
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--published"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#executive-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Executive summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#themes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Themes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Themes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#theme-1-what-we-have-but-could-strengthen" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Theme 1: What we have but could strengthen
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#theme-2-what-we-are-missing-entirely-adopt" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Theme 2: What we are missing entirely (adopt)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#theme-3-what-we-do-differently-and-our-way-is-better" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Theme 3: What we do differently (and our way is better)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#theme-4-explicit-non-adoption-decisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Theme 4: Explicit non-adoption decisions
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prioritized-action-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prioritized action table
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#consensus-validation-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Consensus validation summary
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Consensus validation summary">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cross-model-convergent-findings-all-three-models-agreed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cross-model convergent findings (all three models agreed)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#per-model-key-feedback-summarized" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Per-model key feedback (summarized)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#theme-3-revisions-responding-to-convergent-feedback" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Theme 3 revisions (responding to convergent feedback)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#consensus-adjusted-short-list-execute-first-within-two-weeks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Consensus-adjusted short list (execute first, within two weeks)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#new-recommendations-that-came-out-of-consensus-not-in-the-source-analyses" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        New recommendations that came out of consensus (not in the source analyses)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#appendix-per-chunk-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Appendix: per-chunk summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#authoritative-citations-preserved" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Authoritative citations preserved
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>Synthesis: Best-Practice Repo Review</h1>
+
+<blockquote>
+<p><strong>What this is:</strong> Cross-cutting findings from six parallel subagent analyses
+of the external repository <a href="https://github.com/shanraisshan/claude-code-best-practice">shanraisshan/claude-code-best-practice</a>
+compared against our local Claude Code practices at <code>/home/byron/dev/.claude</code>.</p>
+<p><strong>Supporting evidence:</strong> Six analysis documents in this directory
+(<a href="../01-core-concepts-and-architecture/">01</a>, <a href="../02-runnable-implementations/">02</a>,
+<a href="../03-development-workflows/">03</a>, <a href="../04-tips-harvest/">04</a>,
+<a href="../05-hooks-and-configuration/">05</a>, <a href="../06-changelog-and-versioning/">06</a>).
+This file deduplicates, re-ranks, and validates via multi-model consensus.</p>
+<p><strong>Methodology:</strong> Each subagent fetched its slice via <code>gh api</code>, compared against
+local files, drafted an analysis, ran it through Gemini 3.1 Pro for review,
+revised, and wrote a final template-conformant document. The supervisor then
+synthesized, deduplicated, and ran this report through 5-model consensus
+(gemini-3.1-pro-preview, gpt-5.2 against, qwen3.5-plus, grok-4.1-fast against,
+glm-4.5-air) for adversarial validation.</p>
+</blockquote>
+<h2 id="executive-summary">Executive summary<a class="headerlink" href="#executive-summary" title="Permanent link">&para;</a></h2>
+<p>The external repository is a public teaching product maintained by an
+Anthropic-adjacent community. It is exceptional on three fronts: <strong>citation
+discipline</strong> (every claim links to an Anthropic doc or engineer tweet),
+<strong>runnable worked examples</strong> (weather orchestrator, agent teams, scheduled
+tasks), and <strong>platform-level configuration knowledge</strong> (settings hierarchy,
+permission model, sandbox architecture, 27 hook events). It is weaker than our
+setup on <strong>workflow rigor</strong> (our writing-plans/executing-plans and multi-stage
+review are stricter), <strong>test and quality gates</strong> (our ci-fix/quality/testing
+stack is more complete), and <strong>MCP minimalism</strong> (our <code>mcp-minimal-bloat.md</code>
+standard is better cited and more actionable).</p>
+<p>The <strong>single highest-ROI adoption</strong> is the settings-and-permissions hardening
+package: the 22-entry <code>ask</code> list for destructive bash commands plus a new rule
+file documenting the five-scope settings hierarchy, deny-as-floor evaluation,
+and sandbox architectural layer. This is a one-afternoon change that closes
+our largest safety gap and is the common thread across chunks 1 and 5.</p>
+<p>The <strong>single most important deliberate non-adoption</strong> is the monolithic
+<code>hooks.py</code> + per-event soundboard pattern. Our targeted shell scripts pay no
+Python interpreter boot cost per tool call, and threshold-based exception
+alerts beat per-event sound feedback for a solo workflow.</p>
+<p>The review surfaces <strong>47 raw recommendations</strong> across six analysis documents.
+After deduplication and cross-cutting grouping, the prioritized action table
+contains <strong>38 distinct actions</strong> (12 high, 18 medium, 8 low) plus <strong>7 explicit
+non-adoption decisions</strong> captured in Theme 4. Consensus validation (see
+section below) recommends cutting or deferring several of the high-priority
+items; the consensus-adjusted short list is <strong>10 actions</strong> to execute in the
+next two weeks.</p>
+<h2 id="themes">Themes<a class="headerlink" href="#themes" title="Permanent link">&para;</a></h2>
+<h3 id="theme-1-what-we-have-but-could-strengthen">Theme 1: What we have but could strengthen<a class="headerlink" href="#theme-1-what-we-have-but-could-strengthen" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Current state</th>
+<th>External insight</th>
+<th>Strengthening action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MCP strategy</td>
+<td><code>rules/mcp-strategy.md</code> + <code>standards/mcp-minimal-bloat.md</code> (ours is richer and better cited)</td>
+<td>External documents three MCP scopes (Project / User / Subagent) with precedence</td>
+<td>Add a short subsection naming the native scope model and explaining our deliberate deviation so future maintainers do not accidentally try to use subagent-frontmatter <code>mcpServers:</code></td>
+</tr>
+<tr>
+<td>Agent prompt structure</td>
+<td>29 agents written as encyclopedic <code>## Capabilities</code> + <code>## Review Checklist</code> reference docs</td>
+<td>External agents use imperative <code>## Your Task</code> + numbered <code>### Step N</code> + <code>## Critical Requirements</code> + <code>## Output Summary</code> state-machine framing</td>
+<td>Gradual migration to imperative framing, starting with the five most-invoked agents</td>
+</tr>
+<tr>
+<td>Plan writing</td>
+<td><code>writing-plans</code> skill enforces TDD 2-5 minute steps, no placeholders</td>
+<td>External RPI adds a mandatory Technical Discovery (Explore pass) step before the plan's File Structure section is written</td>
+<td>Add a codebase discovery checklist item to <code>writing-plans/SKILL.md</code></td>
+</tr>
+<tr>
+<td>Subagent review loop</td>
+<td><code>subagent-driven-development</code> has two-stage review (spec compliance, then code quality)</td>
+<td>External <code>constitutional-validator</code> adds a non-functional Complexity Appropriateness dimension</td>
+<td>Extend the existing code quality reviewer prompt with a complexity check. Do not create a new subagent.</td>
+</tr>
+<tr>
+<td>Hook coverage</td>
+<td>4 events wired (PreToolUse, PostToolUse, UserPromptSubmit, SessionStart)</td>
+<td>External wires 27 events to a monolithic Python dispatcher</td>
+<td>Wire only three additional events worth the cost: <code>SessionEnd</code> (cleanup leaked temp state), <code>FileChanged</code> (with <code>.env*</code> matcher for secret-file audit), and <code>PermissionDenied</code> (advisory to break retry loops)</td>
+</tr>
+<tr>
+<td>PR size and squash discipline</td>
+<td>Already in <code>rules/git-workflow.md</code></td>
+<td>External includes 2026 Anthropic internal PR distribution stats (p50=118 lines, p90=498, p99=2978)</td>
+<td>Add the stats as a reference anchor in git-workflow.md for calibration</td>
+</tr>
+<tr>
+<td>Verification discipline</td>
+<td><code>verification-before-completion</code> skill + RAD tagging</td>
+<td>External emphasizes Stop hook for deterministic verification that does not rely on model compliance</td>
+<td>Wire a Stop hook that runs <code>pre-commit run --files &lt;touched&gt;</code> at minimum, so verification is unconditional</td>
+</tr>
+</tbody>
+</table>
+<h3 id="theme-2-what-we-are-missing-entirely-adopt">Theme 2: What we are missing entirely (adopt)<a class="headerlink" href="#theme-2-what-we-are-missing-entirely-adopt" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Nature of gap</th>
+<th>Adoption action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Settings + permissions + sandbox documentation</td>
+<td>We have no rule file explaining the five-scope settings hierarchy, the <code>deny -&gt; ask -&gt; allow</code> evaluation order, path-prefix syntax, or the <code>sandbox.filesystem</code> / <code>sandbox.network</code> architectural layer</td>
+<td>Create <code>rules/settings-and-permissions.md</code></td>
+</tr>
+<tr>
+<td>Destructive-bash <code>ask</code> list</td>
+<td>Our local example has 4 entries; external has 22 covering <code>rm</code>, <code>chmod</code>, <code>chown</code>, <code>docker</code>, <code>kubectl</code>, <code>npm</code>, <code>pip</code>, <code>firebase</code>, <code>gcloud</code>, <code>kill</code>, <code>pkill</code>, <code>dd</code>, <code>mkfs</code>, etc.</td>
+<td>Copy the external 22-entry list into <code>settings.json</code> and the local example</td>
+</tr>
+<tr>
+<td>Preloaded "agent skill" pattern</td>
+<td>We have no mechanism for injecting a skill's body into an agent at startup; every skill invocation goes through the Skill tool</td>
+<td>Introduce <code>skills:</code> frontmatter on agents paired with <code>user-invocable: false</code> on the target skill, starting with security-auditor + owasp-dispatch</td>
+</tr>
+<tr>
+<td>Worked Command -&gt; Agent -&gt; Skill coordinator</td>
+<td><code>.claude/commands/</code> is entirely symlinks to vendored plugins; we have no hand-authored coordinator</td>
+<td>Author one reference coordinator (e.g., <code>commands/rad-verify-pipeline.md</code> or <code>commands/test-coverage-pipeline.md</code>) with an explicit <code>### Data Contract</code> block between steps</td>
+</tr>
+<tr>
+<td>SessionStart dynamic rule loading</td>
+<td>Rules rely on model to find and load the right subset</td>
+<td>Hook that detects git branch + modified paths + project type and injects the relevant rule subset</td>
+</tr>
+<tr>
+<td>Fork session awareness</td>
+<td><code>--fork-session</code> and <code>/branch</code> are not documented anywhere in our rules</td>
+<td>Short section in <code>git-workflow.md</code> on when to fork (speculative exploration, preserves parent cache) vs when to worktree (filesystem isolation)</td>
+</tr>
+<tr>
+<td><code>/loop</code> experimentation</td>
+<td>No documentation on when to use <code>/loop</code> for babysit-style automation</td>
+<td>Document two recipes (<code>/loop 6h /doc-audit</code>, <code>/loop 30m /sonarcloud</code>) and run for 48 hours as a bounded experiment (the 7-day auto-expiry makes it self-terminating)</td>
+</tr>
+<tr>
+<td><code>${CLAUDE_PLUGIN_DATA}</code> stateful skill memory</td>
+<td>Detector skills rediscover the same patterns every run</td>
+<td>Update <code>silent-failure-hunter</code>, <code>test-coverage</code>, <code>debug-tests</code> to persist findings and read history on invocation</td>
+</tr>
+<tr>
+<td>Citation discipline</td>
+<td>Our rules cite a few inline URLs but have no systematic Sources footer; only <code>standards/mcp-minimal-bloat.md</code> does this well</td>
+<td>Add a <code>## Sources</code> footer to each file in <code>.claude/rules/</code> and the behavior-related files in <code>.claude/standards/</code></td>
+</tr>
+<tr>
+<td>Built-in Explore and Plan read-only subagents</td>
+<td>Our agent assignment table in <code>supervisor.md</code> does not reference them</td>
+<td>Add Explore (haiku, read-only) for codebase search and Plan (inherit, read-only) for pre-planning to the supervisor agent table</td>
+</tr>
+<tr>
+<td>Monorepo CLAUDE.md loading semantics</td>
+<td>Our CLAUDE.md references path-scoped rules but never explains why they compose safely</td>
+<td>Add 4-6 lines on ancestor-eager vs descendant-lazy vs sibling-never loading to the global CLAUDE.md</td>
+</tr>
+<tr>
+<td>Attribution + plansDirectory + outputStyle + autocompact settings</td>
+<td>Four one-line declarative gains we do not use</td>
+<td>Add to <code>settings.json</code>: <code>attribution.commit</code>, <code>attribution.pr</code>, <code>plansDirectory</code>, <code>outputStyle: "Explanatory"</code>, <code>env.CLAUDE_AUTOCOMPACT_PCT_OVERRIDE: "80"</code></td>
+</tr>
+<tr>
+<td><code>--bare</code> flag for SDK calls</td>
+<td>Our scripts that shell out to <code>claude -p</code> pay the full auto-scan cost</td>
+<td>Audit <code>scripts/*.sh</code> and add <code>--bare</code> where appropriate for 10x cold-start improvement</td>
+</tr>
+<tr>
+<td>Verification checklist pattern</td>
+<td>We do not track accumulated audit rules from past drift incidents</td>
+<td>Single file <code>docs/development/platform-audit-checklist.md</code> that grows only when a new drift type is caught</td>
+</tr>
+<tr>
+<td>On-demand skill hooks</td>
+<td>No convention for hooks that activate only while a skill is in use</td>
+<td>Document the pattern in <code>writing-skills</code> and ship one reference implementation (e.g., <code>/rad-strict</code> that blocks commit until <code>#VERIFY</code> annotations exist)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="theme-3-what-we-do-differently-and-our-way-is-better">Theme 3: What we do differently (and our way is better)<a class="headerlink" href="#theme-3-what-we-do-differently-and-our-way-is-better" title="Permanent link">&para;</a></h3>
+<p>These are deliberate decisions. Capturing them here prevents later audits from
+re-raising the same questions.</p>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>External approach</th>
+<th>Our approach</th>
+<th>Why ours is better</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MCP per-agent routing</td>
+<td><code>mcpServers:</code> field in subagent frontmatter (distributed)</td>
+<td><code>mcp_config.yaml</code> + <code>scripts/mcp-tool-loader.sh</code> (centralized)</td>
+<td>Centralized mapping is auditable; prevents drift between agents; enables Tier &frac12;/3 bundling</td>
+</tr>
+<tr>
+<td>Hook architecture</td>
+<td>Monolithic <code>hooks.py</code> (one Python file handles all 27 events via dispatch)</td>
+<td>Targeted shell scripts (one script per purpose, bash is effectively free to start)</td>
+<td>Python interpreter boot on every tool call is an unacceptable tax; one syntax error in monolith breaks every hook</td>
+</tr>
+<tr>
+<td>Sound feedback</td>
+<td>27-folder per-event MP3 soundboard</td>
+<td>Threshold-based Windows toast via <code>bash-notify.sh</code> when Bash exceeds 30 seconds</td>
+<td>Exception-signal beats reward-signal for focus; solo work has no audience requiring constant feedback</td>
+</tr>
+<tr>
+<td>Hook disable mechanism</td>
+<td><code>hooks-config.json</code> with <code>disable&lt;Event&gt;Hook</code> boolean keys</td>
+<td>Remove the entry from <code>settings.json</code> or use an env var</td>
+<td>Disable flags still fork the process and pay the Python boot cost; removing the entry skips the hook entirely</td>
+</tr>
+<tr>
+<td>Plan artifact layout</td>
+<td>Multi-file split by audience (<code>pm.md</code>, <code>ux.md</code>, <code>eng.md</code>, <code>PLAN.md</code>) in <code>rpi/{feature-slug}/</code></td>
+<td>Single file at <code>docs/superpowers/plans/YYYY-MM-DD-&lt;feature-name&gt;.md</code></td>
+<td>Single reader (same agent) gains nothing from audience split; single file is faster to traverse and sync-proof</td>
+</tr>
+<tr>
+<td>Feasibility gate</td>
+<td>6-agent research pipeline with GO / CONDITIONAL GO / DEFER / NO-GO</td>
+<td>Currently no gate; see Theme 2 for the lightweight adoption</td>
+<td>Full RPI pipeline is over-engineering for 90% of real tasks; a single-agent gate captures the value at 10% of the cost</td>
+</tr>
+<tr>
+<td>Quality gate stack</td>
+<td>Single <code>bun run format</code> in a PostToolUse hook</td>
+<td>ruff format + ruff lint + shellcheck + Python 3.10 compat + pre-commit + RAD tagging + TDD enforcement</td>
+<td>Our pipeline is fundamentally richer and better calibrated for a Python-first codebase</td>
+</tr>
+<tr>
+<td>CLAUDE.md iteration pattern</td>
+<td>Advice to "edit CLAUDE.md after every correction"</td>
+<td>Dedicated <code>claude-md-improver</code> skill that audits against templates and applies structured updates</td>
+<td>Skill-based iteration is verifiable and repeatable; manual edit advice decays</td>
+</tr>
+<tr>
+<td>Verification stack</td>
+<td>"Give Claude a way to verify its work"</td>
+<td><code>verification-before-completion</code> + <code>test-driven-development</code> + <code>systematic-debugging</code> + RAD <code>#VERIFY</code> tagging</td>
+<td>Multi-layer verification with deterministic components is strictly stronger than model-compliance verification alone. Note: we should still add the Stop hook (Theme 1) to close the deterministic-verification gap.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="theme-4-explicit-non-adoption-decisions">Theme 4: Explicit non-adoption decisions<a class="headerlink" href="#theme-4-explicit-non-adoption-decisions" title="Permanent link">&para;</a></h3>
+<p>Capturing deliberate NO votes so they do not resurface.</p>
+<ol>
+<li><strong>Monolithic <code>hooks.py</code> dispatcher</strong> (Subagent 5 Rec 6). Architectural
+   anti-pattern for our workload.</li>
+<li><strong>Per-event MP3/WAV soundboard</strong> (Subagent 5 Rec 7). Pure novelty for a
+   solo workflow.</li>
+<li><strong><code>hooks-config.json</code> disable flag pattern</strong> (Subagent 5 Rec 8). Performance
+   anti-pattern because the fork still happens.</li>
+<li><strong>Multi-file plan split (pm/ux/eng/PLAN)</strong> (Subagent 3 Rec 6). Overhead
+   without audience split benefit.</li>
+<li><strong>6-agent research pipeline</strong> (Subagent 3 Rec 4 explains the lightweight
+   alternative). Over-engineering; the lightweight single-agent gate captures
+   the value.</li>
+<li><strong>Per-version Claude Code changelog</strong> (Subagent 6 Rec 1). Duplication with
+   Anthropic's <code>/release-notes</code> and <code>code.claude.com/docs</code>. The lightweight
+   verification-checklist (Theme 2) captures the genuinely novel contribution.</li>
+<li><strong><code>mcpServers:</code> in subagent frontmatter</strong> (contradicts our existing
+   <code>rules/mcp-strategy.md</code> lines 70-82; covered in Theme 3).</li>
+</ol>
+<h2 id="prioritized-action-table">Prioritized action table<a class="headerlink" href="#prioritized-action-table" title="Permanent link">&para;</a></h2>
+<p>Sorted by priority (high -&gt; medium -&gt; low), then by effort (S -&gt; M -&gt; L).
+Numbers in square brackets reference the source analysis document.</p>
+<table>
+<thead>
+<tr>
+<th>Priority</th>
+<th>Effort</th>
+<th>Action</th>
+<th>Target files</th>
+<th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>high</td>
+<td>S</td>
+<td>Add 22-entry <code>permissions.ask</code> list for destructive bash commands</td>
+<td><code>settings.json</code>, <code>.claude/settings.local.json.example</code></td>
+<td>[05] Rec 1</td>
+</tr>
+<tr>
+<td>high</td>
+<td>S</td>
+<td>Document <code>/branch</code> and <code>--fork-session</code> in <code>rules/git-workflow.md</code></td>
+<td><code>rules/git-workflow.md</code></td>
+<td>[04] Rec 2</td>
+</tr>
+<tr>
+<td>high</td>
+<td>S</td>
+<td>Document three <code>/loop</code> recipes and run 48h trial on <code>doc-audit</code> + <code>sonarcloud</code></td>
+<td>new <code>rules/loop-recipes.md</code></td>
+<td>[04] Rec 3</td>
+</tr>
+<tr>
+<td>high</td>
+<td>S</td>
+<td>Add <code>--bare</code> flag to SDK-style <code>claude -p</code> invocations</td>
+<td>audit <code>scripts/*.sh</code></td>
+<td>[04] Rec 9</td>
+</tr>
+<tr>
+<td>high</td>
+<td>S</td>
+<td>Add built-in Explore and Plan read-only subagents to supervisor table</td>
+<td><code>rules/supervisor.md</code></td>
+<td>[01] Rec 7</td>
+</tr>
+<tr>
+<td>high</td>
+<td>S</td>
+<td>Document two-pattern skill architecture (agent-preloaded vs tool-invoked)</td>
+<td><code>rules/supervisor.md</code> or new <code>rules/skill-patterns.md</code></td>
+<td>[01] Rec 3</td>
+</tr>
+<tr>
+<td>high</td>
+<td>S</td>
+<td>Add codebase discovery checklist to <code>writing-plans</code> skill</td>
+<td><code>skills/writing-plans/SKILL.md</code></td>
+<td>[03] Rec 1</td>
+</tr>
+<tr>
+<td>high</td>
+<td>M</td>
+<td>Create <code>rules/settings-and-permissions.md</code> covering 5-scope hierarchy, <code>deny -&gt; ask -&gt; allow</code>, sandbox layer</td>
+<td>new <code>rules/settings-and-permissions.md</code>; xref from CLAUDE.md</td>
+<td>[01] Rec 2</td>
+</tr>
+<tr>
+<td>high</td>
+<td>M</td>
+<td>SessionStart hook for dynamic rule loading based on branch and modified paths</td>
+<td><code>settings.json</code>, new <code>scripts/session-start-rules.sh</code></td>
+<td>[04] Rec 1</td>
+</tr>
+<tr>
+<td>high</td>
+<td>M</td>
+<td>Stop hook for deterministic verification (<code>pre-commit run --files &lt;touched&gt;</code> minimum)</td>
+<td><code>settings.json</code>, new <code>scripts/stop-verification.sh</code></td>
+<td>[04] Rec 10</td>
+</tr>
+<tr>
+<td>high</td>
+<td>M</td>
+<td>On-demand skill hooks convention + one reference impl (<code>/rad-strict</code>)</td>
+<td><code>skills/writing-skills/SKILL.md</code>, <code>skills/rad/</code></td>
+<td>[04] Rec 4</td>
+</tr>
+<tr>
+<td>high</td>
+<td>L</td>
+<td>Convert 5 high-traffic agents to imperative state-machine framing</td>
+<td><code>agents/code-reviewer.md</code>, <code>test-engineer.md</code>, <code>security-auditor.md</code>, <code>documentation-writer.md</code>, <code>research-agent.md</code></td>
+<td>[02] Rec 2</td>
+</tr>
+<tr>
+<td>medium</td>
+<td>S</td>
+<td>Add <code>attribution.commit</code>, <code>attribution.pr</code>, <code>plansDirectory</code>, <code>outputStyle</code>, <code>env.CLAUDE_AUTOCOMPACT_PCT_OVERRIDE</code> to settings.json</td>
+<td><code>settings.json</code></td>
+<td>[05] Rec 2</td>
+</tr>
+<tr>
+<td>medium</td>
+<td>S</td>
+<td>Add monorepo CLAUDE.md loading semantics to global CLAUDE.md</td>
+<td><code>CLAUDE.md</code></td>
+<td>[01] Rec 4</td>
+</tr>
+<tr>
+<td>medium</td>
+<td>S</td>
+<td>Extend subagent-driven-development reviewer with complexity check</td>
+<td><code>skills/subagent-driven-development/code-quality-reviewer-prompt.md</code></td>
+<td>[03] Rec 3</td>
+</tr>
+<tr>
+<td>medium</td>
+<td>S</td>
+<td>Append-only constraint to code-review and plan-review skills</td>
+<td><code>skills/requesting-code-review/SKILL.md</code>, <code>skills/writing-plans/SKILL.md</code></td>
+<td>[03] Rec 2</td>
+</tr>
+<tr>
+<td>medium</td>
+<td>S</td>
+<td>Contrast three MCP scopes vs our Tier &frac12;/3 strategy in mcp-strategy.md</td>
+<td><code>rules/mcp-strategy.md</code></td>
+<td>[01] Rec 5</td>
+</tr>
+<tr>
+<td>medium</td>
+<td>S</td>
+<td>Document Command -&gt; Agent -&gt; Skill orchestration concept in supervisor.md</td>
+<td><code>rules/supervisor.md</code></td>
+<td>[01] Rec 6</td>
+</tr>
+<tr>
+<td>medium</td>
+<td>S</td>
+<td>Add <code>maxTurns</code>, <code>permissionMode</code>, <code>color</code> frontmatter fields to all agents</td>
+<td><code>agents/*.md</code></td>
+<td>[02] Rec 3</td>
+</tr>
+<tr>
+<td>medium</td>
+<td>S</td>
+<td>Skill usage telemetry via PreToolUse log</td>
+<td><code>settings.json</code>, new <code>scripts/log-skill-usage.sh</code></td>
+<td>[04] Rec 7</td>
+</tr>
+<tr>
+<td>medium</td>
+<td>M</td>
+<td>Normalize agent tool declarations to <code>allowedTools</code> YAML list (least privilege)</td>
+<td><code>agents/*.md</code>, <code>skills/*/SKILL.md</code></td>
+<td>[02] Rec 4</td>
+</tr>
+<tr>
+<td>medium</td>
+<td>M</td>
+<td>Add <code>## Output Summary</code> terminal contracts to all non-trivial agents</td>
+<td><code>agents/*.md</code></td>
+<td>[02] Rec 7</td>
+</tr>
+<tr>
+<td>medium</td>
+<td>M</td>
+<td>Author one Command -&gt; Agent -&gt; Skill reference coordinator with <code>### Data Contract</code></td>
+<td>new <code>commands/rad-verify-pipeline.md</code> or similar</td>
+<td>[02] Rec 5</td>
+</tr>
+<tr>
+<td>medium</td>
+<td>M</td>
+<td>Wire FileChanged hook with <code>.env*</code> matcher</td>
+<td><code>settings.json</code>, new <code>scripts/env-file-guard.sh</code></td>
+<td>[05] Rec 3</td>
+</tr>
+<tr>
+<td>medium</td>
+<td>M</td>
+<td>Wire SessionEnd cleanup hook</td>
+<td><code>settings.json</code>, new <code>scripts/session-end-cleanup.sh</code></td>
+<td>[05] Rec 4</td>
+</tr>
+<tr>
+<td>medium</td>
+<td>M</td>
+<td>Adopt preloaded "agent skill" pattern for domain knowledge</td>
+<td><code>agents/security-auditor.md</code>, <code>agents/test-engineer.md</code></td>
+<td>[02] Rec 1</td>
+</tr>
+<tr>
+<td>medium</td>
+<td>M</td>
+<td>Lightweight feasibility-check skill between brainstorming and writing-plans</td>
+<td>new <code>skills/feasibility-check/SKILL.md</code></td>
+<td>[03] Rec 4</td>
+</tr>
+<tr>
+<td>medium</td>
+<td>M</td>
+<td><code>${CLAUDE_PLUGIN_DATA}</code> memory for detector skills</td>
+<td><code>skills/silent-failure-hunter/</code>, <code>test-coverage/</code>, <code>debug-tests/</code> SKILL.md</td>
+<td>[04] Rec 6</td>
+</tr>
+<tr>
+<td>medium</td>
+<td>M</td>
+<td>Runbook skill template for operational procedures</td>
+<td>new <code>skills/runbook-template/</code></td>
+<td>[04] Rec 8</td>
+</tr>
+<tr>
+<td>medium</td>
+<td>M</td>
+<td>Citation footers across rules/ and behavior-related standards/</td>
+<td><code>rules/*.md</code>, selected <code>standards/*.md</code></td>
+<td>[01] Rec 1</td>
+</tr>
+<tr>
+<td>low</td>
+<td>S</td>
+<td>PermissionDenied advisory hook</td>
+<td><code>settings.json</code>, new <code>scripts/permission-denied-advisor.sh</code></td>
+<td>[05] Rec 5</td>
+</tr>
+<tr>
+<td>low</td>
+<td>S</td>
+<td>Lightweight verification-checklist (accumulated audit rules)</td>
+<td>new <code>docs/development/platform-audit-checklist.md</code></td>
+<td>[06] Rec 2</td>
+</tr>
+<tr>
+<td>low</td>
+<td>S</td>
+<td>Document subagent <code>isolation: "worktree"</code> and <code>--teammate-mode</code> as orchestration levers</td>
+<td><code>rules/git-workflow.md</code>, <code>standards/git-worktree.md</code>, <code>rules/supervisor.md</code></td>
+<td>[01] Rec 8</td>
+</tr>
+<tr>
+<td>low</td>
+<td>S</td>
+<td>Note <code>CLAUDE_CODE_SUBAGENT_MODEL</code> as cost optimization lever</td>
+<td><code>rules/supervisor.md</code></td>
+<td>[01] Rec 9</td>
+</tr>
+<tr>
+<td>low</td>
+<td>S</td>
+<td>Cross-model review in subagent-driven-development (reviewer != implementer family)</td>
+<td><code>skills/subagent-driven-development/SKILL.md</code> Model Selection section</td>
+<td>[03] Rec 5</td>
+</tr>
+<tr>
+<td>low</td>
+<td>S</td>
+<td>Document "dispatching-parallel-agents vs agent-teams" tradeoff</td>
+<td><code>rules/supervisor.md</code> or new <code>standards/multi-agent-coordination.md</code></td>
+<td>[02] Rec 10</td>
+</tr>
+<tr>
+<td>low</td>
+<td>S</td>
+<td>Standardize skill frontmatter to always include <code>name:</code> and optionally <code>user-invocable:</code></td>
+<td><code>skills/*/SKILL.md</code></td>
+<td>[02] Rec 9</td>
+</tr>
+<tr>
+<td>low</td>
+<td>S</td>
+<td>Self-evolving Learnings pattern for maintenance agents</td>
+<td><code>agents/skill-creator</code>, <code>claude-md-improver</code>, <code>diagram-maintenance</code></td>
+<td>[02] Rec 8</td>
+</tr>
+<tr>
+<td>low</td>
+<td>L</td>
+<td>Progressive disclosure audit across existing 41 skills</td>
+<td><code>skills/*/SKILL.md</code></td>
+<td>[04] Rec 5</td>
+</tr>
+</tbody>
+</table>
+<h2 id="consensus-validation-summary">Consensus validation summary<a class="headerlink" href="#consensus-validation-summary" title="Permanent link">&para;</a></h2>
+<p>The draft synthesis was reviewed by three models in parallel via
+<code>mcp__pal__chat</code>. Two additional models (grok-4.1-fast, glm-4.5-air) were
+blocked by per-call token-budget limits on file attachments and could not
+process the 5306-token synthesis report. The three responding models
+(gemini-3.1-pro-preview neutral, gpt-5.2 against, qwen3.5-plus-02-15 neutral)
+provided substantively critical feedback that surfaced several real weaknesses.</p>
+<h3 id="cross-model-convergent-findings-all-three-models-agreed">Cross-model convergent findings (all three models agreed)<a class="headerlink" href="#cross-model-convergent-findings-all-three-models-agreed" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Accounting inconsistency in the executive summary.</strong> The original draft
+   claimed "24 distinct actions" and "three non-adoption decisions" but the
+   action table lists 38 rows and Theme 4 lists 7 non-adoptions. <strong>Addressed:</strong>
+   executive summary numbers corrected to 38 actions / 7 non-adoptions.</li>
+<li><strong>Theme 3 "our way is better" claims lack supporting evidence.</strong> Python
+   interpreter boot cost is asserted as "unacceptable tax" with no
+   measurement; "our pipeline is richer and better calibrated" conflates
+   richer with better. <strong>Addressed:</strong> see "Theme 3 revisions" below.</li>
+<li><strong>Imperative agent rewrite (high priority, L effort) is a regression
+   risk.</strong> Modifying already-working, high-traffic agents without a
+   regression suite is unsafe. <strong>Addressed:</strong> demoted to medium priority with
+   an explicit "pilot on one agent first" condition.</li>
+<li><strong>22-entry destructive-bash <code>ask</code> list is a double-edged sword.</strong> Could
+   cause a prompt storm that trains users to blindly approve, defeating the
+   safety goal. <strong>Addressed:</strong> kept at high priority but added a mitigation
+   note below.</li>
+<li><strong>Dependencies between items are implicit.</strong> <strong>Addressed:</strong> consensus-
+   adjusted short list below is explicitly ordered.</li>
+</ol>
+<h3 id="per-model-key-feedback-summarized">Per-model key feedback (summarized)<a class="headerlink" href="#per-model-key-feedback-summarized" title="Permanent link">&para;</a></h3>
+<p><strong>Gemini 3.1 Pro (neutral):</strong></p>
+<ul>
+<li>Escalate to HIGH: FileChanged <code>.env*</code> matcher (secret-leak prevention is
+  Theme 2's highest-ROI thesis; leaving it medium contradicts the report's
+  own framing). Normalize agent <code>allowedTools</code> (foundational least-privilege
+  before scaling <code>/loop</code> automations).</li>
+<li>Demote to MEDIUM: Explore + Plan read-only subagents (organizational
+  luxury), Imperative agent conversion (touches working assets).</li>
+<li>Missing entirely: <strong>Cost/token circuit breaker for <code>/loop</code> trials.</strong> An
+  unattended loop running for 48 hours with a malformed prompt can cause API
+  bill shock. This is genuinely absent from the report.</li>
+<li>Effort reality check: "On-demand skill hooks" and "Preloaded agent skill
+  pattern" are realistically L, not M (state management + empirical testing).</li>
+<li>Biggest uncalled risk: <strong>Compounding invisible state.</strong> Dynamic rule
+  loading plus on-demand hooks plus cleanup hooks plus 41 skills times 29
+  agents equals a nondeterministic environment where debugging a misbehaving
+  session becomes a nightmare.</li>
+</ul>
+<p><strong>GPT-5.2 (adversarial, advanced reasoning):</strong></p>
+<ul>
+<li>Cut outright or demote aggressively: SessionStart dynamic rule loading
+  ("complexity bomb, will create heisenbugs"), On-demand skill hooks ("no
+  rollback story"), Convert 5 high-traffic agents ("regression risk,
+  high-traffic makes it worse"), repo-wide mechanical edits (maxTurns +
+  color + Output Summary + citation footers = time sinks with unclear
+  payoff), Progressive disclosure audit ("refactor-a-thon").</li>
+<li>Theme 3 claims that need data: Python boot cost, centralized mapping
+  "prevents drift", single-file plan "faster and sync-proof", quality gate
+  stack "richer". None of these are measured.</li>
+<li>Hidden dependencies not priced in: Stop hook requires pre-commit installed
+  and fast everywhere; FileChanged needs robust globbing and a policy for
+  legitimate <code>.env.example</code> edits; skill telemetry is a new logging pipeline
+  with storage/rotation/analysis costs; <code>${CLAUDE_PLUGIN_DATA}</code> creates data
+  format migration ownership.</li>
+<li>Risk blind spots: SessionStart creates non-reproducible session behavior;
+  imperative rewrites can reduce agent flexibility; on-demand hooks create
+  a second control plane that is hard to reason about.</li>
+<li>Speculative high priorities: <code>/loop</code> recipes (where is the pain signal?),
+  Explore/Plan built-ins, Command to Agent to Skill orchestration doc,
+  attribution strings.</li>
+</ul>
+<p><strong>Qwen 3.5 Plus (neutral, technical accuracy focus):</strong></p>
+<ul>
+<li>Technical accuracy concerns that must be verified before adoption:</li>
+<li><strong><code>${CLAUDE_PLUGIN_DATA}</code> is not in Anthropic's official docs.</strong> It may
+    be a community convention from the external repo rather than a
+    documented Claude Code platform feature. Recommendation 4.6 is built on
+    sand if this is not real. <strong>Addressed:</strong> added verification step.</li>
+<li><strong>"--bare flag 10x cold-start improvement"</strong> lacks a citation anchor.
+    Should be measured before auditing 10+ scripts. <strong>Addressed:</strong> added
+    verification step.</li>
+<li><strong>"27 hook events"</strong> may be the external repo's extrapolation, not all
+    officially supported. <strong>Addressed:</strong> added verification step.</li>
+<li>Dependency ordering issues: settings-and-permissions.md should land with
+  or before the 22-entry ask list; Discovery checklist logically follows
+  feasibility gating; ask list plus <code>.env*</code> guard should be tested together.</li>
+<li>SessionStart is realistically L effort, not M (detection, classification,
+  rule selection, injection, and testing across project types).</li>
+<li>Missing: success metrics and sunset criteria. Each of the 38 actions needs
+  a "Definition of Done" column. Without measurable outcomes, there is no
+  way to know whether the effort paid off or when to roll back.</li>
+<li>Theme 4 non-adoption #1 (monolithic hooks.py) is sound for per-tool-call
+  events but a <strong>hybrid approach</strong> (Python for infrequent lifecycle events,
+  shell for frequent tool events) was not explored. Worth noting.</li>
+</ul>
+<h3 id="theme-3-revisions-responding-to-convergent-feedback">Theme 3 revisions (responding to convergent feedback)<a class="headerlink" href="#theme-3-revisions-responding-to-convergent-feedback" title="Permanent link">&para;</a></h3>
+<p>The "our way is better" claims are now framed as working hypotheses rather
+than demonstrated facts:</p>
+<ul>
+<li>Python interpreter boot cost: kept as a hypothesis, not a proven tax. If
+  we later adopt any hook that genuinely needs Python (JSON parsing, state
+  management), measure the per-call cost first.</li>
+<li>Centralized MCP mapping: kept as our convention, with acknowledgment that
+  it creates a single point of staleness that must be audited.</li>
+<li>Single-file plan layout: kept, with acknowledgment that the single-reader
+  assumption holds only while this repo has one maintainer.</li>
+<li>Quality gate stack: kept, with acknowledgment that deterministic linters
+  can create panic loops if the subagent cannot appease them; mitigation is
+  the existing <code>ci-fix</code> skill which handles the retry logic centrally.</li>
+</ul>
+<h3 id="consensus-adjusted-short-list-execute-first-within-two-weeks">Consensus-adjusted short list (execute first, within two weeks)<a class="headerlink" href="#consensus-adjusted-short-list-execute-first-within-two-weeks" title="Permanent link">&para;</a></h3>
+<p>This is the minimum viable adoption subset after consensus. Everything else
+in the full action table stays in place as a backlog, but is not promised
+as two-week work.</p>
+<table>
+<thead>
+<tr>
+<th>Order</th>
+<th>Priority</th>
+<th>Effort</th>
+<th>Action</th>
+<th>Consensus note</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>high</td>
+<td>M</td>
+<td>Create <code>rules/settings-and-permissions.md</code> (5-scope hierarchy, <code>deny -&gt; ask -&gt; allow</code> eval, sandbox layer)</td>
+<td>Lands first per qwen ordering; qualifies everything else</td>
+</tr>
+<tr>
+<td>2</td>
+<td>high</td>
+<td>S</td>
+<td>Adopt a <strong>limited</strong> 22-entry <code>permissions.ask</code> list with a 7-day trial period and an off-switch</td>
+<td>gpt-5.2 flagged prompt-storm risk; mitigation is trial-and-measure, not full adoption</td>
+</tr>
+<tr>
+<td>3</td>
+<td>high</td>
+<td>S</td>
+<td>Wire FileChanged hook with <code>.env*</code> matcher</td>
+<td>gemini escalated from medium; secret-leak prevention belongs at top</td>
+</tr>
+<tr>
+<td>4</td>
+<td>high</td>
+<td>S</td>
+<td>Add <code>attribution.commit</code>, <code>attribution.pr</code>, <code>plansDirectory</code>, <code>outputStyle: "Explanatory"</code>, <code>CLAUDE_AUTOCOMPACT_PCT_OVERRIDE: 80</code> to settings.json</td>
+<td>5 one-line gains, zero-risk</td>
+</tr>
+<tr>
+<td>5</td>
+<td>high</td>
+<td>S</td>
+<td>Add <code>--bare</code> flag to existing <code>claude -p</code> invocations <strong>after verifying the 10x claim on one script first</strong></td>
+<td>qwen verification requirement</td>
+</tr>
+<tr>
+<td>6</td>
+<td>high</td>
+<td>S</td>
+<td>Document <code>/branch</code> and <code>--fork-session</code> in <code>rules/git-workflow.md</code></td>
+<td>Pure documentation, zero risk</td>
+</tr>
+<tr>
+<td>7</td>
+<td>high</td>
+<td>S</td>
+<td>Add built-in Explore + Plan to supervisor agent table</td>
+<td>One table row; gemini thought this was lower priority but it is a 5-minute change</td>
+</tr>
+<tr>
+<td>8</td>
+<td>high</td>
+<td>M</td>
+<td>Stop hook running <code>pre-commit run --files &lt;touched&gt;</code> with measurement of per-invocation latency before committing to it</td>
+<td>gpt-5.2 hidden dependency warning; trial first</td>
+</tr>
+<tr>
+<td>9</td>
+<td>high</td>
+<td>M</td>
+<td>Document two-pattern skill architecture in supervisor.md</td>
+<td>Pure documentation</td>
+</tr>
+<tr>
+<td>10</td>
+<td>high</td>
+<td>S</td>
+<td>Add codebase discovery checklist item to <code>writing-plans</code> skill</td>
+<td>Single checklist line</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Explicitly deferred from the two-week window</strong> (stays in the full action
+table but does not commit until after the short list proves out):</p>
+<ul>
+<li>SessionStart dynamic rule loading (effort reality: L, gpt-5.2 flagged as
+  complexity bomb; reassess after we have lived with the ordered items above)</li>
+<li>On-demand skill hooks convention (new primitive; needs rollback story and
+  success metric before adoption)</li>
+<li>Imperative agent conversion (demoted to medium; pilot on one low-risk
+  agent first, then decide whether to extend)</li>
+<li>Mass frontmatter edits (maxTurns + color + allowedTools normalization +
+  Output Summary) — batch these into a single scheduled maintenance pass,
+  not sprinkled across the timeline</li>
+<li>Progressive disclosure audit of 41 skills (L effort; schedule separately)</li>
+<li><code>${CLAUDE_PLUGIN_DATA}</code> stateful memory (verify the feature exists first)</li>
+<li><code>/loop</code> recipes (deferred; add a token/cost circuit breaker first per
+  gemini's gap finding)</li>
+</ul>
+<h3 id="new-recommendations-that-came-out-of-consensus-not-in-the-source-analyses">New recommendations that came out of consensus (not in the source analyses)<a class="headerlink" href="#new-recommendations-that-came-out-of-consensus-not-in-the-source-analyses" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Cost/token circuit breaker hook</strong> for any unattended <code>/loop</code> or
+  background task. Add a hard-stop policy before any automation runs for
+  more than 30 minutes unattended. (gemini)</li>
+<li><strong>Success metrics column</strong> on the action table ("Definition of Done" for
+  each action). This file does not yet add that column; future
+  implementation plans should treat it as a required field. (qwen)</li>
+<li><strong>Verify before adopting</strong>: <code>${CLAUDE_PLUGIN_DATA}</code> environment variable
+  existence, <code>--bare</code> flag 10x speedup claim, count of officially supported
+  hook events (may be less than 27). (qwen)</li>
+</ul>
+<h2 id="appendix-per-chunk-summary">Appendix: per-chunk summary<a class="headerlink" href="#appendix-per-chunk-summary" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Chunk</th>
+<th>Recs</th>
+<th>High</th>
+<th>Med</th>
+<th>Low</th>
+<th>Non-adopt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>[01] Core concepts and architecture</td>
+<td>9</td>
+<td>3</td>
+<td>5</td>
+<td>1</td>
+<td>0</td>
+</tr>
+<tr>
+<td>[02] Runnable implementations</td>
+<td>10</td>
+<td>2</td>
+<td>6</td>
+<td>2</td>
+<td>0</td>
+</tr>
+<tr>
+<td>[03] Development workflows</td>
+<td>6</td>
+<td>1</td>
+<td>3</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>[04] Tips harvest</td>
+<td>10</td>
+<td>6</td>
+<td>4</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>[05] Hooks and configuration</td>
+<td>8</td>
+<td>1</td>
+<td>4</td>
+<td>1</td>
+<td>3</td>
+</tr>
+<tr>
+<td>[06] Changelog and versioning</td>
+<td>4</td>
+<td>0</td>
+<td>0</td>
+<td>3</td>
+<td>1</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td><strong>47</strong></td>
+<td><strong>13</strong></td>
+<td><strong>22</strong></td>
+<td><strong>8</strong></td>
+<td><strong>5</strong></td>
+</tr>
+</tbody>
+</table>
+<p>After deduplication and cross-cutting grouping, the 47 raw recommendations
+consolidated into the 38 actions in the prioritized table above, plus 7
+explicit non-adoption decisions captured in Theme 4 (some non-adoptions from
+individual chunks merged into a single Theme 4 entry).</p>
+<h2 id="authoritative-citations-preserved">Authoritative citations preserved<a class="headerlink" href="#authoritative-citations-preserved" title="Permanent link">&para;</a></h2>
+<p>Collected across all six analysis documents for future reference in our own
+docs.</p>
+<p><strong>Anthropic official:</strong></p>
+<ul>
+<li>Claude Code docs (full tree): <a href="https://code.claude.com/docs/en/">https://code.claude.com/docs/en/</a></li>
+<li>Claude Code sub-agents, skills, settings, memory, mcp, permissions, sandbox, statusline, hooks, output-styles, env-vars, interactive-mode, keybindings</li>
+<li>Claude Code CHANGELOG: <a href="https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md">https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md</a></li>
+<li>Claude Code settings JSON schema: <a href="https://json.schemastore.org/claude-code-settings.json">https://json.schemastore.org/claude-code-settings.json</a></li>
+<li>Anthropic engineering blog: <a href="https://www.anthropic.com/engineering/advanced-tool-use">Advanced Tool Use Guide</a>, "Code Execution with MCP"</li>
+<li>Claude GitHub App: <a href="https://github.com/apps/claude">https://github.com/apps/claude</a></li>
+<li>Model Context Protocol specification: <a href="https://modelcontextprotocol.io/">https://modelcontextprotocol.io/</a></li>
+</ul>
+<p><strong>Boris Cherny (Anthropic, Claude Code creator) tweets:</strong></p>
+<ul>
+<li>Jan 3 2026, 13 tips: <a href="https://x.com/bcherny/status/2007179832300581177">https://x.com/bcherny/status/2007179832300581177</a></li>
+<li>Feb 1 2026, 10 team tips: <a href="https://x.com/bcherny/status/2017742741636321619">https://x.com/bcherny/status/2017742741636321619</a></li>
+<li>Feb 12 2026, 12 customization tips: <a href="https://x.com/bcherny/status/2021699851499798911">https://x.com/bcherny/status/2021699851499798911</a></li>
+<li>Mar 10 2026, Code Review + test time compute: <a href="https://x.com/bcherny/status/2031089411820228645">https://x.com/bcherny/status/2031089411820228645</a></li>
+<li>Mar 25 2026, squash merge + PR size: <a href="https://x.com/bcherny/status/2038552880018538749">https://x.com/bcherny/status/2038552880018538749</a></li>
+<li>Mar 30 2026, 15 hidden features: <a href="https://x.com/bcherny/status/2038454336355999749">https://x.com/bcherny/status/2038454336355999749</a></li>
+<li>CLAUDE.md loading clarification: <a href="https://x.com/bcherny/status/2016339448863355206">https://x.com/bcherny/status/2016339448863355206</a></li>
+</ul>
+<p><strong>Community:</strong></p>
+<ul>
+<li>Thariq on skills, Mar 17 2026: <a href="https://x.com/trq212/status/2033949937936085378">https://x.com/trq212/status/2033949937936085378</a></li>
+<li>Humanlayer "Writing a good Claude.md": <a href="https://www.humanlayer.dev/blog/writing-a-good-claude-md">https://www.humanlayer.dev/blog/writing-a-good-claude-md</a></li>
+<li>Reddit r/mcp thread 1: <a href="https://reddit.com/r/mcp/comments/1mj0fxs/">https://reddit.com/r/mcp/comments/1mj0fxs/</a></li>
+<li>Reddit r/mcp thread 2: <a href="https://reddit.com/r/mcp/comments/1qarjqm/">https://reddit.com/r/mcp/comments/1qarjqm/</a></li>
+<li>Shipyard Claude Code CLI cheatsheet: <a href="https://shipyard.build/blog/claude-code-cheat-sheet/">https://shipyard.build/blog/claude-code-cheat-sheet/</a></li>
+<li>Companion Codex CLI best-practice repo: <a href="https://github.com/shanraisshan/codex-cli-best-practice">https://github.com/shanraisshan/codex-cli-best-practice</a></li>
+</ul>
+<p><strong>External repo subject of this review:</strong></p>
+<ul>
+<li>Root: <a href="https://github.com/shanraisshan/claude-code-best-practice">https://github.com/shanraisshan/claude-code-best-practice</a></li>
+<li>Orchestration workflow: <code>/orchestration-workflow/orchestration-workflow.md</code></li>
+<li>Weather orchestrator example: <code>/.claude/commands/weather-orchestrator.md</code></li>
+<li>RPI workflow: <code>/development-workflows/rpi/rpi-workflow.md</code></li>
+<li>Cross-model workflow: <code>/development-workflows/cross-model-workflow/cross-model-workflow.md</code></li>
+<li>Hook dispatcher: <code>/.claude/hooks/scripts/hooks.py</code></li>
+</ul>
+
+
+
+
+
+
+
+  
+    
+  
+  
+    
+  
+
+
+  <aside class="md-source-file">
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Last update">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 11, 2026 22:24:49 UTC">April 11, 2026</span>
+  </span>
+
+    
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Created">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 11, 2026 22:24:49 UTC">April 11, 2026</span>
+  </span>
+
+    
+    
+    
+  </aside>
+
+
+  
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2025 Byron Williams
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/ByronWilliamsCPA" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,3587 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Global Claude Code development standards, commands, and configuration for all projects">
+      
+      
+        <meta name="author" content="Byron Williams">
+      
+      
+        <link rel="canonical" href="https://.claude.readthedocs.io/development/best-practice-review/04-tips-harvest/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Analysis: Tips Harvest (Boris Cherny + Community) - Claude Code Configuration</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+  
+
+
+  
+  
+
+<script id="__analytics">function __md_analytics(){function e(){dataLayer.push(arguments)}window.dataLayer=window.dataLayer||[],e("js",new Date),e("config",""),document.addEventListener("DOMContentLoaded",(function(){document.forms.search&&document.forms.search.query.addEventListener("blur",(function(){this.value&&e("event","search",{search_term:this.value})}));document$.subscribe((function(){var t=document.forms.feedback;if(void 0!==t)for(var a of t.querySelectorAll("[type=submit]"))a.addEventListener("click",(function(a){a.preventDefault();var n=document.location.pathname,d=this.getAttribute("data-md-value");e("event","feedback",{page:n,data:d}),t.firstElementChild.disabled=!0;var r=t.querySelector(".md-feedback__note [data-md-value='"+d+"']");r&&(r.hidden=!1)})),t.hidden=!1})),location$.subscribe((function(t){e("config","",{page_path:t.pathname})}))}));var t=document.createElement("script");t.async=!0,t.src="https://www.googletagmanager.com/gtag/js?id=",document.getElementById("__analytics").insertAdjacentElement("afterEnd",t)}</script>
+  
+    <script>"undefined"!=typeof __md_analytics&&__md_analytics()</script>
+  
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#files-reviewed" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Claude Code Configuration" class="md-header__button md-logo" aria-label="Claude Code Configuration" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Claude Code Configuration
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Analysis: Tips Harvest (Boris Cherny + Community)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/ByronWilliamsCPA/.claude" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    ByronWilliamsCPA/claude_config
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../getting-started/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../architecture/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../reference/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../contributing/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Contributing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../project/roadmap/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Project
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Claude Code Configuration" class="md-nav__button md-logo" aria-label="Claude Code Configuration" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Claude Code Configuration
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/ByronWilliamsCPA/.claude" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    ByronWilliamsCPA/claude_config
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--published"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../getting-started/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../getting-started/install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1. Install
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../getting-started/first-agent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2. Your First Agent
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../getting-started/first-skill/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3. Your First Skill
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../getting-started/picking/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Picking Agents vs Skills
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../getting-started/troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../architecture/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../architecture/install-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Install Model
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../architecture/hook-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hook Pipeline
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../architecture/agent-dispatch/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent Dispatch
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../architecture/mcp-tiered-loading/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MCP Tiered Loading
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../architecture/submodule-strategy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Submodule Strategy
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../architecture/rules-vs-standards/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rules vs Standards
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../architecture/diagrams/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Diagrams
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_9" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../architecture/adr/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Decisions (ADRs)
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3_9" id="__nav_3_9_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Decisions (ADRs)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../architecture/adr/ADR-001-two-layer-symlink-install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-001 Two-Layer Symlink Install
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../architecture/adr/ADR-002-hook-composition/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-002 Hook Composition
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../architecture/adr/ADR-003-tiered-mcp-loading/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-003 Tiered MCP Loading
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../architecture/adr/ADR-004-skill-vs-agent-boundary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-004 Skill vs Agent Boundary
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../architecture/adr/ADR-005-submodule-extension-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-005 Submodule Extension Model
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../architecture/adr/ADR-006-rules-vs-standards/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-006 Rules vs Standards
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../architecture/adr/ADR-007-dual-audience-docs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-007 Dual-Audience Docs
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../reference/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/agents/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agents Catalog
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/skills/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Skills Catalog
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/hooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hooks
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/mcp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MCP Strategy
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--published"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../contributing/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contributing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../contributing/adding-agents/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding an Agent
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../contributing/adding-skills/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding a Skill
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../contributing/adding-hooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding a Hook
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../contributing/writing-adrs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writing ADRs
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../contributing/writing-diagrams/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writing Diagrams
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../frontmatter-standard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontmatter Standard
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--published"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Project
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../project/roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--published"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../project/changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--published"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../project/license/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    License
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--published"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#files-reviewed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Files reviewed
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#all-tips-extracted" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        All tips extracted
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="All tips extracted">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#boris-jan-3-13-tips" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Boris Jan 3 (13 tips)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#boris-feb-1-10-tips" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Boris Feb 1 (10 tips)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#boris-feb-12-12-customization-tips" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Boris Feb 12 (12 customization tips)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#boris-mar-10-2-tips" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Boris Mar 10 (2 tips)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#boris-mar-25-2-tips" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Boris Mar 25 (2 tips)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#boris-mar-30-15-tips" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Boris Mar 30 (15 tips)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#thariq-mar-17-22-items" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Thariq Mar 17 (22 items)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gap-analysis-ranked-high-to-low-for-a-solo-practitioner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gap analysis (ranked high to low for a solo practitioner)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Gap analysis (ranked high to low for a solo practitioner)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#high-priority" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HIGH priority
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#medium-priority" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MEDIUM priority
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#low-priority" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LOW priority
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tips-classified-as-not-applicable-or-not-worth-it-for-solo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tips classified as NOT APPLICABLE or NOT WORTH IT for solo
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tips-we-cover-better" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tips we cover better
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommendations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommendations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Recommendations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#recommendation-1-sessionstart-hook-for-dynamic-rule-loading" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommendation 1: SessionStart hook for dynamic rule loading
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#recommendation-2-document-branch-and-fork-session-in-git-workflow-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommendation 2: Document /branch and --fork-session in git-workflow rules
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#recommendation-3-trial-loop-on-doc-audit-and-sonarcloud" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommendation 3: Trial /loop on doc-audit and sonarcloud
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#recommendation-4-on-demand-hooks-convention-for-skills" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommendation 4: On-demand hooks convention for skills
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#recommendation-5-audit-existing-skills-for-progressive-disclosure-gotchas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommendation 5: Audit existing skills for progressive disclosure + Gotchas
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#recommendation-6-claude_plugin_data-memory-for-detector-skills" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommendation 6: ${CLAUDE_PLUGIN_DATA} memory for detector skills
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#recommendation-7-skill-usage-telemetry-via-pretooluse-log" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommendation 7: Skill usage telemetry via PreToolUse log
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#recommendation-8-runbook-skill-template-for-operational-procedures" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommendation 8: Runbook skill template for operational procedures
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#recommendation-9-add-bare-to-any-sdk-style-invocations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommendation 9: Add --bare to any SDK-style invocations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#recommendation-10-stop-hook-for-deterministic-verification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommendation 10: Stop hook for deterministic verification
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gemini-review-pass-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gemini review pass (summary)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#authoritative-citations-found" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Authoritative citations found
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>Analysis: Tips Harvest (Boris Cherny + Community)</h1>
+
+<blockquote>
+<p><strong>Scope:</strong> Seven tip files from <code>shanraisshan/claude-code-best-practice/tips/</code>
+covering Boris Cherny posts (Jan 3 through Mar 30, 2026) plus Thariq's March 17
+skill-construction guide. Total of 76 discrete items extracted and mapped
+against our 41 skills / 29 agents / 7 rules / 7 commands at <code>/home/byron/dev/.claude</code>.</p>
+<p><strong>Audience:</strong> Solo practitioner. Prioritization reflects that team-specific
+tips (Slack sync, mobile app, Cowork Dispatch) are deprioritized.</p>
+</blockquote>
+<h2 id="files-reviewed">Files reviewed<a class="headerlink" href="#files-reviewed" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>External file</th>
+<th>Tip count</th>
+<th>Authors</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tips/claude-boris-13-tips-03-jan-26.md</code></td>
+<td>13</td>
+<td>Boris Cherny</td>
+</tr>
+<tr>
+<td><code>tips/claude-boris-10-tips-01-feb-26.md</code></td>
+<td>10</td>
+<td>Boris + CC team</td>
+</tr>
+<tr>
+<td><code>tips/claude-boris-12-tips-12-feb-26.md</code></td>
+<td>12</td>
+<td>Boris Cherny</td>
+</tr>
+<tr>
+<td><code>tips/claude-boris-2-tips-10-mar-26.md</code></td>
+<td>2</td>
+<td>Boris Cherny</td>
+</tr>
+<tr>
+<td><code>tips/claude-thariq-tips-17-mar-26.md</code></td>
+<td>22 (9 categories + 9 construction + 4 distribution)</td>
+<td>Thariq</td>
+</tr>
+<tr>
+<td><code>tips/claude-boris-2-tips-25-mar-26.md</code></td>
+<td>2</td>
+<td>Boris Cherny</td>
+</tr>
+<tr>
+<td><code>tips/claude-boris-15-tips-30-mar-26.md</code></td>
+<td>15</td>
+<td>Boris Cherny</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td><strong>76</strong></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>Note: Expected list was 6 files; directory actually contains 7. The extra
+file <code>claude-boris-2-tips-10-mar-26.md</code> (Code Review + test time compute)
+was included.</p>
+<h2 id="all-tips-extracted">All tips extracted<a class="headerlink" href="#all-tips-extracted" title="Permanent link">&para;</a></h2>
+<h3 id="boris-jan-3-13-tips">Boris Jan 3 (13 tips)<a class="headerlink" href="#boris-jan-3-13-tips" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Tip (short name)</th>
+<th>Classification</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Run 5 Claudes in parallel across numbered terminal tabs</td>
+<td>partially covered</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Use <code>claude.ai/code</code> for web parallelism, teleport between web and local</td>
+<td>gap</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Use Opus with thinking for everything</td>
+<td>already covered</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Share a single <code>CLAUDE.md</code> checked into git, iterate weekly</td>
+<td>already covered</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Tag <code>@claude</code> on PRs to amend <code>CLAUDE.md</code> during review</td>
+<td>gap</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Start most sessions in Plan mode (shift+tab twice)</td>
+<td>partially covered</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Use slash commands for inner-loop workflows</td>
+<td>already covered</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Use subagents to automate common workflows</td>
+<td>already covered</td>
+</tr>
+<tr>
+<td>9</td>
+<td>PostToolUse hook to auto-format code</td>
+<td>already covered</td>
+</tr>
+<tr>
+<td>10</td>
+<td>Pre-allow permissions in <code>/permissions</code>, not <code>--dangerously-skip-permissions</code></td>
+<td>already covered</td>
+</tr>
+<tr>
+<td>11</td>
+<td>Let Claude use Slack/BigQuery/Sentry via MCP</td>
+<td>gap</td>
+</tr>
+<tr>
+<td>12</td>
+<td>Verify long-running tasks with Stop hook or ralph-wiggum plugin</td>
+<td>partially covered</td>
+</tr>
+<tr>
+<td>13</td>
+<td>Give Claude a way to verify its work (feedback loop primacy)</td>
+<td>already covered</td>
+</tr>
+</tbody>
+</table>
+<h3 id="boris-feb-1-10-tips">Boris Feb 1 (10 tips)<a class="headerlink" href="#boris-feb-1-10-tips" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Tip (short name)</th>
+<th>Classification</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>14</td>
+<td>3-5 parallel worktrees, shell aliases (2a/2b/2c), analysis worktree</td>
+<td>partially covered</td>
+</tr>
+<tr>
+<td>15</td>
+<td>Start every complex task in Plan mode; second Claude reviews as staff engineer</td>
+<td>partially covered</td>
+</tr>
+<tr>
+<td>16</td>
+<td>Invest in <code>CLAUDE.md</code> — update after every correction</td>
+<td>already covered</td>
+</tr>
+<tr>
+<td>17</td>
+<td>Commit skills to git: <code>/techdebt</code>, Slack+GDrive+Asana sync skill</td>
+<td>partially covered</td>
+</tr>
+<tr>
+<td>18</td>
+<td>Claude fixes most bugs alone: paste Slack thread, "fix CI", docker logs</td>
+<td>partially covered</td>
+</tr>
+<tr>
+<td>19</td>
+<td>Level up prompting: challenge Claude, "scrap and reimplement", detailed specs</td>
+<td>already covered</td>
+</tr>
+<tr>
+<td>20</td>
+<td>Terminal setup: Ghostty, <code>/statusline</code>, tmux, voice dictation</td>
+<td>gap</td>
+</tr>
+<tr>
+<td>21</td>
+<td>Subagents: "use subagents" suffix, offload for context hygiene, route perms via hook</td>
+<td>partially covered</td>
+</tr>
+<tr>
+<td>22</td>
+<td><code>bq</code> CLI + BigQuery skill for analytics</td>
+<td>gap</td>
+</tr>
+<tr>
+<td>23</td>
+<td>Learning: Explanatory/Learning output style, HTML presentations, ASCII diagrams, spaced repetition</td>
+<td>gap</td>
+</tr>
+</tbody>
+</table>
+<h3 id="boris-feb-12-12-customization-tips">Boris Feb 12 (12 customization tips)<a class="headerlink" href="#boris-feb-12-12-customization-tips" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Tip (short name)</th>
+<th>Classification</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>24</td>
+<td><code>/config</code> terminal theme, notifications, <code>/terminal-setup</code>, <code>/vim</code></td>
+<td>gap</td>
+</tr>
+<tr>
+<td>25</td>
+<td><code>/model</code> effort level (low/medium/high, Boris prefers high)</td>
+<td>gap</td>
+</tr>
+<tr>
+<td>26</td>
+<td><code>/plugin</code> to install LSPs, MCPs, skills, agents, hooks</td>
+<td>partially covered</td>
+</tr>
+<tr>
+<td>27</td>
+<td>Custom agents in <code>.claude/agents/</code>, <code>--agent</code> flag, default via settings.json</td>
+<td>already covered</td>
+</tr>
+<tr>
+<td>28</td>
+<td><code>/permissions</code> with wildcard syntax <code>Bash(bun run *)</code></td>
+<td>already covered</td>
+</tr>
+<tr>
+<td>29</td>
+<td><code>/sandbox</code> file and network isolation</td>
+<td>gap</td>
+</tr>
+<tr>
+<td>30</td>
+<td><code>/statusline</code> for model/directory/context/cost</td>
+<td>gap</td>
+</tr>
+<tr>
+<td>31</td>
+<td><code>/keybindings</code> with live reload</td>
+<td>gap</td>
+</tr>
+<tr>
+<td>32</td>
+<td>Hooks to route permissions to Slack, nudge Claude, pre/post-process</td>
+<td>partially covered</td>
+</tr>
+<tr>
+<td>33</td>
+<td>Customize spinner verbs</td>
+<td>gap (trivial)</td>
+</tr>
+<tr>
+<td>34</td>
+<td>Output styles: Explanatory, Learning, Custom</td>
+<td>gap</td>
+</tr>
+<tr>
+<td>35</td>
+<td>Customize everything via <code>settings.json</code> checked into git</td>
+<td>already covered</td>
+</tr>
+</tbody>
+</table>
+<h3 id="boris-mar-10-2-tips">Boris Mar 10 (2 tips)<a class="headerlink" href="#boris-mar-10-2-tips" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Tip (short name)</th>
+<th>Classification</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>36</td>
+<td>Code Review product: team of agents runs deep review on every PR</td>
+<td>partially covered</td>
+</tr>
+<tr>
+<td>37</td>
+<td>Test time compute: multiple uncorrelated context windows catch bugs</td>
+<td>already covered</td>
+</tr>
+</tbody>
+</table>
+<h3 id="boris-mar-25-2-tips">Boris Mar 25 (2 tips)<a class="headerlink" href="#boris-mar-25-2-tips" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Tip (short name)</th>
+<th>Classification</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>38</td>
+<td>Always squash merge (141 PRs/day, clean history, easy revert)</td>
+<td>already covered</td>
+</tr>
+<tr>
+<td>39</td>
+<td>PR size distribution: p50=118 lines, p90=498, p99=2978</td>
+<td>partially covered</td>
+</tr>
+</tbody>
+</table>
+<h3 id="boris-mar-30-15-tips">Boris Mar 30 (15 tips)<a class="headerlink" href="#boris-mar-30-15-tips" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Tip (short name)</th>
+<th>Classification</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>40</td>
+<td>Claude Code mobile app (iOS/Android Code tab)</td>
+<td>gap (low priority solo)</td>
+</tr>
+<tr>
+<td>41</td>
+<td><code>/teleport</code> and <code>/remote-control</code> between mobile/web/desktop/terminal</td>
+<td>gap (low priority solo)</td>
+</tr>
+<tr>
+<td>42</td>
+<td><code>/loop</code> and <code>/schedule</code> for recurring automation</td>
+<td>gap</td>
+</tr>
+<tr>
+<td>43</td>
+<td>Hooks: SessionStart dynamic context, PreToolUse logging, Stop nudging</td>
+<td>partially covered</td>
+</tr>
+<tr>
+<td>44</td>
+<td>Cowork Dispatch (remote control for Claude Desktop app)</td>
+<td>gap (low priority solo)</td>
+</tr>
+<tr>
+<td>45</td>
+<td>Chrome extension for frontend iteration feedback loop</td>
+<td>gap</td>
+</tr>
+<tr>
+<td>46</td>
+<td>Claude Desktop app auto-starts and tests web servers</td>
+<td>gap</td>
+</tr>
+<tr>
+<td>47</td>
+<td>Fork session via <code>/branch</code> or <code>claude --resume &lt;id&gt; --fork-session</code></td>
+<td>gap</td>
+</tr>
+<tr>
+<td>48</td>
+<td><code>/btw</code> for side queries while agent is working</td>
+<td>gap</td>
+</tr>
+<tr>
+<td>49</td>
+<td><code>claude -w</code> for worktree-backed sessions</td>
+<td>already covered</td>
+</tr>
+<tr>
+<td>50</td>
+<td><code>/batch</code> to fan out massive changesets across dozens of worktrees</td>
+<td>gap</td>
+</tr>
+<tr>
+<td>51</td>
+<td><code>--bare</code> flag: skip auto-loading, 10x faster SDK startup</td>
+<td>gap</td>
+</tr>
+<tr>
+<td>52</td>
+<td><code>--add-dir</code> / <code>additionalDirectories</code> for multi-repo access</td>
+<td>gap</td>
+</tr>
+<tr>
+<td>53</td>
+<td><code>--agent</code> flag for custom system prompt and restricted tools</td>
+<td>already covered</td>
+</tr>
+<tr>
+<td>54</td>
+<td><code>/voice</code> for voice input</td>
+<td>gap</td>
+</tr>
+</tbody>
+</table>
+<h3 id="thariq-mar-17-22-items">Thariq Mar 17 (22 items)<a class="headerlink" href="#thariq-mar-17-22-items" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Tip (short name)</th>
+<th>Classification</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>T1</td>
+<td>Library &amp; API Reference skill category</td>
+<td>partially covered</td>
+</tr>
+<tr>
+<td>T2</td>
+<td>Product Verification skill category (Playwright/tmux paired)</td>
+<td>already covered</td>
+</tr>
+<tr>
+<td>T3</td>
+<td>Data Fetching &amp; Analysis skill category</td>
+<td>gap</td>
+</tr>
+<tr>
+<td>T4</td>
+<td>Business Process &amp; Team Automation skill category</td>
+<td>partially covered</td>
+</tr>
+<tr>
+<td>T5</td>
+<td>Code Scaffolding &amp; Templates skill category</td>
+<td>already covered</td>
+</tr>
+<tr>
+<td>T6</td>
+<td>Code Quality &amp; Review skill category</td>
+<td>already covered</td>
+</tr>
+<tr>
+<td>T7</td>
+<td>CI/CD &amp; Deployment skill category</td>
+<td>already covered</td>
+</tr>
+<tr>
+<td>T8</td>
+<td>Runbook skill category (symptom to investigation to report)</td>
+<td>gap</td>
+</tr>
+<tr>
+<td>T9</td>
+<td>Infrastructure Operations skill category</td>
+<td>gap</td>
+</tr>
+<tr>
+<td>T10</td>
+<td>Don't state the obvious: push Claude out of default thinking</td>
+<td>partially covered</td>
+</tr>
+<tr>
+<td>T11</td>
+<td>Build a Gotchas section: highest-signal content</td>
+<td>partially covered</td>
+</tr>
+<tr>
+<td>T12</td>
+<td>Use file system as progressive disclosure, not single markdown</td>
+<td>partially covered</td>
+</tr>
+<tr>
+<td>T13</td>
+<td>Avoid railroading: give goals + constraints, not step-by-step</td>
+<td>partially covered</td>
+</tr>
+<tr>
+<td>T14</td>
+<td>Think through setup: <code>config.json</code> + AskUserQuestion tool</td>
+<td>gap</td>
+</tr>
+<tr>
+<td>T15</td>
+<td>Description field is a trigger specification, not a summary</td>
+<td>already covered</td>
+</tr>
+<tr>
+<td>T16</td>
+<td>Memory via <code>${CLAUDE_PLUGIN_DATA}</code> stable storage path</td>
+<td>gap</td>
+</tr>
+<tr>
+<td>T17</td>
+<td>Store scripts and libraries so Claude composes rather than reconstructs</td>
+<td>partially covered</td>
+</tr>
+<tr>
+<td>T18</td>
+<td>On-demand hooks activated only when skill invoked (<code>/careful</code>, <code>/freeze</code>)</td>
+<td>gap</td>
+</tr>
+<tr>
+<td>T19</td>
+<td>Distribution: check into repo vs plugin marketplace</td>
+<td>already covered</td>
+</tr>
+<tr>
+<td>T20</td>
+<td>Marketplace management: organic curation, sandbox then promote</td>
+<td>not applicable (solo)</td>
+</tr>
+<tr>
+<td>T21</td>
+<td>Compose skills by reference, model invokes if installed</td>
+<td>partially covered</td>
+</tr>
+<tr>
+<td>T22</td>
+<td>Measure skills with PreToolUse log hook</td>
+<td>gap</td>
+</tr>
+</tbody>
+</table>
+<h2 id="gap-analysis-ranked-high-to-low-for-a-solo-practitioner">Gap analysis (ranked high to low for a solo practitioner)<a class="headerlink" href="#gap-analysis-ranked-high-to-low-for-a-solo-practitioner" title="Permanent link">&para;</a></h2>
+<h3 id="high-priority">HIGH priority<a class="headerlink" href="#high-priority" title="Permanent link">&para;</a></h3>
+<p><strong>Gap 1: SessionStart hook for dynamic context injection</strong>
+- <strong>Tip:</strong> Use a <code>SessionStart</code> hook to evaluate the active branch or modified
+  files and load only the relevant rule file from <code>.claude/rules/</code> into context.
+- <strong>Why it matters:</strong> We have <code>git-workflow.md</code>, <code>mcp-strategy.md</code>,
+  <code>pre-commit.md</code>, <code>python.md</code>, <code>supervisor.md</code>, <code>testing.md</code>, <code>writing.md</code> but
+  rely on the model fetching the right one. A SessionStart hook can detect
+  modified paths and inject exactly the needed rules, trimming context waste.
+- <strong>Where it would land:</strong> New hook entry in <code>.claude/settings.json</code> +
+  <code>scripts/session-start-context.sh</code>.
+- <strong>Effort:</strong> M
+- <strong>Priority:</strong> high</p>
+<p><strong>Gap 2: Fork session via <code>/branch</code> and <code>--fork-session</code></strong>
+- <strong>Tip:</strong> <code>/branch</code> or <code>claude --resume &lt;id&gt; --fork-session</code> branches the
+  current conversation. You can explore a destructive refactor in the fork and
+  discard it, returning to the parent session unchanged.
+- <strong>Why it matters:</strong> Solo developers are the bottleneck for context switching.
+  Forking is cheaper than worktrees for speculative exploration and preserves
+  the parent's cache.
+- <strong>Where it would land:</strong> New entry in <code>.claude/rules/git-workflow.md</code> or a
+  new <code>fork-session</code> playbook note.
+- <strong>Effort:</strong> S (documentation only)
+- <strong>Priority:</strong> high</p>
+<p><strong>Gap 3: <code>/loop</code> and <code>/schedule</code> for babysit-style automation</strong>
+- <strong>Tip:</strong> <code>/loop 5m /ci-fix</code> or <code>/loop 30m /doc-audit</code> runs a skill on interval
+  for up to a week. Boris uses it for auto-rebase, PR pruning, and
+  post-merge sweeping.
+- <strong>Why it matters:</strong> Our <code>ci-fix</code>, <code>doc-audit</code>, <code>sonarcloud</code> skills are
+  perfect loop candidates. Running <code>doc-audit</code> overnight surfaces drift
+  without manual invocation.
+- <strong>Where it would land:</strong> New section in <code>CLAUDE.md</code> or
+  <code>.claude/rules/loop-recipes.md</code>; no code changes needed.
+- <strong>Effort:</strong> S
+- <strong>Priority:</strong> high
+- <strong>Note on Gemini pushback:</strong> Gemini argued <code>/loop</code> is lower value for solo
+  work. I disagree for our specific case: our doc and CI skills drift
+  continuously and the loop runs as background watcher, not polling. Worth a
+  trial, not a full commitment.</p>
+<p><strong>Gap 4: On-demand hooks inside skills (T18: <code>/careful</code>, <code>/freeze</code> pattern)</strong>
+- <strong>Tip:</strong> Skills can register hooks that are active only for the session in
+  which the skill is invoked. Example: <code>/freeze</code> blocks edits outside the
+  current branch directory; <code>/careful</code> blocks <code>rm -rf</code>, <code>DROP TABLE</code>,
+  force-push via PreToolUse Bash matcher.
+- <strong>Why it matters:</strong> Different from global hooks. Lets a skill temporarily
+  tighten guardrails without bloating <code>settings.json</code>. Pairs well with our RAD
+  framework: a <code>/rad-strict</code> on-demand hook could inject verification
+  requirements only when RAD tagging is active.
+- <strong>Where it would land:</strong> New skill convention documented in
+  <code>.claude/skills/writing-skills/</code> or <code>.claude/rules/hook-patterns.md</code>.
+- <strong>Effort:</strong> M
+- <strong>Priority:</strong> high</p>
+<p><strong>Gap 5: <code>--bare</code> flag for SDK / non-interactive startup</strong>
+- <strong>Tip:</strong> <code>claude -p "..." --bare</code> skips the auto-scan for local <code>CLAUDE.md</code>,
+  settings, and MCPs. Up to 10x faster startup.
+- <strong>Why it matters:</strong> Our <code>ci-fix</code> and doc audit hooks already invoke
+  <code>claude -p</code> style calls. If we move toward cron-backed automation
+  (see Gap 3), <code>--bare</code> reduces cold-start cost.
+- <strong>Where it would land:</strong> <code>.claude/scripts/*.sh</code> that shell out to <code>claude -p</code>.
+- <strong>Effort:</strong> S
+- <strong>Priority:</strong> high</p>
+<h3 id="medium-priority">MEDIUM priority<a class="headerlink" href="#medium-priority" title="Permanent link">&para;</a></h3>
+<p><strong>Gap 6: <code>${CLAUDE_PLUGIN_DATA}</code> stable storage for skill memory</strong>
+- <strong>Tip:</strong> Skills can persist state across sessions via
+  <code>${CLAUDE_PLUGIN_DATA}</code>. Anthropic uses it for append-only logs, JSON
+  caches, SQLite.
+- <strong>Why it matters:</strong> Our <code>silent-failure-hunter</code>, <code>test-coverage</code>, and
+  <code>debug-tests</code> skills rediscover the same patterns every run. Stateful
+  memory would let them track flaky tests, coverage trends, and repeated
+  bug sites.
+- <strong>Where it would land:</strong> Update three to five existing skills to write to
+  <code>${CLAUDE_PLUGIN_DATA}/&lt;skill&gt;/history.jsonl</code>.
+- <strong>Effort:</strong> M
+- <strong>Priority:</strong> medium</p>
+<p><strong>Gap 7: Data Fetching / Runbook / Infra Ops skill categories (T3, T8, T9)</strong>
+- <strong>Tip:</strong> Thariq's taxonomy shows three categories we have zero coverage in.
+  Runbooks take a symptom (Slack thread, alert, error signature), walk a
+  multi-tool investigation, and produce a structured report.
+- <strong>Why it matters:</strong> Our <code>debug-tests</code> and <code>systematic-debugging</code> skills
+  operate locally on code. We have no skill that ingests external
+  operational state (logs, metrics, alerts) and triages. For a solo dev
+  running services, this is a real gap.
+- <strong>Where it would land:</strong> New skill directory
+  <code>.claude/skills/runbook-template/</code> with a config-driven starter. Optional
+  Data Fetching skill once we identify a target system.
+- <strong>Effort:</strong> M
+- <strong>Priority:</strong> medium (depends on whether we operate services)</p>
+<p><strong>Gap 8: Progressive disclosure audit across existing 41 skills (T12)</strong>
+- <strong>Tip:</strong> A skill is a folder, not just a markdown file. Claude should read
+  <code>references/</code> and <code>examples/</code> on demand, not eagerly.
+- <strong>Why it matters:</strong> Gemini flagged this as "implicit but not verified." We
+  need a pass across our 41 skills to ensure SKILL.md files are thin and
+  heavy content lives in sibling files the model loads when needed. Context
+  budget is real.
+- <strong>Where it would land:</strong> Audit script + updates to any skill found
+  dumping large reference blocks.
+- <strong>Effort:</strong> L
+- <strong>Priority:</strong> medium</p>
+<p><strong>Gap 9: Gotchas sections across existing skills (T11)</strong>
+- <strong>Tip:</strong> Build up a Gotchas section in every skill from common failure
+  points. Highest-signal content.
+- <strong>Why it matters:</strong> We likely have partial coverage. Systematic audit
+  would surface which skills lack this.
+- <strong>Where it would land:</strong> Pair with Gap 8 audit.
+- <strong>Effort:</strong> M
+- <strong>Priority:</strong> medium</p>
+<p><strong>Gap 10: Second Claude as staff-engineer plan reviewer (tip 15)</strong>
+- <strong>Tip:</strong> One Claude writes the plan, a second Claude reviews it as a staff
+  engineer before switching to auto-accept mode.
+- <strong>Why it matters:</strong> Our <code>plan-validator</code> agent is close but the pattern of
+  "spin up a fresh session specifically to review the plan" is a workflow
+  primitive we should document, not a new tool.
+- <strong>Where it would land:</strong> <code>.claude/skills/writing-plans/</code> or
+  <code>.claude/skills/executing-plans/</code> — add a two-session review pattern.
+- <strong>Effort:</strong> S
+- <strong>Priority:</strong> medium</p>
+<p><strong>Gap 11: Skill usage measurement via PreToolUse log (T22)</strong>
+- <strong>Tip:</strong> PreToolUse hook logs every skill invocation so you can see
+  which are popular and which are undertriggered.
+- <strong>Why it matters:</strong> With 41 skills, we don't know which are unused. A
+  simple append-only log of skill names and timestamps would surface
+  dead weight for pruning.
+- <strong>Where it would land:</strong> New PreToolUse hook + <code>scripts/log-skill.sh</code>
+  writing to <code>$HOME/.claude/logs/skill-usage.jsonl</code>.
+- <strong>Effort:</strong> S
+- <strong>Priority:</strong> medium</p>
+<p><strong>Gap 12: <code>--add-dir</code> / <code>additionalDirectories</code> for multi-repo work</strong>
+- <strong>Tip:</strong> When working across repos, start Claude in one and use <code>--add-dir</code>
+  to give it visibility plus permissions on siblings.
+- <strong>Why it matters:</strong> We often touch <code>.claude/</code> globals while in a project
+  repo. <code>additionalDirectories</code> in project <code>settings.json</code> would make this
+  seamless.
+- <strong>Where it would land:</strong> Template update for project-level
+  <code>settings.json</code> examples.
+- <strong>Effort:</strong> S
+- <strong>Priority:</strong> medium</p>
+<h3 id="low-priority">LOW priority<a class="headerlink" href="#low-priority" title="Permanent link">&para;</a></h3>
+<p><strong>Gap 13: Output styles (Explanatory / Learning)</strong>
+- <strong>Tip:</strong> <code>/config</code> sets an output style. Explanatory explains the why.
+  Learning coaches you through changes.
+- <strong>Why it matters:</strong> Nice for onboarding unfamiliar codebases. Not
+  critical for daily work.
+- <strong>Effort:</strong> S
+- <strong>Priority:</strong> low</p>
+<p><strong>Gap 14: <code>/sandbox</code> file and network isolation</strong>
+- <strong>Tip:</strong> Claude Code ships a sandbox runtime with file and network
+  isolation.
+- <strong>Why it matters:</strong> Would reduce permission prompts and offer defense in
+  depth. But adds complexity to a working setup.
+- <strong>Effort:</strong> M
+- <strong>Priority:</strong> low</p>
+<p><strong>Gap 15: <code>/btw</code> for side queries</strong>
+- <strong>Tip:</strong> Ask a quick side question without interrupting the agent.
+- <strong>Why it matters:</strong> Minor quality-of-life improvement.
+- <strong>Effort:</strong> S (no setup required, just habit)
+- <strong>Priority:</strong> low</p>
+<p><strong>Gap 16: <code>/statusline</code>, spinner verbs, keybindings, terminal theme</strong>
+- <strong>Tip:</strong> Purely cosmetic customization (tips 24, 30, 31, 33).
+- <strong>Why it matters:</strong> Zero effect on code quality.
+- <strong>Effort:</strong> S
+- <strong>Priority:</strong> low (skip unless craving)</p>
+<p><strong>Gap 17: Chrome extension for frontend feedback loop</strong>
+- <strong>Tip:</strong> Give Claude a browser so it can iterate on frontend code with
+  visual feedback.
+- <strong>Why it matters:</strong> Our <code>frontend-design</code> skill has no visual feedback
+  loop. For rare frontend work this matters; for us it's situational.
+- <strong>Effort:</strong> M
+- <strong>Priority:</strong> low (unless frontend work picks up)</p>
+<h3 id="tips-classified-as-not-applicable-or-not-worth-it-for-solo">Tips classified as NOT APPLICABLE or NOT WORTH IT for solo<a class="headerlink" href="#tips-classified-as-not-applicable-or-not-worth-it-for-solo" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Slack + GDrive + Asana + GitHub 7-day context sync (tip 17 sub): no team
+  systems to sync.</li>
+<li>Tag <code>@claude</code> on PRs for Compounding Engineering (tip 5): our PRs are
+  solo; we'd be tagging ourselves.</li>
+<li>Mobile app, teleport, Cowork Dispatch (tips 40, 41, 44): solo laptop
+  workflow doesn't need remote delegation.</li>
+<li><code>/batch</code> for dozens of worktree agents (tip 50): scale mismatch.</li>
+<li>Voice dictation (tips 20, 54): personal preference, not a process gap.</li>
+<li>Marketplace curation (T20): we share skills via the single <code>.claude</code>
+  repo, not via a marketplace.</li>
+</ul>
+<h2 id="tips-we-cover-better">Tips we cover better<a class="headerlink" href="#tips-we-cover-better" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>CLAUDE.md iteration (tip 4, 16):</strong> We have a <code>claude-md-improver</code> skill
+  that audits CLAUDE.md files against templates and updates them. Boris's
+  advice is "edit it after every correction"; we have a dedicated skill.</li>
+<li><strong>Slash commands for inner loop (tip 7):</strong> Our <code>ci-fix</code>, <code>quality</code>,
+  <code>testing</code>, <code>security</code>, <code>sonarcloud</code>, <code>git</code> skills are exactly
+  inner-loop workflows plus CI safety nets.</li>
+<li><strong>Subagent workflow automation (tip 8):</strong> 29 agents with role separation
+  including <code>code-simplifier</code>, <code>plan-validator</code>, <code>silent-failure-hunter</code>,
+  <code>test-writer</code>, <code>test-engineer</code>, <code>security-auditor</code> exceeds what Boris
+  describes in the tips.</li>
+<li><strong>Feedback loop / test verification (tips 12, 13):</strong> We pair
+  <code>verification-before-completion</code> + <code>test-driven-development</code> +
+  <code>systematic-debugging</code> + RAD tagging, which is stricter than Boris's
+  "give Claude a way to verify."</li>
+<li><strong>PostToolUse formatting (tip 9):</strong> Our hooks run ruff auto-fix,
+  shellcheck, Python 3.10 compatibility check, and pre-commit. Boris's
+  example was a single <code>bun run format</code> call.</li>
+<li><strong>Squash merge policy (tip 38):</strong> Already in <code>.claude/rules/git-workflow.md</code>.</li>
+<li><strong>Pre-allow permissions (tip 10, 28):</strong> <code>.claude/settings.json</code> already
+  maintains allowlists.</li>
+<li><strong>Plan mode primitives (tips 6, 15):</strong> <code>brainstorming</code>, <code>writing-plans</code>,
+  <code>executing-plans</code>, <code>project-planning</code>, <code>plan-validator</code> cover this more
+  explicitly than shift+tab twice.</li>
+<li><strong>Challenging Claude / review prompting (tip 19):</strong> Our
+  <code>receiving-code-review</code> and <code>requesting-code-review</code> skills codify
+  this as a process, not ad-hoc advice.</li>
+<li><strong>Skill description = trigger (T15):</strong> Our <code>writing-skills</code> skill
+  enforces this for new skill creation.</li>
+<li><strong>Squash + PR size discipline (tips 38, 39):</strong> <code>git-workflow.md</code>
+  handles squash. We don't enforce a 118-line median but our general
+  small-PR preference is compatible.</li>
+<li><strong>Custom agents pattern (tip 27):</strong> 29 agents already in
+  <code>.claude/agents/</code> plus SKILL.md infrastructure.</li>
+</ul>
+<h2 id="recommendations">Recommendations<a class="headerlink" href="#recommendations" title="Permanent link">&para;</a></h2>
+<h3 id="recommendation-1-sessionstart-hook-for-dynamic-rule-loading">Recommendation 1: SessionStart hook for dynamic rule loading<a class="headerlink" href="#recommendation-1-sessionstart-hook-for-dynamic-rule-loading" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>What:</strong> Add a <code>SessionStart</code> hook to <code>.claude/settings.json</code> that
+  detects git branch, modified paths, and project type, then injects the
+  relevant subset of <code>.claude/rules/*.md</code> into the session.</li>
+<li><strong>Why:</strong> We have seven rule files but rely on the model to find them.
+  Deterministic injection cuts context waste and ensures the right
+  constraint is always active.</li>
+<li><strong>Target files:</strong> <code>.claude/settings.json</code>,
+  <code>.claude/scripts/session-start-rules.sh</code> (new),
+  <code>.claude/rules/session-start-strategy.md</code> (new).</li>
+<li><strong>Effort:</strong> M</li>
+<li><strong>Priority:</strong> high</li>
+<li><strong>Source citation:</strong> Boris Mar 30 2026 tip 4 (hooks for SessionStart),
+  <a href="https://x.com/bcherny/status/2038454343519932844">x.com/bcherny/status/2038454343519932844</a></li>
+</ul>
+<h3 id="recommendation-2-document-branch-and-fork-session-in-git-workflow-rules">Recommendation 2: Document <code>/branch</code> and <code>--fork-session</code> in git-workflow rules<a class="headerlink" href="#recommendation-2-document-branch-and-fork-session-in-git-workflow-rules" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>What:</strong> Add a section to <code>.claude/rules/git-workflow.md</code> documenting
+  when to fork a session versus creating a worktree. Forks preserve parent
+  cache; worktrees isolate filesystem.</li>
+<li><strong>Why:</strong> Zero-implementation-cost capability already in Claude Code.
+  Solo practitioners benefit most from cheap speculation.</li>
+<li><strong>Target files:</strong> <code>.claude/rules/git-workflow.md</code>.</li>
+<li><strong>Effort:</strong> S</li>
+<li><strong>Priority:</strong> high</li>
+<li><strong>Source citation:</strong> Boris Mar 30 2026 tip 8,
+  <a href="https://x.com/bcherny/status/2038454350214041740">x.com/bcherny/status/2038454350214041740</a></li>
+</ul>
+<h3 id="recommendation-3-trial-loop-on-doc-audit-and-sonarcloud">Recommendation 3: Trial <code>/loop</code> on doc-audit and sonarcloud<a class="headerlink" href="#recommendation-3-trial-loop-on-doc-audit-and-sonarcloud" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>What:</strong> Document two loop recipes: <code>/loop 6h /doc-audit</code> for weekly
+  drift tracking, <code>/loop 30m /sonarcloud</code> for PR review watchdog. Run
+  each for 48 hours and measure signal-to-noise.</li>
+<li><strong>Why:</strong> Our <code>doc-audit</code> and <code>sonarcloud</code> skills are idempotent and
+  produce useful state on every run. The 7-day auto-expiry on loops
+  means the experiment is self-terminating.</li>
+<li><strong>Target files:</strong> <code>.claude/rules/loop-recipes.md</code> (new).</li>
+<li><strong>Effort:</strong> S</li>
+<li><strong>Priority:</strong> high</li>
+<li><strong>Source citation:</strong> Boris Mar 30 2026 tip 3,
+  <a href="https://x.com/bcherny/status/2038454341884154269">x.com/bcherny/status/2038454341884154269</a></li>
+</ul>
+<h3 id="recommendation-4-on-demand-hooks-convention-for-skills">Recommendation 4: On-demand hooks convention for skills<a class="headerlink" href="#recommendation-4-on-demand-hooks-convention-for-skills" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>What:</strong> Document a convention for skill-scoped PreToolUse hooks.
+  Concrete first example: <code>/rad-strict</code> that blocks any <code>Bash</code> command
+  matching <code>git commit</code> until <code>#VERIFY</code> annotations are present.</li>
+<li><strong>Why:</strong> Lets us tighten guardrails for specific workflows without
+  bloating global settings.</li>
+<li><strong>Target files:</strong> <code>.claude/skills/writing-skills/SKILL.md</code> (update),
+  <code>.claude/skills/rad/</code> (reference implementation).</li>
+<li><strong>Effort:</strong> M</li>
+<li><strong>Priority:</strong> high</li>
+<li><strong>Source citation:</strong> Thariq Mar 17 2026 tip 9,
+  <a href="https://x.com/trq212/status/2033949937936085378">x.com/trq212/status/2033949937936085378</a></li>
+</ul>
+<h3 id="recommendation-5-audit-existing-skills-for-progressive-disclosure-gotchas">Recommendation 5: Audit existing skills for progressive disclosure + Gotchas<a class="headerlink" href="#recommendation-5-audit-existing-skills-for-progressive-disclosure-gotchas" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>What:</strong> Run <code>skill-creator</code> or a one-off audit against each of the 41
+  skills. Verify SKILL.md is under ~200 lines, heavy reference material
+  lives in sibling files, and every skill has a Gotchas section with at
+  least three entries. Update skills that fail.</li>
+<li><strong>Why:</strong> Context budget is real. Thariq is explicit that the file system
+  is the vehicle for progressive disclosure. We should not assume this is
+  fine without measurement.</li>
+<li><strong>Target files:</strong> Audit across <code>.claude/skills/*/SKILL.md</code>.</li>
+<li><strong>Effort:</strong> L</li>
+<li><strong>Priority:</strong> medium</li>
+<li><strong>Source citation:</strong> Thariq Mar 17 2026 tips 11 and 12,
+  <a href="https://x.com/trq212/status/2033949937936085378">x.com/trq212/status/2033949937936085378</a></li>
+</ul>
+<h3 id="recommendation-6-claude_plugin_data-memory-for-detector-skills">Recommendation 6: <code>${CLAUDE_PLUGIN_DATA}</code> memory for detector skills<a class="headerlink" href="#recommendation-6-claude_plugin_data-memory-for-detector-skills" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>What:</strong> Update <code>silent-failure-hunter</code>, <code>test-coverage</code>, and
+  <code>debug-tests</code> to persist findings to
+  <code>${CLAUDE_PLUGIN_DATA}/&lt;skill&gt;/history.jsonl</code>. On next invocation,
+  read history to prioritize known flaky tests or repeat failure sites.</li>
+<li><strong>Why:</strong> Current state: each run rediscovers the same patterns. With
+  stable memory they become smarter over time.</li>
+<li><strong>Target files:</strong> <code>.claude/skills/silent-failure-hunter/SKILL.md</code>,
+  <code>.claude/skills/test-coverage/SKILL.md</code>,
+  <code>.claude/skills/debug-tests/SKILL.md</code>.</li>
+<li><strong>Effort:</strong> M</li>
+<li><strong>Priority:</strong> medium</li>
+<li><strong>Source citation:</strong> Thariq Mar 17 2026 tip 7,
+  <a href="https://x.com/trq212/status/2033949937936085378">x.com/trq212/status/2033949937936085378</a></li>
+</ul>
+<h3 id="recommendation-7-skill-usage-telemetry-via-pretooluse-log">Recommendation 7: Skill usage telemetry via PreToolUse log<a class="headerlink" href="#recommendation-7-skill-usage-telemetry-via-pretooluse-log" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>What:</strong> Add a PreToolUse hook that logs skill invocations to
+  <code>$HOME/.claude/logs/skill-usage.jsonl</code>. Review monthly and prune skills
+  with zero use after 90 days.</li>
+<li><strong>Why:</strong> With 41 skills we don't know which are dead weight. Telemetry
+  is cheap and data-driven pruning reduces context dump and cognitive load.</li>
+<li><strong>Target files:</strong> <code>.claude/settings.json</code>,
+  <code>.claude/scripts/log-skill-usage.sh</code> (new).</li>
+<li><strong>Effort:</strong> S</li>
+<li><strong>Priority:</strong> medium</li>
+<li><strong>Source citation:</strong> Thariq Mar 17 2026, measurement section,
+  <a href="https://x.com/trq212/status/2033949937936085378">x.com/trq212/status/2033949937936085378</a></li>
+</ul>
+<h3 id="recommendation-8-runbook-skill-template-for-operational-procedures">Recommendation 8: Runbook skill template for operational procedures<a class="headerlink" href="#recommendation-8-runbook-skill-template-for-operational-procedures" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>What:</strong> Create <code>.claude/skills/runbook-template/</code> that scaffolds a
+  symptom-to-investigation-to-report flow. Concrete first instance:
+  <code>runbook-preflight</code> that validates GPG, SSH, pip-audit, uv lock state
+  before release.</li>
+<li><strong>Why:</strong> Thariq's taxonomy surfaces Runbook as a distinct category.
+  Our <code>systematic-debugging</code> is closest but is code-focused. Runbooks
+  should codify checklists that currently live in our heads.</li>
+<li><strong>Target files:</strong> <code>.claude/skills/runbook-template/</code> (new directory).</li>
+<li><strong>Effort:</strong> M</li>
+<li><strong>Priority:</strong> medium</li>
+<li><strong>Source citation:</strong> Thariq Mar 17 2026 category 8,
+  <a href="https://x.com/trq212/status/2033949937936085378">x.com/trq212/status/2033949937936085378</a></li>
+</ul>
+<h3 id="recommendation-9-add-bare-to-any-sdk-style-invocations">Recommendation 9: Add <code>--bare</code> to any SDK-style invocations<a class="headerlink" href="#recommendation-9-add-bare-to-any-sdk-style-invocations" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>What:</strong> Audit our <code>.claude/scripts/</code> for any <code>claude -p</code> shell-outs
+  and add <code>--bare</code> flag plus explicit <code>--system-prompt</code>, <code>--settings</code>,
+  <code>--mcp-config</code> where needed. Document as the default for new scripts.</li>
+<li><strong>Why:</strong> 10x cold-start improvement. Free win.</li>
+<li><strong>Target files:</strong> <code>.claude/scripts/*.sh</code> (audit), rules documentation.</li>
+<li><strong>Effort:</strong> S</li>
+<li><strong>Priority:</strong> high</li>
+<li><strong>Source citation:</strong> Boris Mar 30 2026 tip 12,
+  <a href="https://x.com/bcherny/status/2038454357088457168">x.com/bcherny/status/2038454357088457168</a></li>
+</ul>
+<h3 id="recommendation-10-stop-hook-for-deterministic-verification">Recommendation 10: Stop hook for deterministic verification<a class="headerlink" href="#recommendation-10-stop-hook-for-deterministic-verification" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>What:</strong> Add a <code>Stop</code> hook that runs <code>ci-fix</code> or at minimum a
+  <code>pre-commit run --files &lt;touched&gt;</code> pass before exit. Prevents
+  "forgot to run tests" failures that rely on the model remembering.</li>
+<li><strong>Why:</strong> Gemini's pushback on classifying our <code>verification-before-completion</code>
+  skill as covering tip 12 is correct: skills require model compliance,
+  hooks run unconditionally. The Stop hook closes that gap.</li>
+<li><strong>Target files:</strong> <code>.claude/settings.json</code>,
+  <code>.claude/scripts/stop-verification.sh</code> (new).</li>
+<li><strong>Effort:</strong> M</li>
+<li><strong>Priority:</strong> high</li>
+<li><strong>Source citation:</strong> Boris Jan 3 2026 tip 12 and Mar 30 tip 4,
+  <a href="https://x.com/bcherny/status/2007179858435281082">x.com/bcherny/status/2007179858435281082</a></li>
+</ul>
+<h2 id="gemini-review-pass-summary">Gemini review pass (summary)<a class="headerlink" href="#gemini-review-pass-summary" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Gemini corrected me on three "already covered" classifications: the
+  Stop hook tip (we rely on skill-based verification, which is non-deterministic),
+  progressive disclosure (we assumed coverage without verifying), and
+  parallel worktree usage (we have the skill but probably don't actually
+  run concurrent sessions in practice).</li>
+<li>Gemini pushed back on ranking <code>/loop</code> and <code>/schedule</code> as high impact
+  for a solo dev, arguing they introduce background state complexity.
+  I partially accepted (moved to medium) but kept a narrow experiment
+  in Recommendation 3 since our <code>doc-audit</code> and <code>sonarcloud</code> skills
+  are specifically idempotent.</li>
+<li>Gemini surfaced three skill-taxonomy gaps (Data Fetching, Runbook,
+  Infra Ops) that I had marked as covered by <code>debug-tests</code> and
+  <code>systematic-debugging</code>. Gemini's distinction: runbook skills codify
+  operational procedures (deploy, rollback, rotate credentials),
+  not debugging sessions. Accepted into Recommendation 8.</li>
+<li>Gemini reinforced <code>--fork-session</code> (Recommendation 2),
+  <code>${CLAUDE_PLUGIN_DATA}</code> (Recommendation 6), and on-demand hooks
+  (Recommendation 4) as highest leverage for solo work. Accepted.</li>
+<li>Gemini recommended avoiding new procedural agents and focusing on
+  context branching plus stateful data sharing between existing agents.
+  This shaped the final ordering: recommendations lean on extending
+  existing skills rather than creating new ones.</li>
+</ul>
+<h2 id="authoritative-citations-found">Authoritative citations found<a class="headerlink" href="#authoritative-citations-found" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Boris Cherny, Jan 3 2026 (13 tips thread):
+  <a href="https://x.com/bcherny/status/2007179832300581177">x.com/bcherny/status/2007179832300581177</a></li>
+<li>Boris Cherny, Feb 1 2026 (10 team tips thread):
+  <a href="https://x.com/bcherny/status/2017742741636321619">x.com/bcherny/status/2017742741636321619</a></li>
+<li>Boris Cherny, Feb 12 2026 (12 customization tips thread):
+  <a href="https://x.com/bcherny/status/2021699851499798911">x.com/bcherny/status/2021699851499798911</a></li>
+<li>Boris Cherny, Mar 10 2026 (Code Review + test time compute):
+  <a href="https://x.com/bcherny/status/2031089411820228645">x.com/bcherny/status/2031089411820228645</a>,
+  <a href="https://x.com/bcherny/status/2031151689219321886">x.com/bcherny/status/2031151689219321886</a></li>
+<li>Boris Cherny, Mar 25 2026 (squash merge + PR size):
+  <a href="https://x.com/bcherny/status/2038552880018538749">x.com/bcherny/status/2038552880018538749</a></li>
+<li>Boris Cherny, Mar 30 2026 (15 hidden features):
+  <a href="https://x.com/bcherny/status/2038454336355999749">x.com/bcherny/status/2038454336355999749</a></li>
+<li>Thariq, Mar 17 2026 (How we use skills at Anthropic):
+  <a href="https://x.com/trq212/status/2033949937936085378">x.com/trq212/status/2033949937936085378</a></li>
+<li>Claude Code terminal setup docs:
+  <a href="https://code.claude.com/docs/en/terminal">code.claude.com/docs/en/terminal</a></li>
+<li>Claude Code plugins docs:
+  <a href="https://code.claude.com/docs/en/discover-plugins">code.claude.com/docs/en/discover-plugins</a></li>
+<li>Claude Code sub-agents docs:
+  <a href="https://code.claude.com/docs/en/sub-agents">code.claude.com/docs/en/sub-agents</a></li>
+<li>Claude Code permissions docs:
+  <a href="https://code.claude.com/docs/en/permissions">code.claude.com/docs/en/permissions</a></li>
+<li>Claude Code sandbox docs:
+  <a href="https://code.claude.com/docs/en/sandbox">code.claude.com/docs/en/sandbox</a></li>
+<li>Claude Code statusline docs:
+  <a href="https://code.claude.com/docs/en/statusline">code.claude.com/docs/en/statusline</a></li>
+<li>Claude Code keybindings docs:
+  <a href="https://code.claude.com/docs/en/keybindings">code.claude.com/docs/en/keybindings</a></li>
+<li>Claude Code hooks reference:
+  <a href="https://code.claude.com/docs/en/hooks">code.claude.com/docs/en/hooks</a></li>
+<li>Claude Code output styles docs:
+  <a href="https://code.claude.com/docs/en/output-styles">code.claude.com/docs/en/output-styles</a></li>
+<li>Claude Code settings docs:
+  <a href="https://code.claude.com/docs/en/settings">code.claude.com/docs/en/settings</a></li>
+<li>Claude Code skills docs:
+  <a href="https://code.claude.com/docs/en/skills">code.claude.com/docs/en/skills</a></li>
+<li>Claude GitHub App (install @claude action):
+  <a href="https://github.com/apps/claude">github.com/apps/claude</a></li>
+</ul>
+
+
+
+
+
+
+
+  
+    
+  
+  
+    
+  
+
+
+  <aside class="md-source-file">
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Last update">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 11, 2026 22:24:49 UTC">April 11, 2026</span>
+  </span>
+
+    
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Created">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 11, 2026 22:24:49 UTC">April 11, 2026</span>
+  </span>
+
+    
+    
+    
+  </aside>
+
+
+  
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2025 Byron Williams
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/ByronWilliamsCPA" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
