@@ -1,5 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "_permissionsTrialNote": "22-entry ask list added 2026-04-11. 7-day trial. Off-switch: set ask to [].",
   "permissions": {
     "allow": [
       "Bash(poetry run ruff:*)",
@@ -9,7 +10,29 @@
       "Task"
     ],
     "deny": [],
-    "ask": []
+    "ask": [
+      "Bash(rm:*)",
+      "Bash(chmod:*)",
+      "Bash(chown:*)",
+      "Bash(mv:*)",
+      "Bash(cp:*)",
+      "Bash(dd:*)",
+      "Bash(mkfs:*)",
+      "Bash(fdisk:*)",
+      "Bash(kill:*)",
+      "Bash(pkill:*)",
+      "Bash(killall:*)",
+      "Bash(docker rm:*)",
+      "Bash(docker rmi:*)",
+      "Bash(docker system prune:*)",
+      "Bash(kubectl delete:*)",
+      "Bash(kubectl drain:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(pip uninstall:*)",
+      "Bash(firebase deploy:*)",
+      "Bash(gcloud:*)",
+      "Bash(git push --force:*)"
+    ]
   },
   "hooks": {
     "PreToolUse": [
@@ -61,6 +84,16 @@
             "command": "$HOME/.claude/scripts/run-superpowers-session-start.sh"
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/scripts/session-start-rules.sh",
+            "timeout": 10,
+            "statusMessage": "Detecting session context..."
+          }
+        ]
       }
     ]
   },
@@ -98,5 +131,10 @@
   },
   "sandbox": {
     "enabled": false
-  }
+  },
+  "env": {
+    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "80"
+  },
+  "outputStyle": "explanatory",
+  "plansDirectory": "~/.claude/plans"
 }
