@@ -214,6 +214,18 @@ Deterministic fixes; no user prompt needed:
 | Redundant exception type (python:S5713) | Remove subclass from tuple |
 | ReDoS regex (python:S5852) | Replace with substring match or anchored pattern |
 | Security hotspot | Apply prescribed remediation; call `show_rule` for guidance |
+| Single-bracket conditional (shelldre:S7688) | Replace `[ ... ]` with `[[ ... ]]` for all conditional tests in bash |
+| Nested `if` in shell (shelldre:S1066) | Merge nested `if` into enclosing `if` with `&&` |
+| Missing default case in `case` (shelldre:S131) | Add `*) ;;` default case to `case` statements |
+| Error message to stdout (shelldre:S7677) | Redirect error messages to stderr: `echo "..." >&2` |
+| Unused local variable (shelldre:S1481) | Remove the unused local variable |
+| Positional parameter not named (shelldre:S7679) | Assign positional parameters to named local variables at function start |
+| Constant boolean expression in test (python:S5914) | Replace `assertTrue(True)` / `assertFalse(False)` with `assertIsNotNone` or restructure the test |
+| Float equality check (python:S1244) | Replace float equality check with `pytest.approx()` |
+| Nested `if` in Python (python:S1066) | Merge nested `if` with enclosing `if` using `and` |
+| Repeated string literal (python:S1192) | Extract string appearing 3+ times to a named constant at module level |
+| Broad workflow permissions (githubactions:S8234) | Replace `permissions: read-all` with explicit minimal permissions listing only what the workflow needs |
+| Workflow-level permissions (githubactions:S8233) | Move permissions block from workflow level down to individual job level |
 
 ### Priority 3: Review comments
 
@@ -231,7 +243,7 @@ For each unresolved actionable comment:
 | Shell script error handling (`set -e` before `$?`, wrong exit code) | Fix specific line; match repo hook contract |
 | Bare python calls (`python` vs `uv run python`) | Replace; check pyproject.toml/uv.lock first |
 | Hard-coded absolute paths (`/home/user/...`) | Replace with `~`, `$HOME`, or relative path |
-| Version mismatches (docs vs pyproject.toml) | Read pyproject.toml, update docs to match |
+| Documentation accuracy (see sub-categories below) | Read the authoritative source, update docs to match |
 | Broken relative links | Compute correct path from source to target |
 | Diagram/config drift (PUML vs actual settings) | Read actual config, update diagram source |
 | Markdown table formatting (extra pipes, missing spaces) | Fix table syntax |
@@ -241,6 +253,22 @@ For each unresolved actionable comment:
 | `== None` / `!= None` | Replace with `is None` / `is not None` |
 | Bare `except:` | Replace with `except Exception:` |
 | Docstring parameter mismatch | Update docstring to match function signature |
+| `jq` invoked without presence guard (with `set -euo pipefail`) | Add `command -v jq >/dev/null 2>&1 \|\| { echo "jq not found" >&2; exit 1; }` before first `jq` call |
+| Hook block message written to stderr instead of stdout | Change `>&2` redirect to stdout so Claude surfaces the block reason |
+| `grep -nP` used (requires GNU grep / PCRE) | Replace with POSIX-compatible `grep -n` plus equivalent pattern, or note BSD incompatibility inline |
+| PowerShell single-quote escaping in bash | Mark "requires manual fix": escaping logic is error-prone to auto-patch |
+
+**Documentation accuracy sub-categories:**
+
+| Sub-category | Fix approach |
+| --- | --- |
+| Docs reference wrong Python version | Read `requires-python` from `pyproject.toml`, update docs to match |
+| Docs describe wrong pre-commit hook exclude list | Read `.pre-commit-config.yaml`, update docs to match actual excludes |
+| Spec frontmatter `status` conflicts with body `Status:` blockquote | Align both fields to the same value; prefer the body blockquote as the authoritative source |
+| Architecture section asserts a hook is wired in `settings.json` but it is not | Update doc to say "not yet wired" rather than asserting it is wired |
+| Design spec missing required metadata blockquote (Date / Status / Scope) | Add the blockquote using the same format as other specs in the same directory |
+| Skill SKILL.md intro says "N modes" but body documents N+1 modes | Count the documented modes and update the intro sentence to match |
+| Cowork doc says filename is "or similar" but README specifies exact filename | Align to the exact filename from the README |
 
 **Always skip (mark "requires manual fix"):**
 
@@ -251,9 +279,11 @@ For each unresolved actionable comment:
 | Cognitive complexity (python:S3776) | Extracting helpers requires design judgment |
 | Complex logic bugs | Algorithm/business logic needs human review |
 | Security vulnerabilities | Must not be auto-patched without review |
+| Path from user-controlled data (pythonsecurity:S2083) | Requires manual security review; alert user and do not auto-patch |
 | Design debates from prior PRs | Unresolved architectural decisions |
 | SVG regeneration | Requires plantuml.jar; note source was updated |
 | PlantUML diagram accuracy | Requires cross-referencing multiple settings files and SVG regeneration |
+| Force-push guard bypass via non-standard refspec forms | Requires security design review |
 
 ### Priority 4: Coverage gaps
 
