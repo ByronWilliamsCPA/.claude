@@ -479,10 +479,10 @@ explanation — keep the prompt concise.
 Review complete. What would you like to do?
 
 1. Post review to GitHub only
-2. Fix identified issues only
-   ({N_sonar} SonarQube + {N_critical} Critical + {N_important} Important agent findings)
-3. Post to GitHub, then fix identified issues
-4. Done — no further action
+2. Run /pr-fix (gathers CI failures, review comments, SonarQube, coverage,
+   and agent findings; fixes all in an isolated worktree)
+3. Post to GitHub, then run /pr-fix
+4. Done, no further action
 
 Which option?
 ```
@@ -527,13 +527,18 @@ they are mutable.
 After posting, if `NEXT_ACTION` is 3, continue to the fix workflow below.
 If `NEXT_ACTION` is 1, stop here.
 
-### Option 2 or 3 — Fix identified issues
+### Option 2 or 3 — Run /pr-fix
 
 Load `workflows/pr-fix.md` and execute it. Pass forward:
 
 - `OWNER`, `REPO`, `PR_NUMBER`
 - `HEAD_BRANCH` (the branch to check out in the worktree)
 - `FINDINGS` — the full deduplicated, scored findings list from Step 7
+- `SONAR_FINDINGS` — SonarQube findings from Step 4 (if any)
+
+The pr-fix workflow runs its own gather step for CI check failures,
+review comments, and Codecov status (data that pr-review did not collect),
+supplementing the FINDINGS and SONAR_FINDINGS already in context.
 
 ---
 
