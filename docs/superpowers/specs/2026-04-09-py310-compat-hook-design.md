@@ -91,7 +91,11 @@ exit 0
 
 ### 2. Hook entry in `settings.json`
 
-Add `PostToolUse` array to the existing `hooks` object:
+The PostToolUse hook for `Edit|Write` triggering `py310-compat-check.sh` is **not yet wired**
+in `settings.json`. The architecture below documents the intended configuration; it has not
+been added to the committed settings file.
+
+Intended configuration (not yet active):
 
 ```json
 "PostToolUse": [
