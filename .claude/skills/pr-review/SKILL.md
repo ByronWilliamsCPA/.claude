@@ -18,7 +18,7 @@ Two complementary workflows for pull request quality:
 
 ## Usage
 
-```
+```text
 /pr-review https://github.com/owner/repo/pull/123
 /pr-fix https://github.com/owner/repo/pull/123
 ```
@@ -43,6 +43,6 @@ review completion menu), or standalone on any PR.
 ## Routing
 
 | Activation Context | Workflow File |
-|---|---|
+| --- | --- |
 | Review-related (`review PR`, `/pr-review`, etc.) | `workflows/pr-review.md` |
 | Fix-related (`fix PR`, `/pr-fix`, etc.) | `workflows/pr-fix.md` |
