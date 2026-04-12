@@ -86,6 +86,7 @@ for src in "${sources[@]}"; do
                 failed=1
             fi
             ;;
+        *) ;;
     esac
 done
 
