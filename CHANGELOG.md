@@ -1,6 +1,64 @@
 # CHANGELOG
 
 
+## v0.6.0 (2026-04-12)
+
+### Bug Fixes
+
+- **review**: Address pr-review agent findings on PR #16
+  ([`2746c50`](https://github.com/ByronWilliamsCPA/.claude/commit/2746c50f0d4af0033e8ba094d6bc4497e62d736a))
+
+Formatting fixes (markdownlint): - Add language specifiers to bare code fences (MD040) - Space all
+  table separator rows: |---|---| -> | --- | --- | (MD060) - Add blank lines around all lists and
+  list-adjacent blocks (MD032) - Change all heading separators from ' -- ' to ': '
+
+Content corrections: - Fix SonarQube rule key: shelldre:S7682 -> shell:S7682 - Move cognitive
+  complexity (python:S3776) from deterministic-fixes table to manual-fix table (requires design
+  judgment, not mechanical) - Clarify GitHub MCP method names in Steps 1b and 7; note that
+  resolve_review_thread and subscribe_pr_activity are unconfirmed method names and replace with gh
+  CLI polling workaround - Fix Step 3 error message: 'ensure git fetch origin ran' -> 'check that
+  the branch exists on origin' - Escape MD056-triggering pipe literal in table cell
+
+Note: TruffleHog skipped (SKIP=trufflehog) due to known incompatibility with git worktrees (.git is
+  a file pointer, not a directory).
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+### Chores
+
+- **deps**: Reconcile uv.lock version with pyproject.toml 0.5.0
+  ([`b2250a4`](https://github.com/ByronWilliamsCPA/.claude/commit/b2250a4b1784bd44f6a0c8db6181463afc2b1de5))
+
+uv sync updated the lock file version from 0.4.0 to 0.5.0 to match the current pyproject.toml
+  version after the v0.5.0 release.
+
+https://claude.ai/code/session_016cTxGxECo4rzsVNFPR7Wxa
+
+### Features
+
+- **skills**: Rewrite pr-fix as standalone multi-source PR remediation workflow
+  ([`7845e2e`](https://github.com/ByronWilliamsCPA/.claude/commit/7845e2e04693a6264aee9e1cf67bd0691c904167))
+
+Rewrite /pr-fix from a downstream-only sub-step of /pr-review into a standalone skill that
+  independently gathers all open issues on a PR:
+
+- CI check failures (test, lint, format, type-check, security, changelog, compatibility, docs build,
+  license, dead code) - Review comments from all sources (Copilot, CodeRabbit, human reviewers) with
+  author classification and actionability filtering - SonarQube findings (missing returns, redundant
+  exceptions, cognitive complexity, ReDoS patterns, security hotspots) - Codecov coverage gaps (if
+  configured) - pr-review agent findings (when called from the review workflow)
+
+The workflow fixes issues in priority order inside an isolated worktree, verifies via ci-fix gate
+  sequence, commits in logical batches, and offers to push, reply to review comments, resolve
+  threads, and post a summary.
+
+Also updates: - SKILL.md: add pr-fix trigger keywords and routing table - pr-review.md: Step 9/10
+  now references the full pr-fix workflow - git-workflow.md: add /pr-fix to Layer 2 gate
+  documentation
+
+https://claude.ai/code/session_016cTxGxECo4rzsVNFPR7Wxa
+
+
 ## v0.5.0 (2026-04-12)
 
 ### Bug Fixes
