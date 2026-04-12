@@ -142,113 +142,127 @@ class LLMGovernanceMapper:
         return cls.RULE_TO_TAG_MAP.get(rule_key)
 
 
-def format_report(
-    quality_gate_status: dict, issues: dict, rad_tags: int, llm_tags: int
-) -> str:
-    """Generate unified three-layer governance report."""
-
-    qg = quality_gate_status["projectStatus"]
-    status = qg["status"]
-    conditions = qg.get("conditions", [])
-
-    report = []
-    report.append("=" * 80)
-    report.append("THREE-LAYER GOVERNANCE REPORT")
-    report.append("=" * 80)
-    report.append("")
-
-    # Layer 1: Production Runtime Risks (RAD)
-    report.append("Layer 1: Production Runtime Risks (RAD)")
-    report.append("-" * 80)
+def _format_rad_layer(rad_tags: int) -> list[str]:
+    """Format Layer 1: Production Runtime Risks (RAD) section."""
+    lines: list[str] = []
+    lines.append("Layer 1: Production Runtime Risks (RAD)")
+    lines.append("-" * 80)
     if rad_tags > 0:
-        report.append(f"❌ FOUND {rad_tags} unverified production risk tags")
-        report.append("   Status: BLOCKED")
+        lines.append(f"❌ FOUND {rad_tags} unverified production risk tags")
+        lines.append("   Status: BLOCKED")
     else:
-        report.append("✅ No unverified production risk tags")
-        report.append("   Status: PASSED")
-    report.append("")
+        lines.append("✅ No unverified production risk tags")
+        lines.append("   Status: PASSED")
+    lines.append("")
+    return lines
 
-    # Layer 2: LLM Development Debt
-    report.append("Layer 2: LLM Development Debt")
-    report.append("-" * 80)
+
+def _format_llm_layer(llm_tags: int) -> list[str]:
+    """Format Layer 2: LLM Development Debt section."""
+    lines: list[str] = []
+    lines.append("Layer 2: LLM Development Debt")
+    lines.append("-" * 80)
     if llm_tags > 0:
-        report.append(f"⚠️  FOUND {llm_tags} unverified LLM debt tags")
-        report.append("   Status: WARNING")
+        lines.append(f"⚠️  FOUND {llm_tags} unverified LLM debt tags")
+        lines.append("   Status: WARNING")
     else:
-        report.append("✅ No unverified LLM debt tags")
-        report.append("   Status: PASSED")
-    report.append("")
+        lines.append("✅ No unverified LLM debt tags")
+        lines.append("   Status: PASSED")
+    lines.append("")
+    return lines
 
-    # Layer 3: Automated Code Quality (SonarQube)
-    report.append("Layer 3: Automated Code Quality (SonarQube)")
-    report.append("-" * 80)
+
+def _format_sonar_layer(status: str, conditions: list, issues: dict) -> list[str]:
+    """Format Layer 3: Automated Code Quality (SonarQube) section."""
+    lines: list[str] = []
+    lines.append("Layer 3: Automated Code Quality (SonarQube)")
+    lines.append("-" * 80)
 
     if status == "OK":
-        report.append("✅ Quality Gate: PASSED")
+        lines.append("✅ Quality Gate: PASSED")
     elif status == "ERROR":
-        report.append("❌ Quality Gate: FAILED")
+        lines.append("❌ Quality Gate: FAILED")
     elif status == "WARN":
-        report.append("⚠️  Quality Gate: WARNING")
+        lines.append("⚠️  Quality Gate: WARNING")
     else:
-        report.append(f"❓ Quality Gate: {status}")
+        lines.append(f"❓ Quality Gate: {status}")
 
-    report.append("")
-    report.append("Quality Gate Conditions:")
+    lines.append("")
+    lines.append("Quality Gate Conditions:")
     for condition in conditions:
         metric = condition["metricKey"]
         status_icon = "✅" if condition["status"] == "OK" else "❌"
         actual = condition.get("actualValue", "N/A")
-
-        # Map to LLM tag if failed
         llm_tag = ""
         if condition["status"] != "OK":
             tag = LLMGovernanceMapper.map_condition_to_tag(metric, condition["status"])
             if tag:
                 llm_tag = f" -> {tag}"
+        lines.append(f"  {status_icon} {metric}: {actual}{llm_tag}")
 
-        report.append(f"  {status_icon} {metric}: {actual}{llm_tag}")
+    lines.append("")
 
-    report.append("")
-
-    # Critical/Blocker issues
     total_issues = issues.get("total", 0)
     if total_issues > 0:
-        report.append(f"Found {total_issues} critical/blocker issues:")
-        for issue in issues.get("issues", [])[:10]:  # Show first 10
+        lines.append(f"Found {total_issues} critical/blocker issues:")
+        for issue in issues.get("issues", [])[:10]:
             rule_key = issue["rule"]
             severity = issue["severity"]
             message = issue["message"]
             llm_tag = LLMGovernanceMapper.map_issue_to_tag(rule_key) or ""
-            report.append(f"  • [{severity}] {message}")
+            lines.append(f"  • [{severity}] {message}")
             if llm_tag:
-                report.append(f"    {llm_tag}")
+                lines.append(f"    {llm_tag}")
 
-    report.append("")
-    report.append("=" * 80)
-    report.append("OVERALL STATUS")
-    report.append("=" * 80)
+    lines.append("")
+    return lines
 
-    # Determine overall status
-    blocked = rad_tags > 0 or status == "ERROR"
+
+def _format_overall_status(
+    blocked: bool, rad_tags: int, status: str, llm_tags: int
+) -> list[str]:
+    """Format OVERALL STATUS section."""
+    lines: list[str] = []
+    lines.append("=" * 80)
+    lines.append("OVERALL STATUS")
+    lines.append("=" * 80)
 
     if blocked:
-        report.append("❌ PR BLOCKED - Fix issues before merging")
-        report.append("")
-        report.append("Next Steps:")
+        lines.append("❌ PR BLOCKED - Fix issues before merging")
+        lines.append("")
+        lines.append("Next Steps:")
         if rad_tags > 0:
-            report.append("  1. Verify and remove all #CRITICAL and #ASSUME tags")
+            lines.append("  1. Verify and remove all #CRITICAL and #ASSUME tags")
         if status == "ERROR":
-            report.append("  2. Fix all BLOCKER and CRITICAL SonarQube issues")
-            report.append("  3. Ensure test coverage meets threshold")
+            lines.append("  2. Fix all BLOCKER and CRITICAL SonarQube issues")
+            lines.append("  3. Ensure test coverage meets threshold")
         if llm_tags > 0:
-            report.append("  4. Review and resolve LLM debt tags")
+            lines.append("  4. Review and resolve LLM debt tags")
     else:
-        report.append("✅ READY TO MERGE")
+        lines.append("✅ READY TO MERGE")
         if llm_tags > 0:
-            report.append("")
-            report.append("Note: LLM debt tags found (warnings only)")
+            lines.append("")
+            lines.append("Note: LLM debt tags found (warnings only)")
 
-    report.append("=" * 80)
+    lines.append("=" * 80)
+    return lines
+
+
+def format_report(
+    quality_gate_status: dict, issues: dict, rad_tags: int, llm_tags: int
+) -> str:
+    """Generate unified three-layer governance report."""
+    qg = quality_gate_status["projectStatus"]
+    status = qg["status"]
+    conditions = qg.get("conditions", [])
+    blocked = rad_tags > 0 or status == "ERROR"
+
+    report: list[str] = []
+    report.extend(["=" * 80, "THREE-LAYER GOVERNANCE REPORT", "=" * 80, ""])
+    report.extend(_format_rad_layer(rad_tags))
+    report.extend(_format_llm_layer(llm_tags))
+    report.extend(_format_sonar_layer(status, conditions, issues))
+    report.extend(_format_overall_status(blocked, rad_tags, status, llm_tags))
 
     return "\n".join(report)
 
