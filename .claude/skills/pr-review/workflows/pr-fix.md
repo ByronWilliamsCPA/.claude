@@ -25,11 +25,11 @@ PAL_TIERED_LEVEL:    1
 PAL_TIERED_THINKING: auto
 ```
 
-- `PAL_CHAT_MODEL` — model passed to `mcp__pal__chat` for targeted validations
-- `PAL_TIERED_LEVEL` — level (1/2/3) for all `mcp__pal__tiered_consensus` calls;
+- `PAL_CHAT_MODEL`: model passed to `mcp__pal__chat` for targeted validations
+- `PAL_TIERED_LEVEL`: level (1/2/3) for all `mcp__pal__tiered_consensus` calls;
   level 1 uses 3 free models, level 2 adds paid models (~$0.50), level 3 is
   comprehensive (~$5)
-- `PAL_TIERED_THINKING` — thinking depth for tiered_consensus (`auto`, `low`,
+- `PAL_TIERED_THINKING`: thinking depth for tiered_consensus (`auto`, `low`,
   `high`)
 
 ---
@@ -218,7 +218,7 @@ After each category, verify locally before moving on:
 - Type fixes: `cd {WORKTREE_PATH} && uv run basedpyright src/`
 
 **Changelog enforcement:** Check whether any commit on this branch (since
-`git merge-base HEAD origin/main`) uses type `feat`, `fix`, `perf`, or
+`git merge-base HEAD origin/{BASE_BRANCH}`) uses type `feat`, `fix`, `perf`, or
 includes `!` (breaking change). If yes, generate an entry from the PR title,
 commit messages, and changed files, and place it under `[Unreleased]` in
 CHANGELOG.md. If no such commits exist, note "CHANGELOG not required: no
@@ -230,7 +230,7 @@ feat/fix/perf/breaking changes on this branch" and skip.
 
 ### Priority 2: SonarQube findings
 
-**Auto-fix** (no user prompt needed) — mechanical, low-risk changes:
+**Auto-fix** (no user prompt needed): mechanical, low-risk changes:
 
 | SonarQube pattern | Fix |
 | --- | --- |
@@ -242,10 +242,10 @@ feat/fix/perf/breaking changes on this branch" and skip.
 | Error message to stdout (shelldre:S7677) | Redirect error messages to stderr: `echo "..." >&2` |
 | Positional parameter not named (shelldre:S7679) | Assign positional parameters to named local variables at function start |
 | Constant boolean expression in test (python:S5914) | Remove the trivially-true assertion or replace with a meaningful assertion for what the test actually verifies; use `assertIsNotNone` only when the test intent is specifically a non-None check |
-| Float equality check (python:S1244) | Replace float equality check with `pytest.approx()` |
+| Float equality check (python:S1244) | Replace float equality check with `math.isclose()` in production code, or `pytest.approx()` in test code |
 
 **Propose and confirm** (show the proposed change, wait for user approval before
-applying) — these touch logic, security policy, or refactoring:
+applying): these touch logic, security policy, or refactoring:
 
 For each propose-and-confirm finding, before presenting the proposed fix to
 the user, call `mcp__pal__chat` to validate the fix:
@@ -256,7 +256,7 @@ mcp__pal__chat(
   prompt: "A SonarQube finding requires a propose-and-confirm fix before I
            show it to the user. Validate the proposed fix is correct and safe.
 
-           Finding: {rule key} — {message}
+           Finding: {rule key}: {message}
            File: {file path}, line {line}
            Current code:
            {10 lines of context around the finding}
@@ -265,8 +265,8 @@ mcp__pal__chat(
            {description of the planned change}
 
            Questions:
-           1. Is the proposed fix semantically correct — does it preserve the
-              original behavior for all non-vulnerable inputs?
+           1. Is the proposed fix semantically correct (does it preserve the
+              original behavior for all non-vulnerable inputs)?
            2. Does the fix introduce any new risks (e.g., regression, changed
               semantics, security implications)?
            3. Is there a better fix?
@@ -277,7 +277,7 @@ mcp__pal__chat(
 ```
 
 If PAL returns REVISE or REJECT, update the proposed fix before showing it
-to the user. Do not block on this call — if the PAL tool is unavailable,
+to the user. Do not block on this call; if the PAL tool is unavailable,
 proceed with the original proposed fix and note "PAL validation skipped" in
 the presentation.
 
@@ -373,8 +373,8 @@ If Codecov is failing:
 ```text
 mcp__pal__chat(
   model:  PAL_CHAT_MODEL,
-  prompt: "Review these generated tests for tautological failures — tests that
-           will pass regardless of whether the code under test is correct.
+  prompt: "Review these generated tests for tautological failures (tests that
+           will pass regardless of whether the code under test is correct).
 
            Tests to review:
            {generated test code}
@@ -669,13 +669,20 @@ Classify the outcome:
 
 ### Phase C: Automatic re-fix pass (up to 2 cycles)
 
+**Completion conditions (exit the loop immediately when any are met):**
+
+- Phase A returns all-green with no new comments: report success, clean up worktree, done.
+- User declines a re-fix pass: report remaining items, keep worktree, done.
+- User selects "stop" in the delta prompt: same as decline above.
+- Cycle count reaches 2 and issues remain: run stuck-loop diagnosis, present final options, done.
+
 If Phase B indicates issues:
 
 1. Gather the new failures and comments (same as Step 1 sources)
 2. Present a delta summary (format below)
 3. If the user confirms: apply fixes (same rules as Step 4), verify (Step 5),
    commit (Step 6), push, and re-enter Phase A
-4. If the user declines: report remaining items and offer to keep the worktree
+4. If the user declines or selects "stop": report remaining items and offer to keep the worktree; exit the loop
 
 Delta summary format:
 
