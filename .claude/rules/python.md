@@ -66,7 +66,7 @@ or token generation.
 
 | Rule | What It Catches |
 |------|----------------|
-| **BLE** | Blind except: catches over-broad `except:` and `except Exception:` clauses that swallow errors silently |
+| **BLE** | Blind except: catches over-broad `except:` and `except Exception:` clauses, including those that re-raise or log before re-raising |
 | **EM** | Error message best practices |
 | **SLF** | Private member access violations |
 | **INP** | Require `__init__.py` in packages |
