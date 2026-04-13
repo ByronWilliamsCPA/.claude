@@ -159,7 +159,9 @@ def autofix_front_matter(path: Path) -> bool:
         yrt.dump(data, out)
         new_yaml = out.getvalue().rstrip()
         new_content = f"---\n{new_yaml}\n---\n{text[match.end() :]}"
-        path.write_text(new_content, encoding="utf-8")  # VERIFY: path constructed from user input — validate/sanitize before use (pythonsecurity:S2083)
+        path.write_text(
+            new_content, encoding="utf-8"
+        )  # S2083: path validated at function entry (lines 109-112) before this write; SonarQube flags as incomplete remediation (security review needed)
 
     return changed
 
