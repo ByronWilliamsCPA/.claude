@@ -15,12 +15,12 @@ Before committing ANY changes, verify all items:
 - [ ] **OpenSSF Compliance**: Required files present (LICENSE, SECURITY.md, CONTRIBUTING.md, CHANGELOG.md)
 - [ ] **Tests Pass**: Test suite passes with required coverage (`/testing`)
 - [ ] **RAD Tagging**: Critical assumptions tagged where applicable (`#CRITICAL`, `#ASSUME`, `#EDGE`)
-- [ ] Environment validation passes — GPG and SSH keys present (run `/security` skill)
-- [ ] File-specific linter has been run and passes (`/quality`) — Ruff format + lint, BasedPyright strict type-check
+- [ ] Environment validation passes: GPG and SSH keys present (run `/security` skill)
+- [ ] File-specific linter has been run and passes (`/quality`): Ruff format + lint, BasedPyright strict type-check
 - [ ] Pre-commit hooks execute successfully (`pre-commit run --all-files`)
 - [ ] No linting warnings or errors remain
 - [ ] Code formatting is consistent with project standards
-- [ ] **Docstring Coverage**: `interrogate` passes at 85% threshold for `scripts/` — add missing docstrings rather than suppressing
+- [ ] **Docstring Coverage**: `interrogate` passes at 85% threshold for `scripts/`; add missing docstrings rather than suppressing
 - [ ] **Docstring Arguments**: `darglint` passes; `Args`/`Returns`/`Raises` sections match function signatures (excludes `tests/`, `scripts/`, `benchmarks/`, `tools/`, `noxfile.py`, `.claude/skills/`). Update the docstring to fix mismatches.
 - [ ] Commits are signed (Git signing key configured)
 

@@ -10,7 +10,7 @@ tags:
   - front_matter
 ---
 
-Every markdown file under `docs/` that is part of the built site carries YAML frontmatter. The schema is enforced by `tools/validate_front_matter.py` using Pydantic models defined in `tools/frontmatter_contract/models.py`. The validator has `extra="forbid"` — unknown fields cause hard errors, so treat the schema as closed.
+Every markdown file under `docs/` that is part of the built site carries YAML frontmatter. The schema is enforced by `tools/validate_front_matter.py` using Pydantic models defined in `tools/frontmatter_contract/models.py`. The validator has `extra="forbid"`: unknown fields cause hard errors, so treat the schema as closed.
 
 ## Required Fields (CommonFM)
 
@@ -33,17 +33,17 @@ tags:
 | --- | --- | --- |
 | `title` | yes | String. Renders as H1 when the body has no `# Heading`. |
 | `schema_type` | yes | Literal `common`, `script`, `knowledge`, or `planning`. |
-| `status` | yes | One of `draft`, `in-review`, `published`. There is no `deprecated` or `superseded` — use an H2 banner in the body if needed. |
+| `status` | yes | One of `draft`, `in-review`, `published`. There is no `deprecated` or `superseded`; use an H2 banner in the body if needed. |
 | `owner` | yes | Must match a key in [docs/_data/owners.yml](_data/owners.yml). Currently: `core-maintainer`, `team-lead`, `documentation`, `engineering`. |
 | `purpose` | yes | Must end with `.`, `!`, or `?`. |
 | `tags` | yes | List of snake_case strings. Every tag must be present in [docs/_data/tags.yml](_data/tags.yml). |
 
 ## Optional Fields
 
-- `description` — longer prose summary; falls through to search engines.
-- `review_cycle_days` — integer in `[1, 365]` for periodic review scheduling.
-- `authors` — list of `{name, orcid}` objects.
-- `model` / `dataset` — schema.org-aligned metadata for ML-related content.
+- `description`: longer prose summary; falls through to search engines.
+- `review_cycle_days`: integer in `[1, 365]` for periodic review scheduling.
+- `authors`: list of `{name, orcid}` objects.
+- `model` / `dataset`: schema.org-aligned metadata for ML-related content.
 
 ## Audience Is a Tag, Not a Field
 
@@ -59,9 +59,9 @@ The `nav:` block in `mkdocs.yml` drives what readers actually see; tags are meta
 
 ## Variants
 
-- **`schema_type: script`** — adds `name`, `usage`, `behavior`, and `category` for tool/script pages.
-- **`schema_type: knowledge`** — adds `agent_id` for AI-assisted workflow knowledge base entries.
-- **`schema_type: planning`** — adds `component` and `source` for planning and strategy documents.
+- **`schema_type: script`**: adds `name`, `usage`, `behavior`, and `category` for tool/script pages.
+- **`schema_type: knowledge`**: adds `agent_id` for AI-assisted workflow knowledge base entries.
+- **`schema_type: planning`**: adds `component` and `source` for planning and strategy documents.
 
 See `tools/frontmatter_contract/models.py` for the full Pydantic definitions.
 
