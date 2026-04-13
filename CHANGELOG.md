@@ -1,5 +1,24 @@
 # CHANGELOG
 
+## [Unreleased]
+
+### Bug Fixes
+
+- **scripts**: Correct `confirm()` in `cleanup-template-repo.sh` to return the
+  actual user response instead of unconditional 0; previously typed "n" was
+  silently ignored for all destructive confirmation prompts
+- **hooks**: Restore `always 0` exit contract for `py310-compat-check.sh`
+  PostToolUse hook; add `|| true` guard to `log()` so unexpected I/O errors
+  cannot propagate a non-zero exit that would block Claude tool calls
+
+### Chores
+
+- **quality**: Remove dead `GREP_PCRE_AVAILABLE` variable and unreachable
+  `== false` guard from `py310-compat-check.sh` after `grep -E` migration
+- **writing**: Replace em-dashes with colons and semicolons in
+  `py310-compat-check.sh` and `render_diagrams.sh` per CLAUDE.md hard rule
+- **ci**: Pin `actions/checkout` in `release.yml` test job to full commit SHA
+  for supply chain consistency
 
 ## v0.6.1 (2026-04-12)
 
