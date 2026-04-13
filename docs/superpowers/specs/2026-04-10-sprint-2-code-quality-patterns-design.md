@@ -30,7 +30,7 @@ bare `Exception`, which defeats type-checked error handling and produces inconsi
 API error responses.
 
 **Solution**: Add a `### Exception Hierarchy` subsection under
-`## Code Generation — Python-Specific` in `rules/python.md`, after the Naming Standards
+`## Code Generation: Python-Specific` in `rules/python.md`, after the Naming Standards
 block and before the Documentation bullet. Approach C: guidelines plus a minimal
 skeleton showing `AppError → typed subclass → to_dict()` without prescribing a full
 implementation.
@@ -105,8 +105,8 @@ or how to resolve them without suppression.
   `benchmarks/`, `tools/`; `darglint` is in the CI skip list; `interrogate` is not
 - Both require fixes, not suppressions
 
-**Solution — `rules/python.md`**: Replace the existing two-line Documentation bullet
-under `## Code Generation — Python-Specific` with the expanded block below. The bullet
+**Solution: `rules/python.md`**: Replace the existing two-line Documentation bullet
+under `## Code Generation: Python-Specific` with the expanded block below. The bullet
 is promoted to a `### Documentation` subsection heading to match the Exception Hierarchy
 subsection style added in Item 1.
 

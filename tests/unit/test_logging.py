@@ -21,15 +21,24 @@ class TestLogging:
         This test verifies that get_logger creates a valid structlog
         logger with expected methods.
         """
+        import structlog
+
         from claude_config.utils.logging import get_logger
 
         logger = get_logger("test_logger")
 
         assert logger is not None
+        # structlog loggers expose bind(); generic objects do not
+        assert hasattr(logger, "bind"), "logger should be a structlog bound logger"
         assert callable(logger.info)
         assert callable(logger.debug)
         assert callable(logger.warning)
         assert callable(logger.error)
+        # calling a method should not raise
+        logger.info("test_message", test_key="value")
+        # structlog config should be active
+        config = structlog.get_config()
+        assert config["wrapper_class"] is structlog.stdlib.BoundLogger
 
     @pytest.mark.unit
     def test_log_performance(self) -> None:
@@ -54,7 +63,9 @@ class TestLogging:
         call_args = mock_logger.info.call_args
         assert call_args[0][0] == "performance"
         assert call_args[1]["operation"] == "test_operation"
-        assert call_args[1]["duration_ms"] == 123.46  # Rounded to 2 decimals
+        assert call_args[1]["duration_ms"] == pytest.approx(
+            123.46, rel=1e-6
+        )  # float comparison for rounded value
         assert call_args[1]["success"] is True
         assert call_args[1]["extra_metric"] == 42
 
@@ -95,24 +106,33 @@ class TestLoggingJSON:
 
         Tests that setup_logging properly configures JSON output.
         """
+        import structlog
+
         from claude_config.utils.logging import setup_logging
 
-        # Configure with JSON logging to cover the JSON renderer branch
         setup_logging(level="INFO", json_logs=True)
 
-        # Should complete without errors
-        assert True
+        processors = structlog.get_config()["processors"]
+        assert any(
+            isinstance(p, structlog.processors.JSONRenderer) for p in processors
+        ), "JSONRenderer should be present when json_logs=True"
+        assert not any(
+            isinstance(p, structlog.dev.ConsoleRenderer) for p in processors
+        ), "ConsoleRenderer should not be present when json_logs=True"
 
     @pytest.mark.unit
     def test_setup_logging_without_timestamp(self) -> None:
-        """Verify setup_logging works without timestamps.
+        """Verify setup_logging excludes TimeStamper when include_timestamp=False.
 
         Tests that setup_logging properly handles include_timestamp=False.
         """
+        import structlog
+
         from claude_config.utils.logging import setup_logging
 
-        # Configure without timestamps
         setup_logging(level="DEBUG", json_logs=False, include_timestamp=False)
 
-        # Should complete without errors
-        assert True
+        processors = structlog.get_config()["processors"]
+        assert not any(
+            isinstance(p, structlog.processors.TimeStamper) for p in processors
+        ), "TimeStamper should not be present when include_timestamp=False"

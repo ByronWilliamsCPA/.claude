@@ -2,11 +2,11 @@
 
 ## Five-scope hierarchy (precedence order, lowest to highest)
 
-1. `~/.claude/settings.json` (global user settings — starting point, lowest)
+1. `~/.claude/settings.json` (global user settings; lowest)
 2. `.claude/settings.json` (project-committed shared settings)
 3. `.claude/settings.local.json` (gitignored per-machine overrides)
 4. Claude Code CLI args (`--allowedTools`, `--disallowedTools`)
-5. Managed policy (server-enforced; cannot be overridden — highest)
+5. Managed policy (server-enforced; cannot be overridden; highest)
 
 When the same key appears at multiple scopes, the highest scope wins.
 Managed policy at scope 5 is the ceiling: no other scope overrides it.
