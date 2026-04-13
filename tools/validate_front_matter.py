@@ -106,12 +106,17 @@ def autofix_front_matter(path: Path) -> bool:
     Returns:
         True if changes were made, False otherwise.
     """
-    # Security: Validate file path is within expected directory BEFORE reading
-    if not path.resolve().is_relative_to(Path.cwd()):
+    # Security: resolve and validate containment, then reconstruct the read/write
+    # target from the trusted CWD base so neither operation is derived from
+    # user-controlled input (S2083).
+    cwd = Path.cwd()
+    resolved_path = path.resolve()
+    if not resolved_path.is_relative_to(cwd):
         print(f"Security: Path {path} is outside current directory", file=sys.stderr)
         return False
+    safe_path = cwd / resolved_path.relative_to(cwd)
 
-    text = path.read_text(encoding="utf-8")
+    text = safe_path.read_text(encoding="utf-8")
 
     # Find front matter block
     match = re.search(r"^---\n.*?\n---\n", text, flags=re.DOTALL | re.MULTILINE)
@@ -159,7 +164,7 @@ def autofix_front_matter(path: Path) -> bool:
         yrt.dump(data, out)
         new_yaml = out.getvalue().rstrip()
         new_content = f"---\n{new_yaml}\n---\n{text[match.end() :]}"
-        path.write_text(new_content, encoding="utf-8")
+        safe_path.write_text(new_content, encoding="utf-8")
 
     return changed
 

@@ -19,6 +19,8 @@ Exit codes:
     1: Violations found (or other errors)
 """
 
+from __future__ import annotations
+
 import argparse
 import ast
 import re
@@ -52,8 +54,8 @@ class UnionSyntaxVisitor(ast.NodeVisitor):
             self.visit(node.annotation)
         self.generic_visit(node)
 
-    def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
-        """Visit function definitions with return annotations."""
+    def _visit_function_def(self, node: ast.FunctionDef | ast.AsyncFunctionDef) -> None:
+        """Shared visitor logic for sync and async function definitions."""
         if node.returns:
             self.visit(node.returns)
         for arg in node.args.args + node.args.posonlyargs + node.args.kwonlyargs:
@@ -65,9 +67,13 @@ class UnionSyntaxVisitor(ast.NodeVisitor):
             self.visit(node.args.kwarg.annotation)
         self.generic_visit(node)
 
+    def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
+        """Visit function definitions with return annotations."""
+        self._visit_function_def(node)
+
     def visit_AsyncFunctionDef(self, node: ast.AsyncFunctionDef) -> None:
         """Visit async function definitions."""
-        self.visit_FunctionDef(node)  # type: ignore[arg-type]
+        self._visit_function_def(node)
 
 
 def has_future_annotations_import(content: str) -> bool:
@@ -78,11 +84,10 @@ def has_future_annotations_import(content: str) -> bool:
         return False
 
     for node in ast.walk(tree):
-        if isinstance(node, ast.ImportFrom):
-            if node.module == "__future__":
-                for alias in node.names:
-                    if alias.name == "annotations":
-                        return True
+        if isinstance(node, ast.ImportFrom) and node.module == "__future__":
+            for alias in node.names:
+                if alias.name == "annotations":
+                    return True
     return False
 
 
@@ -186,15 +191,19 @@ def add_future_import(file_path: Path) -> bool:
             lines.insert(insert_index, import_line)
             lines.insert(insert_index + 1, "\n")
 
-        # Security: Validate file path is within expected directory
-        if not file_path.resolve().is_relative_to(Path.cwd()):
+        # Security: resolve and validate containment, then reconstruct the write
+        # target from the trusted CWD base so the written path is not derived
+        # from user-controlled input (S2083).
+        cwd = Path.cwd()
+        resolved_path = file_path.resolve()
+        if not resolved_path.is_relative_to(cwd):
             print(
                 f"Security: Path {file_path} is outside current directory",
                 file=sys.stderr,
             )
             return False
-
-        file_path.write_text("".join(lines), encoding="utf-8")
+        safe_path = cwd / resolved_path.relative_to(cwd)
+        safe_path.write_text("".join(lines), encoding="utf-8")
         return True
     except Exception as e:
         print(f"Error adding import to {file_path}: {e}", file=sys.stderr)

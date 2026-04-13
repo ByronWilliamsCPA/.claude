@@ -1,7 +1,7 @@
 # Git Workflow Rules
 
 Always run pre-commit hooks (`pre-commit run --all-files`) before committing.
-Expect ruff-format, basedpyright, and lint checks to catch issues — fix proactively.
+Expect ruff-format, basedpyright, and lint checks to catch issues; fix proactively.
 
 ## Branch Strategy (MANDATORY)
 
@@ -73,9 +73,9 @@ Record this as a comment in the commit message footer:
 Two layers of automated gates enforce quality throughout the workflow:
 
 **Layer 1 - Development gates (fire automatically):**
-- `security-guidance` hook: PreToolUse on file edits — blocks writes containing known dangerous code patterns (XSS vectors, unsafe shell invocations, dangerous deserialization, GitHub Actions injection, etc.). Warning shows once per file per session.
-- `py310-compat-check` hook: PostToolUse on file edits — catches Python 3.10 incompatibilities immediately after each write.
-- `hookify` hooks: fire on every tool use — enforces any project-level rules defined in `.claude/hookify.*.local.md` files.
+- `security-guidance` hook: PreToolUse on file edits: blocks writes containing known dangerous code patterns (XSS vectors, unsafe shell invocations, dangerous deserialization, GitHub Actions injection, etc.). Warning shows once per file per session.
+- `py310-compat-check` hook: PostToolUse on file edits: catches Python 3.10 incompatibilities immediately after each write.
+- `hookify` hooks: fire on every tool use: enforces any project-level rules defined in `.claude/hookify.*.local.md` files.
 
 **Layer 2 - PR gates (automatic and manual, after PR creation):**
 - `CodeRabbit`: fires automatically on every PR targeting `main`, `master`, or `develop`.
@@ -110,7 +110,7 @@ command for all PRs (triggers Copilot + SonarQube + 8 agents in one pass),
 spot-checks.
 
 **Creating new gates with hookify:**
-Use `/hookify <instruction>` to add a rule instantly, or `/hookify` with no args to analyze the current conversation for repeated corrections. Rules live in `.claude/hookify.*.local.md` and take effect on the next tool call — no restart required.
+Use `/hookify <instruction>` to add a rule instantly, or `/hookify` with no args to analyze the current conversation for repeated corrections. Rules live in `.claude/hookify.*.local.md` and take effect on the next tool call; no restart required.
 
 ```bash
 /hookify Don't delete files without asking me first
@@ -127,10 +127,10 @@ author after the fact, enabling supply chain attacks via tag mutation.
 
 Always pin to the full commit SHA:
 
-    # Bad — tag is mutable, can be rewritten after you reference it
+    # Bad: tag is mutable, can be rewritten after you reference it
     - uses: actions/checkout@v4
 
-    # Good — SHA is immutable
+    # Good: SHA is immutable
     - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
 
 To find the SHA: navigate to the action's releases page on GitHub, click the commit link for
