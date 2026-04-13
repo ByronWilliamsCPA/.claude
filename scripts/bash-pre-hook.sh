@@ -80,11 +80,18 @@ if echo "$CMD" | grep -qE '(--force|--force-with-lease(=[^\s]+)?|-f)(\s|$)'; the
     # ${BRANCH_TOKEN##*:} strips the source ref; if no colon, returns BRANCH_TOKEN.
     DEST_TOKEN="${BRANCH_TOKEN##*:}"
 
+    # Normalize common Git ref prefixes so fully-qualified refs such as
+    # refs/heads/main and refs/main are treated the same as main.
+    NORMALIZED_BRANCH_TOKEN="${BRANCH_TOKEN#refs/heads/}"
+    NORMALIZED_BRANCH_TOKEN="${NORMALIZED_BRANCH_TOKEN#refs/}"
+    NORMALIZED_DEST_TOKEN="${DEST_TOKEN#refs/heads/}"
+    NORMALIZED_DEST_TOKEN="${NORMALIZED_DEST_TOKEN#refs/}"
+
     # Block if: no branch token (bare force push), explicit branch is main/master,
     # or destination ref extracted from a refspec is main/master.
     if [[ -z "$BRANCH_TOKEN" ]] || \
-       echo "$BRANCH_TOKEN" | grep -qE '^(main|master)$' || \
-       echo "$DEST_TOKEN" | grep -qE '^(main|master)$'; then
+       echo "$NORMALIZED_BRANCH_TOKEN" | grep -qE '^(main|master)$' || \
+       echo "$NORMALIZED_DEST_TOKEN" | grep -qE '^(main|master)$'; then
         log "BLOCKED force-push: CMD=${CMD}"
         echo "BLOCKED: force-push to main/master (or bare force-push) is prohibited. Use a PR instead."
         exit 2
