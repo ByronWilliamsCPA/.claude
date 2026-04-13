@@ -18,8 +18,8 @@ COOKIECUTTER_TEMPLATE="/home/byron/dev/cookiecutter-python-template/{{cookiecutt
 echo -e "${GREEN}=== Template Consistency Verification ===${NC}"
 echo ""
 
-if [ ! -d "$COOKIECUTTER_TEMPLATE" ]; then
-    echo -e "${RED}Error: Cookiecutter template not found at $COOKIECUTTER_TEMPLATE${NC}"
+if [[ ! -d "$COOKIECUTTER_TEMPLATE" ]]; then
+    echo -e "${RED}Error: Cookiecutter template not found at $COOKIECUTTER_TEMPLATE${NC}" >&2
     exit 1
 fi
 
@@ -27,7 +27,7 @@ fi
 check_file_exists() {
     local file="$1"
     local source="$2"
-    if [ ! -f "$file" ]; then
+    if [[ ! -f "$file" ]]; then
         echo -e "${RED}✗ Missing: $file${NC}"
         echo -e "  ${YELLOW}Source: $source${NC}"
         return 1
@@ -43,12 +43,12 @@ compare_files() {
     local file2="$2"
     local name="$3"
 
-    if [ ! -f "$file1" ]; then
+    if [[ ! -f "$file1" ]]; then
         echo -e "${RED}✗ Missing in this repo: $name${NC}"
         return 1
     fi
 
-    if [ ! -f "$file2" ]; then
+    if [[ ! -f "$file2" ]]; then
         echo -e "${YELLOW}⚠ Not in cookiecutter: $name${NC}"
         return 0
     fi
@@ -80,7 +80,7 @@ for file in $COOKIECUTTER_FILES; do
     repo_file="$REPO_ROOT/.claude/$file"
     cc_file="$COOKIECUTTER_TEMPLATE/$file"
 
-    if [ ! -f "$repo_file" ]; then
+    if [[ ! -f "$repo_file" ]]; then
         echo -e "${RED}✗ Missing: $file${NC}"
         ((missing_count++))
     elif ! diff -q "$repo_file" "$cc_file" > /dev/null 2>&1; then
@@ -103,7 +103,7 @@ extra_count=0
 for file in $REPO_FILES; do
     cc_file="$COOKIECUTTER_TEMPLATE/$file"
 
-    if [ ! -f "$cc_file" ]; then
+    if [[ ! -f "$cc_file" ]]; then
         echo -e "${YELLOW}⚠ Extra (not in cookiecutter): $file${NC}"
         ((extra_count++))
     fi
@@ -117,7 +117,7 @@ echo -e "Missing files: ${RED}$missing_count${NC}"
 echo -e "Extra files: ${YELLOW}$extra_count${NC}"
 echo ""
 
-if [ $missing_count -eq 0 ] && [ $different_count -eq 0 ] && [ $extra_count -eq 0 ]; then
+if [[ $missing_count -eq 0 ]] && [[ $different_count -eq 0 ]] && [[ $extra_count -eq 0 ]]; then
     echo -e "${GREEN}✓ .claude/ directory is fully consistent with cookiecutter template${NC}"
     exit 0
 else

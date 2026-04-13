@@ -5,7 +5,7 @@
       "hooks": [
         {
           "type": "command",
-          "command": "if [[ \"$CLAUDE_FILE_PATH\" == *'.env'* || \"$CLAUDE_FILE_PATH\" == *'settings.local.json'* ]]; then echo 'BLOCKED: editing secrets file requires explicit confirmation' >&2; exit 2; fi",
+          "command": "if [[ \"$CLAUDE_FILE_PATH\" == *'.env'* || \"$CLAUDE_FILE_PATH\" == *'settings.local.json'* ]]; then echo 'BLOCKED: editing secrets file requires explicit confirmation'; exit 2; fi",
           "timeout": 5,
           "statusMessage": "Checking for sensitive file edits..."
         }

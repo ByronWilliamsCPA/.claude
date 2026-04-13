@@ -228,7 +228,8 @@ main() {
     local test_file=""
 
     while [[ $# -gt 0 ]]; do
-        case $1 in
+        local arg="$1"
+        case $arg in
             -v|--verbose)
                 verbose=1
                 shift
@@ -242,11 +243,11 @@ main() {
                 exit 0
                 ;;
             *.bats)
-                test_file="$1"
+                test_file="$arg"
                 shift
                 ;;
             *)
-                log_error "Unknown option: $1"
+                log_error "Unknown option: $arg"
                 show_usage
                 exit 1
                 ;;

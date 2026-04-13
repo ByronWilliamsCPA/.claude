@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Diagram Renderer — docs/architecture/diagrams/*.puml → *.svg
+# Diagram Renderer: docs/architecture/diagrams/*.puml to *.svg
 # =============================================================================
 # Renders PlantUML sources to SVG siblings. Idempotent: safe to re-run.
 #
@@ -13,9 +13,9 @@
 #   - docker (falls back to plantuml/plantuml image if local binary missing)
 #
 # Exit codes:
-#   0 — all sources rendered successfully
-#   1 — at least one render failed
-#   2 — no renderer available (neither plantuml nor docker)
+#   0: all sources rendered successfully
+#   1: at least one render failed
+#   2: no renderer available (neither plantuml nor docker)
 # =============================================================================
 
 set -euo pipefail
@@ -86,6 +86,7 @@ for src in "${sources[@]}"; do
                 failed=1
             fi
             ;;
+        *) ;;
     esac
 done
 
