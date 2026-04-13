@@ -17,7 +17,7 @@ paths:
 ## Type Checking with BasedPyright
 
 BasedPyright replaces MyPy (3-5x faster, stricter analysis):
-- **Mode**: `strict` — enables all strict type checking without excessive noise
+- **Mode**: `strict` (enables all strict type checking without excessive noise)
 - **Strict Inference**: `strictListInference`, `strictDictionaryInference`, `strictSetInference` enabled
 - **Configuration**: `pyproject.toml` under `[tool.basedpyright]`
 - **Reference**: https://docs.basedpyright.com
@@ -111,7 +111,7 @@ or token generation.
 | **ASYNC** | Async/await best practices |
 | **RUF** | Ruff-native rules |
 
-## Code Generation — Python-Specific
+## Code Generation: Python-Specific
 
 ### Parameter Grouping (>4 params → dataclass)
 
@@ -163,7 +163,7 @@ class NotFoundError(AppError): ...    # e.g. resource_id: str
 - One base class per project; typed subclasses per error category; subclasses are minimal when
   no additional attributes are needed
 - `TRY002` flags `raise Exception(...)` directly; `BLE001` flags overly broad except clauses;
-  neither validates the full hierarchy — that enforcement comes from code review
+  neither validates the full hierarchy; enforcement comes from code review
 
 ### Documentation
 
@@ -190,7 +190,7 @@ When darglint flags a mismatch, fix the docstring. Do not add a `# noqa` suppres
 ### CI / Compatibility
 
 **Supported range**: Python 3.10–3.14 (`requires-python = ">=3.10,<3.15"`).
-**Ruff target**: `py312` — Ruff auto-fixes target 3.12 syntax.
+**Ruff target**: `py312` (Ruff auto-fixes target 3.12 syntax).
 **Minimum compatibility**: Do not use `datetime.UTC` (3.11+); use `datetime.timezone.utc`.
 Check all auto-fix tools (ruff, etc.) for version-incompatible changes before committing.
 
