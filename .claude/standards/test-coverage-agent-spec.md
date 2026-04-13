@@ -93,7 +93,7 @@ The design follows a **multi-agent writer/reviewer pattern** validated in produc
 │  on: pull_request                                                │
 │    1. pytest --cov --cov-report=json --cov-branch               │
 │    2. Codecov patch-level check (90% new code)                  │
-│    3. If below threshold → claude -p "generate tests for gaps"  │
+│    3. If below threshold → claude --bare -p "generate tests for gaps"  │
 │    4. Claude opens PR with generated tests                      │
 │    5. Weekly: mutmut run on critical modules                     │
 └──────────────────────────────────────────────────────────────────┘
