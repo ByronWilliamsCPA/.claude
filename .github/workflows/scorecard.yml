@@ -16,8 +16,9 @@ on:
       - master
   workflow_dispatch:
 
-# Minimal permissions for scorecard execution
-permissions: read-all
+# Workflow-level permissions: minimal; job-level permissions are set below
+permissions:
+  contents: read
 
 jobs:
   analysis:
