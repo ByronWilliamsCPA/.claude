@@ -63,20 +63,22 @@ format: `https://github.com/owner/repo/pull/123`"
 Request a GitHub Copilot review before fetching any data. This fires the async
 Copilot review so it runs in parallel with the rest of this workflow.
 
-```bash
-gh pr edit "$PR_NUMBER" --repo "$OWNER/$REPO" --add-reviewer "copilot"
-```
-
-If that command fails with "not found" or a permissions error, try the API:
+The Copilot bot login is `copilot-pull-request-reviewer`. Use the API endpoint
+directly; do NOT use `gh pr edit --add-reviewer "copilot"` (that username does
+not exist and will silently fail).
 
 ```bash
-gh api repos/"$OWNER"/"$REPO"/pulls/"$PR_NUMBER"/requested_reviewers \
+COPILOT_RESULT=$(gh api repos/"$OWNER"/"$REPO"/pulls/"$PR_NUMBER"/requested_reviewers \
   --method POST \
-  --field "reviewers[]=copilot-pull-request-reviewer"
+  --field "reviewers[]=copilot-pull-request-reviewer" 2>&1)
+COPILOT_STATUS=$?
 ```
 
-Record whether Copilot review was successfully triggered (yes/no/error) for
-the final report. Do not block the rest of the workflow on this step.
+- If `COPILOT_STATUS` is 0: record "Copilot: requested successfully."
+- If non-zero: record "Copilot: request failed; add manually via GitHub UI."
+  Log the error text from `$COPILOT_RESULT` for diagnostics. Continue.
+
+Do not block the rest of the workflow on this step.
 
 ---
 
@@ -901,7 +903,7 @@ https://github.com/{OWNER}/{REPO}/blob/{HEAD_SHA}/{file}#L{start}-L{end}}
 
 {SonarQube summary line if findings exist}
 
-Copilot review requested; see Reviewers section for results.
+{If COPILOT_STATUS=0: "Copilot review requested; see Reviewers section for results." Else: "Copilot review request failed; request manually via GitHub UI."}
 
 🤖 Generated with [Claude Code](https://claude.ai/code)
 EOF
