@@ -91,11 +91,11 @@ exit 0
 
 ### 2. Hook entry in `settings.json`
 
-The PostToolUse hook for `Edit|Write` triggering `py310-compat-check.sh` is **not yet wired**
-in `settings.json`. The architecture below documents the intended configuration; it has not
-been added to the committed settings file.
+The PostToolUse hook for `Edit|Write` triggering `py310-compat-check.sh` is active in the
+global `~/.claude/settings.json` but has not been added to the committed repo `settings.json`.
+The architecture below documents the intended committed configuration.
 
-Intended configuration (not yet active):
+Intended committed configuration (not yet in repo settings.json):
 
 ```json
 "PostToolUse": [
