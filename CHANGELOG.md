@@ -1,24 +1,7 @@
 # CHANGELOG
 
 
-## [Unreleased]
-
-### Bug Fixes
-
-- **hooks**: Normalize `refs/heads/` and `refs/` prefixes in force-push guard so
-  fully-qualified refspecs (e.g. `refs/heads/main`) are blocked the same as bare
-  branch names (PR #20)
-
-- **quality-gate**: Harden `check_quality_gate.py` against API error envelopes:
-  use `.get()` on all bare dict key accesses in `format_report`, `_format_sonar_layer`,
-  and `main`; treat `status=NONE` as a blocking condition so a missing quality gate
-  cannot silently pass as READY TO MERGE
-
-- **writing**: Remove em-dashes from SonarQube false-positive suppression comments in
-  `check_type_hints.py` and `validate_front_matter.py`; add SonarQube issue IDs to
-  each S2083 suppression comment; fix `validate_front_matter.py` to use `changed |=`
-  pattern (not bitwise OR on bools) and wrap `_fix_tags`/`_fix_purpose` in
-  try/except with stderr logging; correct inaccurate comment wording in `bash-notify.sh`
+## v0.6.4 (2026-04-13)
 
 
 ## v0.6.3 (2026-04-13)
@@ -172,6 +155,18 @@ Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
 
 ### Bug Fixes
 
+- **hooks**: Close force-push guard bypass vectors for URL remotes, interleaved flags, and compound
+  commands
+  ([`c2ce659`](https://github.com/ByronWilliamsCPA/.claude/commit/c2ce659fb3de66354a3f25f7a52885c4c0a1f20f))
+
+Fixes three bypass vectors not addressed by the refs/heads/ normalization: - URL-format remote names
+  (git@github.com:...) defeat simple sed stripping; now detected and treated as ambiguous (block) -
+  Interleaved flags (-f -u origin main) were mis-parsed; now all flags are stripped before
+  extracting remote and branch tokens - Compound commands (ls && git push --force) are now handled
+  by extracting only the git push ... segment for analysis
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
 - **hooks**: Correct exit codes, block message routing, and PCRE portability
   ([`e0180dd`](https://github.com/ByronWilliamsCPA/.claude/commit/e0180ddfea37f8720ef288ba06cd3e5572911701))
 
@@ -182,6 +177,74 @@ Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
   patterns); update header comment to accurately describe exit behavior under set -euo pipefail;
   note that match/case is already not flagged (false-positive issue 3 was already resolved in the
   AST scan)
+
+- **hooks**: Correct force-push refspec detection and PowerShell escaping
+  ([`00c7a99`](https://github.com/ByronWilliamsCPA/.claude/commit/00c7a99e5b091eb6f1bb210a0cc2818fe5cb6c49))
+
+bash-pre-hook.sh: BRANCH_TOKEN from sed/awk matched bare branch names but not refspec forms like
+  HEAD:main or :main. Add DEST_TOKEN="${BRANCH_TOKEN##*:}" to strip the source ref, then also test
+  DEST_TOKEN against the main/master pattern. This closes the bypass where force-pushing via a
+  refspec would not be intercepted.
+
+bash-notify.sh: PS_MSG="${MSG//\'/\'\'}" inside double quotes matches the two-character sequence
+  backslash+quote rather than a bare single quote, so messages containing single quotes were passed
+  through unescaped into the PowerShell string. Replace with printf+sed to avoid bash
+  parameter-expansion ambiguity.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- **hooks**: Normalize refs/heads/ prefix in force-push guard
+  ([`eae2d06`](https://github.com/ByronWilliamsCPA/.claude/commit/eae2d06a4874e8a49aa732ae3babf2acb2f5fedd))
+
+Copilot identified a bypass: a fully-qualified refspec such as refs/heads/main would pass the
+  grep-for-main check because the pattern only matched bare branch names.
+
+Strip refs/heads/ and refs/ prefixes from both BRANCH_TOKEN and DEST_TOKEN before the
+  '^(main|master)$' comparison so all three ref forms are blocked consistently.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- **quality**: Clamp _find_insert_index return value to list bounds
+  ([`8496f12`](https://github.com/ByronWilliamsCPA/.claude/commit/8496f1229621145844618ea9c0ba17aaa67d7b45))
+
+When a file's module docstring is the last statement and the file has no trailing newline,
+  end_lineno equals len(lines) and the for-loop iterates over an empty slice, leaving insert_index
+  past the list boundary. Add a min(insert_index, len(lines)) clamp to guard the caller against an
+  out-of-bounds index.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- **quality**: Harden quality gate against API error envelopes
+  ([`7298c2b`](https://github.com/ByronWilliamsCPA/.claude/commit/7298c2b0a035c7b99b97aef68cf4ec7af8853d9d))
+
+Bare dict key accesses on the SonarQube API response would raise KeyError when the API returns an
+  error envelope or omits expected fields.
+
+- Use .get() on projectStatus, status, metricKey, condition status, rule, severity, and message
+  throughout format_report, _format_sonar_layer, and main - Default status to NONE when the key is
+  absent - Treat NONE as a blocking condition in both format_report and main so a missing quality
+  gate cannot silently pass as READY TO MERGE - Add NONE to the Next Steps branch in
+  _format_overall_status
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- **quality**: Reduce cognitive complexity and document S2083 false positives
+  ([`f517247`](https://github.com/ByronWilliamsCPA/.claude/commit/f517247ff2c658fdab5ffc955be9f509c38bdbcd))
+
+Extract private helpers from functions flagged by python:S3776 to bring cognitive complexity below
+  the 15-threshold in all three scripts:
+
+- check_quality_gate.py: extract _format_rad_layer, _format_llm_layer, _format_sonar_layer,
+  _format_overall_status from format_report (was 34) - check_type_hints.py: replace nested loops in
+  has_future_annotations_import with any() generator; extract _find_insert_index from
+  add_future_import; extract _collect_python_files and _process_files from main (was 16/16/23) -
+  validate_front_matter.py: extract _fix_tags, _fix_purpose from autofix_front_matter; extract
+  _collect_md_files, _output_results from main (was 16/21)
+
+Add sonar false-positive comments at write call sites for pythonsecurity:S2083: paths are validated
+  via is_relative_to(Path.cwd()) before any write occurs.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
 
 - **quality**: Resolve SonarQube violations in scripts/
   ([`8dc86c6`](https://github.com/ByronWilliamsCPA/.claude/commit/8dc86c62abaa8ed03cf4b9d383084d0284c4f501))
@@ -226,6 +289,19 @@ CI: pin both actions/checkout references in release.yml to full commit SHA for s
 
 Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
 
+- **review**: Address PR #20 Copilot and agent findings
+  ([`f76f658`](https://github.com/ByronWilliamsCPA/.claude/commit/f76f65824040107c08aa6475a41e9292c240b973))
+
+- bash-notify.sh: fix comment wording; 'double-quote expansion ambiguity' was inaccurate; the actual
+  concern is parameter substitution escaping issues in \${var//pat/rep} - check_type_hints.py:
+  remove em-dashes from S2083 suppression comment; add SonarQube issue ID AZ1eBjvzS1usNdOdvc1l to
+  the tracking reference - validate_front_matter.py: remove em-dashes from S2083 suppression
+  comment; add SonarQube issue ID AZ1eBjxNS1usNdOdvc1m; apply Copilot suggestion to use changed |=
+  pattern instead of bitwise OR on bools; wrap _fix_tags/_fix_purpose calls in try/except with
+  stderr logging so a helper exception returns False rather than propagating
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
 - **security**: Scope GitHub Actions permissions to job level
   ([`b12fe52`](https://github.com/ByronWilliamsCPA/.claude/commit/b12fe5261f5bdd906ce8a875307ed69d42f4ec8d))
 
@@ -238,6 +314,38 @@ Replace overly broad workflow-level permissions with minimal job-level declarati
   level to each job; core-validation gets both, changelog gets read on pull-requests, all others get
   contents: read only - release.yml: move all write permissions from workflow level to the release
   job only; test job gets contents: read only
+
+### Documentation
+
+- **changelog**: Add Unreleased section for PR #20 changes
+  ([`5322f93`](https://github.com/ByronWilliamsCPA/.claude/commit/5322f9396661a0b56c02a3f1c6c0e6b0d15ac459))
+
+Documents the three change groups landed by /pr-fix on PR #20: hooks force-push normalization,
+  quality gate hardening, and writing/em-dash fixes with Copilot suggestions.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- **diagram**: Rewrite hook_pipeline.puml to match actual configuration
+  ([`c25cac8`](https://github.com/ByronWilliamsCPA/.claude/commit/c25cac8fe27cf0b9e49d033c1b48ae8d813cc96c))
+
+The previous diagram showed four scripts as wired that are not present in either hooks.json or
+  .claude/settings.json: - keyword-tool-trigger.sh (shown as UserPromptSubmit) -
+  tdd-enforcement-hook.sh (shown as PreToolUse) - track-mcp-usage.sh (shown as PostToolUse mcp__*) -
+  session-start-rules.sh (shown in SessionStart note)
+
+The following wired hooks were missing from the diagram: - hooks.json UserPromptSubmit:
+  hookify/userpromptsubmit.py, pr-review-reminder.py - hooks.json PreToolUse [Edit|Write]: inline
+  .env/secrets write block - hooks.json PreToolUse [Edit|Write|MultiEdit]: security_reminder_hook.py
+  - hooks.json PreToolUse [Skill]: planning-bridge-gate.sh - hooks.json PreToolUse [any]:
+  hookify/pretooluse.py - hooks.json PostToolUse [Edit|Write]: py310-compat-check.sh - hooks.json
+  PostToolUse [any]: hookify/posttooluse.py - hooks.json Stop: hookify/stop.py - settings.json
+  PostToolUse [Edit|Write]: inline py310, ruff, shellcheck, validate-frontmatter.sh - settings.json
+  FileChanged [.env*]: env-file-audit.sh
+
+Rewrite separates hooks.json (project-level) from settings.json (user-level) participants.
+  Regenerate SVG from updated PUML source.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
 
 
 ## v0.6.1 (2026-04-12)
