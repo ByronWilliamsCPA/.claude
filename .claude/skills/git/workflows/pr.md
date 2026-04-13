@@ -177,7 +177,7 @@ Immediately after `gh pr create` succeeds, invoke `/pr-review` with the new PR U
 This triggers GitHub Copilot review, fetches SonarQube PR-specific findings, and runs
 up to 8 parallel agents (CLAUDE.md compliance, bug scan, git-history context, prior PR
 comments, comment accuracy, silent failures, test coverage, type design). All findings
-are reported in tiers (Critical / Important / Suggested / Informational) — nothing is
+are reported in tiers (Critical / Important / Suggested / Informational); nothing is
 filtered. Optionally posts a consolidated comment to the PR.
 
 The PR URL was already shared with the user in Step 5. Present the final review report
