@@ -191,17 +191,19 @@ def add_future_import(file_path: Path) -> bool:
             lines.insert(insert_index, import_line)
             lines.insert(insert_index + 1, "\n")
 
-        # Security: Resolve path once; validate containment and write through
-        # the resolved path to prevent symlink-based traversal (S2083)
+        # Security: resolve and validate containment, then reconstruct the write
+        # target from the trusted CWD base so the written path is not derived
+        # from user-controlled input (S2083).
+        cwd = Path.cwd()
         resolved_path = file_path.resolve()
-        if not resolved_path.is_relative_to(Path.cwd()):
+        if not resolved_path.is_relative_to(cwd):
             print(
                 f"Security: Path {file_path} is outside current directory",
                 file=sys.stderr,
             )
             return False
-
-        resolved_path.write_text("".join(lines), encoding="utf-8")
+        safe_path = cwd / resolved_path.relative_to(cwd)
+        safe_path.write_text("".join(lines), encoding="utf-8")
         return True
     except Exception as e:
         print(f"Error adding import to {file_path}: {e}", file=sys.stderr)
