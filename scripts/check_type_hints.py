@@ -193,7 +193,9 @@ def add_future_import(file_path: Path) -> bool:
             )
             return False
 
-        file_path.write_text("".join(lines), encoding="utf-8")  # VERIFY: path constructed from user input — validate/sanitize before use (pythonsecurity:S2083)
+        file_path.write_text(
+            "".join(lines), encoding="utf-8"
+        )  # S2083: path validated at lines 189-194 before this write; SonarQube flags as incomplete remediation (security review needed)
         return True
     except Exception as e:
         print(f"Error adding import to {file_path}: {e}", file=sys.stderr)
