@@ -37,7 +37,7 @@ METRICS_FILE="${LOG_DIR}/mcp-metrics.json"
 mkdir -p "$LOG_DIR"
 
 # Initialize metrics file if it doesn't exist
-if [ ! -f "$METRICS_FILE" ]; then
+if [[ ! -f "$METRICS_FILE" ]]; then
     echo '{"tool_counts":{},"session_start":"'"$(date -Iseconds)"'","total_calls":0}' > "$METRICS_FILE"
 fi
 
@@ -59,15 +59,17 @@ log_usage() {
             .last_updated = now | todate
         ' "$METRICS_FILE" > "$temp_file" && mv "$temp_file" "$METRICS_FILE"
     fi
+    return 0
 }
 
 # Read tool call info from stdin
 read_tool_info() {
     local info=""
-    if [ ! -t 0 ]; then
+    if [[ ! -t 0 ]]; then
         info=$(cat)
     fi
     echo "$info"
+    return 0
 }
 
 # Extract tool name from context
@@ -75,10 +77,10 @@ extract_tool_name() {
     local context="$1"
 
     # Try to extract from JSON
-    if command -v jq &> /dev/null && [ -n "$context" ]; then
+    if command -v jq &> /dev/null && [[ -n "$context" ]]; then
         local name
         name=$(echo "$context" | jq -r '.tool_name // .name // empty' 2>/dev/null)
-        if [ -n "$name" ]; then
+        if [[ -n "$name" ]]; then
             echo "$name"
             return
         fi
@@ -90,7 +92,7 @@ extract_tool_name() {
 
 # Generate usage report
 generate_report() {
-    if [ ! -f "$METRICS_FILE" ]; then
+    if [[ ! -f "$METRICS_FILE" ]]; then
         echo "No metrics available yet"
         return
     fi
@@ -128,6 +130,7 @@ generate_report() {
         echo "Recent usage:"
         tail -20 "$USAGE_LOG" 2>/dev/null || echo "No usage logged"
     fi
+    return 0
 }
 
 # Reset metrics for new session
@@ -145,6 +148,7 @@ main() {
     tool_name=$(extract_tool_name "$context")
 
     log_usage "$tool_name"
+    return 0
 }
 
 # Handle command-line arguments

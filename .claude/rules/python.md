@@ -17,7 +17,7 @@ paths:
 ## Type Checking with BasedPyright
 
 BasedPyright replaces MyPy (3-5x faster, stricter analysis):
-- **Mode**: `strict` — enables all strict type checking without excessive noise
+- **Mode**: `strict` (enables all strict type checking without excessive noise)
 - **Strict Inference**: `strictListInference`, `strictDictionaryInference`, `strictSetInference` enabled
 - **Configuration**: `pyproject.toml` under `[tool.basedpyright]`
 - **Reference**: https://docs.basedpyright.com
@@ -66,7 +66,7 @@ or token generation.
 
 | Rule | What It Catches |
 |------|----------------|
-| **BLE** | Blind except detection (no bare `except:` or `except Exception:`) |
+| **BLE** | Blind except: catches over-broad `except:` and `except Exception:` clauses, including those that re-raise or log before re-raising |
 | **EM** | Error message best practices |
 | **SLF** | Private member access violations |
 | **INP** | Require `__init__.py` in packages |
@@ -105,13 +105,13 @@ or token generation.
 | **PERF** | Performance anti-patterns |
 | **FURB** | Refurb: modernization and idiomatic Python |
 | **LOG** | Logging best practices |
-| **TRY** | Try/except best practices |
+| **TRY** | Tryceratops rules: targets raising bare `Exception` directly and other try/except structural patterns |
 | **ERA** | Eradicate: commented-out code detection |
 | **FBT** | Boolean trap detection |
 | **ASYNC** | Async/await best practices |
 | **RUF** | Ruff-native rules |
 
-## Code Generation — Python-Specific
+## Code Generation: Python-Specific
 
 ### Parameter Grouping (>4 params → dataclass)
 
@@ -163,7 +163,7 @@ class NotFoundError(AppError): ...    # e.g. resource_id: str
 - One base class per project; typed subclasses per error category; subclasses are minimal when
   no additional attributes are needed
 - `TRY002` flags `raise Exception(...)` directly; `BLE001` flags overly broad except clauses;
-  neither validates the full hierarchy — that enforcement comes from code review
+  neither validates the full hierarchy; enforcement comes from code review
 
 ### Documentation
 
@@ -172,23 +172,25 @@ class NotFoundError(AppError): ...    # e.g. resource_id: str
 - **Type Hints**: Required on all function signatures (BasedPyright strict enforces this)
 
 **Docstring coverage gate**: `interrogate` runs at pre-commit and requires 85% docstring
-coverage in `scripts/`. Functions missing docstrings block the commit. The `scripts/` scope
-reflects the pre-commit gate; the "Required on all public functions" standard applies globally
-and is checked by Ruff `D` rules at lint time.
+coverage in `scripts/`. Coverage dropping below the configured threshold blocks the commit;
+individual missing docstrings only fail the gate when they push coverage below 85%. The
+`scripts/` scope reflects the pre-commit gate; the "Required on all public functions" standard
+applies globally and is checked by Ruff `D` rules at lint time.
 
 **Docstring argument validation**: `darglint` runs at pre-commit and validates that
 documented `Args`, `Returns`, and `Raises` sections match the actual function signature.
 Strictness: `long` (validates `Args`/`Returns`/`Raises` when a full multi-line docstring is
 present; single-line docstrings are not checked); all parameters must be documented. Excluded:
-`tests/`, `scripts/`, `benchmarks/`, `tools/`. The `scripts/` exclusion is intentional:
-utility scripts often use `*args`/`**kwargs` patterns where darglint produces false positives.
+`tests/`, `scripts/`, `benchmarks/`, `tools/`, `noxfile.py`, `.claude/skills/`. The `scripts/`
+exclusion is intentional: utility scripts often use `*args`/`**kwargs` patterns where darglint
+produces false positives.
 
 When darglint flags a mismatch, fix the docstring. Do not add a `# noqa` suppression.
 
 ### CI / Compatibility
 
 **Supported range**: Python 3.10–3.14 (`requires-python = ">=3.10,<3.15"`).
-**Ruff target**: `py312` — Ruff auto-fixes target 3.12 syntax.
+**Ruff target**: `py312` (Ruff auto-fixes target 3.12 syntax).
 **Minimum compatibility**: Do not use `datetime.UTC` (3.11+); use `datetime.timezone.utc`.
 Check all auto-fix tools (ruff, etc.) for version-incompatible changes before committing.
 

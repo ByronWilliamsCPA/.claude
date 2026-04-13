@@ -19,14 +19,14 @@ CLAUDE_REPO="https://github.com/williaby/.claude.git"
 BRANCH="main"
 
 # Check if we're in a git repository
-if [ ! -d ".git" ]; then
-    echo -e "${RED}Error: Not in a git repository${NC}"
-    echo "Please run this script from the root of your project"
+if [[ ! -d ".git" ]]; then
+    echo -e "${RED}Error: Not in a git repository${NC}" >&2
+    echo "Please run this script from the root of your project" >&2
     exit 1
 fi
 
 # Check if the subtree exists
-if [ ! -d "$SUBTREE_PREFIX" ]; then
+if [[ ! -d "$SUBTREE_PREFIX" ]]; then
     echo -e "${YELLOW}Warning: Claude standards subtree not found at $SUBTREE_PREFIX${NC}"
     echo ""
     read -p "Do you want to add it now? (Y/n): " -r

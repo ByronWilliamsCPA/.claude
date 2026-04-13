@@ -40,6 +40,14 @@ import nox
 with contextlib.suppress(ImportError):
     import nox_uv  # noqa: F401 - Required for uv backend support
 
+# Repeated string constants extracted to avoid S1192 duplicate literal violations
+DEV_EXTRAS = ".[dev]"
+PYPROJECT_TOML = "pyproject.toml"
+REQUIREMENTS_RUNTIME = "requirements-runtime.txt"
+REQUIREMENTS_ALL = "requirements-all.txt"
+COV_SRC = "--cov=src"
+COV_REPORT_TERM = "--cov-report=term-missing:skip-covered"
+
 # Default sessions and options
 nox.options.sessions = ["test", "lint", "docs"]
 nox.options.reuse_existing_virtualenvs = True
@@ -64,7 +72,7 @@ def docs(session: nox.Session) -> None:
     This session installs the project with docs dependencies and builds
     the documentation in strict mode.
     """
-    session.install("-e", ".[dev]")
+    session.install("-e", DEV_EXTRAS)
     session.run("mkdocs", "build", "--strict")
 
 
@@ -75,7 +83,7 @@ def serve(session: nox.Session) -> None:
     This session starts the MkDocs development server with live reloading.
     Access at http://127.0.0.1:8000
     """
-    session.install("-e", ".[dev]")
+    session.install("-e", DEV_EXTRAS)
     session.run("mkdocs", "serve")
 
 
@@ -88,7 +96,7 @@ def docstrings(session: nox.Session) -> None:
     """
     session.install("pydocstyle>=6.3", "interrogate>=1.7")
     session.run("pydocstyle", "src/")
-    session.run("interrogate", "-c", "pyproject.toml", "src/")
+    session.run("interrogate", "-c", PYPROJECT_TOML, "src/")
 
 
 @nox.session(python="3.12")
@@ -100,7 +108,7 @@ def validate(session: nox.Session) -> None:
     """
     session.install(
         "-e",
-        ".[dev]",
+        DEV_EXTRAS,
         "pydantic>=2.0",
         "python-frontmatter>=1.1",
         "ruamel.yaml>=0.18",
@@ -109,7 +117,7 @@ def validate(session: nox.Session) -> None:
     )
     session.run("python", "tools/validate_front_matter.py", "docs", "--fix")
     session.run("pydocstyle", "src/")
-    session.run("interrogate", "-c", "pyproject.toml", "src/")
+    session.run("interrogate", "-c", PYPROJECT_TOML, "src/")
     session.run("mkdocs", "build", "--strict")
 
 
@@ -171,16 +179,16 @@ def sbom(session: nox.Session) -> None:
         "uv",
         "pip",
         "compile",
-        "pyproject.toml",
+        PYPROJECT_TOML,
         "--output-file",
-        "requirements-runtime.txt",
+        REQUIREMENTS_RUNTIME,
         "--no-dev",
         external=True,
     )
     session.run(
         "cyclonedx-py",
         "requirements",
-        "requirements-runtime.txt",
+        REQUIREMENTS_RUNTIME,
         "--of",
         "json",
         "-o",
@@ -195,14 +203,14 @@ def sbom(session: nox.Session) -> None:
         "--format",
         "requirements-txt",
         "--output-file",
-        "requirements-all.txt",
+        REQUIREMENTS_ALL,
         "--no-hashes",
         external=True,
     )
     session.run(
         "cyclonedx-py",
         "requirements",
-        "requirements-all.txt",
+        REQUIREMENTS_ALL,
         "--of",
         "json",
         "-o",
@@ -213,8 +221,8 @@ def sbom(session: nox.Session) -> None:
     # Clean up temporary files
     import pathlib
 
-    pathlib.Path("requirements-runtime.txt").unlink(missing_ok=True)
-    pathlib.Path("requirements-all.txt").unlink(missing_ok=True)
+    pathlib.Path(REQUIREMENTS_RUNTIME).unlink(missing_ok=True)
+    pathlib.Path(REQUIREMENTS_ALL).unlink(missing_ok=True)
 
 
 @nox.session(python="3.12")
@@ -282,7 +290,7 @@ def assuredoss(session: nox.Session) -> None:
     - GOOGLE_CLOUD_PROJECT
     - GOOGLE_APPLICATION_CREDENTIALS or GOOGLE_APPLICATION_CREDENTIALS_B64
     """
-    session.install("-e", ".[dev]")
+    session.install("-e", DEV_EXTRAS)
     session.run("python", "scripts/validate_assuredoss.py")
 
 
@@ -298,14 +306,14 @@ def test(session: nox.Session) -> None:
     This session runs all tests with coverage reporting
     across Python 3.10, 3.11, 3.12, 3.13, and 3.14 to ensure compatibility.
     """
-    session.install("-e", ".[dev]")
+    session.install("-e", DEV_EXTRAS)
     session.run(
         "pytest",
         "-v",
-        "--cov=src",
+        COV_SRC,
         "--cov-branch",
         "--cov-report=xml:coverage.xml",
-        "--cov-report=term-missing:skip-covered",
+        COV_REPORT_TERM,
         "--cov-fail-under=80",
         "tests/",
         *session.posargs,
@@ -319,15 +327,15 @@ def unit(session: nox.Session) -> None:
     Unit tests are isolated, fast, and don't require external dependencies.
     Target: 85%+ coverage for unit tests.
     """
-    session.install("-e", ".[dev]")
+    session.install("-e", DEV_EXTRAS)
     session.run(
         "pytest",
         "-m",
         "unit and not slow",
-        "--cov=src",
+        COV_SRC,
         "--cov-branch",
         "--cov-report=xml:coverage-unit.xml",
-        "--cov-report=term-missing:skip-covered",
+        COV_REPORT_TERM,
         "--cov-fail-under=85",
         "-v",
         *session.posargs,
@@ -341,15 +349,15 @@ def integration(session: nox.Session) -> None:
     Integration tests verify interaction between components.
     Target: 70%+ coverage for integration tests.
     """
-    session.install("-e", ".[dev]")
+    session.install("-e", DEV_EXTRAS)
     session.run(
         "pytest",
         "-m",
         "integration",
-        "--cov=src",
+        COV_SRC,
         "--cov-branch",
         "--cov-report=xml:coverage-integration.xml",
-        "--cov-report=term-missing:skip-covered",
+        COV_REPORT_TERM,
         "--cov-fail-under=70",
         "-v",
         *session.posargs,
@@ -363,14 +371,14 @@ def fast(session: nox.Session) -> None:
     Use this for rapid feedback during development.
     Excludes slow tests and stops after 5 failures.
     """
-    session.install("-e", ".[dev]")
+    session.install("-e", DEV_EXTRAS)
     session.run(
         "pytest",
         "-m",
         "not slow",
-        "--cov=src",
+        COV_SRC,
         "--cov-branch",
-        "--cov-report=term-missing:skip-covered",
+        COV_REPORT_TERM,
         "--cov-fail-under=75",
         "--maxfail=5",
         "-v",
@@ -384,15 +392,15 @@ def security_tests(session: nox.Session) -> None:
 
     Tests focused on security-critical functionality.
     """
-    session.install("-e", ".[dev]")
+    session.install("-e", DEV_EXTRAS)
     session.run(
         "pytest",
         "-m",
         "security",
-        "--cov=src",
+        COV_SRC,
         "--cov-branch",
         "--cov-report=xml:coverage-security.xml",
-        "--cov-report=term-missing:skip-covered",
+        COV_REPORT_TERM,
         "-v",
         *session.posargs,
     )
@@ -410,7 +418,7 @@ def lint(session: nox.Session) -> None:
     This session runs Ruff linting and type hint checks to ensure code quality
     across all supported Python versions.
     """
-    session.install("-e", ".[dev]")
+    session.install("-e", DEV_EXTRAS)
     session.run("ruff", "check", ".", "--config=pyproject.toml")
     session.run("ruff", "format", "--check")
     session.run("python", "scripts/check_type_hints.py", "--src-dir=src")
@@ -424,5 +432,5 @@ def typecheck(session: nox.Session) -> None:
     across all supported Python versions. BasedPyright is a stricter fork
     of Pyright that provides faster analysis than MyPy.
     """
-    session.install("-e", ".[dev]")
+    session.install("-e", DEV_EXTRAS)
     session.run("basedpyright", "src")
