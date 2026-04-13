@@ -1,6 +1,6 @@
 # Folder Context: [PROJECT NAME]
 
-Save as `CLAUDE-FOLDER.md` (or similar) inside your Cowork work folder. Cowork reads folder instructions automatically when the folder is selected.
+Save as `CLAUDE-FOLDER.md` inside your Cowork work folder. Cowork reads folder instructions automatically when the folder is selected.
 
 ## Project
 

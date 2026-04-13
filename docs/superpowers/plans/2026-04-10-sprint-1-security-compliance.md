@@ -5,7 +5,7 @@ status: draft
 owner: core-maintainer
 purpose: "Implementation plan for adding FIPS compliance, pip-audit hook, SHA pinning guidance, and known vulnerability documentation to the global Claude implementation."
 component: Development-Tools
-source: "docs/superpowers/specs/"
+source: "docs/superpowers/specs/2026-04-10-sprint-1-security-compliance-design.md"
 tags:
   - planning
   - security
