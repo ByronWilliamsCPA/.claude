@@ -175,15 +175,21 @@ def autofix_front_matter(path: Path) -> bool:
     if not isinstance(data, dict):
         return False
 
-    changed = _fix_tags(data) | _fix_purpose(data)
+    try:
+        changed = False
+        changed |= _fix_tags(data)
+        changed |= _fix_purpose(data)
+    except Exception as e:
+        print(f"autofix failed for {path}: {e}", file=sys.stderr)
+        return False
 
     if changed:
         out = StringIO()
         yrt.dump(data, out)
         new_yaml = out.getvalue().rstrip()
         new_content = f"---\n{new_yaml}\n---\n{text[match.end() :]}"
-        # Path validated above via is_relative_to(Path.cwd()) — safe to write
-        # sonar: false positive pythonsecurity:S2083 — user input is resolved and bounded
+        # Path validated above via is_relative_to(Path.cwd()); safe to write
+        # sonar: false positive pythonsecurity:S2083 (AZ1eBjxNS1usNdOdvc1m): user input is resolved and bounded
         path.write_text(new_content, encoding="utf-8")
 
     return changed

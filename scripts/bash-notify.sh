@@ -89,7 +89,7 @@ fi
 # ---------------------------------------------------------------------------
 
 # Escape single quotes in MSG for safe embedding in PowerShell single-quoted strings.
-# Using printf+sed avoids bash double-quote expansion ambiguity in ${var//pat/rep}.
+# Using printf+sed avoids bash parameter substitution escaping issues in ${var//pat/rep}.
 PS_MSG=$(printf '%s' "$MSG" | sed "s/'/''/g")
 
 PS_CMD="Add-Type -AssemblyName System.Windows.Forms; \$n = New-Object System.Windows.Forms.NotifyIcon; \$n.Icon = [System.Drawing.SystemIcons]::Application; \$n.BalloonTipTitle = 'Claude Code'; \$n.BalloonTipText = '${PS_MSG}'; \$n.Visible = \$true; \$n.ShowBalloonTip(5000); Start-Sleep -Milliseconds 5500; \$n.Dispose()"
