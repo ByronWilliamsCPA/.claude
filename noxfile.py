@@ -41,12 +41,12 @@ with contextlib.suppress(ImportError):
     import nox_uv  # noqa: F401 - Required for uv backend support
 
 # Repeated string constants extracted to avoid S1192 duplicate literal violations
-DEV_EXTRAS = '.[dev]'
-PYPROJECT_TOML = 'pyproject.toml'
-REQUIREMENTS_RUNTIME = 'requirements-runtime.txt'
-REQUIREMENTS_ALL = 'requirements-all.txt'
-COV_SRC = '--cov=src'
-COV_REPORT_TERM = '--cov-report=term-missing:skip-covered'
+DEV_EXTRAS = ".[dev]"
+PYPROJECT_TOML = "pyproject.toml"
+REQUIREMENTS_RUNTIME = "requirements-runtime.txt"
+REQUIREMENTS_ALL = "requirements-all.txt"
+COV_SRC = "--cov=src"
+COV_REPORT_TERM = "--cov-report=term-missing:skip-covered"
 
 # Default sessions and options
 nox.options.sessions = ["test", "lint", "docs"]
