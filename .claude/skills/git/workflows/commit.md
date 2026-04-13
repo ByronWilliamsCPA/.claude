@@ -26,6 +26,7 @@ git diff --stat
 ### 2. Analyze Changes
 
 Determine:
+
 - **Type**: feat, fix, docs, refactor, test, chore, perf, ci
 - **Scope**: Which component/module is affected (optional)
 - **Breaking**: Are there breaking changes?
@@ -36,7 +37,7 @@ Determine:
 
 Follow conventional commits format:
 
-```
+```text
 <type>(<scope>): <subject>
 
 <body>
@@ -47,7 +48,7 @@ Follow conventional commits format:
 #### Type Reference
 
 | Type | When to Use | Example |
-|------|-------------|---------|
+| ---- | ----------- | ------- |
 | `feat` | New feature | `feat: add user authentication` |
 | `fix` | Bug fix | `fix: resolve null pointer in parser` |
 | `docs` | Documentation only | `docs: update API reference` |
@@ -69,9 +70,12 @@ See `context/conventional-commits.md` for version impact per type.
 ### 4. Handle Staging
 
 If there are unstaged changes, ask:
-- "Stage all changes?" (`git add .`)
-- "Stage specific files?" (list them)
-- "Review changes first?" (show diff)
+
+- "Stage specific files?" (list files and let user choose; **preferred default**)
+- "Review changes first?" (show diff, then offer file-by-file staging)
+- "Stage all changes?" (`git add .`): use only when the user explicitly asks
+  for this; note that `git add .` can accidentally include secrets, generated
+  files, or IDE config that should not be committed
 
 ### 5. Execute Commit
 
@@ -94,6 +98,7 @@ EOF
 ### 6. Post-Commit
 
 After successful commit:
+
 - Show `git log -1` to confirm
 - Suggest `git push` if ready
 - Mention if more changes remain unstaged
@@ -104,7 +109,7 @@ After successful commit:
 
 Use `!` after type and add `BREAKING CHANGE:` footer:
 
-```
+```text
 feat(api)!: change response envelope format
 
 BREAKING CHANGE: API responses now use { data, meta, errors }
@@ -120,11 +125,13 @@ Migration: Update response handlers to access .data property.
 If staged changes touch multiple unrelated areas, recommend splitting:
 
 > I see changes to multiple unrelated areas:
+>
 > 1. Bug fix in `parser.py`
 > 2. New feature in `export.py`
 > 3. Updated docs
 >
 > Recommend splitting into separate commits:
+>
 > 1. `fix(parser): handle empty input gracefully`
 > 2. `feat(export): add CSV export option`
 > 3. `docs: update export documentation`
@@ -137,7 +144,7 @@ If staged changes touch multiple unrelated areas, recommend splitting:
 
 Always include Claude attribution for AI-assisted commits:
 
-```
+```text
 🤖 Generated with [Claude Code](https://claude.ai/code)
 
 Co-Authored-By: Claude <noreply@anthropic.com>
@@ -168,11 +175,13 @@ git diff --cached
 ```
 
 Looking at your staged changes:
-- Modified `src/auth/oauth.py` — added token refresh logic
-- Modified `tests/test_auth.py` — added refresh tests
+
+- Modified `src/auth/oauth.py`: added token refresh logic
+- Modified `tests/test_auth.py`: added refresh tests
 
 **Suggested commit**:
-```
+
+```text
 feat(auth): add OAuth token refresh
 
 Implement automatic token refresh when access token expires.
@@ -190,7 +199,8 @@ Shall I commit with this message?
 I see you've changed the API response format. This is a breaking change.
 
 **Suggested commit**:
-```
+
+```text
 feat(api)!: change response envelope format
 
 BREAKING CHANGE: API responses now use { data, meta, errors }
@@ -203,11 +213,12 @@ This marks it as a breaking change with `!`. Proceed?
 
 ---
 
-### Multiple Logical Changes
+### Example: Multiple Logical Changes
 
 **User**: "commit this"
 
 I see changes to multiple unrelated areas:
+
 1. Bug fix in `parser.py`
 2. New feature in `export.py`
 3. Updated docs
