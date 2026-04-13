@@ -18,7 +18,8 @@ on:
       - master
       - develop
 
-permissions: read-all
+permissions:
+  contents: read
 
 jobs:
   reuse:

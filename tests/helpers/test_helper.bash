@@ -22,13 +22,15 @@ setup_test_environment() {
     touch "$CLAUDE_CONFIG_DIR/.env.mcp"
     # Add mocks to PATH
     export PATH="$TEST_TMP_DIR/mocks:$PATH"
+    return 0
 }
 
 # Clean up test environment
 teardown_test_environment() {
-    if [ -n "$TEST_TMP_DIR" ] && [ -d "$TEST_TMP_DIR" ]; then
+    if [[ -n "$TEST_TMP_DIR" ]] && [[ -d "$TEST_TMP_DIR" ]]; then
         rm -rf "$TEST_TMP_DIR"
     fi
+    return 0
 }
 
 # Create a mock command
@@ -47,6 +49,7 @@ exit $exit_code
 EOF
     chmod +x "$mock_dir/$cmd_name"
     export PATH="$mock_dir:$PATH"
+    return 0
 }
 
 # Create a failing mock command
@@ -54,12 +57,13 @@ mock_command_fail() {
     local cmd_name="$1"
     local error_msg="${2:-Command failed}"
     mock_command "$cmd_name" 1 "$error_msg"
+    return 0
 }
 
 # Assert that a file exists
 assert_file_exists() {
     local file="$1"
-    [ -f "$file" ] || {
+    [[ -f "$file" ]] || {
         echo "Expected file to exist: $file"
         return 1
     }
@@ -68,7 +72,7 @@ assert_file_exists() {
 # Assert that a directory exists
 assert_dir_exists() {
     local dir="$1"
-    [ -d "$dir" ] || {
+    [[ -d "$dir" ]] || {
         echo "Expected directory to exist: $dir"
         return 1
     }
@@ -108,7 +112,7 @@ assert_output_not_contains() {
 
 # Assert exit status
 assert_success() {
-    [ "$status" -eq 0 ] || {
+    [[ "$status" -eq 0 ]] || {
         echo "Expected success (exit 0), got exit $status"
         echo "Output: $output"
         return 1
@@ -116,7 +120,7 @@ assert_success() {
 }
 
 assert_failure() {
-    [ "$status" -ne 0 ] || {
+    [[ "$status" -ne 0 ]] || {
         echo "Expected failure (exit non-zero), got exit 0"
         echo "Output: $output"
         return 1
@@ -131,6 +135,7 @@ PERPLEXITY_API_KEY=test_key
 TAVILY_API_KEY=test_key
 GITHUB_PERSONAL_ACCESS_TOKEN=test_token
 EOF
+    return 0
 }
 
 # Create a minimal settings.json file
@@ -141,6 +146,7 @@ create_settings_json() {
     "enableAllProjectMcpServers": true
 }
 EOF
+    return 0
 }
 
 # Create a minimal CLAUDE.md file
@@ -149,6 +155,7 @@ create_claude_md() {
 # Test CLAUDE.md
 Test configuration file.
 EOF
+    return 0
 }
 
 # Initialize a git repo in a directory
@@ -162,6 +169,7 @@ init_git_repo() {
     git add .gitkeep
     git commit -m "Initial commit" --quiet
     cd - > /dev/null || return 1
+    return 0
 }
 
 # Source a script's functions without running main
@@ -170,4 +178,5 @@ source_script_functions() {
     # Override the main function to prevent execution
     main() { :; }
     source "$script"
+    return 0
 }

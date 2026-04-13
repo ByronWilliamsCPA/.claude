@@ -5,6 +5,6 @@
 SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 HOOK="${REPO_ROOT}/.submodules/superpowers/hooks/session-start"
-if [ -x "${HOOK}" ]; then
+if [[ -x "${HOOK}" ]]; then
     exec "${HOOK}" "$@"
 fi

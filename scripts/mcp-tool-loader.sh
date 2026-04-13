@@ -25,6 +25,7 @@ mkdir -p "$(dirname "$LOG_FILE")"
 
 log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" >> "$LOG_FILE"
+    return 0
 }
 
 # Parse YAML configuration (simplified parser)
@@ -38,6 +39,7 @@ parse_agent_tools() {
         # Simplified grep-based extraction
         grep -A 20 "^  ${agent_name}:" "$CONFIG_FILE" | grep -E "^\s+\w+:" | head -10
     fi
+    return 0
 }
 
 # Get Tier 1 tools (always loaded)
@@ -47,6 +49,7 @@ get_tier1_tools() {
     else
         grep -A 15 "^tier_1:" "$CONFIG_FILE" | grep -E "^\s+-\s+" | sed 's/^\s*-\s*//'
     fi
+    return 0
 }
 
 # Check for keyword triggers in user prompt
@@ -88,6 +91,7 @@ check_keyword_triggers() {
     fi
 
     echo "$triggered_servers"
+    return 0
 }
 
 # Output tools in JSON format for Claude Code
@@ -97,7 +101,7 @@ output_tools_json() {
     local first=true
 
     for tool in "${tools[@]}"; do
-        if [ "$first" = true ]; then
+        if [[ "$first" = true ]]; then
             first=false
         else
             json="$json,"
@@ -107,6 +111,7 @@ output_tools_json() {
 
     json="$json]"
     echo "$json"
+    return 0
 }
 
 # Main command processing
@@ -114,7 +119,7 @@ main() {
     case "${1:-}" in
         --agent)
             local agent_name="${2:-}"
-            if [ -z "$agent_name" ]; then
+            if [[ -z "$agent_name" ]]; then
                 echo "Error: Agent name required" >&2
                 exit 1
             fi
@@ -124,7 +129,7 @@ main() {
 
         --keywords)
             local prompt="${2:-}"
-            if [ -z "$prompt" ]; then
+            if [[ -z "$prompt" ]]; then
                 echo "Error: Prompt required" >&2
                 exit 1
             fi
@@ -163,6 +168,7 @@ EOF
             exit 1
             ;;
     esac
+    return 0
 }
 
 main "$@"
