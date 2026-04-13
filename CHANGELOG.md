@@ -1,24 +1,77 @@
 # CHANGELOG
 
-## [Unreleased]
+
+## v0.6.2 (2026-04-13)
 
 ### Bug Fixes
 
-- **scripts**: Correct `confirm()` in `cleanup-template-repo.sh` to return the
-  actual user response instead of unconditional 0; previously typed "n" was
-  silently ignored for all destructive confirmation prompts
-- **hooks**: Restore `always 0` exit contract for `py310-compat-check.sh`
-  PostToolUse hook; add `|| true` guard to `log()` so unexpected I/O errors
-  cannot propagate a non-zero exit that would block Claude tool calls
+- **hooks**: Correct exit codes, block message routing, and PCRE portability
+  ([`e0180dd`](https://github.com/ByronWilliamsCPA/.claude/commit/e0180ddfea37f8720ef288ba06cd3e5572911701))
 
-### Chores
+- rad-strict-hook.sh: merge nested if (S1066) so the git commit check and #VERIFY grep are in a
+  single compound condition - hooks.json: remove >&2 from the sensitive-file block message so the
+  reason appears on stdout, which Claude Code surfaces to the user - py310-compat-check.sh: replace
+  grep -nP (PCRE; fails on macOS/BSD) with grep -nE (POSIX extended regex; equivalent for all used
+  patterns); update header comment to accurately describe exit behavior under set -euo pipefail;
+  note that match/case is already not flagged (false-positive issue 3 was already resolved in the
+  AST scan)
 
-- **quality**: Remove dead `GREP_PCRE_AVAILABLE` variable and unreachable
-  `== false` guard from `py310-compat-check.sh` after `grep -E` migration
-- **writing**: Replace em-dashes with colons and semicolons in
-  `py310-compat-check.sh` and `render_diagrams.sh` per CLAUDE.md hard rule
-- **ci**: Pin `actions/checkout` in `release.yml` test job to full commit SHA
-  for supply chain consistency
+- **quality**: Resolve SonarQube violations in scripts/
+  ([`8dc86c6`](https://github.com/ByronWilliamsCPA/.claude/commit/8dc86c62abaa8ed03cf4b9d383084d0284c4f501))
+
+Apply mechanical SonarQube fixes across shell scripts:
+
+- S7682 (explicit return): add return 0 at end of each function in keyword-tool-trigger.sh,
+  mcp-tool-loader.sh, track-mcp-usage.sh, cleanup-template-repo.sh, generate_requirements.sh - S1066
+  (merge nested if): collapse inner if into enclosing if using && for all five keyword-detection
+  blocks in keyword-tool-trigger.sh - S7688 (use [[): replace single-bracket [ conditionals with [[
+  throughout all scripts where flagged - S131 (default case): add *) ;; default clause to the case
+  "$renderer" statement in render_diagrams.sh - S7677 (redirect to stderr): add >&2 to error echo
+  statements in generate_requirements.sh, update-claude-standards.sh, and
+  verify-template-consistency.sh
+
+- **quality**: Resolve SonarQube violations in tests/
+  ([`558bab2`](https://github.com/ByronWilliamsCPA/.claude/commit/558bab204c3fe603acd7f610a85277a8e66e7164))
+
+- S7682 (explicit return): add return 0 at end of all helper functions in tests/run_tests.sh and
+  tests/helpers/test_helper.bash - S7688 (use [[): replace single-bracket [ tests with [[ throughout
+  both test files - S1481 (unused variable): remove declaration of skipped_tests in run_tests()
+  since it is assigned but never read - S7679 (positional param to local): in main() arg-parsing
+  loop, introduce local arg="$1" and use $arg in case/assignment instead of referencing $1 directly
+
+- **review**: Address PR #18 review findings
+  ([`b8ed6e3`](https://github.com/ByronWilliamsCPA/.claude/commit/b8ed6e3350589927b037195e48ebdec97edb13ff))
+
+Critical: correct confirm() in cleanup-template-repo.sh to return the actual user response (return
+  \$?) instead of unconditional 0; previously any N/n answer to a destructive confirmation prompt
+  was silently ignored.
+
+Important: restore always-0 exit contract for py310-compat-check.sh PostToolUse hook; add || true
+  guard to log() and revert exit comment so unexpected I/O errors cannot produce a non-zero exit
+  that blocks Claude. Remove now-dead GREP_PCRE_AVAILABLE variable and unreachable == false guard
+  from run_grep after the grep -E migration.
+
+Writing: replace all em-dashes in py310-compat-check.sh and render_diagrams.sh with
+  colons/semicolons per CLAUDE.md hard rule.
+
+CI: pin both actions/checkout references in release.yml to full commit SHA for supply chain
+  consistency with all other workflows.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- **security**: Scope GitHub Actions permissions to job level
+  ([`b12fe52`](https://github.com/ByronWilliamsCPA/.claude/commit/b12fe5261f5bdd906ce8a875307ed69d42f4ec8d))
+
+Replace overly broad workflow-level permissions with minimal job-level declarations (S8234, S8264,
+  S8233):
+
+- scorecard.yml: replace permissions: read-all with contents: read at workflow level; job already
+  declares its specific permissions - reuse.yml: replace permissions: read-all with contents: read
+  at workflow level - pr-validation.yml: move contents: read and pull-requests: write from workflow
+  level to each job; core-validation gets both, changelog gets read on pull-requests, all others get
+  contents: read only - release.yml: move all write permissions from workflow level to the release
+  job only; test job gets contents: read only
+
 
 ## v0.6.1 (2026-04-12)
 
