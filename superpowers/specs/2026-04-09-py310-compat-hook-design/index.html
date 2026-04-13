@@ -25,7 +25,7 @@
     
     
       
-        <title>Python Version Compatibility Hook — Design Spec - Claude Code Configuration</title>
+        <title>Python Version Compatibility Hook: Design Spec - Claude Code Configuration</title>
       
     
     
@@ -122,7 +122,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Python Version Compatibility Hook — Design Spec
+              Python Version Compatibility Hook: Design Spec
             
           </span>
         </div>
@@ -2262,7 +2262,7 @@
   <a href="#tier-1-grep-patterns" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Tier 1 — grep patterns
+        Tier 1: grep patterns
       
     </span>
   </a>
@@ -2273,7 +2273,7 @@
   <a href="#tier-2-python-ast-patterns" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Tier 2 — Python AST patterns
+        Tier 2: Python AST patterns
       
     </span>
   </a>
@@ -2360,7 +2360,7 @@
   
 
 
-  <h1>Python Version Compatibility Hook — Design Spec</h1>
+  <h1>Python Version Compatibility Hook: Design Spec</h1>
 
 <blockquote>
 <p><strong>Date</strong>: 2026-04-09
@@ -2371,7 +2371,7 @@
 <p>Ruff's <code>UP017</code> auto-fix introduced <code>datetime.UTC</code> across 130+ files in a Python 3.10-target
 project, requiring a bulk revert. The root cause: no automated check existed to catch 3.11+
 patterns after Claude edits a file. A PostToolUse hook closes this gap by warning Claude
-immediately — before any commit — whenever a <code>.py</code> file contains patterns that violate either
+immediately, before any commit, whenever a <code>.py</code> file contains patterns that violate either
 the floor (Python 3.10) or ceiling (Python 3.14) compatibility boundaries.</p>
 <h2 id="goals">Goals<a class="headerlink" href="#goals" title="Permanent link">&para;</a></h2>
 <ul>
@@ -2385,10 +2385,10 @@ the floor (Python 3.10) or ceiling (Python 3.14) compatibility boundaries.</p>
 <h2 id="non-goals">Non-Goals<a class="headerlink" href="#non-goals" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Does not block edits (PostToolUse hooks cannot block tool calls)</li>
-<li>Does not scan entire repositories — file-level only, triggered per edit</li>
+<li>Does not scan entire repositories; file-level only, triggered per edit</li>
 <li>Does not parse <code>pyproject.toml</code> for per-project version targets (Option C: single
   conservative floor applied globally)</li>
-<li>Does not replace ruff or pre-commit — complements them with real-time feedback</li>
+<li>Does not replace ruff or pre-commit; complements them with real-time feedback</li>
 </ul>
 <h2 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">&para;</a></h2>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Edit/Write tool fires
@@ -2430,7 +2430,10 @@ immediately after the edit and can fix all violations before proceeding.</p>
 </span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>exit 0
 </span></code></pre></div>
 <h3 id="2-hook-entry-in-settingsjson">2. Hook entry in <code>settings.json</code><a class="headerlink" href="#2-hook-entry-in-settingsjson" title="Permanent link">&para;</a></h3>
-<p>Add <code>PostToolUse</code> array to the existing <code>hooks</code> object:</p>
+<p>The PostToolUse hook for <code>Edit|Write</code> triggering <code>py310-compat-check.sh</code> is active in the
+global <code>~/.claude/settings.json</code> but has not been added to the committed repo <code>settings.json</code>.
+The architecture below documents the intended committed configuration.</p>
+<p>Intended committed configuration (not yet in repo settings.json):</p>
 <div class="language-json highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nt">&quot;PostToolUse&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="p">{</span>
 </span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span><span class="nt">&quot;matcher&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Edit|Write&quot;</span><span class="p">,</span>
@@ -2444,7 +2447,7 @@ immediately after the edit and can fix all violations before proceeding.</p>
 </span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="p">]</span>
 </span></code></pre></div>
 <h2 id="pattern-inventory">Pattern Inventory<a class="headerlink" href="#pattern-inventory" title="Permanent link">&para;</a></h2>
-<h3 id="tier-1-grep-patterns">Tier 1 — grep patterns<a class="headerlink" href="#tier-1-grep-patterns" title="Permanent link">&para;</a></h3>
+<h3 id="tier-1-grep-patterns">Tier 1: grep patterns<a class="headerlink" href="#tier-1-grep-patterns" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
@@ -2505,7 +2508,7 @@ immediately after the edit and can fix all violations before proceeding.</p>
 </tr>
 </tbody>
 </table>
-<h3 id="tier-2-python-ast-patterns">Tier 2 — Python AST patterns<a class="headerlink" href="#tier-2-python-ast-patterns" title="Permanent link">&para;</a></h3>
+<h3 id="tier-2-python-ast-patterns">Tier 2: Python AST patterns<a class="headerlink" href="#tier-2-python-ast-patterns" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
@@ -2536,7 +2539,7 @@ throughout the supported range (3.10–3.14).</p>
 <p>Note: Parenthesized <code>with</code> statements are not detectable via AST alone (both
 <code>with (a, b):</code> and <code>with a, b:</code> produce identical AST nodes), so this pattern is omitted.</p>
 <h2 id="output-format">Output Format<a class="headerlink" href="#output-format" title="Permanent link">&para;</a></h2>
-<p><strong>No findings</strong> — no output, no log entry. Hook is invisible.</p>
+<p><strong>No findings</strong>: no output, no log entry. Hook is invisible.</p>
 <p><strong>Findings present:</strong></p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>⚠ Python compatibility issue(s) detected: src/pipeline/processor.py
 </span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
@@ -2568,7 +2571,7 @@ throughout the supported range (3.10–3.14).</p>
 </tr>
 <tr>
 <td><code>jq</code> not found</td>
-<td>Log warning, <code>exit 0</code> — never block Claude on missing tooling</td>
+<td>Log warning, <code>exit 0</code>; never block Claude on missing tooling</td>
 </tr>
 <tr>
 <td><code>python3</code> not in PATH</td>
@@ -2580,7 +2583,7 @@ throughout the supported range (3.10–3.14).</p>
 </tr>
 <tr>
 <td>Any unexpected error</td>
-<td><code>exit 0</code> — hook must never cause Claude to stop working</td>
+<td><code>exit 0</code>; hook must never cause Claude to stop working</td>
 </tr>
 </tbody>
 </table>
@@ -2596,15 +2599,15 @@ infrastructure failures by Claude Code.</p>
 <h2 id="testing">Testing<a class="headerlink" href="#testing" title="Permanent link">&para;</a></h2>
 <p>Five test cases to verify before shipping:</p>
 <ol>
-<li><strong>Floor violation</strong>: Edit a <code>.py</code> file to include <code>datetime.UTC</code> — hook should print the
+<li><strong>Floor violation</strong>: Edit a <code>.py</code> file to include <code>datetime.UTC</code>; hook should print the
    floor warning with correct line number</li>
-<li><strong>Ceiling violation</strong>: Edit a <code>.py</code> file to include <code>datetime.datetime.utcnow()</code> — hook
+<li><strong>Ceiling violation</strong>: Edit a <code>.py</code> file to include <code>datetime.datetime.utcnow()</code>; hook
    should print the ceiling warning (pattern matches both <code>datetime.utcnow()</code> and
    <code>datetime.datetime.utcnow()</code> as a substring)</li>
-<li><strong>Clean file</strong>: Edit a <code>.py</code> file with no violations — hook should produce no output</li>
-<li><strong>Non-Python file</strong>: Edit a <code>.md</code> file — hook should produce no output</li>
-<li><strong>AST pattern</strong>: Edit a <code>.py</code> file to include <code>except*</code> — Tier 2 should detect it as
-   a 3.11+ floor violation (<code>match/case</code> is intentionally not flagged — valid at 3.10 floor)</li>
+<li><strong>Clean file</strong>: Edit a <code>.py</code> file with no violations; hook should produce no output</li>
+<li><strong>Non-Python file</strong>: Edit a <code>.md</code> file; hook should produce no output</li>
+<li><strong>AST pattern</strong>: Edit a <code>.py</code> file to include <code>except*</code>; Tier 2 should detect it as
+   a 3.11+ floor violation (<code>match/case</code> is intentionally not flagged; valid at 3.10 floor)</li>
 </ol>
 <h2 id="file-locations">File Locations<a class="headerlink" href="#file-locations" title="Permanent link">&para;</a></h2>
 <table>
@@ -2655,7 +2658,7 @@ infrastructure failures by Claude Code.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 10, 2026 19:37:21 UTC">April 10, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 13, 2026 03:51:13 UTC">April 13, 2026</span>
   </span>
 
     
