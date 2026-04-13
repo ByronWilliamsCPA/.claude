@@ -106,12 +106,14 @@ def autofix_front_matter(path: Path) -> bool:
     Returns:
         True if changes were made, False otherwise.
     """
-    # Security: Validate file path is within expected directory BEFORE reading
-    if not path.resolve().is_relative_to(Path.cwd()):
+    # Security: Resolve path once; validate containment and use the resolved
+    # path for both read and write to prevent symlink-based traversal (S2083)
+    resolved_path = path.resolve()
+    if not resolved_path.is_relative_to(Path.cwd()):
         print(f"Security: Path {path} is outside current directory", file=sys.stderr)
         return False
 
-    text = path.read_text(encoding="utf-8")
+    text = resolved_path.read_text(encoding="utf-8")
 
     # Find front matter block
     match = re.search(r"^---\n.*?\n---\n", text, flags=re.DOTALL | re.MULTILINE)
@@ -159,9 +161,7 @@ def autofix_front_matter(path: Path) -> bool:
         yrt.dump(data, out)
         new_yaml = out.getvalue().rstrip()
         new_content = f"---\n{new_yaml}\n---\n{text[match.end() :]}"
-        path.write_text(
-            new_content, encoding="utf-8"
-        )  # S2083: path validated at function entry (lines 109-112) before this write; SonarQube flags as incomplete remediation (security review needed)
+        resolved_path.write_text(new_content, encoding="utf-8")
 
     return changed
 
