@@ -71,9 +71,9 @@ See `context/conventional-commits.md` for version impact per type.
 
 If there are unstaged changes, ask:
 
-- "Stage specific files?" (list files and let user choose — **preferred default**)
+- "Stage specific files?" (list files and let user choose; **preferred default**)
 - "Review changes first?" (show diff, then offer file-by-file staging)
-- "Stage all changes?" (`git add .`) — use only when the user explicitly asks
+- "Stage all changes?" (`git add .`): use only when the user explicitly asks
   for this; note that `git add .` can accidentally include secrets, generated
   files, or IDE config that should not be committed
 
@@ -176,8 +176,8 @@ git diff --cached
 
 Looking at your staged changes:
 
-- Modified `src/auth/oauth.py` — added token refresh logic
-- Modified `tests/test_auth.py` — added refresh tests
+- Modified `src/auth/oauth.py`: added token refresh logic
+- Modified `tests/test_auth.py`: added refresh tests
 
 **Suggested commit**:
 
