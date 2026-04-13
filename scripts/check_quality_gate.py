@@ -190,12 +190,13 @@ def _format_sonar_layer(status: str, conditions: list, issues: dict) -> list[str
     lines.append("")
     lines.append("Quality Gate Conditions:")
     for condition in conditions:
-        metric = condition["metricKey"]
-        status_icon = "✅" if condition["status"] == "OK" else "❌"
+        metric = condition.get("metricKey", "unknown")
+        cond_status = condition.get("status", "UNKNOWN")
+        status_icon = "✅" if cond_status == "OK" else "❌"
         actual = condition.get("actualValue", "N/A")
         llm_tag = ""
-        if condition["status"] != "OK":
-            tag = LLMGovernanceMapper.map_condition_to_tag(metric, condition["status"])
+        if cond_status != "OK":
+            tag = LLMGovernanceMapper.map_condition_to_tag(metric, cond_status)
             if tag:
                 llm_tag = f" -> {tag}"
         lines.append(f"  {status_icon} {metric}: {actual}{llm_tag}")
@@ -206,9 +207,9 @@ def _format_sonar_layer(status: str, conditions: list, issues: dict) -> list[str
     if total_issues > 0:
         lines.append(f"Found {total_issues} critical/blocker issues:")
         for issue in issues.get("issues", [])[:10]:
-            rule_key = issue["rule"]
-            severity = issue["severity"]
-            message = issue["message"]
+            rule_key = issue.get("rule", "")
+            severity = issue.get("severity", "")
+            message = issue.get("message", "(no message)")
             llm_tag = LLMGovernanceMapper.map_issue_to_tag(rule_key) or ""
             lines.append(f"  • [{severity}] {message}")
             if llm_tag:
@@ -233,7 +234,7 @@ def _format_overall_status(
         lines.append("Next Steps:")
         if rad_tags > 0:
             lines.append("  1. Verify and remove all #CRITICAL and #ASSUME tags")
-        if status == "ERROR":
+        if status in {"ERROR", "NONE"}:
             lines.append("  2. Fix all BLOCKER and CRITICAL SonarQube issues")
             lines.append("  3. Ensure test coverage meets threshold")
         if llm_tags > 0:
@@ -252,10 +253,10 @@ def format_report(
     quality_gate_status: dict, issues: dict, rad_tags: int, llm_tags: int
 ) -> str:
     """Generate unified three-layer governance report."""
-    qg = quality_gate_status["projectStatus"]
-    status = qg["status"]
+    qg = quality_gate_status.get("projectStatus", {})
+    status = qg.get("status", "NONE")
     conditions = qg.get("conditions", [])
-    blocked = rad_tags > 0 or status == "ERROR"
+    blocked = rad_tags > 0 or status in {"ERROR", "NONE"}
 
     report: list[str] = []
     report.extend(["=" * 80, "THREE-LAYER GOVERNANCE REPORT", "=" * 80, ""])
@@ -329,7 +330,7 @@ def main():
     print(report)
 
     # Exit with appropriate code
-    project_status = qg_status["projectStatus"]["status"]
+    project_status = qg_status.get("projectStatus", {}).get("status", "NONE")
 
     if args.rad_tags > 0:
         print("\nExiting with code 1: RAD tags found (PR blocked)", file=sys.stderr)
@@ -337,6 +338,12 @@ def main():
     elif project_status == "ERROR":
         print(
             "\nExiting with code 1: Quality gate failed (PR blocked)", file=sys.stderr
+        )
+        sys.exit(1)
+    elif project_status == "NONE":
+        print(
+            "\nExiting with code 1: Quality gate status unknown (PR blocked)",
+            file=sys.stderr,
         )
         sys.exit(1)
     elif project_status == "WARN":
