@@ -194,8 +194,8 @@ def add_future_import(file_path: Path) -> bool:
             )
             return False
 
-        # Path validated above via is_relative_to(Path.cwd()) — safe to write
-        # sonar: false positive pythonsecurity:S2083 — user input is resolved and bounded
+        # Path validated above via is_relative_to(Path.cwd()); safe to write
+        # sonar: false positive pythonsecurity:S2083 (AZ1eBjvzS1usNdOdvc1l): user input is resolved and bounded
         file_path.write_text("".join(lines), encoding="utf-8")
         return True
     except Exception as e:
