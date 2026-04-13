@@ -173,6 +173,21 @@ PR / keep / discard options and handles worktree cleanup.
 >
 > **Full branch strategy detail**: See `.claude/skills/git/context/branch-strategy.md`
 
+### PR size calibration
+
+Anthropic internal distribution (Boris Cherny, Mar 25 2026):
+
+| Percentile | Lines changed |
+| --- | --- |
+| p50 | 118 |
+| p90 | 498 |
+| p99 | 2,978 |
+
+PRs above 500 lines are in the top 10% of Anthropic's own internal distribution.
+Prefer splitting features at a natural seam before crossing the p90 threshold.
+
+Source: <https://x.com/bcherny/status/2038552880018538749>
+
 ## Session Forking
 
 Claude Code supports two mechanisms for exploration that should not contaminate
