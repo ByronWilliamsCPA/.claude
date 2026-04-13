@@ -165,6 +165,11 @@ def _find_insert_index(lines: list[str], content: str) -> int:
             insert_index = i
             break
 
+    # Clamp to list length; docstring-only files with no trailing newline can
+    # leave insert_index equal to len(lines), which is a valid insertion point
+    # but must not exceed it.
+    insert_index = min(insert_index, len(lines))
+
     return insert_index
 
 
