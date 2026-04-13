@@ -1,6 +1,153 @@
 # CHANGELOG
 
 
+## v0.6.3 (2026-04-13)
+
+### Bug Fixes
+
+- **quality**: Extract duplicate literals to constants in noxfile.py
+  ([`7096daf`](https://github.com/ByronWilliamsCPA/.claude/commit/7096dafd449dfc6cfaa53780c97638d890a8901d))
+
+Resolves SonarQube S1192 by extracting six repeated string literals to named module-level constants:
+  DEV_EXTRAS, PYPROJECT_TOML, REQUIREMENTS_RUNTIME, REQUIREMENTS_ALL, COV_SRC, and COV_REPORT_TERM.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- **quality**: Fix noxfile quote style and update stale test comment
+  ([`8e23e60`](https://github.com/ByronWilliamsCPA/.claude/commit/8e23e603f475dab5cf9b8e202725ca31b5c97964))
+
+Change 6 module-level string constants in noxfile.py from single to double quotes to match ruff
+  quote-style = "double". Update the stale inline comment on the pytest.approx assertion in
+  test_logging.py from "Rounded to 2 decimals" to "float comparison for rounded value".
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- **quality**: Merge nested if and add security VERIFY markers in scripts
+  ([`895e894`](https://github.com/ByronWilliamsCPA/.claude/commit/895e89498f647574dc790b14694daa4efae4b9d3))
+
+Resolves SonarQube S1066 in check_type_hints.py by merging the nested isinstance + module equality
+  check into a single condition using and. Adds pythonsecurity:S2083 VERIFY comments to both
+  check_type_hints.py and validate_front_matter.py to flag paths constructed from user input pending
+  security review.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- **security**: Break S2083 taint chain by reconstructing path from CWD
+  ([`834b883`](https://github.com/ByronWilliamsCPA/.claude/commit/834b883792314fc72c75d8b59c645c6b31af0b4c))
+
+SonarQube's data-flow analysis traced the taint from the user-controlled path parameter through
+  resolve() to the write call, flagging both scripts as BLOCKER even after the containment check was
+  added.
+
+The fix: after validating that resolved_path is within cwd, reconstruct the write (and read) target
+  as:
+
+safe_path = cwd / resolved_path.relative_to(cwd)
+
+safe_path is derived from Path.cwd() (a trusted system value), not from the original user-supplied
+  argument, so the taint chain is broken at the point of file I/O rather than just validated before
+  it.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- **security**: Close S2083 path traversal in scripts
+  ([`41f20b4`](https://github.com/ByronWilliamsCPA/.claude/commit/41f20b432556cb19a484effa8b0983302a06e926))
+
+Resolve path once at function entry, validate containment inside CWD, then perform both read and
+  write through the resolved path. Writing through the original (potentially symlinked) path was the
+  residual gap: symlinks could redirect the write to a location outside CWD even after containment
+  validation.
+
+Also extracted a shared `_visit_function_def` helper in check_type_hints.py to remove `type:
+  ignore[arg-type]` on the visit_AsyncFunctionDef delegation. Added `from __future__ import
+  annotations` to satisfy the script's own union-syntax rule.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- **tests**: Replace constant boolean assertions and float equality checks
+  ([`de07b82`](https://github.com/ByronWilliamsCPA/.claude/commit/de07b82c202510fb17cb7ec6a31f365bc3efd444))
+
+Resolves SonarQube S5914 by replacing assert True with meaningful assertions in test_logging.py
+  (lines 104 and 118) and test_integration.py (line 48). Resolves S1244 by replacing float ==
+  comparison with pytest.approx() in test_logging.py line 57.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- **writing**: Remove em-dashes and correct inaccurate VERIFY comments
+  ([`bbef5d8`](https://github.com/ByronWilliamsCPA/.claude/commit/bbef5d82695f585dcc3356b8adbb60a6cf92d3cf))
+
+Replace em-dashes in pre-commit.md darglint line, check_type_hints.py, and validate_front_matter.py.
+  The VERIFY comment bodies also inaccurately implied path validation was absent; rewrite to cite
+  the existing guard locations (lines 189-194 in check_type_hints.py, lines 109-112 in
+  validate_front_matter.py) and note SonarQube still requires deeper remediation for S2083.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+### Documentation
+
+- Correct BLE rule description and py310 hook wiring status
+  ([`e01ae97`](https://github.com/ByronWilliamsCPA/.claude/commit/e01ae97af788ffee80933cbf8802025deb98bd38))
+
+Broaden the BLE entry in python.md to reflect that BLE001 fires on any except/except Exception
+  clause including those that re-raise or log before re-raising, not only ones that swallow errors
+  silently.
+
+Clarify the py310-compat-hook spec: the hook IS active in the global ~/.claude/settings.json but has
+  NOT been added to the committed repo settings.json. The previous wording "not yet wired" was
+  ambiguous; rewrite to distinguish the two scopes explicitly.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- Fix rule descriptions, broken links, and doc accuracy issues
+  ([`5a87be0`](https://github.com/ByronWilliamsCPA/.claude/commit/5a87be0145a40222dc2863bce47d40bb6c182773))
+
+Resolves multiple unresolved Copilot review comments from merged PRs: - PR#10: Correct BLE and TRY
+  rule descriptions in python.md; fix interrogate coverage description (threshold-based, not
+  per-function); update darglint exclude list to match pre-commit config (adds noxfile.py and
+  .claude/skills/); update pre-commit.md checklist to match the same exclude list - PR#13: Align
+  folder-template.md to use exact filename CLAUDE-FOLDER.md; add missing entries for
+  folder-template.md, README.md, and sources.md to sources.md mapping table; fix profile.md
+  Communication row to reference repo-level CLAUDE.md instead of ~/.claude/CLAUDE.md - PR#9: Fix
+  sprint-1 plan source frontmatter to point to specific spec file; add metadata blockquote to
+  sprint-1 spec - PR#7: Update py310 spec architecture section to say PostToolUse hook is not yet
+  wired in settings.json - PR#6: Replace direct git push + gh pr create in pr.md step 5 with /git pr
+  skill invocation for consistency
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- Replace em-dashes in rules and spec files
+  ([`43f1adc`](https://github.com/ByronWilliamsCPA/.claude/commit/43f1adccccf0928bfb29a34a522dd5efbe273311))
+
+Replace all em-dashes with commas, semicolons, or colons throughout rules and spec files touched in
+  this branch. The no-em-dash rule in CLAUDE.md applies to all output including documentation,
+  comments, and rules files.
+
+Files updated: python.md, pre-commit.md, git-workflow.md, settings-and-permissions.md,
+  frontmatter-standard.md, known-vulnerabilities-template.md, and both sprint spec files.
+
+The intentional example in rules/writing.md ("The system — which runs nightly") is not changed; it
+  is a documented bad example.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+### Testing
+
+- Strengthen assertions and add script integration tests
+  ([`3553e51`](https://github.com/ByronWilliamsCPA/.claude/commit/3553e5175b1a14ac50a6230a0a08c6ea13c5e6c8))
+
+Replace weak existence checks with behavioral assertions in test_logging.py: -
+  test_json_logging_renderer: verify JSONRenderer present, ConsoleRenderer absent -
+  test_setup_logging_without_timestamp: verify TimeStamper absent when disabled -
+  test_full_logging_setup_with_settings: verify structlog BoundLogger wrapper
+
+Add tests/integration/test_scripts.py with 10 new tests covering check_type_hints.py (5 tests) and
+  validate_front_matter.py (5 tests). Each script is loaded via
+  importlib.util.spec_from_file_location so tests exercise real script behavior without polluting
+  sys.path globally. Includes security-guard tests verifying CWD rejection for both scripts.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+
 ## v0.6.2 (2026-04-13)
 
 ### Bug Fixes
