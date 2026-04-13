@@ -1,0 +1,3504 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Global Claude Code development standards, commands, and configuration for all projects">
+      
+      
+        <meta name="author" content="Byron Williams">
+      
+      
+        <link rel="canonical" href="https://.claude.readthedocs.io/pr-workflow-improvement-plan/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>PR Workflow Improvement Plan - Claude Code Configuration</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+  
+
+
+  
+  
+
+<script id="__analytics">function __md_analytics(){function e(){dataLayer.push(arguments)}window.dataLayer=window.dataLayer||[],e("js",new Date),e("config",""),document.addEventListener("DOMContentLoaded",(function(){document.forms.search&&document.forms.search.query.addEventListener("blur",(function(){this.value&&e("event","search",{search_term:this.value})}));document$.subscribe((function(){var t=document.forms.feedback;if(void 0!==t)for(var a of t.querySelectorAll("[type=submit]"))a.addEventListener("click",(function(a){a.preventDefault();var n=document.location.pathname,d=this.getAttribute("data-md-value");e("event","feedback",{page:n,data:d}),t.firstElementChild.disabled=!0;var r=t.querySelector(".md-feedback__note [data-md-value='"+d+"']");r&&(r.hidden=!1)})),t.hidden=!1})),location$.subscribe((function(t){e("config","",{page_path:t.pathname})}))}));var t=document.createElement("script");t.async=!0,t.src="https://www.googletagmanager.com/gtag/js?id=",document.getElementById("__analytics").insertAdjacentElement("afterEnd",t)}</script>
+  
+    <script>"undefined"!=typeof __md_analytics&&__md_analytics()</script>
+  
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#background" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Claude Code Configuration" class="md-header__button md-logo" aria-label="Claude Code Configuration" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Claude Code Configuration
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              PR Workflow Improvement Plan
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/ByronWilliamsCPA/.claude" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    ByronWilliamsCPA/claude_config
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../getting-started/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../architecture/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../reference/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../contributing/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Contributing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../project/roadmap/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Project
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Claude Code Configuration" class="md-nav__button md-logo" aria-label="Claude Code Configuration" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Claude Code Configuration
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/ByronWilliamsCPA/.claude" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    ByronWilliamsCPA/claude_config
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--published"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../getting-started/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1. Install
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/first-agent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2. Your First Agent
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/first-skill/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3. Your First Skill
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/picking/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Picking Agents vs Skills
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../architecture/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/install-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Install Model
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/hook-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hook Pipeline
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/agent-dispatch/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent Dispatch
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/mcp-tiered-loading/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MCP Tiered Loading
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/submodule-strategy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Submodule Strategy
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/rules-vs-standards/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rules vs Standards
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/diagrams/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Diagrams
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_9" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../architecture/adr/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Decisions (ADRs)
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3_9" id="__nav_3_9_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Decisions (ADRs)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr/ADR-001-two-layer-symlink-install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-001 Two-Layer Symlink Install
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr/ADR-002-hook-composition/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-002 Hook Composition
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr/ADR-003-tiered-mcp-loading/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-003 Tiered MCP Loading
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr/ADR-004-skill-vs-agent-boundary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-004 Skill vs Agent Boundary
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr/ADR-005-submodule-extension-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-005 Submodule Extension Model
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr/ADR-006-rules-vs-standards/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-006 Rules vs Standards
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr/ADR-007-dual-audience-docs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-007 Dual-Audience Docs
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../reference/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/agents/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agents Catalog
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/skills/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Skills Catalog
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/hooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hooks
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/mcp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MCP Strategy
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--published"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../contributing/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contributing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/adding-agents/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding an Agent
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/adding-skills/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding a Skill
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/adding-hooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding a Hook
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/writing-adrs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writing ADRs
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/writing-diagrams/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writing Diagrams
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../frontmatter-standard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontmatter Standard
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--published"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Project
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../project/roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--published"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../project/changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--published"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../project/license/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    License
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--published"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#background" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Background
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files-in-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Files in Scope
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tier-1-critical-safety-gaps-implement-first-highest-defect-cost" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tier 1: Critical Safety Gaps (implement first, highest defect cost)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Tier 1: Critical Safety Gaps (implement first, highest defect cost)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#t1-1-branch-freshness-gate-prmd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        T1-1: Branch-Freshness Gate (pr.md)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#t1-2-mandatory-thread-replies-for-all-outcomes-pr-fixmd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        T1-2: Mandatory Thread Replies for All Outcomes (pr-fix.md)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#t1-3-fix-scope-restriction-language-pr-fixmd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        T1-3: Fix Scope-Restriction Language (pr-fix.md)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#t1-4-surface-pr-url-immediately-prmd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        T1-4: Surface PR URL Immediately (pr.md)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tier-2-review-depth-and-coverage-gaps-high-value-moderate-effort" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tier 2: Review Depth and Coverage Gaps (high value, moderate effort)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Tier 2: Review Depth and Coverage Gaps (high value, moderate effort)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#t2-5-ci-status-ingestion-pr-reviewmd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        T2-5: CI Status Ingestion (pr-review.md)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#t2-6-agent-i-dedicated-security-pass-pr-reviewmd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        T2-6: Agent I: Dedicated Security Pass (pr-review.md)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#t2-7-agent-j-pr-description-vs-diff-validation-pr-reviewmd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        T2-7: Agent J: PR Description vs Diff Validation (pr-review.md)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#t2-8-file-context-fetching-for-agents-b-f-g-pr-reviewmd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        T2-8: File Context Fetching for Agents B, F, G (pr-review.md)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#t2-9-self-review-diff-scan-prmd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        T2-9: Self-Review Diff Scan (pr.md)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tier-3-process-completeness-closes-common-senior-dev-gaps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tier 3: Process Completeness (closes common senior-dev gaps)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Tier 3: Process Completeness (closes common senior-dev gaps)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#t3-10-t4-17-pr-description-template-rewrite-and-testing-checklist-prmd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        T3-10 + T4-17: PR Description Template Rewrite and Testing Checklist (pr.md)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#t3-11a-changelog-check-in-pr-preparation-prmd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        T3-11a: CHANGELOG Check in PR Preparation (pr.md)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#t3-11b-changelog-check-in-agent-a-pr-reviewmd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        T3-11b: CHANGELOG Check in Agent A (pr-review.md)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#t3-11c-changelog-validation-in-pr-fix-pr-fixmd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        T3-11c: CHANGELOG Validation in PR Fix (pr-fix.md)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#t3-12-unify-test-policy-pr-fixmd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        T3-12: Unify Test Policy (pr-fix.md)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#t3-13-demote-unsafe-sonarqube-auto-fixes-pr-fixmd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        T3-13: Demote Unsafe SonarQube Auto-Fixes (pr-fix.md)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#t3-14-replace-large-pr-truncation-pr-reviewmd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        T3-14: Replace Large-PR Truncation (pr-review.md)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#t3-15-agent-k-performance-review-pr-reviewmd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        T3-15: Agent K: Performance Review (pr-review.md)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tier-4-polish-and-robustness" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tier 4: Polish and Robustness
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Tier 4: Polish and Robustness">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#t4-16-fix-git-add-default-in-commit-workflow-commitmd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        T4-16: Fix git add . Default in Commit Workflow (commit.md)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#t4-18-pr-size-and-split-heuristic-prmd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        T4-18: PR Size and Split Heuristic (pr.md)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#t4-19-repo-driven-ci-gate-command-pr-fixmd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        T4-19: Repo-Driven CI Gate Command (pr-fix.md)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#t4-20-sonarqube-severity-distribution-in-report-pr-reviewmd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        T4-20: SonarQube Severity Distribution in Report (pr-review.md)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#t4-21-restrict-known-failures-commit-gate-pr-fixmd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        T4-21: Restrict Known-Failures Commit Gate (pr-fix.md)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#t4-22-fix-url-parser-pr-reviewmd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        T4-22: Fix URL Parser (pr-review.md)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementation-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementation Order
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cross-item-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cross-Item Dependencies
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementation-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementation Notes
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>PR Workflow Improvement Plan</h1>
+
+<blockquote>
+<p><strong>Status</strong>: Implemented
+<strong>Version</strong>: 1.0.0
+<strong>Created</strong>: 2026-04-13</p>
+</blockquote>
+<h2 id="background">Background<a class="headerlink" href="#background" title="Permanent link">&para;</a></h2>
+<p>Two PRs exercised the new pr-review and pr-fix workflows for the first time:</p>
+<ul>
+<li><code>ByronWilliamsCPA/.claude#20</code>: required many follow-up cycles due to async Copilot timing
+  and missing conflict-check before push</li>
+<li><code>williaby/dna#1</code>: required 7 ClusterFuzzLite commits due to no CI dry-run before push</li>
+</ul>
+<p>Three subagents evaluated the full workflow (pr.md, pr-review.md, pr-fix.md) against
+senior-developer standards, then used <code>mcp__pal__chat</code> with <code>openai/gpt-5.2</code> to
+validate each evaluation. A level-3 tiered consensus synthesized 22 specific
+improvements into 4 tiers.</p>
+<hr />
+<h2 id="files-in-scope">Files in Scope<a class="headerlink" href="#files-in-scope" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Path</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>pr.md</code></td>
+<td><code>.claude/skills/git/workflows/pr.md</code></td>
+</tr>
+<tr>
+<td><code>commit.md</code></td>
+<td><code>.claude/skills/git/workflows/commit.md</code></td>
+</tr>
+<tr>
+<td><code>pr-review.md</code></td>
+<td><code>.claude/skills/pr-review/workflows/pr-review.md</code></td>
+</tr>
+<tr>
+<td><code>pr-fix.md</code></td>
+<td><code>.claude/skills/pr-review/workflows/pr-fix.md</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="tier-1-critical-safety-gaps-implement-first-highest-defect-cost">Tier 1: Critical Safety Gaps (implement first, highest defect cost)<a class="headerlink" href="#tier-1-critical-safety-gaps-implement-first-highest-defect-cost" title="Permanent link">&para;</a></h2>
+<h3 id="t1-1-branch-freshness-gate-prmd">T1-1: Branch-Freshness Gate (<code>pr.md</code>)<a class="headerlink" href="#t1-1-branch-freshness-gate-prmd" title="Permanent link">&para;</a></h3>
+<p><strong>File</strong>: <code>.claude/skills/git/workflows/pr.md</code>
+<strong>Section</strong>: Step 0 (before "Confirm CI gates are green")</p>
+<p><strong>Problem</strong>: PR preparation runs <code>git merge-base</code> with no prior <code>git fetch</code>. If the
+local copy of <code>origin/main</code> is stale, the diff may appear correct but diverge at push
+time, causing a forced merge commit or conflicts.</p>
+<p><strong>Change</strong>: Insert a new sub-step at the top of Step 0:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>#### 0a. Fetch and freshness check
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>  git fetch origin
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>  BEHIND=$(git rev-list --count HEAD..origin/main)
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>  if [ &quot;$BEHIND&quot; -gt 0 ]; then
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    echo &quot;Branch is $BEHIND commit(s) behind origin. Rebase before continuing.&quot;
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    git rebase origin/main
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>  fi
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>If rebase produces conflicts, stop here. Resolve conflicts and re-run `/git pr`.
+</span></code></pre></div>
+<p><strong>Dependencies</strong>: None.</p>
+<hr />
+<h3 id="t1-2-mandatory-thread-replies-for-all-outcomes-pr-fixmd">T1-2: Mandatory Thread Replies for All Outcomes (<code>pr-fix.md</code>)<a class="headerlink" href="#t1-2-mandatory-thread-replies-for-all-outcomes-pr-fixmd" title="Permanent link">&para;</a></h3>
+<p><strong>File</strong>: <code>.claude/skills/pr-review/workflows/pr-fix.md</code>
+<strong>Section</strong>: Step 8, Option 1 (push changes)</p>
+<p><strong>Problem</strong>: The workflow only instructs posting a reply when fixing an issue. Reviewers
+receive no signal when a finding is intentionally deferred or declined, leaving threads
+open and reviewers guessing.</p>
+<p><strong>Change</strong>: In the "Reply to review threads" instruction within Option 1, replace the
+current instruction with:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>For every finding in FINDINGS, post a reply to its GitHub thread:
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>  Outcome   | Reply format
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>  Fixed     | &quot;Fixed in {commit SHA}: {one sentence description of what changed}&quot;
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>  Deferred  | &quot;Deferred: {reason}. Tracked in {ticket or follow-up issue number}.&quot;
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>  Declined  | &quot;Declined: {reason}. This is intentional because {explanation}.&quot;
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>Never leave a thread without a reply. Reviewers must be able to mark threads resolved
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>without chasing context.
+</span></code></pre></div>
+<p><strong>Dependencies</strong>: None.</p>
+<hr />
+<h3 id="t1-3-fix-scope-restriction-language-pr-fixmd">T1-3: Fix Scope-Restriction Language (<code>pr-fix.md</code>)<a class="headerlink" href="#t1-3-fix-scope-restriction-language-pr-fixmd" title="Permanent link">&para;</a></h3>
+<p><strong>File</strong>: <code>.claude/skills/pr-review/workflows/pr-fix.md</code>
+<strong>Section</strong>: Step 4, Priority 3 (scoping instruction)</p>
+<p><strong>Problem</strong>: The current instruction "do not fix anything outside the stated finding"
+prevents fixing the root cause when the root cause lives in a different function than
+the symptom reported. This has caused fixes that patch symptoms rather than causes.</p>
+<p><strong>Change</strong>: Replace the current Priority 3 scoping rule with:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>Priority 3, scope: Fix the root cause of each finding, even if it lives in a
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>different function or file than where the symptom was reported. Keep the diff as small
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>as the root cause requires. Do not refactor unrelated code, rename variables for
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>style, or add features not requested. When the root cause fix touches more than 3 files
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>not in the original diff, pause and confirm with the user before proceeding.
+</span></code></pre></div>
+<p><strong>Dependencies</strong>: None.</p>
+<hr />
+<h3 id="t1-4-surface-pr-url-immediately-prmd">T1-4: Surface PR URL Immediately (<code>pr.md</code>)<a class="headerlink" href="#t1-4-surface-pr-url-immediately-prmd" title="Permanent link">&para;</a></h3>
+<p><strong>File</strong>: <code>.claude/skills/git/workflows/pr.md</code>
+<strong>Section</strong>: Step 5, after <code>gh pr create</code></p>
+<p><strong>Problem</strong>: Step 6 blocks on <code>/pr-review</code> completing before showing the user the PR
+URL. If the review takes several minutes, the user has no link to share or monitor.</p>
+<p><strong>Change</strong>: After the <code>gh pr create</code> command in Step 5, add:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>Print the PR URL returned by `gh pr create` to the user immediately. Do not wait for
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>the review in Step 6 to complete before showing it.
+</span></code></pre></div>
+<p>Then update Step 6 to say "Run <code>/pr-review</code> after sharing the PR URL with the user"
+rather than implying the URL is withheld until review completes.</p>
+<p><strong>Dependencies</strong>: None.</p>
+<hr />
+<h2 id="tier-2-review-depth-and-coverage-gaps-high-value-moderate-effort">Tier 2: Review Depth and Coverage Gaps (high value, moderate effort)<a class="headerlink" href="#tier-2-review-depth-and-coverage-gaps-high-value-moderate-effort" title="Permanent link">&para;</a></h2>
+<h3 id="t2-5-ci-status-ingestion-pr-reviewmd">T2-5: CI Status Ingestion (<code>pr-review.md</code>)<a class="headerlink" href="#t2-5-ci-status-ingestion-pr-reviewmd" title="Permanent link">&para;</a></h3>
+<p><strong>File</strong>: <code>.claude/skills/pr-review/workflows/pr-review.md</code>
+<strong>Section</strong>: Step 2 (gather context), add as new sub-step 2c</p>
+<p><strong>Problem</strong>: The review assembles findings from code analysis but ignores CI check
+results. A PR with a failing test suite passes through pr-review without any Critical
+finding for the broken build.</p>
+<p><strong>Change</strong>: Add Step 2c before Step 3:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>#### 2c. CI status
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>  gh pr checks {PR_NUMBER} --repo {OWNER}/{REPO} \
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    --json name,status,conclusion,detailsUrl \
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    --jq &#39;.[] | {name, status, conclusion, detailsUrl}&#39;
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>Store as CI_CHECKS. For any check with conclusion != &quot;success&quot; and conclusion != null
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>(null means in-progress), emit a Critical finding:
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>  [Critical] CI: {check name}: {conclusion} ({detailsUrl})
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>  Confidence: 100 (objective CI result)
+</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>
+</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>If any Critical CI finding exists, the report header must say:
+</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>BUILD FAILING: do not merge until CI is green.
+</span></code></pre></div>
+<p><strong>Dependencies</strong>: None. Feeds into T4-20 (severity distribution) and T4-22 (URL
+parser, since detailsUrl may contain query strings).</p>
+<hr />
+<h3 id="t2-6-agent-i-dedicated-security-pass-pr-reviewmd">T2-6: Agent I: Dedicated Security Pass (<code>pr-review.md</code>)<a class="headerlink" href="#t2-6-agent-i-dedicated-security-pass-pr-reviewmd" title="Permanent link">&para;</a></h3>
+<p><strong>File</strong>: <code>.claude/skills/pr-review/workflows/pr-review.md</code>
+<strong>Section</strong>: Step 5 (parallel agents), add Agent I after Agent H</p>
+<p><strong>Problem</strong>: Security findings are currently mixed into general agent outputs with no
+guarantee of coverage. Injection, SSRF, and path traversal can appear anywhere in a
+diff and require dedicated focus to catch reliably.</p>
+<p><strong>Change</strong>: Add Agent I specification:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>Agent I: Security Pass
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>Scope: The full diff (all files).
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>Checks (each must be explicitly evaluated, not skipped if &quot;no match found&quot;):
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>- SQL injection: string concatenation into queries, f-string queries, execute() with
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>  user-supplied input
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>- Command injection: subprocess calls, shell execution APIs (eval, exec) with
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>  user-supplied input
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>- Path traversal: file open operations without resolve() plus base-path check
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>- SSRF: outbound HTTP calls where the URL contains user-supplied hostname or path
+</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>- Authentication bypass: routes missing auth decorator, permission checks skipped by
+</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>  early return
+</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>- Secrets in code: API keys, tokens, passwords hardcoded or logged
+</span><span id="__span-5-15"><a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>- Insecure deserialization: unsafe deserialization of untrusted binary data,
+</span><span id="__span-5-16"><a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a>  yaml.load without Loader=SafeLoader
+</span><span id="__span-5-17"><a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a>
+</span><span id="__span-5-18"><a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a>For each check, output one of:
+</span><span id="__span-5-19"><a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a>  [Critical] Security/{check}: {finding}     (if a vulnerability is found)
+</span><span id="__span-5-20"><a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a>  [Info] Security/{check}: No issues found   (if clean; always emit, never skip)
+</span><span id="__span-5-21"><a id="__codelineno-5-21" name="__codelineno-5-21" href="#__codelineno-5-21"></a>
+</span><span id="__span-5-22"><a id="__codelineno-5-22" name="__codelineno-5-22" href="#__codelineno-5-22"></a>Confidence scoring: Critical findings get 90 unless the vulnerability requires
+</span><span id="__span-5-23"><a id="__codelineno-5-23" name="__codelineno-5-23" href="#__codelineno-5-23"></a>attacker-controlled input that is demonstrably impossible, in which case 70.
+</span></code></pre></div>
+<p><strong>Dependencies</strong>: None.</p>
+<hr />
+<h3 id="t2-7-agent-j-pr-description-vs-diff-validation-pr-reviewmd">T2-7: Agent J: PR Description vs Diff Validation (<code>pr-review.md</code>)<a class="headerlink" href="#t2-7-agent-j-pr-description-vs-diff-validation-pr-reviewmd" title="Permanent link">&para;</a></h3>
+<p><strong>File</strong>: <code>.claude/skills/pr-review/workflows/pr-review.md</code>
+<strong>Section</strong>: Step 5 (parallel agents), add Agent J after Agent I</p>
+<p><strong>Problem</strong>: PR descriptions frequently claim changes that are not in the diff, or omit
+changes that are in the diff. This misleads reviewers and creates merge risk.</p>
+<p><strong>Change</strong>: Add Agent J specification:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>Agent J: PR Description vs Diff Validation
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>Inputs: PR_BODY (full PR description text), CHANGED_FILES list, diff.
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>Checks:
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>1. For each component or change claimed in PR_BODY &quot;## Changes&quot; section: verify a
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>   corresponding file or function change exists in the diff. Flag as Important if
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>   not found.
+</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>2. For each file in CHANGED_FILES: verify it is mentioned (directly or by implication)
+</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>   in PR_BODY. Flag as Suggested if a changed file is not referenced.
+</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>3. Check that PR_BODY contains a &quot;## Why&quot; or equivalent motivation section. Flag as
+</span><span id="__span-6-12"><a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>   Suggested if absent.
+</span><span id="__span-6-13"><a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>4. Check that PR_BODY references an issue number (Fixes #N, Closes #N, or Relates to
+</span><span id="__span-6-14"><a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a>   #N) if the PR is labeled as a bug fix. Flag as Suggested if absent.
+</span><span id="__span-6-15"><a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a>
+</span><span id="__span-6-16"><a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a>Output findings as:
+</span><span id="__span-6-17"><a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a>  [Important] PRDesc: {finding}   (for case 1)
+</span><span id="__span-6-18"><a id="__codelineno-6-18" name="__codelineno-6-18" href="#__codelineno-6-18"></a>  [Suggested] PRDesc: {finding}   (for cases 2, 3, 4)
+</span></code></pre></div>
+<p><strong>Dependencies</strong>: T3-10 (template rewrite adds "## Why"; this agent checks for it).
+Implement T3-10 first or make the "## Why" check conditional on whether the template
+was already updated.</p>
+<hr />
+<h3 id="t2-8-file-context-fetching-for-agents-b-f-g-pr-reviewmd">T2-8: File Context Fetching for Agents B, F, G (<code>pr-review.md</code>)<a class="headerlink" href="#t2-8-file-context-fetching-for-agents-b-f-g-pr-reviewmd" title="Permanent link">&para;</a></h3>
+<p><strong>File</strong>: <code>.claude/skills/pr-review/workflows/pr-review.md</code>
+<strong>Section</strong>: Step 5, preamble before individual agent listings</p>
+<p><strong>Problem</strong>: Agents receive only the patch (zero context lines). A bug that only
+manifests through interaction with a calling function, or a test that only makes sense
+in the context of the class it tests, requires surrounding context to evaluate
+correctly.</p>
+<p><strong>Change</strong>: In the Step 5 preamble (before listing individual agents), add:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>#### File context fetch (run before spawning agents)
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>For each file in CHANGED_FILES that has more than 10 lines changed:
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>  gh api repos/{OWNER}/{REPO}/contents/{FILE_PATH}?ref={HEAD_SHA} \
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>    --jq &#39;.content&#39; | base64 -d &gt; /tmp/context_{FILE_SLUG}.txt
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>Store as CONTEXT_FILES map: {file_path: full_file_content}.
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>
+</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>Agents B, F, and G receive CONTEXT_FILES in addition to the diff. Their instructions
+</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>should say: &quot;When evaluating a changed function, read the surrounding 200 lines from
+</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>CONTEXT_FILES to understand callers and callees before issuing findings.&quot;
+</span></code></pre></div>
+<p><strong>Dependencies</strong>: None. Increases token cost per review; monitor for cost regression.</p>
+<hr />
+<h3 id="t2-9-self-review-diff-scan-prmd">T2-9: Self-Review Diff Scan (<code>pr.md</code>)<a class="headerlink" href="#t2-9-self-review-diff-scan-prmd" title="Permanent link">&para;</a></h3>
+<p><strong>File</strong>: <code>.claude/skills/git/workflows/pr.md</code>
+<strong>Section</strong>: New Step 1b, inserted after Step 1 (gather context) and before Step 2
+(analyze changes)</p>
+<p><strong>Problem</strong>: PR authors submit debug prints, TODO comments, hardcoded test values, and
+scope-crept changes without noticing them. A self-review step catches these before a
+reviewer sees them.</p>
+<p><strong>Change</strong>: Insert Step 1b:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>### 1b. Self-review diff scan
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>Before writing the description, scan the diff for common authoring mistakes:
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>  git diff $(git merge-base HEAD main)..HEAD | grep -n \
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>    -e &#39;print(&#39; \
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>    -e &#39;console\.log&#39; \
+</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>    -e &#39;TODO\|FIXME\|HACK\|XXX&#39; \
+</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>    -e &#39;debugger&#39; \
+</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>    -e &#39;pdb\.set_trace\|breakpoint()&#39; \
+</span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>    -e &#39;password\s*=\s*[...non-placeholder value...]&#39; \
+</span><span id="__span-8-12"><a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>    -e &#39;api_key\s*=\s*[...non-placeholder value...]&#39;
+</span><span id="__span-8-13"><a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a>
+</span><span id="__span-8-14"><a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a>If any match is found, report it to the user:
+</span><span id="__span-8-15"><a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a>  &quot;Self-review found: {list of matches with file:line}. Confirm these are intentional
+</span><span id="__span-8-16"><a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a>  before continuing.&quot;
+</span><span id="__span-8-17"><a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a>
+</span><span id="__span-8-18"><a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a>Do not block if the user confirms. Do block (stop and ask) for any apparent secret
+</span><span id="__span-8-19"><a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a>(pattern matching password = or api_key = with a non-placeholder value).
+</span></code></pre></div>
+<p><strong>Dependencies</strong>: None. Should run before T3-10 (description template) so the
+description reflects a clean diff.</p>
+<hr />
+<h2 id="tier-3-process-completeness-closes-common-senior-dev-gaps">Tier 3: Process Completeness (closes common senior-dev gaps)<a class="headerlink" href="#tier-3-process-completeness-closes-common-senior-dev-gaps" title="Permanent link">&para;</a></h2>
+<h3 id="t3-10-t4-17-pr-description-template-rewrite-and-testing-checklist-prmd">T3-10 + T4-17: PR Description Template Rewrite and Testing Checklist (<code>pr.md</code>)<a class="headerlink" href="#t3-10-t4-17-pr-description-template-rewrite-and-testing-checklist-prmd" title="Permanent link">&para;</a></h3>
+<p><strong>File</strong>: <code>.claude/skills/git/workflows/pr.md</code>
+<strong>Section</strong>: Step 3 (generate PR description), template block</p>
+<p><strong>Problem</strong>: The current template lacks "Why" (motivation), "Acceptance Criteria"
+(definition of done), and "Migration/Rollback" (operational safety). The testing
+checklist only covers pytest and ruff, missing format checks and type checking.
+These two items share the same template block and must be implemented together.</p>
+<p><strong>Change</strong>: Replace the entire template block in Step 3 with:</p>
+<div class="language-markdown highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="gu">## Summary</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>[1-3 sentences: what changed and why, including the business or technical motivation]
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="gu">## Why</span>
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>
+</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>[1-2 sentences: what problem this solves, what risk this mitigates, or what user need
+</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>this addresses. Link to issue or ticket if applicable. <span class="sb">`Fixes #N`</span> / <span class="sb">`Closes #N`</span>]
+</span><span id="__span-9-9"><a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>
+</span><span id="__span-9-10"><a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="gu">## Changes</span>
+</span><span id="__span-9-11"><a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a>
+</span><span id="__span-9-12"><a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a><span class="k">-</span><span class="w"> </span><span class="gs">**[Component]**</span>: [What changed and why, specific enough that a reviewer can
+</span><span id="__span-9-13"><a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a>  find the change in the diff]
+</span><span id="__span-9-14"><a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a><span class="k">-</span><span class="w"> </span><span class="gs">**[Component]**</span>: [What changed and why]
+</span><span id="__span-9-15"><a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a>
+</span><span id="__span-9-16"><a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a><span class="gu">## Acceptance Criteria</span>
+</span><span id="__span-9-17"><a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a>
+</span><span id="__span-9-18"><a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a><span class="k">- [ ]</span> [Specific, testable condition that must be true when this PR is merged]
+</span><span id="__span-9-19"><a id="__codelineno-9-19" name="__codelineno-9-19" href="#__codelineno-9-19"></a><span class="k">- [ ]</span> [Another condition]
+</span><span id="__span-9-20"><a id="__codelineno-9-20" name="__codelineno-9-20" href="#__codelineno-9-20"></a>
+</span><span id="__span-9-21"><a id="__codelineno-9-21" name="__codelineno-9-21" href="#__codelineno-9-21"></a><span class="gu">## Impact</span>
+</span><span id="__span-9-22"><a id="__codelineno-9-22" name="__codelineno-9-22" href="#__codelineno-9-22"></a>
+</span><span id="__span-9-23"><a id="__codelineno-9-23" name="__codelineno-9-23" href="#__codelineno-9-23"></a><span class="k">-</span><span class="w"> </span>[Key benefit or outcome]
+</span><span id="__span-9-24"><a id="__codelineno-9-24" name="__codelineno-9-24" href="#__codelineno-9-24"></a><span class="k">-</span><span class="w"> </span>[Another benefit]
+</span><span id="__span-9-25"><a id="__codelineno-9-25" name="__codelineno-9-25" href="#__codelineno-9-25"></a><span class="k">-</span><span class="w"> </span>No breaking changes / Breaking change: [describe migration path]
+</span><span id="__span-9-26"><a id="__codelineno-9-26" name="__codelineno-9-26" href="#__codelineno-9-26"></a>
+</span><span id="__span-9-27"><a id="__codelineno-9-27" name="__codelineno-9-27" href="#__codelineno-9-27"></a><span class="gu">## Migration and Rollback</span>
+</span><span id="__span-9-28"><a id="__codelineno-9-28" name="__codelineno-9-28" href="#__codelineno-9-28"></a>
+</span><span id="__span-9-29"><a id="__codelineno-9-29" name="__codelineno-9-29" href="#__codelineno-9-29"></a>[If no migration is needed: &quot;No migration required.&quot;]
+</span><span id="__span-9-30"><a id="__codelineno-9-30" name="__codelineno-9-30" href="#__codelineno-9-30"></a>[If a migration is needed: describe the steps, the rollback procedure, and any
+</span><span id="__span-9-31"><a id="__codelineno-9-31" name="__codelineno-9-31" href="#__codelineno-9-31"></a> data loss risk]
+</span><span id="__span-9-32"><a id="__codelineno-9-32" name="__codelineno-9-32" href="#__codelineno-9-32"></a>
+</span><span id="__span-9-33"><a id="__codelineno-9-33" name="__codelineno-9-33" href="#__codelineno-9-33"></a><span class="gu">## Testing</span>
+</span><span id="__span-9-34"><a id="__codelineno-9-34" name="__codelineno-9-34" href="#__codelineno-9-34"></a>
+</span><span id="__span-9-35"><a id="__codelineno-9-35" name="__codelineno-9-35" href="#__codelineno-9-35"></a><span class="k">- [ ]</span> Tests pass (<span class="sb">`uv run pytest`</span>)
+</span><span id="__span-9-36"><a id="__codelineno-9-36" name="__codelineno-9-36" href="#__codelineno-9-36"></a><span class="k">- [ ]</span> Format clean (<span class="sb">`uv run ruff format --check`</span>)
+</span><span id="__span-9-37"><a id="__codelineno-9-37" name="__codelineno-9-37" href="#__codelineno-9-37"></a><span class="k">- [ ]</span> Lint clean (<span class="sb">`uv run ruff check`</span>)
+</span><span id="__span-9-38"><a id="__codelineno-9-38" name="__codelineno-9-38" href="#__codelineno-9-38"></a><span class="k">- [ ]</span> Type check clean (<span class="sb">`uv run basedpyright`</span>)
+</span><span id="__span-9-39"><a id="__codelineno-9-39" name="__codelineno-9-39" href="#__codelineno-9-39"></a><span class="k">- [ ]</span> CHANGELOG updated (for feat/fix/perf/breaking changes)
+</span><span id="__span-9-40"><a id="__codelineno-9-40" name="__codelineno-9-40" href="#__codelineno-9-40"></a>
+</span><span id="__span-9-41"><a id="__codelineno-9-41" name="__codelineno-9-41" href="#__codelineno-9-41"></a><span class="gu">## Notes</span>
+</span><span id="__span-9-42"><a id="__codelineno-9-42" name="__codelineno-9-42" href="#__codelineno-9-42"></a>
+</span><span id="__span-9-43"><a id="__codelineno-9-43" name="__codelineno-9-43" href="#__codelineno-9-43"></a>[Optional: known issues, follow-up work, dependencies, reviewer focus areas]
+</span></code></pre></div>
+<p><strong>Note on CHANGELOG</strong>: The "CHANGELOG updated" checkbox covers T4-17 (expanded
+testing checklist). The explicit check in Step 2 (T3-11a) covers automated detection.</p>
+<p><strong>Dependencies</strong>: T2-7 (Agent J checks for "## Why"); implement this template before
+or at the same time as Agent J. T4-17 is merged into this item.</p>
+<hr />
+<h3 id="t3-11a-changelog-check-in-pr-preparation-prmd">T3-11a: CHANGELOG Check in PR Preparation (<code>pr.md</code>)<a class="headerlink" href="#t3-11a-changelog-check-in-pr-preparation-prmd" title="Permanent link">&para;</a></h3>
+<p><strong>File</strong>: <code>.claude/skills/git/workflows/pr.md</code>
+<strong>Section</strong>: Step 2 (analyze changes), end of section</p>
+<p><strong>Problem</strong>: CHANGELOG updates are frequently omitted for feat/fix/perf/breaking
+changes. No current step verifies it before the PR is created.</p>
+<p><strong>Change</strong>: Add to the end of Step 2:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>#### CHANGELOG check
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>  git diff $(git merge-base HEAD main)..HEAD -- CHANGELOG.md
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>If the output is empty AND the commit history contains any feat:, fix:, perf:, or !
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>(breaking) commit, emit a warning:
+</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>
+</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>  &quot;CHANGELOG.md has not been updated. For feat/fix/perf/breaking changes, add an entry
+</span><span id="__span-10-9"><a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>  before creating the PR.&quot;
+</span><span id="__span-10-10"><a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a>
+</span><span id="__span-10-11"><a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a>Do not auto-generate the CHANGELOG entry from the commit message. Present the relevant
+</span><span id="__span-10-12"><a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a>commits and ask the user to author the entry.
+</span></code></pre></div>
+<p><strong>Dependencies</strong>: Coordinates with T3-11b (pr-review checks it) and T3-11c (pr-fix
+validates it). All three should be implemented together.</p>
+<hr />
+<h3 id="t3-11b-changelog-check-in-agent-a-pr-reviewmd">T3-11b: CHANGELOG Check in Agent A (<code>pr-review.md</code>)<a class="headerlink" href="#t3-11b-changelog-check-in-agent-a-pr-reviewmd" title="Permanent link">&para;</a></h3>
+<p><strong>File</strong>: <code>.claude/skills/pr-review/workflows/pr-review.md</code>
+<strong>Section</strong>: Step 5, Agent A (CLAUDE.md compliance) instructions</p>
+<p><strong>Problem</strong>: Agent A checks for CLAUDE.md compliance but does not verify CHANGELOG
+updates, which are required by the OpenSSF baseline in CLAUDE.md.</p>
+<p><strong>Change</strong>: In Agent A's instruction block, add a check:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>- CHANGELOG: If CHANGED_FILES contains feat/fix/perf/breaking commits (check
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>  git log {BASE}..HEAD --oneline for commit type prefixes), verify that CHANGELOG.md
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>  appears in CHANGED_FILES. If absent:
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>    [Important] CLAUDE.md: CHANGELOG.md not updated for feat/fix/perf/breaking change
+</span></code></pre></div>
+<p><strong>Dependencies</strong>: T3-11a (preparation check), T3-11c (fix validation).</p>
+<hr />
+<h3 id="t3-11c-changelog-validation-in-pr-fix-pr-fixmd">T3-11c: CHANGELOG Validation in PR Fix (<code>pr-fix.md</code>)<a class="headerlink" href="#t3-11c-changelog-validation-in-pr-fix-pr-fixmd" title="Permanent link">&para;</a></h3>
+<p><strong>File</strong>: <code>.claude/skills/pr-review/workflows/pr-fix.md</code>
+<strong>Section</strong>: Step 4, Priority 1 (Critical findings)</p>
+<p><strong>Problem</strong>: When pr-fix addresses Critical findings, it does not check whether
+CHANGELOG was updated as part of the fix batch.</p>
+<p><strong>Change</strong>: Add to Priority 1 instructions:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>After addressing all Critical findings, verify CHANGELOG.md has been updated if
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>the branch contains feat/fix/perf/breaking commits:
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>  git diff origin/main..HEAD -- CHANGELOG.md | head -5
+</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>
+</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>If empty and commits require a CHANGELOG entry, ask the user to provide the entry text
+</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>rather than generating it automatically. Do not invent version numbers or release dates.
+</span></code></pre></div>
+<p><strong>Dependencies</strong>: T3-11a, T3-11b.</p>
+<hr />
+<h3 id="t3-12-unify-test-policy-pr-fixmd">T3-12: Unify Test Policy (<code>pr-fix.md</code>)<a class="headerlink" href="#t3-12-unify-test-policy-pr-fixmd" title="Permanent link">&para;</a></h3>
+<p><strong>File</strong>: <code>.claude/skills/pr-review/workflows/pr-fix.md</code>
+<strong>Section</strong>: Step 4, Priority 3 and Priority 4</p>
+<p><strong>Problem</strong>: Priority 3 says "add a proof-of-fix test" while Priority 4 contradicts by
+implying tests are optional ("if time permits"). The contradiction causes inconsistent
+behavior depending on which priority the agent processes last.</p>
+<p><strong>Change</strong>: Remove the Priority 3/Priority 4 test-policy language and replace with a
+single unified block at the end of Step 4:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>#### Test requirement for all findings
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>For every Critical or Important finding that is fixed:
+</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>- Add or update a test that would have caught the finding before the fix.
+</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>- The test must fail on the pre-fix code and pass on the post-fix code.
+</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>- If a test is impossible (e.g., finding is a doc update or a config style issue),
+</span><span id="__span-13-7"><a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a>  note &quot;No test required: {reason}&quot; in the commit message.
+</span><span id="__span-13-8"><a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a>
+</span><span id="__span-13-9"><a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a>For Suggested or Informational findings:
+</span><span id="__span-13-10"><a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a>- Add a test if one can be written in under 15 minutes.
+</span><span id="__span-13-11"><a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a>- Otherwise, note the finding is addressed without a test and explain why.
+</span><span id="__span-13-12"><a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a>
+</span><span id="__span-13-13"><a id="__codelineno-13-13" name="__codelineno-13-13" href="#__codelineno-13-13"></a>Never skip tests for Critical findings without explicit user approval.
+</span></code></pre></div>
+<p><strong>Dependencies</strong>: None.</p>
+<hr />
+<h3 id="t3-13-demote-unsafe-sonarqube-auto-fixes-pr-fixmd">T3-13: Demote Unsafe SonarQube Auto-Fixes (<code>pr-fix.md</code>)<a class="headerlink" href="#t3-13-demote-unsafe-sonarqube-auto-fixes-pr-fixmd" title="Permanent link">&para;</a></h3>
+<p><strong>File</strong>: <code>.claude/skills/pr-review/workflows/pr-fix.md</code>
+<strong>Section</strong>: Step 4, SonarQube auto-fix instructions (wherever auto-apply logic exists)</p>
+<p><strong>Problem</strong>: The workflow currently auto-applies SonarQube suggestions without
+confirmation for fixes that carry semantic risk: regex rewrites, shell if-merge
+patterns, permission scoping changes, and dead-code removal. These have caused
+regressions in other projects.</p>
+<p><strong>Change</strong>: Add a "require confirmation" gating rule before any SonarQube auto-fix:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>The following SonarQube rule categories require propose-and-confirm rather than
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>auto-apply:
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>  Category              | Examples                                    | Risk
+</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>  Regex rewrites        | Simplifying character classes, rm escapes   | Changes match behavior
+</span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>  Shell if-merge        | Combining nested if into single condition   | Logic equivalence not guaranteed
+</span><span id="__span-14-7"><a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a>  Permission scoping    | Narrowing file permissions                  | May break runtime behavior
+</span><span id="__span-14-8"><a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a>  Dead-code removal     | Removing functions flagged as unreachable   | May have dynamic callers
+</span><span id="__span-14-9"><a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a>  Serialization changes | Changing JSON field names, removing fields  | Wire-format breaking change
+</span><span id="__span-14-10"><a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a>
+</span><span id="__span-14-11"><a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a>For these categories, present the proposed change and ask &quot;Apply this fix? (y/n)&quot;
+</span><span id="__span-14-12"><a id="__codelineno-14-12" name="__codelineno-14-12" href="#__codelineno-14-12"></a>before making any edit.
+</span><span id="__span-14-13"><a id="__codelineno-14-13" name="__codelineno-14-13" href="#__codelineno-14-13"></a>
+</span><span id="__span-14-14"><a id="__codelineno-14-14" name="__codelineno-14-14" href="#__codelineno-14-14"></a>Auto-apply is safe for: import ordering, whitespace, missing docstrings, unused
+</span><span id="__span-14-15"><a id="__codelineno-14-15" name="__codelineno-14-15" href="#__codelineno-14-15"></a>import removal (when no __all__ exports), explicit None return types.
+</span></code></pre></div>
+<p><strong>Dependencies</strong>: None.</p>
+<hr />
+<h3 id="t3-14-replace-large-pr-truncation-pr-reviewmd">T3-14: Replace Large-PR Truncation (<code>pr-review.md</code>)<a class="headerlink" href="#t3-14-replace-large-pr-truncation-pr-reviewmd" title="Permanent link">&para;</a></h3>
+<p><strong>File</strong>: <code>.claude/skills/pr-review/workflows/pr-review.md</code>
+<strong>Section</strong>: Step 3 or wherever diff loading/truncation logic is specified</p>
+<p><strong>Problem</strong>: The current workflow silently truncates diffs larger than 500 lines,
+meaning agents may never see the second half of a large PR. This creates false
+confidence in review completeness.</p>
+<p><strong>Change</strong>: Replace the truncation logic with one of two explicit strategies:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>#### Large-PR handling
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>If the total diff exceeds 500 lines:
+</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>
+</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>Strategy A: Per-file chunking (preferred for PRs with many small files):
+</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>Split CHANGED_FILES into batches of 10 files each. Run all agents once per batch.
+</span><span id="__span-15-7"><a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a>Merge findings across batches before assembling the report. Label each finding with
+</span><span id="__span-15-8"><a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a>the batch file that produced it.
+</span><span id="__span-15-9"><a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a>
+</span><span id="__span-15-10"><a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a>Strategy B: Hard stop (preferred for PRs with one or two very large files):
+</span><span id="__span-15-11"><a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a>Emit a Critical finding:
+</span><span id="__span-15-12"><a id="__codelineno-15-12" name="__codelineno-15-12" href="#__codelineno-15-12"></a>  [Critical] Review: Diff exceeds 500 lines ({actual count} lines). Review requires
+</span><span id="__span-15-13"><a id="__codelineno-15-13" name="__codelineno-15-13" href="#__codelineno-15-13"></a>  manual split or per-section analysis. pr-review cannot guarantee complete coverage
+</span><span id="__span-15-14"><a id="__codelineno-15-14" name="__codelineno-15-14" href="#__codelineno-15-14"></a>  of diffs this large.
+</span><span id="__span-15-15"><a id="__codelineno-15-15" name="__codelineno-15-15" href="#__codelineno-15-15"></a>
+</span><span id="__span-15-16"><a id="__codelineno-15-16" name="__codelineno-15-16" href="#__codelineno-15-16"></a>Then continue with the first 500 lines, clearly labeling the report:
+</span><span id="__span-15-17"><a id="__codelineno-15-17" name="__codelineno-15-17" href="#__codelineno-15-17"></a>  &quot;WARNING: Review covers lines 1-500 only. Lines 501 onward were not analyzed.&quot;
+</span><span id="__span-15-18"><a id="__codelineno-15-18" name="__codelineno-15-18" href="#__codelineno-15-18"></a>
+</span><span id="__span-15-19"><a id="__codelineno-15-19" name="__codelineno-15-19" href="#__codelineno-15-19"></a>Never silently truncate. Always tell the user what was and was not reviewed.
+</span></code></pre></div>
+<p><strong>Dependencies</strong>: T2-8 (file context fetching); coordinate so context files for
+chunked batches are fetched per-batch, not all upfront.</p>
+<hr />
+<h3 id="t3-15-agent-k-performance-review-pr-reviewmd">T3-15: Agent K: Performance Review (<code>pr-review.md</code>)<a class="headerlink" href="#t3-15-agent-k-performance-review-pr-reviewmd" title="Permanent link">&para;</a></h3>
+<p><strong>File</strong>: <code>.claude/skills/pr-review/workflows/pr-review.md</code>
+<strong>Section</strong>: Step 5 (parallel agents), add Agent K after Agent J</p>
+<p><strong>Problem</strong>: No agent currently checks for performance anti-patterns. N+1 queries,
+blocking I/O in async context, and quadratic-complexity loops have shipped undetected.</p>
+<p><strong>Change</strong>: Add Agent K specification:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>Agent K: Performance Review
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>Scope: The full diff (all files) plus CONTEXT_FILES for files with more than 10 lines
+</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>changed.
+</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>
+</span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a>Checks:
+</span><span id="__span-16-7"><a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a>- N+1 queries: ORM calls inside loops (e.g., for item in queryset: item.related.all())
+</span><span id="__span-16-8"><a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a>- Blocking I/O in async context: synchronous HTTP calls or file reads inside async def
+</span><span id="__span-16-9"><a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a>- Unbounded loops: while True or iteration with a database/network call and no limit
+</span><span id="__span-16-10"><a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a>- Quadratic complexity: nested loops where both iterables grow with user input
+</span><span id="__span-16-11"><a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a>- Missing pagination: list endpoints returning unbounded result sets
+</span><span id="__span-16-12"><a id="__codelineno-16-12" name="__codelineno-16-12" href="#__codelineno-16-12"></a>- Large in-memory loads: loading entire files or tables without streaming
+</span><span id="__span-16-13"><a id="__codelineno-16-13" name="__codelineno-16-13" href="#__codelineno-16-13"></a>
+</span><span id="__span-16-14"><a id="__codelineno-16-14" name="__codelineno-16-14" href="#__codelineno-16-14"></a>For each issue found:
+</span><span id="__span-16-15"><a id="__codelineno-16-15" name="__codelineno-16-15" href="#__codelineno-16-15"></a>  [Important] Perf/{category}: {finding}; estimated impact: {brief impact statement}
+</span><span id="__span-16-16"><a id="__codelineno-16-16" name="__codelineno-16-16" href="#__codelineno-16-16"></a>
+</span><span id="__span-16-17"><a id="__codelineno-16-17" name="__codelineno-16-17" href="#__codelineno-16-17"></a>If no issues found:
+</span><span id="__span-16-18"><a id="__codelineno-16-18" name="__codelineno-16-18" href="#__codelineno-16-18"></a>  [Info] Perf: No performance issues detected in diff
+</span></code></pre></div>
+<p><strong>Dependencies</strong>: T2-8 (file context fetching, needed for N+1 detection in callers).</p>
+<hr />
+<h2 id="tier-4-polish-and-robustness">Tier 4: Polish and Robustness<a class="headerlink" href="#tier-4-polish-and-robustness" title="Permanent link">&para;</a></h2>
+<h3 id="t4-16-fix-git-add-default-in-commit-workflow-commitmd">T4-16: Fix <code>git add .</code> Default in Commit Workflow (<code>commit.md</code>)<a class="headerlink" href="#t4-16-fix-git-add-default-in-commit-workflow-commitmd" title="Permanent link">&para;</a></h3>
+<p><strong>File</strong>: <code>.claude/skills/git/workflows/commit.md</code>
+<strong>Section</strong>: Step 4 (handle staging), staging options list</p>
+<p><strong>Problem</strong>: The current workflow lists "Stage all changes? (<code>git add .</code>)" as the
+first option, making it the default. <code>git add .</code> can accidentally stage secrets,
+build artifacts, or unrelated work-in-progress files.</p>
+<p><strong>Change</strong>: Reorder the staging options so file-by-file is first:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>If there are unstaged changes, choose a staging strategy:
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>
+</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>1. Stage specific files (recommended):
+</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a>     git add path/to/file1 path/to/file2
+</span><span id="__span-17-5"><a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a>
+</span><span id="__span-17-6"><a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a>2. Review changes first (if uncertain what to include):
+</span><span id="__span-17-7"><a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a>     git diff --stat
+</span><span id="__span-17-8"><a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a>     git diff path/to/file
+</span><span id="__span-17-9"><a id="__codelineno-17-9" name="__codelineno-17-9" href="#__codelineno-17-9"></a>
+</span><span id="__span-17-10"><a id="__codelineno-17-10" name="__codelineno-17-10" href="#__codelineno-17-10"></a>3. Stage all changes (use with caution -- verify no secrets or build artifacts):
+</span><span id="__span-17-11"><a id="__codelineno-17-11" name="__codelineno-17-11" href="#__codelineno-17-11"></a>     git add .
+</span><span id="__span-17-12"><a id="__codelineno-17-12" name="__codelineno-17-12" href="#__codelineno-17-12"></a>     git status   # review the staged list before committing
+</span><span id="__span-17-13"><a id="__codelineno-17-13" name="__codelineno-17-13" href="#__codelineno-17-13"></a>
+</span><span id="__span-17-14"><a id="__codelineno-17-14" name="__codelineno-17-14" href="#__codelineno-17-14"></a>   Always run git status after git add . to confirm only intended files are staged.
+</span></code></pre></div>
+<p><strong>Dependencies</strong>: None.</p>
+<hr />
+<h3 id="t4-18-pr-size-and-split-heuristic-prmd">T4-18: PR Size and Split Heuristic (<code>pr.md</code>)<a class="headerlink" href="#t4-18-pr-size-and-split-heuristic-prmd" title="Permanent link">&para;</a></h3>
+<p><strong>File</strong>: <code>.claude/skills/git/workflows/pr.md</code>
+<strong>Section</strong>: Step 2 (analyze changes), after the existing "Identify" block</p>
+<p><strong>Problem</strong>: PRs larger than 400 lines or spanning 3 or more unrelated functional
+domains are harder to review, more likely to cause merge conflicts, and statistically
+more likely to introduce bugs. No current step surfaces this to the author.</p>
+<p><strong>Change</strong>: Add to Step 2 after the identify block:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>#### PR size check
+</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>
+</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>  LINES_CHANGED=$(git diff $(git merge-base HEAD main)..HEAD --stat | \
+</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a>    tail -1 | grep -oP &#39;\d+ insertion&#39; | grep -oP &#39;\d+&#39;)
+</span><span id="__span-18-5"><a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>  DOMAINS=$(git diff $(git merge-base HEAD main)..HEAD --name-only | \
+</span><span id="__span-18-6"><a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>    cut -d/ -f1 | sort -u | wc -l)
+</span><span id="__span-18-7"><a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a>
+</span><span id="__span-18-8"><a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a>If LINES_CHANGED &gt; 400 or DOMAINS &gt;= 3:
+</span><span id="__span-18-9"><a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a>  &quot;This PR is large ({LINES_CHANGED} lines changed, {DOMAINS} top-level directories).
+</span><span id="__span-18-10"><a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a>  Consider splitting into smaller PRs by logical area. Suggested splits:
+</span><span id="__span-18-11"><a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a>  {list CHANGED_FILES grouped by top-level directory}
+</span><span id="__span-18-12"><a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a>
+</span><span id="__span-18-13"><a id="__codelineno-18-13" name="__codelineno-18-13" href="#__codelineno-18-13"></a>  Continue as a single PR? (y/n)&quot;
+</span><span id="__span-18-14"><a id="__codelineno-18-14" name="__codelineno-18-14" href="#__codelineno-18-14"></a>
+</span><span id="__span-18-15"><a id="__codelineno-18-15" name="__codelineno-18-15" href="#__codelineno-18-15"></a>If the user says yes, continue. If no, help them identify split boundaries using the
+</span><span id="__span-18-16"><a id="__codelineno-18-16" name="__codelineno-18-16" href="#__codelineno-18-16"></a>directory grouping above.
+</span></code></pre></div>
+<p><strong>Dependencies</strong>: None.</p>
+<hr />
+<h3 id="t4-19-repo-driven-ci-gate-command-pr-fixmd">T4-19: Repo-Driven CI Gate Command (<code>pr-fix.md</code>)<a class="headerlink" href="#t4-19-repo-driven-ci-gate-command-pr-fixmd" title="Permanent link">&para;</a></h3>
+<p><strong>File</strong>: <code>.claude/skills/pr-review/workflows/pr-fix.md</code>
+<strong>Section</strong>: Step 5 (CI gate / pre-push verification)</p>
+<p><strong>Problem</strong>: Step 5 hardcodes <code>uv run pytest &amp;&amp; uv run ruff check &amp;&amp; uv run ruff
+format --check</code>. Projects using <code>nox</code>, <code>tox</code>, <code>make ci</code>, or a <code>scripts/ci.sh</code> runner
+fail this step because the hardcoded commands do not match the project's actual CI
+entrypoint.</p>
+<p><strong>Change</strong>: Replace the hardcoded CI command with a detection-first sequence:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>#### 5a. Detect CI entrypoint
+</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>
+</span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a>Check in order:
+</span><span id="__span-19-4"><a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a>
+</span><span id="__span-19-5"><a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>1. noxfile.py exists and uv run nox --list succeeds:
+</span><span id="__span-19-6"><a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a>     use: uv run nox -s lint tests
+</span><span id="__span-19-7"><a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a>2. tox.ini or pyproject.toml [tool.tox] section exists:
+</span><span id="__span-19-8"><a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a>     use: uv run tox
+</span><span id="__span-19-9"><a id="__codelineno-19-9" name="__codelineno-19-9" href="#__codelineno-19-9"></a>3. Makefile with a ci target (grep -q &#39;^ci:&#39; Makefile):
+</span><span id="__span-19-10"><a id="__codelineno-19-10" name="__codelineno-19-10" href="#__codelineno-19-10"></a>     use: make ci
+</span><span id="__span-19-11"><a id="__codelineno-19-11" name="__codelineno-19-11" href="#__codelineno-19-11"></a>4. scripts/ci.sh or scripts/test.sh exists:
+</span><span id="__span-19-12"><a id="__codelineno-19-12" name="__codelineno-19-12" href="#__codelineno-19-12"></a>     use: bash scripts/ci.sh
+</span><span id="__span-19-13"><a id="__codelineno-19-13" name="__codelineno-19-13" href="#__codelineno-19-13"></a>5. Fallback:
+</span><span id="__span-19-14"><a id="__codelineno-19-14" name="__codelineno-19-14" href="#__codelineno-19-14"></a>     use: uv run pytest &amp;&amp; uv run ruff check &amp;&amp; uv run ruff format --check &amp;&amp; uv run basedpyright
+</span><span id="__span-19-15"><a id="__codelineno-19-15" name="__codelineno-19-15" href="#__codelineno-19-15"></a>
+</span><span id="__span-19-16"><a id="__codelineno-19-16" name="__codelineno-19-16" href="#__codelineno-19-16"></a>Store the detected command as CI_CMD. Always echo &quot;Using CI entrypoint: {CI_CMD}&quot;
+</span><span id="__span-19-17"><a id="__codelineno-19-17" name="__codelineno-19-17" href="#__codelineno-19-17"></a>before running so the user can verify.
+</span></code></pre></div>
+<p><strong>Dependencies</strong>: None. Required by T4-21.</p>
+<hr />
+<h3 id="t4-20-sonarqube-severity-distribution-in-report-pr-reviewmd">T4-20: SonarQube Severity Distribution in Report (<code>pr-review.md</code>)<a class="headerlink" href="#t4-20-sonarqube-severity-distribution-in-report-pr-reviewmd" title="Permanent link">&para;</a></h3>
+<p><strong>File</strong>: <code>.claude/skills/pr-review/workflows/pr-review.md</code>
+<strong>Section</strong>: Step 9 (assemble report), report header template</p>
+<p><strong>Problem</strong>: The report lists SonarQube findings inline but gives no summary count by
+severity, making it hard to gauge overall SonarQube health at a glance.</p>
+<p><strong>Change</strong>: In the report header block (the summary table before the findings list),
+add a SonarQube row:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>| SonarQube | Blocker: {N} | Critical: {N} | Major: {N} | Minor: {N} | Info: {N} |
+</span></code></pre></div>
+<p>Populate counts from SONAR_FINDINGS. If SonarQube is not configured or returned no
+findings, show:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>| SonarQube | Not configured / No findings |
+</span></code></pre></div>
+<p><strong>Dependencies</strong>: T2-5 (CI status); coordinate report header layout so CI status
+and SonarQube distribution appear in adjacent rows.</p>
+<hr />
+<h3 id="t4-21-restrict-known-failures-commit-gate-pr-fixmd">T4-21: Restrict Known-Failures Commit Gate (<code>pr-fix.md</code>)<a class="headerlink" href="#t4-21-restrict-known-failures-commit-gate-pr-fixmd" title="Permanent link">&para;</a></h3>
+<p><strong>File</strong>: <code>.claude/skills/pr-review/workflows/pr-fix.md</code>
+<strong>Section</strong>: Step 8, Option 4 (commit with known CI failures) or equivalent</p>
+<p><strong>Problem</strong>: The current workflow allows committing when CI is failing without checking
+whether those failures are pre-existing or newly introduced by the fix. This can ship
+new regressions under the cover of pre-existing failures.</p>
+<p><strong>Change</strong>: Replace the unrestricted "commit with known failures" option with:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>Option 4: Commit with pre-existing CI failures (restricted):
+</span><span id="__span-22-2"><a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a>
+</span><span id="__span-22-3"><a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a>Before using this option:
+</span><span id="__span-22-4"><a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a>
+</span><span id="__span-22-5"><a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a>  git stash
+</span><span id="__span-22-6"><a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a>  {CI_CMD} 2&gt;&amp;1 | grep -E &#39;FAILED|ERROR&#39; &gt; /tmp/pre_pr_failures.txt
+</span><span id="__span-22-7"><a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a>  git stash pop
+</span><span id="__span-22-8"><a id="__codelineno-22-8" name="__codelineno-22-8" href="#__codelineno-22-8"></a>  {CI_CMD} 2&gt;&amp;1 | grep -E &#39;FAILED|ERROR&#39; &gt; /tmp/post_pr_failures.txt
+</span><span id="__span-22-9"><a id="__codelineno-22-9" name="__codelineno-22-9" href="#__codelineno-22-9"></a>  diff /tmp/pre_pr_failures.txt /tmp/post_pr_failures.txt
+</span><span id="__span-22-10"><a id="__codelineno-22-10" name="__codelineno-22-10" href="#__codelineno-22-10"></a>
+</span><span id="__span-22-11"><a id="__codelineno-22-11" name="__codelineno-22-11" href="#__codelineno-22-11"></a>If diff shows new failures not present before the PR: do not commit. Fix the
+</span><span id="__span-22-12"><a id="__codelineno-22-12" name="__codelineno-22-12" href="#__codelineno-22-12"></a>new failures first.
+</span><span id="__span-22-13"><a id="__codelineno-22-13" name="__codelineno-22-13" href="#__codelineno-22-13"></a>
+</span><span id="__span-22-14"><a id="__codelineno-22-14" name="__codelineno-22-14" href="#__codelineno-22-14"></a>If failures are identical to pre-PR baseline: allowed to commit, but must:
+</span><span id="__span-22-15"><a id="__codelineno-22-15" name="__codelineno-22-15" href="#__codelineno-22-15"></a>1. Post a PR comment: &quot;Known pre-existing CI failures: {list}. These failures existed
+</span><span id="__span-22-16"><a id="__codelineno-22-16" name="__codelineno-22-16" href="#__codelineno-22-16"></a>   before this branch was created and are not caused by changes in this PR.&quot;
+</span><span id="__span-22-17"><a id="__codelineno-22-17" name="__codelineno-22-17" href="#__codelineno-22-17"></a>2. Link to or create a tracking issue for each pre-existing failure.
+</span></code></pre></div>
+<p><strong>Dependencies</strong>: T4-19 (CI_CMD detection must run first).</p>
+<hr />
+<h3 id="t4-22-fix-url-parser-pr-reviewmd">T4-22: Fix URL Parser (<code>pr-review.md</code>)<a class="headerlink" href="#t4-22-fix-url-parser-pr-reviewmd" title="Permanent link">&para;</a></h3>
+<p><strong>File</strong>: <code>.claude/skills/pr-review/workflows/pr-review.md</code>
+<strong>Section</strong>: Step 1 (parse PR URL, extract OWNER/REPO/PR_NUMBER)</p>
+<p><strong>Problem</strong>: The URL parser fails on trailing slashes and query strings (e.g.,
+<code>https://github.com/owner/repo/pull/123?diff=unified</code>). This causes downstream
+failures when OWNER, REPO, or PR_NUMBER is parsed incorrectly.</p>
+<p><strong>Change</strong>: Replace the current URL parsing instruction with:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-23-1"><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>#### 1. Parse PR URL
+</span><span id="__span-23-2"><a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a>
+</span><span id="__span-23-3"><a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a>Strip trailing slashes and query strings before parsing:
+</span><span id="__span-23-4"><a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a>
+</span><span id="__span-23-5"><a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a>  CLEAN_URL=$(echo &quot;{PR_URL}&quot; | sed &#39;s|[?#].*||&#39; | sed &#39;s|/\+$||&#39;)
+</span><span id="__span-23-6"><a id="__codelineno-23-6" name="__codelineno-23-6" href="#__codelineno-23-6"></a>  OWNER=$(echo &quot;$CLEAN_URL&quot; | cut -d/ -f4)
+</span><span id="__span-23-7"><a id="__codelineno-23-7" name="__codelineno-23-7" href="#__codelineno-23-7"></a>  REPO=$(echo &quot;$CLEAN_URL&quot; | cut -d/ -f5)
+</span><span id="__span-23-8"><a id="__codelineno-23-8" name="__codelineno-23-8" href="#__codelineno-23-8"></a>  PR_NUMBER=$(echo &quot;$CLEAN_URL&quot; | cut -d/ -f7)
+</span><span id="__span-23-9"><a id="__codelineno-23-9" name="__codelineno-23-9" href="#__codelineno-23-9"></a>
+</span><span id="__span-23-10"><a id="__codelineno-23-10" name="__codelineno-23-10" href="#__codelineno-23-10"></a>Echo the resolved values for verification:
+</span><span id="__span-23-11"><a id="__codelineno-23-11" name="__codelineno-23-11" href="#__codelineno-23-11"></a>  Resolved: {OWNER}/{REPO}#{PR_NUMBER}
+</span><span id="__span-23-12"><a id="__codelineno-23-12" name="__codelineno-23-12" href="#__codelineno-23-12"></a>
+</span><span id="__span-23-13"><a id="__codelineno-23-13" name="__codelineno-23-13" href="#__codelineno-23-13"></a>If any value is empty, stop and report:
+</span><span id="__span-23-14"><a id="__codelineno-23-14" name="__codelineno-23-14" href="#__codelineno-23-14"></a>  &quot;Could not parse PR URL: {PR_URL}. Expected format:
+</span><span id="__span-23-15"><a id="__codelineno-23-15" name="__codelineno-23-15" href="#__codelineno-23-15"></a>   https://github.com/owner/repo/pull/123&quot;
+</span></code></pre></div>
+<p><strong>Dependencies</strong>: T2-5 (CI status) uses <code>detailsUrl</code> from gh output which may
+contain query strings. Apply the same cleaning pattern there.</p>
+<hr />
+<h2 id="implementation-order">Implementation Order<a class="headerlink" href="#implementation-order" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Order</th>
+<th>Item</th>
+<th>File</th>
+<th>Tier</th>
+<th>Est. Size</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>T1-1</td>
+<td>pr.md</td>
+<td>1</td>
+<td>Small</td>
+</tr>
+<tr>
+<td>2</td>
+<td>T1-2</td>
+<td>pr-fix.md</td>
+<td>1</td>
+<td>Small</td>
+</tr>
+<tr>
+<td>3</td>
+<td>T1-3</td>
+<td>pr-fix.md</td>
+<td>1</td>
+<td>Small</td>
+</tr>
+<tr>
+<td>4</td>
+<td>T1-4</td>
+<td>pr.md</td>
+<td>1</td>
+<td>Small</td>
+</tr>
+<tr>
+<td>5</td>
+<td>T4-22</td>
+<td>pr-review.md</td>
+<td>4</td>
+<td>Small</td>
+</tr>
+<tr>
+<td>6</td>
+<td>T2-5</td>
+<td>pr-review.md</td>
+<td>2</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td>7</td>
+<td>T3-14</td>
+<td>pr-review.md</td>
+<td>3</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td>8</td>
+<td>T2-8</td>
+<td>pr-review.md</td>
+<td>2</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td>9</td>
+<td>T2-6</td>
+<td>pr-review.md</td>
+<td>2</td>
+<td>Large</td>
+</tr>
+<tr>
+<td>10</td>
+<td>T2-7</td>
+<td>pr-review.md</td>
+<td>2</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td>11</td>
+<td>T3-15</td>
+<td>pr-review.md</td>
+<td>3</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td>12</td>
+<td>T3-11b</td>
+<td>pr-review.md</td>
+<td>3</td>
+<td>Small</td>
+</tr>
+<tr>
+<td>13</td>
+<td>T4-20</td>
+<td>pr-review.md</td>
+<td>4</td>
+<td>Small</td>
+</tr>
+<tr>
+<td>14</td>
+<td>T2-9</td>
+<td>pr.md</td>
+<td>2</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td>15</td>
+<td>T3-11a</td>
+<td>pr.md</td>
+<td>3</td>
+<td>Small</td>
+</tr>
+<tr>
+<td>16</td>
+<td>T3-10+17</td>
+<td>pr.md</td>
+<td>3</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td>17</td>
+<td>T4-18</td>
+<td>pr.md</td>
+<td>4</td>
+<td>Small</td>
+</tr>
+<tr>
+<td>18</td>
+<td>T3-12</td>
+<td>pr-fix.md</td>
+<td>3</td>
+<td>Small</td>
+</tr>
+<tr>
+<td>19</td>
+<td>T3-13</td>
+<td>pr-fix.md</td>
+<td>3</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td>20</td>
+<td>T3-11c</td>
+<td>pr-fix.md</td>
+<td>3</td>
+<td>Small</td>
+</tr>
+<tr>
+<td>21</td>
+<td>T4-19</td>
+<td>pr-fix.md</td>
+<td>4</td>
+<td>Small</td>
+</tr>
+<tr>
+<td>22</td>
+<td>T4-21</td>
+<td>pr-fix.md</td>
+<td>4</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td>23</td>
+<td>T4-16</td>
+<td>commit.md</td>
+<td>4</td>
+<td>Small</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="cross-item-dependencies">Cross-Item Dependencies<a class="headerlink" href="#cross-item-dependencies" title="Permanent link">&para;</a></h2>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-24-1"><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>T3-11a (pr.md CHANGELOG check) --&gt; T3-11b (pr-review Agent A CHANGELOG check)
+</span><span id="__span-24-2"><a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a>                               --&gt; T3-11c (pr-fix CHANGELOG validation)
+</span><span id="__span-24-3"><a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a>
+</span><span id="__span-24-4"><a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a>T3-10 (template rewrite) --&gt; T2-7 (Agent J checks for ## Why section)
+</span><span id="__span-24-5"><a id="__codelineno-24-5" name="__codelineno-24-5" href="#__codelineno-24-5"></a>T4-17 merged into T3-10 (testing checklist is part of the template)
+</span><span id="__span-24-6"><a id="__codelineno-24-6" name="__codelineno-24-6" href="#__codelineno-24-6"></a>
+</span><span id="__span-24-7"><a id="__codelineno-24-7" name="__codelineno-24-7" href="#__codelineno-24-7"></a>T2-8 (context fetch preamble) --&gt; T2-6 (Agent I can use CONTEXT_FILES)
+</span><span id="__span-24-8"><a id="__codelineno-24-8" name="__codelineno-24-8" href="#__codelineno-24-8"></a>                             --&gt; T3-14 (per-batch context fetch coordination)
+</span><span id="__span-24-9"><a id="__codelineno-24-9" name="__codelineno-24-9" href="#__codelineno-24-9"></a>                             --&gt; T3-15 (Agent K uses CONTEXT_FILES)
+</span><span id="__span-24-10"><a id="__codelineno-24-10" name="__codelineno-24-10" href="#__codelineno-24-10"></a>
+</span><span id="__span-24-11"><a id="__codelineno-24-11" name="__codelineno-24-11" href="#__codelineno-24-11"></a>T4-19 (CI_CMD detection) --&gt; T4-21 (uses CI_CMD for pre/post failure diff)
+</span><span id="__span-24-12"><a id="__codelineno-24-12" name="__codelineno-24-12" href="#__codelineno-24-12"></a>
+</span><span id="__span-24-13"><a id="__codelineno-24-13" name="__codelineno-24-13" href="#__codelineno-24-13"></a>T2-5 (CI status ingestion) --&gt; T4-20 (report header layout)
+</span><span id="__span-24-14"><a id="__codelineno-24-14" name="__codelineno-24-14" href="#__codelineno-24-14"></a>T4-22 (URL parser) should precede T2-5 (both handle URLs with query strings)
+</span></code></pre></div>
+<hr />
+<h2 id="implementation-notes">Implementation Notes<a class="headerlink" href="#implementation-notes" title="Permanent link">&para;</a></h2>
+<ul>
+<li>All items in <code>pr-review.md</code> must not break the existing Step numbering (Steps 1-11
+  after the polling gate was added in the prior session).</li>
+<li>No em-dashes in any content added. Use commas, semicolons, or restructured sentences.</li>
+<li>All fenced code blocks must be surrounded by blank lines (MD031 requirement).</li>
+<li>After implementing each item, run <code>pre-commit run --all-files</code> on the modified file
+  before marking the TODO complete.</li>
+<li>Items in the same file should be batched into a single editing session where possible
+  to reduce re-read overhead.</li>
+</ul>
+
+
+
+
+
+
+
+  
+    
+  
+  
+    
+  
+
+
+  <aside class="md-source-file">
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Last update">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 13, 2026 18:38:30 UTC">April 13, 2026</span>
+  </span>
+
+    
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Created">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 13, 2026 18:38:30 UTC">April 13, 2026</span>
+  </span>
+
+    
+    
+    
+  </aside>
+
+
+  
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2025 Byron Williams
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/ByronWilliamsCPA" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
