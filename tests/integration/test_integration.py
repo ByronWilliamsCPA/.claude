@@ -41,11 +41,16 @@ class TestSettingsLoggingIntegration:
             json_logs=settings.json_logs,
             include_timestamp=settings.include_timestamp,
         )
+        import structlog
+
         logger = get_logger(__name__)
 
         # Should be able to log without errors
         logger.debug("Test debug message", test_key="test_value")
-        assert callable(logger.debug)
+        # Verify structlog configuration is active after settings-driven setup
+        assert hasattr(logger, "bind"), "logger should be a structlog bound logger"
+        config = structlog.get_config()
+        assert config["wrapper_class"] is structlog.stdlib.BoundLogger
 
 
 class TestPackageImports:
