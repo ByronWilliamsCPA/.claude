@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Python Version Compatibility Check — PostToolUse Hook
+# Python Version Compatibility Check: PostToolUse Hook
 # =============================================================================
 # Fires after Edit or Write tool calls. Scans modified .py files for patterns
 # that violate Python 3.10 floor or 3.14 ceiling compatibility boundaries.
 #
-# Tier 1: grep scan — floor (3.11+ APIs/imports) and ceiling (3.14 removed)
-# Tier 2: Python AST scan — syntactic patterns (match/case, except*)
+# Tier 1: grep scan for floor (3.11+ APIs/imports) and ceiling (3.14 removed)
+# Tier 2: Python AST scan for syntactic patterns (match/case, except*)
 #
-# Both tiers always run. Output goes to stdout (Claude reads it). Findings
-# also appended to ~/.claude/logs/py310-compat-check.log.
+# Tier 1 always runs. Tier 2 (AST) skips if python3 is unavailable or a
+# syntax error is encountered. Output goes to stdout (Claude reads it).
+# Findings also appended to ~/.claude/logs/py310-compat-check.log.
 #
-# Exit codes: exits 0 on normal completion; may exit non-zero if tooling
-# commands fail unexpectedly (set -euo pipefail is active)
+# Exit codes: always 0 -- PostToolUse hooks must never fail
 # =============================================================================
 
 set -euo pipefail
@@ -21,19 +21,17 @@ LOG_FILE="${HOME}/.claude/logs/py310-compat-check.log"
 mkdir -p "$(dirname "$LOG_FILE")"
 
 log() {
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" >> "$LOG_FILE"
-    return 0
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" >> "$LOG_FILE" || true
 }
 
 # ---- Tool guards -------------------------------------------------------------
 if ! command -v jq &>/dev/null; then
-    log "WARN jq not found — py310 compat check skipped"
+    log "WARN jq not found; py310 compat check skipped"
     exit 0
 fi
 
 # grep -E (extended regex) is used for patterns below.
 # -E is POSIX-compliant and works on macOS/BSD and GNU grep.
-GREP_PCRE_AVAILABLE=true
 
 # ---- Read hook context from stdin --------------------------------------------
 CONTEXT=$(cat)
@@ -50,12 +48,12 @@ FILE_PATH=$(jq -r '.tool_input.file_path // empty' 2>/dev/null <<< "$CONTEXT")
 [[ ! -f "$FILE_PATH" ]] && exit 0
 
 # ============================================================
-# TIER 1: grep scan — API/import patterns
+# TIER 1: grep scan for API/import patterns
 # ============================================================
 FINDINGS=()
 
-# run_grep <label> <pcre_pattern> <description> <fix>
-# No-ops silently when PCRE is unavailable on the current system.
+# run_grep <label> <pattern> <description> <fix>
+# Scans FILE_PATH with grep -nE and appends any matches to FINDINGS.
 run_grep() {
     local label="$1"
     local pattern="$2"
@@ -63,8 +61,6 @@ run_grep() {
     local fix="$4"
     local indent
     indent=$(printf "%26s" '')
-
-    [[ "$GREP_PCRE_AVAILABLE" == false ]] && return 0
 
     while IFS=: read -r linenum _; do
         [[ -z "$linenum" ]] && continue
@@ -74,47 +70,47 @@ run_grep() {
     done < <(grep -nE "$pattern" "$FILE_PATH" 2>/dev/null || true)
 }
 
-# Floor — Python 3.11+ required, breaks 3.10 floor
+# Floor: Python 3.11+ required, breaks 3.10 floor
 run_grep "[FLOOR 3.11+]" \
     'datetime\.UTC\b|from datetime import[^#]*\bUTC\b' \
-    "\`datetime.UTC\` — requires Python 3.11+" \
+    "\`datetime.UTC\` requires Python 3.11+" \
     "use \`datetime.timezone.utc\` or a compat layer"
 
 run_grep "[FLOOR 3.11+]" \
     '^\s*(import tomllib|from tomllib\b)' \
-    "\`tomllib\` — stdlib module requires Python 3.11+" \
+    "\`tomllib\`: stdlib module requires Python 3.11+" \
     "use \`import tomli as tomllib\` inside try/except ImportError"
 
 run_grep "[FLOOR 3.11+]" \
     '\b(ExceptionGroup|BaseExceptionGroup)\b' \
-    "\`ExceptionGroup\` / \`BaseExceptionGroup\` — requires Python 3.11+ (check is best-effort)" \
+    "\`ExceptionGroup\` / \`BaseExceptionGroup\`: requires Python 3.11+ (check is best-effort)" \
     "install and use the \`exceptiongroup\` backport package"
 
 run_grep "[FLOOR 3.11+]" \
     "fromisoformat\(.*Z['\"]" \
-    "\`fromisoformat\` with Z suffix — Z parsing requires Python 3.11+ (best-effort)" \
+    "\`fromisoformat\` with Z suffix: Z parsing requires Python 3.11+ (best-effort)" \
     "normalize first: replace trailing Z with +00:00 before calling fromisoformat"
 
-# Ceiling — deprecated 3.12, removed 3.14
+# Ceiling: deprecated in 3.12, removed in 3.14
 # Patterns match both calling styles: datetime.utcnow() and datetime.datetime.utcnow()
 run_grep "[CEILING 3.14]" \
     '(datetime\.)?datetime\.utcnow\(\)' \
-    "\`datetime.utcnow()\` — deprecated in 3.12, removed in 3.14" \
+    "\`datetime.utcnow()\`: deprecated in 3.12, removed in 3.14" \
     "use \`datetime.datetime.now(datetime.timezone.utc)\`"
 
 run_grep "[CEILING 3.14]" \
     '(datetime\.)?datetime\.utcfromtimestamp\(' \
-    "\`datetime.utcfromtimestamp()\` — deprecated in 3.12, removed in 3.14" \
+    "\`datetime.utcfromtimestamp()\`: deprecated in 3.12, removed in 3.14" \
     "use \`datetime.datetime.fromtimestamp(ts, datetime.timezone.utc)\`"
 
 # ============================================================
-# TIER 2: Python AST scan — syntactic patterns
+# TIER 2: Python AST scan for syntactic patterns
 # ============================================================
 AST_SKIP_REASON=""
 
 if ! command -v python3 &>/dev/null; then
     AST_SKIP_REASON="python3 not in PATH"
-    log "WARN python3 not found — AST scan skipped for ${FILE_PATH}"
+    log "WARN python3 not found; AST scan skipped for ${FILE_PATH}"
 else
     AST_OUTPUT=$(python3 - "$FILE_PATH" 2>/dev/null <<'PYEOF'
 import ast, sys
@@ -130,8 +126,8 @@ except Exception:
     sys.exit(0)
 
 for node in ast.walk(tree):
-    # except* — exception groups, Python 3.11+ TryStar node
-    # Note: match/case (ast.Match) is NOT flagged — it is valid Python 3.10+ syntax
+    # except*: exception groups, Python 3.11+ TryStar node
+    # Note: match/case (ast.Match) is NOT flagged; it is valid Python 3.10+ syntax
     # and the project floor is 3.10, so match statements are permitted.
     if type(node).__name__ == "TryStar":
         print(f"FLOOR_EXCEPT_STAR:{node.lineno}")
@@ -156,19 +152,19 @@ PYEOF
             case "$line" in
                 FLOOR_EXCEPT_STAR:*)
                     lineno="${line#FLOOR_EXCEPT_STAR:}"
-                    FINDINGS+=("  [FLOOR 3.11+] line ${lineno}: \`except*\` — requires Python 3.11+")
+                    FINDINGS+=("  [FLOOR 3.11+] line ${lineno}: \`except*\` requires Python 3.11+")
                     FINDINGS+=("$(printf "%26s" '')Fix: restructure to standard try/except handlers")
                     log "FINDING FLOOR_EXCEPT_STAR line=${lineno} file=${FILE_PATH}"
                     ;;
                 FLOOR_TYPING_SELF:*)
                     lineno="${line#FLOOR_TYPING_SELF:}"
-                    FINDINGS+=("  [FLOOR 3.11+] line ${lineno}: \`Self\` from \`typing\` — requires Python 3.11+")
+                    FINDINGS+=("  [FLOOR 3.11+] line ${lineno}: \`Self\` from \`typing\` requires Python 3.11+")
                     FINDINGS+=("$(printf "%26s" '')Fix: use \`from typing_extensions import Self\`")
                     log "FINDING FLOOR_TYPING_SELF line=${lineno} file=${FILE_PATH}"
                     ;;
                 FLOOR_TYPING_LITERALSTRING:*)
                     lineno="${line#FLOOR_TYPING_LITERALSTRING:}"
-                    FINDINGS+=("  [FLOOR 3.11+] line ${lineno}: \`LiteralString\` from \`typing\` — requires Python 3.11+")
+                    FINDINGS+=("  [FLOOR 3.11+] line ${lineno}: \`LiteralString\` from \`typing\` requires Python 3.11+")
                     FINDINGS+=("$(printf "%26s" '')Fix: use \`from typing_extensions import LiteralString\`")
                     log "FINDING FLOOR_TYPING_LITERALSTRING line=${lineno} file=${FILE_PATH}"
                     ;;
@@ -193,7 +189,7 @@ done
 
 if [[ -n "$AST_SKIP_REASON" ]]; then
     echo ""
-    echo "  Note: AST scan skipped (${AST_SKIP_REASON}) — syntactic patterns not checked"
+    echo "  Note: AST scan skipped (${AST_SKIP_REASON}); syntactic patterns not checked"
     echo "  Note: Self/LiteralString detection from \`typing\` requires python3 (AST scan)"
 fi
 

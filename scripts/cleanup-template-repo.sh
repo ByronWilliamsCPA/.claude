@@ -25,7 +25,7 @@ confirm() {
     read -p "$(echo -e ${YELLOW}${prompt}${NC}) (y/N): " -n 1 -r
     echo
     [[ $REPLY =~ ^[Yy]$ ]]
-    return 0
+    return $?
 }
 
 # Function to create backup
