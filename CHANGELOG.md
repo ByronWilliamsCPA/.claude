@@ -1,6 +1,26 @@
 # CHANGELOG
 
 
+## [Unreleased]
+
+### Features
+
+- **skills**: Add PAL multi-model validation to pr-review and pr-fix workflows
+  ([`6e7e96b`](https://github.com/ByronWilliamsCPA/.claude/commit/6e7e96ba635883a1d3316e5ec54f6a573bdf421c))
+
+Implement all accepted PAL tool insertion points across pr-review.md and pr-fix.md:
+  Agent L (architectural consensus via mcp__pal__consensus), Step 7b (Critical-tier
+  false-positive filter and security validation via mcp__pal__tiered_consensus),
+  Priority 2 propose-and-confirm chat validation, Priority 4 test tautology validation,
+  and Step 9 stuck-loop diagnosis. Expose PAL_CHAT_MODEL, PAL_CONSENSUS_MODELS,
+  PAL_TIERED_LEVEL, and PAL_TIERED_THINKING as config variables in each workflow.
+  Also apply all 22 roadmap items to commit.md and pr.md including self-review scan,
+  CHANGELOG enforcement, updated PR description template with Acceptance Criteria
+  and Migration/Rollback sections, and staging order correction.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+
 ## v0.6.4 (2026-04-13)
 
 
