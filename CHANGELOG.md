@@ -1,24 +1,67 @@
 # CHANGELOG
 
 
-## [Unreleased]
+## v0.7.0 (2026-04-13)
+
+### Bug Fixes
+
+- **writing**: Remove em-dashes and apply structural fixes to skill workflows
+  ([`391d6ca`](https://github.com/ByronWilliamsCPA/.claude/commit/391d6cadb36bd9d37cee9436afed086fd3c3bcf2))
+
+Remove all em-dash violations from four skill workflow files in compliance with the CLAUDE.md hard
+  rule. Apply structural fixes identified during PR review of
+  feat/pal-validation-workflow-improvements:
+
+Em-dash removal (affects all four files): - commit.md: 4 instances - pr.md: 1 instance - pr-fix.md:
+  ~12 instances - pr-review.md: ~40 instances
+
+Structural fixes (pr-fix.md, pr-review.md): - I1: Use origin/{BASE_BRANCH} instead of origin/main in
+  changelog check - I2: Fix duplicate sonar-project.properties path to .template variant - I3:
+  Distinguish math.isclose() (production) vs pytest.approx() (test code) - I4: Add explicit Phase C
+  loop exit conditions to prevent infinite loops - I5: Add 15-line diff context extraction
+  instruction before PAL calls - C2: Add Agent L to Step 7 deduplication source list
+
+🤖 Generated with [Claude Code](https://claude.ai/code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+
+### Chores
+
+- **changelog**: Add unreleased entry for PAL validation feature
+  ([`ac83c87`](https://github.com/ByronWilliamsCPA/.claude/commit/ac83c877aece70fe31bb830784a5359881acfee7))
+
+Add CHANGELOG entry for the PAL multi-model validation feat commit. Configure MD024 with
+  siblings_only in .markdownlint.json so version sections in CHANGELOG can reuse standard headings
+  (Features, Bug Fixes, etc.) without false-positive duplicate-heading warnings.
+
+🤖 Generated with [Claude Code](https://claude.ai/code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
 
 ### Features
 
-- **skills**: Add PAL multi-model validation to pr-review and pr-fix workflows
+- **skills**: Add PAL multi-model validation and 22-item PR workflow improvements
   ([`6e7e96b`](https://github.com/ByronWilliamsCPA/.claude/commit/6e7e96ba635883a1d3316e5ec54f6a573bdf421c))
 
-Implement all accepted PAL tool insertion points across pr-review.md and pr-fix.md:
-  Agent L (architectural consensus via mcp__pal__consensus), Step 7b (Critical-tier
-  false-positive filter and security validation via mcp__pal__tiered_consensus),
-  Priority 2 propose-and-confirm chat validation, Priority 4 test tautology validation,
-  and Step 9 stuck-loop diagnosis. Expose PAL_CHAT_MODEL, PAL_CONSENSUS_MODELS,
-  PAL_TIERED_LEVEL, and PAL_TIERED_THINKING as config variables in each workflow.
-  Also apply all 22 roadmap items to commit.md and pr.md including self-review scan,
-  CHANGELOG enforcement, updated PR description template with Acceptance Criteria
-  and Migration/Rollback sections, and staging order correction.
+Implement all accepted PAL tool insertion points with config variables across pr-review.md and
+  pr-fix.md. Add Agent L (architectural consensus via mcp__pal__consensus), Step 7b (Critical-tier
+  false-positive filter plus security validation via mcp__pal__tiered_consensus), Priority 2
+  propose-and-confirm chat validation (Candidate 3, reinstated), Priority 4 test tautology chat
+  validation, and Step 9 stuck-loop diagnosis.
 
-Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+Expose PAL_CHAT_MODEL, PAL_CONSENSUS_MODELS, PAL_TIERED_LEVEL, and PAL_TIERED_THINKING as config
+  variables at the top of each workflow file.
+
+Also apply all 22 roadmap items to commit.md and pr.md: Step 1b self-review scan, CHANGELOG
+  enforcement, Acceptance Criteria and Migration/Rollback sections in PR template, staging order
+  correction, and pre-existing lint fixes throughout all four files.
+
+Add docs/pr-workflow-improvement-plan.md: the 22-item evaluation roadmap derived from GPT-5.2
+  subagent review and PAL level-3 tiered consensus.
+
+🤖 Generated with [Claude Code](https://claude.ai/code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
 
 
 ## v0.6.4 (2026-04-13)
