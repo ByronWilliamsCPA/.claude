@@ -10,11 +10,11 @@ tags:
 ---
 
 > Tracks CVEs that cannot be immediately resolved. Review quarterly.
-> No entry may age past 60 days without reassessment — escalate or resolve.
+> No entry may age past 60 days without reassessment; escalate or resolve.
 
 <!-- Copy the entry below for each new CVE. Delete this comment in your project's file. -->
 
-## CVE-YYYY-XXXXX — Package Name vX.Y
+## CVE-YYYY-XXXXX: Package Name vX.Y
 
 | Field | Value |
 | --- | --- |
@@ -27,7 +27,7 @@ tags:
 
 **Exploitation scenario**: Describe what an attacker needs to exploit this in your context.
 
-**Why deferred**: Specific reason — upstream unpatched, breaking API change required, etc.
+**Why deferred**: Specific reason: upstream unpatched, breaking API change required, etc.
 
 **Compensating control**: What reduces the risk while the CVE remains open.
 
