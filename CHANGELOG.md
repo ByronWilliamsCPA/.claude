@@ -1,6 +1,28 @@
 # CHANGELOG
 
 
+## v0.7.1 (2026-04-13)
+
+### Bug Fixes
+
+- **pr-review**: Use correct Copilot bot username in Step 1
+  ([`4f92e79`](https://github.com/ByronWilliamsCPA/.claude/commit/4f92e79413cd84f3820e16f75c92fa25ce2926c0))
+
+The primary reviewer request used `gh pr edit --add-reviewer "copilot"`. The username "copilot" does
+  not exist on GitHub (returns 404), so Copilot was never added as a reviewer. The correct bot login
+  is `copilot-pull-request-reviewer`, confirmed from prior PRs that had Copilot reviews (those were
+  requested manually via the GitHub UI).
+
+Changes: - Replace the broken `gh pr edit` call with the API endpoint directly, using the verified
+  bot username `copilot-pull-request-reviewer` - Capture exit code explicitly so success/failure is
+  always recorded - Add a warning note prohibiting the wrong `--add-reviewer "copilot"` form - Make
+  the PR comment template conditional on actual COPILOT_STATUS
+
+🤖 Generated with [Claude Code](https://claude.ai/code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+
+
 ## v0.7.0 (2026-04-13)
 
 ### Bug Fixes
