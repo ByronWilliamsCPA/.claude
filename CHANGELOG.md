@@ -1,6 +1,26 @@
 # CHANGELOG
 
 
+## [Unreleased]
+
+### Bug Fixes
+
+- **hooks**: Normalize `refs/heads/` and `refs/` prefixes in force-push guard so
+  fully-qualified refspecs (e.g. `refs/heads/main`) are blocked the same as bare
+  branch names (PR #20)
+
+- **quality-gate**: Harden `check_quality_gate.py` against API error envelopes:
+  use `.get()` on all bare dict key accesses in `format_report`, `_format_sonar_layer`,
+  and `main`; treat `status=NONE` as a blocking condition so a missing quality gate
+  cannot silently pass as READY TO MERGE
+
+- **writing**: Remove em-dashes from SonarQube false-positive suppression comments in
+  `check_type_hints.py` and `validate_front_matter.py`; add SonarQube issue IDs to
+  each S2083 suppression comment; fix `validate_front_matter.py` to use `changed |=`
+  pattern (not bitwise OR on bools) and wrap `_fix_tags`/`_fix_purpose` in
+  try/except with stderr logging; correct inaccurate comment wording in `bash-notify.sh`
+
+
 ## v0.6.3 (2026-04-13)
 
 ### Bug Fixes

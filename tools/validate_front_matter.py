@@ -93,6 +93,51 @@ def parse_front_matter(path: Path) -> tuple[dict[str, Any] | None, str]:
         return None, ""
 
 
+def _fix_tags(data: dict[str, Any]) -> bool:
+    """Normalize tags to snake_case in-place.
+
+    Args:
+        data: Parsed YAML front matter dict.
+
+    Returns:
+        True if any tag was changed, False otherwise.
+    """
+    if "tags" not in data or not isinstance(data["tags"], list):
+        return False
+
+    fixed_tags = []
+    for tag in data["tags"]:
+        tag_str = str(tag).strip().replace("-", "_").replace(" ", "_")
+        tag_str = re.sub(r"__+", "_", tag_str).lower()
+        fixed_tags.append(tag_str)
+
+    if fixed_tags == data["tags"]:
+        return False
+
+    data["tags"] = fixed_tags
+    return True
+
+
+def _fix_purpose(data: dict[str, Any]) -> bool:
+    """Add terminal punctuation to purpose field if missing.
+
+    Args:
+        data: Parsed YAML front matter dict.
+
+    Returns:
+        True if the purpose field was changed, False otherwise.
+    """
+    if "purpose" not in data or not isinstance(data["purpose"], str):
+        return False
+
+    purpose = data["purpose"].strip()
+    if not purpose or purpose[-1] in ".!?":
+        return False
+
+    data["purpose"] = purpose + "."
+    return True
+
+
 def autofix_front_matter(path: Path) -> bool:
     """Automatically fix common front matter issues.
 
@@ -118,12 +163,10 @@ def autofix_front_matter(path: Path) -> bool:
 
     text = safe_path.read_text(encoding="utf-8")
 
-    # Find front matter block
     match = re.search(r"^---\n.*?\n---\n", text, flags=re.DOTALL | re.MULTILINE)
     if not match:
         return False
 
-    # Parse YAML with round-trip preservation
     yrt = YAML(typ="rt")
     yrt.preserve_quotes = True
     yrt.allow_duplicate_keys = False
@@ -137,33 +180,20 @@ def autofix_front_matter(path: Path) -> bool:
     if not isinstance(data, dict):
         return False
 
-    changed = False
+    try:
+        changed = False
+        changed |= _fix_tags(data)
+        changed |= _fix_purpose(data)
+    except Exception as e:
+        print(f"autofix failed for {path}: {e}", file=sys.stderr)
+        return False
 
-    # Fix tags: normalize to snake_case
-    if "tags" in data and isinstance(data["tags"], list):
-        fixed_tags = []
-        for tag in data["tags"]:
-            tag_str = str(tag).strip().replace("-", "_").replace(" ", "_")
-            tag_str = re.sub(r"__+", "_", tag_str).lower()
-            fixed_tags.append(tag_str)
-
-        if fixed_tags != data["tags"]:
-            data["tags"] = fixed_tags
-            changed = True
-
-    # Fix purpose: add terminal punctuation
-    if "purpose" in data and isinstance(data["purpose"], str):
-        purpose = data["purpose"].strip()
-        if purpose and purpose[-1] not in ".!?":
-            data["purpose"] = purpose + "."
-            changed = True
-
-    # Write changes back to file
     if changed:
         out = StringIO()
         yrt.dump(data, out)
         new_yaml = out.getvalue().rstrip()
         new_content = f"---\n{new_yaml}\n---\n{text[match.end() :]}"
+        # sonar: false positive pythonsecurity:S2083 (AZ1eBjxNS1usNdOdvc1m): path reconstructed from trusted CWD
         safe_path.write_text(new_content, encoding="utf-8")
 
     return changed
@@ -239,6 +269,43 @@ def validate_file(
     return {"file": str(path), "ok": ok, "errors": errors, "fixed": fixed}
 
 
+def _collect_md_files(paths: list[str]) -> list[Path]:
+    """Collect Markdown files from the given path strings.
+
+    Args:
+        paths: List of file or directory path strings.
+
+    Returns:
+        List of Path objects for Markdown files found.
+    """
+    md_files: list[Path] = []
+    for path_str in paths:
+        path = Path(path_str)
+        if path.is_dir():
+            md_files.extend(path.rglob("*.md"))
+        elif path.suffix.lower() == ".md":
+            md_files.append(path)
+    return md_files
+
+
+def _output_results(results: list[dict[str, Any]], emit_json: bool) -> None:
+    """Print validation results to stdout.
+
+    Args:
+        results: List of per-file validation result dicts.
+        emit_json: If True, emit results as a JSON array; otherwise use text format.
+    """
+    if emit_json:
+        print(json.dumps(results, ensure_ascii=False, indent=2))
+    else:
+        for result in results:
+            status = "OK" if result["ok"] else "ISSUES"
+            fixed_marker = " [FIXED]" if result.get("fixed", False) else ""
+            print(f"{result['file']}: {status}{fixed_marker}")
+            for error in result["errors"]:
+                print(f"  - {error}")
+
+
 def main() -> int:
     """Main entry point for the validation script.
 
@@ -265,52 +332,30 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    # Collect Markdown files
-    md_files: list[Path] = []
-    for path_str in args.paths:
-        path = Path(path_str)
-        if path.is_dir():
-            md_files.extend(path.rglob("*.md"))
-        elif path.suffix.lower() == ".md":
-            md_files.append(path)
-
+    md_files = _collect_md_files(args.paths)
     if not md_files:
         print("No Markdown files found", file=sys.stderr)
         return 1
 
-    # Find docs root for allow-lists
     docroot = next(
         (p for p in map(Path, args.paths) if p.name == "docs"),
         Path("docs"),
     )
 
-    # Load allow-lists
     try:
         allowed_tags, allowed_owners = load_allowlists(docroot)
     except Exception as e:
         print(f"Error loading allow-lists: {e}", file=sys.stderr)
         return 1
 
-    # Validate all files
     results: list[dict[str, Any]] = []
     failed = False
-
     for md_file in sorted(md_files):
         result = validate_file(md_file, allowed_tags, allowed_owners, args.fix)
         results.append(result)
         failed |= not result["ok"]
 
-    # Output results
-    if args.emit_json:
-        print(json.dumps(results, ensure_ascii=False, indent=2))
-    else:
-        for result in results:
-            status = "OK" if result["ok"] else "ISSUES"
-            fixed_marker = " [FIXED]" if result.get("fixed", False) else ""
-            print(f"{result['file']}: {status}{fixed_marker}")
-            for error in result["errors"]:
-                print(f"  - {error}")
-
+    _output_results(results, args.emit_json)
     return 1 if failed else 0
 
 

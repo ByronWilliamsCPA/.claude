@@ -1,7 +1,7 @@
 @startuml hook_pipeline
 ' Hook Pipeline — backs ADR-002.
-' Shows the 6 hook types firing across a single conversation turn.
-' Scripts listed match the current settings.json + .claude/settings.json configuration.
+' Scripts match the current hooks.json + .claude/settings.json configuration.
+' Last verified: 2026-04-12 against hooks.json and .claude/settings.json.
 
 title Hook Pipeline — One Conversation Turn
 
@@ -11,56 +11,112 @@ skinparam defaultFontName Roboto
 
 actor User
 participant "Claude Code" as CC
-participant "settings.json\nhooks dispatch" as Hooks
-participant "PreToolUse\nScripts" as Pre
-participant "Tools\n(Edit/Write/Bash/...)" as Tools
-participant "PostToolUse\nScripts" as Post
-participant "Stop Script" as Stop
+participant "hooks.json\n(project-level)" as HJ
+participant "settings.json\n(user-level)" as SJ
+participant "Tool\n(Edit/Write/Bash/...)" as Tool
 
 User -> CC : prompt
 activate CC
 
-CC -> Hooks : UserPromptSubmit
-Hooks -> Hooks : keyword-tool-trigger.sh
-Hooks --> CC : continue
+' UserPromptSubmit: hooks.json only
+CC -> HJ : UserPromptSubmit
+HJ -> HJ : hookify/userpromptsubmit.py
+HJ -> HJ : pr-review-reminder.py
+HJ --> CC : continue
 
 CC -> CC : model turn
 note right : Model reasons\nand decides tool calls
 
-loop each tool call (Write, Edit, Bash, ...)
-  CC -> Hooks : PreToolUse
-  Hooks -> Pre : tdd-enforcement-hook.sh\n(Write | Edit | MultiEdit)
-  Hooks -> Pre : bash-pre-hook.sh safety check\n(Bash)
-  Hooks -> Pre : pre-commit run --all-files\n(Bash)
-  Hooks --> CC : allow / block
+loop each tool call (Edit, Write, Bash, Skill, ...)
+
+  group PreToolUse
+    alt Bash tool
+      CC -> SJ : PreToolUse [Bash]
+      SJ -> SJ : pre-commit run --all-files
+      SJ -> SJ : bash-pre-hook.sh\n(force-push guard, timing start)
+      SJ --> CC : allow / block
+    end
+
+    alt Edit | Write tool
+      CC -> HJ : PreToolUse [Edit|Write]
+      HJ -> HJ : inline: block .env / secrets writes
+      HJ --> CC : allow / block
+    end
+
+    alt Edit | Write | MultiEdit tool
+      CC -> HJ : PreToolUse [Edit|Write|MultiEdit]
+      HJ -> HJ : security_reminder_hook.py
+      HJ --> CC : allow / block
+    end
+
+    alt Skill tool
+      CC -> HJ : PreToolUse [Skill]
+      HJ -> HJ : planning-bridge-gate.sh
+      HJ --> CC : allow / block
+    end
+
+    CC -> HJ : PreToolUse [any tool]
+    HJ -> HJ : hookify/pretooluse.py
+    HJ --> CC : allow / block
+  end
 
   alt hooks allow
-    CC -> Tools : execute
-    Tools --> CC : result
-    CC -> Hooks : PostToolUse
-    Hooks -> Post : bash-notify.sh (Bash)
-    Hooks -> Post : py310-compat check, ruff auto-fix,\nshellcheck, validate-frontmatter.sh\n(Edit | Write)
-    Hooks -> Post : track-mcp-usage.sh (mcp__*)
-    Hooks --> CC : continue
+    CC -> Tool : execute
+    Tool --> CC : result
+
+    group PostToolUse
+      alt Bash tool
+        CC -> SJ : PostToolUse [Bash]
+        SJ -> SJ : bash-notify.sh\n(duration notification)
+        SJ --> CC : continue
+      end
+
+      alt Edit | Write tool (hooks.json)
+        CC -> HJ : PostToolUse [Edit|Write]
+        HJ -> HJ : py310-compat-check.sh
+        HJ --> CC : continue
+      end
+
+      alt Edit | Write tool (settings.json)
+        CC -> SJ : PostToolUse [Edit|Write]
+        SJ -> SJ : py310-compat check (inline)
+        SJ -> SJ : ruff check --fix
+        SJ -> SJ : shellcheck (if .sh file)
+        SJ -> SJ : validate-frontmatter.sh
+        SJ --> CC : continue
+      end
+
+      CC -> HJ : PostToolUse [any tool]
+      HJ -> HJ : hookify/posttooluse.py
+      HJ --> CC : continue
+    end
+
   else hook blocks
     CC --> User : blocked (with reason)
   end
+
 end
 
 CC --> User : response
-CC -> Hooks : Stop
-Hooks -> Stop : stop-pre-commit-hook.sh
+
+CC -> HJ : Stop
+HJ -> HJ : hookify/stop.py
+HJ --> CC : done
+CC -> SJ : Stop
+SJ -> SJ : stop-pre-commit-hook.sh
+SJ --> CC : done
 deactivate CC
 
-note right of Hooks
-  SessionStart fires once per session
-  (not per turn):
-  keyword-tool-trigger.sh --reset,
-  run-superpowers-session-start.sh,
-  session-start-rules.sh.
+note right of SJ
+  FileChanged fires on .env* file changes
+  (outside the tool loop):
+  env-file-audit.sh
 
-  FileChanged fires on .env* files:
-  env-file-audit.sh.
+  Scripts that exist but are NOT wired:
+  keyword-tool-trigger.sh,
+  tdd-enforcement-hook.sh,
+  track-mcp-usage.sh,
+  session-start-rules.sh
 end note
 
 @enduml

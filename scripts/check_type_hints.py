@@ -83,12 +83,12 @@ def has_future_annotations_import(content: str) -> bool:
     except SyntaxError:
         return False
 
-    for node in ast.walk(tree):
-        if isinstance(node, ast.ImportFrom) and node.module == "__future__":
-            for alias in node.names:
-                if alias.name == "annotations":
-                    return True
-    return False
+    return any(
+        isinstance(node, ast.ImportFrom)
+        and node.module == "__future__"
+        and any(alias.name == "annotations" for alias in node.names)
+        for node in ast.walk(tree)
+    )
 
 
 def has_union_pipe_syntax(content: str) -> bool:
@@ -144,6 +144,41 @@ def check_file(file_path: Path) -> tuple[bool, str]:
     return True, "OK"
 
 
+def _find_insert_index(lines: list[str], content: str) -> int:
+    """Find the line index at which to insert 'from __future__ import annotations'.
+
+    Skips past any shebang, module docstring, and existing __future__ imports.
+    Returns the integer index at which the new import line should be inserted.
+    """
+    insert_index = 0
+
+    if lines and lines[0].startswith("#!"):
+        insert_index = 1
+
+    tree = ast.parse(content)
+    if (
+        tree.body
+        and isinstance(tree.body[0], ast.Expr)
+        and isinstance(tree.body[0].value, ast.Constant)
+    ):
+        docstring_end = tree.body[0].end_lineno or 0
+        insert_index = max(insert_index, docstring_end)
+
+    for i, line in enumerate(lines[insert_index:], start=insert_index):
+        if line.strip().startswith("from __future__ import"):
+            continue
+        if line.strip() and not line.strip().startswith("#"):
+            insert_index = i
+            break
+
+    # Clamp to list length; docstring-only files with no trailing newline can
+    # leave insert_index equal to len(lines), which is a valid insertion point
+    # but must not exceed it.
+    insert_index = min(insert_index, len(lines))
+
+    return insert_index
+
+
 def add_future_import(file_path: Path) -> bool:
     """Add 'from __future__ import annotations' to a file.
 
@@ -153,41 +188,12 @@ def add_future_import(file_path: Path) -> bool:
     try:
         content = file_path.read_text(encoding="utf-8")
         lines = content.splitlines(keepends=True)
+        insert_index = _find_insert_index(lines, content)
 
-        # Find the right place to insert the import
-        # After shebang and module docstring, before other imports
-        insert_index = 0
-
-        # Skip shebang
-        if lines and lines[0].startswith("#!"):
-            insert_index = 1
-
-        # Skip module docstring
-        tree = ast.parse(content)
-        if (
-            tree.body
-            and isinstance(tree.body[0], ast.Expr)
-            and isinstance(tree.body[0].value, ast.Constant)
-        ):
-            # Find the line after the docstring
-            docstring_end = tree.body[0].end_lineno or 0
-            insert_index = max(insert_index, docstring_end)
-
-        # Skip any existing __future__ imports
-        for i, line in enumerate(lines[insert_index:], start=insert_index):
-            if line.strip().startswith("from __future__ import"):
-                continue
-            if line.strip() and not line.strip().startswith("#"):
-                insert_index = i
-                break
-
-        # Insert the import
         import_line = "from __future__ import annotations\n"
         if insert_index > 0 and not lines[insert_index - 1].strip():
-            # If there's already a blank line, don't add another
             lines.insert(insert_index, import_line)
         else:
-            # Add the import with a blank line after it
             lines.insert(insert_index, import_line)
             lines.insert(insert_index + 1, "\n")
 
@@ -203,11 +209,71 @@ def add_future_import(file_path: Path) -> bool:
             )
             return False
         safe_path = cwd / resolved_path.relative_to(cwd)
+        # sonar: false positive pythonsecurity:S2083 (AZ1eBjvzS1usNdOdvc1l): path reconstructed from trusted CWD
         safe_path.write_text("".join(lines), encoding="utf-8")
         return True
     except Exception as e:
         print(f"Error adding import to {file_path}: {e}", file=sys.stderr)
         return False
+
+
+def _collect_python_files(args: argparse.Namespace) -> list[Path]:
+    """Collect Python files to check based on parsed arguments.
+
+    Args:
+        args: Parsed argparse namespace with src_dir and include_tests fields.
+
+    Returns:
+        List of Path objects for Python files to check.
+    """
+    python_files: list[Path] = []
+
+    if args.src_dir.exists():
+        python_files.extend(args.src_dir.rglob("*.py"))
+
+    if args.include_tests:
+        tests_dir = Path("tests")
+        if tests_dir.exists():
+            python_files.extend(tests_dir.rglob("*.py"))
+
+    return python_files
+
+
+def _process_files(
+    python_files: list[Path], fix: bool
+) -> tuple[list[tuple[Path, str]], list[Path]]:
+    """Check and optionally fix each Python file for future annotations compliance.
+
+    Args:
+        python_files: List of Python file paths to process.
+        fix: If True, attempt to auto-fix non-compliant files.
+
+    Returns:
+        Tuple of (violations, fixed) where violations is a list of (path, message)
+        pairs and fixed is a list of successfully auto-fixed paths.
+    """
+    violations: list[tuple[Path, str]] = []
+    fixed: list[Path] = []
+
+    for file_path in python_files:
+        if "__pycache__" in str(file_path):
+            continue
+
+        is_compliant, message = check_file(file_path)
+
+        if not is_compliant:
+            if fix:
+                if add_future_import(file_path):
+                    fixed.append(file_path)
+                    print(f"✓ Fixed: {file_path}")
+                else:
+                    violations.append((file_path, message))
+                    print(f"✗ Failed to fix: {file_path}: {message}", file=sys.stderr)
+            else:
+                violations.append((file_path, message))
+                print(f"✗ {file_path}: {message}", file=sys.stderr)
+
+    return violations, fixed
 
 
 def main() -> int:
@@ -233,44 +299,13 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    # Find all Python files
-    python_files = []
-
-    if args.src_dir.exists():
-        python_files.extend(args.src_dir.rglob("*.py"))
-
-    if args.include_tests:
-        tests_dir = Path("tests")
-        if tests_dir.exists():
-            python_files.extend(tests_dir.rglob("*.py"))
-
+    python_files = _collect_python_files(args)
     if not python_files:
         print(f"No Python files found in {args.src_dir}", file=sys.stderr)
         return 1
 
-    violations = []
-    fixed = []
+    violations, fixed = _process_files(python_files, args.fix)
 
-    for file_path in python_files:
-        # Skip __pycache__ and other generated files
-        if "__pycache__" in str(file_path):
-            continue
-
-        is_compliant, message = check_file(file_path)
-
-        if not is_compliant:
-            if args.fix:
-                if add_future_import(file_path):
-                    fixed.append(file_path)
-                    print(f"✓ Fixed: {file_path}")
-                else:
-                    violations.append((file_path, message))
-                    print(f"✗ Failed to fix: {file_path}: {message}", file=sys.stderr)
-            else:
-                violations.append((file_path, message))
-                print(f"✗ {file_path}: {message}", file=sys.stderr)
-
-    # Print summary
     print()
     if violations:
         print(f"Found {len(violations)} violation(s):")
