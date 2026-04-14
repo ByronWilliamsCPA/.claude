@@ -728,9 +728,10 @@ on tests/unit/test_auth.py and src/auth/"
 
 ```bash
 # In CI via headless mode — check changed files only
-claude -p "Run the OWASP dispatcher in review-code mode on the files
+claude --bare -p "Run the OWASP dispatcher in review-code mode on the files
 changed in this PR. Report any findings with severity HIGH or above.
 If critical gaps exist, generate tests and commit them."
+# --bare skips project-dir auto-scan; use for all scripted claude -p invocations
 ```
 
 ### 7.4 Orchestrator Integration

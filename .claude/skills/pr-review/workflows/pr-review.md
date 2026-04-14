@@ -63,9 +63,11 @@ format: `https://github.com/owner/repo/pull/123`"
 Request a GitHub Copilot review before fetching any data. This fires the async
 Copilot review so it runs in parallel with the rest of this workflow.
 
-The Copilot bot login is `copilot-pull-request-reviewer`. Use the API endpoint
-directly; do NOT use `gh pr edit --add-reviewer "copilot"` (that username does
-not exist and will silently fail).
+**Two-stage trigger with fallback.** The reviewer API only works when Copilot
+is configured as an auto-assigned reviewer in repo settings. When it is not,
+fall back to the comment-trigger mechanism.
+
+### Stage 1a: Reviewer API (preferred)
 
 ```bash
 COPILOT_RESULT=$(gh api repos/"$OWNER"/"$REPO"/pulls/"$PR_NUMBER"/requested_reviewers \
@@ -74,9 +76,32 @@ COPILOT_RESULT=$(gh api repos/"$OWNER"/"$REPO"/pulls/"$PR_NUMBER"/requested_revi
 COPILOT_STATUS=$?
 ```
 
-- If `COPILOT_STATUS` is 0: record "Copilot: requested successfully."
-- If non-zero: record "Copilot: request failed; add manually via GitHub UI."
-  Log the error text from `$COPILOT_RESULT` for diagnostics. Continue.
+- If `COPILOT_STATUS` is 0: record "Copilot: requested via reviewer API."
+  Skip Stage 1b.
+- If `COPILOT_STATUS` is non-zero and output contains "422": fall through to
+  Stage 1b (the repo does not have Copilot auto-assignment configured).
+- If non-zero for any other reason: record "Copilot: request failed;
+  add manually via GitHub UI." Log the error text for diagnostics. Continue.
+
+### Stage 1b: Comment trigger (fallback for 422)
+
+Post a PR comment to trigger Copilot via the mention mechanism:
+
+```bash
+COPILOT_COMMENT=$(gh pr comment "$PR_NUMBER" --repo "$OWNER/$REPO" \
+  --body "@github-copilot review" 2>&1)
+COPILOT_COMMENT_STATUS=$?
+```
+
+- If `COPILOT_COMMENT_STATUS` is 0: record "Copilot: triggered via
+  @github-copilot review comment (reviewer API returned 422 — enable
+  auto-assignment in repo settings to use the direct API)."
+- If non-zero: record "Copilot: both trigger methods failed; add manually
+  via GitHub UI." Continue.
+
+**One-time fix:** To stop needing the fallback, enable Copilot auto-assignment
+at `https://github.com/{OWNER}/{REPO}/settings/copilot_review_policies`.
+Once enabled, Stage 1a will succeed on every PR without the comment.
 
 Do not block the rest of the workflow on this step.
 

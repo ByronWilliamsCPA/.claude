@@ -38,3 +38,9 @@ Before committing ANY changes, verify all items:
       before merging and use `@coderabbitai` in PR comments to ask follow-up questions
 - [ ] **Copilot review** (optional): for complex logic changes, request from the
       Reviewers menu on GitHub; review instructions are in `.github/copilot-instructions.md`
+
+## Sources
+
+- pre-commit documentation: <https://pre-commit.com/>
+- Ruff pre-commit hooks: <https://docs.astral.sh/ruff/integrations/#pre-commit>
+- Claude Code CLAUDE.md: <https://code.claude.com/docs/en/memory>
