@@ -172,49 +172,58 @@ def _format_llm_layer(llm_tags: int) -> list[str]:
     return lines
 
 
+def _gate_status_line(status: str) -> str:
+    """Return a formatted quality gate status line."""
+    if status == "OK":
+        return "✅ Quality Gate: PASSED"
+    if status == "ERROR":
+        return "❌ Quality Gate: FAILED"
+    if status == "WARN":
+        return "⚠️  Quality Gate: WARNING"
+    return f"❓ Quality Gate: {status}"
+
+
+def _format_condition_line(condition: dict) -> str:
+    """Format a single quality gate condition as a display line."""
+    metric = condition.get("metricKey", "unknown")
+    cond_status = condition.get("status", "UNKNOWN")
+    status_icon = "✅" if cond_status == "OK" else "❌"
+    actual = condition.get("actualValue", "N/A")
+    llm_tag = ""
+    if cond_status != "OK":
+        tag = LLMGovernanceMapper.map_condition_to_tag(metric, cond_status)
+        if tag:
+            llm_tag = f" -> {tag}"
+    return f"  {status_icon} {metric}: {actual}{llm_tag}"
+
+
+def _format_issue_lines(issue: dict) -> list[str]:
+    """Format a single issue entry as one or two display lines."""
+    severity = issue.get("severity", "")
+    message = issue.get("message", "(no message)")
+    rule_key = issue.get("rule", "")
+    llm_tag = LLMGovernanceMapper.map_issue_to_tag(rule_key) or ""
+    result = [f"  • [{severity}] {message}"]
+    if llm_tag:
+        result.append(f"    {llm_tag}")
+    return result
+
+
 def _format_sonar_layer(status: str, conditions: list, issues: dict) -> list[str]:
     """Format Layer 3: Automated Code Quality (SonarQube) section."""
     lines: list[str] = []
     lines.append("Layer 3: Automated Code Quality (SonarQube)")
     lines.append("-" * 80)
-
-    if status == "OK":
-        lines.append("✅ Quality Gate: PASSED")
-    elif status == "ERROR":
-        lines.append("❌ Quality Gate: FAILED")
-    elif status == "WARN":
-        lines.append("⚠️  Quality Gate: WARNING")
-    else:
-        lines.append(f"❓ Quality Gate: {status}")
-
+    lines.append(_gate_status_line(status))
     lines.append("")
     lines.append("Quality Gate Conditions:")
-    for condition in conditions:
-        metric = condition.get("metricKey", "unknown")
-        cond_status = condition.get("status", "UNKNOWN")
-        status_icon = "✅" if cond_status == "OK" else "❌"
-        actual = condition.get("actualValue", "N/A")
-        llm_tag = ""
-        if cond_status != "OK":
-            tag = LLMGovernanceMapper.map_condition_to_tag(metric, cond_status)
-            if tag:
-                llm_tag = f" -> {tag}"
-        lines.append(f"  {status_icon} {metric}: {actual}{llm_tag}")
-
+    lines.extend(_format_condition_line(c) for c in conditions)
     lines.append("")
-
     total_issues = issues.get("total", 0)
     if total_issues > 0:
         lines.append(f"Found {total_issues} critical/blocker issues:")
         for issue in issues.get("issues", [])[:10]:
-            rule_key = issue.get("rule", "")
-            severity = issue.get("severity", "")
-            message = issue.get("message", "(no message)")
-            llm_tag = LLMGovernanceMapper.map_issue_to_tag(rule_key) or ""
-            lines.append(f"  • [{severity}] {message}")
-            if llm_tag:
-                lines.append(f"    {llm_tag}")
-
+            lines.extend(_format_issue_lines(issue))
     lines.append("")
     return lines
 
