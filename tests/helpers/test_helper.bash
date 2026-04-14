@@ -176,7 +176,7 @@ init_git_repo() {
 source_script_functions() {
     local script="$1"
     # Override the main function to prevent execution
-    main() { :; }
+    main() { return 0; }
     source "$script"
     return 0
 }
