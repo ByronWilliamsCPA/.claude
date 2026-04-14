@@ -136,9 +136,14 @@ exactly this shape; the coordinator validates required fields before passing it 
 **Validation rules the coordinator must enforce before Stage 2:**
 
 - `schema_version` is present and equals `"1.0"`
+- `repo_root` is a non-empty string
+- `threshold_pct` is a number between 0 and 100
 - `gaps` is an array (may be empty)
+- `errors` is empty (a non-empty `errors` array means the coverage run failed; abort with the errors list)
 - Each gap entry has `file`, `coverage_pct`, and `uncovered_lines`
 - If `gaps` is empty, skip Stages 2 and 3; go directly to Stage 4 with a trivial summary
+
+If any required field is missing and no skip condition applies, the coordinator must stop the pipeline and report the failure to the user with: the stage number (Stage 1), the missing field name, and the raw output from the failing stage.
 
 ---
 
@@ -181,6 +186,9 @@ exactly this shape; the coordinator validates required fields before passing it 
   // ISO-8601 timestamp for this analysis.
   "analyzed_at": "2026-04-13T10:01:00Z",
 
+  // Carried forward unchanged from Stage 1 output.
+  "repo_root": "/home/user/project",
+
   // Files selected for test generation, ordered by priority (highest first).
   "targets": [
     {
@@ -217,6 +225,8 @@ exactly this shape; the coordinator validates required fields before passing it 
 - `targets` is a non-empty array (if empty, skip Stage 3; go to Stage 4 with a note)
 - Each target has `file`, `risk_score`, and `uncovered_ranges`
 - `targets` length does not exceed `MAX_FILES`
+
+If any required field is missing and no skip condition applies, the coordinator must stop the pipeline and report the failure to the user with: the stage number (Stage 2), the missing field name, and the raw output from the failing stage.
 
 ---
 
@@ -378,8 +388,9 @@ If targets is empty: skip to Stage 4 with message "No high-risk gaps found."
 
 ## Stage 3: Test Writer
 
-Pass the validated Stage 2 JSON and repo_root to a subagent with file read/write
-access. Provide test directory conventions.
+Pass the validated Stage 2 JSON to a subagent with file read/write access.
+Pass: repo_root from Stage 1, targets from Stage 2.
+Provide test directory conventions.
 Instruct the agent to return the Stage 3 JSON contract.
 
 Validate: results is an array. Flag any entries where passing == false.
