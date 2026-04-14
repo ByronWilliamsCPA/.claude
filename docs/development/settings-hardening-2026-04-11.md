@@ -83,7 +83,7 @@ continue to work unchanged.
 
 Kept without change: `zen`, `context7`, `github`, `sonarqube`,
 `sonarqube-williaby`, `playwright`, `sentry`, `mermaid`, `docker`,
-`uml-mcp-server` — all map to observed work areas.
+`uml-mcp-server`: all map to observed work areas.
 
 ### Skill removal
 
@@ -135,9 +135,9 @@ MCP server, renamed to PAL.
 
 Known usage:
 
-- `chat` — heavily used
-- `consensus` — heavily used
-- `tiered_consensus` — desired but currently unstable
+- `chat`: heavily used
+- `consensus`: heavily used
+- `tiered_consensus`: desired but currently unstable
 
 Currently underused (may be replaceable by agents and skills after the
 overhaul):
@@ -150,7 +150,7 @@ each tool is still useful after the global Claude setup changes land, and
 whether some can be pruned or deferred. `ENABLE_TOOL_SEARCH=auto:5` in this
 commit should reduce their overhead in the meantime.
 
-Launch location also needs confirmation — likely running from the WSL instance
+Launch location also needs confirmation; likely running from the WSL instance
 where PAL was cloned, but the exact path is undocumented.
 
 ### CLAUDE.md refactor
