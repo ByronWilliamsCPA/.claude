@@ -219,3 +219,11 @@ point, or running a long background investigation without blocking the parent.
 
 Source: Boris Cherny, 15 hidden features (Mar 30 2026):
 <https://x.com/bcherny/status/2038454336355999749>
+
+## Sources
+
+- Conventional Commits specification: <https://www.conventionalcommits.org/>
+- Boris Cherny, PR size/squash (Mar 25 2026): <https://x.com/bcherny/status/2038552880018538749>
+- Boris Cherny, session forking/hidden features (Mar 30 2026): <https://x.com/bcherny/status/2038454336355999749>
+- Boris Cherny, CLAUDE.md loading semantics: <https://x.com/bcherny/status/2016339448863355206>
+- Claude Code git worktrees: <https://code.claude.com/docs/en/worktrees>
