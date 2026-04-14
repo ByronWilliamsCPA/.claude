@@ -173,6 +173,21 @@ PR / keep / discard options and handles worktree cleanup.
 >
 > **Full branch strategy detail**: See `.claude/skills/git/context/branch-strategy.md`
 
+### PR size calibration
+
+Anthropic internal distribution (Boris Cherny, Mar 25 2026):
+
+| Percentile | Lines changed |
+| --- | --- |
+| p50 | 118 |
+| p90 | 498 |
+| p99 | 2,978 |
+
+PRs above 500 lines are in the top 10% of Anthropic's own internal distribution.
+Prefer splitting features at a natural seam before crossing the p90 threshold.
+
+Source: <https://x.com/bcherny/status/2038552880018538749>
+
 ## Session Forking
 
 Claude Code supports two mechanisms for exploration that should not contaminate
@@ -204,3 +219,11 @@ point, or running a long background investigation without blocking the parent.
 
 Source: Boris Cherny, 15 hidden features (Mar 30 2026):
 <https://x.com/bcherny/status/2038454336355999749>
+
+## Sources
+
+- Conventional Commits specification: <https://www.conventionalcommits.org/>
+- Boris Cherny, PR size/squash (Mar 25 2026): <https://x.com/bcherny/status/2038552880018538749>
+- Boris Cherny, session forking/hidden features (Mar 30 2026): <https://x.com/bcherny/status/2038454336355999749>
+- Boris Cherny, CLAUDE.md loading semantics: <https://x.com/bcherny/status/2016339448863355206>
+- Claude Code git worktrees: <https://code.claude.com/docs/en/worktrees>

@@ -232,3 +232,10 @@ in Ruff.
   function arguments; avoid module-level mutable globals
 - **Parameter Grouping**: see the dataclass example earlier in this file for
   the greater than 4 parameter refactor pattern
+
+## Sources
+
+- Ruff documentation: <https://docs.astral.sh/ruff/>
+- BasedPyright: <https://github.com/DetachHead/basedpyright>
+- uv package manager: <https://docs.astral.sh/uv/>
+- Python 3.10 changelog: <https://docs.python.org/3/whatsnew/3.10.html>

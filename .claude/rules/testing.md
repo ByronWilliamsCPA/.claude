@@ -65,3 +65,8 @@ To update golden files when behavior changes intentionally:
 3. Commit the updated golden file with a message explaining why the expected
    output changed, with enough context that a future reviewer can verify the
    change was intentional rather than accidental
+
+## Sources
+
+- Claude Code sub-agents: <https://code.claude.com/docs/en/sub-agents>
+- Claude Code tools overview: <https://code.claude.com/docs/en/tools>
