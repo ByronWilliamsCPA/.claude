@@ -48,7 +48,7 @@ Save to `docs/superpowers/feasibility/<feature-slug>-feasibility.md`:
 ---
 title: "Feasibility: <Feature Name>"
 schema_type: common
-status: active
+status: published
 owner: core-maintainer
 purpose: "Feasibility assessment for <feature-slug>."
 tags:
