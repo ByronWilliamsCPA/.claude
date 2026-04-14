@@ -1,6 +1,24 @@
 # CHANGELOG
 
 
+## v0.8.1 (2026-04-14)
+
+### Bug Fixes
+
+- **quality**: Resolve all SonarQube issues and sync uv.lock version
+  ([`c1fa1ac`](https://github.com/ByronWilliamsCPA/.claude/commit/c1fa1ac8a9297e0aa070bb0538c900050498d142))
+
+- Mark S2083 path-traversal false positives in SonarCloud (check_type_hints, validate_front_matter):
+  paths reconstructed from trusted CWD base - Refactor _format_sonar_layer (S3776): extract
+  _gate_status_line, _format_condition_line, _format_issue_lines helpers; complexity 19 -> ~3 - Add
+  explicit return 0 to shell functions: check_docs.sh:check, track-mcp-usage.sh:reset_metrics,
+  run_tests.sh (8 functions), test_helper.bash:source_script_functions inner main (S7682) - Replace
+  [ with [[ in run_tests.sh (13 conditionals) (S7688) - Remove unused local variable skipped_tests
+  in run_tests.sh (S1481) - Sync uv.lock claude-config version from 0.7.1 to 0.8.0
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+
 ## v0.8.0 (2026-04-14)
 
 ### Bug Fixes
