@@ -1,11 +1,11 @@
 ---
 name: sonarcloud
 description: >
-  Review, triage, and fix SonarCloud issues using the SonarQube MCP servers.
-  Auto-detects project org and key from workspace config files. Supports
-  issue search, quality gate checks, rule lookup, setup diagnostics, and
-  automated fixing. Includes health checks for configuration consistency.
-version: 2.0.0
+  Review, triage, and fix SonarCloud issues AND security hotspots using the
+  SonarQube MCP servers. Auto-detects project org and key from workspace config
+  files. Supports issue search, hotspot review, combined triage runs, quality
+  gate checks, rule lookup, setup diagnostics, and automated fixing.
+version: 2.1.0
 ---
 
 # SonarCloud Skill
@@ -105,6 +105,9 @@ look them up via MCP using the rule ID shown in the issue (e.g., `python:S3776`)
 - `gate` — Show quality gate status with condition details
 - `rule <key>` — Show details for a specific rule (e.g., `python:S3776`)
 - `analyze` — Guidance on triggering a fresh SonarCloud analysis
+- `hotspots` — List all security hotspots with status TO_REVIEW
+- `hotspots <probability>` — Filter by vulnerability probability: HIGH, MEDIUM, LOW
+- `triage` — Combined view of open issues AND hotspots grouped by priority; suitable for weekly hygiene runs
 
 ## Workflow
 
@@ -144,7 +147,8 @@ globally in `~/.claude/settings.json` and available to all projects.
 
 1. Call `get_project_quality_gate_status` with the detected project key
 2. Call `search_sonar_issues_in_projects` with `ps: 10` for a quick overview
-3. Present a summary:
+3. Call `search_security_hotspots` with `status: "TO_REVIEW"` and `ps: 10`
+4. Present a combined summary:
 
 ```markdown
 ## SonarCloud: {project_name}
@@ -163,8 +167,19 @@ globally in `~/.claude/settings.json` and available to all projects.
 | MEDIUM   | X     |
 | LOW      | X     |
 
+**Security Hotspots (TO_REVIEW)**: {total}
+| Probability | Count |
+|-------------|-------|
+| HIGH        | X     |
+| MEDIUM      | X     |
+| LOW         | X     |
+
 **Top Issues**:
 - [{severity}] {file}:{line} - {message} ({rule})
+- ...
+
+**Top Hotspots**:
+- [{probability}] {file}:{line} - {message} ({rule} / {securityCategory})
 - ...
 ```
 
@@ -235,6 +250,84 @@ Check which method the project uses:
 - Check analysis freshness via `get_component_measures` with `last_analysis_date`
 
 If analysis is stale (>30 days), suggest the user push changes or run the scanner.
+
+#### Mode: Hotspots (`hotspots [probability]`)
+
+Security hotspots are a separate queue from issues. They represent code that
+SonarCloud flagged as security-sensitive and requires a human to decide whether
+it is truly exploitable.
+
+1. Call `search_security_hotspots` with `projectKey` and `status: "TO_REVIEW"`
+2. If probability argument provided, filter results to only that probability
+   level (HIGH, MEDIUM, LOW)
+3. Page through results if total > 100
+4. Group by securityCategory, then by vulnerabilityProbability
+5. Present as actionable list with file paths, line numbers, and rule keys
+6. For each hotspot, include a brief description of the security category
+   (e.g., "sql-injection", "command-injection", "path-traversal-injection")
+
+**Hotspot status values:**
+
+| Status | Meaning |
+|--------|---------|
+| `TO_REVIEW` | Needs human review to decide if exploitable |
+| `ACKNOWLEDGED` | Reviewer confirmed the risk exists but accepted it |
+| `FIXED` | Code was changed to eliminate the risk |
+| `SAFE` | Reviewer confirmed this specific instance is not exploitable |
+
+When the user wants to mark a hotspot, use `change_security_hotspot_status`
+with the appropriate status. Only mark `SAFE` when you can verify the code
+paths that make the hotspot unexploitable; otherwise prefer `ACKNOWLEDGED`.
+
+#### Mode: Triage (`triage`)
+
+Designed for weekly hygiene runs or on-demand combined review. Fetches all open
+issues AND all TO_REVIEW hotspots in a single session and walks through remediation.
+
+1. Run Steps 1 and 2 (detect org, select MCP server) as normal
+2. Fetch all data in parallel:
+   - `search_sonar_issues_in_projects` — all severities, paged until exhausted
+   - `search_security_hotspots` with `status: "TO_REVIEW"` — paged until exhausted
+   - `get_project_quality_gate_status` — for overall gate status
+3. Present a combined triage dashboard:
+
+```markdown
+## SonarCloud Triage: {project_name}
+
+**Quality Gate**: PASSED / FAILED
+**Last analysis**: {date}
+
+### Issues ({N} total)
+| Severity | Count | Top Rule |
+|----------|-------|----------|
+| BLOCKER  | X     | {rule}   |
+| HIGH     | X     | {rule}   |
+| MEDIUM   | X     | {rule}   |
+| LOW      | X     | {rule}   |
+
+### Security Hotspots ({M} TO_REVIEW)
+| Probability | Count | Top Category |
+|-------------|-------|--------------|
+| HIGH        | X     | {category}   |
+| MEDIUM      | X     | {category}   |
+| LOW         | X     | {category}   |
+
+### Recommended Fix Order
+1. [BLOCKER issues first — block releases]
+2. [HIGH hotspots — highest exploitability risk]
+3. [HIGH issues]
+4. [MEDIUM hotspots]
+5. [MEDIUM/LOW issues and hotspots]
+```
+
+4. After presenting the dashboard, ask: "Fix issues now, fix hotspots now, or
+   fix both? (issues / hotspots / both / skip)"
+5. Route to the Fix or Hotspot handler based on the answer, starting with the
+   highest-severity items first
+
+**Key triage rule:** Never mix the two queues -- call both APIs, but report them
+separately. A zero-issue count does NOT mean zero hotspots. Always show both
+sections even when one count is zero, to make the distinction visible.
 
 #### Mode: Check (`check`)
 
@@ -394,6 +487,8 @@ Both MCP servers expose these tools (use the appropriate prefix):
 | `show_rule` | Rule details | `key` (e.g., `python:S3776`) |
 | `search_my_sonarqube_projects` | List projects | `page` |
 | `change_sonar_issue_status` | Accept/FP/reopen | `key`, `status[]` |
+| `search_security_hotspots` | Fetch hotspots | `projectKey`, `status`, `pullRequest`, `branch`, `ps`, `p` |
+| `change_security_hotspot_status` | Mark hotspot reviewed | `hotspot`, `status` (ACKNOWLEDGED/SAFE/FIXED) |
 | `list_quality_gates` | List quality gates | (none) |
 | `get_raw_source` | Source code from SonarCloud | `key` (file key), `branch` |
 | `get_scm_info` | Git blame from SonarCloud | `key`, `from`, `to` |

@@ -31,8 +31,10 @@ review completion menu), or standalone on any PR.
 - **Nothing is filtered.** All findings are reported at the appropriate
   priority tier. The old 80-confidence hard cut is replaced by
   Critical / Important / Suggested / Informational tiers.
-- **SonarQube findings are authoritative.** They bypass AI confidence scoring
-  and are always included regardless of perceived severity.
+- **SonarQube findings are authoritative.** Both issues and security hotspots
+  bypass AI confidence scoring and are always included regardless of perceived
+  severity. The two queues are fetched separately (Step 4c and 4f) because
+  SonarCloud never returns them from the same API call.
 - **Copilot fires first.** The review request is sent to GitHub Copilot
   immediately so its async review runs in parallel with ours.
 - **No local checkout for review.** All review context is fetched via GitHub
