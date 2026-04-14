@@ -32,7 +32,7 @@ Use the coordinator pattern when:
 Use simpler alternatives when:
 
 - All tasks are independent: use the parallel dispatch pattern instead
-  (`skills/dispatching-parallel-agents/SKILL.md`)
+  (`.claude/skills/dispatching-parallel-agents/SKILL.md`)
 - The task fits in a single well-scoped agent prompt with no chaining needed
 - There are only two stages: a single subagent call with a return contract is enough
 
