@@ -157,3 +157,9 @@ Required checklist:
 Only after this pass should the File Structure section of any plan be written.
 This prevents the plan from specifying helpers that already exist or patterns
 that diverge from established conventions.
+
+## Sources
+
+- Thariq on skills (Mar 17 2026): <https://x.com/trq212/status/2033949937936085378>
+- Claude Code sub-agents: <https://code.claude.com/docs/en/sub-agents>
+- Claude Code agent tool: <https://code.claude.com/docs/en/tools/agent>

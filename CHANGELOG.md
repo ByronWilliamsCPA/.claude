@@ -3,6 +3,24 @@
 
 ## v0.7.1 (2026-04-13)
 
+### Features
+
+- **skills**: Add feasibility-check skill for GO/CONDITIONAL GO/DEFER gate before writing-plans
+  ([`690c617`](https://github.com/ByronWilliamsCPA/.claude/commit/690c617))
+
+Lightweight single-agent feasibility gate to run after brainstorming produces a spec and before
+invoking writing-plans. Dispatches one Sonnet agent to answer four questions (core assumption,
+blocking dependencies, minimum buildable version, verdict). Output saved to
+`docs/superpowers/feasibility/<feature-slug>-feasibility.md`.
+
+- **skills**: Add pipeline-coordinator-reference pattern guide
+  ([`e271c57`](https://github.com/ByronWilliamsCPA/.claude/commit/e271c57))
+
+Non-user-invokable reference skill documenting the Command -> Agent -> Skill coordinator pattern
+with explicit typed JSONC Data Contract blocks between all four pipeline stages. Uses a
+test-coverage pipeline as the concrete example. Includes common mistakes, decision guide,
+and coordinator prompt template.
+
 ### Bug Fixes
 
 - **pr-review**: Use correct Copilot bot username in Step 1
