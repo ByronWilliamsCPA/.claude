@@ -35,7 +35,7 @@ from pydantic import TypeAdapter, ValidationError
 from ruamel.yaml import YAML
 
 # Regular expression to detect body H1 headings
-H1_RE = re.compile(r"^\s*#\s+(.+?)\s*$", re.MULTILINE)
+H1_RE = re.compile(r"^[ \t]*#[ \t]+(\S[^\r\n]*)", re.MULTILINE)
 
 # Create type adapter for validating discriminated union
 FM_ADAPTER: TypeAdapter[DiscriminatedFM] = TypeAdapter(DiscriminatedFM)
@@ -199,6 +199,33 @@ def autofix_front_matter(path: Path) -> bool:
     return changed
 
 
+def _strip_code_blocks(content: str) -> str:
+    """Remove fenced code blocks (``` or ~~~) from content.
+
+    Uses line-by-line processing to avoid polynomial backtracking (S5852).
+    """
+    result: list[str] = []
+    in_fence = False
+    fence_char = ""
+    fence_len = 0
+    for line in content.splitlines(keepends=True):
+        if not in_fence:
+            m = re.match(r"^[ \t]*(`{3,}|~{3,})", line)
+            if m:
+                in_fence = True
+                fence_char = m.group(1)[0]
+                fence_len = len(m.group(1))
+            else:
+                result.append(line)
+        else:
+            close_pat = rf"^[ \t]*{re.escape(fence_char)}{{{fence_len},}}[ \t]*$"
+            if re.match(close_pat, line):
+                in_fence = False
+                fence_char = ""
+                fence_len = 0
+    return "".join(result)
+
+
 def validate_file(
     path: Path,
     allowed_tags: set[str],
@@ -237,9 +264,7 @@ def validate_file(
     # Check for redundant body H1 (but skip code blocks)
     # Remove code blocks (3+ backticks/tildes, with optional indentation) before checking for H1
     # Pattern handles varying fence lengths (```, ````, ~~~~~, etc.)
-    content_without_code = re.sub(
-        r"^\s*(`{3,}|~{3,}).*?^\s*\1", "", content, flags=re.DOTALL | re.MULTILINE
-    )
+    content_without_code = _strip_code_blocks(content)
     h1_match = H1_RE.search(content_without_code)
     if h1_match:
         h1_text = h1_match.group(1).strip()
