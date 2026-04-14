@@ -88,3 +88,8 @@ For document editing tasks, use the three-stage pipeline:
 3. `writing-style-editor` (Stage 3): voice alignment, AI pattern detection, stylometry
 
 Always run in order. See `../standards/writing-quality.md` for thresholds and sequencing rules.
+
+## Sources
+
+- Claude Code memory and CLAUDE.md: <https://code.claude.com/docs/en/memory>
+- Humanlayer "Writing a good Claude.md": <https://www.humanlayer.dev/blog/writing-a-good-claude-md>
