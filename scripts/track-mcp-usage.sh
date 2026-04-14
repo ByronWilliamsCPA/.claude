@@ -137,6 +137,7 @@ generate_report() {
 reset_metrics() {
     echo '{"tool_counts":{},"session_start":"'"$(date -Iseconds)"'","total_calls":0}' > "$METRICS_FILE"
     echo "Metrics reset for new session"
+    return 0
 }
 
 # Main hook logic

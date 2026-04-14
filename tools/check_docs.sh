@@ -32,6 +32,7 @@ check() {
         echo "$result" | sed 's/^/    /'
         FAILURES=$((FAILURES + 1))
     fi
+    return 0
 }
 
 echo ""
