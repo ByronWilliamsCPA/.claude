@@ -1,25 +1,157 @@
 # CHANGELOG
 
 
-## v0.7.1 (2026-04-13)
+## v0.8.0 (2026-04-14)
+
+### Bug Fixes
+
+- **pr-review**: Add two-stage Copilot trigger with comment fallback
+  ([`7fb1b0e`](https://github.com/ByronWilliamsCPA/.claude/commit/7fb1b0e2e7f7296b26d9346867cb15078ea1e763))
+
+The reviewer API call (`copilot-pull-request-reviewer`) returns 422 on repos where Copilot
+  auto-assignment is not configured in settings. This causes Step 1 to silently skip the Copilot
+  request on every pr-review run.
+
+Fix: two-stage trigger.
+
+- Stage 1a: try the reviewer API (works when auto-assign is enabled) - Stage 1b: if 422, fall back
+  to posting `@github-copilot review` comment (the mention-based trigger that works for all account
+  types)
+
+Also documents the one-time fix: enable auto-assignment at
+  github.com/{OWNER}/{REPO}/settings/copilot_review_policies so Stage 1a succeeds on every PR
+  without needing the fallback.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- **review**: Address Copilot findings on PR #22
+  ([`7041e9a`](https://github.com/ByronWilliamsCPA/.claude/commit/7041e9a49931630d84420c2c500f8c950bc85afe))
+
+Two corrections flagged by Copilot inline review:
+
+1. feasibility-check/SKILL.md:51 -- output template used `status: active` which is not a valid
+  CommonFM schema value. Changed to `status: published` (valid values: draft, in-review, published
+  per tools/frontmatter_contract/models.py:110).
+
+2. pipeline-coordinator-reference/SKILL.md:35 -- relative path
+  `skills/dispatching-parallel-agents/SKILL.md` won't resolve from anywhere in the repo. Corrected
+  to full prefix `.claude/skills/dispatching-parallel-agents/SKILL.md` matching every other internal
+  reference in the same file.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- **skills**: Address quality review gaps in pipeline-coordinator-reference
+  ([`b5a383b`](https://github.com/ByronWilliamsCPA/.claude/commit/b5a383bea2c3b7c0317eb07aadac2819a63d976f))
+
+- Document coordinator abort behavior on validation failure - Add repo_root passthrough to Stage
+  2->3 Data Contract - Add repo_root and threshold_pct to Stage 1 validation rules - Add
+  schema_version to Stage 3->4 Data Contract - Add errors-array validation rule to Stage 1 rules
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- **writing**: Replace em-dashes in settings-hardening doc
+  ([`f8afb5e`](https://github.com/ByronWilliamsCPA/.claude/commit/f8afb5e92f48f6cb80905890276af84e36b4faf2))
+
+Five em-dash violations introduced in the new docs/development/settings-hardening-2026-04-11.md
+  file. Replaced with colons and semicolons per CLAUDE.md hard rule.
+
+Lines affected: 86, 138, 139, 140, 153. Flagged by Copilot (3 of 5) and Agent A (all 5) in PR
+  review.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+### Chores
+
+- Update superpowers submodule (writing-plans skill update)
+  ([`4b10ec2`](https://github.com/ByronWilliamsCPA/.claude/commit/4b10ec2cc97783c56af2df1abae52ea847d09352))
+
+- Update superpowers submodule with additional writing-plans em-dash fix
+  ([`81a4303`](https://github.com/ByronWilliamsCPA/.claude/commit/81a430384a071e87ffe07550d83daa93ce03a856))
+
+- Update superpowers submodule with writing-plans em-dash fixes
+  ([`b166992`](https://github.com/ByronWilliamsCPA/.claude/commit/b16699218316a16194a038d4aea9ec14e487595e))
+
+- **config**: Document global settings hardening and skill cleanup
+  ([`9011202`](https://github.com/ByronWilliamsCPA/.claude/commit/9011202c3995f93b0e07670e2ac6b92a9100daa6))
+
+Captures the configuration changes applied to ~/.claude/settings.json on 2026-04-11 to address
+  friction observed in 30-day usage analysis (561 messages, 93 sessions, 1327 Bash invocations).
+
+Settings changes (live file, not git-tracked): - env: adaptive thinking disabled, effort level
+  pinned via env var, autocompact lowered to 75%, tool search aggression raised to auto:5, bash and
+  API timeouts aligned to real workloads - permissions.defaultMode: acceptEdits to bypass the
+  .claude/skills/ protected-directory prompt regression in v2.1.78+ - permissions.allow: expanded
+  from 5 to 30 calibrated entries including git commit and git add - permissions.deny: secrets path
+  rules (defense-in-depth) - enableAllProjectMcpServers: false (Trail of Bits supply-chain fix) -
+  postgres removed from global MCP list (per-repo as needed)
+
+Skill cleanup (local, untracked): - Removed testing-variant-b-r2 and test-coverage-variant-b which
+  had frontmatter name collisions with canonical skills, causing duplicate registration in every
+  session's context. Workspaces preserved.
+
+Follow-ups staged in the doc: - PAL MCP repo review (evaluate which tools remain useful
+  post-hardening) - CLAUDE.md refactor to trim ~3.5k token session-start cost
+
+Full rationale, rollback steps, and verification checks in the doc.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- **deps**: Sync uv.lock to v0.7.1
+  ([`4183dd0`](https://github.com/ByronWilliamsCPA/.claude/commit/4183dd08bd1ec2cdf0a6782ed8ca3e7cb977b951))
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+### Documentation
+
+- Add platform-audit-checklist.md seeded with two observed drift types
+  ([`1413596`](https://github.com/ByronWilliamsCPA/.claude/commit/14135960e3c8076714e1f83efe3936640d330fcc))
+
+- **changelog**: Add Features section to v0.7.1 for new skills
+  ([`5a72fea`](https://github.com/ByronWilliamsCPA/.claude/commit/5a72feae54a81377e7dafdd4fad695409c157f35))
+
+Two feat(skills): commits on this branch were not reflected in the CHANGELOG. Added a Features
+  section under v0.7.1 with entries for:
+
+- feasibility-check skill (commit 690c617) - pipeline-coordinator-reference skill (commit e271c57)
+
+Required by CLAUDE.md OpenSSF baseline: update CHANGELOG for all feat/fix/perf/breaking changes
+  before release.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- **git-workflow**: Add PR size calibration table with Anthropic p50/p90/p99 data
+  ([`90eb7a2`](https://github.com/ByronWilliamsCPA/.claude/commit/90eb7a2fdb55111a2e52da389a4a0bc1ddf67931))
+
+- **rules**: Add ## Sources citation footers to all rules files
+  ([`1710015`](https://github.com/ByronWilliamsCPA/.claude/commit/1710015b18697b917aea2c2401e5997d2e9b0fc1))
+
+Appended authoritative reference sections to the seven rules files that were missing them:
+  git-workflow.md, supervisor.md, writing.md, testing.md, python.md, mcp-strategy.md, and
+  pre-commit.md. Existing content unchanged.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- **standards**: Add --bare flag to scripted claude -p examples
+  ([`3042042`](https://github.com/ByronWilliamsCPA/.claude/commit/30420429b26e42bc7814477ff6eb3c87a95e7d0b))
 
 ### Features
 
-- **skills**: Add feasibility-check skill for GO/CONDITIONAL GO/DEFER gate before writing-plans
-  ([`690c617`](https://github.com/ByronWilliamsCPA/.claude/commit/690c617))
+- **skills**: Add feasibility-check skill for lightweight GO/DEFER gate before writing-plans
+  ([`690c617`](https://github.com/ByronWilliamsCPA/.claude/commit/690c6175a3121ae1879e1773a368c97fae21a287))
 
-Lightweight single-agent feasibility gate to run after brainstorming produces a spec and before
-invoking writing-plans. Dispatches one Sonnet agent to answer four questions (core assumption,
-blocking dependencies, minimum buildable version, verdict). Output saved to
-`docs/superpowers/feasibility/<feature-slug>-feasibility.md`.
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
 
 - **skills**: Add pipeline-coordinator-reference pattern guide
-  ([`e271c57`](https://github.com/ByronWilliamsCPA/.claude/commit/e271c57))
+  ([`e271c57`](https://github.com/ByronWilliamsCPA/.claude/commit/e271c57bd5a5d7e72c1732e1ee1ba9f8007a2dfb))
 
-Non-user-invokable reference skill documenting the Command -> Agent -> Skill coordinator pattern
-with explicit typed JSONC Data Contract blocks between all four pipeline stages. Uses a
-test-coverage pipeline as the concrete example. Includes common mistakes, decision guide,
-and coordinator prompt template.
+Adds a non-user-invokable reference skill demonstrating the Command -> Agent -> Skill coordinator
+  pattern with explicit Data Contract blocks between pipeline stages. Uses test-coverage pipeline as
+  the concrete example.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+
+## v0.7.1 (2026-04-13)
 
 ### Bug Fixes
 
