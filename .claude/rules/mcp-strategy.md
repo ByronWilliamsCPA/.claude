@@ -79,3 +79,9 @@ tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
 ```
 
 MCP tool bundles for agents are configured in `mcp_config.yaml` under `tier_2_agent_bundles`, not in agent frontmatter. The loading infrastructure reads that config to determine which MCP tools to activate when a given agent is invoked.
+
+## Sources
+
+- Model Context Protocol specification: <https://modelcontextprotocol.io/>
+- Claude Code MCP documentation: <https://code.claude.com/docs/en/mcp>
+- Claude Code settings schema: <https://json.schemastore.org/claude-code-settings.json>
