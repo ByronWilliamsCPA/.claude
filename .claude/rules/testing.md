@@ -66,6 +66,25 @@ To update golden files when behavior changes intentionally:
    output changed, with enough context that a future reviewer can verify the
    change was intentional rather than accidental
 
+## Verification means runtime observation
+
+When verifying that code works, passing tests are not sufficient evidence.
+Tests are written by the same agent that wrote the code and may share the
+same errors. Verification means: build the artifact, run it, drive it to
+the path that exercises the changed code, and observe actual output.
+
+Prohibited as the sole basis for a correctness verdict:
+
+- Running the test suite (CI already does this; it does not replace
+  runtime observation)
+- Reading the source and reasoning that it looks correct
+- Importing the module and calling internal functions from a scratch script
+- Relying on type checks or linters to confirm behavior
+
+When verification is blocked (no runtime, no harness, no observable
+surface), report BLOCKED with the specific blocker. Do not silently
+degrade to code inspection and call it verified.
+
 ## Sources
 
 - Claude Code sub-agents: <https://code.claude.com/docs/en/sub-agents>

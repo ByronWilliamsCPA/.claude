@@ -40,6 +40,21 @@ directory tree, and network calls go through a filtering proxy.
 - `permissions.ask` contains 22 entries covering destructive bash commands.
   See `~/.claude/settings.json` for the full list.
 
+## Authorization failure modes
+
+Two principles not captured by the permissions schema that apply at runtime:
+
+- **Questions are not consent.** Asking the user whether to proceed is not
+  equivalent to being authorized. An unanswered or deflected question grants
+  nothing; wait for an explicit answer before acting.
+- **Silence is not consent.** User non-intervention between actions does not
+  establish approval for the next action. Each significant action requires
+  its own authorization basis.
+
+These apply regardless of `permissions.allow` entries. A permission entry
+grants capability; it does not grant blanket authorization for all uses of
+that capability in a single session.
+
 ## Sources
 
 - Claude Code settings: <https://code.claude.com/docs/en/settings>

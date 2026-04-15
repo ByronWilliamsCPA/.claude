@@ -118,15 +118,9 @@ write tests first, document security implications, update CHANGELOG.
 
 ## Development philosophy
 
-Decision order when priorities conflict:
-
-1. **Security first**, validate keys, encrypt secrets, scan dependencies
-2. **Reuse first**, check existing repositories and skills before building new code
-3. **Configure, don't build**, prefer configuration over custom implementation
-4. **Quality standards**, maintain consistent code quality across projects
-5. **Testing**, maintain graduated coverage, run tests before commits
-6. **Scope tracing** *(phased projects only)*, every task must trace to a
-   phase acceptance criterion; use `/phase-gate` to verify phase readiness
+**Scope tracing (phased projects)**: every task must trace to a phase
+acceptance criterion; use `/phase-gate` to verify phase readiness before
+closing a phase.
 
 ## Compact Instructions
 
