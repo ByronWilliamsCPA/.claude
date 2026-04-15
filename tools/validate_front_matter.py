@@ -202,7 +202,16 @@ def autofix_front_matter(path: Path) -> bool:
 def _strip_code_blocks(content: str) -> str:
     """Remove fenced code blocks (``` or ~~~) from content.
 
-    Uses line-by-line processing to avoid polynomial backtracking (S5852).
+    Uses line-by-line processing to avoid catastrophic backtracking (S5852).
+    Opening fence marker lines and their matching closing fence marker lines
+    are also excluded from the result. Content from an unclosed fence opener
+    to end-of-input is also excluded (conservative choice for H1 detection:
+    uncertain content is not reported as an H1 false positive).
+
+    Returns:
+        Content with complete fenced code blocks (including fence lines)
+        removed. Content from an unclosed fence opener to end-of-input is
+        also excluded.
     """
     result: list[str] = []
     in_fence = False
@@ -218,7 +227,7 @@ def _strip_code_blocks(content: str) -> str:
             else:
                 result.append(line)
         else:
-            close_pat = rf"^[ \t]*{re.escape(fence_char)}{{{fence_len},}}[ \t]*$"
+            close_pat = rf"^[ \t]*{re.escape(fence_char)}{{{fence_len},}}[ \t]*\r?$"
             if re.match(close_pat, line):
                 in_fence = False
                 fence_char = ""
@@ -261,15 +270,13 @@ def validate_file(
         errors.append("missing or invalid front matter")
         return {"file": str(path), "ok": False, "errors": errors, "fixed": fixed}
 
-    # Check for redundant body H1 (but skip code blocks)
-    # Remove code blocks (3+ backticks/tildes, with optional indentation) before checking for H1
-    # Pattern handles varying fence lengths (```, ````, ~~~~~, etc.)
+    # Check for redundant body H1; strip code blocks first to avoid false positives
     content_without_code = _strip_code_blocks(content)
     h1_match = H1_RE.search(content_without_code)
     if h1_match:
         h1_text = h1_match.group(1).strip()
         errors.append(
-            f"redundant H1 found: '# {h1_text}' — remove it; 'title' renders automatically"
+            f"redundant H1 found: '# {h1_text}'; remove it, 'title' renders automatically"
         )
 
     # Strict Pydantic validation
