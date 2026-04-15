@@ -266,7 +266,7 @@ Note in the report whether results are PR-specific or branch-level.
 Store as `SONAR_HOTSPOTS`. For each hotspot record: component, line, rule key,
 message, securityCategory, vulnerabilityProbability (HIGH/MEDIUM/LOW).
 
-### 4d. Pre-flight SonarCloud configuration check
+### 4g. Pre-flight SonarCloud configuration check
 
 Before fetching findings, inspect any `sonar-project.properties` or
 `sonar-project.properties.template` for placeholder values:
@@ -986,6 +986,7 @@ Load `workflows/pr-fix.md` and execute it. Pass forward:
 - `HEAD_BRANCH` (the branch to check out in the worktree)
 - `FINDINGS`: the full deduplicated, scored findings list from Step 7
 - `SONAR_FINDINGS`: SonarQube findings from Step 4 (if any)
+- `SONAR_HOTSPOTS`: security hotspots from Step 4f (if any)
 
 The pr-fix workflow runs its own gather step for CI check failures,
 review comments, and Codecov status (data that pr-review did not collect),
