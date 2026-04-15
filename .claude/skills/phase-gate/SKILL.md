@@ -40,14 +40,14 @@ Extract the phase number from `$ARGUMENTS`. Valid values: 0-6. If missing, check
 Launch both agents simultaneously using the Agent tool:
 
 1. **scope-analyzer** agent:
-   - Task: "Analyze phase {N} scope against docs/IMPLEMENTATION_PLAN.md. Check which deliverables are DONE, PARTIAL, NOT STARTED, or UNCLEAR. Detect any scope creep on the current branch."
+   - Task: "Analyze phase {N} scope against docs/IMPLEMENTATION_PLAN.md. Check which deliverables are DONE, PARTIAL, NOT STARTED, or UNCLEAR. Detect any scope creep on the current branch. Return a JSON object with this exact shape: {\"deliverables\": [{\"id\": \"<name>\", \"status\": \"DONE|PARTIAL|NOT_STARTED|UNCLEAR\", \"detail\": \"<one sentence>\"}], \"scope_creep\": [\"<item>\"], \"verdict\": \"PASS|FAIL\"}"
    - This agent reads the implementation plan and scans the source tree
-   - Returns: Deliverable status table, scope boundaries, scope creep detection
+   - Returns: `{"deliverables": [{"id": str, "status": "DONE"|"PARTIAL"|"NOT_STARTED"|"UNCLEAR", "detail": str}], "scope_creep": [str], "verdict": "PASS"|"FAIL"}`
 
 2. **phase-reviewer** agent:
-   - Task: "Run quality gates for phase {N}. Execute: ruff check, ruff format --check, basedpyright, pytest with coverage, bandit. Check the per-phase smoke test from docs/IMPLEMENTATION_PLAN.md."
+   - Task: "Run quality gates for phase {N}. Execute: ruff check, ruff format --check, basedpyright, pytest with coverage, bandit. Check the per-phase smoke test from docs/IMPLEMENTATION_PLAN.md. Return a JSON object with this exact shape: {\"gates\": [{\"name\": \"<check name>\", \"status\": \"PASS|FAIL\", \"detail\": \"<one sentence>\"}], \"coverage_pct\": <float>, \"verdict\": \"PASS|FAIL\"}"
    - This agent runs the actual checks
-   - Returns: Quality gate pass/fail table, coverage detail, smoke test results, verdict
+   - Returns: `{"gates": [{"name": str, "status": "PASS"|"FAIL", "detail": str}], "coverage_pct": float, "verdict": "PASS"|"FAIL"}`
 
 #### Step 3: Synthesize Results
 

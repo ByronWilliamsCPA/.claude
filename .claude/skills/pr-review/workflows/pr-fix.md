@@ -720,10 +720,20 @@ mcp__pal__tiered_consensus(
               symptoms to recur?
            3. What is the most likely path to resolution?
 
-           Return a structured diagnosis: root cause, whether automation can
-           fix it, and recommended next step."
+           Return a JSON object:
+           {
+             \"can_retry\": <bool>,
+             \"root_cause\": \"<one paragraph>\",
+             \"blocker\": \"<specific reason automation cannot resolve this — required when can_retry is false>\",
+             \"proposed_fix\": \"<specific targeted fix to attempt — required when can_retry is true>\"
+           }"
 )
 ```
+
+Use the `can_retry` field to drive the exit presentation:
+
+- If `can_retry: true`: present `proposed_fix` as Option 1 for a targeted third attempt
+- If `can_retry: false`: surface `blocker` as the reason automation is exhausted
 
 Include the PAL diagnosis in the report presented to the user, then stop:
 
@@ -731,10 +741,12 @@ Include the PAL diagnosis in the report presented to the user, then stop:
 Completed 2 re-fix cycles. Remaining issues:
   {list with reasons}
 
-PAL diagnosis: {summary from tiered_consensus}
+PAL diagnosis:
+  Root cause:    {root_cause from tiered_consensus}
+  Can retry:     {yes — proposed fix: {proposed_fix} / no — blocker: {blocker}}
 
 Options:
-1. Keep worktree for manual work
+1. {If can_retry: "Apply targeted fix: {proposed_fix}" / If not: "Keep worktree for manual work"}
 2. Push current state and stop
 3. Discard all changes
 ```

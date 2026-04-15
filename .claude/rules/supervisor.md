@@ -158,6 +158,42 @@ Only after this pass should the File Structure section of any plan be written.
 This prevents the plan from specifying helpers that already exist or patterns
 that diverge from established conventions.
 
+## Agent Output Format
+
+When an agent's output feeds a downstream automated step (another agent, a
+gate, a filter), specify a structured output envelope in the agent prompt.
+Always pair any verdict or decision field with a mandatory `reason` or
+`issues` field so the downstream step has evidence, not just a verdict.
+
+**When to require structure:** the agent's result is consumed by code or
+another agent before a human sees it.
+
+**When to leave as prose:** the agent's result is the final output to the user
+(plans, summaries, documentation, architectural analyses).
+
+Minimum envelope patterns:
+
+| Use case | Shape |
+| --- | --- |
+| Binary decision | `{"ok": bool, "reason": str}` |
+| Pass/fail verdict | `{"verdict": "PASS"\|"FAIL"\|"BLOCKED"\|"SKIP", "reason": str}` |
+| Approve/revise loop | `{"verdict": "APPROVE"\|"NEEDS_WORK", "issues": [str]}` |
+| Findings list | `{"findings": [str], "confidence": float}` |
+| Retry decision | `{"can_retry": bool, "blocker": str, "proposed_fix": str}` |
+
+The `issues` list on `NEEDS_WORK` and the `blocker`/`proposed_fix` fields on
+retry decisions are **required** when their condition is true; they must not be
+omitted or left empty. A response that omits a required field should be treated
+as a failed verdict (e.g., `NEEDS_WORK` with issue: "agent returned unparseable output").
+
+Specify the exact shape in the agent task prompt so the model commits to the
+structure before generating output. Example instruction to add to a task:
+
+```
+Return only a JSON object: {"verdict": "APPROVE"|"NEEDS_WORK", "issues": [str]}
+The issues list is required when verdict is NEEDS_WORK. Return an empty list on APPROVE.
+```
+
 ## Sources
 
 - Thariq on skills (Mar 17 2026): <https://x.com/trq212/status/2033949937936085378>
