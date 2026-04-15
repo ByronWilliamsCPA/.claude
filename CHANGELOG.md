@@ -1,6 +1,24 @@
 # CHANGELOG
 
 
+## [Unreleased]
+
+### Features
+
+- **skills**: Add security hotspot coverage to pr-review and sonarcloud skills;
+  `/sonarcloud hotspots`, `/sonarcloud triage`, and `SONAR_HOTSPOTS` pass-forward
+  from pr-review to pr-fix
+
+### Bug Fixes
+
+- **security**: Resolve all 17 SonarCloud security hotspots (S5852 ReDoS,
+  S7637 unpinned GitHub Actions, S7635 secret over-share); pin `actions/checkout`
+  and `actions/upload-artifact` to full SHAs in ci.yml, docs.yml,
+  security-analysis.yml
+- **validate_front_matter**: Fix CRLF line-ending handling in `_strip_code_blocks`
+  close pattern; add unclosed-fence guard to prevent silent content loss
+
+
 ## v0.8.1 (2026-04-14)
 
 ### Bug Fixes
