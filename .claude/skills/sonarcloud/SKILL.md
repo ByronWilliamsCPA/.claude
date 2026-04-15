@@ -10,7 +10,7 @@ version: 2.1.0
 
 # SonarCloud Skill
 
-Review and resolve SonarCloud issues for the current project.
+Review and resolve SonarCloud issues and security hotspots for the current project.
 
 ## Activation
 
@@ -105,9 +105,9 @@ look them up via MCP using the rule ID shown in the issue (e.g., `python:S3776`)
 - `gate` — Show quality gate status with condition details
 - `rule <key>` — Show details for a specific rule (e.g., `python:S3776`)
 - `analyze` — Guidance on triggering a fresh SonarCloud analysis
-- `hotspots` — List all security hotspots with status TO_REVIEW
-- `hotspots <probability>` — Filter by vulnerability probability: HIGH, MEDIUM, LOW
-- `triage` — Combined view of open issues AND hotspots grouped by priority; suitable for weekly hygiene runs
+- `hotspots`: list all security hotspots with status TO_REVIEW
+- `hotspots <probability>`: filter by vulnerability probability: HIGH, MEDIUM, LOW
+- `triage`: combined view of open issues AND hotspots grouped by priority; suitable for weekly hygiene runs
 
 ## Workflow
 
@@ -286,9 +286,9 @@ issues AND all TO_REVIEW hotspots in a single session and walks through remediat
 
 1. Run Steps 1 and 2 (detect org, select MCP server) as normal
 2. Fetch all data in parallel:
-   - `search_sonar_issues_in_projects` — all severities, paged until exhausted
-   - `search_security_hotspots` with `status: "TO_REVIEW"` — paged until exhausted
-   - `get_project_quality_gate_status` — for overall gate status
+   - `search_sonar_issues_in_projects`: all severities, paged until exhausted
+   - `search_security_hotspots` with `status: "TO_REVIEW"`, paged until exhausted
+   - `get_project_quality_gate_status`: for overall gate status
 3. Present a combined triage dashboard:
 
 ```markdown
@@ -313,8 +313,8 @@ issues AND all TO_REVIEW hotspots in a single session and walks through remediat
 | LOW         | X     | {category}   |
 
 ### Recommended Fix Order
-1. [BLOCKER issues first — block releases]
-2. [HIGH hotspots — highest exploitability risk]
+1. [BLOCKER issues first; they block releases]
+2. [HIGH hotspots; highest exploitability risk]
 3. [HIGH issues]
 4. [MEDIUM hotspots]
 5. [MEDIUM/LOW issues and hotspots]
