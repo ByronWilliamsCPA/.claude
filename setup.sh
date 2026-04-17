@@ -227,6 +227,45 @@ ensure_submodules() {
     return 0
 }
 
+# Refresh the plugin cache for plugins backed by local submodules. Plugin
+# install copies files from the submodule into ~/.claude/plugins/cache/ at
+# install time, so submodule updates do NOT propagate automatically. This
+# closes that gap. Plugins from the remote claude-plugins-official
+# marketplace update from GitHub on their own and are skipped here.
+sync_local_plugins() {
+    local local_plugins=(
+        "superpowers@superpowers-dev"
+        "document-skills@anthropic-agent-skills"
+        "example-skills@anthropic-agent-skills"
+        "claude-api@anthropic-agent-skills"
+    )
+
+    if ! command -v claude >/dev/null 2>&1; then
+        log_skip "claude CLI not found; skipping plugin cache sync"
+        return 0
+    fi
+
+    local installed
+    installed="$(claude plugin list 2>/dev/null || true)"
+
+    for pkg in "${local_plugins[@]}"; do
+        if ! grep -qE "^\s*❯?\s*${pkg}\b" <<< "$installed"; then
+            log_skip "${pkg} not installed; run scripts/install-vendored-plugins.sh"
+            continue
+        fi
+        if (( DRY_RUN )); then
+            echo "  [dry]  claude plugin update ${pkg}"
+            continue
+        fi
+        if claude plugin update "$pkg" >/dev/null 2>&1; then
+            log_ok "synced ${pkg}"
+        else
+            log_warn "failed to sync ${pkg}"
+        fi
+    done
+    return 0
+}
+
 # ---------- Settings merge ----------
 backup_settings() {
     local settings="$1"
@@ -318,6 +357,7 @@ fi
 echo ""
 
 ensure_submodules
+sync_local_plugins
 
 run_or_dry mkdir -p "$CLAUDE_DIR"
 
