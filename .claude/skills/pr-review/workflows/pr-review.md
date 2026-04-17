@@ -238,7 +238,35 @@ search_sonar_issues_in_projects(
 
 Note in the report whether results are PR-specific or branch-level.
 
-### 4d. Pre-flight SonarCloud configuration check
+### 4f. Fetch PR-specific security hotspots
+
+Security hotspots are a completely separate queue from issues in SonarCloud.
+`search_sonar_issues_in_projects` never returns them; this explicit call is
+required. Skipping it is the most common reason hotspots go unreviewed.
+
+```text
+search_security_hotspots(
+  projectKey: PROJECT_KEY,
+  pullRequest: PR_NUMBER
+)
+```
+
+If the result is empty (PR not yet analyzed), fall back to branch-level with
+status filter:
+
+```text
+search_security_hotspots(
+  projectKey: PROJECT_KEY,
+  branch: HEAD_BRANCH,
+  status: "TO_REVIEW"
+)
+```
+
+Note in the report whether results are PR-specific or branch-level.
+Store as `SONAR_HOTSPOTS`. For each hotspot record: component, line, rule key,
+message, securityCategory, vulnerabilityProbability (HIGH/MEDIUM/LOW).
+
+### 4g. Pre-flight SonarCloud configuration check
 
 Before fetching findings, inspect any `sonar-project.properties` or
 `sonar-project.properties.template` for placeholder values:
@@ -261,18 +289,25 @@ and project key before merge."
 This prevents the silent "SonarCloud: not configured" skip that delays
 findings until a later push.
 
-### 4e. Store SonarQube findings for the fix step
+### 4e. Store SonarQube findings and hotspots for the fix step
 
-SonarQube findings are deterministic -- they have clear, prescribed fixes and
+SonarQube issues are deterministic -- they have clear, prescribed fixes and
 do not require human judgment. Do not include them in the review report.
-Store them as `SONAR_FINDINGS` and pass them to the fix workflow.
+Store as `SONAR_FINDINGS` and pass to the fix workflow.
 
-For each finding record: file, line, rule key, message, severity. Run a
+For each issue record: file, line, rule key, message, severity. Run a
 `show_rule` lookup for any unfamiliar rule key so the fix step has
 remediation guidance ready.
 
-The review report shows only a one-line summary: "SonarQube: {N} findings
-queued for auto-fix." The fix step resolves them without further review.
+Security hotspots require human judgment to decide exploitability, but still
+warrant a code change in most cases (pinning an unpinned action, removing a
+vulnerable regex, etc.). Store `SONAR_HOTSPOTS` alongside `SONAR_FINDINGS`
+and pass both to the fix workflow.
+
+The review report shows only a one-line summary:
+"SonarQube: {N} issues and {M} hotspots queued for auto-fix."
+Omit the hotspot clause if M = 0. The fix step resolves both without
+further review unless a hotspot genuinely requires a human decision.
 
 ---
 
@@ -837,9 +872,11 @@ automatically; the user can decide whether to post.
 ## Review Status
 - **GitHub Copilot**: {Received N comments / Pending (timed out) / Failed}
 - **CodeRabbit**: {Received N comments / Pending (timed out) / Not installed}
-- **SonarQube**: {N} findings queued for auto-fix
+- **SonarQube Issues**: {N} queued for auto-fix
   *(PR-specific / branch-level / not configured / placeholder config detected)*
   Severity: Blocker: {N} | Critical: {N} | Major: {N} | Minor: {N} | Info: {N}
+- **SonarQube Hotspots**: {M} queued for review *(omit line if M = 0)*
+  Probability: HIGH: {N} | MEDIUM: {N} | LOW: {N}
 - **CI checks**: {N} failing / all passing / BUILD FAILING (if Critical CI findings exist)
 - **Agents run**: {list of agents that fired}
 - **Agent findings**: {N} ({critical} Critical, {important} Important,
@@ -949,6 +986,7 @@ Load `workflows/pr-fix.md` and execute it. Pass forward:
 - `HEAD_BRANCH` (the branch to check out in the worktree)
 - `FINDINGS`: the full deduplicated, scored findings list from Step 7
 - `SONAR_FINDINGS`: SonarQube findings from Step 4 (if any)
+- `SONAR_HOTSPOTS`: security hotspots from Step 4f (if any)
 
 The pr-fix workflow runs its own gather step for CI check failures,
 review comments, and Codecov status (data that pr-review did not collect),
