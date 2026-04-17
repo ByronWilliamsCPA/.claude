@@ -156,8 +156,42 @@ doctor() {
     fi
 
     echo ""
+    echo "Vendored plugins (claude plugin list):"
+    if command -v claude >/dev/null 2>&1; then
+        local expected_plugins=(
+            "superpowers@superpowers-dev"
+            "document-skills@anthropic-agent-skills"
+            "example-skills@anthropic-agent-skills"
+            "claude-api@anthropic-agent-skills"
+            "claude-code-setup@claude-plugins-official"
+            "claude-md-management@claude-plugins-official"
+            "session-report@claude-plugins-official"
+            "hookify@claude-plugins-official"
+            "pr-review-toolkit@claude-plugins-official"
+            "code-review@claude-plugins-official"
+        )
+        local installed
+        installed="$(claude plugin list 2>/dev/null || true)"
+        local missing=0
+        for pkg in "${expected_plugins[@]}"; do
+            if grep -qE "^\s*❯?\s*${pkg}\b" <<< "$installed"; then
+                log_ok "${pkg}"
+            else
+                log_warn "${pkg} NOT installed"
+                missing=$((missing + 1))
+            fi
+        done
+        if (( missing > 0 )); then
+            log_warn "${missing} plugin(s) missing. Run ./scripts/install-vendored-plugins.sh"
+            broken=$((broken + missing))
+        fi
+    else
+        log_warn "claude CLI not found; skipping plugin checks"
+    fi
+
+    echo ""
     if (( broken > 0 )); then
-        log_warn "${broken} symlink(s) need attention. Run ./setup.sh to fix."
+        log_warn "${broken} item(s) need attention. See messages above."
         exit 1
     fi
     log_ok "All checks passed."

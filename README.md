@@ -294,7 +294,16 @@ edits to tracked files propagate immediately without a copy step.
 ```bash
 git clone --recurse-submodules https://github.com/ByronWilliamsCPA/.claude.git ~/dev/.claude
 cd ~/dev/.claude && ./setup.sh
+./scripts/install-vendored-plugins.sh
 ```
+
+The third step registers the vendored submodules (`superpowers`,
+`anthropics-skills`) as local Claude Code marketplaces and installs their
+plugins. Without this step, vendored skills resolve only by bare name (e.g.,
+`subagent-driven-development`) and any cross-skill handoff that invokes the
+namespaced form (e.g., `superpowers:subagent-driven-development`, used by
+`writing-plans`) silently falls through to manual execution. The script is
+idempotent and safe to re-run.
 
 **Verify install**:
 
@@ -303,8 +312,9 @@ cd ~/dev/.claude && ./setup.sh
 ```
 
 Doctor mode prints the resolved symlink topology, flags any broken or drifted
-links, and checks that `hooks` and `claudeMdExcludes` are present in
-`~/.claude/settings.json`.
+links, checks that `hooks` and `claudeMdExcludes` are present in
+`~/.claude/settings.json`, and verifies that the expected vendored plugins
+are installed.
 
 **Dry-run before applying changes**:
 
