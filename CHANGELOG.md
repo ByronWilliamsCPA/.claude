@@ -1,17 +1,16 @@
 # CHANGELOG
+## v0.11.0 (2026-04-18)
+### Chore
+* chore: merge main into feat/pr-fix-expand-fix-scope
 
-## [Unreleased]
+Resolve CHANGELOG.md conflict by placing [Unreleased] above v0.10.0.
+Resolve uv.lock conflict by taking main version 0.9.1.
 
-### Feature
+Co-Authored-By: Claude Sonnet 4.6 &lt;noreply@anthropic.com&gt; ([`9909512`](https://github.com/ByronWilliamsCPA/.claude/commit/990951216e01befded747ad2f0dddf876fe07974))
+### Unknown
+* Merge pull request #27 from ByronWilliamsCPA/feat/pr-fix-expand-fix-scope
 
-* feat(pr-fix): expand fix scope and route non-auto-fixable findings to specialized agents
-
-Tier coverage now addresses Critical, Important, and Suggested findings on every
-pr-fix run. Non-auto-fixable findings are no longer silently deferred; they route
-to domain-specific agents (test-writer, type-design-analyzer, code-reviewer,
-security-auditor, owasp-web, diagram-maintenance-agent) in parallel after all
-auto-fixes are applied.
-
+feat(pr-fix): expand fix scope and add agent evaluation for non-auto-fixable items ([`373a88b`](https://github.com/ByronWilliamsCPA/.claude/commit/373a88bef04ff2b516a91d9226545ebc0dba420b))
 ## v0.10.0 (2026-04-18)
 ### Chore
 * chore(deps): sync uv.lock to 0.9.0
@@ -125,7 +124,41 @@ priority items that Claude follows without instruction, retaining only
 the project-specific scope tracing rule.
 
 https://claude.ai/code/session_013eTYt5xiLPb87w7gnZZ9CR ([`0cfd192`](https://github.com/ByronWilliamsCPA/.claude/commit/0cfd1920b3e8810122be4c1a5895a4ad8ced23e0))
+### Feature
+* feat(pr-fix): expand fix scope and add agent evaluation for non-auto-fixable items
+
+Step 2 now shows tier distribution (Critical/Important/Suggested/
+Informational) so the user knows the full scope before confirming.
+All Critical, Important, and Suggested findings are addressed in every
+run. Informational findings are addressed when simple and low-risk.
+
+Priority 3 &#34;Always skip&#34; table replaced with &#34;Assign to specialized
+agent&#34; table: test coverage gaps go to test-writer, type design issues
+go to type-design-analyzer, cognitive complexity and complex logic bugs
+go to code-reviewer, security vulnerabilities go to security-auditor,
+path-injection findings go to owasp-web, and diagram findings go to
+diagram-maintenance-agent. Agent evaluations run in parallel after all
+auto-fixes and their outputs are included in the Step 6 commit options.
+
+Only three categories remain as &#34;human-only&#34;: design debates requiring
+stakeholder input, GitGuardian secret detections, and deliberate
+product decisions. All other previously-deferred findings now have an
+agent evaluation path.
+
+Error handling table updated to reflect agent assignment instead of
+silent deferral.
+
+Co-Authored-By: Claude Sonnet 4.6 &lt;noreply@anthropic.com&gt; ([`88f5185`](https://github.com/ByronWilliamsCPA/.claude/commit/88f51852216a100c5744bf169d2cb26cb4979111))
 ### Fix
+* fix(pr-fix): remove em-dashes and add CHANGELOG entry
+
+- Replace em-dashes with comma/semicolon in Step 2 Tier coverage block
+- Add [Unreleased] CHANGELOG entry for the expanded fix scope feature
+- Sync uv.lock version from 0.8.1 to 0.9.0
+
+Addresses pr-review Critical findings on PR #27.
+
+Co-Authored-By: Claude Sonnet 4.6 &lt;noreply@anthropic.com&gt; ([`29dfef1`](https://github.com/ByronWilliamsCPA/.claude/commit/29dfef13344e54b65f2765bbdd087d02aa4541c1))
 * fix(review): address Copilot findings on PR #26 documentation
 
 - supervisor.md: expand evidence rule to list 4 acceptable field
@@ -153,7 +186,6 @@ Co-Authored-By: Claude Sonnet 4.6 &lt;noreply@anthropic.com&gt; ([`a290ab5`](htt
 * Merge pull request #26 from ByronWilliamsCPA/claude/review-system-prompts-yi29Y
 
 docs(standards): verification failure modes and structured agent output contracts ([`ad95d1e`](https://github.com/ByronWilliamsCPA/.claude/commit/ad95d1e7ccca978a8457302963d601aa9a7d1d69))
-
 ## v0.9.0 (2026-04-17)
 ### Feature
 * feat(skills): add security hotspot coverage to pr-review and sonarcloud skills
