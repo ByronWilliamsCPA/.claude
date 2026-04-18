@@ -1,4 +1,21 @@
 # CHANGELOG
+
+## [Unreleased]
+
+### Feature
+
+* feat(setup): add `scripts/install-vendored-plugins.sh` to register local
+  marketplaces (`superpowers-dev`, `anthropic-agent-skills`) and install all
+  vendored plugins in one idempotent step. Required so that namespaced skill
+  references (e.g. `superpowers:subagent-driven-development`) resolve correctly
+  via the plugin system rather than falling through to manual execution.
+
+* feat(setup): extend `setup.sh --doctor` to verify that all expected plugins
+  are installed and surface missing ones with a remediation command.
+
+* feat(setup): add `sync_local_plugins()` to `setup.sh` to refresh the plugin
+  cache for locally-vendored plugins after submodule updates.
+
 ## v0.9.1 (2026-04-18)
 ### Documentation
 * docs(standards): add structured output contracts to agent-to-agent interfaces
