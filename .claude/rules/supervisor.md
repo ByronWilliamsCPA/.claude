@@ -27,6 +27,8 @@ Claude Code acts as SUPERVISOR for all development tasks.
 | Coverage analysis | `/test-coverage` skill | Skill |
 | OWASP security | owasp-dispatch agent | Agent |
 | Documentation | documentation-writer agent (`zen.docgen` auto-loaded) | Agent |
+| AI content detection / scoring | ai-detection-agent | Agent |
+| Writing pipeline detection audit | ai-detection-agent | Agent |
 | Debugging | `systematic-debugging` skill | Skill |
 | Debugging failing tests | `/debug-tests` skill | Skill |
 | Refactoring | `/quality` skill + code-reviewer agent | Skill + Agent |
