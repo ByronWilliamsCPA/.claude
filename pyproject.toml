@@ -3,7 +3,7 @@
 # UV uses standard PEP 621 pyproject.toml format with uv.lock for reproducible builds.
 [project]
 name = "claude-config"
-version = "0.9.0"
+version = "0.9.1"
 description = "Global Claude Code development standards, commands, and configuration for all projects"
 authors = [
     {name = "Byron Williams", email = "byronawilliams@gmail.com"}
