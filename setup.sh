@@ -156,8 +156,47 @@ doctor() {
     fi
 
     echo ""
+    echo "Vendored plugins (claude plugin list):"
+    if command -v claude >/dev/null 2>&1; then
+        local expected_plugins=(
+            "superpowers@superpowers-dev"
+            "document-skills@anthropic-agent-skills"
+            "example-skills@anthropic-agent-skills"
+            "claude-api@anthropic-agent-skills"
+            "claude-code-setup@claude-plugins-official"
+            "claude-md-management@claude-plugins-official"
+            "session-report@claude-plugins-official"
+            "hookify@claude-plugins-official"
+            "pr-review-toolkit@claude-plugins-official"
+            "code-review@claude-plugins-official"
+        )
+        local installed
+        local missing=0
+        if ! installed="$(claude plugin list 2>/dev/null)"; then
+            log_warn "claude plugin list failed; cannot verify installed plugins"
+            missing=${#expected_plugins[@]}
+        else
+            for pkg in "${expected_plugins[@]}"; do
+                if grep -qF "$pkg" <<< "$installed"; then
+                    log_ok "${pkg}"
+                else
+                    log_warn "${pkg} NOT installed"
+                    missing=$((missing + 1))
+                fi
+            done
+        fi
+        if (( missing > 0 )); then
+            log_warn "${missing} plugin(s) missing. Run ${REPO_DIR}/scripts/install-vendored-plugins.sh"
+            broken=$((broken + missing))
+        fi
+    else
+        log_warn "claude CLI not found; install Claude Code to enable plugin verification"
+        broken=$((broken + 1))
+    fi
+
+    echo ""
     if (( broken > 0 )); then
-        log_warn "${broken} symlink(s) need attention. Run ./setup.sh to fix."
+        log_warn "${broken} item(s) need attention. See messages above."
         exit 1
     fi
     log_ok "All checks passed."
@@ -190,6 +229,49 @@ ensure_submodules() {
         log_info "Initializing submodules"
         run_or_dry git -C "${REPO_DIR}" submodule update --init --recursive
     fi
+    return 0
+}
+
+# Refresh the plugin cache for plugins backed by local submodules. Plugin
+# install copies files from the submodule into ~/.claude/plugins/cache/ at
+# install time, so submodule updates do NOT propagate automatically. This
+# closes that gap. Plugins from the remote claude-plugins-official
+# marketplace update from GitHub on their own and are skipped here.
+sync_local_plugins() {
+    local local_plugins=(
+        "superpowers@superpowers-dev"
+        "document-skills@anthropic-agent-skills"
+        "example-skills@anthropic-agent-skills"
+        "claude-api@anthropic-agent-skills"
+    )
+
+    if ! command -v claude >/dev/null 2>&1; then
+        log_skip "claude CLI not found; skipping plugin cache sync"
+        return 0
+    fi
+
+    local installed
+    if ! installed="$(claude plugin list 2>/dev/null)"; then
+        log_warn "claude plugin list failed; skipping plugin cache sync"
+        return 1
+    fi
+
+    for pkg in "${local_plugins[@]}"; do
+        if ! grep -qF "$pkg" <<< "$installed"; then
+            log_skip "${pkg} not installed; run ${REPO_DIR}/scripts/install-vendored-plugins.sh"
+            continue
+        fi
+        if (( DRY_RUN )); then
+            echo "  [dry]  claude plugin update ${pkg}"
+            continue
+        fi
+        local err_output=""
+        if ! err_output="$(claude plugin update "$pkg" 2>&1)"; then
+            log_warn "failed to sync ${pkg}: ${err_output}"
+        else
+            log_ok "synced ${pkg}"
+        fi
+    done
     return 0
 }
 
@@ -284,6 +366,7 @@ fi
 echo ""
 
 ensure_submodules
+sync_local_plugins
 
 run_or_dry mkdir -p "$CLAUDE_DIR"
 
