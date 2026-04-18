@@ -1,21 +1,77 @@
 # CHANGELOG
+## v0.10.0 (2026-04-18)
+### Chore
+* chore(deps): sync uv.lock to 0.9.0
 
-## [Unreleased]
+Align uv.lock with pyproject.toml version bump that landed on main.
 
+Co-Authored-By: Claude Sonnet 4.6 &lt;noreply@anthropic.com&gt; ([`a327049`](https://github.com/ByronWilliamsCPA/.claude/commit/a327049056921a0bc9dcec1bae44b292f48ed891))
 ### Feature
+* feat(setup): auto-sync local plugin cache after submodule updates
 
-* feat(setup): add `scripts/install-vendored-plugins.sh` to register local
-  marketplaces (`superpowers-dev`, `anthropic-agent-skills`) and install all
-  vendored plugins in one idempotent step. Required so that namespaced skill
-  references (e.g. `superpowers:subagent-driven-development`) resolve correctly
-  via the plugin system rather than falling through to manual execution.
+Plugin install copies files from the submodule into ~/.claude/plugins/cache/
+at install time, so submodule pointer updates do not propagate until the
+plugin cache is refreshed. Without this, the namespaced skill form (used
+by cross-skill handoffs like writing-plans -&gt; superpowers:subagent-driven-development)
+silently runs against stale vendor code after a git submodule update.
 
-* feat(setup): extend `setup.sh --doctor` to verify that all expected plugins
-  are installed and surface missing ones with a remediation command.
+Adds sync_local_plugins() called after ensure_submodules in the main flow.
+Skips remote claude-plugins-official plugins (those auto-update from
+GitHub). Honors --dry-run, gracefully skips when claude CLI is absent or
+plugins are not yet installed.
 
-* feat(setup): add `sync_local_plugins()` to `setup.sh` to refresh the plugin
-  cache for locally-vendored plugins after submodule updates.
+Co-Authored-By: Claude Sonnet 4.6 &lt;noreply@anthropic.com&gt; ([`be77b9a`](https://github.com/ByronWilliamsCPA/.claude/commit/be77b9a695770a09a0fc835c3e095f881e10a3f1))
+* feat(setup): add vendored plugin installer and doctor check
 
+Register vendored submodules (superpowers, anthropics-skills) as local
+Claude Code marketplaces and install the 10 expected plugins at user scope.
+Without this step, namespaced skill invocations (e.g.
+superpowers:subagent-driven-development, used by writing-plans) silently
+fall through because Claude Code treats symlink-loaded and plugin-loaded
+skills as distinct identifiers.
+
+Doctor mode (./setup.sh doctor) now verifies the expected plugin list is
+installed and flags missing entries with a pointer to the installer.
+
+Co-Authored-By: Claude Sonnet 4.6 &lt;noreply@anthropic.com&gt; ([`3da1bd1`](https://github.com/ByronWilliamsCPA/.claude/commit/3da1bd1aef57f43bcd1ec38dfc1f1e9bc00370ea))
+### Fix
+* fix(setup): address pr-review findings on vendored plugin installer
+
+install-vendored-plugins.sh:
+- Use pwd -P for REPO_DIR to resolve ~/.claude/scripts symlink correctly
+- Replace || true on marketplace and plugin list with explicit error exit
+- Replace GNU-only grep -qE (\s, \b) with grep -qF for POSIX portability
+- Surface stderr in error messages for marketplace add and plugin install
+- Add pre-flight check that claude-plugins-official is registered before
+  attempting remote plugin installs
+- Remove unused log_info() function
+
+setup.sh doctor():
+- Replace || true on plugin list with explicit error path that increments
+  broken counter so doctor fails on CLI errors
+- Replace GNU grep with grep -qF
+- Absolute-path the install command in the missing-plugin warning
+- Make claude CLI absence fail-closed: increment broken rather than skip
+
+setup.sh sync_local_plugins():
+- Replace || true on plugin list with explicit return 1
+- Replace GNU grep with grep -qF
+- Surface stderr in log_warn on plugin update failure
+- Absolute-path the install command in the not-installed skip message
+
+README.md: fix anthropics-skills -&gt; anthropic-agent-skills in narrative
+
+CHANGELOG.md: add [Unreleased] section covering the three new features
+
+.pre-commit-config.yaml: forward-port the TruffleHog worktree fix
+(already on main via a290ab5; included here so pre-commit passes
+locally when committing in this worktree before merge)
+
+Co-Authored-By: Claude Sonnet 4.6 &lt;noreply@anthropic.com&gt; ([`230dc09`](https://github.com/ByronWilliamsCPA/.claude/commit/230dc0936c644da09b7a6ceb2fe21a4520e66727))
+### Unknown
+* Merge pull request #25 from ByronWilliamsCPA/chore/settings-hardening-and-plugins
+
+chore(setup): add vendored plugin installer and sync uv.lock ([`a7d63f0`](https://github.com/ByronWilliamsCPA/.claude/commit/a7d63f0d9e26da7093bd783985732620dbcd70c1))
 ## v0.9.1 (2026-04-18)
 ### Documentation
 * docs(standards): add structured output contracts to agent-to-agent interfaces
