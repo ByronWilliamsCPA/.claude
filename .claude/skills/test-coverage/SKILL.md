@@ -52,8 +52,13 @@ When invoked with `generate` or `generate <file_path>`:
    d. Run generated tests: `pytest <test_file> --cov=<source> -v`
    e. If tests fail, feed errors back to writer (up to 3 iterations)
    f. Once passing, spawn test-reviewer subagent for quality check.
-      Require the reviewer to return a JSON object:
+      Require the reviewer to return only a JSON object matching this schema:
       `{"verdict": "APPROVE"|"NEEDS_WORK", "issues": [str]}`
+      Schema notation: `|` separates allowed values; `[str]` means an array
+      of strings. The reviewer must emit a concrete JSON instance, not the
+      schema notation itself.
+      Example APPROVE response:    `{"verdict": "APPROVE", "issues": []}`
+      Example NEEDS_WORK response: `{"verdict": "NEEDS_WORK", "issues": ["add test for empty input"]}`
       The `issues` list is required when verdict is `NEEDS_WORK` (each entry
       is a specific, actionable instruction for the writer); empty list on
       `APPROVE`. A response without this structure should be treated as

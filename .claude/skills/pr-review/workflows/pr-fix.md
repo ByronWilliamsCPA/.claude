@@ -720,13 +720,19 @@ mcp__pal__tiered_consensus(
               symptoms to recur?
            3. What is the most likely path to resolution?
 
-           Return a JSON object:
-           {
-             \"can_retry\": <bool>,
-             \"root_cause\": \"<one paragraph>\",
-             \"blocker\": \"<specific reason automation cannot resolve this — required when can_retry is false>\",
-             \"proposed_fix\": \"<specific targeted fix to attempt — required when can_retry is true>\"
-           }"
+           Return only a JSON object with this shape (no surrounding prose):
+
+             {
+               \"can_retry\": <bool>,
+               \"root_cause\": \"<one paragraph>\",
+               \"blocker\": \"<specific reason automation cannot resolve this; required when can_retry is false>\",
+               \"proposed_fix\": \"<specific targeted fix to attempt; required when can_retry is true>\"
+             }
+
+           Example can_retry=true response:
+             {\"can_retry\": true, \"root_cause\": \"flaky network call\", \"blocker\": \"\", \"proposed_fix\": \"add retry with backoff\"}
+           Example can_retry=false response:
+             {\"can_retry\": false, \"root_cause\": \"test asserts business rule now intentionally changed\", \"blocker\": \"requires product decision\", \"proposed_fix\": \"\"}"
 )
 ```
 
@@ -743,7 +749,7 @@ Completed 2 re-fix cycles. Remaining issues:
 
 PAL diagnosis:
   Root cause:    {root_cause from tiered_consensus}
-  Can retry:     {yes — proposed fix: {proposed_fix} / no — blocker: {blocker}}
+  Can retry:     {yes, proposed fix: {proposed_fix} | no, blocker: {blocker}}
 
 Options:
 1. {If can_retry: "Apply targeted fix: {proposed_fix}" / If not: "Keep worktree for manual work"}
