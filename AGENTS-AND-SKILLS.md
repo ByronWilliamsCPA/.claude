@@ -149,6 +149,13 @@ actionable recommendations.
 
 ### Writing & Content
 
+**[ai-detection-agent](/.claude/agents/ai-detection-agent.md)**
+AI content detection specialist with two modes: (1) evaluate submitted files and text for
+probabilistic AI-generation analysis using the Pangram API plus self-hosted Binoculars and
+Fast-DetectGPT on the P40 GPU; (2) audit writing pipeline outputs to identify detection
+vulnerabilities and recommend targeted revisions to reference library prompts and templates.
+Cross-references findings against `.claude/standards/ai-detection-landscape.md`.
+
 **[document-drafter](/.claude/agents/document-drafter.md)**
 Pre-pipeline generative agent. Produces first drafts calibrated to the author's voice from outlines,
 bullet points, or contextual prompts. Outputs feed directly into the three-stage editing pipeline.
