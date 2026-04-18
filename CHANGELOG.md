@@ -1,4 +1,72 @@
 # CHANGELOG
+## v0.9.1 (2026-04-18)
+### Documentation
+* docs(standards): add structured output contracts to agent-to-agent interfaces
+
+phase-gate: scope-analyzer and phase-reviewer agents now return typed JSON
+envelopes (deliverables array with status enum, gates array with PASS/FAIL,
+coverage_pct float, verdict) so the synthesis step reads fields rather than
+parsing prose tables.
+
+test-coverage: test-reviewer must return {&#34;verdict&#34;: &#34;APPROVE&#34;|&#34;NEEDS_WORK&#34;,
+&#34;issues&#34;: [str]}. The issues list is required on NEEDS_WORK and passed
+verbatim to the writer as the revision brief. Unparseable output is treated
+as NEEDS_WORK.
+
+pr-fix: stuck-loop PAL diagnosis now returns {&#34;can_retry&#34;: bool,
+&#34;root_cause&#34;: str, &#34;blocker&#34;: str, &#34;proposed_fix&#34;: str}. The can_retry
+field drives the options presented to the user — proposed_fix surfaces as
+Option 1 when retrying is viable, blocker surfaces when it is not.
+
+supervisor.md: adds Agent Output Format section with the when/when-not rule
+(structure for machine-consumed results, prose for human-facing output),
+the five standard envelope shapes, and an example task prompt snippet.
+
+https://claude.ai/code/session_013eTYt5xiLPb87w7gnZZ9CR ([`745fe02`](https://github.com/ByronWilliamsCPA/.claude/commit/745fe022992869c778e9921fb81c5a6b9d3977a0))
+* docs(standards): apply lessons from Claude Code system prompt analysis
+
+Add verification failure modes to testing.md: names the specific LLM
+shortcuts that pass as verification but are not (reading source, running
+test suite only, type-check reliance), and introduces the BLOCKED verdict
+for when runtime observation is unavailable.
+
+Add authorization failure modes to settings-and-permissions.md: documents
+that questions are not consent and silence is not consent, two runtime
+principles not captured by the permissions schema.
+
+Trim CLAUDE.md development philosophy section: removes five generic
+priority items that Claude follows without instruction, retaining only
+the project-specific scope tracing rule.
+
+https://claude.ai/code/session_013eTYt5xiLPb87w7gnZZ9CR ([`0cfd192`](https://github.com/ByronWilliamsCPA/.claude/commit/0cfd1920b3e8810122be4c1a5895a4ad8ced23e0))
+### Fix
+* fix(review): address Copilot findings on PR #26 documentation
+
+- supervisor.md: expand evidence rule to list 4 acceptable field
+  patterns (reason, issues, blocker/proposed_fix, domain arrays);
+  add concrete JSON examples alongside schema notation in envelope table
+- phase-gate/SKILL.md: fix NOT STARTED -&gt; NOT_STARTED in scope-analyzer
+  prompt; add BLOCKED verdict + required blocker field to phase-reviewer;
+  add concrete JSON examples to both agent task prompts
+- test-coverage/SKILL.md: label schema notation explicitly; add concrete
+  APPROVE and NEEDS_WORK JSON examples for test-reviewer envelope
+- pr-fix.md: replace em-dashes in PAL JSON field comments; restructure
+  tiered_consensus prompt to use readable JSON block with concrete examples
+
+Co-Authored-By: Claude Sonnet 4.6 &lt;noreply@anthropic.com&gt; ([`d26817f`](https://github.com/ByronWilliamsCPA/.claude/commit/d26817f4f244b78bd3b94ac2bd480b0460c43310))
+* fix(ci): handle TruffleHog git scanner failure in git worktrees
+
+In a git worktree, .git is a symlink file rather than a directory.
+TruffleHog&#39;s git source tries to open .git/index as a path and errors
+with &#34;not a directory&#34;. Wrap the hook entry in a bash conditional:
+in worktrees, scan only staged files via filesystem mode; in normal
+checkouts, use the original git history scan unchanged.
+
+Co-Authored-By: Claude Sonnet 4.6 &lt;noreply@anthropic.com&gt; ([`a290ab5`](https://github.com/ByronWilliamsCPA/.claude/commit/a290ab50f80f745c764341358fb52df2c2f1bbf6))
+### Unknown
+* Merge pull request #26 from ByronWilliamsCPA/claude/review-system-prompts-yi29Y
+
+docs(standards): verification failure modes and structured agent output contracts ([`ad95d1e`](https://github.com/ByronWilliamsCPA/.claude/commit/ad95d1e7ccca978a8457302963d601aa9a7d1d69))
 ## v0.9.0 (2026-04-17)
 ### Feature
 * feat(skills): add security hotspot coverage to pr-review and sonarcloud skills
