@@ -180,8 +180,8 @@ Tier coverage (from pr-review findings):
 
 Fixability:
   Auto-fixable:       {N}
-  Agent-evaluated:    {N} (assigned to specialized agents — not deferred)
-  Human-only:         {N} (design debates, security policy decisions — listed at end)
+  Agent-evaluated:    {N} (assigned to specialized agents, not deferred)
+  Human-only:         {N} (design debates, security policy decisions; listed at end)
 
 Proceed? (yes / review details / cancel)
 ```

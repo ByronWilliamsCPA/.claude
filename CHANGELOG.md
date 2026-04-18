@@ -1,4 +1,17 @@
 # CHANGELOG
+
+## [Unreleased]
+
+### Feature
+
+* feat(pr-fix): expand fix scope and route non-auto-fixable findings to specialized agents
+
+Tier coverage now addresses Critical, Important, and Suggested findings on every
+pr-fix run. Non-auto-fixable findings are no longer silently deferred; they route
+to domain-specific agents (test-writer, type-design-analyzer, code-reviewer,
+security-auditor, owasp-web, diagram-maintenance-agent) in parallel after all
+auto-fixes are applied.
+
 ## v0.9.0 (2026-04-17)
 ### Feature
 * feat(skills): add security hotspot coverage to pr-review and sonarcloud skills
