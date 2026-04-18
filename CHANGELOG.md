@@ -1,4 +1,17 @@
 # CHANGELOG
+
+## [Unreleased]
+
+### Feature
+
+* feat(pr-fix): expand fix scope and route non-auto-fixable findings to specialized agents
+
+Tier coverage now addresses Critical, Important, and Suggested findings on every
+pr-fix run. Non-auto-fixable findings are no longer silently deferred; they route
+to domain-specific agents (test-writer, type-design-analyzer, code-reviewer,
+security-auditor, owasp-web, diagram-maintenance-agent) in parallel after all
+auto-fixes are applied.
+
 ## v0.10.0 (2026-04-18)
 ### Chore
 * chore(deps): sync uv.lock to 0.9.0
@@ -140,6 +153,7 @@ Co-Authored-By: Claude Sonnet 4.6 &lt;noreply@anthropic.com&gt; ([`a290ab5`](htt
 * Merge pull request #26 from ByronWilliamsCPA/claude/review-system-prompts-yi29Y
 
 docs(standards): verification failure modes and structured agent output contracts ([`ad95d1e`](https://github.com/ByronWilliamsCPA/.claude/commit/ad95d1e7ccca978a8457302963d601aa9a7d1d69))
+
 ## v0.9.0 (2026-04-17)
 ### Feature
 * feat(skills): add security hotspot coverage to pr-review and sonarcloud skills
