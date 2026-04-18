@@ -51,8 +51,20 @@ When invoked with `generate` or `generate <file_path>`:
    c. Writer generates tests following project conventions from CLAUDE.md
    d. Run generated tests: `pytest <test_file> --cov=<source> -v`
    e. If tests fail, feed errors back to writer (up to 3 iterations)
-   f. Once passing, spawn test-reviewer subagent for quality check
-   g. If reviewer returns NEEDS_WORK, send feedback to writer (up to 2 rounds)
+   f. Once passing, spawn test-reviewer subagent for quality check.
+      Require the reviewer to return only a JSON object matching this schema:
+      `{"verdict": "APPROVE"|"NEEDS_WORK", "issues": [str]}`
+      Schema notation: `|` separates allowed values; `[str]` means an array
+      of strings. The reviewer must emit a concrete JSON instance, not the
+      schema notation itself.
+      Example APPROVE response:    `{"verdict": "APPROVE", "issues": []}`
+      Example NEEDS_WORK response: `{"verdict": "NEEDS_WORK", "issues": ["add test for empty input"]}`
+      The `issues` list is required when verdict is `NEEDS_WORK` (each entry
+      is a specific, actionable instruction for the writer); empty list on
+      `APPROVE`. A response without this structure should be treated as
+      `NEEDS_WORK` with a single issue: "reviewer returned unparseable output."
+   g. If reviewer returns NEEDS_WORK, pass the `issues` list verbatim to
+      the writer as the revision brief (up to 2 rounds)
    h. If reviewer returns APPROVE, commit the test file
 4. Re-run full coverage and present before/after comparison
 

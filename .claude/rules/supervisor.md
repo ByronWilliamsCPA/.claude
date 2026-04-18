@@ -158,6 +158,57 @@ Only after this pass should the File Structure section of any plan be written.
 This prevents the plan from specifying helpers that already exist or patterns
 that diverge from established conventions.
 
+## Agent Output Format
+
+When an agent's output feeds a downstream automated step (another agent, a
+gate, a filter), specify a structured output envelope in the agent prompt.
+Always pair any verdict or decision field with a mandatory evidence field so
+the downstream step has reasoning, not just a verdict. Acceptable evidence
+fields include:
+
+- `reason` (single-string summary), or
+- `issues` (array of actionable strings for revision loops), or
+- `blocker` plus `proposed_fix` (required pair for retry decisions), or
+- a domain-specific evidence array whose items carry per-item detail (for
+  example, `deliverables[].detail`, `gates[].detail`, or `scope_creep[]`).
+
+**When to require structure:** the agent's result is consumed by code or
+another agent before a human sees it.
+
+**When to leave as prose:** the agent's result is the final output to the user
+(plans, summaries, documentation, architectural analyses).
+
+Minimum envelope patterns. The Schema column uses schema notation (union `|`
+means "one-of", `[str]` means "array of strings"); the Example column shows
+a concrete parseable JSON instance. Agents must emit the concrete form, not
+the schema notation itself.
+
+| Use case | Schema | Concrete example |
+| --- | --- | --- |
+| Binary decision | `{"ok": bool, "reason": str}` | `{"ok": true, "reason": "all inputs valid"}` |
+| Pass/fail verdict | `{"verdict": "PASS"\|"FAIL"\|"BLOCKED"\|"SKIP", "reason": str}` | `{"verdict": "PASS", "reason": "all gates green"}` |
+| Approve/revise loop | `{"verdict": "APPROVE"\|"NEEDS_WORK", "issues": [str]}` | `{"verdict": "NEEDS_WORK", "issues": ["missing null check on line 42"]}` |
+| Findings list | `{"findings": [str], "confidence": float}` | `{"findings": ["fallback swallows IOError"], "confidence": 0.9}` |
+| Retry decision | `{"can_retry": bool, "blocker": str, "proposed_fix": str}` | `{"can_retry": true, "blocker": "", "proposed_fix": "retry with explicit timeout"}` |
+
+The `issues` list on `NEEDS_WORK` and the `blocker`/`proposed_fix` fields on
+retry decisions are **required** when their condition is true; they must not be
+omitted or left empty. A response that omits a required field should be treated
+as a failed verdict (for example, `NEEDS_WORK` with issue: "agent returned unparseable output").
+
+Specify the exact shape in the agent task prompt so the model commits to the
+structure before generating output. Example instruction to add to a task:
+
+```
+Return only a JSON object with this shape (no surrounding prose):
+  {"verdict": "APPROVE" or "NEEDS_WORK", "issues": <array of strings>}
+
+Example APPROVE response:    {"verdict": "APPROVE", "issues": []}
+Example NEEDS_WORK response: {"verdict": "NEEDS_WORK", "issues": ["missing null check"]}
+
+The issues array is required when verdict is NEEDS_WORK. Return an empty array on APPROVE.
+```
+
 ## Sources
 
 - Thariq on skills (Mar 17 2026): <https://x.com/trq212/status/2033949937936085378>
