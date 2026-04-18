@@ -298,7 +298,7 @@ cd ~/dev/.claude && ./setup.sh
 ```
 
 The third step registers the vendored submodules (`superpowers`,
-`anthropics-skills`) as local Claude Code marketplaces and installs their
+`anthropic-agent-skills`) as local Claude Code marketplaces and installs their
 plugins. Without this step, vendored skills resolve only by bare name (e.g.,
 `subagent-driven-development`) and any cross-skill handoff that invokes the
 namespaced form (e.g., `superpowers:subagent-driven-development`, used by
