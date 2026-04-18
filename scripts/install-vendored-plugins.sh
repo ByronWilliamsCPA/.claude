@@ -16,7 +16,8 @@
 
 set -euo pipefail
 
-REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# pwd -P resolves the physical path, handling the ~/.claude/scripts symlink.
+REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 
 # Marketplaces to register: <local-path>:<expected-marketplace-name>
 # The marketplace name is taken from the submodule's
@@ -44,7 +45,6 @@ PLUGINS=(
     "code-review@claude-plugins-official"
 )
 
-log_info() { echo "  [info] $*"; }
 log_ok()   { echo "  [ok]   $*"; }
 log_skip() { echo "  [skip] $*"; }
 log_err()  { echo "  [err]  $*" >&2; }
@@ -56,7 +56,11 @@ command -v claude >/dev/null 2>&1 || {
 
 # ---------- Marketplaces ----------
 echo "Registering marketplaces..."
-existing_markets="$(claude plugin marketplace list 2>/dev/null || true)"
+existing_markets=""
+if ! existing_markets="$(claude plugin marketplace list 2>/dev/null)"; then
+    log_err "claude plugin marketplace list failed; cannot determine registered marketplaces"
+    exit 1
+fi
 
 for entry in "${MARKETPLACES[@]}"; do
     path="${entry%%:*}"
@@ -68,36 +72,49 @@ for entry in "${MARKETPLACES[@]}"; do
         exit 1
     fi
 
-    if grep -qE "^\s*❯?\s*${name}\b" <<< "$existing_markets"; then
+    if grep -qF "$name" <<< "$existing_markets"; then
         log_skip "marketplace $name already registered"
         continue
     fi
 
-    if claude plugin marketplace add "$path" --scope user >/dev/null 2>&1; then
-        log_ok "marketplace added: $name ($path)"
-    else
-        log_err "marketplace add failed for $name"
+    err_output=""
+    if ! err_output="$(claude plugin marketplace add "$path" --scope user 2>&1)"; then
+        log_err "marketplace add failed for $name: ${err_output}"
         exit 1
     fi
+    log_ok "marketplace added: $name ($path)"
 done
 
 # ---------- Plugins ----------
 echo ""
 echo "Installing plugins..."
-existing_plugins="$(claude plugin list 2>/dev/null || true)"
+
+# claude-plugins-official is expected pre-registered by Claude Code defaults.
+# Verify before attempting remote installs so failures are diagnosed clearly.
+if ! grep -qF "claude-plugins-official" <<< "$existing_markets"; then
+    log_err "claude-plugins-official marketplace not found; remote plugins cannot be installed"
+    log_err "  Check that Claude Code user defaults are intact: claude plugin marketplace list"
+    exit 1
+fi
+
+existing_plugins=""
+if ! existing_plugins="$(claude plugin list 2>/dev/null)"; then
+    log_err "claude plugin list failed; cannot determine installed plugins"
+    exit 1
+fi
 
 for pkg in "${PLUGINS[@]}"; do
-    if grep -qE "^\s*❯?\s*${pkg}\b" <<< "$existing_plugins"; then
+    if grep -qF "$pkg" <<< "$existing_plugins"; then
         log_skip "plugin $pkg already installed"
         continue
     fi
 
-    if claude plugin install "$pkg" --scope user >/dev/null 2>&1; then
-        log_ok "plugin installed: $pkg"
-    else
-        log_err "plugin install failed for $pkg"
+    err_output=""
+    if ! err_output="$(claude plugin install "$pkg" --scope user 2>&1)"; then
+        log_err "plugin install failed for $pkg: ${err_output}"
         exit 1
     fi
+    log_ok "plugin installed: $pkg"
 done
 
 echo ""

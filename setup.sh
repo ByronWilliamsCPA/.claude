@@ -171,22 +171,27 @@ doctor() {
             "code-review@claude-plugins-official"
         )
         local installed
-        installed="$(claude plugin list 2>/dev/null || true)"
         local missing=0
-        for pkg in "${expected_plugins[@]}"; do
-            if grep -qE "^\s*❯?\s*${pkg}\b" <<< "$installed"; then
-                log_ok "${pkg}"
-            else
-                log_warn "${pkg} NOT installed"
-                missing=$((missing + 1))
-            fi
-        done
+        if ! installed="$(claude plugin list 2>/dev/null)"; then
+            log_warn "claude plugin list failed; cannot verify installed plugins"
+            missing=${#expected_plugins[@]}
+        else
+            for pkg in "${expected_plugins[@]}"; do
+                if grep -qF "$pkg" <<< "$installed"; then
+                    log_ok "${pkg}"
+                else
+                    log_warn "${pkg} NOT installed"
+                    missing=$((missing + 1))
+                fi
+            done
+        fi
         if (( missing > 0 )); then
-            log_warn "${missing} plugin(s) missing. Run ./scripts/install-vendored-plugins.sh"
+            log_warn "${missing} plugin(s) missing. Run ${REPO_DIR}/scripts/install-vendored-plugins.sh"
             broken=$((broken + missing))
         fi
     else
-        log_warn "claude CLI not found; skipping plugin checks"
+        log_warn "claude CLI not found; install Claude Code to enable plugin verification"
+        broken=$((broken + 1))
     fi
 
     echo ""
@@ -246,21 +251,25 @@ sync_local_plugins() {
     fi
 
     local installed
-    installed="$(claude plugin list 2>/dev/null || true)"
+    if ! installed="$(claude plugin list 2>/dev/null)"; then
+        log_warn "claude plugin list failed; skipping plugin cache sync"
+        return 1
+    fi
 
     for pkg in "${local_plugins[@]}"; do
-        if ! grep -qE "^\s*❯?\s*${pkg}\b" <<< "$installed"; then
-            log_skip "${pkg} not installed; run scripts/install-vendored-plugins.sh"
+        if ! grep -qF "$pkg" <<< "$installed"; then
+            log_skip "${pkg} not installed; run ${REPO_DIR}/scripts/install-vendored-plugins.sh"
             continue
         fi
         if (( DRY_RUN )); then
             echo "  [dry]  claude plugin update ${pkg}"
             continue
         fi
-        if claude plugin update "$pkg" >/dev/null 2>&1; then
-            log_ok "synced ${pkg}"
+        local err_output=""
+        if ! err_output="$(claude plugin update "$pkg" 2>&1)"; then
+            log_warn "failed to sync ${pkg}: ${err_output}"
         else
-            log_warn "failed to sync ${pkg}"
+            log_ok "synced ${pkg}"
         fi
     done
     return 0
