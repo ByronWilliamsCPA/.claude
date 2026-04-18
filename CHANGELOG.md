@@ -12,6 +12,148 @@ to domain-specific agents (test-writer, type-design-analyzer, code-reviewer,
 security-auditor, owasp-web, diagram-maintenance-agent) in parallel after all
 auto-fixes are applied.
 
+## v0.10.0 (2026-04-18)
+### Chore
+* chore(deps): sync uv.lock to 0.9.0
+
+Align uv.lock with pyproject.toml version bump that landed on main.
+
+Co-Authored-By: Claude Sonnet 4.6 &lt;noreply@anthropic.com&gt; ([`a327049`](https://github.com/ByronWilliamsCPA/.claude/commit/a327049056921a0bc9dcec1bae44b292f48ed891))
+### Feature
+* feat(setup): auto-sync local plugin cache after submodule updates
+
+Plugin install copies files from the submodule into ~/.claude/plugins/cache/
+at install time, so submodule pointer updates do not propagate until the
+plugin cache is refreshed. Without this, the namespaced skill form (used
+by cross-skill handoffs like writing-plans -&gt; superpowers:subagent-driven-development)
+silently runs against stale vendor code after a git submodule update.
+
+Adds sync_local_plugins() called after ensure_submodules in the main flow.
+Skips remote claude-plugins-official plugins (those auto-update from
+GitHub). Honors --dry-run, gracefully skips when claude CLI is absent or
+plugins are not yet installed.
+
+Co-Authored-By: Claude Sonnet 4.6 &lt;noreply@anthropic.com&gt; ([`be77b9a`](https://github.com/ByronWilliamsCPA/.claude/commit/be77b9a695770a09a0fc835c3e095f881e10a3f1))
+* feat(setup): add vendored plugin installer and doctor check
+
+Register vendored submodules (superpowers, anthropics-skills) as local
+Claude Code marketplaces and install the 10 expected plugins at user scope.
+Without this step, namespaced skill invocations (e.g.
+superpowers:subagent-driven-development, used by writing-plans) silently
+fall through because Claude Code treats symlink-loaded and plugin-loaded
+skills as distinct identifiers.
+
+Doctor mode (./setup.sh doctor) now verifies the expected plugin list is
+installed and flags missing entries with a pointer to the installer.
+
+Co-Authored-By: Claude Sonnet 4.6 &lt;noreply@anthropic.com&gt; ([`3da1bd1`](https://github.com/ByronWilliamsCPA/.claude/commit/3da1bd1aef57f43bcd1ec38dfc1f1e9bc00370ea))
+### Fix
+* fix(setup): address pr-review findings on vendored plugin installer
+
+install-vendored-plugins.sh:
+- Use pwd -P for REPO_DIR to resolve ~/.claude/scripts symlink correctly
+- Replace || true on marketplace and plugin list with explicit error exit
+- Replace GNU-only grep -qE (\s, \b) with grep -qF for POSIX portability
+- Surface stderr in error messages for marketplace add and plugin install
+- Add pre-flight check that claude-plugins-official is registered before
+  attempting remote plugin installs
+- Remove unused log_info() function
+
+setup.sh doctor():
+- Replace || true on plugin list with explicit error path that increments
+  broken counter so doctor fails on CLI errors
+- Replace GNU grep with grep -qF
+- Absolute-path the install command in the missing-plugin warning
+- Make claude CLI absence fail-closed: increment broken rather than skip
+
+setup.sh sync_local_plugins():
+- Replace || true on plugin list with explicit return 1
+- Replace GNU grep with grep -qF
+- Surface stderr in log_warn on plugin update failure
+- Absolute-path the install command in the not-installed skip message
+
+README.md: fix anthropics-skills -&gt; anthropic-agent-skills in narrative
+
+CHANGELOG.md: add [Unreleased] section covering the three new features
+
+.pre-commit-config.yaml: forward-port the TruffleHog worktree fix
+(already on main via a290ab5; included here so pre-commit passes
+locally when committing in this worktree before merge)
+
+Co-Authored-By: Claude Sonnet 4.6 &lt;noreply@anthropic.com&gt; ([`230dc09`](https://github.com/ByronWilliamsCPA/.claude/commit/230dc0936c644da09b7a6ceb2fe21a4520e66727))
+### Unknown
+* Merge pull request #25 from ByronWilliamsCPA/chore/settings-hardening-and-plugins
+
+chore(setup): add vendored plugin installer and sync uv.lock ([`a7d63f0`](https://github.com/ByronWilliamsCPA/.claude/commit/a7d63f0d9e26da7093bd783985732620dbcd70c1))
+## v0.9.1 (2026-04-18)
+### Documentation
+* docs(standards): add structured output contracts to agent-to-agent interfaces
+
+phase-gate: scope-analyzer and phase-reviewer agents now return typed JSON
+envelopes (deliverables array with status enum, gates array with PASS/FAIL,
+coverage_pct float, verdict) so the synthesis step reads fields rather than
+parsing prose tables.
+
+test-coverage: test-reviewer must return {&#34;verdict&#34;: &#34;APPROVE&#34;|&#34;NEEDS_WORK&#34;,
+&#34;issues&#34;: [str]}. The issues list is required on NEEDS_WORK and passed
+verbatim to the writer as the revision brief. Unparseable output is treated
+as NEEDS_WORK.
+
+pr-fix: stuck-loop PAL diagnosis now returns {&#34;can_retry&#34;: bool,
+&#34;root_cause&#34;: str, &#34;blocker&#34;: str, &#34;proposed_fix&#34;: str}. The can_retry
+field drives the options presented to the user — proposed_fix surfaces as
+Option 1 when retrying is viable, blocker surfaces when it is not.
+
+supervisor.md: adds Agent Output Format section with the when/when-not rule
+(structure for machine-consumed results, prose for human-facing output),
+the five standard envelope shapes, and an example task prompt snippet.
+
+https://claude.ai/code/session_013eTYt5xiLPb87w7gnZZ9CR ([`745fe02`](https://github.com/ByronWilliamsCPA/.claude/commit/745fe022992869c778e9921fb81c5a6b9d3977a0))
+* docs(standards): apply lessons from Claude Code system prompt analysis
+
+Add verification failure modes to testing.md: names the specific LLM
+shortcuts that pass as verification but are not (reading source, running
+test suite only, type-check reliance), and introduces the BLOCKED verdict
+for when runtime observation is unavailable.
+
+Add authorization failure modes to settings-and-permissions.md: documents
+that questions are not consent and silence is not consent, two runtime
+principles not captured by the permissions schema.
+
+Trim CLAUDE.md development philosophy section: removes five generic
+priority items that Claude follows without instruction, retaining only
+the project-specific scope tracing rule.
+
+https://claude.ai/code/session_013eTYt5xiLPb87w7gnZZ9CR ([`0cfd192`](https://github.com/ByronWilliamsCPA/.claude/commit/0cfd1920b3e8810122be4c1a5895a4ad8ced23e0))
+### Fix
+* fix(review): address Copilot findings on PR #26 documentation
+
+- supervisor.md: expand evidence rule to list 4 acceptable field
+  patterns (reason, issues, blocker/proposed_fix, domain arrays);
+  add concrete JSON examples alongside schema notation in envelope table
+- phase-gate/SKILL.md: fix NOT STARTED -&gt; NOT_STARTED in scope-analyzer
+  prompt; add BLOCKED verdict + required blocker field to phase-reviewer;
+  add concrete JSON examples to both agent task prompts
+- test-coverage/SKILL.md: label schema notation explicitly; add concrete
+  APPROVE and NEEDS_WORK JSON examples for test-reviewer envelope
+- pr-fix.md: replace em-dashes in PAL JSON field comments; restructure
+  tiered_consensus prompt to use readable JSON block with concrete examples
+
+Co-Authored-By: Claude Sonnet 4.6 &lt;noreply@anthropic.com&gt; ([`d26817f`](https://github.com/ByronWilliamsCPA/.claude/commit/d26817f4f244b78bd3b94ac2bd480b0460c43310))
+* fix(ci): handle TruffleHog git scanner failure in git worktrees
+
+In a git worktree, .git is a symlink file rather than a directory.
+TruffleHog&#39;s git source tries to open .git/index as a path and errors
+with &#34;not a directory&#34;. Wrap the hook entry in a bash conditional:
+in worktrees, scan only staged files via filesystem mode; in normal
+checkouts, use the original git history scan unchanged.
+
+Co-Authored-By: Claude Sonnet 4.6 &lt;noreply@anthropic.com&gt; ([`a290ab5`](https://github.com/ByronWilliamsCPA/.claude/commit/a290ab50f80f745c764341358fb52df2c2f1bbf6))
+### Unknown
+* Merge pull request #26 from ByronWilliamsCPA/claude/review-system-prompts-yi29Y
+
+docs(standards): verification failure modes and structured agent output contracts ([`ad95d1e`](https://github.com/ByronWilliamsCPA/.claude/commit/ad95d1e7ccca978a8457302963d601aa9a7d1d69))
+
 ## v0.9.0 (2026-04-17)
 ### Feature
 * feat(skills): add security hotspot coverage to pr-review and sonarcloud skills
