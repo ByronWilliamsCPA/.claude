@@ -172,9 +172,16 @@ Issues found:
   Coverage:           {status or "not configured"}
   Agent Findings:     {N} from pr-review (if available)
 
+Tier coverage (from pr-review findings):
+  Critical:           {N} (all addressed)
+  Important:          {N} (all addressed)
+  Suggested:          {N} (all addressed)
+  Informational:      {N} (addressed if single-file, low-risk; otherwise skipped)
+
 Fixability:
   Auto-fixable:       {N}
-  Needs judgment:     {N} (will be skipped, listed at end)
+  Agent-evaluated:    {N} (assigned to specialized agents — not deferred)
+  Human-only:         {N} (design debates, security policy decisions — listed at end)
 
 Proceed? (yes / review details / cancel)
 ```
@@ -338,20 +345,32 @@ For each unresolved actionable comment:
 | Skill SKILL.md intro says "N modes" but body documents N+1 modes | Count the documented modes and update the intro sentence to match |
 | Collaboration document (e.g., `COWORK.md`) says filename is "or similar" but README specifies exact filename | Read the README for the canonical filename and update the collaboration document to match |
 
-**Always skip (mark "requires manual fix"):**
+**Assign to specialized agent (cannot auto-fix):**
+
+For each of the following, launch the named agent to evaluate the finding and
+produce a concrete fix recommendation or draft fix. Run agent evaluations in
+parallel after all auto-fixes are applied (Step 4 end). Include agent outputs
+in the Step 6 commit options and Step 8 PR summary.
+
+| Finding type | Agent to invoke | What to ask it |
+| --- | --- | --- |
+| Test coverage gaps (from review comments) | `test-writer` | Generate minimal tests covering the flagged uncovered lines |
+| Type design issues | `type-design-analyzer` | Evaluate the type and rate encapsulation/invariant expression; propose improvements |
+| Cognitive complexity (python:S3776) | `code-reviewer` | Propose the minimal refactor to reduce complexity below the threshold |
+| Complex logic bugs | `code-reviewer` | Evaluate the reported bug; propose a safe, targeted fix |
+| Security vulnerabilities (non-secret) | `security-auditor` | Assess severity, propose a remediation that does not change calling contracts |
+| Path from user-controlled data (pythonsecurity:S2083) | `owasp-web` | Evaluate the injection risk, propose input validation or path sanitization |
+| SVG regeneration | `diagram-maintenance-agent` | Regenerate SVG from the updated PlantUML source |
+| PlantUML diagram accuracy | `diagram-maintenance-agent` | Cross-reference settings files, update diagram source, regenerate SVG |
+| Force-push guard bypass | `security-auditor` | Evaluate the bypass vector, propose a configuration or hook-based guard |
+
+**Always mark human-only (no agent can resolve):**
 
 | Finding type | Reason |
 | --- | --- |
-| Test coverage gaps (from review comments) | Never auto-add tests from comments alone; see Priority 4 for Codecov-driven coverage |
-| Type design issues | Architectural judgment |
-| Cognitive complexity (python:S3776) | Extracting helpers requires design judgment |
-| Complex logic bugs | Algorithm/business logic needs human review |
-| Security vulnerabilities | Must not be auto-patched without review |
-| Path from user-controlled data (pythonsecurity:S2083) | Requires manual security review; alert user and do not auto-patch |
-| Design debates from prior PRs | Unresolved architectural decisions |
-| SVG regeneration | Requires plantuml.jar; note source was updated |
-| PlantUML diagram accuracy | Requires cross-referencing multiple settings files and SVG regeneration |
-| Force-push guard bypass via non-standard refspec forms | Requires security design review |
+| Design debates from prior PRs | Unresolved architectural decisions requiring stakeholder input |
+| GitGuardian secret detected | Alert user immediately; never auto-patch or agent-patch |
+| Reversing a deliberate product decision | Requires explicit product owner approval |
 
 ### Priority 4: Coverage gaps
 
@@ -774,7 +793,7 @@ git worktree remove {WORKTREE_PATH}
 | PR not found or closed | Stop with clear message. |
 | Worktree already exists | Remove with `--force` and re-create. |
 | Pre-commit fails after 3 attempts | Report failures, ask commit anyway or stop. |
-| Finding cannot be auto-fixed | Mark "requires manual fix", skip, continue. |
+| Finding cannot be auto-fixed | Assign to the appropriate specialized agent (see Priority 3 agent table). Mark "human-only" only when no agent applies. |
 | Push rejected (protected/diverged) | Report error. Offer Option 3 (keep worktree). |
 | SonarQube MCP unreachable | Log "SonarQube: MCP offline", continue without. |
 | No Codecov configured | Log "Coverage: not configured", continue. |
