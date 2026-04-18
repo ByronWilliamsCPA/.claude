@@ -60,7 +60,10 @@ repos:
     rev: v3.92.3
     hooks:
       - id: trufflehog
-        entry: trufflehog git file://. --since-commit HEAD --fail --no-update
+        # In git worktrees .git is a file pointer, not a directory; the git
+        # scanner cannot read the index. Fall back to scanning staged files only.
+        entry: bash -c 'if [ -f .git ]; then staged=$(git diff --cached --name-only 2>/dev/null); [ -z "$staged" ] || echo "$staged" | xargs trufflehog filesystem --fail --no-update; else trufflehog git file://. --since-commit HEAD --fail --no-update; fi'
+        pass_filenames: false
         stages: [pre-commit]
 
   # ============================================================================
