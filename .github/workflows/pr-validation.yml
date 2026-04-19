@@ -29,18 +29,12 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-    uses: ByronWilliamsCPA/.github/.github/workflows/python-pr-validation.yml@c22009ccaab0d3234819d30d9d7a03d53c531cb9 # main
+      checks: write
+    uses: ByronWilliamsCPA/.github/.github/workflows/python-ci.yml@16979833c433ecb375f884552312b9fdf8c5ba6a # main
     with:
       python-version: '3.12'
-      source-directory: 'src'
-      test-directory: 'tests'
-      require-tests: true
-      require-conventional-commits: true
-      require-description: true
-      min-description-length: 50
-      check-breaking-changes: true
-      add-size-labels: true
       coverage-threshold: 80
+      enable-dead-code-check: true
 
   # ==========================================================================
   # Additional Checks (Template-Specific)
