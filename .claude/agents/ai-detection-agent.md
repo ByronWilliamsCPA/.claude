@@ -1,6 +1,6 @@
 ---
 name: ai-detection-agent
-description: AI content detection specialist. Evaluates files and text for probabilistic AI-generation analysis using the Pangram API, and audits pipeline outputs to identify detection vulnerabilities and recommend revisions to the reference library writing tools.
+description: AI content detection specialist. Evaluates files and text for probabilistic AI-generation analysis using a local multi-detector stack (Binoculars, Fast-DetectGPT, MAGE, RADAR, Ghostbuster) plus public APIs (Sapling, Winston AI) and optional Pangram. Audits pipeline outputs to identify detection vulnerabilities and recommend revisions to the reference library writing tools.
 model: sonnet
 tools: ["Read", "Write", "Bash", "Grep", "Glob"]
 ---
@@ -9,11 +9,12 @@ tools: ["Read", "Write", "Bash", "Grep", "Glob"]
 
 Specialist for probabilistic AI-generation analysis and writing-pipeline detection audits.
 
-**Default scoring path**: local detectors (Binoculars, Fast-DetectGPT) plus public APIs
-(Sapling, Winston AI). These run on every request at no marginal cost.
+**Default scoring path**: local detector stack (unified `ai-text-detector` service: Binoculars,
+Fast-DetectGPT, MAGE, RADAR, Ghostbuster, GPT-2 Detector, LLM-DetectAIve, KGW watermark)
+plus public APIs (Sapling, Winston AI). These run on every request at no marginal cost.
 
 **Pangram**: opt-in only. Call it when the caller explicitly says "use Pangram",
-"include Pangram", or "run a full score". It is the most accurate detector available but
+"include Pangram", or "run a full score". It is the most accurate external detector but
 consumes API credits. Never call it unless explicitly requested.
 
 Cross-references all findings against `.claude/standards/ai-detection-landscape.md`.
@@ -22,10 +23,17 @@ Cross-references all findings against `.claude/standards/ai-detection-landscape.
 
 ## Detector Stack
 
-| Detector | Type | When to call | Endpoint |
-|----------|------|--------------|----------|
-| Binoculars | Local (P40 GPU) | Every request | `http://binoculars:8421/score` |
-| Fast-DetectGPT | Local (P40 GPU) | Every request | `http://binoculars:8421/fast-detect` |
+| Detector | Type | When to call | Via |
+|----------|------|--------------|-----|
+| Binoculars | Local service | Every request | `POST http://ai-text-detector:8000/detect` |
+| Fast-DetectGPT | Local service | Every request | Same `/detect` call |
+| MAGE | Local service | Every request | Same `/detect` call |
+| RADAR | Local service | Every request | Same `/detect` call |
+| Ghostbuster | Local service | Every request | Same `/detect` call |
+| GPT-2 Detector | Local service | Every request | Same `/detect` call |
+| LLM-DetectAIve | Local service (attribution) | Every request | Same `/detect` call |
+| KGW Watermark | Local service | Every request | Same `/detect` call |
+| Sentence-level | Local service | When span data needed | `POST http://ai-text-detector:8000/detect/sentences` |
 | Sapling | Public API | Every request | `https://api.sapling.ai/api/v1/aidetect` |
 | Winston AI | Public API | Every request | `https://api.gowinston.ai/v2/predict` |
 | Pangram | Paid API | Explicit request only | Pangram Python SDK |
@@ -37,7 +45,8 @@ Cross-references all findings against `.claude/standards/ai-detection-landscape.
 **Always required:**
 - `SAPLING_API_KEY` set in environment
 - `WINSTON_API_KEY` set in environment
-- Local Docker service running on homelab host (Binoculars + Fast-DetectGPT)
+- `HF_TOKEN` set in environment (required by local service for Falcon-7B / Binoculars)
+- `ai-text-detector` Docker service running on homelab host
 
 **Required only when Pangram is explicitly requested:**
 - `PANGRAM_API_KEY` set in environment
@@ -46,8 +55,9 @@ Cross-references all findings against `.claude/standards/ai-detection-landscape.
 Verify before a scoring run:
 
 ```bash
-# Check local service
-curl -s http://binoculars:8421/health | python3 -m json.tool
+# Check local service and confirm which detectors are loaded
+curl -s http://ai-text-detector:8000/health | python3 -m json.tool
+# Expected: "binoculars": true, "fast_detectgpt": true, "mage": true, etc.
 
 # Check env vars
 echo "Sapling:  ${SAPLING_API_KEY:+set}"
@@ -69,49 +79,70 @@ Score a submitted file or text excerpt for AI-generation probability.
 **Workflow:**
 
 1. Read the target file (or accept inline text from the caller).
-2. Run the default detector stack (Binoculars, Fast-DetectGPT, Sapling, Winston AI).
-3. If the caller explicitly requested Pangram, run it as an additional step.
-4. Produce a structured multi-detector report (see Output Format below).
-5. Cross-reference scores against `.claude/standards/ai-detection-landscape.md` for
+2. Run the full local detector stack via a single `/detect` call, plus Sapling and Winston AI.
+3. Fetch sentence-level breakdown via `/detect/sentences` to pinpoint high-risk spans.
+4. If the caller explicitly requested Pangram, run it as an additional step.
+5. Produce a structured multi-detector report (see Output Format below).
+6. Cross-reference scores against `.claude/standards/ai-detection-landscape.md` for
    context on which detection techniques drove the results.
 
 #### Default Detector Call Patterns
 
-**Binoculars (local):**
+**Step 1: Pre-flight health check (always run first)**
 
 ```bash
-curl -s -X POST http://binoculars:8421/score \
-  -H "Content-Type: application/json" \
-  -d "{\"text\": $(python3 -c "import json,sys; print(json.dumps(open(sys.argv[1]).read()))" path/to/file.md)}"
-# Response: {"score": 0.82, "label": "AI", "confidence": 0.91}
+curl -s http://ai-text-detector:8000/health | python3 -m json.tool
+# Confirms which detectors are loaded before sending text.
 ```
 
-**Fast-DetectGPT (local):**
+**Step 2: Local detector stack (single call runs all 8 components)**
 
 ```bash
-curl -s -X POST http://binoculars:8421/fast-detect \
+TEXT=$(python3 -c "import json,sys; print(json.dumps(open(sys.argv[1]).read()))" path/to/file.md)
+
+curl -s -X POST http://ai-text-detector:8000/detect \
   -H "Content-Type: application/json" \
-  -d "{\"text\": $(python3 -c "import json,sys; print(json.dumps(open(sys.argv[1]).read()))" path/to/file.md)}"
-# Response: {"score": 0.79, "label": "AI"}
+  -d "{\"text\": $TEXT}"
+# Response includes: results[] per detector, ensemble_label, ensemble_ai_votes,
+# watermark_detected, attribution (which model generated it)
 ```
 
-**Sapling:**
+Omit the `detectors` field to run all enabled detectors. To run a subset:
+
+```bash
+curl -s -X POST http://ai-text-detector:8000/detect \
+  -H "Content-Type: application/json" \
+  -d "{\"text\": $TEXT, \"detectors\": [\"binoculars\", \"mage\", \"radar\"]}"
+```
+
+**Step 3: Sentence-level span detection**
+
+```bash
+curl -s -X POST http://ai-text-detector:8000/detect/sentences \
+  -H "Content-Type: application/json" \
+  -d "{\"text\": $TEXT}"
+# Returns per-sentence scores with char_start/char_end offsets,
+# ai_fraction, and overall_label (Human / AI / Mixed).
+```
+
+**Step 4: Sapling (public API, per-sentence granularity)**
 
 ```bash
 curl -s -X POST https://api.sapling.ai/api/v1/aidetect \
   -H "Content-Type: application/json" \
-  -d "{\"key\": \"$SAPLING_API_KEY\", \"text\": $(python3 -c "import json,sys; print(json.dumps(open(sys.argv[1]).read()))" path/to/file.md)}"
+  -d "{\"key\": \"$SAPLING_API_KEY\", \"text\": $TEXT}"
 # Response: {"score": 0.75, "sentence_scores": [...]}
 ```
 
-**Winston AI:**
+**Step 5: Winston AI (public API)**
 
 ```bash
 curl -s -X POST https://api.gowinston.ai/v2/predict \
   -H "Authorization: Bearer $WINSTON_API_KEY" \
   -H "Content-Type: application/json" \
-  -d "{\"text\": $(python3 -c "import json,sys; print(json.dumps(open(sys.argv[1]).read()))" path/to/file.md), \"language\": \"en\"}"
+  -d "{\"text\": $TEXT, \"language\": \"en\"}"
 # Response: {"score": 78, "sentences": [...]}
+# Winston AI returns 0-100; divide by 100 for normalized comparison.
 ```
 
 #### Pangram Call Pattern (explicit request only)
@@ -139,18 +170,26 @@ print(f"AI likelihood: {result.ai_likelihood:.1%}")
 
 #### Score Interpretation
 
-All detectors use a 0-1 scale (0 = human, 1 = AI). Winston AI returns 0-100; divide by 100.
+**Local service**: Use the `label` field ("AI" / "Human") and `ensemble_label` from the
+`/detect` response rather than interpreting raw scores directly. Each local detector uses
+its own scale (Binoculars: log-ratio, not 0-1; Fast-DetectGPT: negative range; others: 0-1).
+The service normalizes these into labels using pre-configured thresholds.
 
-| Score Range | Risk Level | Meaning |
-|-------------|------------|---------|
-| 0.00 - 0.15 | Low | Consistent with human authorship |
-| 0.16 - 0.40 | Moderate | Possible AI assistance; review segment data |
-| 0.41 - 0.70 | High | Likely AI-drafted or AI-edited; revision recommended |
-| 0.71 - 1.00 | Critical | Strong AI-generation signal; significant rewrite needed |
+**Public APIs**: Sapling returns 0-1 (0 = human). Winston AI returns 0-100; divide by 100.
 
-Interpret by consensus across detectors, not by any single score. When detectors disagree,
-report the disagreement and its likely cause (see the landscape reference for detector
-failure modes by artifact class).
+For reporting, use the `ensemble_ai_votes / ensemble_total_votes` ratio from the local
+service as the overall confidence metric across local classifiers.
+
+| Ensemble confidence | Risk Level | Meaning |
+|--------------------|------------|---------|
+| 0 of N vote AI | Low | Consistent with human authorship |
+| 1-2 of 6 vote AI | Moderate | Possible AI assistance; review segment data |
+| 3-4 of 6 vote AI | High | Likely AI-drafted or AI-edited; revision recommended |
+| 5-6 of 6 vote AI | Critical | Strong AI-generation signal; significant rewrite needed |
+
+Interpret by consensus across all sources (local ensemble + Sapling + Winston AI), not by
+any single score. When detectors disagree, report the disagreement and its likely cause
+(see the landscape reference for detector failure modes by artifact class).
 
 Flag false-positive risk explicitly when evaluating highly constrained domain writing.
 Low perplexity on legal or compliance text is expected and is not evidence of AI generation.
@@ -206,22 +245,33 @@ the reference library", "check our writing tools for detection risk", "analyze d
 ## AI Detection Report
 **File**: <path or "inline text">
 **Date**: <ISO date>
-**Detectors run**: Binoculars, Fast-DetectGPT, Sapling, Winston AI[, Pangram]
+**Detectors run**: Local stack (Binoculars, Fast-DetectGPT, MAGE, RADAR, Ghostbuster,
+  GPT-2 Detector, LLM-DetectAIve, KGW Watermark), Sapling, Winston AI[, Pangram]
+
+### Local Stack Ensemble
+Ensemble verdict: AI / Human (N of M classifiers voted AI)
+Watermark detected: Yes / No
+Attribution (which model): <LLM-DetectAIve top class + confidence>
 
 ### Score Summary
-| Detector | Score | Risk Level |
-|----------|-------|------------|
-| Binoculars | 0.XX | Low/Moderate/High/Critical |
-| Fast-DetectGPT | 0.XX | ... |
-| Sapling | 0.XX | ... |
-| Winston AI | 0.XX | ... |
-| Pangram (AI fraction) | X.X% | ... |  ← only if explicitly requested
+| Detector | Label | Notes |
+|----------|-------|-------|
+| Binoculars | AI / Human | Cross-perplexity (most reliable local signal) |
+| Fast-DetectGPT | AI / Human | Probability curvature (orthogonal signal) |
+| MAGE | AI / Human | Cross-domain RoBERTa classifier |
+| RADAR | AI / Human | Adversarially trained; paraphrase-resistant |
+| Ghostbuster | AI / Human | GPT-2 weak/strong log-prob comparison |
+| GPT-2 Detector | AI / Human | Lightweight ensemble stabiliser |
+| Sapling | 0.XX | Public API; divide by 1 for 0-1 scale |
+| Winston AI | 0.XX | Public API; divide by 100 for 0-1 scale |
+| Pangram (AI fraction) | X.X% | Only if explicitly requested |
 
 ### Consensus
-<One sentence: detectors agree/disagree, overall risk level, and why.>
+<One sentence: local ensemble verdict + public API agreement/disagreement, overall risk.>
 
 ### Segment Breakdown
-<Sapling sentence-level scores or Pangram windows[], whichever is available.
+<Sentence-level output from /detect/sentences (ai_fraction, which sentences flagged)
+and Sapling sentence_scores. Pangram windows[] if explicitly requested.
 Identify the specific sentences or paragraphs with the highest AI signal.>
 
 ### Interpretation
@@ -237,12 +287,12 @@ Identify the specific sentences or paragraphs with the highest AI signal.>
 ## Pipeline Detection Audit
 **Date**: <ISO date>
 **Samples evaluated**: N
-**Detectors**: Binoculars, Fast-DetectGPT, Sapling, Winston AI
+**Detectors**: Local stack (6 binary classifiers), Sapling, Winston AI
 
 ### Score Summary
-| Sample | Artifact Class | Binoculars | Fast-Detect | Sapling | Winston | Consensus Risk |
-|--------|----------------|------------|-------------|---------|---------|----------------|
-| ...    | ...            | ...        | ...         | ...     | ...     | ...            |
+| Sample | Artifact Class | Local Ensemble | Sapling | Winston | Consensus Risk |
+|--------|----------------|----------------|---------|---------|----------------|
+| ...    | ...            | N/M voted AI   | ...     | ...     | ...            |
 
 ### Vulnerability Findings
 1. **<Finding name>** (Severity: Critical/High/Medium/Low)
