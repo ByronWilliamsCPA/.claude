@@ -10,8 +10,9 @@ tools: ["Read", "Write", "Bash", "Grep", "Glob"]
 Specialist for probabilistic AI-generation analysis and writing-pipeline detection audits.
 
 **Default scoring path**: local detector stack (unified `ai-text-detector` service: Binoculars,
-Fast-DetectGPT, MAGE, RADAR, Ghostbuster, GPT-2 Detector, LLM-DetectAIve, KGW watermark)
-plus public APIs (Sapling, Winston AI). These run on every request at no marginal cost.
+Fast-DetectGPT, MAGE, RADAR, Ghostbuster, GPT-2 Detector, LLM-DetectAIve, KGW watermark).
+Local detectors add no marginal external API cost. Public APIs (Sapling, Winston AI) are
+used when the required API keys are configured; they may consume quota or incur usage cost.
 
 **Pangram**: opt-in only. Call it when the caller explicitly says "use Pangram",
 "include Pangram", or "run a full score". It is the most accurate external detector but
@@ -28,15 +29,19 @@ Cross-references all findings against `.claude/standards/ai-detection-landscape.
 | Binoculars | Local service | Every request | `POST http://ai-text-detector:8000/detect` |
 | Fast-DetectGPT | Local service | Every request | Same `/detect` call |
 | MAGE | Local service | Every request | Same `/detect` call |
-| RADAR | Local service | Every request | Same `/detect` call |
+| RADAR | Local service (adversarial) | Every request | Same `/detect` call |
 | Ghostbuster | Local service | Every request | Same `/detect` call |
 | GPT-2 Detector | Local service | Every request | Same `/detect` call |
 | LLM-DetectAIve | Local service (attribution) | Every request | Same `/detect` call |
 | KGW Watermark | Local service | Every request | Same `/detect` call |
 | Sentence-level | Local service | When span data needed | `POST http://ai-text-detector:8000/detect/sentences` |
-| Sapling | Public API | Every request | `https://api.sapling.ai/api/v1/aidetect` |
-| Winston AI | Public API | Every request | `https://api.gowinston.ai/v2/predict` |
+| Sapling | Public API | When key is configured | `https://api.sapling.ai/api/v1/aidetect` |
+| Winston AI | Public API | When key is configured | `https://api.gowinston.ai/v2/predict` |
 | Pangram | Paid API | Explicit request only | Pangram Python SDK |
+
+> **Note**: RADAR (TrustSafeAI/RADAR-Vicuna-7B) is an adversarially trained binary classifier,
+> distinct from Raidar (ICLR 2024), a rewriting-based detection method profiled in the landscape
+> reference. They share similar names but different architectures.
 
 ---
 
@@ -180,12 +185,12 @@ The service normalizes these into labels using pre-configured thresholds.
 For reporting, use the `ensemble_ai_votes / ensemble_total_votes` ratio from the local
 service as the overall confidence metric across local classifiers.
 
-| Ensemble confidence | Risk Level | Meaning |
-|--------------------|------------|---------|
-| 0 of N vote AI | Low | Consistent with human authorship |
-| 1-2 of 6 vote AI | Moderate | Possible AI assistance; review segment data |
-| 3-4 of 6 vote AI | High | Likely AI-drafted or AI-edited; revision recommended |
-| 5-6 of 6 vote AI | Critical | Strong AI-generation signal; significant rewrite needed |
+| Ensemble confidence (`ensemble_ai_votes / ensemble_total_votes`) | Risk Level | Meaning |
+|------------------------------------------------------------------|------------|---------|
+| 0 / N | Low | Consistent with human authorship |
+| > 0 but < 0.5 × N | Moderate | Possible AI assistance; review segment data |
+| ≥ 0.5 × N but < N | High | Likely AI-drafted or AI-edited; revision recommended |
+| N / N (all vote AI) | Critical | Strong AI-generation signal; significant rewrite needed |
 
 Interpret by consensus across all sources (local ensemble + Sapling + Winston AI), not by
 any single score. When detectors disagree, report the disagreement and its likely cause
@@ -262,7 +267,7 @@ Attribution (which model): <LLM-DetectAIve top class + confidence>
 | RADAR | AI / Human | Adversarially trained; paraphrase-resistant |
 | Ghostbuster | AI / Human | GPT-2 weak/strong log-prob comparison |
 | GPT-2 Detector | AI / Human | Lightweight ensemble stabiliser |
-| Sapling | 0.XX | Public API; divide by 1 for 0-1 scale |
+| Sapling | 0.XX | Public API; already normalized to 0-1 scale |
 | Winston AI | 0.XX | Public API; divide by 100 for 0-1 scale |
 | Pangram (AI fraction) | X.X% | Only if explicitly requested |
 
