@@ -33,7 +33,7 @@ FILE_PATH=$(jq -r '.tool_input.file_path // empty' 2>/dev/null <<< "$CONTEXT")
 # ---- Guards: only check SKILL.md and agents/*.md files ----------------------
 # Match */SKILL.md or a literal agents/ directory ending in .md
 # Exclude CLAUDE.md meta-docs that live inside agents/ or skills/ as folder
-# convention guides — they are not agent/skill definitions and have no frontmatter.
+# convention guides; they are not agent/skill definitions and have no frontmatter.
 is_target=0
 if [[ "$FILE_PATH" == */SKILL.md ]]; then
     is_target=1
