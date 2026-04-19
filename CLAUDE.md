@@ -19,6 +19,34 @@ state what was searched and answer from training knowledge, prefixed with:
 Do not assume organizational priorities without verifying them in the
 project tree.
 
+### Repository structure
+
+```
+~/.claude/                        # Global user config (this repo)
+├── CLAUDE.md                     # Global standards (this file)
+├── AGENTS-AND-SKILLS.md          # Full agent and skill catalog
+├── README.md                     # Setup and install guide
+├── .claude/
+│   ├── agents/                   # Specialized subagent definitions
+│   │   └── CLAUDE.md             # Agent authoring conventions
+│   ├── skills/                   # Reusable skill workflows
+│   │   └── CLAUDE.md             # Skill authoring conventions
+│   ├── rules/                    # Operational rules (path-scoped)
+│   ├── standards/                # Detailed specifications
+│   ├── cowork/                   # Cowork session instructions
+│   └── context/                  # Shared context fragments
+├── docs/
+│   ├── architecture/             # ADRs and system diagrams
+│   ├── development/              # Code quality and workflow guides
+│   ├── getting-started/          # Install, first-run, troubleshooting
+│   └── reference/                # Hooks, MCP, agents, skills indexes
+└── scripts/                      # MCP loading and hook utilities
+```
+
+Rules in `.claude/rules/` are path-scoped where possible; they apply only when
+Claude is editing files under the path specified in the rule header. Standards
+in `.claude/standards/` are full specifications referenced by the rules.
+
 ## Code quality
 
 When SonarCloud or linting tools flag issues, fix the actual issue. Never
@@ -68,6 +96,23 @@ this automatically, so it must be applied manually before every commit.
 >
 > Writing quality thresholds: see `.claude/standards/writing-quality.md`
 
+## Model selection
+
+Use the right model for the task to balance quality and cost:
+
+| Task type | Model | When |
+| --- | --- | --- |
+| Complex reasoning, planning, architecture | Opus 4.7 | Multi-step decisions, ADRs, deep code review |
+| Standard development work | Sonnet 4.6 (default) | Most coding, editing, PR descriptions |
+| Read-only exploration | Haiku 4.5 | File scanning, structure mapping, quick lookups |
+
+In subagent configuration, set `model: haiku` for the built-in `Explore` subagent
+(read-only codebase discovery) and `model: sonnet` for the built-in `Plan` subagent.
+Agents that write code or produce deliverables default to `sonnet` unless the task
+requires deep reasoning, in which case specify `model: opus` in the agent prompt.
+
+> Per-agent model defaults and orchestration patterns: see `.claude/rules/supervisor.md`
+
 ## Core development standards
 
 - **Code quality**: Ruff format and lint (88 chars, PyStrict-aligned),
@@ -115,6 +160,16 @@ Required files in every project: `LICENSE`, `SECURITY.md`, `CONTRIBUTING.md`,
 Before any release: CHANGELOG updated, no vulnerabilities older than 60 days,
 tests pass above 80% coverage, version tag follows SemVer. New features:
 write tests first, document security implications, update CHANGELOG.
+
+## Scoped context
+
+CLAUDE.md operates at three scopes: global (`~/.claude/CLAUDE.md`), project
+(`./CLAUDE.md`), and folder (`./src/CLAUDE.md`). Last scope wins on conflicts.
+
+When working in a project that has subdirectories with distinct conventions
+(e.g., `src/api/`, `src/components/`, `workers/`), proactively suggest creating
+folder-level CLAUDE.md files to scope rules to those paths. Keep them focused:
+one or two overrides per file, not a full restatement of global rules.
 
 ## Development philosophy
 
