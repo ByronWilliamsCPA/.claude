@@ -1,4 +1,49 @@
 # CHANGELOG
+## v0.12.2 (2026-04-19)
+### Documentation
+* docs(claude.md): add repo structure map, model selection, and scoped context
+
+From image review of Claude Code best practices:
+- Add repository structure map under Project context (WHAT framework)
+- Add model selection table with Opus/Sonnet/Haiku guidance, pointing to
+  supervisor.md for per-agent detail
+- Add Scoped context section: documents three CLAUDE.md scopes and
+  instructs Claude to proactively suggest folder-level files in projects
+- Add folder-level CLAUDE.md authoring guides in .claude/agents/ and
+  .claude/skills/ for use when editing those directories in this repo
+
+Rejected from review: output naming conventions (Cowork desktop app
+pattern, not applicable here), sprint workflow commands (proprietary
+third-party product), social media tool integrations (irrelevant).
+System Design/Feature Breakdown/Master Prompt documents (already
+implemented more rigorously via ADRs, project-planning skill, TodoWrite).
+
+https://claude.ai/code/session_01FPVFc244A2wx7UWNJKdjpy ([`8b03adc`](https://github.com/ByronWilliamsCPA/.claude/commit/8b03adce4814de51c312a5efa40e4b146e99da25))
+### Fix
+* fix(review): address PR #29 review findings
+
+- Fix Plan subagent model: inherits caller&#39;s model, not fixed to sonnet
+  (aligns CLAUDE.md with supervisor.md canonical reference)
+- Add model: inherit to valid frontmatter values in agents/CLAUDE.md
+- Soften 400-line agent system prompt limit to a target, not a hard rule
+- Soften 200-line SKILL.md limit to a target, not a hard rule
+- Add reference/ and templates/ to optional skill subdirectory list
+- Clarify workflow file naming: single verb is valid when noun is implied
+- Fix mcp_config.yaml path: add mcp/ prefix in agents/CLAUDE.md
+- Fix repo structure tree: use ~/dev/.claude/ (not ~/.claude/), add
+  commands/ and mcp/ directories
+- Add text language tag to fenced code block (MD040)
+- Bump version to 1.4.0, Last Updated to 2026-04-19
+
+Addresses: Copilot comments (4), agent findings (6).
+Human-only items (PR Validation startup_failure, PR body motivation,
+frontmatter policy for meta-docs) not included.
+
+Co-Authored-By: Claude Sonnet 4.6 &lt;noreply@anthropic.com&gt; ([`79ba360`](https://github.com/ByronWilliamsCPA/.claude/commit/79ba36068093f6b3866cf46a521488f892f0ad45))
+### Unknown
+* Merge pull request #29 from ByronWilliamsCPA/claude/review-structure-improvements-BDhiw
+
+docs(claude.md): add repo structure map, model selection, and scoped context ([`a7903d0`](https://github.com/ByronWilliamsCPA/.claude/commit/a7903d0d21e926397c0869117db00b5186e0864a))
 ## v0.12.1 (2026-04-19)
 ### Fix
 * fix(hooks): remove remaining em-dashes from frontmatter validator
