@@ -1,8 +1,8 @@
 # AI Detection Landscape Reference
 
-**Version**: 1.0
-**Effective**: 2026-04-18
-**Applies to**: `ai-detection-agent` pipeline audits and detection scoring interpretation
+**Version:** 1.0
+**Effective:** 2026-04-18
+**Applies to:** `ai-detection-agent` pipeline audits and detection scoring interpretation
 
 > Background reference for the `ai-detection-agent`. Read this file at the start of any
 > Mode 2 audit. Snapshot date: 2026-04-01. Update quarterly or when a major detector
@@ -37,6 +37,7 @@ Scribbr, early Turnitin) have largely been discredited in enterprise and academi
 intermediate supervision to estimate the precise, continuous extent of AI editing.
 
 **Key metrics**:
+
 - 94.7% F1 on binary classification
 - 90.4% F1 on ternary (Human / AI / Mixed)
 - 0.5% false positive rate on clean text
@@ -59,6 +60,7 @@ rate) over v3.1.
 LLMs (scorer model and observer model, typically Falcon-7B variants).
 
 **Key metrics**:
+
 - AUROC > 0.99 on standard clean benchmarks without domain-specific fine-tuning
 - Materially outperforms Ghostbuster in out-of-domain settings
 - No API key required; runs entirely on local GPU
@@ -84,6 +86,81 @@ exploiting the property that AI text resides in local probability maxima.
 detection alongside Binoculars.
 
 **Deployment**: Co-hosted in the Docker service alongside Binoculars on the P40.
+
+---
+
+### MAGE — Self-Hosted (Local Stack)
+
+**Architecture**: Fine-tuned RoBERTa sequence classifier trained across multiple writing
+domains. Binary AI vs. human classification.
+
+**Strengths**: Strong cross-domain generalization; handles diverse writing styles without
+retraining.
+
+**Deployment**: Part of the `ai-text-detector` Docker service. Model: `yaful/MAGE`.
+
+---
+
+### RADAR — Self-Hosted (Local Stack)
+
+**Architecture**: Adversarially trained binary classifier (Vicuna-7B base) designed to
+resist paraphrase-based evasion attacks. Distinct from Raidar (ICLR 2024, rewriting-based
+detection) despite the similar name.
+
+**Strengths**: More paraphrase-resistant than Binoculars under moderate adversarial conditions.
+
+**Deployment**: Part of the `ai-text-detector` Docker service. Model: `TrustSafeAI/RADAR-Vicuna-7B`.
+Runs with 4-bit quantization by default to reduce VRAM.
+
+---
+
+### Ghostbuster — Self-Hosted (Local Stack)
+
+**Architecture**: Compares GPT-2 (weak) and GPT-2-XL (strong) log-probability sequences as
+features for a binary classifier. Exploits the observation that AI text is more predictable
+under stronger models.
+
+**Strengths**: Interpretable signal; useful as an ensemble stabilizer alongside zero-shot
+methods.
+
+**Deployment**: Part of the `ai-text-detector` Docker service.
+
+---
+
+### GPT-2 Detector — Self-Hosted (Local Stack)
+
+**Architecture**: RoBERTa-base fine-tuned by OpenAI to classify GPT-2 output. Now used
+primarily as a lightweight ensemble stabilizer rather than a standalone detector.
+
+**Deployment**: Part of the `ai-text-detector` Docker service. Model:
+`openai-community/roberta-base-openai-detector`.
+
+---
+
+### LLM-DetectAIve — Self-Hosted (Local Stack, Attribution)
+
+**Architecture**: Multi-class classifier for LLM attribution. Instead of binary AI/Human,
+it reports which LLM family likely generated the text (e.g., GPT-4, Claude, Gemini).
+
+**Note**: LLM-DetectAIve is excluded from the binary ensemble vote (`ensemble_ai_votes`) by
+the service because it is multi-class. Its output appears in the `attribution` field of the
+`/detect` response.
+
+**Deployment**: Part of the `ai-text-detector` Docker service. Model: `raj-tomar001/LLM-DetectAIve`.
+
+---
+
+### KGW Watermark Detector — Self-Hosted (Local Stack)
+
+**Architecture**: Detects KGW (Kirchenbauer et al. 2023) watermarks by checking whether
+green-listed tokens appear at a statistically significant rate. Uses a z-test against a
+configurable threshold.
+
+**Strengths**: Can detect watermarked text without access to the original generation model,
+only requires knowledge of the watermark key.
+
+**Deployment**: Part of the `ai-text-detector` Docker service. Multi-key sweep (50 keys by
+default) to detect watermarks even without the exact key used.
 
 ---
 
@@ -245,7 +322,7 @@ Scores are synthesized proxy evaluations based on documented detector behavior p
 Not live API results.
 
 | Sample | Domain / Origin | Pangram | Originality | GPTZero | Turnitin | Copyleaks |
-|--------|----------------|---------|-------------|---------|----------|-----------|
+| ------ | --------------- | ------- | ----------- | ------- | -------- | --------- |
 | Human Tech | Python auth docs (pre-AI) | 0.8% | 45% (FP) | 12% | <20%* | 15% |
 | Human Legal | Oregon legal standard (pre-AI) | 1.2% | 68% (FP) | 18% | <20%* | 22% |
 | System-edited | Security audit (MCP output) | 85.0% | 92% | 55% (Mixed) | 48% | 88% |
