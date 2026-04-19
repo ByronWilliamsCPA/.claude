@@ -1,6 +1,6 @@
 # Global Claude Development Standards
 
-> **Status**: Active | Core Standard | **Version**: 1.3.0 | **Last Updated**: 2026-04-11
+> **Status**: Active | Core Standard | **Version**: 1.4.0 | **Last Updated**: 2026-04-19
 >
 > Universal development standards and practices for Claude Code across all projects.
 
@@ -21,14 +21,15 @@ project tree.
 
 ### Repository structure
 
-```
-~/.claude/                        # Global user config (this repo)
+```text
+~/dev/.claude/                    # Repo root (symlinked to ~/.claude/ by setup.sh)
 ├── CLAUDE.md                     # Global standards (this file)
 ├── AGENTS-AND-SKILLS.md          # Full agent and skill catalog
 ├── README.md                     # Setup and install guide
 ├── .claude/
 │   ├── agents/                   # Specialized subagent definitions
 │   │   └── CLAUDE.md             # Agent authoring conventions
+│   ├── commands/                 # Slash command definitions
 │   ├── skills/                   # Reusable skill workflows
 │   │   └── CLAUDE.md             # Skill authoring conventions
 │   ├── rules/                    # Operational rules (path-scoped)
@@ -40,6 +41,7 @@ project tree.
 │   ├── development/              # Code quality and workflow guides
 │   ├── getting-started/          # Install, first-run, troubleshooting
 │   └── reference/                # Hooks, MCP, agents, skills indexes
+├── mcp/                          # MCP tool loading configuration
 └── scripts/                      # MCP loading and hook utilities
 ```
 
@@ -107,9 +109,10 @@ Use the right model for the task to balance quality and cost:
 | Read-only exploration | Haiku 4.5 | File scanning, structure mapping, quick lookups |
 
 In subagent configuration, set `model: haiku` for the built-in `Explore` subagent
-(read-only codebase discovery) and `model: sonnet` for the built-in `Plan` subagent.
-Agents that write code or produce deliverables default to `sonnet` unless the task
-requires deep reasoning, in which case specify `model: opus` in the agent prompt.
+(read-only codebase discovery). The built-in `Plan` subagent inherits the caller's
+model automatically; do not set it explicitly. Agents that write code or produce
+deliverables default to `sonnet` unless the task requires deep reasoning, in which
+case specify `model: opus` in the agent prompt.
 
 > Per-agent model defaults and orchestration patterns: see `.claude/rules/supervisor.md`
 
