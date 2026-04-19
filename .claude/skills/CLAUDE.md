@@ -6,9 +6,9 @@
 ## Structure
 
 Every skill lives in `.claude/skills/<skill-name>/SKILL.md`. Optional subdirectories:
-`workflows/`, `context/`, `evals/`, `scripts/`.
+`workflows/`, `context/`, `evals/`, `scripts/`, `reference/`, `templates/`.
 
-Keep `SKILL.md` under 200 lines. Move detail into `workflows/` or `context/` files.
+Target: keep `SKILL.md` under 200 lines. Move detail into `workflows/` or `context/` files. Umbrella skills that cover multiple workflows may exceed this; keep it as short as the skill's scope allows.
 
 ## Key rules
 
@@ -16,7 +16,7 @@ Keep `SKILL.md` under 200 lines. Move detail into `workflows/` or `context/` fil
 - Stateless design: same input produces same output, no cross-invocation state.
 - Pattern A (agent-preloaded) vs Pattern B (tool-invoked): see `.claude/rules/supervisor.md`.
 - Set `user-invocable: false` for Pattern A skills to prevent accidental slash-command use.
-- Workflow files named `<verb>-<noun>.md`; context files are read-only reference material.
+- Workflow files: prefer `<verb>-<noun>.md` for compound names (e.g., `pr-review.md`); a single verb (`review.md`, `format.md`) is acceptable when the noun is implied by the skill directory name. Context files are read-only reference material.
 
 ## Registration
 
