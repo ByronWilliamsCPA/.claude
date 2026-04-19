@@ -6,7 +6,7 @@
 # for required YAML frontmatter fields: name and description.
 #
 # Prints WARN lines to stdout (Claude reads them). Silent on valid files.
-# Exit codes: always 0 — PostToolUse hooks must never fail
+# Exit codes: always 0 (PostToolUse hooks must never fail)
 # =============================================================================
 
 set -uo pipefail
