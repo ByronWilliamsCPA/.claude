@@ -67,8 +67,10 @@ LLMs (scorer model and observer model, typically Falcon-7B variants).
 that drop AUROC toward random chance (mean TPR of 0.024 at 1% FPR under GRPO adversarial
 conditions).
 
-**Deployment**: Docker container on P40 (24GB VRAM; both 7B models fit simultaneously in
-FP16 at ~14GB). Exposed as a REST API at `http://binoculars:8421/score`.
+**Deployment**: Part of the unified `ai-text-detector` Docker service. Both 7B Falcon models
+fit simultaneously in FP16 at ~16GB VRAM. Binoculars is called via:
+`POST http://ai-text-detector:8000/detect` with `"detectors": ["binoculars"]` or omitted
+to run the full stack. Requires `HF_TOKEN` (Falcon-7B is gated on HuggingFace).
 
 ---
 
@@ -174,6 +176,28 @@ that retrieval-based detection identifies immediately.
 
 ---
 
+### Scribbr — Do Not Benchmark Against
+
+**Architecture**: Powered by Turnitin's engine since mid-2024. Not independently meaningful
+as a separate tool. Free demo with 1200-word limit.
+
+**Verdict**: Scribbr's own consumer-facing research summary reports the best premium detector
+in its review reached 84% and the best free detector 68%. Use Turnitin numbers directly;
+Scribbr adds no independent signal.
+
+---
+
+### QuillBot — Do Not Benchmark Against
+
+**Architecture**: Free, perplexity-based, deliberately tuned toward leniency. Conflict of
+interest: QuillBot also sells a paraphrasing tool, creating an incentive to under-flag AI
+content.
+
+**Verdict**: Use only as a lowest-bar cross-check. A QuillBot pass provides no protection
+against any enterprise or academic detector.
+
+---
+
 ### ZeroGPT — Do Not Benchmark Against
 
 **Architecture**: Outdated perplexity heuristics.
@@ -188,9 +212,23 @@ provides a false sense of security and no protection against modern ensemble arc
 
 ### Academic Open-Source Detectors
 
+**Binoculars and Fast-DetectGPT** are the primary self-hosted detectors (see dedicated
+profiles above).
+
 **Ghostbuster**: Structured search using weaker language models (unigram, trigram,
 non-instruction GPT-3) to compute generation probabilities. Achieves 99.0 F1 historically;
-generalizes well across unseen models.
+generalizes well across unseen models. Notable limitation: performance degrades on
+non-native English text (authors acknowledge this explicitly).
+
+**Raidar (ICLR 2024)**: Detection via rewriting. Prompts an LLM to rewrite the input, then
+measures edit distance. LLMs modify human text more than AI text because they perceive AI
+output as already high-quality. Works on black-box LLMs. Open-source from Columbia
+Engineering. Gains F1 across news, creative writing, student essays, code, and research
+domains.
+
+**Glimpse (ICLR 2025)**: Enables Fast-DetectGPT to use proprietary models (GPT-3.5) as the
+scoring model, outperforming Fast-Detect-Neo on DIPPER paraphrase attacks. Fills the gap
+when open-weight models underperform on specific text types.
 
 **MAGE**: Robust sequence modeling for machine-generated text detection. Vulnerable to
 StealthRL RL paraphrase attacks as of early 2026 benchmarks.
@@ -224,6 +262,48 @@ Not live API results.
   legal domains.
 - System-edited MCP outputs score 78-85% on Pangram; these are the primary revision targets.
 - ZeroGPT is bypassed entirely by the system's prompt-time constraints (12-15% on edited output).
+
+---
+
+## Independent Benchmarking Baselines
+
+The spread between vendor claims and independent evaluations is wide and persistent.
+
+**Jabarian & Imas (Aug 2025, Becker Friedman Institute, SSRN 5407424)**: The most rigorous
+independent audit in the current literature. Tested GPT-4.1, Claude Opus 4, Claude Sonnet 4,
+and Gemini 2.0 Flash passages. Findings: Pangram was the only detector satisfying FPR <= 0.005
+with accuracy intact across all model families. Against StealthGPT humanizer output, Pangram's
+FNR remained low while GPTZero's FNR rose past 50%. Pangram is in a category of its own;
+Originality.ai and GPTZero form a second tier.
+
+**Weber-Wulff et al. (2023, Springer)**: Canonical pre-2024 evaluation. Most detectors scored
+below 80% on diverse samples. The 80% threshold has been broken only by Pangram and Binoculars
+under rigorous conditions; commercial marketing claims of 99% accuracy are not replicated
+independently except for Pangram.
+
+**RAID (Dugan et al., ACL 2024)**: Demonstrated that both open and closed detectors are easily
+defeated by adversarial attacks, sampling strategy changes, repetition penalties, and unseen
+models. In-distribution performance does not survive cross-domain or cross-LLM shift.
+
+---
+
+## False-Positive Risk Factors
+
+**Non-native English bias (Liang et al., 2023)**: Seven widely used GPT detectors misclassified
+more than half of sampled TOEFL essays as AI-generated; average false-positive rate of 61.3%.
+Native-speaker school essays were classified near perfectly. Detectors that lean on low
+perplexity or reduced lexical variety penalize formal, predictable, or linguistically
+constrained prose.
+
+**Cross-lingual revisit (arXiv 2602.05769, 2026)**: Czech non-native speakers showed the
+opposite pattern from Liang 2023 -- higher entropy, making them less likely to be false-flagged.
+The non-native-English bias is not universal; it is an English-training artifact.
+
+**Constrained domain writing**: Legal boilerplate, compliance phrasing, and technical
+documentation produce unnaturally low perplexity that perplexity-based detectors misread as
+AI generation. Binoculars handles this better than Sapling or Winston AI because its
+contrastive architecture normalizes for domain register. Flag Originality.ai false positives
+on any text with formulaic domain constraints.
 
 ---
 
@@ -262,13 +342,32 @@ Not live API results.
 | Timeframe | Capability Evolution | Threat Level |
 |-----------|---------------------|--------------|
 | Q3 2026 | Universal EditLens-style regression (edit percentage vs. binary) | Critical |
+| Q3 2026 | EU AI Act Article 50 enforcement begins (2 August 2026); machine-readable watermarks required for AI-generated text on matters of public interest | Regulatory |
 | Q4 2026 | AI Source Match integrated across enterprise compliance scanners | High |
+| Q4 2026 | OpenAI may deploy watermark on GPT-5.x consumer tier for EU compliance | Moderate |
 | Q1 2027 | StealthRL-immune multi-detector ensembles (RoBERTa + XLM-R) | Critical |
+| Q1 2027 | Semantic watermarks (SemStamp family) may reach deployment grade | Moderate |
 | Q2 2027 | Mandated cryptographic watermarking at frontier API level | Moderate |
+| Q3 2027 | Multi-signal ensemble detectors combining watermark + classifier + retrieval | High |
 
 ---
 
-## SynthID-Text (Google DeepMind Watermarking)
+## Watermarking: Current Deployment Status
+
+### Provider Watermark Status (April 2026)
+
+| Provider | Watermark Deployed | Notes |
+|----------|-------------------|-------|
+| Google DeepMind (Gemini) | Yes (SynthID-Text) | Live in Gemini app and web; open-sourced via HuggingFace |
+| OpenAI (GPT-4o/5) | No confirmed deployment | Classifier retired July 2023; cryptographic watermarks discussed but not deployed as of April 2026 |
+| Anthropic (Claude 4.x) | No public deployment | No published watermarking scheme on Claude Opus 4 or Sonnet 4 |
+
+**Implication**: The pipeline's use of Claude insulates outputs from watermark tracking as
+of April 2026. Monitor Anthropic announcements, especially post-EU AI Act enforcement.
+
+---
+
+### SynthID-Text (Google DeepMind)
 
 **Mechanism**: Tournament sampling. A pseudorandom g-function generates secret values for
 each token based on a context hash from previous tokens. Tokens compete in elimination
@@ -276,13 +375,24 @@ rounds; a token advances if its generative likelihood plus its secret watermark 
 defeats competitors, embedding a statistically detectable bias.
 
 **Vulnerabilities**:
+
 - Layer inflation attacks target the mean score of the detection strategy.
 - Cross-model shifting (routing watermarked output through a non-watermarked model like
   Claude or Llama 3) destroys the token sequence and strips the watermark entirely.
+- Paraphrase, copy-paste, and back-translation degrade detectability significantly.
 
-**Relevance**: The pipeline's documented use of Claude insulates outputs from SynthID
-tracking, provided no upstream watermarked model output (e.g., Gemini-generated text) is
-ingested verbatim without local regeneration.
+**Black-box detection risk**: ETH SRI Lab probing showed that black-box detection of
+SynthID's presence is possible. The scheme is more resistant to spoofing than prior SOTA,
+but not immune.
+
+---
+
+### Semantic Watermarks (Research Stage)
+
+SemStamp, k-SemStamp, and SynGuard (August 2025, arXiv 2508.20228) embed semantic-level
+signals that survive paraphrase. The SynGuard hybrid improves robustness by +11.1% F1
+over base SynthID. Active research area; no commercial deployment as of April 2026, but
+the trajectory points toward paraphrase-resistant watermarks becoming viable by 2027.
 
 ---
 
@@ -325,21 +435,65 @@ Ranked by risk reduction impact:
 
 ---
 
+## Quarterly Benchmark Protocol
+
+Re-run this protocol every quarter or when a major detector version ships (Pangram, GPTZero,
+Binoculars update announcements are the primary triggers).
+
+1. Select 5 pinned reference passages: 1 pure-human baseline, 2 system-edited AI samples,
+   1 raw AI control, 1 hybrid. Keep the same passages across quarters for trend tracking.
+2. Run all five through: Pangram free tier (or trial), GPTZero free tier, Binoculars (local).
+3. Record tool name, version/date accessed, numeric score, classification.
+4. Compare to prior-quarter scores. A drift of > 10 points on any passage warrants a
+   prompt review.
+5. If Pangram scores on human baseline rise above 5%, investigate whether domain changes
+   or model updates altered the baseline distribution.
+
+**Access summary for quarterly runs**:
+
+- Pangram: 4-5 scans/day free; 7-day trial covers a full benchmark cycle
+- GPTZero: free tier, generous limits
+- Binoculars: local on P40, no usage limit
+
+---
+
 ## References
 
+- Bao et al. (2024). "Fast-DetectGPT." ICLR 2024. https://arxiv.org/abs/2310.05130
 - Callison-Burch et al. (2024). "RAID: A Shared Benchmark for Robust Evaluation of
   Machine-Generated Text Detectors." ACL 2024. https://aclanthology.org/2024.acl-long.674/
+- Dathathri et al. (2024). "Scalable watermarking for identifying large language model
+  outputs." Nature, October 2024. (SynthID-Text)
 - Dugan et al. (2025). "GenAIDetect 2025: Workshop on GenAI Content Detection." COLING 2025.
   https://aclanthology.org/events/genaidetect-2025/
 - Google DeepMind (2026). "SynthID Text: Tournament Sampling."
   https://huggingface.co/blog/synthid-text
+- Hans et al. (2024). "Spotting LLMs With Binoculars." ICML 2024.
+  https://arxiv.org/abs/2401.12070
+- Jabarian & Imas (2025). "Artificial Writing and Automated Detection." Becker Friedman
+  Institute Working Paper 2025-116; SSRN 5407424.
+  https://bfi.uchicago.edu/insights/artificial-writing-and-automated-detection/
+- Krishna et al. (2024). "Paraphrasing evades detectors of AI-generated text." NeurIPS 2023/24.
+- Li et al. (2024). "MAGE: Machine-Generated Text Detection in the Wild." ACL 2024.
 - Li et al. (2026). "Variation is the Key." arXiv:2602.13226v1.
   https://arxiv.org/html/2602.13226v1
+- Liang et al. (2023). "GPT detectors are biased against non-native English writers."
+  Patterns 4(7). https://doi.org/10.1016/j.patter.2023.100779
+- Mao et al. (2024). "Raidar: geneRative AI Detection viA Rewriting." ICLR 2024.
+  https://arxiv.org/abs/2401.12970
+- Mitchell et al. (2023). "DetectGPT." ICML 2023.
 - Pangram Research (2026). "EditLens: Quantifying the Extent of AI Editing." ICLR 2026.
   https://liner.com/review/editlens-quantifying-the-extent-of-ai-editing-in-text
 - Ranganath & Ramesh (2026). "StealthRL." arXiv:2602.08934.
   https://arxiv.org/abs/2602.08934
+- SynGuard / SynthID robustness (Aug 2025). arXiv:2508.20228.
+  https://arxiv.org/html/2508.20228v1
 - Verma et al. (2024). "Ghostbuster." NAACL 2024.
   https://aclanthology.org/2024.naacl-long.95/
+- Wang et al. (2024). "M4: Multi-generator, Multi-domain, Multi-lingual Black-Box MGT
+  Detection." EACL 2024.
+- Weber-Wulff et al. (2023). "Testing of detection tools for AI-generated text."
+  International Journal for Educational Integrity.
+  https://link.springer.com/article/10.1007/s40979-023-00146-z
 - Zhang et al. (2026). "Tournament Sampling for SynthID-Text." arXiv:2603.03410v2.
   https://arxiv.org/html/2603.03410v2
