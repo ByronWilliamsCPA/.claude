@@ -149,6 +149,15 @@ actionable recommendations.
 
 ### Writing & Content
 
+**[ai-detection-agent](/.claude/agents/ai-detection-agent.md)**
+AI content detection specialist with two modes: (1) evaluate submitted files and text for
+probabilistic AI-generation analysis using the self-hosted `ai-text-detector` stack
+(Binoculars, Fast-DetectGPT, MAGE, RADAR, Ghostbuster, and more) plus Sapling and Winston AI;
+Pangram is opt-in and used only when explicitly requested; (2) audit writing pipeline outputs
+to identify detection vulnerabilities and recommend targeted revisions to reference library
+prompts and templates. Cross-references findings against
+`.claude/standards/ai-detection-landscape.md`.
+
 **[document-drafter](/.claude/agents/document-drafter.md)**
 Pre-pipeline generative agent. Produces first drafts calibrated to the author's voice from outlines,
 bullet points, or contextual prompts. Outputs feed directly into the three-stage editing pipeline.
@@ -381,7 +390,7 @@ default system prompt.
 ## Quick Reference: When to Use What
 
 | Need | Use |
-|------|-----|
+| ---- | --- |
 | Review code before merging | `code-reviewer` agent or `requesting-code-review` skill |
 | Write missing tests | `test-writer` agent or `/test-coverage` skill |
 | Security scan a PR | `security-auditor` agent or `/security` skill |
