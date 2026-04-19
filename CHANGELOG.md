@@ -1,4 +1,81 @@
 # CHANGELOG
+## v0.12.0 (2026-04-19)
+### Documentation
+* docs(ai-detection-agent): align spec with actual service and integrate research
+
+Update ai-detection-agent.md to reflect the real ai-text-detector Docker
+service (hostname ai-text-detector:8000, not binoculars:8421). The unified
+FastAPI service exposes 8 local detectors via a single /detect call, plus
+sentence-level detection and C2PA provenance. The previous spec was missing
+MAGE, RADAR, Ghostbuster, GPT-2 Detector, LLM-DetectAIve, and KGW Watermark.
+
+Integrate findings from three research files in tmp_cleanup/ai_detection into
+the landscape reference: BFI/UChicago independent Pangram audit (Jabarian &amp;
+Imas 2025), Raidar and Glimpse detector profiles, non-native English bias data
+(Liang 2023), EU AI Act Article 50 timeline, provider watermark status table,
+semantic watermarks research, Scribbr/QuillBot profiles, independent
+benchmarking baselines, quarterly benchmark protocol, and 12 new references.
+
+Co-Authored-By: Claude Sonnet 4.6 &lt;noreply@anthropic.com&gt; ([`ee06921`](https://github.com/ByronWilliamsCPA/.claude/commit/ee0692131f9956f12f75207aaf1cda35554f0dbb))
+### Feature
+* feat: add ai-detection-agent with Pangram API and landscape reference
+
+Adds a two-mode AI content detection specialist agent:
+- Mode 1: evaluates files/text via Pangram predict() and predict_short(),
+  with score interpretation thresholds and segment-level breakdown
+- Mode 2: audits writing pipeline outputs against the detection landscape
+  to identify vulnerabilities and recommend reference library revisions
+
+Detector mix: Pangram (API), Binoculars + Fast-DetectGPT (self-hosted P40),
+Sapling and Winston AI (public APIs). Skips enterprise-gated tools
+(Originality.ai, GPTZero, Copyleaks) and discredited legacy tools (ZeroGPT).
+
+Also adds:
+- .claude/standards/ai-detection-landscape.md: full technical reference
+  covering detector profiles, empirical scoring matrix, SynthID-Text
+  watermarking, StealthRL threat model, and prioritized remediation actions
+- AGENTS-AND-SKILLS.md entry under Writing &amp; Content
+- supervisor.md agent assignment rows for detection and audit tasks
+
+https://claude.ai/code/session_019GKjs88u1rXbBQZrrFBWha ([`df1205d`](https://github.com/ByronWilliamsCPA/.claude/commit/df1205d6b7e3bf2c9b353d3db04e9e7faf9a1e7c))
+### Fix
+* fix(ai-detection-agent): address Copilot PR review comments
+
+- Clarify that local stack is no-cost; Sapling/Winston may consume API quota
+- Fix Sapling output note: already normalized to 0-1, not &#34;divide by 1&#34;
+- Use N-based ensemble thresholds instead of hardcoded &#34;of 6&#34; counts
+- Update Sapling/Winston &#34;When to call&#34; to &#34;When key is configured&#34;
+- Add disambiguation note: RADAR (adversarial classifier) vs Raidar (ICLR 2024)
+- Add profiles for 6 undocumented local stack detectors: MAGE, RADAR, Ghostbuster,
+  GPT-2 Detector, LLM-DetectAIve, KGW Watermark
+- Fix landscape.md header format: colon inside bold labels
+- Reframe AGENTS-AND-SKILLS.md entry: Pangram is opt-in, not part of standard workflow
+- Fix MD032 (blank lines before lists) and MD060 (table separator spacing)
+
+Co-Authored-By: Claude Sonnet 4.6 &lt;noreply@anthropic.com&gt; ([`be6ca78`](https://github.com/ByronWilliamsCPA/.claude/commit/be6ca7838f12699e2b841f87b4179e20eb1fc43a))
+### Refactor
+* refactor(ai-detection-agent): make Pangram opt-in, local detectors default
+
+Pangram is now called only when explicitly requested by the caller to
+preserve API credits. The default scoring path runs Binoculars,
+Fast-DetectGPT, Sapling, and Winston AI on every request at no
+marginal cost.
+
+Changes:
+- Introduce detector stack table with clear call-frequency policy
+- Add curl call patterns for Binoculars, Fast-DetectGPT, Sapling,
+  and Winston AI
+- Move Pangram to a clearly marked opt-in section
+- Update output format to show multi-detector score table
+- Add consensus interpretation rule (disagree = diagnostic, not error)
+- Remove references to enterprise-gated tools (Originality, Copyleaks)
+  from operational rules
+
+https://claude.ai/code/session_019GKjs88u1rXbBQZrrFBWha ([`8e045d3`](https://github.com/ByronWilliamsCPA/.claude/commit/8e045d373735e87fbf24ff7be0d1e6647e91f032))
+### Unknown
+* Merge pull request #28 from ByronWilliamsCPA/feat/add-ai-detection-agent
+
+feat(ai-detection-agent): add detection agent with full service integration and research landscape ([`b103f00`](https://github.com/ByronWilliamsCPA/.claude/commit/b103f00f7160ecb393d3dc7ba87085a9b45cac54))
 ## v0.11.0 (2026-04-18)
 ### Chore
 * chore: merge main into feat/pr-fix-expand-fix-scope
