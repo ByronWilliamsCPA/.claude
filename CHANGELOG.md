@@ -1,4 +1,40 @@
 # CHANGELOG
+## v0.12.1 (2026-04-19)
+### Fix
+* fix(hooks): remove remaining em-dashes from frontmatter validator
+
+Replace em-dash in exit-code comment with parentheses per writing rules.
+
+Co-Authored-By: Claude Sonnet 4.6 &lt;noreply@anthropic.com&gt; ([`e65d4b7`](https://github.com/ByronWilliamsCPA/.claude/commit/e65d4b741c3f2592d5139ecdddf6e9c0dcf14ba0))
+* fix(hooks): exclude CLAUDE.md meta-docs from frontmatter validation
+
+CLAUDE.md files inside agents/ and skills/ are folder-level convention
+guides, not agent or skill definitions. The validate-frontmatter.sh hook
+previously warned on every session edit because these files have no YAML
+frontmatter. Add a basename check to skip any file literally named
+CLAUDE.md after it matches the directory pattern.
+
+Also extends the target guard to cover skills/*.md alongside agents/*.md,
+and replaces em-dashes in warn messages with semicolons per writing rules.
+
+Co-Authored-By: Claude Sonnet 4.6 &lt;noreply@anthropic.com&gt; ([`ad1f825`](https://github.com/ByronWilliamsCPA/.claude/commit/ad1f825d2e9022664b0d285275235834eebfa2b3))
+* fix(ci): migrate to python-ci.yml and add checks: write to fix PR Validation startup_failure
+
+The core-validation job called the deprecated python-pr-validation.yml reusable
+workflow but did not grant checks: write permission, which the reusable workflow
+requires. GitHub Actions fails the entire caller workflow with startup_failure
+when a reusable workflow requests a permission the caller job does not grant.
+
+Changes:
+- Replace python-pr-validation.yml reference with python-ci.yml (the actively
+  maintained successor) at current HEAD SHA 16979833
+- Add checks: write to the core-validation job permissions block
+- Enable dead-code detection via enable-dead-code-check: true (python-ci.yml
+  native support, removing duplication with the standalone dead-code job)
+- Remove deprecated inputs that do not exist in python-ci.yml
+- Fix em-dashes in scripts/validate-frontmatter.sh (writing rule compliance)
+
+Co-Authored-By: Claude Sonnet 4.6 &lt;noreply@anthropic.com&gt; ([`8e8aa30`](https://github.com/ByronWilliamsCPA/.claude/commit/8e8aa30e8ac4562a42a6d0134273fed628db8c1f))
 ## v0.12.0 (2026-04-19)
 ### Documentation
 * docs(ai-detection-agent): align spec with actual service and integrate research
