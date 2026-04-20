@@ -183,10 +183,11 @@ write tests first, document security implications, update CHANGELOG.
 CLAUDE.md operates at three scopes: global (`~/.claude/CLAUDE.md`), project
 (`./CLAUDE.md`), and folder (`./src/CLAUDE.md`). Last scope wins on conflicts.
 
-When working in a project that has subdirectories with distinct conventions
-(e.g., `src/api/`, `src/components/`, `workers/`), proactively suggest creating
-folder-level CLAUDE.md files to scope rules to those paths. Keep them focused:
-one or two overrides per file, not a full restatement of global rules.
+When working in any project, proactively create folder-level `CLAUDE.md` files
+for subdirectories with conventions distinct from the root. Common candidates:
+`src/api/`, `src/components/`, `tests/`, `scripts/`, `migrations/`. Keep them
+under 100 lines: only what differs from the parent scope (a different linter
+config, naming rule, or architecture note). Do not restate root-level rules.
 
 ## Development philosophy
 
