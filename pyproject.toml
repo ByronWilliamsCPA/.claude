@@ -608,6 +608,9 @@ ignore_names = [
 # Version location in this file
 version_toml = ["pyproject.toml:project.version"]
 
+# Regenerate uv.lock after version bump so it stays in sync with pyproject.toml
+build_command = "uv lock"
+
 # Commit message parsing
 commit_parser = "angular"
 commit_parser_options = { parse_squash_commits = true, ignore_merge_commits = true }
