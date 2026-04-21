@@ -1,4 +1,11 @@
 # CHANGELOG
+
+## Unreleased
+
+### Fix
+
+* fix(release): add `build_command = "uv lock"` to prevent uv.lock version drift after semantic releases
+
 ## v0.13.0 (2026-04-21)
 ### Documentation
 * docs(compliance): correct agent count and domain inventory in design docs
