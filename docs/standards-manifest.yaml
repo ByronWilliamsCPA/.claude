@@ -64,7 +64,7 @@ checks:
     domain: foundations
     severity: suggested
     description: "pyproject.toml requires-python upper bound is <3.15 or unset"
-    verify: "metadata_value: pyproject.toml, requires-python, not_contains: <3.13"
+    verify: "metadata_value: pyproject.toml, requires-python, not_contains: <3.15"
     override_eligible: true
 
   - id: FOUND-009
