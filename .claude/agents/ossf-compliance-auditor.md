@@ -132,7 +132,7 @@ If neither docs directory nor N/A marker exists: emit OSSF-005 FINDING with guid
 ## FINDING Block Format
 
 ```
-FINDING
+FINDING:
 id: OSSF-001                    # manifest check ID, or SCORECARD:CheckName
 severity: critical|important|suggested
 description: one-line summary
@@ -146,9 +146,9 @@ remediation: |
 For Scorecard findings sourced from the API, include `current_score:` and `target_score:` fields:
 
 ```
-FINDING
+FINDING:
 id: SCORECARD:Branch-Protection
-severity: high
+severity: important
 description: Branch-Protection score is X/10 (target: 4+)
 status: below_threshold
 current_score: X

@@ -90,7 +90,7 @@ For approved CI findings:
 # .github/workflows/ci.yml
 jobs:
   ci:
-    uses: williamy/.github/.github/workflows/python-ci.yml@main
+    uses: williaby/.github/.github/workflows/python-ci.yml@<sha>  # main
     with:
       python-versions: '["3.11", "3.12"]'
     secrets:
