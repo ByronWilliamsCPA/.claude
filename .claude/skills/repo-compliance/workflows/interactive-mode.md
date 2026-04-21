@@ -30,6 +30,7 @@ Agents to dispatch simultaneously:
 - `pre-commit-auditor` (PC-* checks)
 - `devops-deployment-agent` in CI audit mode (CI-* checks)
 - `claude-docs-auditor` (CLAUDE-* checks)
+- `ossf-compliance-auditor` (OSSF-* and SCORECARD:* checks)
 - `general-compliance-auditor` (all checks as negative filter, freeform review)
 
 ### 3. Merge and Present Findings
@@ -79,6 +80,7 @@ Dispatch agents by domain in dependency order:
 3. `pre-commit-auditor` (pre_commit -- depends on toolchain being correct)
 4. `devops-deployment-agent` CI audit mode (ci -- no dependencies)
 5. `claude-docs-auditor` (claude_docs -- no dependencies)
+6. `ossf-compliance-auditor` (ossf -- no dependencies)
 
 Collect ACTION lines from each agent and present a summary of all changes made.
 

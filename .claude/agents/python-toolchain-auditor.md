@@ -37,11 +37,11 @@ For approved findings:
 - `dep_absent` (remove forbidden dep): Remove the dep line from pyproject.toml using Edit
 - `dep_present` (add missing dep): Add the dep to the appropriate dev section using Edit
 - Missing Ruff codes: Append the missing codes to the `select` list in `[tool.ruff.lint]`
-- Missing `[tool.basedpyright]` block: Append the following block to pyproject.toml:
+- Missing `[tool.basedpyright]` block: Read `requires-python` from pyproject.toml to determine the project's minimum Python version (e.g. `>=3.12` → `"3.12"`), then append:
 
 ```toml
 [tool.basedpyright]
-pythonVersion = "3.11"
+pythonVersion = "<derive from requires-python>"
 pythonPlatform = "All"
 typeCheckingMode = "strict"
 strictListInference = true

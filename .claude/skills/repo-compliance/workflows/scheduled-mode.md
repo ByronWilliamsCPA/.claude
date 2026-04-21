@@ -15,7 +15,7 @@ find ~/dev -maxdepth 2 -name ".git" -type d \
 
 # Remote repos -- williaby org
 gh repo list williaby --limit 100 --json nameWithOwner,sshUrl \
-  | jq -r '.[].sshUrl' >> /tmp/remote-repos.txt
+  | jq -r '.[].sshUrl' > /tmp/remote-repos.txt
 
 # Remote repos -- ByronWilliamsCPA org
 gh repo list ByronWilliamsCPA --limit 100 --json nameWithOwner,sshUrl \
