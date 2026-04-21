@@ -287,7 +287,7 @@ checks:
   - id: CI-004
     domain: ci
     severity: important
-    description: "Qlty coverage workflow present (replaces Codecov)"
+    description: "Qlty coverage workflow present (supplements Codecov; Qlty handles code quality metrics, Codecov tracks test coverage history and PR deltas)"
     verify: "file_exists: .github/workflows/coverage.yml"
     override_eligible: true
 
