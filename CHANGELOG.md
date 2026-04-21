@@ -1,4 +1,32 @@
 # CHANGELOG
+## [Unreleased]
+### Features
+* feat(compliance): add multi-agent repository compliance system with seven domain
+  auditors (repo-foundations, python-toolchain, pre-commit, claude-docs,
+  general-compliance, CI/CD, OSSF), interactive and scheduled workflow modes,
+  and a standards manifest with 61 checks across 6 domains
+* feat(compliance): add repo-compliance skill entry point with interactive and
+  scheduled mode workflows
+* feat(compliance): add interactive mode workflow with parallel domain dispatch
+* feat(compliance): add scheduled mode workflow and report template
+* feat(compliance): add repo-foundations-auditor agent
+* feat(compliance): add python-toolchain-auditor agent
+* feat(compliance): add pre-commit-auditor agent
+* feat(compliance): add claude-docs-auditor agent
+* feat(compliance): add general-compliance-auditor agent
+* feat(compliance): add compliance-retrospective agent
+* feat(compliance): add ossf-compliance-auditor agent (Scorecard + Best Practices Badge)
+* feat(compliance): add CI compliance audit mode to devops-deployment-agent
+* feat(compliance): add standards manifest with 61 checks across 6 domains
+* feat(compliance): add support files (exclusions list, report gitignore, override template)
+* feat(compliance): add CI-009..CI-013 checks for Codecov, SonarQube, and workflow inventory
+### Fix
+* fix(compliance): clarify exclusion slug matching and override template path context
+* fix(compliance): handle both .codecov.yml and codecov.yaml filename variants
+* fix(docs): replace em-dash in AGENTS-AND-SKILLS.md rad skill entry
+### Documentation
+* docs: register compliance system agents and skill in AGENTS-AND-SKILLS.md
+
 ## v0.12.2 (2026-04-19)
 ### Documentation
 * docs(claude.md): add repo structure map, model selection, and scoped context
