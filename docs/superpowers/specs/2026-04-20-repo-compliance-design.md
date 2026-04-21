@@ -43,7 +43,8 @@ The system evaluates six domains:
 | Pre-commit | Hook inventory vs. required list, SHA pinning in hooks |
 | CI | GitHub Actions structure, SHA-pinned actions, reusable workflows, harden-runner |
 | Claude and Docs | CLAUDE.md sections, settings.json, AGENTS.md/GEMINI.md location, em-dash/AI patterns |
-| General | Freeform review for gaps outside the five defined domains |
+| OSSF | OpenSSF Scorecard API checks, Best Practices Badge, required project files |
+| General | Freeform review for gaps outside the six defined domains |
 
 ---
 
