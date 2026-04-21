@@ -58,7 +58,9 @@ def vfm() -> ValidateFrontMatterModule:
 
 
 class TestStripCodeBlocks:
-    def test_removes_closed_backtick_fence(self, vfm: ValidateFrontMatterModule) -> None:
+    def test_removes_closed_backtick_fence(
+        self, vfm: ValidateFrontMatterModule
+    ) -> None:
         content = "Before\n```\ncode here\n```\nAfter\n"
         result = vfm._strip_code_blocks(content)
         assert "code here" not in result
@@ -94,7 +96,9 @@ class TestStripCodeBlocks:
         assert "Before" in result
         assert "After" in result
 
-    def test_mixed_fence_types_independent(self, vfm: ValidateFrontMatterModule) -> None:
+    def test_mixed_fence_types_independent(
+        self, vfm: ValidateFrontMatterModule
+    ) -> None:
         content = "```\nbacktick code\n```\n~~~\ntilde code\n~~~\n"
         result = vfm._strip_code_blocks(content)
         assert "backtick code" not in result
