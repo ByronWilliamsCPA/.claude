@@ -1,0 +1,15 @@
+# docs/compliance-exclusions.yaml
+# Repos excluded from scheduled compliance sweeps.
+# 'repo' matches the GitHub repository name (e.g. "my-repo"), which is also
+# the expected local directory name under ~/dev/. The sweep normalizes both
+# local paths and remote listings to the GitHub repo slug before applying
+# exclusions. If a local clone uses a different name than the GitHub repo,
+# use the GitHub name here.
+# #ASSUME: sweep normalization to GitHub slug is implemented in scheduled-mode.md
+# #VERIFY: confirm slug derivation logic when scheduled mode workflow is complete
+
+exclusions:
+  - repo: cookiecutter-python-template
+    reason: "template source, not a generated project"
+  - repo: .claude
+    reason: "this repo is the standards source, not a downstream project"

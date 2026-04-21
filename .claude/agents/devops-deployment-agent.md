@@ -59,6 +59,99 @@ Execute DevOps workflows: pipeline analysis → deployment strategy design → i
 
 ---
 
+## CI Compliance Audit Mode
+
+When invoked by the repo-compliance coordinator with audit or remediation mode context, this agent evaluates or remediates CI-* checks from the standards manifest.
+
+### Audit Workflow
+
+Receive from the coordinator: target repo path, list of CI-* checks to evaluate, and override entries. For each check:
+
+- `content_present` checks on workflow files: use Grep across `.github/workflows/*.yml`
+- `file_exists` checks: use Glob
+- `sha_pinned` checks: Read each workflow file; find all `uses:` lines; a valid pin is `owner/repo@<40-hex-chars>`. Flag any ref using a version tag (e.g., `@v4`, `@main`, `@master`)
+- `content_absent` checks: use Grep to confirm the string does not appear
+- `file_exists` checks with comma-separated filenames (CI-009): check if any of the listed filenames exists; pass if at least one is found. Note the resolved filename for use in subsequent content checks (CI-010, CI-011)
+- `content_present` checks using "OR" filename syntax (CI-010, CI-011): resolve the Codecov config filename first (`.codecov.yml` if present, else `codecov.yaml`); then check the resolved file for the specified content
+- `workflow_inventory` checks (CI-013): List all .yml files in `.github/workflows/`; compare against the expected set; report any files not in the expected set as unregistered workflows for evaluation
+- `sonarqube_quality_gate` checks (CI-012): Use Bash to call the SonarQube API or MCP tool to retrieve the project quality gate status; report the status and count of open Blocker and Critical issues
+
+For CI-006 (harden-runner): read each job in each workflow file; confirm `step-security/harden-runner` appears as the first step. Report each job that is missing it.
+
+Return FINDING blocks for each failing check, including the workflow file path and line number in current_value where applicable.
+
+### Remediation Workflow
+
+For approved CI findings:
+
+**CI-001 to CI-004 (reusable workflow migration):** Replace inline workflow content with caller stubs. The org reusable workflows are at `williaby/.github`. Stub format:
+
+```yaml
+# .github/workflows/ci.yml
+jobs:
+  ci:
+    uses: williaby/.github/.github/workflows/python-ci.yml@<sha>  # main
+    with:
+      python-versions: '["3.11", "3.12"]'
+    secrets:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+```
+
+**CI-005 (SHA pinning):** For each unpinned `uses:` reference, resolve the SHA by running:
+
+```bash
+git ls-remote https://github.com/<owner>/<repo>.git refs/tags/<version> | cut -f1
+```
+
+Replace the tag ref with the 40-char SHA and add the version as a comment: `@<sha>  # v1.2.3`
+
+**CI-006 (harden-runner):** Insert as the first step in each non-compliant job:
+
+```yaml
+- name: Harden runner
+  uses: step-security/harden-runner@<current-sha>  # v2.x.x
+  with:
+    egress-policy: audit
+```
+
+**CI-007 (blocking security scan):** Remove `continue-on-error: true` from security workflow jobs using Edit.
+
+**CI-008 (copilot-instructions.md):** Create `.github/copilot-instructions.md` with:
+
+```markdown
+# GitHub Copilot Code Review Instructions
+
+Focus on: business logic correctness, error handling completeness, edge cases,
+concurrency issues, and security logic flaws.
+
+Exclude from review: code style, formatting, and whitespace. These are enforced
+by pre-commit hooks and ruff -- do not flag them.
+```
+
+**CI-009 to CI-011 (Codecov configuration):** Resolve the existing filename first: if `codecov.yaml` exists use it, otherwise use `.codecov.yml` (creating it if absent). Create or patch the resolved file to include:
+
+```yaml
+coverage:
+  status:
+    project:
+      default:
+        target: 80%
+        threshold: 1%
+flags:
+  unit:
+    paths:
+      - tests/unit/
+  integration:
+    paths:
+      - tests/integration/
+```
+
+**CI-013 (workflow inventory):** For each unregistered workflow file found, report it as an ACTION requiring manual review rather than automated remediation. Include the file path and a note that the workflow should either be removed or added to the expected set in the manifest.
+
+### Output Format
+
+FINDING blocks in audit mode (include file path and line number in current_value). ACTION lines in remediation mode.
+
 ## Use Cases
 
 Recommended for: CI/CD pipelines, deployment automation, infrastructure management, monitoring setup, incident response, IaC, container orchestration
