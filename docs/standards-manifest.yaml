@@ -319,6 +319,41 @@ checks:
     verify: "file_exists: .github/copilot-instructions.md"
     override_eligible: true
 
+  - id: CI-009
+    domain: ci
+    severity: important
+    description: ".codecov.yml present at project root"
+    verify: "file_exists: .codecov.yml"
+    override_eligible: true
+
+  - id: CI-010
+    domain: ci
+    severity: important
+    description: ".codecov.yml minimum coverage threshold is 80% or above"
+    verify: "content_present: .codecov.yml, target: 80"
+    override_eligible: true
+
+  - id: CI-011
+    domain: ci
+    severity: important
+    description: ".codecov.yml defines separate coverage flags for unit and integration tests"
+    verify: "content_present: .codecov.yml, flags:"
+    override_eligible: true
+
+  - id: CI-012
+    domain: ci
+    severity: important
+    description: "SonarQube quality gate passes -- no open Blocker or Critical issues (queried via SonarQube API)"
+    verify: "sonarqube_quality_gate: status=OK, severities=BLOCKER,CRITICAL"
+    override_eligible: true
+
+  - id: CI-013
+    domain: ci
+    severity: important
+    description: "No unregistered GitHub Actions workflows -- any .yml in .github/workflows/ not matching the org-standard set (ci.yml, security.yml, sonarcloud.yml, coverage.yml) is flagged for evaluation"
+    verify: "workflow_inventory: .github/workflows/, expected_set=[ci.yml,security.yml,sonarcloud.yml,coverage.yml], report_extras=true"
+    override_eligible: true
+
   # ── Claude and Docs ──────────────────────────────────────────────────────────
 
   - id: CLAUDE-001
