@@ -17,7 +17,7 @@ tags:
 
 **Goal:** Build a self-improving multi-agent system that audits any repository against global standards, remediates approved gaps, and captures lessons to improve future runs.
 
-**Architecture:** A standards manifest (YAML) drives six domain agents that audit repos against defined checks. A coordinator skill orchestrates audit, approval, and remediation in interactive mode, and report-only in scheduled mode. A retrospective agent captures patterns across runs and proposes manifest improvements. Tasks 3-9 are independent and can be parallelized.
+**Architecture:** A standards manifest (YAML) drives seven domain agents that audit repos against defined checks. A coordinator skill orchestrates audit, approval, and remediation in interactive mode, and report-only in scheduled mode. A retrospective agent captures patterns across runs and proposes manifest improvements. Tasks 3-9 are independent and can be parallelized.
 
 **Tech Stack:** YAML (manifest and configs), Markdown (agents, skill, templates), GitHub CLI (`gh`) for repo discovery, Claude Code skill/agent system, `pre-commit` for validation.
 
@@ -426,7 +426,7 @@ Expected: `YAML valid`
 
 ```bash
 git add docs/standards-manifest.yaml
-git commit -m "feat(compliance): add standards manifest with 52 checks across 5 domains"
+git commit -m "feat(compliance): add standards manifest with 61 checks across 6 domains"
 ```
 
 ---
