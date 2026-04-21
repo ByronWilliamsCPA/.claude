@@ -411,3 +411,43 @@ checks:
     description: "No AI blacklist pattern words in formal docs (leverage, seamless, robust, comprehensive, holistic, crucial, pivotal, vital)"
     verify: "ai_patterns_absent: docs/**/*.md"
     override_eligible: true
+
+  # ── OSSF (Best Practices Badge + Scorecard) ──────────────────────────────────
+  # These checks supplement the live Scorecard API and Badge API results with
+  # local file content that those APIs cannot evaluate. The ossf-compliance-auditor
+  # agent queries the APIs first and uses these checks only for gaps the APIs miss.
+
+  - id: OSSF-001
+    domain: ossf
+    severity: important
+    description: "OpenSSF Best Practices Badge application filed (Passing level) -- verified via bestpractices.coreinfrastructure.org API"
+    verify: "ossf_badge_api: level=passing"
+    override_eligible: true
+
+  - id: OSSF-002
+    domain: ossf
+    severity: critical
+    description: "SECURITY.md documents a private vulnerability reporting channel (GitHub Security Advisories or equivalent)"
+    verify: "content_present: SECURITY.md, private"
+    override_eligible: false
+
+  - id: OSSF-003
+    domain: ossf
+    severity: critical
+    description: "SECURITY.md states a maximum initial response SLA of 14 days"
+    verify: "content_present: SECURITY.md, 14"
+    override_eligible: false
+
+  - id: OSSF-004
+    domain: ossf
+    severity: important
+    description: "CHANGELOG entries for vulnerability fixes include the CVE ID"
+    verify: "changelog_cve_pattern: CHANGELOG.md, CVE-[0-9]{4}-[0-9]+"
+    override_eligible: true
+
+  - id: OSSF-005
+    domain: ossf
+    severity: suggested
+    description: "Library projects have published API reference docs; non-library projects have N/A marker in README or CONTRIBUTING"
+    verify: "ossf_api_docs: docs/api/ OR README contains 'N/A' near 'API reference'"
+    override_eligible: true
