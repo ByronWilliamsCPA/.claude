@@ -179,7 +179,7 @@ Automated dependency updates and vulnerability scanning.
 **Tools**:
 
 - **Renovate**: Automated dependency updates
-- **Safety**: Python dependency CVE scanning
+- **pip-audit**: Python dependency CVE scanning
 - **OSV-Scanner**: Multi-ecosystem vulnerability detection
 - **Google Assured OSS**: Vetted, secure packages
 
@@ -243,7 +243,7 @@ mutmut show
 | Token-Permissions | 10/10 | ✅ Scoped permissions |
 | SAST | 10/10 | ✅ Ruff + Bandit + BasedPyright |
 | Fuzzing | 10/10 | ✅ ClusterFuzzLite |
-| Vulnerabilities | 9/10 | ✅ Safety + OSV-Scanner |
+| Vulnerabilities | 9/10 | ✅ pip-audit + OSV-Scanner |
 | Dependency-Update | 10/10 | ✅ Renovate |
 | Pinned-Dependencies | 7/10 | ⚠️ UV lock file (acceptable) |
 | Maintained | 10/10 | ✅ Active development |
@@ -276,7 +276,7 @@ The template meets 44/46 passing-level criteria:
 
 - ✅ Project website with clear description
 - ✅ OSI-approved license
-- ✅ Comprehensive documentation
+- ✅ Complete documentation
 - ✅ HTTPS for all sites
 - ✅ Discussion forum (GitHub Issues/Discussions)
 - ✅ English documentation
@@ -383,7 +383,7 @@ The template meets 44/46 passing-level criteria:
 - [ClusterFuzzLite](https://google.github.io/clusterfuzzlite/)
 - [Cosign](https://github.com/sigstore/cosign)
 - [Renovate](https://docs.renovatebot.com/)
-- [Safety](https://pyup.io/safety/)
+- [pip-audit](https://github.com/pypa/pip-audit)
 
 ### Guides
 
@@ -395,7 +395,7 @@ The template meets 44/46 passing-level criteria:
 
 ## Getting Help
 
-**Security Questions**: byronawilliams@gmail.com
+**Security Questions**: <byronawilliams@gmail.com>
 **Vulnerability Reports**: See [Security Policy](https://github.com/ByronWilliamsCPA/.github/blob/main/SECURITY.md)
 **General Issues**: [GitHub Issues](https://github.com/ByronWilliamsCPA/.claude/issues)
 

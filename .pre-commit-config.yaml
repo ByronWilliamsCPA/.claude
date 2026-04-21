@@ -19,7 +19,7 @@ repos:
   # Fast File Checks (Lightweight, run on every commit)
   # ============================================================================
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: c4a0b883114b00d8d76b479c820ce7950211c99b  # v4.5.0
     hooks:
       - id: trailing-whitespace
         stages: [pre-commit]
@@ -57,7 +57,7 @@ repos:
   # Advanced secret detection beyond detect-private-key
   # Detects API keys, tokens, credentials, and other secrets
   - repo: https://github.com/trufflesecurity/trufflehog
-    rev: v3.92.3
+    rev: 05cccb53bc9e13bc6d17997db5a6bcc3df44bf2f  # v3.92.3
     hooks:
       - id: trufflehog
         # In git worktrees .git is a file pointer, not a directory; the git
@@ -73,7 +73,7 @@ repos:
   # Runs on changed files during pre-commit, full scan on pre-push
   # Configuration in pyproject.toml [tool.bandit]
   - repo: https://github.com/PyCQA/bandit
-    rev: 1.7.10
+    rev: 36fd65054fc8864b4037d0918904f9331512feb5  # 1.7.10
     hooks:
       - id: bandit
         name: Bandit Security Scan (changed files)
@@ -113,7 +113,7 @@ repos:
   # ============================================================================
   # Enforces conventional commit message format for semantic versioning
   - repo: https://github.com/compilerla/conventional-pre-commit
-    rev: v3.4.0
+    rev: 8dc49e5ea0cab89785161620aa22a26f263661ca  # v3.4.0
     hooks:
       - id: conventional-pre-commit
         stages: [commit-msg]
@@ -123,7 +123,7 @@ repos:
   # pyproject.toml Validation
   # ============================================================================
   - repo: https://github.com/abravalheri/validate-pyproject
-    rev: v0.20.2
+    rev: 435e09f5ed9fe57f3444ebfa54c663d0ac8033fe  # v0.20.2
     hooks:
       - id: validate-pyproject
         stages: [pre-commit]
@@ -132,7 +132,7 @@ repos:
   # GitHub Workflow Validation
   # ============================================================================
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.29.4
+    rev: 37cd56d9d154dfb0648eaee8efc1040512700c47  # 0.29.4
     hooks:
       - id: check-github-workflows
         stages: [pre-commit]
@@ -198,7 +198,7 @@ repos:
   # Interrogate ensures all Python code has proper docstrings
   # Target: 85% coverage
   - repo: https://github.com/econchick/interrogate
-    rev: 1.7.0
+    rev: a6268877efd41a21197445cc04cbf28f9c6facba  # 1.7.0
     hooks:
       - id: interrogate
         args: ['-v', '-c', 'pyproject.toml', 'scripts/']
@@ -220,6 +220,71 @@ repos:
         types: [python]
         stages: [pre-commit]
         exclude: ^(tests|scripts|benchmarks|tools|noxfile\.py|\.claude/skills/)
+
+  # ============================================================================
+  # Ruff Linting and Formatting (PC-002)
+  # ============================================================================
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: 2c8dce6094fa2b4b668e74f694ca63ceffd38614  # v0.9.9
+    hooks:
+      - id: ruff
+        args: [--fix]
+        stages: [pre-commit]
+      - id: ruff-format
+        stages: [pre-commit]
+
+  # ============================================================================
+  # Secret Baseline Detection (PC-005)
+  # ============================================================================
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: 68e8b45440415753fff70a312ece8da92ba85b4a  # v1.5.0
+    hooks:
+      - id: detect-secrets
+        args: ['--baseline', '.secrets.baseline']
+        stages: [pre-commit]
+
+  # ============================================================================
+  # Em-Dash Prevention (PC-011)
+  # ============================================================================
+  - repo: local
+    hooks:
+      - id: no-em-dash
+        name: no-em-dash
+        language: pygrep
+        entry: "—"
+        files: \.(md|txt|rst|yaml|yml|toml|py)$
+        exclude: ^(\.claude/|\.pre-commit-config\.yaml|CHANGELOG\.md|CLAUDE\.md|docs/superpowers/)
+        description: "Prevents em-dash characters in source files (excludes .claude/ legacy content)"
+        stages: [pre-commit]
+
+  # ============================================================================
+  # BasedPyright Type Checking (PC-003)
+  # ============================================================================
+  - repo: https://github.com/RobertCraigie/pyright-python
+    rev: 81b795a41ddcc3c77218d8c8e406983e39852285  # v1.1.408
+    hooks:
+      - id: pyright
+        stages: [pre-commit]
+
+  # ============================================================================
+  # YAML Linting (PC-009)
+  # ============================================================================
+  - repo: https://github.com/adrienverge/yamllint
+    rev: 81e9f98ffd059efe8aa9c1b1a42e5cce61b640c6  # v1.35.1
+    hooks:
+      - id: yamllint
+        args: [-d, relaxed]
+        stages: [pre-commit]
+
+  # ============================================================================
+  # Markdown Linting (PC-010)
+  # ============================================================================
+  - repo: https://github.com/DavidAnson/markdownlint-cli2
+    rev: 3766ad839ad3a74558031510b3bc9872bb1d9980  # v0.22.0
+    hooks:
+      - id: markdownlint-cli2
+        stages: [pre-commit]
+        exclude: ^docs/superpowers/
 
 # Exclude patterns
 # .submodules/ is excluded because submodule contents are owned by their upstream

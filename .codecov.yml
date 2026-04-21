@@ -1,0 +1,38 @@
+# Codecov configuration for dot-claude repository
+# https://docs.codecov.com/docs/codecovyml-reference
+
+coverage:
+  status:
+    project:
+      default:
+        target: 80%
+        threshold: 1%
+        informational: false
+    patch:
+      default:
+        target: 80%
+        threshold: 1%
+        informational: false
+
+flags:
+  unit:
+    paths:
+      - tests/unit/
+    carryforward: true
+  integration:
+    paths:
+      - tests/integration/
+    carryforward: true
+
+comment:
+  layout: "reach,diff,flags,files"
+  behavior: default
+  require_changes: false
+  require_base: false
+  require_head: true
+  show_carryforward_flags: true
+
+ignore:
+  - ".worktrees/**"
+  - "docs/**"
+  - "tools/**"

@@ -72,7 +72,7 @@ Context7 provides access to library documentation and code examples. Use it for:
 
 - **Library Documentation**: Get up-to-date docs for popular libraries
 - **Code Examples**: Find working code snippets and patterns
-- **API References**: Access comprehensive API documentation
+- **API References**: Access complete API documentation
 - **Best Practices**: Discover recommended usage patterns
 
 ## Commands

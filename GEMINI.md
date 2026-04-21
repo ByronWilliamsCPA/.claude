@@ -1,0 +1,58 @@
+# Gemini CLI Development Standards
+
+> Global development standards for Gemini CLI across all projects.
+> Mirrors CLAUDE.md; Gemini-specific tool names and activation patterns noted below.
+
+## Skill activation
+
+In Gemini CLI, activate skills with `activate_skill("skill-name")`. Skills are
+auto-discovered from installed plugins. Tool names differ from Claude Code:
+see `references/gemini-tools.md` for the full mapping.
+
+## Project context
+
+When asked about business priorities, read project files first. Search `docs/`,
+`initiatives/`, project root, and this file before answering from training
+knowledge. Prefix training-only answers with:
+`[Not in project docs, answer from training knowledge only]`
+
+## Code quality
+
+- Ruff format and lint (88 chars, PyStrict-aligned)
+- BasedPyright strict mode
+- Never propose `# noqa`, `# type: ignore`, or CI bypass flags to silence issues
+- Fix the root cause; suppress only with a tracking reference
+
+## Git workflow
+
+Always run `pre-commit run --all-files` before committing.
+Create worktrees inside the project at `.worktrees/<branch-slug>`.
+
+## Writing style
+
+Never use em-dashes (--) in any output. Use commas, semicolons, colons, or
+restructure the sentence. This is a hard rule.
+
+## Model selection
+
+| Task | Model |
+| --- | --- |
+| Complex reasoning, architecture | Gemini 2.5 Pro |
+| Standard development | Gemini 2.5 Flash |
+| Read-only exploration | Gemini 2.5 Flash (with thinking budget 0) |
+
+## Core standards
+
+- Security: `uv run pip-audit` for dependency scanning
+- Testing: 80% line coverage, 70% branch, 90% critical paths
+- Git: conventional commits, signed commits, feature branch workflow
+
+## OpenSSF baseline
+
+Required in every project: `LICENSE`, `SECURITY.md`, `CONTRIBUTING.md`,
+`CHANGELOG.md`, `README.md`.
+
+## Global resources
+
+Full agent catalog: `AGENTS-AND-SKILLS.md`
+Tool mapping for Gemini CLI: `references/gemini-tools.md`

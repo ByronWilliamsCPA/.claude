@@ -34,9 +34,9 @@ tags:
 11. [AI and Non-Deterministic Testing](#11-ai-and-non-deterministic-testing)
 12. [Type Checking as Testing](#12-type-checking-as-testing)
 13. [Data Generation and Pipeline Testing](#13-data-generation-and-pipeline-testing)
-14. [Security Testing — ASVS-Aligned](#14-security-testing--asvs-aligned)
+14. [Security Testing: ASVS-Aligned](#14-security-testing-examples)
 15. [CI/CD Integration and Reporting](#15-cicd-integration-and-reporting)
-16. [Testing Terminology — ISTQB Applied](#16-testing-terminology--istqb-applied)
+16. [Testing Terminology: ISTQB Applied](#16-testing-terminology-applied)
 17. [Plugin Reference](#17-plugin-reference)
 18. [Recommended Reading](#18-recommended-reading)
 
@@ -52,12 +52,12 @@ when something breaks.
 
 The FIRST principles capture what makes a test valuable:
 
-- **Fast** — unit tests should complete in milliseconds. A slow test suite
+- **Fast**: unit tests should complete in milliseconds. A slow test suite
   gets skipped.
-- **Independent** — no test should depend on another test's outcome or state.
-- **Repeatable** — same result every time, on any machine, in any order.
-- **Self-validating** — pass or fail, no human interpretation needed.
-- **Timely** — written close to the code they test, ideally before or
+- **Independent**: no test should depend on another test's outcome or state.
+- **Repeatable**: same result every time, on any machine, in any order.
+- **Self-validating**: pass or fail, no human interpretation needed.
+- **Timely**: written close to the code they test, ideally before or
   alongside it.
 
 Every standard in this document traces back to one or more of these principles.
@@ -123,7 +123,7 @@ filterwarnings = [
 ### Why xfail_strict = true
 
 Without strict xfail, a test marked `@pytest.mark.xfail` that starts
-passing silently becomes a "green" test — you never learn that the
+passing silently becomes a "green" test: you never learn that the
 underlying bug was fixed. With `xfail_strict = true`, an unexpectedly
 passing xfail is reported as a failure, prompting you to remove the marker.
 
@@ -212,7 +212,7 @@ def make_order(items=None, discount=None):
         order.apply_discount(discount)
     return order
 
-# DAMP test — readable in isolation without jumping to other files
+# DAMP test: readable in isolation without jumping to other files
 def test_expired_discount_is_ignored():
     expired = Discount(percent=20, expires=date(2020, 1, 1))
     order = make_order(items=[Item(price=100.0)], discount=expired)
@@ -239,18 +239,18 @@ test_case_1                                            ✗ meaningless
 
 For every function, consider these categories:
 
-**Input boundaries** — empty string, empty list, empty dict, None,
+**Input boundaries**: empty string, empty list, empty dict, None,
 single-element collections, zero, negative numbers, very large values,
 Unicode and whitespace-only strings.
 
-**Boundary values** — for a function accepting ages 18–65, test 17, 18,
+**Boundary values**: for a function accepting ages 18–65, test 17, 18,
 19, 64, 65, and 66. Always test at, just below, and just above each
 boundary.
 
-**Error paths** — what exceptions should be raised? What happens when a
+**Error paths**: what exceptions should be raised? What happens when a
 dependency fails? Are resources cleaned up after an error?
 
-**Type boundaries** — wrong type, subclass of expected type, duck-typed
+**Type boundaries**: wrong type, subclass of expected type, duck-typed
 objects.
 
 Use parametrize to express these systematically:
@@ -273,7 +273,7 @@ def test_is_eligible_age(age, eligible):
 ### Scope Hierarchy
 
 Fixtures have five scopes. A fixture can only depend on fixtures of equal
-or wider scope — a `session`-scoped fixture cannot request a
+or wider scope: a `session`-scoped fixture cannot request a
 `function`-scoped one.
 
 | Scope | Lifetime | Use For |
@@ -333,7 +333,7 @@ def test_bulk_discount_requires_premium(make_customer):
 
 ### conftest.py Best Practices
 
-The root `conftest.py` should be lean — only cross-cutting concerns:
+The root `conftest.py` should be lean: only cross-cutting concerns:
 
 ```python
 # tests/conftest.py
@@ -358,13 +358,13 @@ def _reset_caches():
 Domain-specific fixtures belong in subdirectory conftest files:
 
 ```python
-# tests/unit/conftest.py — only for unit tests
+# tests/unit/conftest.py: only for unit tests
 @pytest.fixture
 def mock_database(mocker):
     return mocker.patch("mypackage.db.get_connection")
 ```
 
-Never import from conftest.py directly — pytest discovers it automatically.
+Never import from conftest.py directly: pytest discovers it automatically.
 
 ---
 
@@ -387,23 +387,23 @@ does `from myapp.db import fetch_user`, the name `fetch_user` lives in
 `myapp.service`'s namespace:
 
 ```python
-# WRONG — patches the original but service.py already has its own reference
+# WRONG : patches the original but service.py already has its own reference
 mocker.patch("myapp.db.fetch_user", return_value=mock_user)
 
-# CORRECT — patches the reference that service.py actually uses
+# CORRECT : patches the reference that service.py actually uses
 mocker.patch("myapp.service.fetch_user", return_value=mock_user)
 ```
 
 ### Always Use spec=True
 
-Without spec, mocks silently accept any attribute access — including typos:
+Without spec, mocks silently accept any attribute access: including typos:
 
 ```python
-# Without spec — this silently passes even though get_usr is a typo
+# Without spec: this silently passes even though get_usr is a typo
 mock = MagicMock()
 mock.get_usr(1)  # no error, returns another MagicMock
 
-# With spec — catches the typo immediately
+# With spec: catches the typo immediately
 mock = MagicMock(spec=UserService)
 mock.get_usr(1)  # AttributeError: Mock object has no attribute 'get_usr'
 ```
@@ -424,7 +424,7 @@ class HttpClient:
         response.raise_for_status()
         return response.json()
 
-# Test mocks YOUR interface — stable across library upgrades
+# Test mocks YOUR interface: stable across library upgrades
 def test_fetch_data_returns_parsed_response(mocker):
     mock_client = mocker.MagicMock(spec=HttpClient)
     mock_client.get_json.return_value = {"status": "ok"}
@@ -451,7 +451,7 @@ repositories, and dependency injection via constructor parameters.
 
 ### Filesystem, HTTP, and Time
 
-**Filesystem** — use `tmp_path`:
+**Filesystem**: use `tmp_path`:
 
 ```python
 def test_process_csv(tmp_path):
@@ -464,7 +464,7 @@ def test_process_csv(tmp_path):
     assert result[0]["name"] == "Alice"
 ```
 
-**HTTP** — use `responses` (for `requests`) or `pytest-httpx` (for `httpx`):
+**HTTP**: use `responses` (for `requests`) or `pytest-httpx` (for `httpx`):
 
 ```python
 import responses
@@ -481,7 +481,7 @@ def test_api_client_retries_on_503():
     assert len(responses.calls) == 2
 ```
 
-**Time** — use `freezegun` or `time-machine`:
+**Time**: use `freezegun` or `time-machine`:
 
 ```python
 from freezegun import freeze_time
@@ -630,7 +630,7 @@ def get_status(code):
 ```
 
 A test calling `get_status(200)` achieves 100% line coverage but 50%
-branch coverage — the implicit `else` branch (returning None) is never
+branch coverage: the implicit `else` branch (returning None) is never
 tested.
 
 ### What Coverage Cannot Tell You
@@ -642,11 +642,11 @@ assertions and why mutation testing supplements coverage numbers.
 
 ### Practical Thresholds
 
-- **80% line coverage** is the floor — achievable for most codebases
+- **80% line coverage** is the floor: achievable for most codebases
   without heroics, catches the majority of untested code paths.
-- **90% for critical modules** — auth, payment, data pipelines deserve
+- **90% for critical modules**: auth, payment, data pipelines deserve
   higher confidence.
-- **90% patch coverage** — new code has no excuse for missing tests.
+- **90% patch coverage**: new code has no excuse for missing tests.
   This prevents coverage from eroding over time without requiring teams
   to immediately backfill legacy gaps.
 
@@ -661,7 +661,7 @@ pytest --cov=src --cov-report=json:coverage.json --cov-branch
 
 # HTML report for visual inspection
 pytest --cov=src --cov-report=html --cov-branch
-# Open htmlcov/index.html — yellow lines show partial branches
+# Open htmlcov/index.html: yellow lines show partial branches
 
 # Fail CI when below threshold
 pytest --cov=src --cov-fail-under=80 --cov-branch
@@ -694,7 +694,7 @@ that no test distinguishes between these conditions. This is a blind
 spot your tests should address.
 
 Target >60% mutation score on critical modules. Mutation testing is
-computationally expensive — apply it selectively, not to the entire
+computationally expensive: apply it selectively, not to the entire
 codebase.
 
 ### Property-Based Testing with Hypothesis
@@ -783,13 +783,13 @@ ports, external files) need per-worker uniqueness.
 ### Testing Implementation Instead of Behavior
 
 ```python
-# BAD — breaks when internal storage changes from dict to database
+# BAD : breaks when internal storage changes from dict to database
 def test_user_stored_internally():
     service = UserService()
     service.create("alice@example.com")
     assert "alice@example.com" in service._users  # private attribute!
 
-# GOOD — tests observable behavior through public interface
+# GOOD : tests observable behavior through public interface
 def test_user_retrievable_after_creation():
     service = UserService()
     service.create("alice@example.com")
@@ -799,12 +799,12 @@ def test_user_retrievable_after_creation():
 ### Assert-Free Tests
 
 ```python
-# BAD — runs code but verifies nothing
+# BAD : runs code but verifies nothing
 def test_process_data():
     result = process_data([1, 2, 3])
     # oops, forgot the assert
 
-# WORSE — comparison without assert (easy to miss in review)
+# WORSE: comparison without assert (easy to miss in review)
 def test_calculate():
     result = calculate(5)
     result == 25  # this is a comparison expression, not an assertion!
@@ -818,7 +818,7 @@ def test_calculate():
 ### Shared Mutable State
 
 ```python
-# BAD — tests pollute each other via module-level variable
+# BAD : tests pollute each other via module-level variable
 _cache = {}
 
 def test_first():
@@ -828,7 +828,7 @@ def test_first():
 def test_second():
     assert get_cached("key") is None  # FAILS because test_first left data
 
-# GOOD — fixture isolates state
+# GOOD : fixture isolates state
 @pytest.fixture(autouse=True)
 def _clean_cache():
     yield
@@ -838,13 +838,13 @@ def _clean_cache():
 ### Testing Private Methods
 
 ```python
-# BAD — coupled to internal implementation
+# BAD : coupled to internal implementation
 def test_apply_discount_formula():
     service = PricingService()
     result = service._apply_discount(100, 0.2)  # testing private method
     assert result == 80
 
-# GOOD — test through public interface
+# GOOD : test through public interface
 def test_premium_price_reflects_discount():
     service = PricingService()
     price = service.calculate_price(item=Item(base=100), tier="premium")
@@ -857,7 +857,7 @@ a signal to extract it into a separate public utility function.
 ### Over-Mocking
 
 ```python
-# BAD — 15 lines of mock setup for 2 lines of actual test
+# BAD : 15 lines of mock setup for 2 lines of actual test
 def test_process_order(mocker):
     mock_db = mocker.patch("app.db.get_connection")
     mock_cursor = MagicMock()
@@ -870,7 +870,7 @@ def test_process_order(mocker):
     mock_notify = mocker.patch("app.notifications.send")
     # ... test is testing the mocks, not the code
 
-# GOOD — use a fake repository
+# GOOD : use a fake repository
 class FakeOrderRepo:
     def __init__(self):
         self._orders = {}
@@ -898,7 +898,7 @@ def test_process_order_updates_status():
 
 The fundamental challenge with AI-integrated code is that the same input
 can produce different outputs across calls. But not *all* the code around
-AI is non-deterministic — most of it (prompt construction, response parsing,
+AI is non-deterministic: most of it (prompt construction, response parsing,
 retry logic, cost tracking) is entirely deterministic and should be tested
 like any other function. The three-tier model separates these concerns so
 that the vast majority of your AI code has fast, deterministic tests that
@@ -927,7 +927,7 @@ with appropriate statistical rigor on a schedule.
 ### Tier 1: Deterministic Unit Tests
 
 Most AI-integrated code is scaffolding around the API call. Test it like
-any other code — with mocks, exact assertions, and full coverage.
+any other code: with mocks, exact assertions, and full coverage.
 
 **Testing prompt construction:**
 
@@ -941,7 +941,7 @@ def test_build_quality_prompt_includes_image_metadata():
     # Act
     prompt = build_quality_assessment_prompt(image_meta)
 
-    # Assert — exact string matching is appropriate for prompts
+    # Assert: exact string matching is appropriate for prompts
     assert "1024x768" in prompt
     assert "300 DPI" in prompt
     assert "TIFF" in prompt
@@ -984,7 +984,7 @@ def test_parse_quality_response_handles_empty_response():
 
 ```python
 def test_llm_client_retries_on_rate_limit(mocker):
-    # Arrange — simulate 429, 429, then success
+    # Arrange: simulate 429, 429, then success
     mock_post = mocker.patch("myapp.llm.httpx.AsyncClient.post")
     mock_post.side_effect = [
         httpx.Response(429, headers={"retry-after": "1"}),
@@ -1056,7 +1056,7 @@ class TestQualityResponseContract:
         assert result.quality_score == 0.85
 
     def test_extra_fields_ignored(self):
-        """Forward compatibility — new fields from model don't break parsing."""
+        """Forward compatibility: new fields from model don't break parsing."""
         raw = {
             "quality_score": 0.85,
             "issues": [],
@@ -1135,7 +1135,7 @@ def test_summarization_semantic_quality(
     )
 ```
 
-**CER-based evaluation (stack-specific — for OCR/DIQA work):**
+**CER-based evaluation (stack-specific: for OCR/DIQA work):**
 
 ```python
 def character_error_rate(reference: str, hypothesis: str) -> float:
@@ -1227,7 +1227,7 @@ def test_ensemble_spread_detects_ood_inputs(
         scores = ensemble_scorer.score_all_models(case.image)
         spread = max(scores.values()) - min(scores.values())
         assert spread < 1.5, (
-            f"ID input '{case.name}' has spread {spread:.2f} — "
+            f"ID input '{case.name}' has spread {spread:.2f}: "
             f"expected <1.5 for in-distribution"
         )
 
@@ -1245,7 +1245,7 @@ def test_ensemble_spread_detects_ood_inputs(
     )
 ```
 
-**Calibration bias detection (stack-specific — for Qwen +1.3 bias scenario):**
+**Calibration bias detection (stack-specific: for Qwen +1.3 bias scenario):**
 
 ```python
 @pytest.mark.llm_eval
@@ -1373,7 +1373,7 @@ class TestPromptInjectionResistance:
     @pytest.mark.ai_security
     @pytest.mark.parametrize("payload", DIRECT_INJECTION_PAYLOADS)
     def test_direct_injection_blocked(self, payload, app_client):
-        """v5.0.0-1.1.1 — Verify injection payloads do not alter system behavior."""
+        """v5.0.0-1.1.1: Verify injection payloads do not alter system behavior."""
         response = app_client.chat(user_message=payload)
 
         # System prompt should never appear in output
@@ -1526,7 +1526,7 @@ class TestAgentSecurityBoundaries:
     def test_context_poisoning_resistance(self, agent, mocker):
         """Verify poisoned conversation history cannot alter agent behavior.
 
-        Ref: ATLAS AML.T0056 (AI Agent Context Poisoning — Memory)
+        Ref: ATLAS AML.T0056 (AI Agent Context Poisoning: Memory)
         """
         # Inject adversarial content into the agent's memory/context
         poisoned_memory = {
@@ -1568,7 +1568,7 @@ the VLM pseudo-labeling pipeline with OpenRouter models:
 class TestModelCalibrationIntegrity:
     """Verify calibration corrections are applied and ensemble scoring is robust.
 
-    Ref: ATLAS AML.T0043 (Craft Adversarial Data — Adversarial Example)
+    Ref: ATLAS AML.T0043 (Craft Adversarial Data: Adversarial Example)
     Context: Qwen Flash +1.3 bias detection and correction
     """
 
@@ -1577,7 +1577,7 @@ class TestModelCalibrationIntegrity:
         raw_score = scorer.score_raw(model="qwen-flash", image=REFERENCE_IMAGE)
         calibrated = scorer.score_calibrated(model="qwen-flash", image=REFERENCE_IMAGE)
 
-        # Qwen has a known +1.3 positive bias — calibration should reduce it
+        # Qwen has a known +1.3 positive bias: calibration should reduce it
         assert abs(calibrated - REFERENCE_GROUND_TRUTH) < abs(
             raw_score - REFERENCE_GROUND_TRUTH
         ), "Calibration correction did not reduce Qwen bias"
@@ -1587,7 +1587,7 @@ class TestModelCalibrationIntegrity:
         scores = {
             "gemini-flash": 3.5,
             "gpt-4.1": 3.7,
-            "qwen-flash": 9.9,  # anomalous — far outside expected range
+            "qwen-flash": 9.9,  # anomalous: far outside expected range
         }
 
         result = ensemble_scorer.aggregate(scores)
@@ -1618,7 +1618,7 @@ def process_scores(scores: list[float]) -> float:
 Without type checking, you need unit tests for: passing a string instead
 of a list, passing a list of strings instead of floats, passing None,
 passing an empty list (ZeroDivisionError). With `basedpyright --strict`,
-the first three are caught statically — you only need runtime tests for the
+the first three are caught statically: you only need runtime tests for the
 empty list and the happy path. Type checking doesn't replace testing, but
 it dramatically narrows what runtime tests need to cover.
 
@@ -1635,7 +1635,7 @@ reportMissingTypeStubs = false
 [tool.basedpyright.defineConstant]
 # Use pyrightconfig.json for per-path ignores if needed
 
-# Relax for test files — pytest's dynamic nature resists full typing
+# Relax for test files: pytest's dynamic nature resists full typing
 [[tool.basedpyright.executionEnvironments]]
 root = "tests"
 reportUnknownMemberType = false
@@ -1647,7 +1647,7 @@ reportUnknownArgumentType = false
 Focus type annotation effort where it provides the most value:
 
 ```python
-# Public API boundaries — highest value
+# Public API boundaries: highest value
 def calculate_portfolio_return(
     holdings: dict[str, Decimal],
     prices: dict[str, Decimal],
@@ -1655,7 +1655,7 @@ def calculate_portfolio_return(
 ) -> PortfolioReturn:
     ...
 
-# Type aliases for complex types — improves readability
+# Type aliases for complex types: improves readability
 IdentifierMap = dict[str, dict[str, str]]   # {isin: {figi: "...", cusip: "..."}}
 CoverageGaps = list[tuple[str, int, int]]   # [(file, start_line, end_line)]
 
@@ -1724,7 +1724,7 @@ class PortfolioFactory(factory.Factory):
             self.holdings = HoldingFactory.create_batch(5)
 ```
 
-Usage in tests — clean and focused on what varies:
+Usage in tests: clean and focused on what varies:
 
 ```python
 def test_portfolio_total_value_sums_holdings():
@@ -1879,7 +1879,7 @@ Reference ASVS requirement IDs in test docstrings for audit traceability:
 
 ```python
 def test_password_minimum_length():
-    """v5.0.0-2.1.1 — Verify password minimum length is at least 12 characters.
+    """v5.0.0-2.1.1: Verify password minimum length is at least 12 characters.
 
     ASVS L2 | NIST SP 800-63B alignment
     """
@@ -1912,10 +1912,10 @@ class TestInputValidation:
 
     @pytest.mark.parametrize("payload", SQL_INJECTION_PAYLOADS)
     def test_sql_injection_rejected(self, payload, client):
-        """v5.0.0-1.2.1 — Verify SQL injection payloads are rejected."""
+        """v5.0.0-1.2.1: Verify SQL injection payloads are rejected."""
         response = client.get(f"/api/users?search={payload}")
 
-        # Should not return 200 with data — either 400 or empty results
+        # Should not return 200 with data: either 400 or empty results
         if response.status_code == 200:
             assert len(response.json().get("results", [])) == 0
 
@@ -1928,7 +1928,7 @@ class TestInputValidation:
 
     @pytest.mark.parametrize("payload", COMMAND_INJECTION_PAYLOADS)
     def test_command_injection_rejected(self, payload, client):
-        """v5.0.0-1.2.5 — Verify OS command injection is prevented."""
+        """v5.0.0-1.2.5: Verify OS command injection is prevented."""
         response = client.post("/api/export", json={"filename": payload})
 
         assert response.status_code in (400, 422)
@@ -1945,7 +1945,7 @@ class TestInputValidation:
 
     @pytest.mark.parametrize("payload", PATH_TRAVERSAL_PAYLOADS)
     def test_path_traversal_rejected(self, payload, client):
-        """v5.0.0-1.6.2 — Verify path traversal payloads are blocked."""
+        """v5.0.0-1.6.2: Verify path traversal payloads are blocked."""
         response = client.get(f"/api/files/{payload}")
         assert response.status_code in (400, 403, 404)
 ```
@@ -1960,7 +1960,7 @@ class TestAuthentication:
     """
 
     def test_password_hashed_with_approved_algorithm(self, db_session):
-        """v5.0.0-2.4.1 — Verify passwords use bcrypt/argon2/scrypt."""
+        """v5.0.0-2.4.1: Verify passwords use bcrypt/argon2/scrypt."""
         from myapp.auth import hash_password
 
         hashed = hash_password("test_password_123")
@@ -1972,7 +1972,7 @@ class TestAuthentication:
         ), f"Password hash uses unapproved algorithm: {hashed[:10]}..."
 
     def test_credential_comparison_is_constant_time(self):
-        """v5.0.0-2.4.3 — Verify credential comparison prevents timing attacks."""
+        """v5.0.0-2.4.3: Verify credential comparison prevents timing attacks."""
         from myapp.auth import verify_password
         import time
 
@@ -1993,14 +1993,14 @@ class TestAuthentication:
             verify_password(wrong_pw_different, hash_password(correct_pw))
         time_wrong = time.perf_counter() - start
 
-        # Timing difference should be within 20% — constant-time comparison
+        # Timing difference should be within 20%: constant-time comparison
         ratio = max(time_correct, time_wrong) / min(time_correct, time_wrong)
         assert ratio < 1.2, (
             f"Timing ratio {ratio:.2f} suggests non-constant-time comparison"
         )
 
     def test_failed_login_is_rate_limited(self, client):
-        """v5.0.0-2.2.1 — Verify brute force protection via rate limiting."""
+        """v5.0.0-2.2.1: Verify brute force protection via rate limiting."""
         for i in range(10):
             client.post("/auth/login", json={
                 "email": "target@example.com",
@@ -2016,7 +2016,7 @@ class TestAuthentication:
         assert response.status_code == 429
 
     def test_session_invalidated_on_logout(self, client, make_user):
-        """v5.0.0-2.8.2 — Verify session tokens are invalidated on logout."""
+        """v5.0.0-2.8.2: Verify session tokens are invalidated on logout."""
         user = make_user()
         login_response = client.post("/auth/login", json={
             "email": user.email, "password": "test_password"
@@ -2041,7 +2041,7 @@ class TestErrorHandlingSecurity:
     """
 
     def test_500_error_does_not_leak_stack_trace(self, client, mocker):
-        """v5.0.0-7.4.1 — Verify stack traces are not exposed to users."""
+        """v5.0.0-7.4.1: Verify stack traces are not exposed to users."""
         mocker.patch(
             "myapp.api.handlers.process_request",
             side_effect=RuntimeError("Database connection pool exhausted"),
@@ -2062,7 +2062,7 @@ class TestErrorHandlingSecurity:
     ]
 
     def test_error_responses_contain_no_secrets(self, client, mocker):
-        """v5.0.0-7.4.2 — Verify error messages do not leak secrets."""
+        """v5.0.0-7.4.2: Verify error messages do not leak secrets."""
         mocker.patch(
             "myapp.external.api_call",
             side_effect=ConnectionError(
@@ -2079,7 +2079,7 @@ class TestErrorHandlingSecurity:
             )
 
     def test_authentication_events_are_logged(self, client, make_user, caplog):
-        """v5.0.0-7.2.1 — Verify security events are logged."""
+        """v5.0.0-7.2.1: Verify security events are logged."""
         import logging
         user = make_user()
 
@@ -2098,7 +2098,7 @@ class TestErrorHandlingSecurity:
         assert any("login_failure" in r.message for r in auth_logs)
 
     def test_logging_does_not_record_passwords(self, caplog):
-        """v5.0.0-7.3.1 — Verify sensitive data is not logged."""
+        """v5.0.0-7.3.1: Verify sensitive data is not logged."""
         import logging
 
         with caplog.at_level(logging.DEBUG):
@@ -2241,7 +2241,7 @@ git commit -m "chore: update test duration data for sharding"
 ### Flaky Test Quarantine Workflow
 
 ```python
-# conftest.py — track flaky tests
+# conftest.py: track flaky tests
 import pytest
 
 
@@ -2255,7 +2255,7 @@ def _track_retries(request, record_property):
 ```
 
 ```yaml
-# In CI — use pytest-rerunfailures
+# In CI: use pytest-rerunfailures
 - run: |
     pytest tests/unit/ \
       --reruns 2 \
@@ -2266,7 +2266,7 @@ def _track_retries(request, record_property):
 Tests that repeatedly need retries should be flagged and quarantined:
 
 ```python
-@pytest.mark.flaky(reason="Intermittent timeout on CI — issue #456")
+@pytest.mark.flaky(reason="Intermittent timeout on CI: issue #456")
 @pytest.mark.timeout(30)
 def test_external_service_response_time():
     ...
@@ -2286,7 +2286,7 @@ The ISTQB techniques map directly to how you design parametrize cases:
 **Equivalence Partitioning → Group inputs into classes:**
 
 ```python
-# EP: age input has three partitions — below range, in range, above range
+# EP: age input has three partitions: below range, in range, above range
 @pytest.mark.parametrize("age, partition, expected_valid", [
     pytest.param(10,  "below-range",  False, id="EP-below"),
     pytest.param(30,  "in-range",     True,  id="EP-valid"),
@@ -2415,19 +2415,19 @@ available at: https://github.com/OWASP/ASVS/tree/v5.0.0
 
 ## 18. Recommended Reading
 
-- **Python Testing with pytest** (Brian Okken, 2nd edition) — the
+- **Python Testing with pytest** (Brian Okken, 2nd edition): the
   definitive pytest reference, covers fixtures, parametrize, plugins,
   and project configuration in depth.
-- **Software Engineering at Google**, Chapter 12–13 (Winters, Manshreck,
-  Wright) — testing philosophy, test doubles, and why Google prefers
+- **Software Engineering at Google**, Chapter 12-13 (Winters, Manshreck,
+  Wright): testing philosophy, test doubles, and why Google prefers
   fakes over mocks. Available free at abseil.io/resources/swe-book.
-- **pytest official documentation** — docs.pytest.org, particularly the
+- **pytest official documentation** at docs.pytest.org, particularly the
   "Good Integration Practices" and "How-to" sections.
-- **"Don't Mock What You Don't Own"** (Hynek Schlawack) — hynek.me,
+- **"Don't Mock What You Don't Own"** (Hynek Schlawack) at hynek.me,
   concise explanation of when mocking helps vs. when it hurts.
-- **"Tests Too DRY? Make Them DAMP!"** (Google Testing Blog) —
+- **"Tests Too DRY? Make Them DAMP!"** (Google Testing Blog):
   testing.googleblog.com, the case for readability over DRY in tests.
-- **coverage.py documentation** — coverage.readthedocs.io, configuration
+- **coverage.py documentation** at coverage.readthedocs.io, configuration
   reference and branch coverage explanation.
 
 ---
@@ -2440,7 +2440,6 @@ available at: https://github.com/OWASP/ASVS/tree/v5.0.0
 | `editdistance` | CER computation for OCR evaluation | §11 |
 | `pydantic` | Response schema contracts and runtime validation | §11, §12 |
 | `basedpyright` | Static type checking (strict mode) | §12 |
-| `mypy` | Alternative static type checker | §12 |
 | `beartype` | Runtime type enforcement | §12 |
 | `factory_boy` | Declarative test data generation | §13 |
 | `faker` | Realistic fake data provider | §13 |
