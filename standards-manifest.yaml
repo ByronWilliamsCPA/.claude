@@ -1,0 +1,453 @@
+# docs/standards-manifest.yaml
+version: "1.0"
+last_updated: "2026-04-20"
+
+# verify field is a hint to the domain agent, not executable DSL.
+# Agents interpret it using their own tools (Grep, Read, Glob, Bash).
+
+checks:
+
+  # ── Foundations ─────────────────────────────────────────────────────────────
+
+  - id: FOUND-001
+    domain: foundations
+    severity: critical
+    description: "SECURITY.md present at project root"
+    verify: "file_exists: SECURITY.md"
+    source_template: "/home/byron/dev/.github/SECURITY.md"
+    override_eligible: false
+
+  - id: FOUND-002
+    domain: foundations
+    severity: critical
+    description: "CONTRIBUTING.md present at project root"
+    verify: "file_exists: CONTRIBUTING.md"
+    source_template: "/home/byron/dev/.github/CONTRIBUTING.md"
+    override_eligible: false
+
+  - id: FOUND-003
+    domain: foundations
+    severity: important
+    description: "CHANGELOG.md present at project root"
+    verify: "file_exists: CHANGELOG.md"
+    override_eligible: true
+
+  - id: FOUND-004
+    domain: foundations
+    severity: important
+    description: "CODEOWNERS present at .github/CODEOWNERS"
+    verify: "file_exists: .github/CODEOWNERS"
+    override_eligible: true
+
+  - id: FOUND-005
+    domain: foundations
+    severity: important
+    description: ".worktrees/ entry present in .gitignore"
+    verify: "content_present: .gitignore, .worktrees/"
+    override_eligible: true
+
+  - id: FOUND-006
+    domain: foundations
+    severity: important
+    description: "docs/compliance-reports/ entry present in .gitignore"
+    verify: "content_present: .gitignore, docs/compliance-reports/"
+    override_eligible: false
+
+  - id: FOUND-007
+    domain: foundations
+    severity: suggested
+    description: "pyproject.toml author email is not a placeholder"
+    verify: "metadata_value: pyproject.toml, authors[0].email, not_contains: example.com"
+    override_eligible: true
+
+  - id: FOUND-008
+    domain: foundations
+    severity: suggested
+    description: "pyproject.toml requires-python upper bound is <3.15 or unset"
+    verify: "metadata_value: pyproject.toml, requires-python, not_contains: <3.15"
+    override_eligible: true
+
+  - id: FOUND-009
+    domain: foundations
+    severity: important
+    description: "docs/known-vulnerabilities.md present"
+    verify: "file_exists: docs/known-vulnerabilities.md"
+    source_template: "/home/byron/dev/.claude/docs/known-vulnerabilities-template.md"
+    override_eligible: true
+
+  - id: FOUND-010
+    domain: foundations
+    severity: important
+    description: "AGENTS.md present at project root (not in docs/)"
+    verify: "file_exists: AGENTS.md"
+    override_eligible: true
+
+  - id: FOUND-011
+    domain: foundations
+    severity: suggested
+    description: "GEMINI.md present at project root (not in docs/)"
+    verify: "file_exists: GEMINI.md"
+    override_eligible: true
+
+  # ── Toolchain ────────────────────────────────────────────────────────────────
+
+  - id: TOOL-001
+    domain: toolchain
+    severity: critical
+    description: "ruff present in dev dependencies"
+    verify: "dep_present: ruff"
+    override_eligible: false
+
+  - id: TOOL-002
+    domain: toolchain
+    severity: important
+    description: "black absent from dependencies (replaced by ruff format)"
+    verify: "dep_absent: black"
+    override_eligible: false
+
+  - id: TOOL-003
+    domain: toolchain
+    severity: important
+    description: "mypy absent from dependencies (replaced by basedpyright)"
+    verify: "dep_absent: mypy"
+    override_eligible: false
+
+  - id: TOOL-004
+    domain: toolchain
+    severity: important
+    description: "safety absent from dependencies (replaced by pip-audit)"
+    verify: "dep_absent: safety"
+    override_eligible: false
+
+  - id: TOOL-005
+    domain: toolchain
+    severity: critical
+    description: "basedpyright present in dev dependencies"
+    verify: "dep_present: basedpyright"
+    override_eligible: true
+
+  - id: TOOL-006
+    domain: toolchain
+    severity: critical
+    description: "pip-audit present in dev dependencies"
+    verify: "dep_present: pip-audit"
+    override_eligible: false
+
+  - id: TOOL-007
+    domain: toolchain
+    severity: important
+    description: "darglint present in dev dependencies"
+    verify: "dep_present: darglint"
+    override_eligible: true
+
+  - id: TOOL-008
+    domain: toolchain
+    severity: important
+    description: "interrogate present in dev dependencies"
+    verify: "dep_present: interrogate"
+    override_eligible: true
+
+  - id: TOOL-009
+    domain: toolchain
+    severity: important
+    description: ".qlty/qlty.toml configuration file present"
+    verify: "file_exists: .qlty/qlty.toml"
+    override_eligible: true
+
+  - id: TOOL-010
+    domain: toolchain
+    severity: important
+    description: "Ruff rule set contains all PyStrict-aligned codes"
+    verify: "ruff_rules_include: BLE,EM,SLF,INP,ISC,PGH,RSE,TID,YTT,FA,T10,G,ANN,TCH,FBT,TRY,ERA,FURB,LOG,ASYNC"
+    override_eligible: true
+
+  - id: TOOL-011
+    domain: toolchain
+    severity: suggested
+    description: "Ruff target-version set in pyproject.toml"
+    verify: "content_present: pyproject.toml, target-version"
+    override_eligible: true
+
+  - id: TOOL-012
+    domain: toolchain
+    severity: important
+    description: "[tool.basedpyright] block present with typeCheckingMode = strict"
+    verify: "content_present: pyproject.toml, typeCheckingMode"
+    override_eligible: true
+
+  # ── Pre-commit ───────────────────────────────────────────────────────────────
+
+  - id: PC-001
+    domain: pre_commit
+    severity: critical
+    description: ".pre-commit-config.yaml present at project root"
+    verify: "file_exists: .pre-commit-config.yaml"
+    override_eligible: false
+
+  - id: PC-002
+    domain: pre_commit
+    severity: critical
+    description: "ruff hook present in .pre-commit-config.yaml"
+    verify: "hook_present: .pre-commit-config.yaml, ruff"
+    override_eligible: false
+
+  - id: PC-003
+    domain: pre_commit
+    severity: important
+    description: "basedpyright hook present in .pre-commit-config.yaml"
+    verify: "hook_present: .pre-commit-config.yaml, basedpyright"
+    override_eligible: true
+
+  - id: PC-004
+    domain: pre_commit
+    severity: important
+    description: "bandit hook present in .pre-commit-config.yaml"
+    verify: "hook_present: .pre-commit-config.yaml, bandit"
+    override_eligible: false
+
+  - id: PC-005
+    domain: pre_commit
+    severity: important
+    description: "detect-secrets hook present in .pre-commit-config.yaml"
+    verify: "hook_present: .pre-commit-config.yaml, detect-secrets"
+    override_eligible: false
+
+  - id: PC-006
+    domain: pre_commit
+    severity: important
+    description: "darglint hook present in .pre-commit-config.yaml"
+    verify: "hook_present: .pre-commit-config.yaml, darglint"
+    override_eligible: true
+
+  - id: PC-007
+    domain: pre_commit
+    severity: important
+    description: "interrogate hook present in .pre-commit-config.yaml"
+    verify: "hook_present: .pre-commit-config.yaml, interrogate"
+    override_eligible: true
+
+  - id: PC-008
+    domain: pre_commit
+    severity: important
+    description: "commitizen hook present in .pre-commit-config.yaml"
+    verify: "hook_present: .pre-commit-config.yaml, commitizen"
+    override_eligible: true
+
+  - id: PC-009
+    domain: pre_commit
+    severity: suggested
+    description: "yamllint hook present in .pre-commit-config.yaml"
+    verify: "hook_present: .pre-commit-config.yaml, yamllint"
+    override_eligible: true
+
+  - id: PC-010
+    domain: pre_commit
+    severity: suggested
+    description: "markdownlint hook present in .pre-commit-config.yaml"
+    verify: "hook_present: .pre-commit-config.yaml, markdownlint"
+    override_eligible: true
+
+  - id: PC-011
+    domain: pre_commit
+    severity: important
+    description: "no-em-dash hook present in .pre-commit-config.yaml"
+    verify: "hook_present: .pre-commit-config.yaml, no-em-dash"
+    override_eligible: false
+
+  - id: PC-012
+    domain: pre_commit
+    severity: important
+    description: "All hook rev fields are 40-character SHA pins, not mutable tags"
+    verify: "sha_pinned: .pre-commit-config.yaml, all_rev_fields"
+    override_eligible: false
+
+  # ── CI ────────────────────────────────────────────────────────────────────────
+
+  - id: CI-001
+    domain: ci
+    severity: important
+    description: "CI workflow uses org reusable python-ci.yml"
+    verify: "content_present: .github/workflows/ci.yml, williaby/.github"
+    override_eligible: true
+
+  - id: CI-002
+    domain: ci
+    severity: important
+    description: "Security workflow uses org reusable security analysis workflow"
+    verify: "content_present: .github/workflows/security.yml, williaby/.github"
+    override_eligible: true
+
+  - id: CI-003
+    domain: ci
+    severity: important
+    description: "SonarCloud integration workflow present"
+    verify: "file_exists: .github/workflows/sonarcloud.yml"
+    override_eligible: true
+
+  - id: CI-004
+    domain: ci
+    severity: important
+    description: "Qlty coverage workflow present (supplements Codecov; Qlty handles code quality metrics, Codecov tracks test coverage history and PR deltas)"
+    verify: "file_exists: .github/workflows/coverage.yml"
+    override_eligible: true
+
+  - id: CI-005
+    domain: ci
+    severity: critical
+    description: "All GitHub Action uses: references are 40-character SHA pins"
+    verify: "sha_pinned: .github/workflows/*.yml, all_uses_fields"
+    override_eligible: false
+
+  - id: CI-006
+    domain: ci
+    severity: important
+    description: "harden-runner present as first step in all workflow jobs"
+    verify: "content_present: .github/workflows/*.yml, harden-runner"
+    override_eligible: false
+
+  - id: CI-007
+    domain: ci
+    severity: important
+    description: "Security scan jobs have no continue-on-error: true"
+    verify: "content_absent: .github/workflows/security.yml, continue-on-error"
+    override_eligible: false
+
+  - id: CI-008
+    domain: ci
+    severity: suggested
+    description: ".github/copilot-instructions.md present"
+    verify: "file_exists: .github/copilot-instructions.md"
+    override_eligible: true
+
+  - id: CI-009
+    domain: ci
+    severity: important
+    description: "Codecov config file present at project root (.codecov.yml or codecov.yaml)"
+    verify: "file_exists: .codecov.yml,codecov.yaml"
+    override_eligible: true
+
+  - id: CI-010
+    domain: ci
+    severity: important
+    description: "Codecov config minimum coverage threshold is 80% or above"
+    verify: "content_present: .codecov.yml OR codecov.yaml, target: 80"
+    override_eligible: true
+
+  - id: CI-011
+    domain: ci
+    severity: important
+    description: "Codecov config defines separate coverage flags for unit and integration tests"
+    verify: "content_present: .codecov.yml OR codecov.yaml, flags:"
+    override_eligible: true
+
+  - id: CI-012
+    domain: ci
+    severity: important
+    description: "SonarQube quality gate passes -- no open Blocker or Critical issues (queried via SonarQube API)"
+    verify: "sonarqube_quality_gate: status=OK, severities=BLOCKER,CRITICAL"
+    override_eligible: true
+
+  - id: CI-013
+    domain: ci
+    severity: important
+    description: "No unregistered GitHub Actions workflows -- any .yml in .github/workflows/ not matching the org-standard set (ci.yml, security.yml, sonarcloud.yml, coverage.yml) is flagged for evaluation"
+    verify: "workflow_inventory: .github/workflows/, expected_set=[ci.yml,security.yml,sonarcloud.yml,coverage.yml], report_extras=true"
+    override_eligible: true
+
+  # ── Claude and Docs ──────────────────────────────────────────────────────────
+
+  - id: CLAUDE-001
+    domain: claude_docs
+    severity: important
+    description: "Project CLAUDE.md present at project root"
+    verify: "file_exists: CLAUDE.md"
+    override_eligible: true
+
+  - id: CLAUDE-002
+    domain: claude_docs
+    severity: important
+    description: "CLAUDE.md contains Model Selection section"
+    verify: "section_present: CLAUDE.md, Model Selection"
+    override_eligible: true
+
+  - id: CLAUDE-003
+    domain: claude_docs
+    severity: important
+    description: "CLAUDE.md contains Response-Aware Development (RAD) section"
+    verify: "section_present: CLAUDE.md, Response-Aware Development"
+    override_eligible: true
+
+  - id: CLAUDE-004
+    domain: claude_docs
+    severity: suggested
+    description: "CLAUDE.md contains cross-references to global rule files"
+    verify: "content_present: CLAUDE.md, ~/.claude/.claude/rules/"
+    override_eligible: true
+
+  - id: CLAUDE-005
+    domain: claude_docs
+    severity: important
+    description: ".claude/settings.json present with permissions block"
+    verify: "file_exists: .claude/settings.json"
+    override_eligible: true
+
+  - id: CLAUDE-006
+    domain: claude_docs
+    severity: important
+    description: "CLAUDE.md Essential Commands do not reference removed tools (black, mypy, safety)"
+    verify: "content_absent_any: CLAUDE.md, black,mypy,safety check"
+    override_eligible: true
+
+  - id: CLAUDE-007
+    domain: claude_docs
+    severity: critical
+    description: "No em-dash characters in docs/**/*.md files"
+    verify: "em_dash_absent: docs/**/*.md"
+    override_eligible: false
+
+  - id: CLAUDE-008
+    domain: claude_docs
+    severity: suggested
+    description: "No AI blacklist pattern words in formal docs (leverage, seamless, robust, comprehensive, holistic, crucial, pivotal, vital)"
+    verify: "ai_patterns_absent: docs/**/*.md"
+    override_eligible: true
+
+  # ── OSSF (Best Practices Badge + Scorecard) ──────────────────────────────────
+  # These checks supplement the live Scorecard API and Badge API results with
+  # local file content that those APIs cannot evaluate. The ossf-compliance-auditor
+  # agent queries the APIs first and uses these checks only for gaps the APIs miss.
+
+  - id: OSSF-001
+    domain: ossf
+    severity: important
+    description: "OpenSSF Best Practices Badge application filed (Passing level) -- verified via bestpractices.coreinfrastructure.org API"
+    verify: "ossf_badge_api: level=passing"
+    override_eligible: true
+
+  - id: OSSF-002
+    domain: ossf
+    severity: critical
+    description: "SECURITY.md documents a private vulnerability reporting channel (GitHub Security Advisories or equivalent)"
+    verify: "content_present: SECURITY.md, private"
+    override_eligible: false
+
+  - id: OSSF-003
+    domain: ossf
+    severity: critical
+    description: "SECURITY.md states a maximum initial response SLA of 14 days"
+    verify: "content_present: SECURITY.md, 14"
+    override_eligible: false
+
+  - id: OSSF-004
+    domain: ossf
+    severity: important
+    description: "CHANGELOG entries for vulnerability fixes include the CVE ID"
+    verify: "changelog_cve_pattern: CHANGELOG.md, CVE-[0-9]{4}-[0-9]+"
+    override_eligible: true
+
+  - id: OSSF-005
+    domain: ossf
+    severity: suggested
+    description: "Library projects have published API reference docs; non-library projects have N/A marker in README or CONTRIBUTING"
+    verify: "ossf_api_docs: docs/api/ OR README contains 'N/A' near 'API reference'"
+    override_eligible: true
