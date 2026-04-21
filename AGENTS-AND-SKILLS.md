@@ -128,6 +128,49 @@ changelog generation, semantic versioning, release coordination, and repository 
 GitHub platform specialist for PR management, issue tracking, GitHub Actions CI/CD, branch
 protection rules, CODEOWNERS, and project board administration via the `gh` CLI.
 
+### Compliance & Standards Auditing
+
+**[repo-foundations-auditor](/.claude/agents/repo-foundations-auditor.md)**
+Compliance auditor and remediator for repository foundation files. Checks OpenSSF required files
+(SECURITY.md, CONTRIBUTING.md, CHANGELOG.md), CODEOWNERS, .gitignore entries, pyproject.toml
+metadata, and docs structure against the standards manifest. Returns structured findings in audit
+mode; creates or patches files in remediation mode.
+
+**[python-toolchain-auditor](/.claude/agents/python-toolchain-auditor.md)**
+Compliance auditor and remediator for Python project toolchain configuration. Checks dev dependency
+presence and absence (ruff, basedpyright, pip-audit, darglint, interrogate), Ruff rule set
+completeness against PyStrict-aligned codes, BasedPyright config, qlty setup, and pyproject.toml
+settings against the standards manifest.
+
+**[pre-commit-auditor](/.claude/agents/pre-commit-auditor.md)**
+Compliance auditor and remediator for `.pre-commit-config.yaml`. Checks hook presence against the
+required list (ruff, basedpyright, bandit, detect-secrets, darglint, interrogate, commitizen,
+yamllint, markdownlint, no-em-dash) and validates all rev fields are SHA-pinned.
+
+**[claude-docs-auditor](/.claude/agents/claude-docs-auditor.md)**
+Compliance auditor and remediator for Claude configuration and project documentation. Checks
+CLAUDE.md section presence, `.claude/settings.json`, AGENTS.md/GEMINI.md file locations, and
+writing quality. Delegates em-dash and AI pattern scanning to `writing-style-editor`.
+
+**[ossf-compliance-auditor](/.claude/agents/ossf-compliance-auditor.md)**
+Audits a repository's OpenSSF Best Practices Badge (Passing level) and Security Scorecard (4+ on
+all 20 checks) compliance. Queries the live Scorecard REST API and Best Practices Badge API for
+current results, falls back to the SARIF artifact from the scorecard.yml workflow run, and
+supplements with GitHub API checks (branch protection, signed release assets, private vulnerability
+reporting) and local file checks (SECURITY.md content, CHANGELOG CVE patterns, dependabot config,
+fuzzing targets). Every FINDING includes specific, executable remediation steps drawn from embedded
+knowledge of each check's requirements.
+
+**[general-compliance-auditor](/.claude/agents/general-compliance-auditor.md)**
+Freeform compliance auditor for gaps outside the standards manifest. Receives covered check IDs as
+a negative filter, performs a broad LLM review against global standards, and returns unclassified
+candidates for retrospective pattern analysis. Audit mode only.
+
+**[compliance-retrospective](/.claude/agents/compliance-retrospective.md)**
+Post-run retrospective agent. Synthesizes findings across all repos in a session, detects patterns
+in unclassified candidates, and writes a lessons-learned document with ready-to-paste manifest
+improvement proposals and agent scope expansion candidates.
+
 ### Frontend
 
 **[frontend-designer](/.claude/agents/frontend-designer.md)**
@@ -227,7 +270,7 @@ Runs code quality checks: ruff formatting, ruff linting with auto-fix, BasedPyri
 markdownlint, and yamllint. Activates on: "quality check", "lint", "format code".
 
 **[/rad](/.claude/skills/rad/SKILL.md)**
-Response-Aware Development — systematic assumption tagging and multi-model verification. Tags
+Response-Aware Development: systematic assumption tagging and multi-model verification. Tags
 `#CRITICAL`, `#ASSUME`, and `#EDGE` assumptions in code and routes them to appropriate AI models
 for verification. Sub-workflows: verify, list, test. Activates on: "assumption", "RAD", "verify
 assumptions".
@@ -280,6 +323,11 @@ generation, and enforces consistency across diagram hierarchies. Activates on: "
 Reviews, triages, and fixes SonarCloud issues via the SonarQube MCP server. Auto-detects project
 org and key. Supports issue search, quality gate checks, rule lookup, and automated fixing.
 Activates on: "sonar", "quality gate", "sonar issues".
+
+**[/repo-audit](/.claude/skills/repo-compliance/SKILL.md)**
+Repo compliance coordinator. Audits any repository against the standards manifest, presents
+findings grouped by severity, applies approved remediations, opens a PR, and runs the
+retrospective. Interactive mode for single-repo work; scheduled mode for org-wide sweeps.
 
 **[/skill-creator](/.claude/skills/skill-creator)**
 Creates new skills, modifies existing ones, runs evals, and benchmarks skill performance. Use when
@@ -413,6 +461,8 @@ default system prompt.
 | Draft from outline or bullets | `/writing draft` |
 | Rewrite for a different audience | `/writing rewrite` |
 | Check if document will land with its audience | `/writing analyze` |
+| Audit a repo for compliance | `/repo-audit` skill |
+| Check OSSF Best Practices Badge / Scorecard status | `ossf-compliance-auditor` agent (called by `/repo-audit`) |
 | Check phase readiness | `/phase-gate` skill or `phase-reviewer` agent |
 | Respond to a code review | `receiving-code-review` skill |
 | Confirm work is done | `verification-before-completion` skill |
