@@ -1,32 +1,124 @@
 # CHANGELOG
-## [Unreleased]
-### Features
-* feat(compliance): add multi-agent repository compliance system with seven domain
-  auditors (repo-foundations, python-toolchain, pre-commit, claude-docs,
-  general-compliance, CI/CD, OSSF), interactive and scheduled workflow modes,
-  and a standards manifest with 61 checks across 6 domains
-* feat(compliance): add repo-compliance skill entry point with interactive and
-  scheduled mode workflows
-* feat(compliance): add interactive mode workflow with parallel domain dispatch
-* feat(compliance): add scheduled mode workflow and report template
-* feat(compliance): add repo-foundations-auditor agent
-* feat(compliance): add python-toolchain-auditor agent
-* feat(compliance): add pre-commit-auditor agent
-* feat(compliance): add claude-docs-auditor agent
-* feat(compliance): add general-compliance-auditor agent
-* feat(compliance): add compliance-retrospective agent
-* feat(compliance): add ossf-compliance-auditor agent (Scorecard + Best Practices Badge)
-* feat(compliance): add CI compliance audit mode to devops-deployment-agent
-* feat(compliance): add standards manifest with 61 checks across 6 domains
-* feat(compliance): add support files (exclusions list, report gitignore, override template)
-* feat(compliance): add CI-009..CI-013 checks for Codecov, SonarQube, and workflow inventory
-### Fix
-* fix(compliance): clarify exclusion slug matching and override template path context
-* fix(compliance): handle both .codecov.yml and codecov.yaml filename variants
-* fix(docs): replace em-dash in AGENTS-AND-SKILLS.md rad skill entry
+## v0.13.0 (2026-04-21)
 ### Documentation
+* docs(compliance): correct agent count and domain inventory in design docs
+
+- spec: add OSSF domain row to Scope of Standards table; update
+  General row to reference &#34;six defined domains&#34; (was five)
+- plan: update architecture summary from &#34;six domain agents&#34; to
+  &#34;seven domain agents&#34;; update Task 1 commit message template
+  from &#34;52 checks across 5 domains&#34; to &#34;61 checks across 6 domains&#34;
+
+Co-Authored-By: Claude Sonnet 4.6 &lt;noreply@anthropic.com&gt; ([`49aa54f`](https://github.com/ByronWilliamsCPA/.claude/commit/49aa54fbc6813b61ab88de44766d38e824532f2a))
 * docs: register compliance system agents and skill in AGENTS-AND-SKILLS.md
 
+Co-Authored-By: Claude Sonnet 4.6 &lt;noreply@anthropic.com&gt; ([`e52e7f5`](https://github.com/ByronWilliamsCPA/.claude/commit/e52e7f537890c755dd0970304ad140dd19f0d37b))
+* docs(compliance): add repo compliance system implementation plan
+
+14-task plan covering standards manifest, 6 new domain agents,
+devops-deployment-agent expansion, coordinator skill with
+interactive and scheduled modes, and integration test against
+pp-security-master.
+
+Co-Authored-By: Claude Sonnet 4.6 &lt;noreply@anthropic.com&gt; ([`3f51954`](https://github.com/ByronWilliamsCPA/.claude/commit/3f5195430bb21f7af9752dbc462512b0f52da8af))
+* docs(compliance): add repo compliance system design spec
+
+Specifies a self-improving multi-agent system for auditing and
+remediating repo drift against global standards. Covers six
+domains, hybrid manifest+agent architecture, interactive and
+scheduled modes, override file schema, and retrospective
+self-improvement loop.
+
+Co-Authored-By: Claude Sonnet 4.6 &lt;noreply@anthropic.com&gt; ([`5e9448f`](https://github.com/ByronWilliamsCPA/.claude/commit/5e9448fa0e8d763a15a93c3f7e01dfd77aed3950))
+### Feature
+* feat(compliance): add ossf-compliance-auditor agent
+
+Adds a dedicated OSSF audit domain to the repo compliance system:
+
+- OSSF-001..005 checks in standards-manifest.yaml for gaps the
+  Scorecard and Badge APIs cannot measure (badge application status,
+  SECURITY.md private channel and SLA, CHANGELOG CVE IDs, API docs)
+- ossf-compliance-auditor agent queries the live Scorecard REST API
+  and Best Practices Badge API for current scores, falls back to the
+  SARIF artifact from scorecard.yml when publish_results is false,
+  supplements with GitHub API checks (branch protection, signed
+  releases, private vulnerability reporting), and runs local file
+  checks for OSSF-001..005
+- Embedded knowledge of all 20 Scorecard checks and 5 Best Practices
+  Badge gap criteria so every FINDING includes specific, executable
+  remediation steps without requiring external research
+- Routing table in SKILL.md updated; agent registered in catalog
+
+Co-Authored-By: Claude Sonnet 4.6 &lt;noreply@anthropic.com&gt; ([`2e2fe94`](https://github.com/ByronWilliamsCPA/.claude/commit/2e2fe94719c20b69ea4c35a336ab7ee6c74619ee))
+* feat(compliance): add scheduled mode workflow and report template ([`eeb38f6`](https://github.com/ByronWilliamsCPA/.claude/commit/eeb38f635ccef7fd70a8f101547985c573e38884))
+* feat(compliance): add interactive mode workflow ([`d1df129`](https://github.com/ByronWilliamsCPA/.claude/commit/d1df129f0857bcc33da9f73af35b965a3c2e8c61))
+* feat(compliance): add repo-compliance skill entry point ([`98e6352`](https://github.com/ByronWilliamsCPA/.claude/commit/98e6352de443c63cff0b07e4d04b2f967ce0b607))
+* feat(compliance): add CI compliance audit mode to devops-deployment-agent
+
+Adds a CI Compliance Audit Mode section to the devops-deployment-agent
+with detailed audit and remediation workflows for CI-001 through CI-013
+checks, including sha-pinning, harden-runner, reusable workflow migration,
+Codecov configuration, and workflow inventory evaluation.
+
+Co-Authored-By: Claude Sonnet 4.6 &lt;noreply@anthropic.com&gt; ([`5084072`](https://github.com/ByronWilliamsCPA/.claude/commit/50840720993461b7e3d03c8e6db4d8009729571a))
+* feat(compliance): add compliance-retrospective agent ([`f4245ce`](https://github.com/ByronWilliamsCPA/.claude/commit/f4245ce66fb365a5e2c9e07a1fbdd8a6e80dfe56))
+* feat(compliance): add general-compliance-auditor agent ([`d89c256`](https://github.com/ByronWilliamsCPA/.claude/commit/d89c2564bbac3ce0d3bc97736d8cff87698cb875))
+* feat(compliance): add claude-docs-auditor agent ([`641e39a`](https://github.com/ByronWilliamsCPA/.claude/commit/641e39a68975c08f2a1f9abbf61cdfb3a7fe7966))
+* feat(compliance): add pre-commit-auditor agent ([`c1369af`](https://github.com/ByronWilliamsCPA/.claude/commit/c1369af2a8a81dcda41540147c2c795c606b5df7))
+* feat(compliance): add python-toolchain-auditor agent ([`1d310e1`](https://github.com/ByronWilliamsCPA/.claude/commit/1d310e13c4c2970e2937d0fa52b7b835a3b3b9ab))
+* feat(compliance): add repo-foundations-auditor agent ([`abfb6d3`](https://github.com/ByronWilliamsCPA/.claude/commit/abfb6d36cffbdda899c77fe30fa0f8e0ab3daa23))
+* feat(compliance): add CI-009..CI-013 checks for Codecov, SonarQube, and workflow inventory ([`e2a9010`](https://github.com/ByronWilliamsCPA/.claude/commit/e2a90108be0934a64b716cff162c61e508a1e45a))
+* feat(compliance): add support files -- exclusions, report gitignore, override template ([`995c831`](https://github.com/ByronWilliamsCPA/.claude/commit/995c83172822271a47a06ef00991590902cf3d10))
+* feat(compliance): add standards manifest with 52 checks across 5 domains ([`6e3eb78`](https://github.com/ByronWilliamsCPA/.claude/commit/6e3eb7877f4df3d5155588a7dd21cfc2c89f5a11))
+### Fix
+* fix(compliance): clarify CI-004 -- Qlty supplements Codecov, not replaces
+
+The original description said Qlty &#34;replaces Codecov&#34; which contradicted
+CI-009..CI-011 requiring Codecov config. Both coexist: Qlty runs code
+quality checks (linting, smells, type checks) and Codecov tracks test
+coverage history and PR deltas independently.
+
+Co-Authored-By: Claude Sonnet 4.6 &lt;noreply@anthropic.com&gt; ([`59d5c91`](https://github.com/ByronWilliamsCPA/.claude/commit/59d5c9175e574774d5c9662ca2ff9c4dcb627cd7))
+* fix(compliance): address pr-review findings in agents and workflows
+
+- devops-deployment-agent: fix org name typo williamy -&gt; williaby;
+  add SHA-pinned placeholder for reusable workflow ref (@main -&gt; @&lt;sha&gt;)
+- ossf-compliance-auditor: fix FINDING block format (add colon to both
+  instances); fix severity: high -&gt; important (align to system vocab)
+- python-toolchain-auditor: generalize hard-coded pythonVersion = &#34;3.11&#34;
+  to derive from project&#39;s requires-python constraint
+- interactive-mode: add ossf-compliance-auditor to parallel dispatch
+  (Step 2) and remediation dispatch (Step 5) -- agent was defined but
+  never wired into either dispatch path
+- scheduled-mode: fix &gt;&gt; to &gt; on first remote-repos write to prevent
+  stale entries accumulating across runs
+- standards-manifest FOUND-008: fix verify not_contains value from
+  &lt;3.13 to &lt;3.15 to match the stated description
+
+Co-Authored-By: Claude Sonnet 4.6 &lt;noreply@anthropic.com&gt; ([`132d739`](https://github.com/ByronWilliamsCPA/.claude/commit/132d73956f4d6baaed40378984a31f283c118b2d))
+* fix(ci): unblock CI failures -- ruff format and missing changelog
+
+- Run ruff format on test_validate_front_matter.py (pre-existing
+  format violation, file not in this PR&#39;s diff but flagged by CI)
+- Add [Unreleased] section to CHANGELOG.md covering all feat/fix
+  commits on this branch (unblocks Changelog Check CI gate)
+
+Co-Authored-By: Claude Sonnet 4.6 &lt;noreply@anthropic.com&gt; ([`0a8cb65`](https://github.com/ByronWilliamsCPA/.claude/commit/0a8cb650bcea2e63878c4b2016d9768026b4d3e7))
+* fix(compliance): handle both .codecov.yml and codecov.yaml filename variants
+
+CI-009 verify string now accepts either filename; CI-010 and CI-011 use
+&#34;OR&#34; syntax so the agent resolves whichever file exists before checking
+content. devops-deployment-agent audit and remediation sections updated
+to resolve the filename before applying content checks or creating the
+config file.
+
+Co-Authored-By: Claude Sonnet 4.6 &lt;noreply@anthropic.com&gt; ([`d4a6a59`](https://github.com/ByronWilliamsCPA/.claude/commit/d4a6a5956e1ae5bb2eaebf2a14e03410ab49efeb))
+* fix(docs): replace em-dash in AGENTS-AND-SKILLS.md rad skill entry ([`257bcba`](https://github.com/ByronWilliamsCPA/.claude/commit/257bcba7ec7622ed3efaaf3171701dc7cbd127b1))
+* fix(compliance): clarify exclusion slug matching and override template path context ([`288be55`](https://github.com/ByronWilliamsCPA/.claude/commit/288be55ba771258b4d84b5cb5e3b256cd76171f2))
+### Unknown
+* Merge pull request #30 from ByronWilliamsCPA/feat/repo-compliance-system
+
+feat(compliance): add self-improving multi-agent repo compliance system ([`1a1e132`](https://github.com/ByronWilliamsCPA/.claude/commit/1a1e132fd7b65c1036427a454aec3380a0a37f68))
 ## v0.12.2 (2026-04-19)
 ### Documentation
 * docs(claude.md): add repo structure map, model selection, and scoped context
