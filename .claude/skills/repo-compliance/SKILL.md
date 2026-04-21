@@ -42,6 +42,7 @@ Follow the appropriate workflow file for the selected mode. Both modes share the
 | pre_commit | `pre-commit-auditor` | PC-* |
 | ci | `devops-deployment-agent` (CI audit mode) | CI-* |
 | claude_docs | `claude-docs-auditor` | CLAUDE-* |
+| ossf | `ossf-compliance-auditor` | OSSF-* + live Scorecard/Badge API results |
 | general | `general-compliance-auditor` | unclassified |
 
 ## Coordinator Prompt Template
@@ -56,3 +57,11 @@ Manifest checks for this domain:
 Override entries (skip these check IDs):
 <paste entries from compliance-overrides.md, or "none">
 ```
+
+For the `ossf-compliance-auditor` specifically, also include:
+
+```
+Repo slug: <owner/repo GitHub slug>
+```
+
+The OSSF agent queries live APIs (Scorecard REST API, Best Practices Badge API, GitHub API) using the repo slug. It will produce FINDING blocks both for OSSF-* manifest checks and for Scorecard checks that score below 4, even when those checks have no manifest entry.

@@ -152,6 +152,15 @@ Compliance auditor and remediator for Claude configuration and project documenta
 CLAUDE.md section presence, `.claude/settings.json`, AGENTS.md/GEMINI.md file locations, and
 writing quality. Delegates em-dash and AI pattern scanning to `writing-style-editor`.
 
+**[ossf-compliance-auditor](/.claude/agents/ossf-compliance-auditor.md)**
+Audits a repository's OpenSSF Best Practices Badge (Passing level) and Security Scorecard (4+ on
+all 20 checks) compliance. Queries the live Scorecard REST API and Best Practices Badge API for
+current results, falls back to the SARIF artifact from the scorecard.yml workflow run, and
+supplements with GitHub API checks (branch protection, signed release assets, private vulnerability
+reporting) and local file checks (SECURITY.md content, CHANGELOG CVE patterns, dependabot config,
+fuzzing targets). Every FINDING includes specific, executable remediation steps drawn from embedded
+knowledge of each check's requirements.
+
 **[general-compliance-auditor](/.claude/agents/general-compliance-auditor.md)**
 Freeform compliance auditor for gaps outside the standards manifest. Receives covered check IDs as
 a negative filter, performs a broad LLM review against global standards, and returns unclassified
@@ -453,6 +462,7 @@ default system prompt.
 | Rewrite for a different audience | `/writing rewrite` |
 | Check if document will land with its audience | `/writing analyze` |
 | Audit a repo for compliance | `/repo-audit` skill |
+| Check OSSF Best Practices Badge / Scorecard status | `ossf-compliance-auditor` agent (called by `/repo-audit`) |
 | Check phase readiness | `/phase-gate` skill or `phase-reviewer` agent |
 | Respond to a code review | `receiving-code-review` skill |
 | Confirm work is done | `verification-before-completion` skill |
