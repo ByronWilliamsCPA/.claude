@@ -261,7 +261,7 @@ Runs code quality checks: ruff formatting, ruff linting with auto-fix, BasedPyri
 markdownlint, and yamllint. Activates on: "quality check", "lint", "format code".
 
 **[/rad](/.claude/skills/rad/SKILL.md)**
-Response-Aware Development — systematic assumption tagging and multi-model verification. Tags
+Response-Aware Development: systematic assumption tagging and multi-model verification. Tags
 `#CRITICAL`, `#ASSUME`, and `#EDGE` assumptions in code and routes them to appropriate AI models
 for verification. Sub-workflows: verify, list, test. Activates on: "assumption", "RAD", "verify
 assumptions".
