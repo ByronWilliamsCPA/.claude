@@ -322,22 +322,22 @@ checks:
   - id: CI-009
     domain: ci
     severity: important
-    description: ".codecov.yml present at project root"
-    verify: "file_exists: .codecov.yml"
+    description: "Codecov config file present at project root (.codecov.yml or codecov.yaml)"
+    verify: "file_exists: .codecov.yml,codecov.yaml"
     override_eligible: true
 
   - id: CI-010
     domain: ci
     severity: important
-    description: ".codecov.yml minimum coverage threshold is 80% or above"
-    verify: "content_present: .codecov.yml, target: 80"
+    description: "Codecov config minimum coverage threshold is 80% or above"
+    verify: "content_present: .codecov.yml OR codecov.yaml, target: 80"
     override_eligible: true
 
   - id: CI-011
     domain: ci
     severity: important
-    description: ".codecov.yml defines separate coverage flags for unit and integration tests"
-    verify: "content_present: .codecov.yml, flags:"
+    description: "Codecov config defines separate coverage flags for unit and integration tests"
+    verify: "content_present: .codecov.yml OR codecov.yaml, flags:"
     override_eligible: true
 
   - id: CI-012
