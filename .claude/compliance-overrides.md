@@ -15,11 +15,12 @@ in the standards manifest can be suppressed here. Critical security checks
 
 | Check ID | Reason | Approved By | Date |
 |----------|--------|-------------|------|
-| | | | |
 
 ## How to Add an Override
 
 1. Find the check ID in `~/.claude/docs/standards-manifest.yaml`
+   (`~/.claude/` is the global Claude standards repo; run `setup.sh` from that
+   repo if you see "no such file")
 2. Confirm `override_eligible: true` for that check
 3. Add a row above with the check ID, business reason, your name, and today's date
 4. Commit the change with message: `chore(compliance): add override for <CHECK-ID>`
