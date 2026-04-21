@@ -1,0 +1,9 @@
+# docs/compliance-exclusions.yaml
+# Repos excluded from scheduled compliance sweeps.
+# 'repo' matches against the repo slug (basename of git remote or local dir).
+
+exclusions:
+  - repo: cookiecutter-python-template
+    reason: "template source, not a generated project"
+  - repo: .claude
+    reason: "this repo is the standards source, not a downstream project"
