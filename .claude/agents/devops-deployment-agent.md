@@ -71,7 +71,8 @@ Receive from the coordinator: target repo path, list of CI-* checks to evaluate,
 - `file_exists` checks: use Glob
 - `sha_pinned` checks: Read each workflow file; find all `uses:` lines; a valid pin is `owner/repo@<40-hex-chars>`. Flag any ref using a version tag (e.g., `@v4`, `@main`, `@master`)
 - `content_absent` checks: use Grep to confirm the string does not appear
-- `file_exists_and_content` checks (CI-009 Codecov threshold): Read the file and verify the specified content is present
+- `file_exists` checks with comma-separated filenames (CI-009): check if any of the listed filenames exists; pass if at least one is found. Note the resolved filename for use in subsequent content checks (CI-010, CI-011)
+- `content_present` checks using "OR" filename syntax (CI-010, CI-011): resolve the Codecov config filename first (`.codecov.yml` if present, else `codecov.yaml`); then check the resolved file for the specified content
 - `workflow_inventory` checks (CI-013): List all .yml files in `.github/workflows/`; compare against the expected set; report any files not in the expected set as unregistered workflows for evaluation
 - `sonarqube_quality_gate` checks (CI-012): Use Bash to call the SonarQube API or MCP tool to retrieve the project quality gate status; report the status and count of open Blocker and Critical issues
 
@@ -127,7 +128,7 @@ Exclude from review: code style, formatting, and whitespace. These are enforced
 by pre-commit hooks and ruff -- do not flag them.
 ```
 
-**CI-009 to CI-011 (Codecov configuration):** Create or patch `.codecov.yml` to include:
+**CI-009 to CI-011 (Codecov configuration):** Resolve the existing filename first: if `codecov.yaml` exists use it, otherwise use `.codecov.yml` (creating it if absent). Create or patch the resolved file to include:
 
 ```yaml
 coverage:
