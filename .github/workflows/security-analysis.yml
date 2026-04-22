@@ -1,5 +1,5 @@
 # Security Analysis Workflow for Claude Code Configuration
-# Runs security scans including Bandit, Safety, and dependency checks.
+# Delegates security scans (Bandit, pip-audit, Ruff) to the org-level reusable workflow.
 #
 # Delegates to the org-level reusable security analysis workflow.
 name: Security Analysis
