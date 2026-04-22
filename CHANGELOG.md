@@ -6,6 +6,12 @@
 
 * feat(ci): add CI-014 through CI-017 standards to enforce gate job presence and correct blocking check contexts; update `ossf-compliance-auditor` to audit CI-017 at audit time; fix `setup_github_protection.py` to register short job display names instead of the stale `Workflow / Job` composite format
 
+### Chore
+
+* chore(compliance): remediate OSSF Scorecard compliance gaps: add CodeQL, SonarCloud, Qlty
+  coverage, REUSE, and release-signing workflows; harden all CI jobs with pinned action SHAs;
+  add AGENTS.md, GEMINI.md, .codecov.yml, sonar-project.properties; expand pre-commit hooks
+
 ### Fix
 
 * fix(release): add `build_command = "uv lock"` to prevent uv.lock version drift after semantic releases

@@ -10,6 +10,7 @@
   "MD034": false,
   "MD040": false,
   "MD041": false,
+  "MD004": false,
   "MD060": false,
   "line-length": false,
   "no-inline-html": false,

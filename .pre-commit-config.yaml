@@ -284,7 +284,7 @@ repos:
     hooks:
       - id: markdownlint-cli2
         stages: [pre-commit]
-        exclude: ^docs/superpowers/
+        exclude: ^(docs/superpowers/|CHANGELOG\.md)
 
 # Exclude patterns
 # .submodules/ is excluded because submodule contents are owned by their upstream
