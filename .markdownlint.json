@@ -13,8 +13,5 @@
   "MD060": false,
   "line-length": false,
   "no-inline-html": false,
-  "first-line-heading": false,
-  "ignores": [
-    "docs/superpowers/**"
-  ]
+  "first-line-heading": false
 }
