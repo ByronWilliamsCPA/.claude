@@ -387,10 +387,10 @@ does `from myapp.db import fetch_user`, the name `fetch_user` lives in
 `myapp.service`'s namespace:
 
 ```python
-# WRONG : patches the original but service.py already has its own reference
+# WRONG: patches the original but service.py already has its own reference
 mocker.patch("myapp.db.fetch_user", return_value=mock_user)
 
-# CORRECT : patches the reference that service.py actually uses
+# CORRECT: patches the reference that service.py actually uses
 mocker.patch("myapp.service.fetch_user", return_value=mock_user)
 ```
 
@@ -783,13 +783,13 @@ ports, external files) need per-worker uniqueness.
 ### Testing Implementation Instead of Behavior
 
 ```python
-# BAD : breaks when internal storage changes from dict to database
+# BAD: breaks when internal storage changes from dict to database
 def test_user_stored_internally():
     service = UserService()
     service.create("alice@example.com")
     assert "alice@example.com" in service._users  # private attribute!
 
-# GOOD : tests observable behavior through public interface
+# GOOD: tests observable behavior through public interface
 def test_user_retrievable_after_creation():
     service = UserService()
     service.create("alice@example.com")
@@ -799,7 +799,7 @@ def test_user_retrievable_after_creation():
 ### Assert-Free Tests
 
 ```python
-# BAD : runs code but verifies nothing
+# BAD: runs code but verifies nothing
 def test_process_data():
     result = process_data([1, 2, 3])
     # oops, forgot the assert
@@ -818,7 +818,7 @@ def test_calculate():
 ### Shared Mutable State
 
 ```python
-# BAD : tests pollute each other via module-level variable
+# BAD: tests pollute each other via module-level variable
 _cache = {}
 
 def test_first():
@@ -828,7 +828,7 @@ def test_first():
 def test_second():
     assert get_cached("key") is None  # FAILS because test_first left data
 
-# GOOD : fixture isolates state
+# GOOD: fixture isolates state
 @pytest.fixture(autouse=True)
 def _clean_cache():
     yield
@@ -838,13 +838,13 @@ def _clean_cache():
 ### Testing Private Methods
 
 ```python
-# BAD : coupled to internal implementation
+# BAD: coupled to internal implementation
 def test_apply_discount_formula():
     service = PricingService()
     result = service._apply_discount(100, 0.2)  # testing private method
     assert result == 80
 
-# GOOD : test through public interface
+# GOOD: test through public interface
 def test_premium_price_reflects_discount():
     service = PricingService()
     price = service.calculate_price(item=Item(base=100), tier="premium")
@@ -857,7 +857,7 @@ a signal to extract it into a separate public utility function.
 ### Over-Mocking
 
 ```python
-# BAD : 15 lines of mock setup for 2 lines of actual test
+# BAD: 15 lines of mock setup for 2 lines of actual test
 def test_process_order(mocker):
     mock_db = mocker.patch("app.db.get_connection")
     mock_cursor = MagicMock()
@@ -870,7 +870,7 @@ def test_process_order(mocker):
     mock_notify = mocker.patch("app.notifications.send")
     # ... test is testing the mocks, not the code
 
-# GOOD : use a fake repository
+# GOOD: use a fake repository
 class FakeOrderRepo:
     def __init__(self):
         self._orders = {}

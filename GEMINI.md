@@ -7,7 +7,7 @@
 
 In Gemini CLI, activate skills with `activate_skill("skill-name")`. Skills are
 auto-discovered from installed plugins. Tool names differ from Claude Code:
-see `references/gemini-tools.md` for the full mapping.
+see the tool mapping table below.
 
 ## Project context
 
@@ -30,7 +30,7 @@ Create worktrees inside the project at `.worktrees/<branch-slug>`.
 
 ## Writing style
 
-Never use em-dashes (--) in any output. Use commas, semicolons, colons, or
+Never use em-dashes (U+2014) in any output. Use commas, semicolons, colons, or
 restructure the sentence. This is a hard rule.
 
 ## Model selection
@@ -55,4 +55,4 @@ Required in every project: `LICENSE`, `SECURITY.md`, `CONTRIBUTING.md`,
 ## Global resources
 
 Full agent catalog: `AGENTS-AND-SKILLS.md`
-Tool mapping for Gemini CLI: `references/gemini-tools.md`
+Tool mapping for Gemini CLI: see `.claude/references/` for available reference files

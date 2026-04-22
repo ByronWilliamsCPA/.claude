@@ -4,7 +4,7 @@
 
 Report vulnerabilities privately via GitHub Security Advisories. Navigate to
 the Security tab of this repository and click "Report a vulnerability". Do not
-file public issues for security vulnerabilities -- public disclosure before a
+file public issues for security vulnerabilities; public disclosure before a
 fix is available puts all users at risk.
 
 The Security tab is at:
