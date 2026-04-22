@@ -17,7 +17,7 @@ jobs:
       id-token: write
     steps:
       - name: Harden runner
-        uses: step-security/harden-runner@91182cccc01eb5e619878b0bd9d3b20fd1cca3ab  # v2.10.2
+        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
         with:
           egress-policy: audit
 
@@ -30,16 +30,24 @@ jobs:
       - name: Download release assets
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
         run: |
-          TAG="${{ github.event.release.tag_name }}"
           mkdir -p release-assets
-          gh release download "$TAG" --dir release-assets/ || echo "No assets to sign"
+          if ! gh release download "$RELEASE_TAG" --dir release-assets/; then
+            asset_count=$(gh release view "$RELEASE_TAG" --json assets --jq '.assets | length' 2>/dev/null || echo "unknown")
+            if [ "$asset_count" = "0" ]; then
+              echo "No assets attached to release $RELEASE_TAG; skipping signing" >&2
+              exit 0
+            fi
+            echo "Failed to download assets for release $RELEASE_TAG (asset count: $asset_count)" >&2
+            exit 1
+          fi
 
       - name: Sign release artifacts
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
         run: |
-          TAG="${{ github.event.release.tag_name }}"
           cd release-assets
           for artifact in *.whl *.tar.gz; do
             [ -f "$artifact" ] || continue
@@ -53,10 +61,13 @@ jobs:
       - name: Upload signatures
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
         run: |
-          TAG="${{ github.event.release.tag_name }}"
           cd release-assets
-          sigs=$(ls *.sig *.pem 2>/dev/null || true)
-          if [ -n "$sigs" ]; then
-            gh release upload "$TAG" $sigs --clobber
+          sig_files=()
+          for f in *.sig *.pem; do
+            [ -f "$f" ] && sig_files+=("$f")
+          done
+          if [ "${#sig_files[@]}" -gt 0 ]; then
+            gh release upload "$RELEASE_TAG" "${sig_files[@]}" --clobber
           fi
