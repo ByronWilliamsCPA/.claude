@@ -55,3 +55,20 @@ jobs:
 
       - name: Run security scan (Bandit)
         run: uv run bandit -r src/ -c pyproject.toml
+
+  # ==========================================================================
+  # CI Gate -- aggregates all upstream jobs; must pass for branch protection
+  # ==========================================================================
+  ci-gate:
+    name: CI Gate
+    runs-on: ubuntu-latest
+    needs: [test]
+    if: always()
+    steps:
+      - name: Check CI results
+        run: |
+          if [ "${{ needs.test.result }}" != "success" ]; then
+            echo "::error::CI Gate failed: test result is ${{ needs.test.result }}"
+            exit 1
+          fi
+          echo "CI Gate passed"

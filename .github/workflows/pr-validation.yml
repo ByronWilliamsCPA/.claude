@@ -146,10 +146,10 @@ jobs:
 
 
   # ==========================================================================
-  # Validation Summary
+  # Dependency & Standards Validation Gate
   # ==========================================================================
   validation-summary:
-    name: Validation Summary
+    name: Dependency & Standards Validation
     runs-on: ubuntu-latest
     permissions:
       contents: read

@@ -60,3 +60,20 @@ jobs:
             bandit-report.json
             safety-report.json
           retention-days: 30
+
+  # ==========================================================================
+  # Security Gate Validation -- aggregates all upstream security scan results
+  # ==========================================================================
+  security-gate-validation:
+    name: Security Gate Validation
+    runs-on: ubuntu-latest
+    needs: [security]
+    if: always()
+    steps:
+      - name: Check security scan results
+        run: |
+          if [ "${{ needs.security.result }}" != "success" ]; then
+            echo "::error::Security Gate Validation failed: security scan result is ${{ needs.security.result }}"
+            exit 1
+          fi
+          echo "Security Gate Validation passed"

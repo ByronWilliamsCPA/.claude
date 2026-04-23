@@ -4,6 +4,8 @@
 
 ### Feature
 
+* feat(ci): implement CI Gate, Security Gate Validation, and Dependency & Standards Validation gate jobs in .claude workflow files (ci.yml, security-analysis.yml, pr-validation.yml); gate jobs satisfy CI-014, CI-015, CI-016 blocking check contexts required by branch protection
+
 * feat(ci): add CI-014 through CI-017 standards to enforce gate job presence and correct blocking check contexts; update `ossf-compliance-auditor` to audit CI-017 at audit time; fix `setup_github_protection.py` to register short job display names instead of the stale `Workflow / Job` composite format
 
 ### Fix
