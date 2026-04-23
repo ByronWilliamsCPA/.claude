@@ -354,6 +354,40 @@ checks:
     verify: "workflow_inventory: .github/workflows/, expected_set=[ci.yml,security.yml,sonarcloud.yml,coverage.yml], report_extras=true"
     override_eligible: true
 
+  - id: CI-014
+    domain: ci
+    severity: critical
+    description: "ci.yml contains a gate job with name: CI Gate that aggregates all upstream CI results and fails if any upstream job failed"
+    verify: "content_present: .github/workflows/ci.yml, CI Gate"
+    override_eligible: false
+
+  - id: CI-015
+    domain: ci
+    severity: critical
+    description: "security-analysis.yml contains a gate job with name: Security Gate Validation that gates on all upstream security scan results"
+    verify: "content_present: .github/workflows/security-analysis.yml, Security Gate Validation"
+    override_eligible: false
+
+  - id: CI-016
+    domain: ci
+    severity: critical
+    description: "pr-validation.yml contains a gate job with name: Dependency & Standards Validation as the gate job"
+    verify: "content_present: .github/workflows/pr-validation.yml, Dependency & Standards Validation"
+    override_eligible: false
+
+  # branch_protection_contexts: <context1>, <context2>, ...
+  # Instructs the ossf-compliance-auditor to call:
+  #   gh api repos/{slug}/branches/main/protection --jq '.required_status_checks.contexts'
+  # and verify each listed context appears in the returned array.
+  # Keep in sync with: scripts/setup_github_protection.py contexts list,
+  # .claude/agents/ossf-compliance-auditor.md CI-017 FINDING template.
+  - id: CI-017
+    domain: ci
+    severity: critical
+    description: "Branch protection registers all four blocking check contexts: CI Gate, Security Gate Validation, Dependency & Standards Validation, Check REUSE Compliance"
+    verify: "branch_protection_contexts: CI Gate, Security Gate Validation, Dependency & Standards Validation, Check REUSE Compliance"
+    override_eligible: false
+
   # ── Claude and Docs ──────────────────────────────────────────────────────────
 
   - id: CLAUDE-001
