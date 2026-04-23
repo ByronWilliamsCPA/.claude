@@ -84,6 +84,15 @@ gh api "repos/${REPO_SLUG}/branches/main/protection" 2>/dev/null
 ```
 Check for: `required_pull_request_reviews.required_approving_review_count >= 1`, `required_pull_request_reviews.dismiss_stale_reviews: true`, `required_status_checks.strict: true`. If any are missing or the endpoint returns 404, emit SCORECARD:Branch-Protection FINDING.
 
+**Required blocking check contexts (CI-017):**
+```bash
+CONTEXTS_RAW=$(gh api "repos/${REPO_SLUG}/branches/main/protection" --jq '.required_status_checks.contexts // []' 2>&1)
+CONTEXTS_STATUS=$?
+```
+If `CONTEXTS_STATUS` is non-zero (API failure, auth error, network error, or 404), emit a note: "CI-017 check could not run: `gh api` exited ${CONTEXTS_STATUS} -- ${CONTEXTS_RAW}" and skip the context comparison. Do not emit a false CI-017 FINDING from a failed API call.
+
+If `CONTEXTS_STATUS` is 0, parse `CONTEXTS_RAW` as a JSON array. The four required blocking contexts are: `CI Gate`, `Security Gate Validation`, `Dependency & Standards Validation`, `Check REUSE Compliance`. If any of the four are absent from the returned array, emit a CI-017 FINDING listing which contexts are missing and referencing `scripts/setup_github_protection.py` as the remediation script.
+
 **Private vulnerability reporting:**
 ```bash
 gh api "repos/${REPO_SLUG}" --jq '.security_and_analysis.private_vulnerability_reporting.status'
@@ -155,6 +164,21 @@ current_score: X
 target_score: 4
 remediation: |
   ...
+```
+
+For CI-017 (missing blocking check contexts), use:
+
+```
+FINDING:
+id: CI-017
+severity: critical
+description: Branch protection is missing required blocking check contexts: [list missing ones]
+status: configuration_gap
+current_value: contexts registered: [paste the array from the API]
+remediation: |
+  Run scripts/setup_github_protection.py to register all four blocking checks.
+  Required contexts: CI Gate, Security Gate Validation, Dependency & Standards Validation, Check REUSE Compliance.
+  If the workflow gate jobs do not yet exist, add them first (see CI-014, CI-015, CI-016).
 ```
 
 ---
