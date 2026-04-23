@@ -194,13 +194,13 @@ jobs:
 
 
 
-          # Fail if core validation failed
-          if [ "${{ needs.core-validation.result }}" == "failure" ]; then
-            echo ""
-            echo "❌ Core validation checks failed. Please review and fix issues." >> $GITHUB_STEP_SUMMARY
+          BLOCK=0
+          if [ "${{ needs.core-validation.result }}" != "success" ]; then BLOCK=1; fi
+          if [ "${{ needs.changelog.result }}" == "failure" ]; then BLOCK=1; fi
+          if [ "${{ needs.dead-code.result }}" == "failure" ]; then BLOCK=1; fi
+          if [ "$BLOCK" == "1" ]; then
+            echo "❌ One or more required checks failed. Please review and fix issues." >> $GITHUB_STEP_SUMMARY
             exit 1
           fi
-
-
           echo ""
           echo "✅ All validation checks passed!" >> $GITHUB_STEP_SUMMARY

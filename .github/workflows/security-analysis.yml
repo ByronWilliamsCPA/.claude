@@ -62,7 +62,7 @@ jobs:
           retention-days: 30
 
   # ==========================================================================
-  # Security Gate Validation -- aggregates all upstream security scan results
+  # Security Gate Validation: aggregates the security scan result
   # ==========================================================================
   security-gate-validation:
     name: Security Gate Validation

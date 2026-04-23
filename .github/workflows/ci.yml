@@ -57,7 +57,7 @@ jobs:
         run: uv run bandit -r src/ -c pyproject.toml
 
   # ==========================================================================
-  # CI Gate -- aggregates all upstream jobs; must pass for branch protection
+  # CI Gate: aggregates the test job result; must pass for branch protection
   # ==========================================================================
   ci-gate:
     name: CI Gate
