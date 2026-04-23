@@ -104,7 +104,7 @@ def setup_branch_protection(
     """Configure branch protection rules for a repository.
 
     Sets up OpenSSF-recommended branch protection including:
-    - Required status checks (CI Pipeline, Security Scan, PR Validation)
+    - Required status checks (CI Gate, Security Gate Validation, Dependency & Standards Validation, Check REUSE Compliance)
     - Required pull request reviews
     - Admin enforcement
     - Linear history requirement
@@ -158,16 +158,9 @@ def setup_branch_protection(
     # Branch protection configuration
     # See: https://docs.github.com/en/rest/branches/branch-protection
     #
-    # Status check contexts match the job name: field in each workflow file.
-    # GitHub Actions records checks using the job display name (not "Workflow / Job").
-    #
-    # Gate job structure:
-    #   - ci.yml -> ci-gate (name: "CI Gate")
-    #   - security-analysis.yml -> security-gate-success (name: "Security Gate Validation")
-    #   - pr-validation.yml -> validate-dependencies (name: "Dependency & Standards Validation")
-    #   - reuse.yml -> reuse (name: "Check REUSE Compliance")
-    #
-    # To verify: run a test PR and check the status check names in GitHub's UI.
+    # GitHub Actions records checks using the job display name (not "Workflow / Job" composite).
+    # Keep this contexts list in sync with: docs/standards-manifest.yaml CI-017,
+    # .claude/agents/ossf-compliance-auditor.md CI-017 FINDING template.
     protection = {
         "required_status_checks": {
             "strict": True,
