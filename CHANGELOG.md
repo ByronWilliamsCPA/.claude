@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Feature
+
+* feat(ci): add CI-014 through CI-017 standards to enforce gate job presence and correct blocking check contexts; update `ossf-compliance-auditor` to audit CI-017 at audit time; fix `setup_github_protection.py` to register short job display names instead of the stale `Workflow / Job` composite format
+
 ### Fix
 
 * fix(release): add `build_command = "uv lock"` to prevent uv.lock version drift after semantic releases
