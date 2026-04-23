@@ -104,7 +104,7 @@ def setup_branch_protection(
     """Configure branch protection rules for a repository.
 
     Sets up OpenSSF-recommended branch protection including:
-    - Required status checks (CI Pipeline, Security Scan, PR Validation)
+    - Required status checks (CI Gate, Security Gate Validation, Dependency & Standards Validation, Check REUSE Compliance)
     - Required pull request reviews
     - Admin enforcement
     - Linear history requirement
@@ -158,31 +158,17 @@ def setup_branch_protection(
     # Branch protection configuration
     # See: https://docs.github.com/en/rest/branches/branch-protection
     #
-    # Status check names follow the pattern: "Workflow Name / Job Name"
-    # These must match exactly what appears in GitHub's status check list.
-    #
-    # Our workflow structure:
-    #   - ci.yml -> calls reusable python-ci.yml (job: ci, name: CI Pipeline)
-    #   - security-analysis.yml -> calls reusable workflow (job: security, name: Security Scan)
-    #   - pr-validation.yml -> standalone (jobs: validate-requirements, validate-lockfile)
-    #   - reuse.yml -> REUSE compliance check (job: reuse, name: Check REUSE Compliance)
-    #
-    # NOTE: If your workflow names differ, update the contexts list below.
-    # Run a test PR to see actual status check names in GitHub's UI.
+    # GitHub Actions records checks using the job display name (not "Workflow / Job" composite).
+    # Keep this contexts list in sync with: docs/standards-manifest.yaml CI-017,
+    # .claude/agents/ossf-compliance-auditor.md CI-017 FINDING template.
     protection = {
         "required_status_checks": {
             "strict": True,
             "contexts": [
-                # CI workflow (calls org-level python-ci.yml reusable workflow)
-                "CI / CI Pipeline",
-                # Security Analysis workflow (calls org-level reusable workflow)
-                "Security Analysis / Security Scan",
-                # PR Validation workflow - requirements sync validation
-                "PR Validation / Validate Requirements Sync",
-                # PR Validation workflow - lock file integrity check
-                "PR Validation / Validate Lock File Integrity",
-                # REUSE Compliance workflow (if use_reuse_licensing is enabled)
-                "REUSE Compliance / Check REUSE Compliance",
+                "CI Gate",
+                "Security Gate Validation",
+                "Dependency & Standards Validation",
+                "Check REUSE Compliance",
             ],
         },
         "enforce_admins": True,
