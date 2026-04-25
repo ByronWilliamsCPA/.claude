@@ -28,6 +28,7 @@ jobs:
         uses: sigstore/cosign-installer@dc72c7d5c4d10cd6bcb8cf6e3fd625a9e5e537da  # v3.7.0
 
       - name: Download release assets
+        id: download
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_TAG: ${{ github.event.release.tag_name }}
@@ -37,6 +38,7 @@ jobs:
             asset_count=$(gh release view "$RELEASE_TAG" --json assets --jq '.assets | length' 2>/dev/null || echo "unknown")
             if [ "$asset_count" = "0" ]; then
               echo "No assets attached to release $RELEASE_TAG; skipping signing" >&2
+              echo "skip=true" >> "$GITHUB_OUTPUT"
               exit 0
             fi
             echo "Failed to download assets for release $RELEASE_TAG (asset count: $asset_count)" >&2
@@ -44,11 +46,13 @@ jobs:
           fi
 
       - name: Sign release artifacts
+        if: steps.download.outputs.skip != 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_TAG: ${{ github.event.release.tag_name }}
         run: |
           cd release-assets
+          signed_count=0
           for artifact in *.whl *.tar.gz; do
             [ -f "$artifact" ] || continue
             cosign sign-blob \
@@ -56,9 +60,15 @@ jobs:
               --output-signature "${artifact}.sig" \
               --output-certificate "${artifact}.pem" \
               "$artifact"
+            signed_count=$((signed_count + 1))
           done
+          if [ "$signed_count" -eq 0 ]; then
+            echo "No .whl or .tar.gz artifacts found in release-assets; expected at least one" >&2
+            exit 1
+          fi
 
       - name: Upload signatures
+        if: steps.download.outputs.skip != 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_TAG: ${{ github.event.release.tag_name }}

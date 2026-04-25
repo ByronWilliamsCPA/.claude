@@ -45,11 +45,11 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-          uv run pytest -v --cov=src/claude_config --cov-report=xml --cov-report=term-missing
+          uv run pytest -v --cov=src/claude_config --cov-report=xml --cov-report=term-missing --cov-fail-under=80
 
       - name: Upload coverage to Qlty
         uses: qltysh/qlty-action/coverage@a19242102d17e497f437d7466aa01b528537e899 # v2.2.0
-        if: ${{ always() }}
+        if: success() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
         with:
           token: ${{ secrets.QLTY_COVERAGE_TOKEN }}
           files: coverage.xml

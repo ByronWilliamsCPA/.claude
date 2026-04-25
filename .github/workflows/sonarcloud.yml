@@ -36,6 +36,7 @@ jobs:
           fetch-depth: 0
 
       - name: SonarCloud Scan
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         uses: SonarSource/sonarcloud-github-action@383f7e52eae3ab0510c3cb0e7d9d150bbaeab838 # v3.1.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

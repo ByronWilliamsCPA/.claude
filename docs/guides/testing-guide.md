@@ -34,9 +34,9 @@ tags:
 11. [AI and Non-Deterministic Testing](#11-ai-and-non-deterministic-testing)
 12. [Type Checking as Testing](#12-type-checking-as-testing)
 13. [Data Generation and Pipeline Testing](#13-data-generation-and-pipeline-testing)
-14. [Security Testing: ASVS-Aligned](#14-security-testing-examples)
+14. [Security Testing Examples](#14-security-testing-examples)
 15. [CI/CD Integration and Reporting](#15-cicd-integration-and-reporting)
-16. [Testing Terminology: ISTQB Applied](#16-testing-terminology-applied)
+16. [Testing Terminology Applied](#16-testing-terminology-applied)
 17. [Plugin Reference](#17-plugin-reference)
 18. [Recommended Reading](#18-recommended-reading)
 
