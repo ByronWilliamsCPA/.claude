@@ -30,4 +30,3 @@ jobs:
     with:
       python-version: "3.12"
       coverage-threshold: 80
-    secrets: inherit
