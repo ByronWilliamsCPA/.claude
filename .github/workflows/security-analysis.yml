@@ -21,9 +21,6 @@ concurrency:
 
 permissions:
   contents: read
-  security-events: write
-  pull-requests: write
-  actions: read
 
 jobs:
   security:
