@@ -17,15 +17,14 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
-permissions: {}
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
 
 jobs:
   ci:
     name: CI (Python 3.12)
-    permissions:
-      contents: read
-      pull-requests: write
-      checks: write
     uses: ByronWilliamsCPA/.github/.github/workflows/python-ci.yml@16979833c433ecb375f884552312b9fdf8c5ba6a # main
     with:
       python-version: "3.12"
