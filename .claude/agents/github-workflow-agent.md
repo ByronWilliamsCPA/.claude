@@ -59,6 +59,74 @@ Execute GitHub workflows: repository analysis → branch management → pull req
 
 ---
 
+## GitHub Actions Reusable Workflow Caller Patterns
+
+When reviewing or authoring a workflow that calls a reusable workflow via `uses:` at the job level,
+enforce these structural rules. Violations silently produce "This run likely failed because of a
+workflow file issue" with zero jobs created and no diagnostic log output.
+
+### Permissions placement
+
+Place `permissions:` at the **workflow level**, not the job level, for reusable workflow callers:
+
+```yaml
+# Correct: permissions at workflow level, no job-level permissions block
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+
+jobs:
+  ci:
+    uses: owner/.github/.github/workflows/reusable.yml@SHA
+    with:
+      ...
+```
+
+```yaml
+# Incorrect: permissions: {} at workflow level + permissions block at job level
+permissions: {}
+
+jobs:
+  ci:
+    permissions:          # <-- this combination causes "workflow file issue"
+      contents: read
+    uses: owner/.github/.github/workflows/reusable.yml@SHA
+```
+
+The `pr-validation.yml` pattern (workflow-level `permissions: {}` with job-level permissions)
+works only when the workflow also contains at least one regular `runs-on` job alongside the
+reusable-workflow-caller job.
+
+### secrets: inherit
+
+Avoid `secrets: inherit` on reusable workflow caller jobs. Pass named secrets explicitly, or
+omit secrets entirely if the callee declares all its secrets as `required: false`.
+`secrets: inherit` combined with job-level permissions triggers "workflow file issue" on GitHub.
+
+### Merge conflicts block all PR workflow runs
+
+When a PR branch has a merge conflict in any `.github/workflows/` file, GitHub cannot create
+the simulated merge commit (`refs/pull/N/merge`). As a result, ALL `pull_request` event workflow
+runs stop triggering entirely. Symptoms:
+- `gh run list` shows no new `pull_request` event runs for recent commits
+- `workflow_dispatch` still works but may fail separately
+- Only external checks (SonarCloud App, GitGuardian, CodeRabbit) appear in the PR checks
+
+Resolution: rebase the PR branch onto the base branch to resolve the conflict, then push.
+GitHub resumes triggering PR workflows on the next push after the conflict is cleared.
+
+### Diagnosing "workflow file issue"
+
+1. Run `python3 -c "import yaml; yaml.safe_load(open('file.yml'))"` to confirm YAML is valid.
+2. Fetch the reusable workflow at its pinned SHA to confirm the file exists:
+   `gh api repos/ORG/REPO/contents/.github/workflows/FILE.yml?ref=SHA --jq '.name'`
+3. Verify all `with:` inputs are declared in the callee's `workflow_call.inputs` section.
+4. Compare the failing file side-by-side with a KNOWN WORKING caller in the same repo.
+5. Check for merge conflicts (`gh pr view N --json mergeable,mergeStateStatus`).
+
+---
+
 ## Use Cases
 
 Recommended for: GitHub operations, pull requests, issues, repository management, GitHub Actions, code review workflows, project board management
