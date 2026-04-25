@@ -116,6 +116,38 @@ runs stop triggering entirely. Symptoms:
 Resolution: rebase the PR branch onto the base branch to resolve the conflict, then push.
 GitHub resumes triggering PR workflows on the next push after the conflict is cleared.
 
+### Caller permissions must cover callee permissions
+
+The caller's `permissions:` block is the ceiling for what the callee can use. GitHub validates
+this at parse time. If the callee's workflow-level `permissions:` block declares any scope that
+the caller has not granted, the workflow is rejected with "workflow file issue" before any jobs run.
+
+To audit: fetch the callee at its pinned SHA and check its `permissions:` block. The caller must
+grant every scope the callee declares, at the same or higher access level.
+
+```bash
+gh api repos/ORG/.github/contents/.github/workflows/callee.yml?ref=SHA \
+  --jq '.content' | base64 -d | grep -A10 "^permissions:"
+```
+
+Example: if the callee declares `pull-requests: write` and `checks: write`, the caller must grant
+those scopes at the workflow level, not just `contents: read`.
+
+```yaml
+# Correct: caller grants everything the callee needs
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+
+jobs:
+  ci:
+    uses: owner/.github/.github/workflows/python-ci.yml@SHA
+```
+
+A working single-job caller that calls a different reusable workflow is NOT evidence that the
+pattern works for your callee -- the callee's permissions requirements differ per workflow.
+
 ### Diagnosing "workflow file issue"
 
 1. Run `python3 -c "import yaml; yaml.safe_load(open('file.yml'))"` to confirm YAML is valid.
@@ -124,6 +156,7 @@ GitHub resumes triggering PR workflows on the next push after the conflict is cl
 3. Verify all `with:` inputs are declared in the callee's `workflow_call.inputs` section.
 4. Compare the failing file side-by-side with a KNOWN WORKING caller in the same repo.
 5. Check for merge conflicts (`gh pr view N --json mergeable,mergeStateStatus`).
+6. Fetch the callee and compare its `permissions:` block against the caller's grants (see above).
 
 ---
 
