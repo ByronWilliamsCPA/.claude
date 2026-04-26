@@ -148,6 +148,36 @@ jobs:
 A working single-job caller that calls a different reusable workflow is NOT evidence that the
 pattern works for your callee -- the callee's permissions requirements differ per workflow.
 
+Also check individual JOB-level permissions inside the callee, not just the callee's workflow-level
+block. GitHub may validate the union of all permissions used anywhere in the callee:
+
+```bash
+gh api repos/ORG/.github/contents/.github/workflows/callee.yml?ref=SHA \
+  --jq '.content' | base64 -d | python3 -c "
+import sys, yaml, json
+data = yaml.safe_load(sys.stdin.read())
+print('Workflow perms:', data.get('permissions'))
+for name, job in data.get('jobs', {}).items():
+    if 'permissions' in job:
+        print(f'Job {name}:', job['permissions'])
+"
+```
+
+### Complex callees and trigger compatibility
+
+Some complex reusable callees (those with multiple jobs, `needs:` dependencies, or jobs that
+reference `github.event_name`) fail with "workflow file issue" when the caller includes `push:`
+or `schedule:` triggers. The same caller with ONLY `pull_request:` and `workflow_dispatch:`
+triggers may work.
+
+If you observe "workflow file issue" persisting after fixing all permissions:
+
+1. Strip the caller to the absolute minimum (only `workflow_dispatch:` trigger, no `concurrency:`)
+2. If the stripped version works, add triggers back one at a time to isolate the incompatibility
+3. A `push:` trigger combined with certain callee patterns is a common source of the failure
+
+This is an empirical workaround; the root cause in GitHub's validator is not publicly documented.
+
 ### Diagnosing "workflow file issue"
 
 1. Run `python3 -c "import yaml; yaml.safe_load(open('file.yml'))"` to confirm YAML is valid.
