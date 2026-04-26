@@ -14,6 +14,11 @@
 
 ### Fix
 
+* fix(ci): grant `pull-requests: write` and `checks: write` to `ci.yml` caller; GitHub rejects
+  reusable workflow callers at parse time when the caller's permissions block does not cover every
+  scope the callee's `permissions:` block declares
+* fix(ci): add `actions: read` to `security-analysis.yml` caller to cover the CodeQL job's
+  job-level permission; strip caller to minimal structure to resolve callee-specific parse failure
 * fix(release): add `build_command = "uv lock"` to prevent uv.lock version drift after semantic releases
 
 ## v0.13.0 (2026-04-21)
