@@ -131,3 +131,42 @@ class TestStripCodeBlocks:
     def test_content_with_no_fences(self, vfm: ValidateFrontMatterModule) -> None:
         content = "Just plain text\nNo fences here\n"
         assert vfm._strip_code_blocks(content) == content
+
+
+def test_collect_md_files_excludes_directory(
+    vfm: ValidateFrontMatterModule, tmp_path: Path
+) -> None:
+    """Excluded directories are skipped during collection."""
+    (tmp_path / "included.md").write_text("# Included")
+    excluded_dir = tmp_path / "excluded"
+    excluded_dir.mkdir()
+    (excluded_dir / "report.md").write_text("# Report")
+
+    result = vfm._collect_md_files([str(tmp_path)], exclude=[str(excluded_dir)])
+    result_names = {p.name for p in result}
+    assert "included.md" in result_names
+    assert "report.md" not in result_names
+
+
+def test_collect_md_files_excludes_specific_file(
+    vfm: ValidateFrontMatterModule, tmp_path: Path
+) -> None:
+    """A specific file path is excluded when listed in exclude."""
+    (tmp_path / "keep.md").write_text("# Keep")
+    (tmp_path / "skip.md").write_text("# Skip")
+
+    result = vfm._collect_md_files([str(tmp_path)], exclude=[str(tmp_path / "skip.md")])
+    result_names = {p.name for p in result}
+    assert "keep.md" in result_names
+    assert "skip.md" not in result_names
+
+
+def test_collect_md_files_no_exclude_collects_all(
+    vfm: ValidateFrontMatterModule, tmp_path: Path
+) -> None:
+    """Without exclude, all markdown files in a directory are collected."""
+    (tmp_path / "a.md").write_text("# A")
+    (tmp_path / "b.md").write_text("# B")
+
+    result = vfm._collect_md_files([str(tmp_path)])
+    assert len(result) == 2
