@@ -32,6 +32,7 @@ Agents to dispatch simultaneously:
 - `claude-docs-auditor` (CLAUDE-* checks)
 - `ossf-compliance-auditor` (OSSF-* and SCORECARD:* checks)
 - `general-compliance-auditor` (all checks as negative filter, freeform review)
+- `mkdocs-auditor` in audit mode (MKDOCS-* checks; skipped automatically when no mkdocs.yml is present in the project root)
 
 ### 3. Merge and Present Findings
 
