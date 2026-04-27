@@ -11,8 +11,8 @@ rules:
     max: 120
     level: warning
 
-  # Catch duplicate keys (yamllint 1.33 compatible; forbid-duplicated-merge-keys requires 1.35+)
-  key-duplicates: enable
+  key-duplicates:
+    forbid-duplicated-merge-keys: true
 
   # More lenient indentation for readability
   indentation:
