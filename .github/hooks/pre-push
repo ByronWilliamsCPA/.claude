@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -e
+echo "Running local CI checks before push (nox -s ci_local)..."
+nox -s ci_local
