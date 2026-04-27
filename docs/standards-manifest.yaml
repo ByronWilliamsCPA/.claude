@@ -1,6 +1,6 @@
 # docs/standards-manifest.yaml
 version: "1.0"
-last_updated: "2026-04-20"
+last_updated: "2026-04-27"
 
 # verify field is a hint to the domain agent, not executable DSL.
 # Agents interpret it using their own tools (Grep, Read, Glob, Bash).
@@ -548,7 +548,7 @@ checks:
     domain: mkdocs
     severity: suggested
     description: "No unused needs-proof markdown extensions configured in mkdocs.yml"
-    verify: "scan_docs_for_extension_usage"
+    verify: "scan_docs_for_extension_usage: footnotes, md_in_html, pymdownx.tabbed, pymdownx.arithmatex, content.tabs.link"
     override_eligible: true
 
   - id: MKDOCS-010

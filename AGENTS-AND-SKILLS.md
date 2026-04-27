@@ -479,6 +479,8 @@ default system prompt.
 | Check if document will land with its audience | `/writing analyze` |
 | Audit a repo for compliance | `/repo-audit` skill |
 | Check OSSF Best Practices Badge / Scorecard status | `ossf-compliance-auditor` agent (called by `/repo-audit`) |
+| Audit or scaffold `mkdocs.yml`, detect nav gaps | `mkdocs-auditor` agent |
+| Author missing MkDocs pages or review page content | `mkdocs-specialist` agent |
 | Check phase readiness | `/phase-gate` skill or `phase-reviewer` agent |
 | Respond to a code review | `receiving-code-review` skill |
 | Confirm work is done | `verification-before-completion` skill |
