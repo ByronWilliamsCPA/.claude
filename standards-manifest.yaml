@@ -1,6 +1,6 @@
 # docs/standards-manifest.yaml
 version: "1.0"
-last_updated: "2026-04-20"
+last_updated: "2026-04-27"
 
 # verify field is a hint to the domain agent, not executable DSL.
 # Agents interpret it using their own tools (Grep, Read, Glob, Bash).
@@ -354,6 +354,40 @@ checks:
     verify: "workflow_inventory: .github/workflows/, expected_set=[ci.yml,security.yml,sonarcloud.yml,coverage.yml], report_extras=true"
     override_eligible: true
 
+  - id: CI-014
+    domain: ci
+    severity: critical
+    description: "ci.yml contains a gate job with name: CI Gate that aggregates all upstream CI results and fails if any upstream job failed"
+    verify: "content_present: .github/workflows/ci.yml, CI Gate"
+    override_eligible: false
+
+  - id: CI-015
+    domain: ci
+    severity: critical
+    description: "security-analysis.yml contains a gate job with name: Security Gate Validation that gates on all upstream security scan results"
+    verify: "content_present: .github/workflows/security-analysis.yml, Security Gate Validation"
+    override_eligible: false
+
+  - id: CI-016
+    domain: ci
+    severity: critical
+    description: "pr-validation.yml contains a gate job with name: Dependency & Standards Validation as the gate job"
+    verify: "content_present: .github/workflows/pr-validation.yml, Dependency & Standards Validation"
+    override_eligible: false
+
+  # branch_protection_contexts: <context1>, <context2>, ...
+  # Instructs the ossf-compliance-auditor to call:
+  #   gh api repos/{slug}/branches/main/protection --jq '.required_status_checks.contexts'
+  # and verify each listed context appears in the returned array.
+  # Keep in sync with: scripts/setup_github_protection.py contexts list,
+  # .claude/agents/ossf-compliance-auditor.md CI-017 FINDING template.
+  - id: CI-017
+    domain: ci
+    severity: critical
+    description: "Branch protection registers all four blocking check contexts: CI Gate, Security Gate Validation, Dependency & Standards Validation, Check REUSE Compliance"
+    verify: "branch_protection_contexts: CI Gate, Security Gate Validation, Dependency & Standards Validation, Check REUSE Compliance"
+    override_eligible: false
+
   # ── Claude and Docs ──────────────────────────────────────────────────────────
 
   - id: CLAUDE-001
@@ -450,4 +484,90 @@ checks:
     severity: suggested
     description: "Library projects have published API reference docs; non-library projects have N/A marker in README or CONTRIBUTING"
     verify: "ossf_api_docs: docs/api/ OR README contains 'N/A' near 'API reference'"
+    override_eligible: true
+
+  # MkDocs Configuration Checks
+
+  - id: MKDOCS-001
+    domain: mkdocs
+    severity: critical
+    description: "mkdocs.yml has site_url set"
+    verify: "field_present: site_url"
+    override_eligible: false
+
+  - id: MKDOCS-002
+    domain: mkdocs
+    severity: important
+    description: "mkdocs.yml has repo_url set"
+    verify: "field_present: repo_url"
+    override_eligible: true
+
+  - id: MKDOCS-003
+    domain: mkdocs
+    severity: important
+    description: "mkdocs.yml has repo_name set"
+    verify: "field_present: repo_name"
+    override_eligible: true
+
+  - id: MKDOCS-004
+    domain: mkdocs
+    severity: suggested
+    description: "mkdocs.yml has edit_uri set"
+    verify: "field_present: edit_uri"
+    override_eligible: true
+
+  - id: MKDOCS-005
+    domain: mkdocs
+    severity: important
+    description: "mkdocs.yml has copyright set"
+    verify: "field_present: copyright"
+    override_eligible: true
+
+  - id: MKDOCS-006
+    domain: mkdocs
+    severity: critical
+    description: "mkdocs.yml has site_name set"
+    verify: "field_present: site_name"
+    override_eligible: false
+
+  - id: MKDOCS-007
+    domain: mkdocs
+    severity: suggested
+    description: "mkdocs.yml has site_description set"
+    verify: "field_present: site_description"
+    override_eligible: true
+
+  - id: MKDOCS-008
+    domain: mkdocs
+    severity: suggested
+    description: "mkdocs.yml has site_author set"
+    verify: "field_present: site_author"
+    override_eligible: true
+
+  - id: MKDOCS-009
+    domain: mkdocs
+    severity: suggested
+    description: "No unused needs-proof markdown extensions configured in mkdocs.yml"
+    verify: "scan_docs_for_extension_usage: footnotes, md_in_html, pymdownx.tabbed, pymdownx.arithmatex, content.tabs.link"
+    override_eligible: true
+
+  - id: MKDOCS-010
+    domain: mkdocs
+    severity: important
+    description: "toc.integrate not combined with navigation.sections or navigation.tabs"
+    verify: "feature_conflict: toc.integrate"
+    override_eligible: true
+
+  - id: MKDOCS-011
+    domain: mkdocs
+    severity: suggested
+    description: "mkdocs-material has an upper-bound version pin in pyproject.toml or requirements"
+    verify: "version_upper_bound: mkdocs-material"
+    override_eligible: true
+
+  - id: MKDOCS-012
+    domain: mkdocs
+    severity: suggested
+    description: "CI workflow includes a mkdocs build step"
+    verify: "ci_contains: mkdocs build"
     override_eligible: true
