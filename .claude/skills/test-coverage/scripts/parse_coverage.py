@@ -22,7 +22,7 @@ class UncoveredFunction:
 
 def parse_coverage(
     coverage_path: str = "coverage.json",
-    source_dir: str = "src",
+    _source_dir: str = "src",
     critical_modules: list[str] | None = None,
     threshold: float = 80.0,
 ) -> dict:
@@ -73,7 +73,7 @@ def parse_coverage(
                 continue
 
             for node in ast.walk(tree):
-                if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                if isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef):
                     func_lines = set(
                         range(node.lineno, (node.end_lineno or node.lineno) + 1)
                     )

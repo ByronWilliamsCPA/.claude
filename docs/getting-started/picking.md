@@ -28,25 +28,25 @@ For the load-bearing version of this decision with full rationale, see [ADR-004]
 
 ## Examples
 
-### Agent — code-reviewer
+### Agent: code-reviewer
 
 You have just written a feature and want an independent code review before creating a PR. The `code-reviewer` agent runs in isolation, reads the diff, applies the project standards, and returns a structured review. You invoke it explicitly:
 
 > "Use the code-reviewer agent to review my staged changes."
 
-### Skill — /quality
+### Skill: /quality
 
 You want to run Ruff format, lint, and BasedPyright on your Python files before committing. This is a routine, one-step workflow that should fire the same way every time. You trigger it with:
 
 > `/quality`
 
-### Rule — python.md
+### Rule: python.md
 
 Linting standards, function complexity limits, and coverage thresholds must apply to every Python file edit, not just when you remember to ask. The `python.md` rule is referenced from `CLAUDE.md` and loads at session start so it is always active.
 
-### Standard — packages.md
+### Standard: packages.md
 
-When you are choosing between `httpx` and `requests` for a new project, you look up `packages.md` for the canonical choice. You only need it for that specific decision — it should not load into every session.
+When you are choosing between `httpx` and `requests` for a new project, you look up `packages.md` for the canonical choice. You only need it for that specific decision: it should not load into every session.
 
 ## When Not to Add Anything
 
@@ -58,7 +58,7 @@ Before adding a new agent, skill, rule, or standard, ask:
 
 ## See Also
 
-- [Architecture → Agent Dispatch](../architecture/agent-dispatch.md) — how dispatch works at runtime
-- [ADR-004 Skill vs Agent Boundary](../architecture/adr/ADR-004-skill-vs-agent-boundary.md) — full rubric with all four capability forms
-- [Contributing → Adding an Agent](../contributing/adding-agents.md) — when you decide you do need a new agent
-- [Contributing → Adding a Skill](../contributing/adding-skills.md) — when you decide you do need a new skill
+- [Architecture → Agent Dispatch](../architecture/agent-dispatch.md): how dispatch works at runtime
+- [ADR-004 Skill vs Agent Boundary](../architecture/adr/ADR-004-skill-vs-agent-boundary.md): full rubric with all four capability forms
+- [Contributing → Adding an Agent](../contributing/adding-agents.md): when you decide you do need a new agent
+- [Contributing → Adding a Skill](../contributing/adding-skills.md): when you decide you do need a new skill

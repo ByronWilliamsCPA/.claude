@@ -320,7 +320,7 @@ table but does not commit until after the short list proves out):
 - Imperative agent conversion (demoted to medium; pilot on one low-risk
   agent first, then decide whether to extend)
 - Mass frontmatter edits (maxTurns + color + allowedTools normalization +
-  Output Summary) — batch these into a single scheduled maintenance pass,
+  Output Summary): batch these into a single scheduled maintenance pass,
   not sprinkled across the timeline
 - Progressive disclosure audit of 41 skills (L effort; schedule separately)
 - `${CLAUDE_PLUGIN_DATA}` stateful memory (verify the feature exists first)

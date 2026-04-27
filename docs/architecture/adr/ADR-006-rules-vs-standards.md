@@ -20,19 +20,19 @@ tags:
 
 ## Context
 
-`.claude/rules/` and `.claude/standards/` are both directories under `.claude/`. Both contain markdown files. From a filesystem perspective they look identical. Their difference is entirely in loading semantics — and that difference is load-bearing.
+`.claude/rules/` and `.claude/standards/` are both directories under `.claude/`. Both contain markdown files. From a filesystem perspective they look identical. Their difference is entirely in loading semantics: and that difference is load-bearing.
 
 **Rules** are session-injected behavior. `CLAUDE.md` at repo root contains explicit references to rule files (e.g., `> Python linting and function quality gates: see .claude/rules/python.md`). Claude Code reads `CLAUDE.md` at session start and loads the referenced rules into the system prompt. A rule file in `.claude/rules/` that is referenced from `CLAUDE.md` influences every single turn of every session where it applies. Rules are path-scoped where possible: `python.md` includes a note that it applies to Python files; `git-workflow.md` applies to git operations. But they are all loaded at session start, regardless of whether the current task is Python or git.
 
-**Standards** are on-demand reference material. They are never referenced from `CLAUDE.md`. Nothing loads them automatically. They exist to answer the question "what is the canonical approach for X?" when a task touches X. A standard is read explicitly — either by the model when it decides to look something up, or by an agent whose prompt instructs it to consult a specific standard. Examples: `packages.md` (canonical package choices), `writing-quality.md` (prose quality thresholds), `testing.md` (coverage requirements and test patterns).
+**Standards** are on-demand reference material. They are never referenced from `CLAUDE.md`. Nothing loads them automatically. They exist to answer the question "what is the canonical approach for X?" when a task touches X. A standard is read explicitly: either by the model when it decides to look something up, or by an agent whose prompt instructs it to consult a specific standard. Examples: `packages.md` (canonical package choices), `writing-quality.md` (prose quality thresholds), `testing.md` (coverage requirements and test patterns).
 
 Mixing them creates two distinct failure modes:
 
-1. **Standard mis-filed as a rule**: The content is loaded into every session's system prompt. If `writing-quality.md` were in `rules/`, its detailed quality thresholds would consume context on every coding session, every debugging session, every git operation — regardless of whether prose quality is relevant.
+1. **Standard mis-filed as a rule**: The content is loaded into every session's system prompt. If `writing-quality.md` were in `rules/`, its detailed quality thresholds would consume context on every coding session, every debugging session, every git operation: regardless of whether prose quality is relevant.
 
 2. **Rule mis-filed as a standard**: The behavior silently stops firing. If `git-workflow.md` were in `standards/`, contributors could commit to main directly, skip signing, or use non-conventional commit formats, and nothing in the session would stop them.
 
-Both failure modes are invisible to the contributor making the placement decision. A mis-filed document passes all syntax checks, renders in the docs site, and looks correct. The failure only manifests at runtime — either as unexpected context bloat or as a missing behavioral guard.
+Both failure modes are invisible to the contributor making the placement decision. A mis-filed document passes all syntax checks, renders in the docs site, and looks correct. The failure only manifests at runtime: either as unexpected context bloat or as a missing behavioral guard.
 
 ## Decision
 
@@ -42,9 +42,9 @@ The two directories are maintained as separate conceptual categories, not just f
 
 If yes: `.claude/rules/`. If no: `.claude/standards/`.
 
-This question is intentionally conservative. A document that influences behavior in *most* sessions but not *every* session still goes in `standards/` — load it on demand in the sessions where it applies, rather than burdening sessions where it does not. The cost of an occasionally-missed lookup (a session that should have checked a standard but did not) is lower than the cost of constant context bloat.
+This question is intentionally conservative. A document that influences behavior in *most* sessions but not *every* session still goes in `standards/`: load it on demand in the sessions where it applies, rather than burdening sessions where it does not. The cost of an occasionally-missed lookup (a session that should have checked a standard but did not) is lower than the cost of constant context bloat.
 
-To make a rule's scope explicit, rules files include a path-scoping note near the top (e.g., `> path-scoped to Python files`). This is documented convention, not technical enforcement — Claude Code does not filter rules by file type at load time.
+To make a rule's scope explicit, rules files include a path-scoping note near the top (e.g., `> path-scoped to Python files`). This is documented convention, not technical enforcement: Claude Code does not filter rules by file type at load time.
 
 ## Alternatives Considered
 
@@ -73,8 +73,8 @@ To make a rule's scope explicit, rules files include a path-scoping note near th
 
 ## References
 
-- `.claude/rules/` — session-injected behavioral constraints
-- `.claude/standards/` — on-demand reference material
-- `CLAUDE.md` — the session entry point that references rule files
-- `docs/architecture/rules-vs-standards.md` — narrative explanation of loading semantics
-- [ADR-004](ADR-004-skill-vs-agent-boundary.md) — the broader capability taxonomy (skills, agents, rules, standards)
+- `.claude/rules/`: session-injected behavioral constraints
+- `.claude/standards/`: on-demand reference material
+- `CLAUDE.md`: the session entry point that references rule files
+- `docs/architecture/rules-vs-standards.md`: narrative explanation of loading semantics
+- [ADR-004](ADR-004-skill-vs-agent-boundary.md): the broader capability taxonomy (skills, agents, rules, standards)

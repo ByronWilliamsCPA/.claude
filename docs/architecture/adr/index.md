@@ -11,13 +11,13 @@ tags:
   - reference
 ---
 
-Architecture Decision Records (ADRs) capture load-bearing design choices so future maintainers can understand *why* something is the way it is — not just *what* it is.
+Architecture Decision Records (ADRs) capture load-bearing design choices so future maintainers can understand *why* something is the way it is: not just *what* it is.
 
 ## Process
 
 1. A decision is load-bearing if silently changing it would break behavior, break the install, or break the mental model a reader needs.
 2. New ADRs use the slim template at `docs/architecture/adr/_template.md` (excluded from the built site; open it directly in the repo). The verbose reference variant at `docs/ADRs/adr-template.md` remains for unusually consequential decisions.
-3. ADRs are numbered sequentially. Once published, the title and number do not change — supersede with a new ADR instead.
+3. ADRs are numbered sequentially. Once published, the title and number do not change: supersede with a new ADR instead.
 4. Every ADR carries `schema_type: common` frontmatter. The `status:` field is for the doc itself (`draft` / `in-review` / `published`); the ADR's decision status (`Proposed` / `Accepted` / `Deprecated` / `Superseded`) lives in a body banner near the top.
 
 ## Index

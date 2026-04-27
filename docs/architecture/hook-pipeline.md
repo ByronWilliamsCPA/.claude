@@ -16,15 +16,15 @@ For the design decisions behind this system, see [ADR-002](adr/ADR-002-hook-comp
 
 ## The Five Hook Types
 
-**UserPromptSubmit** — fires immediately after the user sends a message, before Claude processes it. Used for: injecting context, detecting intent signals (PR review reminder), running the hookify user prompt pipeline.
+**UserPromptSubmit**: fires immediately after the user sends a message, before Claude processes it. Used for: injecting context, detecting intent signals (PR review reminder), running the hookify user prompt pipeline.
 
-**PreToolUse** — fires before each tool call Claude attempts. Each entry in the `PreToolUse` array can have a matcher regex targeting specific tools. Used for: secrets file guard (Edit/Write), planning bridge gate (Skill), security reminder (Edit/Write/MultiEdit), hookify dispatch (all tools).
+**PreToolUse**: fires before each tool call Claude attempts. Each entry in the `PreToolUse` array can have a matcher regex targeting specific tools. Used for: secrets file guard (Edit/Write), planning bridge gate (Skill), security reminder (Edit/Write/MultiEdit), hookify dispatch (all tools).
 
-**PostToolUse** — fires after each tool call completes. Used for: Python 3.10 compatibility check (Edit/Write), hookify dispatch (all tools).
+**PostToolUse**: fires after each tool call completes. Used for: Python 3.10 compatibility check (Edit/Write), hookify dispatch (all tools).
 
-**Stop** — fires when Claude finishes its turn (before control returns to the user). Used for: hookify stop handler.
+**Stop**: fires when Claude finishes its turn (before control returns to the user). Used for: hookify stop handler.
 
-**SessionStart** — fires once when a new Claude Code session opens. Not currently defined in `hooks.json` — available for future use.
+**SessionStart**: fires once when a new Claude Code session opens. Not currently defined in `hooks.json`: available for future use.
 
 ## Diagram
 
@@ -119,6 +119,6 @@ For the full workflow, see [Contributing → Adding a Hook](../contributing/addi
 
 ## See Also
 
-- [ADR-002 Hook Composition and Ordering](adr/ADR-002-hook-composition.md) — why hooks.json is the source of truth
-- [Install Model](install-model.md) — how hooks.json gets merged into settings.json
-- [Contributing → Adding a Hook](../contributing/adding-hooks.md) — step-by-step hook authoring guide
+- [ADR-002 Hook Composition and Ordering](adr/ADR-002-hook-composition.md): why hooks.json is the source of truth
+- [Install Model](install-model.md): how hooks.json gets merged into settings.json
+- [Contributing → Adding a Hook](../contributing/adding-hooks.md): step-by-step hook authoring guide

@@ -42,7 +42,7 @@ After initialization, `setup.sh` creates one additional symlink beyond the stand
 
 This makes the reference library accessible at `~/.claude/reference-library/`, which is the path the `{{LIBRARY_PATH}}` placeholder resolves to. Agents in the reference library reference each other using that placeholder; resolving it to `~/.claude/reference-library` lets them work without hardcoded paths.
 
-The other submodules (`superpowers`, `anthropics-skills`, `image-generation`) are accessed by Claude Code via the `.claude/skills/` symlink, which points to `.claude/skills/` in this repo. Skills from those submodules should be added to `.claude/skills/` if they need to be reachable at runtime — the submodule content itself is not automatically in the skill load path.
+The other submodules (`superpowers`, `anthropics-skills`, `image-generation`) are accessed by Claude Code via the `.claude/skills/` symlink, which points to `.claude/skills/` in this repo. Skills from those submodules should be added to `.claude/skills/` if they need to be reachable at runtime: the submodule content itself is not automatically in the skill load path.
 
 `anthropics-plugins` is not symlinked into `~/.claude/`. The hook scripts in `hooks.json` reference it directly by absolute path:
 
@@ -93,7 +93,7 @@ Agent templates in `reference-library` use `{{LIBRARY_PATH}}` as a placeholder f
 
 ## See Also
 
-- [ADR-005 Submodule Extension Model](adr/ADR-005-submodule-extension-model.md) — why submodules over vendoring or packaging
-- [Install Model](install-model.md) — how `setup.sh` creates the symlink topology
-- [Hook Pipeline](hook-pipeline.md) — how `anthropics-plugins/hookify` is used by the hook system
-- `.gitmodules` — the five submodule definitions with upstream URLs
+- [ADR-005 Submodule Extension Model](adr/ADR-005-submodule-extension-model.md): why submodules over vendoring or packaging
+- [Install Model](install-model.md): how `setup.sh` creates the symlink topology
+- [Hook Pipeline](hook-pipeline.md): how `anthropics-plugins/hookify` is used by the hook system
+- `.gitmodules`: the five submodule definitions with upstream URLs

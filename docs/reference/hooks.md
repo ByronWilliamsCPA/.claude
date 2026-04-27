@@ -59,9 +59,9 @@ The authoritative hook definition is `hooks.json` at repo root. It is merged int
 
 | Exit code | Meaning |
 | --- | --- |
-| `0` | Allow — the tool call proceeds |
-| `2` | Block — the tool call is aborted; stderr is shown as an error message |
-| `1` | Hook failure — treated as an error in the hook script itself |
+| `0` | Allow: the tool call proceeds |
+| `2` | Block: the tool call is aborted; stderr is shown as an error message |
+| `1` | Hook failure: treated as an error in the hook script itself |
 
 ## Adding a Hook
 
@@ -74,7 +74,7 @@ For the full step-by-step workflow, see [Contributing → Adding a Hook](../cont
 
 ## See Also
 
-- `hooks.json` at repo root — the authoritative hook definition
-- [Architecture → Hook Pipeline](../architecture/hook-pipeline.md) — turn-level execution diagram and narrative
-- [ADR-002 Hook Composition and Ordering](../architecture/adr/ADR-002-hook-composition.md) — design rationale
-- [Contributing → Adding a Hook](../contributing/adding-hooks.md) — step-by-step authoring guide
+- `hooks.json` at repo root: the authoritative hook definition
+- [Architecture → Hook Pipeline](../architecture/hook-pipeline.md): turn-level execution diagram and narrative
+- [ADR-002 Hook Composition and Ordering](../architecture/adr/ADR-002-hook-composition.md): design rationale
+- [Contributing → Adding a Hook](../contributing/adding-hooks.md): step-by-step authoring guide

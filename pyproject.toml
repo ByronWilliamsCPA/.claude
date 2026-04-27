@@ -16,7 +16,10 @@ classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
 ]
 
 # Core production dependencies
@@ -108,7 +111,6 @@ dev = [
     "interrogate>=1.7.0",
     "jupyter>=1.0.0",
     "ipykernel>=6.25.0",
-    "safety>=3.7.0",
     "nox>=2024.10.16",  # Fixed: was 2025 (typo)
     "nox-uv>=0.6.3",    # Fixed: max available version is 0.6.3, not 1.0.0
     # Google Cloud Assured OSS (optional - uncomment if using Assured OSS)
@@ -306,6 +308,8 @@ known-first-party = ["claude_config"]
     "C901",   # Complexity allowed in utility scripts
     "RUF012", # Class variable annotations (not needed in scripts)
     "SIM",    # Simplification suggestions (scripts prioritize clarity)
+    "N802",   # AST visitor methods require mixed-case names (visit_BinOp etc.)
+    "RET504", # Unnecessary assignment before return (clarity over brevity)
 ]
 
 # Benchmarks (performance testing)
@@ -343,6 +347,16 @@ known-first-party = ["claude_config"]
     "PLR0912",# Too many branches allowed in template utilities
     "ANN", "D", "TRY", "PLR",
     "INP",    # Not packages
+    "ARG",    # Unused arguments allowed in skill templates
+    "EM",     # Error message format not enforced in skill templates
+    "BLE",    # Blind except allowed in skill eval files
+    "TCH",    # TYPE_CHECKING imports not required in skill templates
+    "UP038",  # isinstance tuple syntax allowed (pre-3.10 compat examples)
+]
+
+# Source modules that intentionally shadow stdlib names
+"src/claude_config/utils/logging.py" = [
+    "A005",   # Module 'logging' shadows stdlib; name retained for namespace clarity
 ]
 
 # BasedPyright Configuration
@@ -355,6 +369,10 @@ pythonPlatform = "All"
 # Type checking mode: basic, standard, strict, all
 # "strict" aligns with Google Python Style Guide requirements
 typeCheckingMode = "strict"
+
+# Virtual environment path (relative to project root)
+venvPath = "."
+venv = ".venv"
 
 # Source paths
 include = ["src"]
