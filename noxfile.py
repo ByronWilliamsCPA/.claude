@@ -454,13 +454,13 @@ def ci_local(session: nox.Session) -> None:
         "-v",
         COV_SRC,
         "--cov-branch",
-        "--cov-report=xml",
+        "--cov-report=xml:coverage-ci-local.xml",
         "--cov-report=lcov:reports/lcov.info",
         COV_REPORT_TERM,
         "--cov-fail-under=80",
         "tests/",
         *session.posargs,
     )
-    session.run("basedpyright", "src/")
+    session.run("basedpyright", "src")
     session.run("ruff", "check", "src/", "tests/")
     session.run("bandit", "-r", "src/", "-c", PYPROJECT_TOML)
