@@ -434,3 +434,33 @@ def typecheck(session: nox.Session) -> None:
     """
     session.install("-e", DEV_EXTRAS)
     session.run("basedpyright", "src")
+
+
+# ==========================================
+# LOCAL CI SESSIONS
+# ==========================================
+
+
+@nox.session(python="3.12")
+def ci_local(session: nox.Session) -> None:
+    """Mirror ci.yml locally: pytest, basedpyright, ruff, bandit (Python 3.12).
+
+    Run this before pushing to avoid consuming GitHub Actions minutes on
+    intermediate commits. Blocks push via pre-push hook if any step fails.
+    """
+    session.install("-e", DEV_EXTRAS)
+    session.run(
+        "pytest",
+        "-v",
+        COV_SRC,
+        "--cov-branch",
+        "--cov-report=xml",
+        "--cov-report=lcov:reports/lcov.info",
+        COV_REPORT_TERM,
+        "--cov-fail-under=80",
+        "tests/",
+        *session.posargs,
+    )
+    session.run("basedpyright", "src/")
+    session.run("ruff", "check", "src/", "tests/")
+    session.run("bandit", "-r", "src/", "-c", PYPROJECT_TOML)
