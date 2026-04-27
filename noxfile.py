@@ -464,3 +464,13 @@ def ci_local(session: nox.Session) -> None:
     session.run("basedpyright", "src")
     session.run("ruff", "check", "src/", "tests/")
     session.run("bandit", "-r", "src/", "-c", PYPROJECT_TOML)
+
+
+@nox.session(python="3.12")
+def ci_full(session: nox.Session) -> None:
+    """Run full CI matrix across all Python versions (3.10-3.14).
+
+    Chains the existing multi-version test, lint, and typecheck sessions.
+    Use before opening a PR to get the same coverage as the GitHub matrix.
+    """
+    session.run("nox", "-s", "test", "lint", "typecheck", external=True)
