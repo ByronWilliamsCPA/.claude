@@ -97,7 +97,7 @@ repos:
   # ============================================================================
   # Runs on pre-push, scoped to dep file changes only, to avoid per-commit overhead.
   # Exit code 64 = advisory found. Medium+ severity blocks push.
-  # Audits the active virtualenv — ensure 'uv sync' has been run before push.
+  # Audits the active virtualenv; run 'uv sync' before push if needed.
   - repo: local
     hooks:
       - id: pip-audit
@@ -141,7 +141,7 @@ repos:
   # YAML Linting
   # ============================================================================
   - repo: https://github.com/adrienverge/yamllint
-    rev: 2d931b5a817337fa88aef4325bf613e794e14d52  # v1.9.0
+    rev: cba56bcde1fdd01c1deb3f945e69764c291a6530  # v1.38.0
     hooks:
       - id: yamllint
         args: [--config-file, .yamllint]
