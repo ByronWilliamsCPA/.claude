@@ -20,13 +20,13 @@ tags:
 
 ## Context
 
-Claude Code reads configuration from `~/.claude/`. That directory must contain `CLAUDE.md`, `agents/`, `skills/`, `commands/`, `rules/`, `standards/`, and a `settings.json` with merged hook definitions. The natural instinct is to clone the configuration repository directly into `~/.claude/` — one directory, one location, done.
+Claude Code reads configuration from `~/.claude/`. That directory must contain `CLAUDE.md`, `agents/`, `skills/`, `commands/`, `rules/`, `standards/`, and a `settings.json` with merged hook definitions. The natural instinct is to clone the configuration repository directly into `~/.claude/`: one directory, one location, done.
 
 But the configuration repository is not a simple dotfiles collection. It has:
 
 - **Git submodules** (`reference-library`, `anthropics-plugins`, `anthropics-skills`, `superpowers`, `image-generation`) that must be initialized and updated independently.
 - **A Python toolchain** (`uv`, `pytest`, `pre-commit`, BasedPyright) that expects to live in a conventional project directory with `pyproject.toml` at the root.
-- **A `hooks.json`** file that must be jq-merged into `~/.claude/settings.json` by `setup.sh` — a merge that requires the script to be outside the merge target.
+- **A `hooks.json`** file that must be jq-merged into `~/.claude/settings.json` by `setup.sh`: a merge that requires the script to be outside the merge target.
 - **Repository-local scripts** (`scripts/`, `tools/`) that need to reference each other by relative path without being exposed inside `~/.claude/` at runtime.
 
 Cloning directly into `~/.claude/` breaks all four of these. The git working tree becomes the Claude Code config directory, which means `git status`, `git log`, and `pre-commit` all run against the user's live Claude config. Submodule paths that should be private to the repo (`.submodules/`) sit directly inside `~/.claude/`. The `settings.json` that `setup.sh` is supposed to write already exists as a committed file. The jq merge step has no stable file to write to.
@@ -82,9 +82,9 @@ Symlinks created by `setup.sh`:
 
 ## References
 
-- `setup.sh` — the installer; `--doctor` flag shows current symlink topology
-- `hooks.json` — source of truth for the hooks block merged into `settings.json`
-- `.gitmodules` — the five submodule definitions
-- `docs/architecture/install-model.md` — narrative explanation with embedded diagram
-- `docs/architecture/diagrams/install_layer.svg` — component diagram of this topology
-- [ADR-002](ADR-002-hook-composition.md) — explains the `hooks.json` merge in detail
+- `setup.sh`: the installer; `--doctor` flag shows current symlink topology
+- `hooks.json`: source of truth for the hooks block merged into `settings.json`
+- `.gitmodules`: the five submodule definitions
+- `docs/architecture/install-model.md`: narrative explanation with embedded diagram
+- `docs/architecture/diagrams/install_layer.svg`: component diagram of this topology
+- [ADR-002](ADR-002-hook-composition.md): explains the `hooks.json` merge in detail

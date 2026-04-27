@@ -58,5 +58,5 @@ def test_get_user() -> None:
 def test_add_does_not_raise() -> None:
     try:
         add(1, 1)
-    except Exception:
+    except ArithmeticError:
         pytest.fail("add raised an exception")

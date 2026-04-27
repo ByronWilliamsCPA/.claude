@@ -301,5 +301,8 @@ docs/audit-report.md
 # The '?' pattern matches any single-char dir name that plantuml creates
 docs/architecture/diagrams/?/
 
+# Compliance reports (generated artifacts, not committed)
+docs/compliance-reports/
+
 # Local MCP server configuration (contains auth tokens and local paths)
 .mcp.json

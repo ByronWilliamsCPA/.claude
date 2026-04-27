@@ -93,7 +93,7 @@ tags:
   - `/home/byron/dev/.claude/.submodules/superpowers/skills/writing-plans/SKILL.md`
 - **Effort:** S
 - **Priority:** medium
-- **Source citation:** `cross-model-workflow.md` STEP 2 QA REVIEW ("Adds to the plan — never rewrites original phases.")
+- **Source citation:** `cross-model-workflow.md` STEP 2 QA REVIEW ("Adds to the plan: never rewrites original phases.")
 
 ### Recommendation 3: Add architectural complexity check to subagent-driven-development review loop
 

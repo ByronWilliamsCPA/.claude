@@ -18,9 +18,9 @@ For the classification rubric and the reasoning behind this split, see [ADR-004]
 
 ## Mental Model
 
-**Skills** are automations. A skill fires when the user triggers it — either with a slash command (`/commit`, `/quality`) or when matching keywords appear in the prompt. Skills run inside the main conversation window. They share the conversation's tool access, context, and state. Skills are fast, deterministic, and designed for one-shot transformations.
+**Skills** are automations. A skill fires when the user triggers it: either with a slash command (`/commit`, `/quality`) or when matching keywords appear in the prompt. Skills run inside the main conversation window. They share the conversation's tool access, context, and state. Skills are fast, deterministic, and designed for one-shot transformations.
 
-**Agents** are specialists. An agent is invoked explicitly — the main conversation (or another agent acting as supervisor) calls the `Agent` tool with a `subagent_type` parameter naming the specific agent. Agents run in a fresh, isolated context. Each agent has its own tool restrictions defined in its agent file. Agents are designed for multi-step, domain-isolated work: security audits, full test suite generation, code review with specific frameworks.
+**Agents** are specialists. An agent is invoked explicitly: the main conversation (or another agent acting as supervisor) calls the `Agent` tool with a `subagent_type` parameter naming the specific agent. Agents run in a fresh, isolated context. Each agent has its own tool restrictions defined in its agent file. Agents are designed for multi-step, domain-isolated work: security audits, full test suite generation, code review with specific frameworks.
 
 The practical difference: when you want something to happen automatically from a user action, write a skill. When you want to delegate a complex task to a specialist that works in isolation, write an agent.
 
@@ -49,7 +49,7 @@ The practical difference: when you want something to happen automatically from a
 
 ### Rules and Standards (not dispatched)
 
-Rules (`.claude/rules/`) are not dispatched — they are loaded at session start via `CLAUDE.md` references and remain active throughout the session. Standards (`.claude/standards/`) are never dispatched or auto-loaded; they are read on demand via file reads when a task requires reference material.
+Rules (`.claude/rules/`) are not dispatched: they are loaded at session start via `CLAUDE.md` references and remain active throughout the session. Standards (`.claude/standards/`) are never dispatched or auto-loaded; they are read on demand via file reads when a task requires reference material.
 
 ## The Tool Restriction Model for Agents
 
@@ -63,7 +63,7 @@ tools: ["Read", "Bash", "Grep", "Glob"]
 ---
 ```
 
-This is not a suggestion — it is enforced by the runtime. A `security-auditor` agent cannot call `Write` or `Edit` even if instructed to do so. This isolation is why agents can be trusted with high-stakes analysis: their scope is structurally bounded.
+This is not a suggestion: it is enforced by the runtime. A `security-auditor` agent cannot call `Write` or `Edit` even if instructed to do so. This isolation is why agents can be trusted with high-stakes analysis: their scope is structurally bounded.
 
 MCP tool bundles (Tier 2 in the MCP loading strategy) are loaded separately when a given agent is invoked. See [MCP Tiered Loading](mcp-tiered-loading.md) for how agent-bundled MCP tools compose with the built-in tool set.
 
@@ -73,9 +73,9 @@ All 43 agents live in `.claude/agents/` with no subdirectories. Domain grouping 
 
 ## See Also
 
-- [ADR-004 Skill vs Agent Boundary](adr/ADR-004-skill-vs-agent-boundary.md) — the full classification rubric
-- [MCP Tiered Loading](mcp-tiered-loading.md) — Tier 2 agent-bundled MCP tools
-- [Reference → Agents Catalog](../reference/agents.md) — the 43 agents and their domains
-- [Reference → Skills Catalog](../reference/skills.md) — the 40+ skills and their triggers
+- [ADR-004 Skill vs Agent Boundary](adr/ADR-004-skill-vs-agent-boundary.md): the full classification rubric
+- [MCP Tiered Loading](mcp-tiered-loading.md): Tier 2 agent-bundled MCP tools
+- [Reference → Agents Catalog](../reference/agents.md): the 43 agents and their domains
+- [Reference → Skills Catalog](../reference/skills.md): the 40+ skills and their triggers
 - [Contributing → Adding an Agent](../contributing/adding-agents.md)
 - [Contributing → Adding a Skill](../contributing/adding-skills.md)

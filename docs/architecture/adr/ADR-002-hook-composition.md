@@ -45,24 +45,24 @@ Current hook definitions by type:
 
 **PreToolUse** (fires before each tool call, in this order):
 
-1. **Secrets file guard** — matcher `Edit|Write`. Blocks writes to `.env` and `settings.local.json` with exit code 2.
-2. **Planning bridge gate** — matcher `Skill`. Calls `scripts/planning-bridge-gate.sh` before any Skill invocation to enforce plan-approval workflow.
-3. **Security guidance reminder** — matcher `Edit|Write|MultiEdit`. Runs `security_reminder_hook.py` from `anthropics-plugins/security-guidance` to surface security patterns.
-4. **hookify PreToolUse** — no matcher (all tools). Dispatches to the hookify plugin engine, which runs any plugins registered for PreToolUse events.
+1. **Secrets file guard**: matcher `Edit|Write`. Blocks writes to `.env` and `settings.local.json` with exit code 2.
+2. **Planning bridge gate**: matcher `Skill`. Calls `scripts/planning-bridge-gate.sh` before any Skill invocation to enforce plan-approval workflow.
+3. **Security guidance reminder**: matcher `Edit|Write|MultiEdit`. Runs `security_reminder_hook.py` from `anthropics-plugins/security-guidance` to surface security patterns.
+4. **hookify PreToolUse**: no matcher (all tools). Dispatches to the hookify plugin engine, which runs any plugins registered for PreToolUse events.
 
 **PostToolUse** (fires after each tool call, in this order):
 
-1. **py310-compat-check** — matcher `Edit|Write`. Checks modified Python files for syntax incompatible with Python 3.10.
-2. **hookify PostToolUse** — no matcher (all tools). Dispatches to hookify plugin engine for PostToolUse plugins.
+1. **py310-compat-check**: matcher `Edit|Write`. Checks modified Python files for syntax incompatible with Python 3.10.
+2. **hookify PostToolUse**: no matcher (all tools). Dispatches to hookify plugin engine for PostToolUse plugins.
 
 **Stop** (fires at end of model turn):
 
-1. **hookify Stop** — dispatches to hookify plugin engine's stop handler.
+1. **hookify Stop**: dispatches to hookify plugin engine's stop handler.
 
 **UserPromptSubmit** (fires on each user message, in this order):
 
-1. **hookify UserPromptSubmit** — dispatches to hookify plugin engine. Runs first, before any project-specific logic.
-2. **PR review reminder** — runs `scripts/pr-review-reminder.py` to detect PR review intent and inject reminders.
+1. **hookify UserPromptSubmit**: dispatches to hookify plugin engine. Runs first, before any project-specific logic.
+2. **PR review reminder**: runs `scripts/pr-review-reminder.py` to detect PR review intent and inject reminders.
 
 ### Execution ordering across a conversation turn
 
@@ -100,7 +100,7 @@ Exit codes from hook scripts determine whether the tool call proceeds: exit 0 al
 ### Positive
 
 - Hook definitions are version-controlled, diffable, and reproducible on any machine.
-- Execution order within each hook type is explicit in `hooks.json` — no hidden dispatch logic.
+- Execution order within each hook type is explicit in `hooks.json`: no hidden dispatch logic.
 - Adding a new gate is a two-step change: add the script to `scripts/`, add an entry to `hooks.json`, re-run `setup.sh`.
 - hookify plugins (from upstream `anthropics-plugins`) compose cleanly alongside project-specific gates because each is a separate array entry.
 
@@ -115,13 +115,13 @@ Exit codes from hook scripts determine whether the tool call proceeds: exit 0 al
 
 ## References
 
-- `hooks.json` — the authoritative hook definitions
-- `setup.sh` — the jq merge command (`merge_hooks` function)
-- `scripts/planning-bridge-gate.sh` — Skill PreToolUse gate
-- `scripts/py310-compat-check.sh` — Edit/Write PostToolUse compatibility check
-- `scripts/pr-review-reminder.py` — UserPromptSubmit PR review detector
-- `.submodules/anthropics-plugins/plugins/hookify/` — the hookify plugin engine
-- `.submodules/anthropics-plugins/plugins/security-guidance/` — security reminder hook
-- `docs/architecture/hook-pipeline.md` — narrative explanation with embedded diagram
-- `docs/architecture/diagrams/hook_pipeline.svg` — sequence diagram of a full turn
-- [ADR-001](ADR-001-two-layer-symlink-install.md) — explains why `hooks.json` is separate from `settings.json`
+- `hooks.json`: the authoritative hook definitions
+- `setup.sh`: the jq merge command (`merge_hooks` function)
+- `scripts/planning-bridge-gate.sh`: Skill PreToolUse gate
+- `scripts/py310-compat-check.sh`: Edit/Write PostToolUse compatibility check
+- `scripts/pr-review-reminder.py`: UserPromptSubmit PR review detector
+- `.submodules/anthropics-plugins/plugins/hookify/`: the hookify plugin engine
+- `.submodules/anthropics-plugins/plugins/security-guidance/`: security reminder hook
+- `docs/architecture/hook-pipeline.md`: narrative explanation with embedded diagram
+- `docs/architecture/diagrams/hook_pipeline.svg`: sequence diagram of a full turn
+- [ADR-001](ADR-001-two-layer-symlink-install.md): explains why `hooks.json` is separate from `settings.json`

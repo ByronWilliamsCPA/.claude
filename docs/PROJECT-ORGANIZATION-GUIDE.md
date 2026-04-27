@@ -231,6 +231,7 @@ node_modules/                # 🚫 Node.js dependencies
 ## 🎯 Decision Matrix: Where Does It Go?
 
 ### Configuration
+
 | Item | Location | Reason |
 |------|----------|---------|
 | MCP server definitions | `mcp/{name}.json` | Version control, team sharing |
@@ -239,6 +240,7 @@ node_modules/                # 🚫 Node.js dependencies
 | Hook scripts | `scripts/` | Automation, reusable |
 
 ### Documentation
+
 | Item | Location | Reason |
 |------|----------|---------|
 | Getting started | `README.md` | First thing users see |
@@ -247,6 +249,7 @@ node_modules/                # 🚫 Node.js dependencies
 | Technical details | `docs/` | Implementation specifics |
 
 ### Tools & Automation
+
 | Item | Location | Reason |
 |------|----------|---------|
 | Slash commands | `commands/` | Claude Code auto-discovery |
@@ -255,6 +258,7 @@ node_modules/                # 🚫 Node.js dependencies
 | Hooks | `scripts/` | Event-driven automation |
 
 ### Data & Temporary
+
 | Item | Location | Reason |
 |------|----------|---------|
 | Tool data | `data/` | Organized storage |

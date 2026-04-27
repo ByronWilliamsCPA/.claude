@@ -29,7 +29,7 @@ All skill directories live in `.claude/skills/` (symlinked to `~/.claude/skills/
 | Skill | Trigger | What it does |
 | --- | --- | --- |
 | `quality` | `/quality` | Ruff format, lint, BasedPyright type checking, and code quality gates |
-| `rad` | `/rad` | Response-Aware Development — tags and verifies critical code assumptions |
+| `rad` | `/rad` | Response-Aware Development: tags and verifies critical code assumptions |
 | `requesting-code-review` | `/requesting-code-review` | Structures a review request and invokes the code-reviewer agent |
 | `receiving-code-review` | `/receiving-code-review` | Processes incoming code review feedback systematically |
 | `subagent-driven-development` | `/subagent-driven-development` | Implements a task using an agent-review loop for quality assurance |
@@ -105,6 +105,6 @@ All skill directories live in `.claude/skills/` (symlinked to `~/.claude/skills/
 
 ## See Also
 
-- [Agents Catalog](agents.md) — the 43 agents and their domains
-- [Architecture → Agent Dispatch](../architecture/agent-dispatch.md) — how skills are dispatched at runtime
-- [Contributing → Adding a Skill](../contributing/adding-skills.md) — how to add a new skill
+- [Agents Catalog](agents.md): the 43 agents and their domains
+- [Architecture → Agent Dispatch](../architecture/agent-dispatch.md): how skills are dispatched at runtime
+- [Contributing → Adding a Skill](../contributing/adding-skills.md): how to add a new skill

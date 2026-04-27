@@ -66,7 +66,7 @@ exec uv run --directory "$SERENA_INSTALL" serena-mcp-server \
   "$@"
 ```
 
-2. Update the global configuration to use the wrapper:
+1. Update the global configuration to use the wrapper:
 
 ```json
 // In ~/.claude/mcp/serena-server.json

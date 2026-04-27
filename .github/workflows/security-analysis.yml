@@ -1,62 +1,35 @@
 # Security Analysis Workflow for Claude Code Configuration
-# Runs security scans including Bandit, Safety, and dependency checks.
-#
-# Features:
-#   - Bandit static analysis for Python
-#   - Safety dependency vulnerability scanning
-#   - Weekly scheduled scans
+# Delegates security scans to the org-level reusable workflow.
 name: Security Analysis
 
 on:
-  push:
-    branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
-  schedule:
-    # Run security scans weekly on Monday at 9 AM UTC
-    - cron: '0 9 * * 1'
   workflow_dispatch:
-
-# Cancel in-progress runs for same PR/branch
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
 
 permissions:
   contents: read
   security-events: write
   pull-requests: write
+  actions: read
 
 jobs:
   security:
-    name: Security Scan
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@38f3f104447c67c051c4a08e39b64a148898af3a # v4.2.0
-        with:
-          enable-cache: true
-
-      - name: Set up Python
-        run: uv python install 3.12
-
-      - name: Install dependencies
-        run: uv sync --all-extras
-
-      - name: Run Bandit security scan
-        run: uv run bandit -r src/ -c pyproject.toml -f json -o bandit-report.json || true
-
-      - name: Run Safety dependency check
-        run: uv run safety check --output json > safety-report.json || true
-
-      - name: Upload security reports
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: security-reports
-          path: |
-            bandit-report.json
-            safety-report.json
-          retention-days: 30
+    name: Security Analysis
+    uses: ByronWilliamsCPA/.github/.github/workflows/python-security-analysis.yml@c22009ccaab0d3234819d30d9d7a03d53c531cb9 # main
+    with:
+      python-version: "3.12"
+      # safety is not in this project's dev deps; pip-audit covers the same
+      # vulnerability surface and is already in [project.optional-dependencies]
+      run-safety: false
+      # CodeQL SARIF upload requires GitHub Advanced Security (GHAS); this
+      # private repo does not have GHAS enabled
+      run-codeql: false
+      # Dependency Review requires GHAS Dependency Graph on private repos
+      run-dependency-review: false
+      # osv-scanner-action v2.2.4 has a bug where IgnoredVulns entries that
+      # actively filter a finding are still reported as "unused", causing exit 1.
+      # The py/PYSEC-2022-42969 entry correctly filters the disputed ReDoS vuln
+      # but is marked unused after filtering. pip-audit (dev dep) covers the same
+      # surface. Re-enable once the org workflow updates to osv-scanner >= 2.3.0.
+      run-osv: false

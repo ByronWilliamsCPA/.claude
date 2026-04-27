@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import frontmatter
+import yaml
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def parse_front_matter(path: Path) -> tuple[dict[str, Any] | None, str]:
@@ -22,13 +25,14 @@ def parse_front_matter(path: Path) -> tuple[dict[str, Any] | None, str]:
         FileNotFoundError: If path does not exist.
     """
     if not path.exists():
-        raise FileNotFoundError(f"File not found: {path}")
+        msg = f"File not found: {path}"
+        raise FileNotFoundError(msg)
 
     try:
         post = frontmatter.load(path)
         meta = post.metadata if isinstance(post.metadata, dict) else {}
         return meta, post.content or ""
-    except Exception:
+    except (yaml.YAMLError, ValueError, OSError):
         return None, ""
 
 

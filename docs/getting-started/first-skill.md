@@ -11,7 +11,7 @@ tags:
   - getting_started
 ---
 
-Skills are automations. A skill fires when you trigger it — usually with a slash command typed in the Claude Code prompt. It runs inside the main conversation window, uses the same context and tools as your session, and produces a deterministic result for a common workflow.
+Skills are automations. A skill fires when you trigger it: usually with a slash command typed in the Claude Code prompt. It runs inside the main conversation window, uses the same context and tools as your session, and produces a deterministic result for a common workflow.
 
 ## What a Skill Is
 
@@ -53,12 +53,12 @@ Other good first skills to try:
 When a skill is triggered:
 
 1. Claude recognizes the trigger pattern (slash command or keyword match).
-2. The `Skill` tool fires the `PreToolUse` hook pipeline — specifically the planning bridge gate (if relevant) and the hookify dispatch.
+2. The `Skill` tool fires the `PreToolUse` hook pipeline: specifically the planning bridge gate (if relevant) and the hookify dispatch.
 3. The `SKILL.md` for the matched skill loads into the current conversation context.
 4. Claude executes the skill's workflow steps using the available tools.
 5. `PostToolUse` fires when the skill's tool calls complete.
 
-The skill runs inline — you will see Claude's tool calls and output in the main conversation window in real time.
+The skill runs inline: you will see Claude's tool calls and output in the main conversation window in real time.
 
 ## Read the Output
 
@@ -71,4 +71,4 @@ If a skill does not trigger when you expect it to, check:
 
 ## Next
 
-[Picking Agents vs Skills](picking.md) — a quick reference for when to reach for each.
+[Picking Agents vs Skills](picking.md): a quick reference for when to reach for each.

@@ -30,10 +30,10 @@ Each decision has its own ADR. Read these first if you plan to modify the instal
 
 Four PlantUML diagrams visualize the system. Sources live under [diagrams/](diagrams/index.md); rendered SVGs are committed next to their sources.
 
-- `install_layer` — the two-layer symlink install flow.
-- `hook_pipeline` — hook execution order across a conversation turn.
-- `agent_skill_dispatch` — how Skills and Agents get invoked at runtime.
-- `mcp_tier_loading` — context-budget tiering for MCP tools.
+- `install_layer`: the two-layer symlink install flow.
+- `hook_pipeline`: hook execution order across a conversation turn.
+- `agent_skill_dispatch`: how Skills and Agents get invoked at runtime.
+- `mcp_tier_loading`: context-budget tiering for MCP tools.
 
 ## Narrative Pages
 
@@ -50,7 +50,7 @@ Each narrative page pairs prose with a specific diagram and its backing ADR(s):
 
 **If you are modifying the install topology** (new symlink, new submodule, changing where `~/.claude/` points): start with [Install Model](install-model.md) and [ADR-001](adr/ADR-001-two-layer-symlink-install.md).
 
-**If you are adding or changing a hook**: start with [Hook Pipeline](hook-pipeline.md) and [ADR-002](adr/ADR-002-hook-composition.md). Remember that `hooks.json` is the source of truth — changes to `~/.claude/settings.json` directly will be lost.
+**If you are adding or changing a hook**: start with [Hook Pipeline](hook-pipeline.md) and [ADR-002](adr/ADR-002-hook-composition.md). Remember that `hooks.json` is the source of truth: changes to `~/.claude/settings.json` directly will be lost.
 
 **If you are adding a new agent, skill, rule, or standard**: start with [Agent Dispatch](agent-dispatch.md) and [ADR-004](adr/ADR-004-skill-vs-agent-boundary.md). The classification rubric determines which form is appropriate.
 

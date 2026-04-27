@@ -127,7 +127,7 @@ Configure once at the user level and all projects inherit it automatically.
    git clone https://github.com/ByronWilliamsCPA/.claude.git ~/.claude
    ```
 
-3. That's it. All projects on your machine now have the full agent/skill suite.
+1. That's it. All projects on your machine now have the full agent/skill suite.
 ```
 
 ### `DEVELOPMENT.md`

@@ -31,7 +31,7 @@ What did we decide? State it as a single declarative sentence: "We will X, becau
 ## Consequences
 
 - **Positive**: What this decision enables or prevents.
-- **Negative**: What this decision costs — and when that cost might become unacceptable.
+- **Negative**: What this decision costs: and when that cost might become unacceptable.
 - **Neutral**: What changes but isn't clearly good or bad.
 
 ## References
