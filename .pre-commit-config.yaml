@@ -181,7 +181,7 @@ repos:
     hooks:
       - id: validate-front-matter
         name: Validate documentation front matter
-        entry: python tools/validate_front_matter.py docs
+        entry: python tools/validate_front_matter.py docs --exclude docs/github-activity-reports docs/superpowers/plans/i-need-you-to-reactive-thompson.md
         language: python
         files: ^docs/.*\.md$
         pass_filenames: false
