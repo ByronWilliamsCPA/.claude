@@ -301,22 +301,33 @@ def validate_file(
     return {"file": str(path), "ok": ok, "errors": errors, "fixed": fixed}
 
 
-def _collect_md_files(paths: list[str]) -> list[Path]:
+def _collect_md_files(paths: list[str], exclude: list[str] | None = None) -> list[Path]:
     """Collect Markdown files from the given path strings.
 
     Args:
         paths: List of file or directory path strings.
+        exclude: Path prefixes to skip (matched against resolved path strings).
 
     Returns:
         List of Path objects for Markdown files found.
     """
+    exclude_resolved = [Path(e).resolve() for e in (exclude or [])]
     md_files: list[Path] = []
     for path_str in paths:
         path = Path(path_str)
         if path.is_dir():
-            md_files.extend(path.rglob("*.md"))
+            for md in path.rglob("*.md"):
+                resolved = md.resolve()
+                if not any(
+                    resolved == ex or ex in resolved.parents for ex in exclude_resolved
+                ):
+                    md_files.append(md)
         elif path.suffix.lower() == ".md":
-            md_files.append(path)
+            resolved = path.resolve()
+            if not any(
+                resolved == ex or ex in resolved.parents for ex in exclude_resolved
+            ):
+                md_files.append(path)
     return md_files
 
 
@@ -362,9 +373,16 @@ def main() -> int:
         action="store_true",
         help="Output results as JSON for CI integration",
     )
+    parser.add_argument(
+        "--exclude",
+        nargs="+",
+        default=[],
+        metavar="PATH",
+        help="Paths or directories to exclude from validation",
+    )
     args = parser.parse_args()
 
-    md_files = _collect_md_files(args.paths)
+    md_files = _collect_md_files(args.paths, exclude=args.exclude)
     if not md_files:
         print("No Markdown files found", file=sys.stderr)
         return 1
