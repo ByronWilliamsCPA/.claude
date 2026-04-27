@@ -18,7 +18,7 @@ Read `$TARGET_REPO/.claude/compliance-overrides.md` if it exists; extract the Ch
 
 ### 2. Parallel Audit Dispatch
 
-Use TodoWrite to track agent dispatch. Dispatch all six domain agents in parallel using the Agent tool. Pass each agent the coordinator prompt template from SKILL.md populated with:
+Use TodoWrite to track agent dispatch. Dispatch all domain agents in parallel using the Agent tool. Pass each agent the coordinator prompt template from SKILL.md populated with:
 - Mode: audit
 - Target repo: resolved absolute path
 - Manifest checks: the subset for that domain
@@ -56,8 +56,8 @@ IMPORTANT (N findings)
 SUGGESTED (N findings)
   ...
 
-UNCLASSIFIED CANDIDATES (N items -- for retrospective review)
-  [candidate] .editorconfig absent -- proposed domain: foundations, severity: suggested
+UNCLASSIFIED CANDIDATES (N items, for retrospective review)
+  [candidate] .editorconfig absent; proposed domain: foundations, severity: suggested
   ...
 ```
 
@@ -67,7 +67,7 @@ Ask: "Which findings would you like to remediate? Options:
   A) All critical and important
   B) All critical, important, and suggested
   C) Select specific check IDs (comma-separated)
-  D) Skip remediation -- report only"
+  D) Skip remediation (report only)"
 
 Wait for user response. Parse the selection into an approved findings list.
 
@@ -76,12 +76,14 @@ Wait for user response. Parse the selection into an approved findings list.
 For each approved finding, route to the owning domain agent in remediation mode. Use the same coordinator prompt template with Mode: remediation and only the approved findings list.
 
 Dispatch agents by domain in dependency order:
-1. `repo-foundations-auditor` (foundations -- no dependencies)
-2. `python-toolchain-auditor` (toolchain -- no dependencies)
-3. `pre-commit-auditor` (pre_commit -- depends on toolchain being correct)
-4. `devops-deployment-agent` CI audit mode (ci -- no dependencies)
-5. `claude-docs-auditor` (claude_docs -- no dependencies)
-6. `ossf-compliance-auditor` (ossf -- no dependencies)
+
+1. `repo-foundations-auditor` (foundations: no dependencies)
+2. `python-toolchain-auditor` (toolchain: no dependencies)
+3. `pre-commit-auditor` (pre_commit: depends on toolchain being correct)
+4. `devops-deployment-agent` CI audit mode (ci: no dependencies)
+5. `claude-docs-auditor` (claude_docs: no dependencies)
+6. `ossf-compliance-auditor` (ossf: no dependencies)
+7. `mkdocs-auditor` in remediate mode (mkdocs: no dependencies; skipped automatically when no mkdocs.yml is present)
 
 Collect ACTION lines from each agent and present a summary of all changes made.
 
@@ -123,4 +125,4 @@ EOF
 Dispatch `compliance-retrospective` with: session date, target repo path, all domain findings, all unclassified candidates.
 
 After it writes the lessons-learned doc, print:
-"Retrospective written to docs/compliance-reports/lessons-learned/<date>.md -- review before the next scheduled run."
+"Retrospective written to docs/compliance-reports/lessons-learned/<date>.md; review before the next scheduled run."
