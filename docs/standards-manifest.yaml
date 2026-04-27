@@ -485,3 +485,89 @@ checks:
     description: "Library projects have published API reference docs; non-library projects have N/A marker in README or CONTRIBUTING"
     verify: "ossf_api_docs: docs/api/ OR README contains 'N/A' near 'API reference'"
     override_eligible: true
+
+  # MkDocs Configuration Checks
+
+  - id: MKDOCS-001
+    domain: mkdocs
+    severity: critical
+    description: "mkdocs.yml has site_url set"
+    verify: "field_present: site_url"
+    override_eligible: false
+
+  - id: MKDOCS-002
+    domain: mkdocs
+    severity: important
+    description: "mkdocs.yml has repo_url set"
+    verify: "field_present: repo_url"
+    override_eligible: true
+
+  - id: MKDOCS-003
+    domain: mkdocs
+    severity: important
+    description: "mkdocs.yml has repo_name set"
+    verify: "field_present: repo_name"
+    override_eligible: true
+
+  - id: MKDOCS-004
+    domain: mkdocs
+    severity: suggested
+    description: "mkdocs.yml has edit_uri set"
+    verify: "field_present: edit_uri"
+    override_eligible: true
+
+  - id: MKDOCS-005
+    domain: mkdocs
+    severity: important
+    description: "mkdocs.yml has copyright set"
+    verify: "field_present: copyright"
+    override_eligible: true
+
+  - id: MKDOCS-006
+    domain: mkdocs
+    severity: critical
+    description: "mkdocs.yml has site_name set"
+    verify: "field_present: site_name"
+    override_eligible: false
+
+  - id: MKDOCS-007
+    domain: mkdocs
+    severity: suggested
+    description: "mkdocs.yml has site_description set"
+    verify: "field_present: site_description"
+    override_eligible: true
+
+  - id: MKDOCS-008
+    domain: mkdocs
+    severity: suggested
+    description: "mkdocs.yml has site_author set"
+    verify: "field_present: site_author"
+    override_eligible: true
+
+  - id: MKDOCS-009
+    domain: mkdocs
+    severity: suggested
+    description: "No unused needs-proof markdown extensions configured in mkdocs.yml"
+    verify: "scan_docs_for_extension_usage"
+    override_eligible: true
+
+  - id: MKDOCS-010
+    domain: mkdocs
+    severity: important
+    description: "toc.integrate not combined with navigation.sections or navigation.tabs"
+    verify: "feature_conflict: toc.integrate"
+    override_eligible: true
+
+  - id: MKDOCS-011
+    domain: mkdocs
+    severity: suggested
+    description: "mkdocs-material has an upper-bound version pin in pyproject.toml or requirements"
+    verify: "version_upper_bound: mkdocs-material"
+    override_eligible: true
+
+  - id: MKDOCS-012
+    domain: mkdocs
+    severity: suggested
+    description: "CI workflow includes a mkdocs build step"
+    verify: "ci_contains: mkdocs build"
+    override_eligible: true
