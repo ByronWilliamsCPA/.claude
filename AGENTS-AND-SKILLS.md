@@ -245,6 +245,22 @@ Generates professional visual content (diagrams, blueprints, illustrations) for 
 Analyzes target documents, identifies visual needs, prepares optimized prompts, and manages
 iterative refinement workflows.
 
+### MkDocs
+
+**[mkdocs-auditor](/.claude/agents/mkdocs-auditor.md)**
+MkDocs configuration lifecycle agent for any project. Audits `mkdocs.yml` for required
+metadata fields, extension bloat, feature conflicts, version pinning, and docs CI coverage.
+Remediates violations in place, scaffolds a compliant `mkdocs.yml` from scratch, and
+detects nav and content gaps post-sprint with a structured handoff to `mkdocs-specialist`.
+Invoke in audit mode via repo-compliance, or standalone for create, remediate, and update modes.
+
+**[mkdocs-specialist](/.claude/agents/mkdocs-specialist.md)**
+MkDocs page content creation and style enforcement agent. Authors missing or stale docs
+pages to a consistent Material theme standard: required frontmatter, purpose admonition,
+heading hierarchy, semantic admonition usage, and OS-agnostic shell commands. Invoked
+after `mkdocs-auditor` surfaces content gaps via update mode, or standalone for
+content review and page authoring.
+
 ---
 
 ## Skills
@@ -463,6 +479,8 @@ default system prompt.
 | Check if document will land with its audience | `/writing analyze` |
 | Audit a repo for compliance | `/repo-audit` skill |
 | Check OSSF Best Practices Badge / Scorecard status | `ossf-compliance-auditor` agent (called by `/repo-audit`) |
+| Audit or scaffold `mkdocs.yml`, detect nav gaps | `mkdocs-auditor` agent |
+| Author missing MkDocs pages or review page content | `mkdocs-specialist` agent |
 | Check phase readiness | `/phase-gate` skill or `phase-reviewer` agent |
 | Respond to a code review | `receiving-code-review` skill |
 | Confirm work is done | `verification-before-completion` skill |
