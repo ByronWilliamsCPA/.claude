@@ -7,7 +7,7 @@ tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
 
 # MkDocs Auditor
 
-MkDocs configuration lifecycle agent. Owns `mkdocs.yml` and nav structure entirely. Never authors page prose — hand content gaps to `mkdocs-specialist`.
+MkDocs configuration lifecycle agent. Owns `mkdocs.yml` and nav structure entirely. Never authors page prose; hand content gaps to `mkdocs-specialist`.
 
 ## Modes
 
