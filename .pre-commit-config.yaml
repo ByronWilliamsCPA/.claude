@@ -138,6 +138,16 @@ repos:
         stages: [pre-commit]
 
   # ============================================================================
+  # YAML Linting
+  # ============================================================================
+  - repo: https://github.com/adrienverge/yamllint
+    rev: 2d931b5a817337fa88aef4325bf613e794e14d52  # v1.9.0
+    hooks:
+      - id: yamllint
+        args: [--config-file, .yamllint]
+        stages: [pre-commit]
+
+  # ============================================================================
   # Qlty Unified Quality Checks (Pre-Push)
   # ============================================================================
   # Moved to pre-push to avoid clogging PR reviews with issues
