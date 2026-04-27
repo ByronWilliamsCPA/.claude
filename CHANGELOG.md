@@ -4,10 +4,16 @@
 
 ### Feature
 
+* feat(agents): add `mkdocs-auditor` agent with four lifecycle modes (create, audit, remediate, update) for automated MkDocs `mkdocs.yml` validation against the standards manifest
+* feat(agents): add `mkdocs-specialist` agent for MkDocs page content creation and style enforcement, including nav label alignment and front matter validation
+* feat(compliance): add MKDOCS-001 through MKDOCS-012 checks to `docs/standards-manifest.yaml` covering site metadata, theme configuration, plugins, navigation, and extension requirements
+* feat(compliance): wire `mkdocs-auditor` into the `repo-compliance` coordinator skill for automatic dispatch during audit and remediation passes
 * feat(ci): add CI-014 through CI-017 standards to enforce gate job presence and correct blocking check contexts; update `ossf-compliance-auditor` to audit CI-017 at audit time; fix `setup_github_protection.py` to register short job display names instead of the stale `Workflow / Job` composite format
 
 ### Fix
 
+* fix(tools): add `--exclude` flag to `validate_front_matter.py` to skip specified directories and files during front matter validation; update `.pre-commit-config.yaml` to exclude activity report and plan directories
+* fix(tests): declare `_collect_md_files` in `ValidateFrontMatterModule` Protocol so type checkers and tests can access the internal function without bypassing the module interface
 * fix(release): add `build_command = "uv lock"` to prevent uv.lock version drift after semantic releases
 
 ## v0.13.0 (2026-04-21)
