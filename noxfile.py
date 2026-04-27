@@ -29,6 +29,10 @@ Compliance Sessions:
     nox -s scan            # Scan SBOM for vulnerabilities
     nox -s compliance      # Run all compliance checks
     nox -s assuredoss      # Validate Google Assured OSS credentials
+
+Local CI Sessions:
+    nox -s ci_local         # Mirror ci.yml locally on Python 3.12
+    nox -s ci_full          # Full matrix validation across Python 3.10-3.14
 """
 
 # nox-uv is imported but not explicitly registered.
@@ -473,4 +477,5 @@ def ci_full(session: nox.Session) -> None:
     Chains the existing multi-version test, lint, and typecheck sessions.
     Use before opening a PR to get the same coverage as the GitHub matrix.
     """
+    # No install needed: each delegated session manages its own venv.
     session.run("nox", "-s", "test", "lint", "typecheck", external=True)
