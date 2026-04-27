@@ -300,3 +300,6 @@ docs/audit-report.md
 # PlantUML runtime artifacts (Java font cache written by plantuml CLI)
 # The '?' pattern matches any single-char dir name that plantuml creates
 docs/architecture/diagrams/?/
+
+# Local MCP server configuration (contains auth tokens and local paths)
+.mcp.json
