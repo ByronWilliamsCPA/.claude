@@ -24,6 +24,9 @@ class ValidateFrontMatterModule(Protocol):
     """Structural interface for the dynamically-loaded validate_front_matter module."""
 
     def _strip_code_blocks(self, content: str) -> str: ...
+    def _collect_md_files(
+        self, paths: list[str], exclude: list[str] | None = None
+    ) -> list[Path]: ...
 
 
 # ---------------------------------------------------------------------------
