@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Bypass with: git push --no-verify
 set -e
 echo "Running local CI checks before push (nox -s ci_local)..."
 nox -s ci_local

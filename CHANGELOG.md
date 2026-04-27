@@ -9,6 +9,8 @@
 * feat(compliance): add MKDOCS-001 through MKDOCS-012 checks to `docs/standards-manifest.yaml` covering site metadata, theme configuration, plugins, navigation, and extension requirements
 * feat(compliance): wire `mkdocs-auditor` into the `repo-compliance` coordinator skill for automatic dispatch during audit and remediation passes
 * feat(ci): add CI Gate, Security Gate Validation, and Dependency & Standards Validation gate jobs to `.github/workflows/` (ci.yml, security-analysis.yml, pr-validation.yml); add CI-014 through CI-017 standards; update `ossf-compliance-auditor` to audit CI-017; fix `setup_github_protection.py` to register short job display names
+* feat(ci): add `ci_local` and `ci_full` nox sessions for a local CI fast-feedback loop before push
+* feat(ci): add tracked pre-push hook (`.github/hooks/pre-push`) and install script (`scripts/install-hooks.sh`)
 
 ### Chore
 
