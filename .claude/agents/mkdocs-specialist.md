@@ -16,7 +16,7 @@ Every page must follow this top-down order:
 1. **Frontmatter** (required; see below)
 2. **H1 title** matching the nav label exactly
 3. **Purpose admonition** (`!!! info` or `!!! abstract`): one or two sentences stating what this page covers and who should read it
-4. **Main content**: H2 sections, H3 subsections -- never skip heading levels
+4. **Main content**: H2 sections, H3 subsections; never skip heading levels
 5. **Related links** section at the bottom (optional but encouraged)
 
 ## Frontmatter Standard
