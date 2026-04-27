@@ -301,12 +301,18 @@ def validate_file(
     return {"file": str(path), "ok": ok, "errors": errors, "fixed": fixed}
 
 
+def _is_excluded(resolved: Path, exclude_resolved: list[Path]) -> bool:
+    """Return True when *resolved* is equal to or nested inside any excluded path."""
+    return any(resolved == ex or ex in resolved.parents for ex in exclude_resolved)
+
+
 def _collect_md_files(paths: list[str], exclude: list[str] | None = None) -> list[Path]:
     """Collect Markdown files from the given path strings.
 
     Args:
         paths: List of file or directory path strings.
-        exclude: Path prefixes to skip (matched against resolved path strings).
+        exclude: Directories or files to skip. A path is excluded when it equals
+            an exclude entry or any of its ancestor directories matches one.
 
     Returns:
         List of Path objects for Markdown files found.
@@ -316,18 +322,15 @@ def _collect_md_files(paths: list[str], exclude: list[str] | None = None) -> lis
     for path_str in paths:
         path = Path(path_str)
         if path.is_dir():
-            for md in path.rglob("*.md"):
-                resolved = md.resolve()
-                if not any(
-                    resolved == ex or ex in resolved.parents for ex in exclude_resolved
-                ):
-                    md_files.append(md)
-        elif path.suffix.lower() == ".md":
-            resolved = path.resolve()
-            if not any(
-                resolved == ex or ex in resolved.parents for ex in exclude_resolved
-            ):
-                md_files.append(path)
+            md_files.extend(
+                md
+                for md in path.rglob("*.md")
+                if not _is_excluded(md.resolve(), exclude_resolved)
+            )
+        elif path.suffix.lower() == ".md" and not _is_excluded(
+            path.resolve(), exclude_resolved
+        ):
+            md_files.append(path)
     return md_files
 
 
@@ -382,7 +385,8 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    md_files = _collect_md_files(args.paths, exclude=args.exclude)
+    exclude = [e for e in args.exclude if e]
+    md_files = _collect_md_files(args.paths, exclude=exclude)
     if not md_files:
         print("No Markdown files found", file=sys.stderr)
         return 1
