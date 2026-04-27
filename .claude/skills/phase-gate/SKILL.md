@@ -89,7 +89,7 @@ Combine both agent reports into a single summary for the user:
    - Wait for the skill to complete fully (user has made and executed their choice)
 
 2. **Offer phase N+1 transition** (only after finishing completes):
-   ```
+   ```text
    Phase {N} complete. Ready to start Phase {N+1}?
 
    This will run: /phase-gate phase {N+1} plan
@@ -133,7 +133,7 @@ For pre-implementation validation and workspace setup. Validates the phase plan 
    - After worktree is ready, confirm: "Worktree ready at {path}. Tests passing."
 
 6. **Ask execution preference:**
-   ```
+   ```text
    Workspace ready. How would you like to execute Phase {N}?
 
    1. Subagent-Driven (recommended) — fresh subagent per task, two-stage review

@@ -9,7 +9,7 @@ Code quality validation, formatting, linting, and pre-commit checks.
 
 ## Invocation
 
-```
+```text
 /quality [scope]
 ```
 

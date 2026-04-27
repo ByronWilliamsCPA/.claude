@@ -31,7 +31,7 @@ Projects use either a **2-level** or **4-level** hierarchy. Detect which applies
 
 ### 2-Level (Simple Projects)
 
-```
+```text
 docs/architecture/diagrams/
 ├── level-0/    # System overview — full architecture, all modules
 └── level-1/    # Module/workflow detail diagrams
@@ -39,7 +39,7 @@ docs/architecture/diagrams/
 
 ### 4-Level (Complex Projects)
 
-```
+```text
 docs/architecture/diagrams/
 ├── level-0/                    # Multi-project pipeline context
 ├── level-1/                    # Architecture overview + swimlane hierarchy

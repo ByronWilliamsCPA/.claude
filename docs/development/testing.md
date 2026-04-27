@@ -37,7 +37,7 @@ uv run pytest -m integration -v
 
 ## Test Structure
 
-```
+```text
 tests/
 ├── conftest.py          # Shared fixtures
 ├── unit/                # Unit tests

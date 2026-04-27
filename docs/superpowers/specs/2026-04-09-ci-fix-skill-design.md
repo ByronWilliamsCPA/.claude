@@ -75,7 +75,7 @@ since dependency upgrades require deliberate user action outside the fix loop.
 
 After each gate completes, print the full status table:
 
-```
+```bash
 CI Fix Status
 ─────────────────────────────────────────────────────
 Gate          Status       Notes
@@ -96,7 +96,7 @@ Status values: `⏳ PENDING` → `🔧 FIXING` → `✅ PASS` / `❌ BLOCKER`
 
 **All gates pass** (blockers = 0, pip-audit may have findings):
 
-```
+```text
 All 7 gates green. Commit now? (yes/no)
 ```
 
@@ -105,7 +105,7 @@ All 7 gates green. Commit now? (yes/no)
 
 **Blockers remain**:
 
-```
+```text
 5/7 gates pass. Blockers:
 
   ❌ pytest     — 2 tests failing in tests/unit/test_processor.py (see above)
@@ -129,7 +129,7 @@ Two touch points ensure `/ci-fix` runs before every PR:
 
 ## Invocation
 
-```
+```text
 /ci-fix
 ```
 

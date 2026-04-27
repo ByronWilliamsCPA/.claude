@@ -98,7 +98,7 @@ uv run basedpyright src/module.py
 
 ### Test Organization
 
-```
+```text
 tests/
 ├── unit/           # Unit tests (fast, isolated)
 ├── integration/    # Integration tests (slower, with dependencies)
@@ -185,7 +185,7 @@ uv tree
 
 ### Standard Layout
 
-```
+```text
 project/
 ├── src/
 │   └── package_name/

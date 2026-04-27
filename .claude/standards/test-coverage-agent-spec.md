@@ -36,7 +36,7 @@ The design follows a **multi-agent writer/reviewer pattern** validated in produc
 
 ## 3. Architecture Overview
 
-```
+```text
 ┌──────────────────────────────────────────────────────────────────┐
 │                    CLAUDE CODE HOST SESSION                      │
 │                                                                  │
@@ -195,7 +195,7 @@ exclude_patterns = ["*/migrations/*", "*/conftest.py"]
 test_command = "pytest"
 max_generation_iterations = 3
 max_review_iterations = 2
-```
+```markdown
 
 ## Output Format
 
@@ -211,7 +211,7 @@ $ARGUMENTS
 
 **Supporting Scripts:**
 
-```
+```text
 .claude/skills/test-coverage/
 ├── SKILL.md
 ├── scripts/
@@ -407,7 +407,7 @@ The MCP server wraps deterministic operations (running pytest-cov, parsing JSON,
 
 The generation loop follows CoverUp's validated approach, adapted for Claude Code's subagent model:
 
-```
+```text
 ┌─────────────────┐
 │  1. MEASURE      │
 │  pytest --cov    │──────────────────────────────────────┐
@@ -585,12 +585,12 @@ if __name__ == "__main__":
 
 The test-writer subagent receives this structured context:
 
-```
+```markdown
 ## Source File: {file_path}
 
 ```python
 {source_code_with_line_numbers}
-```
+```markdown
 
 ## Uncovered Lines
 Lines {missing_lines} are not covered by existing tests.
@@ -600,7 +600,7 @@ Specifically, the function `{function_name}` (lines {start}-{end}) has
 ## Existing Tests
 ```python
 {existing_test_file_content}
-```
+```markdown
 
 ## Project Test Conventions
 {from_claude_md_testing_section}
@@ -848,7 +848,7 @@ max_review_iterations = 2
 
 ## 9. Directory Structure
 
-```
+```text
 project-root/
 ├── .claude/
 │   ├── settings.json              # Hooks configuration

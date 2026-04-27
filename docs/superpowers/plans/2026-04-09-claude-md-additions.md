@@ -33,7 +33,7 @@ Read lines 7-12 of `/home/byron/dev/.claude/CLAUDE.md`.
 
 Expected content:
 
-```
+```markdown
 ## Project Context
 
 For project context, always search project docs and markdown files first (especially files in
@@ -45,14 +45,14 @@ organizational priorities.
 
 In `/home/byron/dev/.claude/CLAUDE.md`, replace:
 
-```
+```text
 Do not search memory or make assumptions about
 organizational priorities.
 ```
 
 With:
 
-```
+```sql
 Do not search memory or make assumptions about
 organizational priorities.
 
@@ -74,7 +74,7 @@ Read lines 13-20 of `/home/byron/dev/.claude/CLAUDE.md` (line numbers will have 
 
 Expected content:
 
-```
+```markdown
 ## Code Quality
 
 When SonarCloud or linting tools flag issues, fix the actual issues rather than proposing
@@ -85,13 +85,13 @@ exclusions. Only exclude files if explicitly approved by the user.
 
 In `/home/byron/dev/.claude/CLAUDE.md`, replace:
 
-```
+```text
 exclusions. Only exclude files if explicitly approved by the user.
 ```
 
 With:
 
-```
+```text
 exclusions. Only exclude files if explicitly approved by the user.
 
 This applies to all quality gates: never propose `# noqa` comments, `# type: ignore`,
@@ -110,7 +110,7 @@ Find the `## System / Shell` section in `/home/byron/dev/.claude/CLAUDE.md`.
 
 Expected content:
 
-```
+```markdown
 ## System / Shell
 
 When commands fail due to permissions (e.g., mkdir, mount), try with sudo immediately.
@@ -120,13 +120,13 @@ When commands fail due to permissions (e.g., mkdir, mount), try with sudo immedi
 
 In `/home/byron/dev/.claude/CLAUDE.md`, replace:
 
-```
+```text
 When commands fail due to permissions (e.g., mkdir, mount), try with sudo immediately.
 ```
 
 With:
 
-```
+```text
 When commands fail due to permissions (e.g., mkdir, mount), try with sudo immediately.
 
 When a connection error, socket failure, or service-unreachable symptom appears, check

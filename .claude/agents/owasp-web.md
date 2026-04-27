@@ -81,7 +81,7 @@ For each category, check whether the test suite includes:
 
 Report coverage gaps as:
 
-```
+```text
 CATEGORY    STATUS     GAP DESCRIPTION
 A01:2025    PARTIAL    No horizontal authz tests (user A -> user B resources)
 A05:2025    MISSING    No SQL injection payload tests for /api/search

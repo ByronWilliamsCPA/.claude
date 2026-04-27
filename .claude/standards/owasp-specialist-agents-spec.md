@@ -35,7 +35,7 @@ security assessment.
 
 ## 3. Architecture
 
-```
+```text
 ┌──────────────────────────────────────────────────────────────────┐
 │                    CLAUDE CODE HOST SESSION                      │
 │                                                                  │
@@ -95,7 +95,7 @@ traditional AppSec. Other specialists are activated based on detection.
 
 Each specialist supports three modes invoked via argument:
 
-```
+```html
 review-code <path>     — Scan source code for vulnerabilities
 review-tests <path>    — Audit tests for security coverage gaps
 generate <path>        — Produce missing security tests
@@ -108,7 +108,7 @@ category IDs for traceability.
 
 ## 4. Directory Structure
 
-```
+```text
 .claude/
 ├── agents/
 │   ├── test-writer.md                # Existing — now calls specialists
@@ -184,7 +184,7 @@ Specialists skipped:
   - owasp-agent   — [reason: no agent orchestration detected]
   - owasp-ml      — [reason: inference only, no training code]
   - owasp-citizen — [reason: no low-code indicators]
-```
+```text
 
 Invoke each selected specialist sequentially. Aggregate their findings
 into a unified security report sorted by severity.
@@ -280,7 +280,7 @@ A01:2025    PARTIAL    No horizontal authz tests (user A → user B resources)
 A05:2025    MISSING    No SQL injection payload tests for /api/search
 A07:2025    COVERED    Auth tests cover login, logout, token expiry, rate limit
 A10:2025    MISSING    No tests verify error responses don't leak stack traces
-```
+```markdown
 
 ## Mode: generate
 
@@ -668,7 +668,7 @@ specialists handle security depth.
 Use the Task tool to invoke the specialist:
 ```
 Task: Run the owasp-llm specialist in generate mode on src/llm/prompt.py
-```
+```text
 
 Incorporate the specialist's generated tests into the test file alongside
 your functional tests.
@@ -760,7 +760,7 @@ When invoked with `security` or `security <path>`:
 
 All specialist outputs are aggregated into this format:
 
-```
+```text
 ╔══════════════════════════════════════════════════════════════╗
 ║                  OWASP SECURITY AUDIT REPORT                ║
 ║  Project: mypackage    Date: 2026-03-15    Mode: full       ║
@@ -819,7 +819,7 @@ RECOMMENDATIONS:
 
 Generated security tests are organized by OWASP list and category:
 
-```
+```text
 tests/
 ├── security/                          # All OWASP specialist output
 │   ├── conftest.py                    # Security-specific fixtures

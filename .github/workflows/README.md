@@ -4,7 +4,7 @@ This project uses **org-level reusable workflows** for consistency and maintaina
 
 ## Architecture
 
-```
+```text
 ┌─────────────────────────────────────────┐
 │  claude_config        │
 │  (This Repository)                      │
@@ -191,7 +191,7 @@ act push -j ci
 **Error**: `Workflow file not found`
 
 **Solution**: Ensure the org-level `.github` repository exists and workflows are at:
-```
+```text
 ByronWilliamsCPA/.github/.github/workflows/*.yml
 ```
 

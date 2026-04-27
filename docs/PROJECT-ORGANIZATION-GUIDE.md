@@ -19,7 +19,7 @@ This guide outlines **what should live where** in the `$HOME/.claude/` git-track
 ## 📁 Directory Structure & Ownership
 
 ### Core Configuration Files
-```
+```text
 $HOME/.claude/
 ├── .claude.json              # 🎯 Main config: MCP servers, user settings
 ├── settings.json             # 🎯 Project settings: permissions, hooks
@@ -36,7 +36,7 @@ $HOME/.claude/
 ---
 
 ### Documentation Hub
-```
+```text
 ├── README.md                     # 🎯 Main project overview
 ├── CLAUDE.md                     # 🎯 Global development standards
 ├── PROJECT-ORGANIZATION-GUIDE.md # 🎯 This file - what goes where
@@ -59,7 +59,7 @@ $HOME/.claude/
 ---
 
 ### MCP Server Configurations
-```
+```text
 mcp/
 ├── zen-server.json           # 🎯 Active: Smart consensus + core tools
 ├── github-server.json        # 🎯 Active: GitHub integration
@@ -83,7 +83,7 @@ mcp/
 ---
 
 ### Custom Agents
-```
+```text
 agents/
 ├── README.md                 # 🎯 Agent overview and usage
 ├── security-auditor.md       # 🎯 Security analysis specialist
@@ -105,7 +105,7 @@ agents/
 ---
 
 ### Custom Commands
-```
+```text
 commands/
 ├── _README.md               # 🎯 Command overview and categories
 ├── quality-*.md             # 🎯 Code quality and formatting
@@ -122,7 +122,7 @@ commands/
 - **Workflow helpers** (git operations, branch management)
 
 **Command Naming Convention:**
-```
+```text
 {category}-{action}-{object}.md
 ```
 
@@ -136,7 +136,7 @@ commands/
 ---
 
 ### Scripts & Automation
-```
+```text
 scripts/
 ├── setup-env.sh             # 🎯 Environment setup and validation
 ├── mcp-manager.sh           # 🎯 MCP server installation
@@ -161,7 +161,7 @@ scripts/
 ---
 
 ### Technical Documentation
-```
+```text
 docs/
 ├── response-aware-development.md  # 🎯 RAD methodology and practices
 ├── tdd-enforcement-system.md      # 🎯 TDD hook implementation
@@ -183,7 +183,7 @@ docs/
 ---
 
 ### Context & Standards
-```
+```text
 context/
 ├── development-standards.md  # 🎯 Coding standards and practices
 ├── integration-patterns.md   # 🎯 Common integration patterns
@@ -198,7 +198,7 @@ context/
 ---
 
 ### Data & Configuration Storage
-```
+```text
 data/
 ├── promptcraft/             # 🎯 PromptCraft integration data
 │   ├── channel_config.json
@@ -216,7 +216,7 @@ data/
 ---
 
 ### Temporary & Generated Files (IGNORED)
-```
+```markdown
 # These should be in .gitignore
 .mypy_cache/                 # 🚫 MyPy type checking cache
 __pycache__/                 # 🚫 Python bytecode cache

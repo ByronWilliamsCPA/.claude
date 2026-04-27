@@ -488,7 +488,7 @@ reopen the terminal, or start a new Claude Code session) to pick up the new hook
 
 In the new session, ask Claude to edit a temp file with a known violation:
 
-```
+```text
 Edit /tmp/smoke_test.py to add this line at the top: import datetime; x = datetime.datetime.utcnow()
 ```
 

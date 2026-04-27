@@ -20,7 +20,7 @@ right agents in the right order so you never have to manage the pipeline manuall
 
 ## Invocation
 
-```
+```text
 /writing [mode]
 ```
 

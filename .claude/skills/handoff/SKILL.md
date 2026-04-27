@@ -18,7 +18,7 @@ session can resume without context loss.
 
 ## Invocation
 
-```
+```text
 /handoff
 ```
 

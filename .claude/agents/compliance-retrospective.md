@@ -60,7 +60,7 @@ For each pattern promoted to candidate status, include a ready-to-paste YAML blo
   description: ".editorconfig absent from project root"
   verify: "file_exists: .editorconfig"
   override_eligible: true
-```
+```markdown
 
 ## Agent Scope Expansion Candidates
 

@@ -114,7 +114,7 @@ security auditing (SAST, dependency scanning, secret detection, compliance).
 
 ## Invocation
 
-```
+```text
 Via Agent tool: subagent_type="security-auditor"
 ```
 

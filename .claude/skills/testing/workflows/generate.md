@@ -152,7 +152,7 @@ async def test_async_function_returns_expected_result():
 
 ## Test Organization
 
-```
+```text
 tests/
 ├── unit/           # Pure function tests (fast, isolated, no I/O)
 ├── integration/    # Cross-component tests (may use real DB/filesystem)
@@ -257,7 +257,7 @@ def test_validate_email_never_raises_on_string_input(s):
 For complex test generation requiring comprehensive strategy across multiple modules,
 use the `test-writer` agent (or `test-engineer` for multi-tier architecture planning):
 
-```
+```yaml
 Task: Generate tests for [module]
 Agent: test-writer
 ```

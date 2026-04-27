@@ -26,7 +26,7 @@ This configuration uses environment variables to securely manage API keys for MC
 
 ### Security Architecture
 
-```
+```text
 ~/.claude/
 ├── .env                  # LOCAL ONLY - Contains actual API keys (git-ignored)
 ├── .env.example          # COMMITTED - Template showing required variables

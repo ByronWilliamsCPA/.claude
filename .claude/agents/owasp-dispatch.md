@@ -38,7 +38,7 @@ the correct specialists.
 
 ## Output Format
 
-```
+```text
 DISPATCH PLAN
 ═════════════
 Project: {project_name}

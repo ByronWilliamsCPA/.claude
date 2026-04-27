@@ -50,7 +50,7 @@ Apply relevant patterns to the phase implementation guidance.
 Assign a semantic release-compatible branch type to each phase following the convention in
 `.claude/rules/git-workflow.md`:
 
-```
+```text
 {type}/phase-{N}-{description}
 ```
 
@@ -106,6 +106,6 @@ Phase 0 execution without explicit user confirmation.
 ## Output
 
 `docs/planning/PROJECT-PLAN.md` committed to the current branch with a conventional commit:
-```
+```yaml
 docs: synthesize project plan from planning documents
 ```
