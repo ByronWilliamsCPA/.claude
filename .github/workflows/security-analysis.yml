@@ -27,3 +27,9 @@ jobs:
       run-codeql: false
       # Dependency Review requires GHAS Dependency Graph on private repos
       run-dependency-review: false
+      # osv-scanner-action v2.2.4 has a bug where IgnoredVulns entries that
+      # actively filter a finding are still reported as "unused", causing exit 1.
+      # The py/PYSEC-2022-42969 entry correctly filters the disputed ReDoS vuln
+      # but is marked unused after filtering. pip-audit (dev dep) covers the same
+      # surface. Re-enable once the org workflow updates to osv-scanner >= 2.3.0.
+      run-osv: false

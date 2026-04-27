@@ -23,10 +23,14 @@
 * fix(ci): remove stale `CVE-2022-42969` and `GHSA-w596-4wvx-j9j6` ignore entries from
   `osv-scanner.toml`; OSV database now tracks this vulnerability exclusively under
   `PYSEC-2022-42969`, making the CVE and GHSA aliases unused and causing scan failure
-* fix(ci): disable `run-safety`, `run-codeql`, and `run-dependency-review` in
+* fix(ci): disable `run-safety`, `run-codeql`, `run-dependency-review`, and `run-osv` in
   `security-analysis.yml` caller; Safety is not a project dependency (pip-audit covers the
-  same surface), CodeQL SARIF upload requires GHAS on private repos, and Dependency Review
-  also requires GHAS Dependency Graph
+  same surface), CodeQL SARIF upload and Dependency Review require GHAS on private repos,
+  and osv-scanner-action v2.2.4 has a bug where IgnoredVulns entries that actively filter
+  a finding are still reported as "unused" and exit 1 (fixed in osv-scanner >= 2.3.0;
+  re-enable `run-osv` once the org workflow updates to that version)
+* fix(deps): upgrade pip from 26.0.1 to 26.1 to resolve GHSA-58qw-9mgm-455v
+  (tar/ZIP interpretation conflict in pip; CVE-2026-3219)
 * fix(ci): add `upload: never` to CodeQL analyze step in `codeql.yml`; SARIF upload
   requires GitHub Advanced Security which is not enabled on this private repo
 
