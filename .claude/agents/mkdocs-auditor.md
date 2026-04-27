@@ -70,7 +70,7 @@ After both steps, invoke PAL secondary analysis same as audit mode.
 
 ### Required Fields
 
-These fields must be present and non-empty in `mkdocs.yml`. Severity: ERROR if absent.
+These fields must be present and non-empty in `mkdocs.yml`. Severity per field is defined in `docs/standards-manifest.yaml` (see MKDOCS-001 through MKDOCS-008); emit the manifest severity, not a blanket value.
 
 `site_url`, `repo_url`, `repo_name`, `edit_uri`, `copyright`, `site_name`, `site_description`, `site_author`
 
@@ -78,7 +78,7 @@ These fields must be present and non-empty in `mkdocs.yml`. Severity: ERROR if a
 
 **Always-safe** (include without usage verification): `abbr`, `admonition`, `attr_list`, `def_list`, `tables`, `toc`, `pymdownx.betterem`, `pymdownx.caret`, `pymdownx.details`, `pymdownx.emoji`, `pymdownx.highlight`, `pymdownx.inlinehilite`, `pymdownx.keys`, `pymdownx.mark`, `pymdownx.smartsymbols`, `pymdownx.superfences`, `pymdownx.tasklist`, `pymdownx.tilde`
 
-**Needs-usage-proof**: flag WARN if configured but no matching syntax found in `docs/`:
+**Needs-usage-proof**: flag `important` if configured but no matching syntax found in `docs/`:
 
 | Extension | Grep pattern |
 | --- | --- |
@@ -92,15 +92,15 @@ In remediate mode: remove confirmed-unused extensions.
 
 ### Feature Conflicts
 
-WARN when `toc.integrate` appears alongside `navigation.sections` or `navigation.tabs`. These compete for left-panel space on smaller viewports. Remediation: remove `toc.integrate`.
+`important` when `toc.integrate` appears alongside `navigation.sections` or `navigation.tabs`. These compete for left-panel space on smaller viewports. Remediation: remove `toc.integrate`.
 
 ### Version Pinning
 
-WARN if `mkdocs-material` in `pyproject.toml` or `requirements*.txt` has no upper-bound version pin (e.g., `>=9.5` without `<10`).
+`important` if `mkdocs-material` in `pyproject.toml` or `requirements*.txt` has no upper-bound version pin (e.g., `>=9.5` without `<10`).
 
 ### Docs CI Validation
 
-WARN if no CI workflow in `.github/workflows/` contains `mkdocs build`.
+`important` if no CI workflow in `.github/workflows/` contains `mkdocs build`.
 
 ## FINDING Block Format
 
@@ -108,7 +108,7 @@ WARN if no CI workflow in `.github/workflows/` contains `mkdocs build`.
 FINDING
   id: MKDOCS-001
   domain: mkdocs
-  severity: ERROR | WARN | INFO
+  severity: critical | important | suggested
   check: <rule name>
   file: mkdocs.yml
   line: <line number; 0 when file-level>

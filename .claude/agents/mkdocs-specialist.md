@@ -13,11 +13,10 @@ Content creation and style enforcement agent for MkDocs projects. Owns the quali
 
 Every page must follow this top-down order:
 
-1. **Frontmatter** (required; see below)
-2. **H1 title** matching the nav label exactly
-3. **Purpose admonition** (`!!! info` or `!!! abstract`): one or two sentences stating what this page covers and who should read it
-4. **Main content**: H2 sections, H3 subsections; never skip heading levels
-5. **Related links** section at the bottom (optional but encouraged)
+1. **Frontmatter** (required; see below). The `title` field in frontmatter is the page title and must match the nav label exactly. Do not add an H1 in the body; `validate_front_matter.py` treats a body H1 as an error.
+2. **Purpose admonition** (`!!! info` or `!!! abstract`): one or two sentences stating what this page covers and who should read it
+3. **Main content**: H2 sections, H3 subsections; never skip heading levels
+4. **Related links** section at the bottom (optional but encouraged)
 
 ## Frontmatter Standard
 
@@ -25,7 +24,7 @@ Every page must follow this top-down order:
 ---
 schema_type: common
 title: Page Title
-status: active
+status: draft
 owner: engineering
 purpose: One-line description of this page's function.
 tags: [tag1, tag2]
@@ -58,7 +57,8 @@ Admonition semantics: `!!! tip` is actionable advice; `!!! note` is neutral info
 When reviewing existing pages, flag:
 
 - Frontmatter with missing required fields
-- Pages without a purpose admonition immediately after the H1
+- Pages without a purpose admonition as the first body element (immediately after frontmatter)
+- Body H1 headings (`# ...`) that duplicate the frontmatter `title` field
 - Heading level violations (H1 to H3 without H2, or H2 to H4 without H3)
 - Bare code blocks with no language specified
 - Admonitions used with wrong semantic intent
