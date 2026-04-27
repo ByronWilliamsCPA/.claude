@@ -80,7 +80,7 @@ jobs:
             echo '```' >> $GITHUB_STEP_SUMMARY
             echo "::warning::Potential dead code detected. Review vulture report."
           else
-            echo "✅ No dead code detected with 90% confidence." >> $GITHUB_STEP_SUMMARY
+            echo "No dead code detected with 90% confidence." >> $GITHUB_STEP_SUMMARY
           fi
 
   # Changelog Enforcement
@@ -146,10 +146,10 @@ jobs:
 
 
   # ==========================================================================
-  # Validation Summary
+  # Dependency & Standards Validation Gate
   # ==========================================================================
   validation-summary:
-    name: Validation Summary
+    name: Dependency & Standards Validation
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -162,50 +162,55 @@ jobs:
           egress-policy: audit
 
       - name: Check validation results
+        env:
+          CORE_RESULT: ${{ needs.core-validation.result }}
+          DEAD_CODE_RESULT: ${{ needs.dead-code.result }}
+          CHANGELOG_RESULT: ${{ needs.changelog.result }}
+          LINK_CHECK_RESULT: ${{ needs.link-check.result }}
         run: |
           echo "## PR Validation Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
 
-          if [ "${{ needs.core-validation.result }}" == "success" ]; then
-            echo "✅ Core Validation: Passed" >> $GITHUB_STEP_SUMMARY
+          if [ "$CORE_RESULT" == "success" ]; then
+            echo "Core Validation: Passed" >> $GITHUB_STEP_SUMMARY
           else
-            echo "❌ Core Validation: ${{ needs.core-validation.result }}" >> $GITHUB_STEP_SUMMARY
+            echo "Core Validation: $CORE_RESULT" >> $GITHUB_STEP_SUMMARY
           fi
 
-          if [ "${{ needs.dead-code.result }}" == "success" ]; then
-            echo "✅ Dead Code Check: Passed" >> $GITHUB_STEP_SUMMARY
+          if [ "$DEAD_CODE_RESULT" == "success" ]; then
+            echo "Dead Code Check: Passed" >> $GITHUB_STEP_SUMMARY
           else
-            echo "⚠️ Dead Code Check: ${{ needs.dead-code.result }}" >> $GITHUB_STEP_SUMMARY
+            echo "Dead Code Check: $DEAD_CODE_RESULT" >> $GITHUB_STEP_SUMMARY
           fi
 
-          if [ "${{ needs.changelog.result }}" == "success" ]; then
-            echo "✅ Changelog: Updated" >> $GITHUB_STEP_SUMMARY
-          elif [ "${{ needs.changelog.result }}" == "skipped" ]; then
-            echo "⏭️ Changelog: Skipped" >> $GITHUB_STEP_SUMMARY
+          if [ "$CHANGELOG_RESULT" == "success" ]; then
+            echo "Changelog: Updated" >> $GITHUB_STEP_SUMMARY
+          elif [ "$CHANGELOG_RESULT" == "skipped" ]; then
+            echo "Changelog: Skipped" >> $GITHUB_STEP_SUMMARY
           else
-            echo "⚠️ Changelog: ${{ needs.changelog.result }}" >> $GITHUB_STEP_SUMMARY
-          fi
-
-
-
-
-          if [ "${{ needs.link-check.result }}" == "success" ]; then
-            echo "✅ Link Check: Passed" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "⚠️ Link Check: ${{ needs.link-check.result }}" >> $GITHUB_STEP_SUMMARY
+            echo "Changelog: $CHANGELOG_RESULT" >> $GITHUB_STEP_SUMMARY
           fi
 
 
 
 
-          # Fail if core validation failed
-          if [ "${{ needs.core-validation.result }}" == "failure" ]; then
-            echo ""
-            echo "❌ Core validation checks failed. Please review and fix issues." >> $GITHUB_STEP_SUMMARY
+          if [ "$LINK_CHECK_RESULT" == "success" ]; then
+            echo "Link Check: Passed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "Link Check: $LINK_CHECK_RESULT" >> $GITHUB_STEP_SUMMARY
+          fi
+
+
+
+
+          BLOCK=0
+          if [ "$CORE_RESULT" != "success" ]; then BLOCK=1; fi
+          if [ "$CHANGELOG_RESULT" == "failure" ]; then BLOCK=1; fi
+          if [ "$DEAD_CODE_RESULT" == "failure" ]; then BLOCK=1; fi
+          if [ "$BLOCK" == "1" ]; then
+            echo "One or more required checks failed. Please review and fix issues." >> $GITHUB_STEP_SUMMARY
             exit 1
           fi
-
-
           echo ""
-          echo "✅ All validation checks passed!" >> $GITHUB_STEP_SUMMARY
+          echo "All validation checks passed!" >> $GITHUB_STEP_SUMMARY
