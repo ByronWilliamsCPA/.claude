@@ -16,7 +16,7 @@ Automated test generation, review, and execution for pytest-based projects.
 
 ## Invocation
 
-```
+```text
 /testing [action] [scope]
 ```
 
@@ -100,7 +100,7 @@ generate->run->fix->review loop.
 
 ## Test Organization
 
-```
+```text
 tests/
 ├── unit/           # Unit tests (fast, isolated)
 ├── integration/    # Integration tests (may use external services)

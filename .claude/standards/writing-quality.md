@@ -58,7 +58,7 @@ Input → Generator (if needed) → Stage 1 → Stage 2 → Stage 3 → `audienc
 When Stage 3 (`writing-style-editor`) rewrites text for voice, those sections MUST flow
 back through Stage 1 and Stage 2 before submission:
 
-```
+```text
 Stage 3 rewrites section → Stage 1 re-checks grammar → Stage 2 re-verifies facts → Stage 3 re-approves
 ```
 
@@ -150,7 +150,7 @@ in-line. Stage 2 owns that territory.
 
 All agent reference files live in the submodule at:
 
-```
+```text
 .submodules/reference-library/
 ├── writing-style/
 │   ├── style-profile.md          # Stylometry targets (authoritative)

@@ -145,7 +145,7 @@ outside the declared range as `WARN`.
 Search all `.md` files for Claude model name patterns
 (`claude-[a-z]+-\d+[-\w]*`). Compare against the known current model list:
 
-```
+```text
 claude-sonnet-4-6
 claude-opus-4-6
 claude-haiku-4-5
@@ -160,7 +160,7 @@ References to models not in this list → `WARN` with message "model may be outd
 
 ### Invocation
 
-```
+```text
 /doc-audit [scope]
 ```
 
@@ -175,7 +175,7 @@ References to models not in this list → `WARN` with message "model may be outd
 3. Parse JSON output
 4. Print terminal summary table:
 
-```
+```text
 Doc Audit Summary
 ─────────────────────────────────────────────────────
 Category       Status      Issues

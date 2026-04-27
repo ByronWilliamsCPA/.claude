@@ -19,7 +19,7 @@ before touching application code.
 
 ## Invocation
 
-```
+```text
 /debug-tests [test-path]
 ```
 
@@ -67,7 +67,7 @@ Investigate in this order (do not skip ahead to application logic):
 
 Include the root cause category in the commit message:
 
-```
+```text
 fix(tests): repair auth fixture after session scope change
 
 Root cause: Category 1 (fixture scope) — conftest session fixture

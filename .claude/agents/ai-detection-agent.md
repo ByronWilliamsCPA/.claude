@@ -246,7 +246,7 @@ the reference library", "check our writing tools for detection risk", "analyze d
 
 ### File Evaluation Report
 
-```
+```markdown
 ## AI Detection Report
 **File**: <path or "inline text">
 **Date**: <ISO date>
@@ -288,7 +288,7 @@ Identify the specific sentences or paragraphs with the highest AI signal.>
 
 ### Gap Analysis Report (Mode 2)
 
-```
+```markdown
 ## Pipeline Detection Audit
 **Date**: <ISO date>
 **Samples evaluated**: N
@@ -337,7 +337,7 @@ tied to detector failure modes from the landscape reference.>
 
 ## Invocation
 
-```
+```text
 Via Agent tool: subagent_type="ai-detection-agent"
 ```
 

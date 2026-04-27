@@ -456,7 +456,7 @@ exclusions:
 
 Create `docs/compliance-reports/.gitignore` with this content:
 
-```
+```markdown
 # All compliance reports are local only -- never pushed.
 *
 !.gitignore
@@ -591,14 +591,14 @@ FINDING:
   description: SECURITY.md absent from project root
   status: fail
   current_value: file not found
-```
+```text
 
 Remediation mode (emit one line per action):
 
 ```
 ACTION: Created SECURITY.md from template /home/byron/dev/.github/SECURITY.md
 ACTION: Appended .worktrees/ to .gitignore
-```
+```markdown
 
 ## Use Cases
 
@@ -680,14 +680,14 @@ typeCheckingMode = "strict"
 strictListInference = true
 strictDictionaryInference = true
 strictSetInference = true
-```
+```sql
 
 - Missing `.qlty/qlty.toml`: Create it with:
 
 ```toml
 [plugins]
 enabled = ["ruff", "basedpyright", "bandit"]
-```
+```markdown
 
 After remediation, emit: "NOTE: Adding/removing dependencies and enabling new Ruff rules will surface new violations. Run the full toolchain and fix violations before committing. Do not add noqa or type: ignore suppressions."
 
@@ -759,7 +759,7 @@ Return findings with: id, severity, description, status, current_value (list of 
 
 ```bash
 git ls-remote https://github.com/<owner>/<repo>.git refs/tags/<version> | cut -f1
-```
+```text
 
 The required hook repositories and their hook IDs are:
 - `https://github.com/astral-sh/ruff-pre-commit`: `ruff`, `ruff-format`
@@ -856,7 +856,7 @@ For missing Model Selection section, append:
 | Architecture, planning, ADRs | Opus 4.7 | Multi-step decisions, deep code review |
 | Standard development | Sonnet 4.6 | Most coding and editing |
 | Read-only exploration | Haiku 4.5 | File scanning, quick lookups |
-```
+```text
 
 For missing RAD section, append:
 ```markdown
@@ -868,7 +868,7 @@ timing dependencies, external resources, data integrity, concurrency, security,
 payment and financial.
 
 See `docs/response-aware-development.md` for full tagging syntax and examples.
-```
+```sql
 
 **Missing .claude/settings.json:** Create with a minimal permissions block:
 ```json
@@ -877,7 +877,7 @@ See `docs/response-aware-development.md` for full tagging syntax and examples.
     "allow": []
   }
 }
-```
+```markdown
 
 Note: the allow list should be populated based on the project's actual tool usage. Flag this to the user after creation.
 
@@ -962,7 +962,7 @@ CANDIDATE:
   description: ".editorconfig absent from project root"
   observed: "no .editorconfig found; global standards do not require it but it is present in all other reviewed repos"
   verify_hint: "file_exists: .editorconfig"
-```
+```markdown
 
 ## Use Cases
 
@@ -1066,7 +1066,7 @@ For each pattern promoted to candidate status, include a ready-to-paste YAML blo
 ## High-Frequency Existing Checks
 
 <List checks from the manifest that failed in 50% or more of repos reviewed this session. These warrant prioritized remediation.>
-```
+```markdown
 
 ## Use Cases
 
@@ -1139,13 +1139,13 @@ jobs:
       python-versions: '["3.11", "3.12"]'
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-```
+```text
 
 **CI-005 (SHA pinning):** For each unpinned `uses:` reference, resolve the SHA by running:
 
 ```bash
 git ls-remote https://github.com/<owner>/<repo>.git refs/tags/<version> | cut -f1
-```
+```html
 
 Replace the tag ref with the 40-char SHA and add the version as a comment: `@<sha>  # v1.2.3`
 
@@ -1156,7 +1156,7 @@ Replace the tag ref with the 40-char SHA and add the version as a comment: `@<sh
   uses: step-security/harden-runner@<current-sha>  # v2.x.x
   with:
     egress-policy: audit
-```
+```sql
 
 **CI-007 (blocking security scan):** Remove `continue-on-error: true` from security workflow jobs using Edit.
 
@@ -1170,7 +1170,7 @@ concurrency issues, and security logic flaws.
 
 Exclude from review: code style, formatting, and whitespace. These are enforced
 by pre-commit hooks and ruff -- do not flag them.
-```
+```markdown
 
 ### Output Format
 
@@ -1232,7 +1232,7 @@ Orchestrates a full compliance audit and optional remediation run against any re
 /repo-audit                          # interactive mode, current directory
 /repo-audit /path/to/repo            # interactive mode, specified path
 /repo-audit --scheduled              # report-only mode for cron trigger
-```
+```markdown
 
 ## Mode Selection
 
@@ -1271,7 +1271,7 @@ Manifest checks for this domain:
 <paste the relevant check entries from standards-manifest.yaml>
 Override entries (skip these check IDs):
 <paste entries from compliance-overrides.md, or "none">
-```
+```text
 ```
 
 - [ ] **Step 2: Validate skill frontmatter**
@@ -1313,7 +1313,7 @@ Full audit-approve-remediate-PR flow for a single target repo.
 TARGET_REPO="${1:-$(pwd)}"
 cd "$TARGET_REPO"
 git status  # confirm it is a git repo
-```
+```markdown
 
 Read `~/.claude/docs/standards-manifest.yaml`.
 Read `$TARGET_REPO/.claude/compliance-overrides.md` if it exists; extract the Check ID column.
@@ -1359,7 +1359,7 @@ SUGGESTED (N findings)
 UNCLASSIFIED CANDIDATES (N items -- for retrospective review)
   [candidate] .editorconfig absent -- proposed domain: foundations, severity: suggested
   ...
-```
+```markdown
 
 ### 4. Approval Loop
 
@@ -1415,7 +1415,7 @@ Applied by the repo-compliance system against standards manifest v<version>.
 <list of skipped findings>
 EOF
 )"
-```
+```markdown
 
 ### 7. Retrospective
 
@@ -1467,7 +1467,7 @@ gh repo list ByronWilliamsCPA --limit 100 --json nameWithOwner,sshUrl \
   | jq -r '.[].sshUrl' >> /tmp/remote-repos.txt
 
 sort -u /tmp/local-repos.txt /tmp/remote-repos.txt > /tmp/all-repos.txt
-```
+```markdown
 
 Read `~/.claude/docs/compliance-exclusions.yaml`. For each exclusion entry, remove matching repos from the list.
 
@@ -1494,7 +1494,7 @@ Print: "Scheduled run complete. Reports written to ~/.claude/docs/compliance-rep
 ```bash
 rm -rf /tmp/compliance-<date>/
 rm -f /tmp/local-repos.txt /tmp/remote-repos.txt /tmp/all-repos.txt
-```
+```text
 ```
 
 - [ ] **Step 2: Write compliance-report.md template**
@@ -1624,7 +1624,7 @@ Invoke `/repo-audit` and select option D (skip remediation -- report only) when 
 
 The audit must report findings for at least these check IDs (known from the 2026-04-20 design spec):
 
-```
+```text
 Critical:
   FOUND-001  SECURITY.md absent
   FOUND-002  CONTRIBUTING.md absent

@@ -126,7 +126,7 @@ Based on `--apply-fixes` parameter:
 
 ### For Critical Assumptions
 
-```
+```markdown
 You are a senior security engineer reviewing production-critical code. You have NO knowledge of the original developer's intent.
 
 ## Code Context
@@ -145,7 +145,7 @@ Focus on production failures, not theoretical issues.
 
 ### For Standard Assumptions
 
-```
+```markdown
 You are a code reviewer focused on preventing bugs. Analyze this assumption under production stress conditions.
 
 ## Code Analysis
@@ -177,7 +177,7 @@ No assumption tags found in scope. Start using RAD methodology:
 ```javascript
 // #CRITICAL: payment: Transaction assumed synchronous
 // #VERIFY: Add timeout and retry logic
-```
+```text
 
 See RAD methodology context for complete guidance.
 ```

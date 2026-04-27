@@ -65,7 +65,7 @@ For specialized tasks, this agent delegates to focused subagents:
 - **Patch Coverage**: 90% minimum (new/changed code)
 
 ### Test Organization
-```
+```text
 tests/
 ├── unit/           # Fast, isolated tests
 ├── integration/    # Service integration tests
@@ -118,6 +118,6 @@ the Codecov configuration against Testing Standards §16:
 
 ## Invocation
 
-```
+```text
 Via Agent tool: subagent_type="test-engineer"
 ```

@@ -440,7 +440,7 @@ rm -rf "$FIXTURE"
 ```
 
 Expected:
-```
+```yaml
 BLOCK: pass
 EXIT2: pass
 Passthrough exit: 0

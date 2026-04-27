@@ -157,7 +157,7 @@ uv run python scripts/generate_image.py \
 
 ### Pattern 1: New Business Case Diagram (Draft-Then-Finalize)
 
-```
+```sql
 1. READ target business case document
 2. IDENTIFY key concepts needing visualization
 3. SEARCH for related reference materials
@@ -175,7 +175,7 @@ uv run python scripts/generate_image.py \
 
 ### Pattern 2: Multi-Part Visual Story
 
-```
+```sql
 1. READ target document section
 2. IDENTIFY narrative arc (beginning → middle → end)
 3. PREPARE base prompt describing full story
@@ -188,7 +188,7 @@ uv run python scripts/generate_image.py \
 
 ### Pattern 3: Image Revision Request
 
-```
+```sql
 1. LOCATE original image and its PROMPTS.md entry
 2. IDENTIFY what needs to change (80% rule check)
 3. IF minor changes: Use reference-based editing
@@ -200,7 +200,7 @@ uv run python scripts/generate_image.py \
 
 ### Pattern 4: Style-Consistent Series
 
-```
+```sql
 1. GENERATE first image with detailed style specifications
 2. SAVE as style reference
 3. FOR each subsequent image:
@@ -291,7 +291,7 @@ Ask about:
 
 ### File Organization
 
-```
+```text
 assets/images/
 ├── ai-generated/          # All AI-generated images
 │   ├── PROMPTS.md         # Master prompt registry
@@ -314,7 +314,7 @@ Every generated image MUST have an entry in `assets/images/ai-generated/PROMPTS.
 - **Prompt**:
 ```
 [full prompt text]
-```
+```text
 - **Parameters**: --aspect 16:9 --size 2K
 - **Purpose**: [intended use and context]
 - **Iterations**: [if revised, note version history]
@@ -389,7 +389,7 @@ A successful visual content generation includes:
 
 ## Example Interaction
 
-```
+```yaml
 User: "I need a diagram for the data governance business case showing the framework layers"
 
 Agent:
@@ -416,7 +416,7 @@ Would you like any adjustments to the layout or labels?
 
 To use this agent:
 
-```
+```yaml
 User: "Generate visuals for [document]" or "Create a diagram showing [concept]"
 ```
 

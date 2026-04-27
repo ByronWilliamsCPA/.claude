@@ -128,7 +128,7 @@ When invoked with `codecov` or `audit-codecov`:
 
 4. Present findings as a structured report:
 
-   ```
+   ```text
    ## Codecov Audit Report
 
    ### Flags

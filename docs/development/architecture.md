@@ -13,7 +13,7 @@ This document describes the architecture and design decisions for Claude Code Co
 
 ## Project Structure
 
-```
+```text
 claude_config/
 ├── src/
 │   └── claude_config/

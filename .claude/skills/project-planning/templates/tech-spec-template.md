@@ -50,7 +50,7 @@
 ┌─────────────────────────────────────────┐
 │            [Data Layer]                 │
 └─────────────────────────────────────────┘
-```
+```markdown
 
 ### Component Responsibilities
 | Component | Purpose | Key Functions |
@@ -69,7 +69,7 @@ class [Entity]:
     [field]: [type]
     created_at: datetime
     updated_at: datetime
-```
+```markdown
 
 ### Relationships
 - [Entity A] → [Entity B]: [Relationship type]
@@ -88,7 +88,7 @@ class [Entity]:
   "[field]": "[type]",
   "[field]": "[type]"
 }
-```
+```markdown
 
 ## 5. CLI Specification (if applicable)
 

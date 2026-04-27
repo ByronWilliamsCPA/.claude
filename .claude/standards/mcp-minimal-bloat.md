@@ -205,7 +205,7 @@ From [Code Execution with MCP](https://www.anthropic.com/engineering/code-execut
 
 Instead of loading all tools upfront, present MCP servers as a filesystem hierarchy:
 
-```
+```text
 servers/
 ├── google-drive/
 │   ├── getDocument.ts

@@ -201,7 +201,7 @@ as a failed verdict (for example, `NEEDS_WORK` with issue: "agent returned unpar
 Specify the exact shape in the agent task prompt so the model commits to the
 structure before generating output. Example instruction to add to a task:
 
-```
+```text
 Return only a JSON object with this shape (no surrounding prose):
   {"verdict": "APPROVE" or "NEEDS_WORK", "issues": <array of strings>}
 

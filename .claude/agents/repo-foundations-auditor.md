@@ -38,7 +38,7 @@ Report each action taken: file created, file patched, or entry appended.
 
 Audit mode findings (emit one block per failing check):
 
-```
+```sql
 FINDING:
   id: FOUND-001
   severity: critical
@@ -49,7 +49,7 @@ FINDING:
 
 Remediation mode (emit one line per action):
 
-```
+```yaml
 ACTION: Created SECURITY.md from template /home/byron/dev/.github/SECURITY.md
 ACTION: Appended .worktrees/ to .gitignore
 ```

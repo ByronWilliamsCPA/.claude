@@ -38,7 +38,7 @@ If the API returns no data or a 404, note the fallback in your summary and proce
 
 Also check whether `.github/workflows/scorecard.yml` has `publish_results: false`. If so, emit:
 
-```
+```text
 FINDING
 id: SCORECARD:publish_results
 severity: important
@@ -143,7 +143,7 @@ If neither docs directory nor N/A marker exists: emit OSSF-005 FINDING with guid
 
 ## FINDING Block Format
 
-```
+```text
 FINDING:
 id: OSSF-001                    # manifest check ID, or SCORECARD:CheckName
 severity: critical|important|suggested
@@ -157,7 +157,7 @@ remediation: |
 
 For Scorecard findings sourced from the API, include `current_score:` and `target_score:` fields:
 
-```
+```text
 FINDING:
 id: SCORECARD:Branch-Protection
 severity: important

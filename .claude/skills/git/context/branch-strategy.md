@@ -17,7 +17,7 @@ Branch naming conventions and semantic release mapping.
 
 ## Branch Naming Format
 
-```
+```text
 {type}/{descriptive-slug}
 ```
 

@@ -43,7 +43,7 @@ This directory contains the essential planning documents for Claude Code Configu
 
 ### Starting a Session
 
-```
+```sql
 Load context from:
 - project-vision.md sections 2-3
 - adr/adr-001-*.md
@@ -54,7 +54,7 @@ Then implement [feature].
 
 ### Validating Code
 
-```
+```text
 Review this code against:
 - tech-spec.md section 6 (security)
 - adr/adr-002-*.md (relevant decision)
@@ -72,7 +72,7 @@ Update documents when:
 
 ## Document Relationships
 
-```
+```text
 ┌─────────────────────────────┐
 │   Project Vision & Scope    │  ← WHAT & WHY
 └──────────────┬──────────────┘

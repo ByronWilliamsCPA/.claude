@@ -30,7 +30,7 @@ Return all candidates clearly labeled as unclassified. Do not assert they are de
 
 ## Output Format
 
-```
+```sql
 CANDIDATE:
   proposed_id: FOUND-012
   domain: foundations

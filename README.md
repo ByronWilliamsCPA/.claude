@@ -256,7 +256,7 @@ edits to tracked files propagate immediately without a copy step.
 
 **Topology**:
 
-```
+```text
 ~/.claude/  (runtime, what Claude Code reads)
 ├── CLAUDE.md           --sym-->  ~/dev/.claude/CLAUDE.md
 ├── agents/             --sym-->  ~/dev/.claude/.claude/agents/
@@ -463,7 +463,7 @@ qlty check --plugin osv_scanner
 
 ## Project Structure
 
-```
+```text
 claude_config/
 ├── src/claude_config/     # Main package
 │   ├── __init__.py
