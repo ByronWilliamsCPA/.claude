@@ -20,6 +20,15 @@
 * fix(ci): add `actions: read` to `security-analysis.yml` caller to cover the CodeQL job's
   job-level permission; strip caller to minimal structure to resolve callee-specific parse failure
 * fix(release): add `build_command = "uv lock"` to prevent uv.lock version drift after semantic releases
+* fix(ci): remove stale `CVE-2022-42969` and `GHSA-w596-4wvx-j9j6` ignore entries from
+  `osv-scanner.toml`; OSV database now tracks this vulnerability exclusively under
+  `PYSEC-2022-42969`, making the CVE and GHSA aliases unused and causing scan failure
+* fix(ci): disable `run-safety`, `run-codeql`, and `run-dependency-review` in
+  `security-analysis.yml` caller; Safety is not a project dependency (pip-audit covers the
+  same surface), CodeQL SARIF upload requires GHAS on private repos, and Dependency Review
+  also requires GHAS Dependency Graph
+* fix(ci): add `upload: never` to CodeQL analyze step in `codeql.yml`; SARIF upload
+  requires GitHub Advanced Security which is not enabled on this private repo
 
 ## v0.13.0 (2026-04-21)
 ### Documentation

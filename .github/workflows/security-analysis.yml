@@ -19,3 +19,11 @@ jobs:
     uses: ByronWilliamsCPA/.github/.github/workflows/python-security-analysis.yml@c22009ccaab0d3234819d30d9d7a03d53c531cb9 # main
     with:
       python-version: "3.12"
+      # safety is not in this project's dev deps; pip-audit covers the same
+      # vulnerability surface and is already in [project.optional-dependencies]
+      run-safety: false
+      # CodeQL SARIF upload requires GitHub Advanced Security (GHAS); this
+      # private repo does not have GHAS enabled
+      run-codeql: false
+      # Dependency Review requires GHAS Dependency Graph on private repos
+      run-dependency-review: false

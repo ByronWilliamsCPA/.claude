@@ -57,3 +57,6 @@ jobs:
         uses: github/codeql-action/analyze@48ab28a6f5dbc2a99bf1e0131198dd8f1df78169 # v3.28.0
         with:
           category: "/language:python"
+          # SARIF upload requires GitHub Advanced Security on private repos.
+          # This repo does not have GHAS; analysis still runs locally.
+          upload: never
