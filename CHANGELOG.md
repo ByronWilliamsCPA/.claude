@@ -15,6 +15,8 @@
 * feat(ci): add yamllint pre-commit hook pinned to v1.38.0 with `--config-file .yamllint` (PC-YAMLLINT-FILE-REF)
 * feat(ci): add markdownlint pre-commit hook with MD040 active via `.markdownlint.json` (PC-MARKDOWNLINT-MD040)
 * feat(ci): emit lcov coverage report (`reports/lcov.info`) alongside xml in `ci_local`; add `reports/` and `coverage-ci-local.xml` to `.gitignore`
+* feat(agents): add `ossf-badge-evaluator` agent for OpenSSF Best Practices Badge criterion-by-criterion assessment with three automation URLs (passing/silver/gold) for one-click form pre-filling on bestpractices.dev
+* feat(ossf): add `ossf-criteria-reference.md` with all criterion slugs, N/A eligibility, and URL field names across passing/silver/gold levels; expand `docs/standards-manifest.yaml` with FOUND-012/013/014, CI-018/019, and OSSF-006/007 checks
 
 ### Chore
 
@@ -72,6 +74,9 @@
   `planning-bridge-gate.sh`; `set -euo pipefail` is present and unguarded
   failures in either call would silently block all tool calls matched by this
   PreToolUse hook (same class of defect as C-3/C-4 in tdd-enforcement-hook.sh)
+* fix(ci): eliminate duplicate Bandit runs by setting `run-bandit: false` in `security-analysis.yml` caller (Bandit already runs twice via python-ci.yml); add SLSA Generic Generator provenance job to `release.yml`; migrate Scorecard to org-level reusable workflow at `ByronWilliamsCPA/.github`
+* fix(docs): correct OpenSSF Best Practices badge ID from 12684 to 12685 in README.md and badge URLs; update all badge URL slugs from `claude_config` to `.claude`
+* fix(agents): correct `ossf-badge-evaluator` automation URL base domain to `bestpractices.dev` and prefill path to `/{level}/edit`
 
 ## v0.13.0 (2026-04-21)
 ### Documentation

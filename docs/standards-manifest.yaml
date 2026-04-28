@@ -1,6 +1,6 @@
 # docs/standards-manifest.yaml
 version: "1.0"
-last_updated: "2026-04-27"
+last_updated: "2026-04-28"
 
 # verify field is a hint to the domain agent, not executable DSL.
 # Agents interpret it using their own tools (Grep, Read, Glob, Bash).
@@ -87,6 +87,29 @@ checks:
     severity: suggested
     description: "GEMINI.md present at project root (not in docs/)"
     verify: "file_exists: GEMINI.md"
+    override_eligible: true
+
+  - id: FOUND-012
+    domain: foundations
+    severity: important
+    description: "CODE_OF_CONDUCT.md present at project root or satisfied by org-level ByronWilliamsCPA/.github/CODE_OF_CONDUCT.md (OpenSSF Silver: code_of_conduct)"
+    verify: "file_exists: CODE_OF_CONDUCT.md OR org_community_health: CODE_OF_CONDUCT.md"
+    source_template: "/home/byron/dev/.github/CODE_OF_CONDUCT.md"  # machine-specific; adjust to your local .github checkout path
+    override_eligible: true
+
+  - id: FOUND-013
+    domain: foundations
+    severity: important
+    description: "GOVERNANCE.md present at project root or satisfied by org-level ByronWilliamsCPA/.github/GOVERNANCE.md (OpenSSF Silver: governance + roles_responsibilities)"
+    verify: "file_exists: GOVERNANCE.md OR org_community_health: GOVERNANCE.md"
+    source_template: "/home/byron/dev/.github/GOVERNANCE.md"  # machine-specific; adjust to your local .github checkout path
+    override_eligible: true
+
+  - id: FOUND-014
+    domain: foundations
+    severity: suggested
+    description: "docs/architecture/ directory present with at least one .md file (OpenSSF Silver: documentation_architecture)"
+    verify: "dir_contains: docs/architecture/, *.md"
     override_eligible: true
 
   # ── Toolchain ────────────────────────────────────────────────────────────────
@@ -388,6 +411,20 @@ checks:
     verify: "branch_protection_contexts: CI Gate, Security Gate Validation, Dependency & Standards Validation, Check REUSE Compliance"
     override_eligible: false
 
+  - id: CI-018
+    domain: ci
+    severity: important
+    description: "SLSA provenance job present in release.yml calling slsa-framework/slsa-github-generator (OpenSSF Silver: signed_releases)"
+    verify: "content_present: .github/workflows/release.yml, slsa-framework/slsa-github-generator"
+    override_eligible: true
+
+  - id: CI-019
+    domain: ci
+    severity: important
+    description: "PyPI publish step in release.yml uses attestations: true (supply chain integrity)"
+    verify: "content_present: .github/workflows/release.yml, attestations: true"
+    override_eligible: true
+
   # ── Claude and Docs ──────────────────────────────────────────────────────────
 
   - id: CLAUDE-001
@@ -485,6 +522,20 @@ checks:
     description: "Library projects have published API reference docs; non-library projects have N/A marker in README or CONTRIBUTING"
     verify: "ossf_api_docs: docs/api/ OR README contains 'N/A' near 'API reference'"
     override_eligible: true
+
+  - id: OSSF-006
+    domain: ossf
+    severity: suggested
+    description: "OpenSSF Best Practices Silver badge application filed -- verified via bestpractices.dev API"
+    verify: "ossf_badge_api: level=silver"
+    override_eligible: true
+
+  - id: OSSF-007
+    domain: ossf
+    severity: important
+    description: "GitHub org requires 2FA for all members -- verified via GitHub API (OpenSSF Gold: require_2FA)"
+    verify: "github_org_2fa: ByronWilliamsCPA, two_factor_requirement_enabled=true"
+    override_eligible: false
 
   # MkDocs Configuration Checks
 

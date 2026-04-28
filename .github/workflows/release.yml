@@ -66,6 +66,9 @@ jobs:
     name: Semantic Release
     needs: test
     runs-on: ubuntu-latest
+    outputs:
+      released: ${{ steps.release.outputs.released }}
+      tag: ${{ steps.release.outputs.tag }}
     permissions:
       contents: write
       issues: write
@@ -101,8 +104,66 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Upload distribution artifacts for provenance
+        if: steps.release.outputs.released == 'true'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4.6.2
+        with:
+          name: dist-packages
+          path: dist/
+          retention-days: 5
+          if-no-files-found: error
+
       - name: Publish to PyPI
         if: steps.release.outputs.released == 'true'
         uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b  # release/v1
         with:
           attestations: true
+
+  build-dist:
+    name: Build Distribution
+    needs: release
+    if: needs.release.outputs.released == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      hashes: ${{ steps.hash.outputs.hashes }}
+    steps:
+      - name: Harden the runner
+        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7  # v2.10.1
+        with:
+          egress-policy: audit
+
+      - name: Download distribution artifacts
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093  # v4.3.0
+        with:
+          name: dist-packages
+          path: dist/
+
+      - name: Compute artifact hashes
+        id: hash
+        run: |
+          cd dist && echo "hashes=$(sha256sum ./* | base64 -w0)" >> "$GITHUB_OUTPUT"
+
+      - name: Upload distribution artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4.6.2
+        with:
+          name: dist
+          path: dist/
+          retention-days: 5
+          if-no-files-found: error
+
+  provenance:
+    name: SLSA Provenance
+    needs: [release, build-dist]
+    if: needs.release.outputs.released == 'true'
+    permissions:
+      actions: read
+      id-token: write
+      contents: write
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@f7dd8c54c2067bafc12ca7a55595d5ee9b75204a  # v2.1.0
+    with:
+      base64-subjects: ${{ needs.build-dist.outputs.hashes }}
+      upload-assets: true
+      upload-tag-name: ${{ needs.release.outputs.tag }}
+      provenance-name: multiple.intoto.jsonl
