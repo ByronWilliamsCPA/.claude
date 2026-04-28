@@ -21,6 +21,8 @@ Receive the coordinator prompt containing: target repo path, list of FOUND-* che
 - `content_present` checks: use Grep to confirm the string appears in the target file
 - `content_absent` checks: use Grep to confirm the string is absent
 - `metadata_value` checks: Read pyproject.toml and compare the field value against the condition
+- `org_community_health` checks: use Glob to check whether the file exists at the project root; if not found there, also check `~/dev/.github/<filename>` (the ByronWilliamsCPA org-level community health repo); if found at the org path, the check passes and the finding note must read "satisfied by org-level file at ByronWilliamsCPA/.github/<filename>"
+- `dir_contains` checks: use Glob to confirm the specified directory exists and contains at least one file matching the given glob pattern; if the directory is absent or no file matches, the check fails
 
 Return findings as a structured list with fields: id, severity, description, status (pass or fail), current_value (what was found or not found).
 
