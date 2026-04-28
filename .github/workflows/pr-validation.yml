@@ -206,6 +206,7 @@ jobs:
           DEAD_CODE_RESULT: ${{ needs.dead-code.result }}
           CHANGELOG_RESULT: ${{ needs.changelog.result }}
           LINK_CHECK_RESULT: ${{ needs.link-check.result }}
+          QLTY_COVERAGE_RESULT: ${{ needs.qlty-coverage.result }}
         run: |
           echo "## PR Validation Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
@@ -236,12 +237,12 @@ jobs:
             echo "Link Check: $LINK_CHECK_RESULT" >> $GITHUB_STEP_SUMMARY
           fi
 
-          if [ "${{ needs.qlty-coverage.result }}" == "success" ]; then
-            echo "✅ Qlty Coverage: Uploaded" >> $GITHUB_STEP_SUMMARY
-          elif [ "${{ needs.qlty-coverage.result }}" == "skipped" ]; then
-            echo "⏭️ Qlty Coverage: Skipped (not opened/reopened)" >> $GITHUB_STEP_SUMMARY
+          if [ "$QLTY_COVERAGE_RESULT" == "success" ]; then
+            echo "Qlty Coverage: Uploaded" >> $GITHUB_STEP_SUMMARY
+          elif [ "$QLTY_COVERAGE_RESULT" == "skipped" ]; then
+            echo "Qlty Coverage: Skipped (not opened/reopened)" >> $GITHUB_STEP_SUMMARY
           else
-            echo "⚠️ Qlty Coverage: ${{ needs.qlty-coverage.result }}" >> $GITHUB_STEP_SUMMARY
+            echo "Qlty Coverage: $QLTY_COVERAGE_RESULT" >> $GITHUB_STEP_SUMMARY
           fi
 
           BLOCK=0
