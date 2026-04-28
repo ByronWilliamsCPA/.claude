@@ -43,7 +43,7 @@ This directory contains the essential planning documents for Claude Code Configu
 
 ### Starting a Session
 
-```sql
+```text
 Load context from:
 - project-vision.md sections 2-3
 - adr/adr-001-*.md

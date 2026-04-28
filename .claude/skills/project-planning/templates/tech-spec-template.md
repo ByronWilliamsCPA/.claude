@@ -2,7 +2,7 @@
 
 ## Structure
 
-```markdown
+````markdown
 # Technical Implementation Spec: [Project Name]
 
 > **Status**: Draft | Approved | Implemented
@@ -39,7 +39,7 @@
 [Monolith | Microservices | Serverless | etc] - See [ADR-XXX]
 
 ### Component Diagram
-```
+```text
 ┌─────────────────────────────────────────┐
 │              [Component]                │
 ├─────────────┬─────────────┬─────────────┤
@@ -50,7 +50,7 @@
 ┌─────────────────────────────────────────┐
 │            [Data Layer]                 │
 └─────────────────────────────────────────┘
-```markdown
+```
 
 ### Component Responsibilities
 | Component | Purpose | Key Functions |
@@ -69,7 +69,7 @@ class [Entity]:
     [field]: [type]
     created_at: datetime
     updated_at: datetime
-```markdown
+```
 
 ### Relationships
 - [Entity A] → [Entity B]: [Relationship type]
@@ -88,7 +88,7 @@ class [Entity]:
   "[field]": "[type]",
   "[field]": "[type]"
 }
-```markdown
+```
 
 ## 5. CLI Specification (if applicable)
 
@@ -151,7 +151,7 @@ class [Entity]:
 - [Project Vision](./project-vision.md)
 - [Architecture Decisions](./adr/)
 - [Development Roadmap](./roadmap.md)
-```
+````
 
 ## Generation Notes
 

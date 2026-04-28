@@ -107,7 +107,7 @@ The design follows a **multi-agent writer/reviewer pattern** validated in produc
 
 **Location:** `.claude/skills/test-coverage/SKILL.md`
 
-```markdown
+````markdown
 ---
 name: test-coverage
 description: >
@@ -195,7 +195,7 @@ exclude_patterns = ["*/migrations/*", "*/conftest.py"]
 test_command = "pytest"
 max_generation_iterations = 3
 max_review_iterations = 2
-```markdown
+```
 
 ## Output Format
 
@@ -207,7 +207,7 @@ Coverage reports use this structure:
 - Before/after comparison (when generating)
 
 $ARGUMENTS
-```
+````
 
 **Supporting Scripts:**
 
@@ -585,12 +585,12 @@ if __name__ == "__main__":
 
 The test-writer subagent receives this structured context:
 
-```markdown
+````markdown
 ## Source File: {file_path}
 
 ```python
 {source_code_with_line_numbers}
-```markdown
+```
 
 ## Uncovered Lines
 Lines {missing_lines} are not covered by existing tests.
@@ -600,7 +600,7 @@ Specifically, the function `{function_name}` (lines {start}-{end}) has
 ## Existing Tests
 ```python
 {existing_test_file_content}
-```markdown
+```
 
 ## Project Test Conventions
 {from_claude_md_testing_section}
@@ -611,7 +611,7 @@ pattern, use parametrize for multiple cases, include edge cases (empty,
 None, boundary, error paths). Use monkeypatch for simple replacements,
 mocker with spec=True for call verification. Run the tests after writing
 to confirm they pass.
-```
+````
 
 ---
 

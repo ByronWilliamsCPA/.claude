@@ -37,7 +37,7 @@ Run `/plan <project description>` to generate initial ADRs alongside other plann
 
 When making a new architectural decision:
 
-```sql
+```text
 Create an ADR for [decision topic].
 Use template: .claude/skills/project-planning/templates/adr-template.md
 Save to: docs/planning/adr/adr-NNN-[decision-slug].md

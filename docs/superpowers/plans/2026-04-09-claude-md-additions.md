@@ -52,7 +52,7 @@ organizational priorities.
 
 With:
 
-```sql
+```text
 Do not search memory or make assumptions about
 organizational priorities.
 

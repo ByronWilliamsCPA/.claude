@@ -38,7 +38,7 @@ Report each action taken: file created, file patched, or entry appended.
 
 Audit mode findings (emit one block per failing check):
 
-```sql
+```yaml
 FINDING:
   id: FOUND-001
   severity: critical

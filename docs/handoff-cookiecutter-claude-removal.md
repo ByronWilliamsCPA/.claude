@@ -37,7 +37,7 @@ aligns with how the superpowers community plugin works.
 
 The template repo itself has a `.claude/` folder used during template development. Remove it:
 
-```sql
+```text
 .claude/
   commands/pr.md          ← delete
   skills/                 ← delete entire directory
