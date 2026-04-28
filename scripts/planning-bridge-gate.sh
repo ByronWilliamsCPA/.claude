@@ -15,10 +15,10 @@
 set -euo pipefail
 
 LOG_FILE="${HOME}/.claude/logs/planning-bridge-gate.log"
-mkdir -p "$(dirname "$LOG_FILE")"
+mkdir -p "$(dirname "$LOG_FILE")" || true
 
 log() {
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" >> "$LOG_FILE"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" >> "$LOG_FILE" || true
     return 0
 }
 

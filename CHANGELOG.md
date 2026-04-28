@@ -68,6 +68,10 @@
   GHSA-rpm5-65cw-6hj4 (command injection via Git options bypass, fixed in 3.1.47),
   GHSA-7545-fcxq-7j24 (path traversal in reference APIs, fixed in 3.1.48);
   GitPython is a transitive dependency; only `uv.lock` changes
+* fix(hooks): add `|| true` guards to `mkdir -p` and `log()` write in
+  `planning-bridge-gate.sh`; `set -euo pipefail` is present and unguarded
+  failures in either call would silently block all tool calls matched by this
+  PreToolUse hook (same class of defect as C-3/C-4 in tdd-enforcement-hook.sh)
 
 ## v0.13.0 (2026-04-21)
 ### Documentation
