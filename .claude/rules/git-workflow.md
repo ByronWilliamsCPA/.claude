@@ -51,6 +51,15 @@ If the remote URL is wrong:
 
     git remote set-url origin git@github.com:correct-org/repo-name.git
 
+## Force-Push Prohibition
+
+Never run `git push --force` or `git push --force-with-lease` targeting `main`, `master`,
+or `develop`. These branches are protected; force-pushing rewrites shared history and
+cannot be safely undone once other contributors have pulled.
+
+If a force-push seems necessary (e.g., to remove a secret accidentally committed), stop
+and ask the user before proceeding.
+
 ## Branch Workflow Override
 
 The branch-first rule (never commit directly to `main`) applies in all standard cases.
