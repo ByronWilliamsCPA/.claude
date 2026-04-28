@@ -88,6 +88,20 @@ tier_2_agent_bundles:
         - "*"               # All UML tools (when formal diagrams needed)
     deferred: []
 
+  mkdocs-auditor:
+    estimated_tokens: 1500
+    tools:
+      pal:
+        - chat              # PAL secondary analysis after rule-based checks
+    deferred: []
+
+  mkdocs-specialist:
+    estimated_tokens: 1500
+    tools:
+      pal:
+        - chat              # PAL secondary analysis after gap authoring
+    deferred: []
+
   database-operations-agent:
     estimated_tokens: 3000
     tools:

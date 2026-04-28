@@ -301,21 +301,35 @@ def validate_file(
     return {"file": str(path), "ok": ok, "errors": errors, "fixed": fixed}
 
 
-def _collect_md_files(paths: list[str]) -> list[Path]:
+def _is_excluded(resolved: Path, exclude_resolved: list[Path]) -> bool:
+    """Return True when *resolved* is equal to or nested inside any excluded path."""
+    return any(resolved == ex or ex in resolved.parents for ex in exclude_resolved)
+
+
+def _collect_md_files(paths: list[str], exclude: list[str] | None = None) -> list[Path]:
     """Collect Markdown files from the given path strings.
 
     Args:
         paths: List of file or directory path strings.
+        exclude: Directories or files to skip. A path is excluded when it equals
+            an exclude entry or any of its ancestor directories matches one.
 
     Returns:
         List of Path objects for Markdown files found.
     """
+    exclude_resolved = [Path(e).resolve() for e in (exclude or [])]
     md_files: list[Path] = []
     for path_str in paths:
         path = Path(path_str)
         if path.is_dir():
-            md_files.extend(path.rglob("*.md"))
-        elif path.suffix.lower() == ".md":
+            md_files.extend(
+                md
+                for md in path.rglob("*.md")
+                if not _is_excluded(md.resolve(), exclude_resolved)
+            )
+        elif path.suffix.lower() == ".md" and not _is_excluded(
+            path.resolve(), exclude_resolved
+        ):
             md_files.append(path)
     return md_files
 
@@ -362,9 +376,17 @@ def main() -> int:
         action="store_true",
         help="Output results as JSON for CI integration",
     )
+    parser.add_argument(
+        "--exclude",
+        nargs="+",
+        default=[],
+        metavar="PATH",
+        help="Paths or directories to exclude from validation",
+    )
     args = parser.parse_args()
 
-    md_files = _collect_md_files(args.paths)
+    exclude = [e for e in args.exclude if e]
+    md_files = _collect_md_files(args.paths, exclude=exclude)
     if not md_files:
         print("No Markdown files found", file=sys.stderr)
         return 1
