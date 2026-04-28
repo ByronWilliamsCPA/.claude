@@ -175,19 +175,14 @@ Only criteria **first introduced at silver**. Do not repeat passing slugs.
 | regression_tests_added50 | yes |
 | test_statement_coverage80 | yes |
 | test_policy_mandated | yes |
-| tests_documented_added | yes |
-| warnings_strict | yes |
 
 ### Security
 
 | slug | N/A |
 |------|-----|
 | implement_secure_design | yes |
-| crypto_weaknesses | yes |
 | crypto_algorithm_agility | yes |
 | crypto_credential_agility | yes |
-| crypto_used_network | yes |
-| crypto_tls12 | yes |
 | crypto_certificate_verification | yes |
 | crypto_verification_private | yes |
 | signed_releases | yes |
@@ -195,13 +190,6 @@ Only criteria **first introduced at silver**. Do not repeat passing slugs.
 | input_validation | yes |
 | hardening | yes |
 | assurance_case | no |
-
-### Analysis
-
-| slug | N/A |
-|------|-----|
-| static_analysis_common_vulnerabilities | yes |
-| dynamic_analysis_unsafe | yes |
 
 ---
 
@@ -214,7 +202,6 @@ Only criteria **first introduced at gold**. Do not repeat passing or silver slug
 | slug | N/A |
 |------|-----|
 | achieve_silver | no |
-| bus_factor | no |
 | contributors_unassociated | no |
 
 ### Basics
@@ -228,12 +215,13 @@ Only criteria **first introduced at gold**. Do not repeat passing or silver slug
 
 | slug | N/A |
 |------|-----|
-| repo_distributed | no |
 | small_tasks | no |
 | require_2FA | no |
 | secure_2FA | no |
 
 ### Quality
+
+Note: `test_invocation` and `test_continuous_integration` are intentionally re-listed here. At passing level both allow N/A (`yes`); at gold level N/A is removed (`no`), making them mandatory. Include in the gold URL only when they are Met.
 
 | slug | N/A |
 |------|-----|
@@ -249,18 +237,8 @@ Only criteria **first introduced at gold**. Do not repeat passing or silver slug
 
 | slug | N/A |
 |------|-----|
-| crypto_used_network | yes |
-| crypto_tls12 | yes |
 | hardened_site | no |
 | security_review | no |
-| hardening | yes |
-
-### Analysis
-
-| slug | N/A |
-|------|-----|
-| dynamic_analysis | yes |
-| dynamic_analysis_enable_assertions | yes |
 
 ---
 
