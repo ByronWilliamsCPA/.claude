@@ -161,6 +161,14 @@ reporting) and local file checks (SECURITY.md content, CHANGELOG CVE patterns, d
 fuzzing targets). Every FINDING includes specific, executable remediation steps drawn from embedded
 knowledge of each check's requirements.
 
+**[ossf-badge-evaluator](/.claude/agents/ossf-badge-evaluator.md)**
+Evaluates a repository against OpenSSF Best Practices Badge criteria (passing, silver, or gold) and
+produces a criterion-by-criterion assessment for form submission. For each criterion it inspects the
+local repo, returns the recommended radio button selection (Met/Unmet/N/A/?) with confidence level,
+generates ready-to-paste justification text, lists supporting evidence, and flags required actions.
+Generates a bulk-fill automation URL so all Met/N/A answers can be pre-loaded into the submission
+form in one click. Use before filling out or updating a Best Practices Badge submission.
+
 **[general-compliance-auditor](/.claude/agents/general-compliance-auditor.md)**
 Freeform compliance auditor for gaps outside the standards manifest. Receives covered check IDs as
 a negative filter, performs a broad LLM review against global standards, and returns unclassified
@@ -479,6 +487,7 @@ default system prompt.
 | Check if document will land with its audience | `/writing analyze` |
 | Audit a repo for compliance | `/repo-audit` skill |
 | Check OSSF Best Practices Badge / Scorecard status | `ossf-compliance-auditor` agent (called by `/repo-audit`) |
+| Fill out or update OSSF Best Practices Badge submission | `ossf-badge-evaluator` agent |
 | Audit or scaffold `mkdocs.yml`, detect nav gaps | `mkdocs-auditor` agent |
 | Author missing MkDocs pages or review page content | `mkdocs-specialist` agent |
 | Check phase readiness | `/phase-gate` skill or `phase-reviewer` agent |
