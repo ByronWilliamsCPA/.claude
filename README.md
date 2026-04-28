@@ -2,7 +2,7 @@
 
 ## Quality & Security
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/ByronWilliamsCPA/.claude/badge)](https://securityscorecards.dev/viewer/?uri=github.com/ByronWilliamsCPA/.claude)
-[![OpenSSF Best Practices](https://bestpractices.coreinfrastructure.org/projects/12684/badge)](https://bestpractices.coreinfrastructure.org/projects/12684)
+[![OpenSSF Best Practices](https://bestpractices.coreinfrastructure.org/projects/12685/badge)](https://bestpractices.coreinfrastructure.org/projects/12685)
 [![REUSE Compliance](https://github.com/ByronWilliamsCPA/.claude/actions/workflows/reuse.yml/badge.svg)](https://github.com/ByronWilliamsCPA/.claude/actions/workflows/reuse.yml)
 
 ## CI/CD Status
