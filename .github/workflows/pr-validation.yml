@@ -186,8 +186,6 @@ jobs:
 
           if [ "$CHANGELOG_RESULT" == "success" ]; then
             echo "Changelog: Updated" >> $GITHUB_STEP_SUMMARY
-          elif [ "$CHANGELOG_RESULT" == "skipped" ]; then
-            echo "Changelog: Skipped" >> $GITHUB_STEP_SUMMARY
           else
             echo "Changelog: $CHANGELOG_RESULT" >> $GITHUB_STEP_SUMMARY
           fi
@@ -206,7 +204,7 @@ jobs:
 
           BLOCK=0
           if [ "$CORE_RESULT" != "success" ]; then BLOCK=1; fi
-          if [ "$CHANGELOG_RESULT" == "failure" ]; then BLOCK=1; fi
+          if [ "$CHANGELOG_RESULT" != "success" ] && [ "$CHANGELOG_RESULT" != "skipped" ]; then BLOCK=1; fi
           if [ "$DEAD_CODE_RESULT" == "failure" ]; then BLOCK=1; fi
           if [ "$BLOCK" == "1" ]; then
             echo "One or more required checks failed. Please review and fix issues." >> $GITHUB_STEP_SUMMARY
