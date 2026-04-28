@@ -618,6 +618,15 @@ ignore_names = [
 # UV automatically falls back to PyPI when packages are not found in Assured OSS.
 # Authentication uses GOOGLE_APPLICATION_CREDENTIALS or GOOGLE_APPLICATION_CREDENTIALS_B64.
 
+# Commitizen Configuration
+# Validates commit messages for the commitizen pre-commit hook (commit-msg stage)
+[tool.commitizen]
+name = "cz_conventional_commits"
+version_scheme = "semver"
+version_provider = "pep621"
+tag_format = "v$version"
+update_changelog_on_bump = false
+
 # Semantic Release Configuration
 # Automates versioning and changelog generation based on conventional commits
 # Reference: https://python-semantic-release.readthedocs.io/

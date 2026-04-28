@@ -18,6 +18,8 @@ from pathlib import Path
 from typing import Any, Protocol
 
 import pytest
+from hypothesis import given
+from hypothesis import strategies as st
 
 
 class ValidateFrontMatterModule(Protocol):
@@ -190,55 +192,40 @@ class TestStripCodeBlocksProperties:
     catching edge cases that example-based tests do not cover.
     """
 
-    def test_idempotent(self, vfm: Any) -> None:
+    @given(  # type: ignore[misc]
+        content=st.text(
+            alphabet=st.characters(blacklist_categories=("Cs",)), max_size=500
+        )
+    )
+    def test_idempotent(self, vfm: Any, content: str) -> None:
         """Stripping once equals stripping twice for any input."""
-        from hypothesis import given
-        from hypothesis import strategies as st
-
-        @given(
-            st.text(alphabet=st.characters(blacklist_categories=("Cs",)), max_size=500)
+        once = vfm._strip_code_blocks(content)
+        twice = vfm._strip_code_blocks(once)
+        assert once == twice, (
+            f"_strip_code_blocks is not idempotent.\n"
+            f"Input:       {content!r}\n"
+            f"After one:   {once!r}\n"
+            f"After two:   {twice!r}"
         )
-        def check(content: str) -> None:
-            once = vfm._strip_code_blocks(content)
-            twice = vfm._strip_code_blocks(once)
-            assert once == twice, (
-                f"_strip_code_blocks is not idempotent.\n"
-                f"Input:       {content!r}\n"
-                f"After one:   {once!r}\n"
-                f"After two:   {twice!r}"
-            )
 
-        check()
-
-    def test_output_never_longer_than_input(self, vfm: Any) -> None:
+    @given(  # type: ignore[misc]
+        content=st.text(
+            alphabet=st.characters(blacklist_categories=("Cs",)), max_size=500
+        )
+    )
+    def test_output_never_longer_than_input(self, vfm: Any, content: str) -> None:
         """Stripping code blocks never increases the length of the content."""
-        from hypothesis import given
-        from hypothesis import strategies as st
+        result = vfm._strip_code_blocks(content)
+        assert len(result) <= len(content)
 
-        @given(
-            st.text(alphabet=st.characters(blacklist_categories=("Cs",)), max_size=500)
-        )
-        def check(content: str) -> None:
-            result = vfm._strip_code_blocks(content)
-            assert len(result) <= len(content)
-
-        check()
-
-    def test_fence_free_content_unchanged(self, vfm: Any) -> None:
-        """Content with no fence markers passes through unmodified."""
-        from hypothesis import given
-        from hypothesis import strategies as st
-
-        safe_text = st.text(
+    @given(  # type: ignore[misc]
+        content=st.text(
             alphabet=st.characters(
-                blacklist_categories=("Cs",),
-                blacklist_characters="`~",
+                blacklist_categories=("Cs",), blacklist_characters="`~"
             ),
             max_size=300,
         )
-
-        @given(safe_text)
-        def check(content: str) -> None:
-            assert vfm._strip_code_blocks(content) == content
-
-        check()
+    )
+    def test_fence_free_content_unchanged(self, vfm: Any, content: str) -> None:
+        """Content with no fence markers passes through unmodified."""
+        assert vfm._strip_code_blocks(content) == content
