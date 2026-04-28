@@ -86,10 +86,13 @@ Check for: `required_pull_request_reviews.required_approving_review_count >= 1`,
 
 **Required blocking check contexts (CI-017):**
 ```bash
-CONTEXTS_RAW=$(gh api "repos/${REPO_SLUG}/branches/main/protection" --jq '.required_status_checks.contexts // []' 2>&1)
+GH_STDERR_FILE=$(mktemp)
+trap 'rm -f "$GH_STDERR_FILE"' EXIT
+CONTEXTS_RAW=$(gh api "repos/${REPO_SLUG}/branches/main/protection" --jq '.required_status_checks.contexts // []' 2>"$GH_STDERR_FILE")
 CONTEXTS_STATUS=$?
+GH_STDERR=$(cat "$GH_STDERR_FILE")
 ```
-If `CONTEXTS_STATUS` is non-zero (API failure, auth error, network error, or 404), emit a note: "CI-017 check could not run: `gh api` exited ${CONTEXTS_STATUS} -- ${CONTEXTS_RAW}" and skip the context comparison. Do not emit a false CI-017 FINDING from a failed API call.
+If `CONTEXTS_STATUS` is non-zero (API failure, auth error, network error, or 404), emit a note: "CI-017 check could not run: `gh api` exited ${CONTEXTS_STATUS}; stderr: ${GH_STDERR}" and skip the context comparison. Do not emit a false CI-017 FINDING from a failed API call.
 
 If `CONTEXTS_STATUS` is 0, parse `CONTEXTS_RAW` as a JSON array. The four required blocking contexts are: `CI Gate`, `Security Gate Validation`, `Dependency & Standards Validation`, `Check REUSE Compliance`. If any of the four are absent from the returned array, emit a CI-017 FINDING listing which contexts are missing and referencing `scripts/setup_github_protection.py` as the remediation script.
 

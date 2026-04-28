@@ -8,7 +8,7 @@
 * feat(agents): add `mkdocs-specialist` agent for MkDocs page content creation and style enforcement, including nav label alignment and front matter validation
 * feat(compliance): add MKDOCS-001 through MKDOCS-012 checks to `docs/standards-manifest.yaml` covering site metadata, theme configuration, plugins, navigation, and extension requirements
 * feat(compliance): wire `mkdocs-auditor` into the `repo-compliance` coordinator skill for automatic dispatch during audit and remediation passes
-* feat(ci): add CI-014 through CI-017 standards to enforce gate job presence and correct blocking check contexts; update `ossf-compliance-auditor` to audit CI-017 at audit time; fix `setup_github_protection.py` to register short job display names instead of the stale `Workflow / Job` composite format
+* feat(ci): add CI Gate, Security Gate Validation, and Dependency & Standards Validation gate jobs to `.github/workflows/` (ci.yml, security-analysis.yml, pr-validation.yml); add CI-014 through CI-017 standards; update `ossf-compliance-auditor` to audit CI-017; fix `setup_github_protection.py` to register short job display names
 
 ### Chore
 
