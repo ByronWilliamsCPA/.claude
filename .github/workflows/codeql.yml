@@ -2,10 +2,16 @@
 # Performs static application security testing (SAST) using GitHub CodeQL.
 #
 # Features:
-#   - Python language analysis
+#   - Python language analysis with security-extended + security-and-quality queries
 #   - Triggered on push to main, pull_request, and weekly schedule
 #   - SARIF results uploaded to GitHub Security tab (public repo; GHAS included)
 #   - Supply chain hardened with pinned SHA refs
+#
+# IMPORTANT: GitHub's CodeQL "default setup" must remain DISABLED for this repo.
+# Default setup and custom advanced configuration cannot both upload SARIF to the
+# Security tab -- GitHub rejects the custom upload with "analyses from advanced
+# configurations cannot be processed when the default setup is enabled."
+# To verify or disable: Settings > Code security > Code scanning > Default setup.
 name: CodeQL Analysis
 
 on:
