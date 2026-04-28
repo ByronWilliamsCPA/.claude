@@ -19,6 +19,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: coverage-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   coverage:
     name: Test Coverage
@@ -46,6 +50,13 @@ jobs:
       - name: Run tests with coverage
         run: |
           uv run pytest -v --cov=src/claude_config --cov-report=xml --cov-report=term-missing --cov-fail-under=80
+
+      - name: Verify coverage report exists
+        run: |
+          if [ ! -f coverage.xml ]; then
+            echo "coverage.xml not found; test run may have failed or coverage reporting is misconfigured" >&2
+            exit 1
+          fi
 
       - name: Upload coverage to Qlty
         uses: qltysh/qlty-action/coverage@a19242102d17e497f437d7466aa01b528537e899 # v2.2.0

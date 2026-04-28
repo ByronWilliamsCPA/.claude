@@ -18,7 +18,7 @@ For the design decisions behind this approach, see [ADR-003](adr/ADR-003-tiered-
 
 ## The Context Budget Problem
 
-A Claude Code session with a 128K-token context window has roughly 127K tokens of usable space after the system prompt. Loading 80+ MCP tool schemas at session start consumes ~55K of those tokens: 43% of the context window: before any work begins. Multi-file coding sessions, long code reviews, and document-intensive tasks routinely exceed the remaining budget.
+A Claude Code session with a 128K-token context window has roughly 127K tokens of usable space after the system prompt. Loading 80+ MCP tool schemas at session start consumes ~55K of those tokens: 43% of the context window, before any work begins. Multi-file coding sessions, long code reviews, and document-intensive tasks routinely exceed the remaining budget.
 
 The solution is not to use fewer MCP tools. It is to load tools only when the current task needs them.
 

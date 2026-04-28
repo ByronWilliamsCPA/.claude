@@ -5,6 +5,9 @@ name: Security Analysis
 on:
   pull_request:
     branches: [ main, master ]
+  schedule:
+    # Weekly scan on Mondays at 09:00 UTC
+    - cron: '0 9 * * 1'
   workflow_dispatch:
 
 permissions:
@@ -22,10 +25,11 @@ jobs:
       # safety is not in this project's dev deps; pip-audit covers the same
       # vulnerability surface and is already in [project.optional-dependencies]
       run-safety: false
-      # CodeQL SARIF upload requires GitHub Advanced Security (GHAS); this
-      # private repo does not have GHAS enabled
+      # CodeQL is handled by the dedicated codeql.yml workflow to avoid
+      # duplicate runs and double Security tab entries.
       run-codeql: false
-      # Dependency Review requires GHAS Dependency Graph on private repos
+      # Dependency Review is available (public repo) but handled separately;
+      # enable here if the org workflow adds value beyond what dependabot covers.
       run-dependency-review: false
       # osv-scanner-action v2.2.4 has a bug where IgnoredVulns entries that
       # actively filter a finding are still reported as "unused", causing exit 1.
