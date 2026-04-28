@@ -146,7 +146,7 @@ jobs:
 ```
 
 A working single-job caller that calls a different reusable workflow is NOT evidence that the
-pattern works for your callee -- the callee's permissions requirements differ per workflow.
+pattern works for your callee; the callee's permissions requirements differ per workflow.
 
 Also check individual JOB-level permissions inside the callee, not just the callee's workflow-level
 block. GitHub may validate the union of all permissions used anywhere in the callee:

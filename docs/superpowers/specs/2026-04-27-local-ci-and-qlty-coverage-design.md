@@ -142,9 +142,9 @@ This repo has a `.yamllint` config file but no yamllint hook in `.pre-commit-con
 
 Two hooks added to `.pre-commit-config.yaml`:
 
-**yamllint** -- using `--config-file .yamllint` so local checks use the same config Qlty is pointed at. The `.yamllint` file's `min-spaces-from-content: 1` setting must be verified against Qlty's effective config; if they differ, update `.yamllint` to be the authoritative source and fix any violations in the workflow files.
+**yamllint**: using `--config-file .yamllint` so local checks use the same config Qlty is pointed at. The `.yamllint` file's `min-spaces-from-content: 1` setting must be verified against Qlty's effective config; if they differ, update `.yamllint` to be the authoritative source and fix any violations in the workflow files.
 
-**markdownlint** -- added with a config that keeps MD040 (fenced code language) active. The two README.md fences at lines 7 and 11 get language specifiers added as part of this fix.
+**markdownlint**: added with a config that keeps MD040 (fenced code language) active. The two README.md fences at lines 7 and 11 get language specifiers added as part of this fix.
 
 ### Standards update
 

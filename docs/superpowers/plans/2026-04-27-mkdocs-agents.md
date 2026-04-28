@@ -9,9 +9,9 @@ tags: [agents, mkdocs, documentation, compliance]
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Create two production-ready agents — `mkdocs-auditor` (config lifecycle) and `mkdocs-specialist` (content creation and style) — wired into the repo-compliance system with PAL secondary analysis.
+**Goal:** Create two production-ready agents, `mkdocs-auditor` (config lifecycle) and `mkdocs-specialist` (content creation and style), wired into the repo-compliance system with PAL secondary analysis.
 
-**Architecture:** Two markdown agent files in `.claude/agents/` following the `pre-commit-auditor` pattern. The auditor owns `mkdocs.yml` in four modes (create/audit/remediate/update); the specialist owns page content quality and receives gap lists from the auditor. Both invoke PAL secondary analysis (Tier 1, always available — no mcp_config.yaml changes needed). The auditor integrates into repo-compliance as the `mkdocs` domain.
+**Architecture:** Two markdown agent files in `.claude/agents/` following the `pre-commit-auditor` pattern. The auditor owns `mkdocs.yml` in four modes (create/audit/remediate/update); the specialist owns page content quality and receives gap lists from the auditor. Both invoke PAL secondary analysis (Tier 1, always available; no mcp_config.yaml changes needed). The auditor integrates into repo-compliance as the `mkdocs` domain.
 
 **Tech Stack:** Claude agent markdown files, YAML (standards-manifest.yaml), pytest for validate_front_matter.py --exclude tests, pre-commit hooks.
 
@@ -239,7 +239,7 @@ EOF
 grep -n "^- id:" docs/standards-manifest.yaml | tail -3
 ```
 
-Note the last line number — you will append after it.
+Note the last line number; you will append after it.
 
 - [ ] **Step 2: Append MKDOCS-* entries at the end of docs/standards-manifest.yaml**
 
@@ -364,7 +364,7 @@ EOF
 
 - [ ] **Step 1: Create the agent file**
 
-Create `.claude/agents/mkdocs-auditor.md` with the content below. Copy exactly — the description field appears verbatim in the AGENTS-AND-SKILLS catalog and must be a single unbroken value:
+Create `.claude/agents/mkdocs-auditor.md` with the content below. Copy exactly: the description field appears verbatim in the AGENTS-AND-SKILLS catalog and must be a single unbroken value:
 
 ````markdown
 ---
@@ -376,7 +376,7 @@ tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
 
 # MkDocs Auditor
 
-MkDocs configuration lifecycle agent. Owns `mkdocs.yml` and nav structure entirely. Never authors page prose — hand content gaps to `mkdocs-specialist`.
+MkDocs configuration lifecycle agent. Owns `mkdocs.yml` and nav structure entirely. Never authors page prose; hand content gaps to `mkdocs-specialist`.
 
 ## Modes
 
@@ -507,7 +507,7 @@ git add .claude/agents/mkdocs-auditor.md
 pre-commit run --files .claude/agents/mkdocs-auditor.md
 ```
 
-Expected: all hooks PASS. Note: the `validate-front-matter` hook only runs on `docs/**/*.md` files, so agent files are not subject to the schema check — that is correct behavior.
+Expected: all hooks PASS. Note: the `validate-front-matter` hook only runs on `docs/**/*.md` files, so agent files are not subject to the schema check; that is correct behavior.
 
 - [ ] **Step 3: Commit**
 
@@ -548,7 +548,7 @@ tools: ["Read", "Write", "Edit", "Grep", "Glob"]
 
 # MkDocs Specialist
 
-Content creation and style enforcement agent for MkDocs projects. Owns the quality and uniformity of page content. Never modifies `mkdocs.yml` — route nav changes to `mkdocs-auditor`.
+Content creation and style enforcement agent for MkDocs projects. Owns the quality and uniformity of page content. Never modifies `mkdocs.yml`; route nav changes to `mkdocs-auditor`.
 
 ## Page Structure Standard
 
@@ -557,7 +557,7 @@ Every page must follow this top-down order:
 1. **Frontmatter** (required; see below)
 2. **H1 title** matching the nav label exactly
 3. **Purpose admonition** (`!!! info` or `!!! abstract`): one or two sentences stating what this page covers and who should read it
-4. **Main content**: H2 sections, H3 subsections — never skip heading levels
+4. **Main content**: H2 sections, H3 subsections; never skip heading levels
 5. **Related links** section at the bottom (optional but encouraged)
 
 ## Frontmatter Standard
