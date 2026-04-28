@@ -2361,16 +2361,16 @@
 <p>Claude Code reads from <code>~/.claude/</code>. The repository lives at <code>~/dev/.claude</code>. <code>setup.sh</code> bridges the two by creating a set of symlinks from <code>~/.claude/</code> into the repo. From Claude Code's perspective, the agents, skills, rules, and scripts look native. From the developer's perspective, they are version-controlled files in a normal git repository.</p>
 <p>For the reasoning behind this design, see <a href="../adr/ADR-001-two-layer-symlink-install/">ADR-001</a>.</p>
 <h2 id="two-layers">Two Layers<a class="headerlink" href="#two-layers" title="Permanent link">&para;</a></h2>
-<p><strong>Layer 1 — the repository</strong> (<code>~/dev/.claude</code>):</p>
+<p><strong>Layer 1: the repository</strong> (<code>~/dev/.claude</code>):</p>
 <p>This is where you work. It is a standard git repository with submodules, a Python toolchain (<code>pyproject.toml</code>, <code>uv.lock</code>), pre-commit hooks, and all the tooling a maintainer needs. You run <code>git</code>, <code>uv run pytest</code>, <code>pre-commit</code>, and <code>mkdocs</code> here.</p>
-<p><strong>Layer 2 — the runtime config</strong> (<code>~/.claude/</code>):</p>
+<p><strong>Layer 2: the runtime config</strong> (<code>~/.claude/</code>):</p>
 <p>This is where Claude Code reads. It contains a mix of real files and symlinks. The symlinks point into Layer 1. The one genuine file is <code>settings.json</code>, which is machine-local state (API keys, merged hooks) that is never committed.</p>
-<p><code>setup.sh</code> creates Layer 2 from Layer 1. Running it again is always safe — every operation is idempotent.</p>
+<p><code>setup.sh</code> creates Layer 2 from Layer 1. Running it again is always safe: every operation is idempotent.</p>
 <h2 id="diagram">Diagram<a class="headerlink" href="#diagram" title="Permanent link">&para;</a></h2>
 <p><img alt="Install layer component diagram" src="../diagrams/install_layer.svg" /></p>
 <h2 id="what-setupsh-does">What <code>setup.sh</code> Does<a class="headerlink" href="#what-setupsh-does" title="Permanent link">&para;</a></h2>
 <p><code>setup.sh</code> runs five phases in order:</p>
-<p><strong>1. Preflight</strong>: checks that <code>ln</code> and <code>git</code> are available. Warns (but does not abort) if <code>jq</code> is missing — symlinks can still be created; the hooks merge step will be skipped.</p>
+<p><strong>1. Preflight</strong>: checks that <code>ln</code> and <code>git</code> are available. Warns (but does not abort) if <code>jq</code> is missing: symlinks can still be created; the hooks merge step will be skipped.</p>
 <p><strong>2. Submodule init</strong>: calls <code>git submodule update --init --recursive</code> if the submodules have not been initialized. This populates <code>.submodules/reference-library/</code>, <code>.submodules/anthropics-plugins/</code>, and the others.</p>
 <p><strong>3. Symlink creation</strong>: creates or updates eight symlinks in <code>~/.claude/</code>:</p>
 <table>
@@ -2417,17 +2417,17 @@
 </table>
 <p>All use <code>ln -sfn</code> (force-replace, no-dereference), so re-running after a structural change is safe.</p>
 <p><strong>4. Hook merge</strong>: reads <code>hooks.json</code> from the repo root and uses <code>jq</code> to write its contents into the <code>.hooks</code> key of <code>~/.claude/settings.json</code>. If <code>settings.json</code> does not exist, it creates one. If it exists, it merges in-place, preserving all other keys (API keys, model preferences). A timestamped backup is created before any write.</p>
-<p><strong>5. claudeMdExcludes merge</strong>: adds two path patterns to <code>settings.json</code>'s <code>.claudeMdExcludes</code> array — one for <code>~/dev/.claude/CLAUDE.md</code> and one for <code>~/dev/.claude/.claude/**</code> — so Claude Code does not double-load the repo-local CLAUDE.md. Deduplicates before writing.</p>
+<p><strong>5. claudeMdExcludes merge</strong>: adds two path patterns to <code>settings.json</code>'s <code>.claudeMdExcludes</code> array: one for <code>~/dev/.claude/CLAUDE.md</code> and one for <code>~/dev/.claude/.claude/**</code>. This prevents Claude Code from double-loading the repo-local CLAUDE.md. Deduplicates before writing.</p>
 <h2 id="verifying-the-install">Verifying the Install<a class="headerlink" href="#verifying-the-install" title="Permanent link">&para;</a></h2>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>./setup.sh<span class="w"> </span>--doctor
 </span></code></pre></div>
 <p>The doctor mode prints every expected symlink, its current target, and whether the target exists. Broken symlinks, dangling targets, and drift from the expected topology are all reported. It also checks whether <code>settings.json</code> has the hooks block and <code>claudeMdExcludes</code> merged in.</p>
 <h2 id="see-also">See Also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="../adr/ADR-001-two-layer-symlink-install/">ADR-001 Two-Layer Symlink Install</a> — why this design</li>
-<li><a href="../adr/ADR-002-hook-composition/">ADR-002 Hook Composition and Ordering</a> — how <code>hooks.json</code> merges into <code>settings.json</code></li>
-<li><a href="../../getting-started/install/">Getting Started → Install</a> — step-by-step walkthrough for new developers</li>
-<li><a href="../submodule-strategy/">Submodule Strategy</a> — what the five submodules provide</li>
+<li><a href="../adr/ADR-001-two-layer-symlink-install/">ADR-001 Two-Layer Symlink Install</a>: why this design</li>
+<li><a href="../adr/ADR-002-hook-composition/">ADR-002 Hook Composition and Ordering</a>: how <code>hooks.json</code> merges into <code>settings.json</code></li>
+<li><a href="../../getting-started/install/">Getting Started → Install</a>: step-by-step walkthrough for new developers</li>
+<li><a href="../submodule-strategy/">Submodule Strategy</a>: what the five submodules provide</li>
 </ul>
 
 
@@ -2451,7 +2451,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 11, 2026 22:24:49 UTC">April 11, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 28, 2026 04:12:57 UTC">April 28, 2026</span>
   </span>
 
     

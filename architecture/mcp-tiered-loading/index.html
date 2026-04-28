@@ -1025,7 +1025,7 @@
   <a href="#tier-1-always-loaded" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Tier 1 — Always Loaded
+        Tier 1: Always Loaded
       
     </span>
   </a>
@@ -1036,7 +1036,7 @@
   <a href="#tier-2-agent-bundled" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Tier 2 — Agent-Bundled
+        Tier 2: Agent-Bundled
       
     </span>
   </a>
@@ -1047,7 +1047,7 @@
   <a href="#tier-3-keyword-triggered" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Tier 3 — Keyword-Triggered
+        Tier 3: Keyword-Triggered
       
     </span>
   </a>
@@ -2357,7 +2357,7 @@
   <a href="#tier-1-always-loaded" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Tier 1 — Always Loaded
+        Tier 1: Always Loaded
       
     </span>
   </a>
@@ -2368,7 +2368,7 @@
   <a href="#tier-2-agent-bundled" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Tier 2 — Agent-Bundled
+        Tier 2: Agent-Bundled
       
     </span>
   </a>
@@ -2379,7 +2379,7 @@
   <a href="#tier-3-keyword-triggered" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Tier 3 — Keyword-Triggered
+        Tier 3: Keyword-Triggered
       
     </span>
   </a>
@@ -2436,15 +2436,15 @@
   <h1>MCP Tiered Loading</h1>
 
 <p>The repo connects Claude to dozens of external tools via the Model Context Protocol (MCP): database clients, browser automation, observability platforms, diagram renderers, and more. Every connected tool consumes context tokens to describe its schema to the model.</p>
-<p>Before tiered loading, all tools loaded at session start — roughly 55,000 tokens on tool descriptions alone, before a single line of user input. Tiered loading reduces that to approximately 3,000 tokens at session start, with additional tools loaded only when the current task actually needs them.</p>
+<p>Before tiered loading, all tools loaded at session start: roughly 55,000 tokens on tool descriptions alone, before a single line of user input. Tiered loading reduces that to approximately 3,000 tokens at session start, with additional tools loaded only when the current task actually needs them.</p>
 <p>For the design decisions behind this approach, see <a href="../adr/ADR-003-tiered-mcp-loading/">ADR-003</a>.</p>
 <h2 id="the-context-budget-problem">The Context Budget Problem<a class="headerlink" href="#the-context-budget-problem" title="Permanent link">&para;</a></h2>
-<p>A Claude Code session with a 128K-token context window has roughly 127K tokens of usable space after the system prompt. Loading 80+ MCP tool schemas at session start consumes ~55K of those tokens — 43% of the context window — before any work begins. Multi-file coding sessions, long code reviews, and document-intensive tasks routinely exceed the remaining budget.</p>
+<p>A Claude Code session with a 128K-token context window has roughly 127K tokens of usable space after the system prompt. Loading 80+ MCP tool schemas at session start consumes ~55K of those tokens: 43% of the context window, before any work begins. Multi-file coding sessions, long code reviews, and document-intensive tasks routinely exceed the remaining budget.</p>
 <p>The solution is not to use fewer MCP tools. It is to load tools only when the current task needs them.</p>
 <h2 id="diagram">Diagram<a class="headerlink" href="#diagram" title="Permanent link">&para;</a></h2>
 <p><img alt="MCP tier loading state diagram" src="../diagrams/mcp_tier_loading.svg" /></p>
 <h2 id="the-three-tiers">The Three Tiers<a class="headerlink" href="#the-three-tiers" title="Permanent link">&para;</a></h2>
-<h3 id="tier-1-always-loaded">Tier 1 — Always Loaded<a class="headerlink" href="#tier-1-always-loaded" title="Permanent link">&para;</a></h3>
+<h3 id="tier-1-always-loaded">Tier 1: Always Loaded<a class="headerlink" href="#tier-1-always-loaded" title="Permanent link">&para;</a></h3>
 <p>Tier 1 contains tools used in the large majority of sessions regardless of task type. Loading them unconditionally is correct because the cost of not having them (re-injecting on demand, breaking mid-task) exceeds the ~3K token overhead.</p>
 <p>Current Tier 1 servers:</p>
 <table>
@@ -2473,7 +2473,7 @@
 </tr>
 </tbody>
 </table>
-<h3 id="tier-2-agent-bundled">Tier 2 — Agent-Bundled<a class="headerlink" href="#tier-2-agent-bundled" title="Permanent link">&para;</a></h3>
+<h3 id="tier-2-agent-bundled">Tier 2: Agent-Bundled<a class="headerlink" href="#tier-2-agent-bundled" title="Permanent link">&para;</a></h3>
 <p>Tier 2 tools are loaded when a specific agent or skill is invoked. The agent invocation is the loading trigger; no other signal is needed.</p>
 <p>Example agent bundles:</p>
 <table>
@@ -2511,7 +2511,7 @@
 </tbody>
 </table>
 <p>The full bundle list is in <code>.claude/rules/mcp-strategy.md</code>.</p>
-<h3 id="tier-3-keyword-triggered">Tier 3 — Keyword-Triggered<a class="headerlink" href="#tier-3-keyword-triggered" title="Permanent link">&para;</a></h3>
+<h3 id="tier-3-keyword-triggered">Tier 3: Keyword-Triggered<a class="headerlink" href="#tier-3-keyword-triggered" title="Permanent link">&para;</a></h3>
 <p>Tier 3 tools load dynamically when specific words appear in the user's prompt. The <code>keyword-tool-trigger.sh</code> PreToolUse hook scans each message for registered keywords and loads the associated tools on match.</p>
 <p>Current keyword-to-tool mappings:</p>
 <table>
@@ -2544,7 +2544,7 @@
 </tr>
 </tbody>
 </table>
-<p>Keyword triggers are fuzzy — they fire on substring match, not exact phrase. A false positive (loading Docker tools when "deploy" appears in a non-Docker context) costs a few hundred tokens, not a session failure.</p>
+<p>Keyword triggers are fuzzy: they fire on substring match, not exact phrase. A false positive (loading Docker tools when "deploy" appears in a non-Docker context) costs a few hundred tokens, not a session failure.</p>
 <h2 id="promotion-rules">Promotion Rules<a class="headerlink" href="#promotion-rules" title="Permanent link">&para;</a></h2>
 <p>All new MCP tools default to Tier 3. Tier changes require usage evidence from <code>scripts/track-mcp-usage.sh</code>.</p>
 <table>
@@ -2568,10 +2568,10 @@
 <p>Demotion works in reverse: a Tier 1 tool that drops below 60% session frequency is a candidate for Tier 2. Run <code>./scripts/track-mcp-usage.sh --report</code> to see current usage counts.</p>
 <h2 id="see-also">See Also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="../adr/ADR-003-tiered-mcp-loading/">ADR-003 Tiered MCP Loading</a> — why this structure was chosen</li>
-<li><code>.claude/rules/mcp-strategy.md</code> — the operative tier definitions and full tool assignments</li>
-<li><code>scripts/track-mcp-usage.sh</code> — usage tracking for promotion/demotion decisions</li>
-<li><code>scripts/mcp-tool-loader.sh</code> — the loader script invoked for Tier 2 agent/skill bundles</li>
+<li><a href="../adr/ADR-003-tiered-mcp-loading/">ADR-003 Tiered MCP Loading</a>: why this structure was chosen</li>
+<li><code>.claude/rules/mcp-strategy.md</code>: the operative tier definitions and full tool assignments</li>
+<li><code>scripts/track-mcp-usage.sh</code>: usage tracking for promotion/demotion decisions</li>
+<li><code>scripts/mcp-tool-loader.sh</code>: the loader script invoked for Tier 2 agent/skill bundles</li>
 </ul>
 
 
@@ -2595,7 +2595,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 11, 2026 22:24:49 UTC">April 11, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 28, 2026 04:12:57 UTC">April 28, 2026</span>
   </span>
 
     

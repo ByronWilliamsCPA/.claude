@@ -2398,12 +2398,12 @@
 
   <h1>2. Your First Agent</h1>
 
-<p>Agents are specialists. Each one is a self-contained prompt that runs in an isolated context with a narrowly scoped tool set. You hand an agent a task; it works on it independently and returns a result. You do not need to understand how it works internally — you just need to know when to invoke it and which one to choose.</p>
+<p>Agents are specialists. Each one is a self-contained prompt that runs in an isolated context with a narrowly scoped tool set. You hand an agent a task; it works on it independently and returns a result. You do not need to understand how it works internally: you just need to know when to invoke it and which one to choose.</p>
 <h2 id="what-an-agent-is">What an Agent Is<a class="headerlink" href="#what-an-agent-is" title="Permanent link">&para;</a></h2>
 <p>An agent file in <code>.claude/agents/</code> (visible as <code>~/.claude/agents/</code> after install) defines a specialist: its name, its tool restrictions, and its system prompt. When you invoke an agent via the <code>Agent</code> tool in a Claude Code session, it runs in a fresh context with only those tools. It cannot see your conversation history. It does one thing well, returns a result, and the main conversation continues.</p>
 <p>For the full taxonomy of agents vs skills vs rules vs standards, see <a href="../../architecture/adr/ADR-004-skill-vs-agent-boundary/">ADR-004</a>.</p>
 <h2 id="pick-a-starter-task">Pick a Starter Task<a class="headerlink" href="#pick-a-starter-task" title="Permanent link">&para;</a></h2>
-<p>The <code>Explore</code> agent is a good first choice — it does read-only codebase analysis, produces a concise summary, and has no side effects. Try this task:</p>
+<p>The <code>Explore</code> agent is a good first choice: it does read-only codebase analysis, produces a concise summary, and has no side effects. Try this task:</p>
 <blockquote>
 <p>"Explore this repository and give me a brief overview of how it is structured."</p>
 </blockquote>
@@ -2419,7 +2419,7 @@
 </span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>           300 words.&quot;
 </span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>)
 </span></code></pre></div>
-<p>You do not type this directly — Claude generates this call when you ask it to delegate a task. But understanding the shape helps you write clearer task descriptions.</p>
+<p>You do not type this directly: Claude generates this call when you ask it to delegate a task. But understanding the shape helps you write clearer task descriptions.</p>
 <p>In practice, you would say something like:</p>
 <blockquote>
 <p>"Use the Explore agent to give me an overview of the .claude/ directory structure."</p>
@@ -2428,9 +2428,9 @@
 <h2 id="what-happens-during-the-call">What Happens During the Call<a class="headerlink" href="#what-happens-during-the-call" title="Permanent link">&para;</a></h2>
 <ol>
 <li>Claude's main conversation calls the <code>Agent</code> tool with <code>subagent_type: "Explore"</code>.</li>
-<li>The <code>PreToolUse</code> hook pipeline fires (specifically the hookify dispatch — see <a href="../../architecture/hook-pipeline/">Hook Pipeline</a>).</li>
+<li>The <code>PreToolUse</code> hook pipeline fires (specifically the hookify dispatch: see <a href="../../architecture/hook-pipeline/">Hook Pipeline</a>).</li>
 <li>A fresh context window opens with the Explore agent's system prompt.</li>
-<li>The agent runs its task using only the tools its frontmatter allows (<code>Read</code>, <code>Glob</code>, <code>Grep</code>, etc. for Explore — no <code>Write</code> or <code>Bash</code>).</li>
+<li>The agent runs its task using only the tools its frontmatter allows (<code>Read</code>, <code>Glob</code>, <code>Grep</code>, etc. for Explore: no <code>Write</code> or <code>Bash</code>).</li>
 <li>The agent returns a single text result to the main conversation.</li>
 <li><code>PostToolUse</code> fires in the main conversation.</li>
 <li>The main conversation resumes with the agent's result in context.</li>
@@ -2445,7 +2445,7 @@
 <li>The agent's tool restrictions did not allow the operations it needed. Check the agent's <code>tools:</code> frontmatter.</li>
 </ul>
 <h2 id="next">Next<a class="headerlink" href="#next" title="Permanent link">&para;</a></h2>
-<p><a href="../first-skill/">Your First Skill</a> — trigger an automated workflow with a slash command.</p>
+<p><a href="../first-skill/">Your First Skill</a>: trigger an automated workflow with a slash command.</p>
 
 
 
@@ -2468,7 +2468,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 11, 2026 22:24:49 UTC">April 11, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 27, 2026 22:56:05 UTC">April 27, 2026</span>
   </span>
 
     

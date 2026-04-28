@@ -2460,8 +2460,8 @@
 <p>The repo provides two kinds of reusable capability: <strong>agents</strong> and <strong>skills</strong>. They look similar from the outside but invoke differently, run in different contexts, and are appropriate for different task shapes.</p>
 <p>For the classification rubric and the reasoning behind this split, see <a href="../adr/ADR-004-skill-vs-agent-boundary/">ADR-004</a>.</p>
 <h2 id="mental-model">Mental Model<a class="headerlink" href="#mental-model" title="Permanent link">&para;</a></h2>
-<p><strong>Skills</strong> are automations. A skill fires when the user triggers it — either with a slash command (<code>/commit</code>, <code>/quality</code>) or when matching keywords appear in the prompt. Skills run inside the main conversation window. They share the conversation's tool access, context, and state. Skills are fast, deterministic, and designed for one-shot transformations.</p>
-<p><strong>Agents</strong> are specialists. An agent is invoked explicitly — the main conversation (or another agent acting as supervisor) calls the <code>Agent</code> tool with a <code>subagent_type</code> parameter naming the specific agent. Agents run in a fresh, isolated context. Each agent has its own tool restrictions defined in its agent file. Agents are designed for multi-step, domain-isolated work: security audits, full test suite generation, code review with specific frameworks.</p>
+<p><strong>Skills</strong> are automations. A skill fires when the user triggers it: either with a slash command (<code>/commit</code>, <code>/quality</code>) or when matching keywords appear in the prompt. Skills run inside the main conversation window. They share the conversation's tool access, context, and state. Skills are fast, deterministic, and designed for one-shot transformations.</p>
+<p><strong>Agents</strong> are specialists. An agent is invoked explicitly: the main conversation (or another agent acting as supervisor) calls the <code>Agent</code> tool with a <code>subagent_type</code> parameter naming the specific agent. Agents run in a fresh, isolated context. Each agent has its own tool restrictions defined in its agent file. Agents are designed for multi-step, domain-isolated work: security audits, full test suite generation, code review with specific frameworks.</p>
 <p>The practical difference: when you want something to happen automatically from a user action, write a skill. When you want to delegate a complex task to a specialist that works in isolation, write an agent.</p>
 <h2 id="diagram">Diagram<a class="headerlink" href="#diagram" title="Permanent link">&para;</a></h2>
 <p><img alt="Agent vs Skill dispatch activity diagram" src="../diagrams/agent_skill_dispatch.svg" /></p>
@@ -2484,7 +2484,7 @@
 <li>The parent conversation continues with the agent's result in hand.</li>
 </ol>
 <h3 id="rules-and-standards-not-dispatched">Rules and Standards (not dispatched)<a class="headerlink" href="#rules-and-standards-not-dispatched" title="Permanent link">&para;</a></h3>
-<p>Rules (<code>.claude/rules/</code>) are not dispatched — they are loaded at session start via <code>CLAUDE.md</code> references and remain active throughout the session. Standards (<code>.claude/standards/</code>) are never dispatched or auto-loaded; they are read on demand via file reads when a task requires reference material.</p>
+<p>Rules (<code>.claude/rules/</code>) are not dispatched: they are loaded at session start via <code>CLAUDE.md</code> references and remain active throughout the session. Standards (<code>.claude/standards/</code>) are never dispatched or auto-loaded; they are read on demand via file reads when a task requires reference material.</p>
 <h2 id="the-tool-restriction-model-for-agents">The Tool Restriction Model for Agents<a class="headerlink" href="#the-tool-restriction-model-for-agents" title="Permanent link">&para;</a></h2>
 <p>Each agent file carries a <code>tools:</code> field in its YAML frontmatter listing the built-in Claude Code tools it can use:</p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nn">---</span>
@@ -2493,16 +2493,16 @@
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="nt">tools</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;Read&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;Bash&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;Grep&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;Glob&quot;</span><span class="p p-Indicator">]</span>
 </span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="nn">---</span>
 </span></code></pre></div>
-<p>This is not a suggestion — it is enforced by the runtime. A <code>security-auditor</code> agent cannot call <code>Write</code> or <code>Edit</code> even if instructed to do so. This isolation is why agents can be trusted with high-stakes analysis: their scope is structurally bounded.</p>
+<p>This is not a suggestion: it is enforced by the runtime. A <code>security-auditor</code> agent cannot call <code>Write</code> or <code>Edit</code> even if instructed to do so. This isolation is why agents can be trusted with high-stakes analysis: their scope is structurally bounded.</p>
 <p>MCP tool bundles (Tier 2 in the MCP loading strategy) are loaded separately when a given agent is invoked. See <a href="../mcp-tiered-loading/">MCP Tiered Loading</a> for how agent-bundled MCP tools compose with the built-in tool set.</p>
 <h2 id="the-flat-agent-directory">The Flat Agent Directory<a class="headerlink" href="#the-flat-agent-directory" title="Permanent link">&para;</a></h2>
 <p>All 43 agents live in <code>.claude/agents/</code> with no subdirectories. Domain grouping uses filename prefixes (<code>owasp-web.md</code>, <code>owasp-api.md</code>, <code>owasp-llm.md</code>). <code>setup.sh</code> creates a single symlink <code>~/.claude/agents/ → ~/dev/.claude/.claude/agents/</code>. A nested directory layout would require recursive symlink creation; the flat layout is simpler and makes <code>ls ~/.claude/agents/</code> a complete inventory.</p>
 <h2 id="see-also">See Also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="../adr/ADR-004-skill-vs-agent-boundary/">ADR-004 Skill vs Agent Boundary</a> — the full classification rubric</li>
-<li><a href="../mcp-tiered-loading/">MCP Tiered Loading</a> — Tier 2 agent-bundled MCP tools</li>
-<li><a href="../../reference/agents/">Reference → Agents Catalog</a> — the 43 agents and their domains</li>
-<li><a href="../../reference/skills/">Reference → Skills Catalog</a> — the 40+ skills and their triggers</li>
+<li><a href="../adr/ADR-004-skill-vs-agent-boundary/">ADR-004 Skill vs Agent Boundary</a>: the full classification rubric</li>
+<li><a href="../mcp-tiered-loading/">MCP Tiered Loading</a>: Tier 2 agent-bundled MCP tools</li>
+<li><a href="../../reference/agents/">Reference → Agents Catalog</a>: the 43 agents and their domains</li>
+<li><a href="../../reference/skills/">Reference → Skills Catalog</a>: the 40+ skills and their triggers</li>
 <li><a href="../../contributing/adding-agents/">Contributing → Adding an Agent</a></li>
 <li><a href="../../contributing/adding-skills/">Contributing → Adding a Skill</a></li>
 </ul>
@@ -2528,7 +2528,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 11, 2026 22:24:49 UTC">April 11, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 27, 2026 22:56:05 UTC">April 27, 2026</span>
   </span>
 
     

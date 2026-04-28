@@ -2674,7 +2674,7 @@ was included.</p>
 </tr>
 <tr>
 <td>16</td>
-<td>Invest in <code>CLAUDE.md</code> — update after every correction</td>
+<td>Invest in <code>CLAUDE.md</code>: update after every correction</td>
 <td>already covered</td>
 </tr>
 <tr>
@@ -3041,172 +3041,206 @@ was included.</p>
 </table>
 <h2 id="gap-analysis-ranked-high-to-low-for-a-solo-practitioner">Gap analysis (ranked high to low for a solo practitioner)<a class="headerlink" href="#gap-analysis-ranked-high-to-low-for-a-solo-practitioner" title="Permanent link">&para;</a></h2>
 <h3 id="high-priority">HIGH priority<a class="headerlink" href="#high-priority" title="Permanent link">&para;</a></h3>
-<p><strong>Gap 1: SessionStart hook for dynamic context injection</strong>
-- <strong>Tip:</strong> Use a <code>SessionStart</code> hook to evaluate the active branch or modified
-  files and load only the relevant rule file from <code>.claude/rules/</code> into context.
-- <strong>Why it matters:</strong> We have <code>git-workflow.md</code>, <code>mcp-strategy.md</code>,
+<h4 id="gap-1-sessionstart-hook-for-dynamic-context-injection">Gap 1: SessionStart hook for dynamic context injection<a class="headerlink" href="#gap-1-sessionstart-hook-for-dynamic-context-injection" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>Tip:</strong> Use a <code>SessionStart</code> hook to evaluate the active branch or modified
+  files and load only the relevant rule file from <code>.claude/rules/</code> into context.</li>
+<li><strong>Why it matters:</strong> We have <code>git-workflow.md</code>, <code>mcp-strategy.md</code>,
   <code>pre-commit.md</code>, <code>python.md</code>, <code>supervisor.md</code>, <code>testing.md</code>, <code>writing.md</code> but
   rely on the model fetching the right one. A SessionStart hook can detect
-  modified paths and inject exactly the needed rules, trimming context waste.
-- <strong>Where it would land:</strong> New hook entry in <code>.claude/settings.json</code> +
-  <code>scripts/session-start-context.sh</code>.
-- <strong>Effort:</strong> M
-- <strong>Priority:</strong> high</p>
-<p><strong>Gap 2: Fork session via <code>/branch</code> and <code>--fork-session</code></strong>
-- <strong>Tip:</strong> <code>/branch</code> or <code>claude --resume &lt;id&gt; --fork-session</code> branches the
+  modified paths and inject exactly the needed rules, trimming context waste.</li>
+<li><strong>Where it would land:</strong> New hook entry in <code>.claude/settings.json</code> +
+  <code>scripts/session-start-context.sh</code>.</li>
+<li><strong>Effort:</strong> M</li>
+<li><strong>Priority:</strong> high</li>
+</ul>
+<h4 id="gap-2-fork-session-via-branch-and-fork-session">Gap 2: Fork session via <code>/branch</code> and <code>--fork-session</code><a class="headerlink" href="#gap-2-fork-session-via-branch-and-fork-session" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>Tip:</strong> <code>/branch</code> or <code>claude --resume &lt;id&gt; --fork-session</code> branches the
   current conversation. You can explore a destructive refactor in the fork and
-  discard it, returning to the parent session unchanged.
-- <strong>Why it matters:</strong> Solo developers are the bottleneck for context switching.
+  discard it, returning to the parent session unchanged.</li>
+<li><strong>Why it matters:</strong> Solo developers are the bottleneck for context switching.
   Forking is cheaper than worktrees for speculative exploration and preserves
-  the parent's cache.
-- <strong>Where it would land:</strong> New entry in <code>.claude/rules/git-workflow.md</code> or a
-  new <code>fork-session</code> playbook note.
-- <strong>Effort:</strong> S (documentation only)
-- <strong>Priority:</strong> high</p>
-<p><strong>Gap 3: <code>/loop</code> and <code>/schedule</code> for babysit-style automation</strong>
-- <strong>Tip:</strong> <code>/loop 5m /ci-fix</code> or <code>/loop 30m /doc-audit</code> runs a skill on interval
+  the parent's cache.</li>
+<li><strong>Where it would land:</strong> New entry in <code>.claude/rules/git-workflow.md</code> or a
+  new <code>fork-session</code> playbook note.</li>
+<li><strong>Effort:</strong> S (documentation only)</li>
+<li><strong>Priority:</strong> high</li>
+</ul>
+<h4 id="gap-3-loop-and-schedule-for-babysit-style-automation">Gap 3: <code>/loop</code> and <code>/schedule</code> for babysit-style automation<a class="headerlink" href="#gap-3-loop-and-schedule-for-babysit-style-automation" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>Tip:</strong> <code>/loop 5m /ci-fix</code> or <code>/loop 30m /doc-audit</code> runs a skill on interval
   for up to a week. Boris uses it for auto-rebase, PR pruning, and
-  post-merge sweeping.
-- <strong>Why it matters:</strong> Our <code>ci-fix</code>, <code>doc-audit</code>, <code>sonarcloud</code> skills are
+  post-merge sweeping.</li>
+<li><strong>Why it matters:</strong> Our <code>ci-fix</code>, <code>doc-audit</code>, <code>sonarcloud</code> skills are
   perfect loop candidates. Running <code>doc-audit</code> overnight surfaces drift
-  without manual invocation.
-- <strong>Where it would land:</strong> New section in <code>CLAUDE.md</code> or
-  <code>.claude/rules/loop-recipes.md</code>; no code changes needed.
-- <strong>Effort:</strong> S
-- <strong>Priority:</strong> high
-- <strong>Note on Gemini pushback:</strong> Gemini argued <code>/loop</code> is lower value for solo
+  without manual invocation.</li>
+<li><strong>Where it would land:</strong> New section in <code>CLAUDE.md</code> or
+  <code>.claude/rules/loop-recipes.md</code>; no code changes needed.</li>
+<li><strong>Effort:</strong> S</li>
+<li><strong>Priority:</strong> high</li>
+<li><strong>Note on Gemini pushback:</strong> Gemini argued <code>/loop</code> is lower value for solo
   work. I disagree for our specific case: our doc and CI skills drift
   continuously and the loop runs as background watcher, not polling. Worth a
-  trial, not a full commitment.</p>
-<p><strong>Gap 4: On-demand hooks inside skills (T18: <code>/careful</code>, <code>/freeze</code> pattern)</strong>
-- <strong>Tip:</strong> Skills can register hooks that are active only for the session in
+  trial, not a full commitment.</li>
+</ul>
+<h4 id="gap-4-on-demand-hooks-inside-skills-t18-careful-freeze-pattern">Gap 4: On-demand hooks inside skills (T18: <code>/careful</code>, <code>/freeze</code> pattern)<a class="headerlink" href="#gap-4-on-demand-hooks-inside-skills-t18-careful-freeze-pattern" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>Tip:</strong> Skills can register hooks that are active only for the session in
   which the skill is invoked. Example: <code>/freeze</code> blocks edits outside the
   current branch directory; <code>/careful</code> blocks <code>rm -rf</code>, <code>DROP TABLE</code>,
-  force-push via PreToolUse Bash matcher.
-- <strong>Why it matters:</strong> Different from global hooks. Lets a skill temporarily
+  force-push via PreToolUse Bash matcher.</li>
+<li><strong>Why it matters:</strong> Different from global hooks. Lets a skill temporarily
   tighten guardrails without bloating <code>settings.json</code>. Pairs well with our RAD
   framework: a <code>/rad-strict</code> on-demand hook could inject verification
-  requirements only when RAD tagging is active.
-- <strong>Where it would land:</strong> New skill convention documented in
-  <code>.claude/skills/writing-skills/</code> or <code>.claude/rules/hook-patterns.md</code>.
-- <strong>Effort:</strong> M
-- <strong>Priority:</strong> high</p>
-<p><strong>Gap 5: <code>--bare</code> flag for SDK / non-interactive startup</strong>
-- <strong>Tip:</strong> <code>claude -p "..." --bare</code> skips the auto-scan for local <code>CLAUDE.md</code>,
-  settings, and MCPs. Up to 10x faster startup.
-- <strong>Why it matters:</strong> Our <code>ci-fix</code> and doc audit hooks already invoke
+  requirements only when RAD tagging is active.</li>
+<li><strong>Where it would land:</strong> New skill convention documented in
+  <code>.claude/skills/writing-skills/</code> or <code>.claude/rules/hook-patterns.md</code>.</li>
+<li><strong>Effort:</strong> M</li>
+<li><strong>Priority:</strong> high</li>
+</ul>
+<h4 id="gap-5-bare-flag-for-sdk-non-interactive-startup">Gap 5: <code>--bare</code> flag for SDK / non-interactive startup<a class="headerlink" href="#gap-5-bare-flag-for-sdk-non-interactive-startup" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>Tip:</strong> <code>claude -p "..." --bare</code> skips the auto-scan for local <code>CLAUDE.md</code>,
+  settings, and MCPs. Up to 10x faster startup.</li>
+<li><strong>Why it matters:</strong> Our <code>ci-fix</code> and doc audit hooks already invoke
   <code>claude -p</code> style calls. If we move toward cron-backed automation
-  (see Gap 3), <code>--bare</code> reduces cold-start cost.
-- <strong>Where it would land:</strong> <code>.claude/scripts/*.sh</code> that shell out to <code>claude -p</code>.
-- <strong>Effort:</strong> S
-- <strong>Priority:</strong> high</p>
+  (see Gap 3), <code>--bare</code> reduces cold-start cost.</li>
+<li><strong>Where it would land:</strong> <code>.claude/scripts/*.sh</code> that shell out to <code>claude -p</code>.</li>
+<li><strong>Effort:</strong> S</li>
+<li><strong>Priority:</strong> high</li>
+</ul>
 <h3 id="medium-priority">MEDIUM priority<a class="headerlink" href="#medium-priority" title="Permanent link">&para;</a></h3>
-<p><strong>Gap 6: <code>${CLAUDE_PLUGIN_DATA}</code> stable storage for skill memory</strong>
-- <strong>Tip:</strong> Skills can persist state across sessions via
+<h4 id="gap-6-claude_plugin_data-stable-storage-for-skill-memory">Gap 6: <code>${CLAUDE_PLUGIN_DATA}</code> stable storage for skill memory<a class="headerlink" href="#gap-6-claude_plugin_data-stable-storage-for-skill-memory" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>Tip:</strong> Skills can persist state across sessions via
   <code>${CLAUDE_PLUGIN_DATA}</code>. Anthropic uses it for append-only logs, JSON
-  caches, SQLite.
-- <strong>Why it matters:</strong> Our <code>silent-failure-hunter</code>, <code>test-coverage</code>, and
+  caches, SQLite.</li>
+<li><strong>Why it matters:</strong> Our <code>silent-failure-hunter</code>, <code>test-coverage</code>, and
   <code>debug-tests</code> skills rediscover the same patterns every run. Stateful
   memory would let them track flaky tests, coverage trends, and repeated
-  bug sites.
-- <strong>Where it would land:</strong> Update three to five existing skills to write to
-  <code>${CLAUDE_PLUGIN_DATA}/&lt;skill&gt;/history.jsonl</code>.
-- <strong>Effort:</strong> M
-- <strong>Priority:</strong> medium</p>
-<p><strong>Gap 7: Data Fetching / Runbook / Infra Ops skill categories (T3, T8, T9)</strong>
-- <strong>Tip:</strong> Thariq's taxonomy shows three categories we have zero coverage in.
+  bug sites.</li>
+<li><strong>Where it would land:</strong> Update three to five existing skills to write to
+  <code>${CLAUDE_PLUGIN_DATA}/&lt;skill&gt;/history.jsonl</code>.</li>
+<li><strong>Effort:</strong> M</li>
+<li><strong>Priority:</strong> medium</li>
+</ul>
+<h4 id="gap-7-data-fetching-runbook-infra-ops-skill-categories-t3-t8-t9">Gap 7: Data Fetching / Runbook / Infra Ops skill categories (T3, T8, T9)<a class="headerlink" href="#gap-7-data-fetching-runbook-infra-ops-skill-categories-t3-t8-t9" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>Tip:</strong> Thariq's taxonomy shows three categories we have zero coverage in.
   Runbooks take a symptom (Slack thread, alert, error signature), walk a
-  multi-tool investigation, and produce a structured report.
-- <strong>Why it matters:</strong> Our <code>debug-tests</code> and <code>systematic-debugging</code> skills
+  multi-tool investigation, and produce a structured report.</li>
+<li><strong>Why it matters:</strong> Our <code>debug-tests</code> and <code>systematic-debugging</code> skills
   operate locally on code. We have no skill that ingests external
   operational state (logs, metrics, alerts) and triages. For a solo dev
-  running services, this is a real gap.
-- <strong>Where it would land:</strong> New skill directory
+  running services, this is a real gap.</li>
+<li><strong>Where it would land:</strong> New skill directory
   <code>.claude/skills/runbook-template/</code> with a config-driven starter. Optional
-  Data Fetching skill once we identify a target system.
-- <strong>Effort:</strong> M
-- <strong>Priority:</strong> medium (depends on whether we operate services)</p>
-<p><strong>Gap 8: Progressive disclosure audit across existing 41 skills (T12)</strong>
-- <strong>Tip:</strong> A skill is a folder, not just a markdown file. Claude should read
-  <code>references/</code> and <code>examples/</code> on demand, not eagerly.
-- <strong>Why it matters:</strong> Gemini flagged this as "implicit but not verified." We
+  Data Fetching skill once we identify a target system.</li>
+<li><strong>Effort:</strong> M</li>
+<li><strong>Priority:</strong> medium (depends on whether we operate services)</li>
+</ul>
+<h4 id="gap-8-progressive-disclosure-audit-across-existing-41-skills-t12">Gap 8: Progressive disclosure audit across existing 41 skills (T12)<a class="headerlink" href="#gap-8-progressive-disclosure-audit-across-existing-41-skills-t12" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>Tip:</strong> A skill is a folder, not just a markdown file. Claude should read
+  <code>references/</code> and <code>examples/</code> on demand, not eagerly.</li>
+<li><strong>Why it matters:</strong> Gemini flagged this as "implicit but not verified." We
   need a pass across our 41 skills to ensure SKILL.md files are thin and
   heavy content lives in sibling files the model loads when needed. Context
-  budget is real.
-- <strong>Where it would land:</strong> Audit script + updates to any skill found
-  dumping large reference blocks.
-- <strong>Effort:</strong> L
-- <strong>Priority:</strong> medium</p>
-<p><strong>Gap 9: Gotchas sections across existing skills (T11)</strong>
-- <strong>Tip:</strong> Build up a Gotchas section in every skill from common failure
-  points. Highest-signal content.
-- <strong>Why it matters:</strong> We likely have partial coverage. Systematic audit
-  would surface which skills lack this.
-- <strong>Where it would land:</strong> Pair with Gap 8 audit.
-- <strong>Effort:</strong> M
-- <strong>Priority:</strong> medium</p>
-<p><strong>Gap 10: Second Claude as staff-engineer plan reviewer (tip 15)</strong>
-- <strong>Tip:</strong> One Claude writes the plan, a second Claude reviews it as a staff
-  engineer before switching to auto-accept mode.
-- <strong>Why it matters:</strong> Our <code>plan-validator</code> agent is close but the pattern of
+  budget is real.</li>
+<li><strong>Where it would land:</strong> Audit script + updates to any skill found
+  dumping large reference blocks.</li>
+<li><strong>Effort:</strong> L</li>
+<li><strong>Priority:</strong> medium</li>
+</ul>
+<h4 id="gap-9-gotchas-sections-across-existing-skills-t11">Gap 9: Gotchas sections across existing skills (T11)<a class="headerlink" href="#gap-9-gotchas-sections-across-existing-skills-t11" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>Tip:</strong> Build up a Gotchas section in every skill from common failure
+  points. Highest-signal content.</li>
+<li><strong>Why it matters:</strong> We likely have partial coverage. Systematic audit
+  would surface which skills lack this.</li>
+<li><strong>Where it would land:</strong> Pair with Gap 8 audit.</li>
+<li><strong>Effort:</strong> M</li>
+<li><strong>Priority:</strong> medium</li>
+</ul>
+<h4 id="gap-10-second-claude-as-staff-engineer-plan-reviewer-tip-15">Gap 10: Second Claude as staff-engineer plan reviewer (tip 15)<a class="headerlink" href="#gap-10-second-claude-as-staff-engineer-plan-reviewer-tip-15" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>Tip:</strong> One Claude writes the plan, a second Claude reviews it as a staff
+  engineer before switching to auto-accept mode.</li>
+<li><strong>Why it matters:</strong> Our <code>plan-validator</code> agent is close but the pattern of
   "spin up a fresh session specifically to review the plan" is a workflow
-  primitive we should document, not a new tool.
-- <strong>Where it would land:</strong> <code>.claude/skills/writing-plans/</code> or
-  <code>.claude/skills/executing-plans/</code> — add a two-session review pattern.
-- <strong>Effort:</strong> S
-- <strong>Priority:</strong> medium</p>
-<p><strong>Gap 11: Skill usage measurement via PreToolUse log (T22)</strong>
-- <strong>Tip:</strong> PreToolUse hook logs every skill invocation so you can see
-  which are popular and which are undertriggered.
-- <strong>Why it matters:</strong> With 41 skills, we don't know which are unused. A
+  primitive we should document, not a new tool.</li>
+<li><strong>Where it would land:</strong> <code>.claude/skills/writing-plans/</code> or
+  <code>.claude/skills/executing-plans/</code>: add a two-session review pattern.</li>
+<li><strong>Effort:</strong> S</li>
+<li><strong>Priority:</strong> medium</li>
+</ul>
+<h4 id="gap-11-skill-usage-measurement-via-pretooluse-log-t22">Gap 11: Skill usage measurement via PreToolUse log (T22)<a class="headerlink" href="#gap-11-skill-usage-measurement-via-pretooluse-log-t22" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>Tip:</strong> PreToolUse hook logs every skill invocation so you can see
+  which are popular and which are undertriggered.</li>
+<li><strong>Why it matters:</strong> With 41 skills, we don't know which are unused. A
   simple append-only log of skill names and timestamps would surface
-  dead weight for pruning.
-- <strong>Where it would land:</strong> New PreToolUse hook + <code>scripts/log-skill.sh</code>
-  writing to <code>$HOME/.claude/logs/skill-usage.jsonl</code>.
-- <strong>Effort:</strong> S
-- <strong>Priority:</strong> medium</p>
-<p><strong>Gap 12: <code>--add-dir</code> / <code>additionalDirectories</code> for multi-repo work</strong>
-- <strong>Tip:</strong> When working across repos, start Claude in one and use <code>--add-dir</code>
-  to give it visibility plus permissions on siblings.
-- <strong>Why it matters:</strong> We often touch <code>.claude/</code> globals while in a project
+  dead weight for pruning.</li>
+<li><strong>Where it would land:</strong> New PreToolUse hook + <code>scripts/log-skill.sh</code>
+  writing to <code>$HOME/.claude/logs/skill-usage.jsonl</code>.</li>
+<li><strong>Effort:</strong> S</li>
+<li><strong>Priority:</strong> medium</li>
+</ul>
+<h4 id="gap-12-add-dir-additionaldirectories-for-multi-repo-work">Gap 12: <code>--add-dir</code> / <code>additionalDirectories</code> for multi-repo work<a class="headerlink" href="#gap-12-add-dir-additionaldirectories-for-multi-repo-work" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>Tip:</strong> When working across repos, start Claude in one and use <code>--add-dir</code>
+  to give it visibility plus permissions on siblings.</li>
+<li><strong>Why it matters:</strong> We often touch <code>.claude/</code> globals while in a project
   repo. <code>additionalDirectories</code> in project <code>settings.json</code> would make this
-  seamless.
-- <strong>Where it would land:</strong> Template update for project-level
-  <code>settings.json</code> examples.
-- <strong>Effort:</strong> S
-- <strong>Priority:</strong> medium</p>
+  seamless.</li>
+<li><strong>Where it would land:</strong> Template update for project-level
+  <code>settings.json</code> examples.</li>
+<li><strong>Effort:</strong> S</li>
+<li><strong>Priority:</strong> medium</li>
+</ul>
 <h3 id="low-priority">LOW priority<a class="headerlink" href="#low-priority" title="Permanent link">&para;</a></h3>
-<p><strong>Gap 13: Output styles (Explanatory / Learning)</strong>
-- <strong>Tip:</strong> <code>/config</code> sets an output style. Explanatory explains the why.
-  Learning coaches you through changes.
-- <strong>Why it matters:</strong> Nice for onboarding unfamiliar codebases. Not
-  critical for daily work.
-- <strong>Effort:</strong> S
-- <strong>Priority:</strong> low</p>
-<p><strong>Gap 14: <code>/sandbox</code> file and network isolation</strong>
-- <strong>Tip:</strong> Claude Code ships a sandbox runtime with file and network
-  isolation.
-- <strong>Why it matters:</strong> Would reduce permission prompts and offer defense in
-  depth. But adds complexity to a working setup.
-- <strong>Effort:</strong> M
-- <strong>Priority:</strong> low</p>
-<p><strong>Gap 15: <code>/btw</code> for side queries</strong>
-- <strong>Tip:</strong> Ask a quick side question without interrupting the agent.
-- <strong>Why it matters:</strong> Minor quality-of-life improvement.
-- <strong>Effort:</strong> S (no setup required, just habit)
-- <strong>Priority:</strong> low</p>
-<p><strong>Gap 16: <code>/statusline</code>, spinner verbs, keybindings, terminal theme</strong>
-- <strong>Tip:</strong> Purely cosmetic customization (tips 24, 30, 31, 33).
-- <strong>Why it matters:</strong> Zero effect on code quality.
-- <strong>Effort:</strong> S
-- <strong>Priority:</strong> low (skip unless craving)</p>
-<p><strong>Gap 17: Chrome extension for frontend feedback loop</strong>
-- <strong>Tip:</strong> Give Claude a browser so it can iterate on frontend code with
-  visual feedback.
-- <strong>Why it matters:</strong> Our <code>frontend-design</code> skill has no visual feedback
-  loop. For rare frontend work this matters; for us it's situational.
-- <strong>Effort:</strong> M
-- <strong>Priority:</strong> low (unless frontend work picks up)</p>
+<h4 id="gap-13-output-styles-explanatory-learning">Gap 13: Output styles (Explanatory / Learning)<a class="headerlink" href="#gap-13-output-styles-explanatory-learning" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>Tip:</strong> <code>/config</code> sets an output style. Explanatory explains the why.
+  Learning coaches you through changes.</li>
+<li><strong>Why it matters:</strong> Nice for onboarding unfamiliar codebases. Not
+  critical for daily work.</li>
+<li><strong>Effort:</strong> S</li>
+<li><strong>Priority:</strong> low</li>
+</ul>
+<h4 id="gap-14-sandbox-file-and-network-isolation">Gap 14: <code>/sandbox</code> file and network isolation<a class="headerlink" href="#gap-14-sandbox-file-and-network-isolation" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>Tip:</strong> Claude Code ships a sandbox runtime with file and network
+  isolation.</li>
+<li><strong>Why it matters:</strong> Would reduce permission prompts and offer defense in
+  depth. But adds complexity to a working setup.</li>
+<li><strong>Effort:</strong> M</li>
+<li><strong>Priority:</strong> low</li>
+</ul>
+<h4 id="gap-15-btw-for-side-queries">Gap 15: <code>/btw</code> for side queries<a class="headerlink" href="#gap-15-btw-for-side-queries" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>Tip:</strong> Ask a quick side question without interrupting the agent.</li>
+<li><strong>Why it matters:</strong> Minor quality-of-life improvement.</li>
+<li><strong>Effort:</strong> S (no setup required, just habit)</li>
+<li><strong>Priority:</strong> low</li>
+</ul>
+<h4 id="gap-16-statusline-spinner-verbs-keybindings-terminal-theme">Gap 16: <code>/statusline</code>, spinner verbs, keybindings, terminal theme<a class="headerlink" href="#gap-16-statusline-spinner-verbs-keybindings-terminal-theme" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>Tip:</strong> Purely cosmetic customization (tips 24, 30, 31, 33).</li>
+<li><strong>Why it matters:</strong> Zero effect on code quality.</li>
+<li><strong>Effort:</strong> S</li>
+<li><strong>Priority:</strong> low (skip unless craving)</li>
+</ul>
+<h4 id="gap-17-chrome-extension-for-frontend-feedback-loop">Gap 17: Chrome extension for frontend feedback loop<a class="headerlink" href="#gap-17-chrome-extension-for-frontend-feedback-loop" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>Tip:</strong> Give Claude a browser so it can iterate on frontend code with
+  visual feedback.</li>
+<li><strong>Why it matters:</strong> Our <code>frontend-design</code> skill has no visual feedback
+  loop. For rare frontend work this matters; for us it's situational.</li>
+<li><strong>Effort:</strong> M</li>
+<li><strong>Priority:</strong> low (unless frontend work picks up)</li>
+</ul>
 <h3 id="tips-classified-as-not-applicable-or-not-worth-it-for-solo">Tips classified as NOT APPLICABLE or NOT WORTH IT for solo<a class="headerlink" href="#tips-classified-as-not-applicable-or-not-worth-it-for-solo" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Slack + GDrive + Asana + GitHub 7-day context sync (tip 17 sub): no team
@@ -3490,7 +3524,7 @@ was included.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 11, 2026 22:24:49 UTC">April 11, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 27, 2026 22:56:05 UTC">April 27, 2026</span>
   </span>
 
     

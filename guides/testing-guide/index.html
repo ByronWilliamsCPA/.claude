@@ -3262,9 +3262,9 @@ read this guide to understand why they exist and how to apply them well.</p>
 <li><a href="#11-ai-and-non-deterministic-testing">AI and Non-Deterministic Testing</a></li>
 <li><a href="#12-type-checking-as-testing">Type Checking as Testing</a></li>
 <li><a href="#13-data-generation-and-pipeline-testing">Data Generation and Pipeline Testing</a></li>
-<li><a href="#14-security-testing--asvs-aligned">Security Testing — ASVS-Aligned</a></li>
+<li><a href="#14-security-testing-examples">Security Testing Examples</a></li>
 <li><a href="#15-cicd-integration-and-reporting">CI/CD Integration and Reporting</a></li>
-<li><a href="#16-testing-terminology--istqb-applied">Testing Terminology — ISTQB Applied</a></li>
+<li><a href="#16-testing-terminology-applied">Testing Terminology Applied</a></li>
 <li><a href="#17-plugin-reference">Plugin Reference</a></li>
 <li><a href="#18-recommended-reading">Recommended Reading</a></li>
 </ol>
@@ -3277,12 +3277,12 @@ confidence to refactor, documentation of expected behavior, and fast feedback
 when something breaks.</p>
 <p>The FIRST principles capture what makes a test valuable:</p>
 <ul>
-<li><strong>Fast</strong> — unit tests should complete in milliseconds. A slow test suite
+<li><strong>Fast</strong>: unit tests should complete in milliseconds. A slow test suite
   gets skipped.</li>
-<li><strong>Independent</strong> — no test should depend on another test's outcome or state.</li>
-<li><strong>Repeatable</strong> — same result every time, on any machine, in any order.</li>
-<li><strong>Self-validating</strong> — pass or fail, no human interpretation needed.</li>
-<li><strong>Timely</strong> — written close to the code they test, ideally before or
+<li><strong>Independent</strong>: no test should depend on another test's outcome or state.</li>
+<li><strong>Repeatable</strong>: same result every time, on any machine, in any order.</li>
+<li><strong>Self-validating</strong>: pass or fail, no human interpretation needed.</li>
+<li><strong>Timely</strong>: written close to the code they test, ideally before or
   alongside it.</li>
 </ul>
 <p>Every standard in this document traces back to one or more of these principles.</p>
@@ -3334,7 +3334,7 @@ issues a warning you cannot fix yet, add a targeted suppression:</p>
 </span></code></pre></div>
 <h3 id="why-xfail_strict-true">Why xfail_strict = true<a class="headerlink" href="#why-xfail_strict-true" title="Permanent link">&para;</a></h3>
 <p>Without strict xfail, a test marked <code>@pytest.mark.xfail</code> that starts
-passing silently becomes a "green" test — you never learn that the
+passing silently becomes a "green" test: you never learn that the
 underlying bug was fixed. With <code>xfail_strict = true</code>, an unexpectedly
 passing xfail is reported as a failure, prompting you to remove the marker.</p>
 <hr />
@@ -3402,7 +3402,7 @@ Apply DAMP to <em>what</em> happens in each test (keep the story visible inline)
 </span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>        <span class="n">order</span><span class="o">.</span><span class="n">apply_discount</span><span class="p">(</span><span class="n">discount</span><span class="p">)</span>
 </span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    <span class="k">return</span> <span class="n">order</span>
 </span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>
-</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="c1"># DAMP test — readable in isolation without jumping to other files</span>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="c1"># DAMP test: readable in isolation without jumping to other files</span>
 </span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_expired_discount_is_ignored</span><span class="p">():</span>
 </span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>    <span class="n">expired</span> <span class="o">=</span> <span class="n">Discount</span><span class="p">(</span><span class="n">percent</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">expires</span><span class="o">=</span><span class="n">date</span><span class="p">(</span><span class="mi">2020</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
 </span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>    <span class="n">order</span> <span class="o">=</span> <span class="n">make_order</span><span class="p">(</span><span class="n">items</span><span class="o">=</span><span class="p">[</span><span class="n">Item</span><span class="p">(</span><span class="n">price</span><span class="o">=</span><span class="mf">100.0</span><span class="p">)],</span> <span class="n">discount</span><span class="o">=</span><span class="n">expired</span><span class="p">)</span>
@@ -3422,15 +3422,15 @@ failures. The pattern <code>test_&lt;unit&gt;_&lt;scenario&gt;_&lt;expected&gt;<
 </span></code></pre></div>
 <h3 id="systematic-edge-case-identification">Systematic Edge Case Identification<a class="headerlink" href="#systematic-edge-case-identification" title="Permanent link">&para;</a></h3>
 <p>For every function, consider these categories:</p>
-<p><strong>Input boundaries</strong> — empty string, empty list, empty dict, None,
+<p><strong>Input boundaries</strong>: empty string, empty list, empty dict, None,
 single-element collections, zero, negative numbers, very large values,
 Unicode and whitespace-only strings.</p>
-<p><strong>Boundary values</strong> — for a function accepting ages 18–65, test 17, 18,
+<p><strong>Boundary values</strong>: for a function accepting ages 18–65, test 17, 18,
 19, 64, 65, and 66. Always test at, just below, and just above each
 boundary.</p>
-<p><strong>Error paths</strong> — what exceptions should be raised? What happens when a
+<p><strong>Error paths</strong>: what exceptions should be raised? What happens when a
 dependency fails? Are resources cleaned up after an error?</p>
-<p><strong>Type boundaries</strong> — wrong type, subclass of expected type, duck-typed
+<p><strong>Type boundaries</strong>: wrong type, subclass of expected type, duck-typed
 objects.</p>
 <p>Use parametrize to express these systematically:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">parametrize</span><span class="p">(</span><span class="s2">&quot;age, eligible&quot;</span><span class="p">,</span> <span class="p">[</span>
@@ -3446,7 +3446,7 @@ objects.</p>
 <h2 id="4-fixtures-from-basics-to-advanced">4. Fixtures: From Basics to Advanced<a class="headerlink" href="#4-fixtures-from-basics-to-advanced" title="Permanent link">&para;</a></h2>
 <h3 id="scope-hierarchy">Scope Hierarchy<a class="headerlink" href="#scope-hierarchy" title="Permanent link">&para;</a></h3>
 <p>Fixtures have five scopes. A fixture can only depend on fixtures of equal
-or wider scope — a <code>session</code>-scoped fixture cannot request a
+or wider scope: a <code>session</code>-scoped fixture cannot request a
 <code>function</code>-scoped one.</p>
 <table>
 <thead>
@@ -3523,7 +3523,7 @@ the setup cost justifies it.</p>
 </span><span id="__span-10-21"><a id="__codelineno-10-21" name="__codelineno-10-21" href="#__codelineno-10-21"></a>    <span class="k">assert</span> <span class="n">premium_user</span><span class="o">.</span><span class="n">eligible_for_bulk_discount</span><span class="p">()</span>
 </span></code></pre></div>
 <h3 id="conftestpy-best-practices">conftest.py Best Practices<a class="headerlink" href="#conftestpy-best-practices" title="Permanent link">&para;</a></h3>
-<p>The root <code>conftest.py</code> should be lean — only cross-cutting concerns:</p>
+<p>The root <code>conftest.py</code> should be lean: only cross-cutting concerns:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1"># tests/conftest.py</span>
 </span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">pytest</span>
 </span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>
@@ -3543,12 +3543,12 @@ the setup cost justifies it.</p>
 </span><span id="__span-11-17"><a id="__codelineno-11-17" name="__codelineno-11-17" href="#__codelineno-11-17"></a>    <span class="n">cache</span><span class="o">.</span><span class="n">clear_all</span><span class="p">()</span>
 </span></code></pre></div>
 <p>Domain-specific fixtures belong in subdirectory conftest files:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1"># tests/unit/conftest.py — only for unit tests</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1"># tests/unit/conftest.py: only for unit tests</span>
 </span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
 </span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="k">def</span><span class="w"> </span><span class="nf">mock_database</span><span class="p">(</span><span class="n">mocker</span><span class="p">):</span>
 </span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>    <span class="k">return</span> <span class="n">mocker</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s2">&quot;mypackage.db.get_connection&quot;</span><span class="p">)</span>
 </span></code></pre></div>
-<p>Never import from conftest.py directly — pytest discovers it automatically.</p>
+<p>Never import from conftest.py directly: pytest discovers it automatically.</p>
 <hr />
 <h2 id="5-mocking-the-right-tool-for-each-job">5. Mocking: The Right Tool for Each Job<a class="headerlink" href="#5-mocking-the-right-tool-for-each-job" title="Permanent link">&para;</a></h2>
 <h3 id="three-tools-compared">Three Tools Compared<a class="headerlink" href="#three-tools-compared" title="Permanent link">&para;</a></h3>
@@ -3598,19 +3598,19 @@ the setup cost justifies it.</p>
 <p>This is the single most common mocking mistake. When <code>myapp/service.py</code>
 does <code>from myapp.db import fetch_user</code>, the name <code>fetch_user</code> lives in
 <code>myapp.service</code>'s namespace:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="c1"># WRONG — patches the original but service.py already has its own reference</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="c1"># WRONG: patches the original but service.py already has its own reference</span>
 </span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="n">mocker</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s2">&quot;myapp.db.fetch_user&quot;</span><span class="p">,</span> <span class="n">return_value</span><span class="o">=</span><span class="n">mock_user</span><span class="p">)</span>
 </span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>
-</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="c1"># CORRECT — patches the reference that service.py actually uses</span>
+</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="c1"># CORRECT: patches the reference that service.py actually uses</span>
 </span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="n">mocker</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s2">&quot;myapp.service.fetch_user&quot;</span><span class="p">,</span> <span class="n">return_value</span><span class="o">=</span><span class="n">mock_user</span><span class="p">)</span>
 </span></code></pre></div>
 <h3 id="always-use-spectrue">Always Use spec=True<a class="headerlink" href="#always-use-spectrue" title="Permanent link">&para;</a></h3>
-<p>Without spec, mocks silently accept any attribute access — including typos:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="c1"># Without spec — this silently passes even though get_usr is a typo</span>
+<p>Without spec, mocks silently accept any attribute access: including typos:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="c1"># Without spec: this silently passes even though get_usr is a typo</span>
 </span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="n">mock</span> <span class="o">=</span> <span class="n">MagicMock</span><span class="p">()</span>
 </span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="n">mock</span><span class="o">.</span><span class="n">get_usr</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># no error, returns another MagicMock</span>
 </span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>
-</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="c1"># With spec — catches the typo immediately</span>
+</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="c1"># With spec: catches the typo immediately</span>
 </span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="n">mock</span> <span class="o">=</span> <span class="n">MagicMock</span><span class="p">(</span><span class="n">spec</span><span class="o">=</span><span class="n">UserService</span><span class="p">)</span>
 </span><span id="__span-14-7"><a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a><span class="n">mock</span><span class="o">.</span><span class="n">get_usr</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># AttributeError: Mock object has no attribute &#39;get_usr&#39;</span>
 </span></code></pre></div>
@@ -3627,7 +3627,7 @@ when the library updates. Instead, wrap external dependencies:</p>
 </span><span id="__span-15-8"><a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a>        <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
 </span><span id="__span-15-9"><a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a>        <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
 </span><span id="__span-15-10"><a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a>
-</span><span id="__span-15-11"><a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a><span class="c1"># Test mocks YOUR interface — stable across library upgrades</span>
+</span><span id="__span-15-11"><a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a><span class="c1"># Test mocks YOUR interface: stable across library upgrades</span>
 </span><span id="__span-15-12"><a id="__codelineno-15-12" name="__codelineno-15-12" href="#__codelineno-15-12"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_fetch_data_returns_parsed_response</span><span class="p">(</span><span class="n">mocker</span><span class="p">):</span>
 </span><span id="__span-15-13"><a id="__codelineno-15-13" name="__codelineno-15-13" href="#__codelineno-15-13"></a>    <span class="n">mock_client</span> <span class="o">=</span> <span class="n">mocker</span><span class="o">.</span><span class="n">MagicMock</span><span class="p">(</span><span class="n">spec</span><span class="o">=</span><span class="n">HttpClient</span><span class="p">)</span>
 </span><span id="__span-15-14"><a id="__codelineno-15-14" name="__codelineno-15-14" href="#__codelineno-15-14"></a>    <span class="n">mock_client</span><span class="o">.</span><span class="n">get_json</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ok&quot;</span><span class="p">}</span>
@@ -3650,7 +3650,7 @@ signs:</p>
 <p>Alternatives: fakes (simplified working implementations), in-memory
 repositories, and dependency injection via constructor parameters.</p>
 <h3 id="filesystem-http-and-time">Filesystem, HTTP, and Time<a class="headerlink" href="#filesystem-http-and-time" title="Permanent link">&para;</a></h3>
-<p><strong>Filesystem</strong> — use <code>tmp_path</code>:</p>
+<p><strong>Filesystem</strong>: use <code>tmp_path</code>:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_process_csv</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">):</span>
 </span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>    <span class="n">csv_file</span> <span class="o">=</span> <span class="n">tmp_path</span> <span class="o">/</span> <span class="s2">&quot;input.csv&quot;</span>
 </span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>    <span class="n">csv_file</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="s2">&quot;name,age</span><span class="se">\n</span><span class="s2">Alice,30</span><span class="se">\n</span><span class="s2">Bob,25&quot;</span><span class="p">)</span>
@@ -3660,7 +3660,7 @@ repositories, and dependency injection via constructor parameters.</p>
 </span><span id="__span-16-7"><a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a>    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span>
 </span><span id="__span-16-8"><a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a>    <span class="k">assert</span> <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Alice&quot;</span>
 </span></code></pre></div>
-<p><strong>HTTP</strong> — use <code>responses</code> (for <code>requests</code>) or <code>pytest-httpx</code> (for <code>httpx</code>):</p>
+<p><strong>HTTP</strong>: use <code>responses</code> (for <code>requests</code>) or <code>pytest-httpx</code> (for <code>httpx</code>):</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">responses</span>
 </span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>
 </span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="nd">@responses</span><span class="o">.</span><span class="n">activate</span>
@@ -3674,7 +3674,7 @@ repositories, and dependency injection via constructor parameters.</p>
 </span><span id="__span-17-11"><a id="__codelineno-17-11" name="__codelineno-17-11" href="#__codelineno-17-11"></a>    <span class="k">assert</span> <span class="n">result</span> <span class="o">==</span> <span class="p">{</span><span class="s2">&quot;ok&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
 </span><span id="__span-17-12"><a id="__codelineno-17-12" name="__codelineno-17-12" href="#__codelineno-17-12"></a>    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">responses</span><span class="o">.</span><span class="n">calls</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span>
 </span></code></pre></div>
-<p><strong>Time</strong> — use <code>freezegun</code> or <code>time-machine</code>:</p>
+<p><strong>Time</strong>: use <code>freezegun</code> or <code>time-machine</code>:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">freezegun</span><span class="w"> </span><span class="kn">import</span> <span class="n">freeze_time</span>
 </span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>
 </span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="nd">@freeze_time</span><span class="p">(</span><span class="s2">&quot;2025-06-15 10:30:00&quot;</span><span class="p">)</span>
@@ -3781,7 +3781,7 @@ the coverage configuration.</p>
 </span><span id="__span-27-4"><a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a>    <span class="c1"># implicit else: falls through to return None</span>
 </span></code></pre></div>
 <p>A test calling <code>get_status(200)</code> achieves 100% line coverage but 50%
-branch coverage — the implicit <code>else</code> branch (returning None) is never
+branch coverage: the implicit <code>else</code> branch (returning None) is never
 tested.</p>
 <h3 id="what-coverage-cannot-tell-you">What Coverage Cannot Tell You<a class="headerlink" href="#what-coverage-cannot-tell-you" title="Permanent link">&para;</a></h3>
 <p>Coverage measures execution, not correctness. A test that calls
@@ -3790,11 +3790,11 @@ catching zero bugs. This is why the Standards require meaningful
 assertions and why mutation testing supplements coverage numbers.</p>
 <h3 id="practical-thresholds">Practical Thresholds<a class="headerlink" href="#practical-thresholds" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>80% line coverage</strong> is the floor — achievable for most codebases
+<li><strong>80% line coverage</strong> is the floor: achievable for most codebases
   without heroics, catches the majority of untested code paths.</li>
-<li><strong>90% for critical modules</strong> — auth, payment, data pipelines deserve
+<li><strong>90% for critical modules</strong>: auth, payment, data pipelines deserve
   higher confidence.</li>
-<li><strong>90% patch coverage</strong> — new code has no excuse for missing tests.
+<li><strong>90% patch coverage</strong>: new code has no excuse for missing tests.
   This prevents coverage from eroding over time without requiring teams
   to immediately backfill legacy gaps.</li>
 </ul>
@@ -3807,7 +3807,7 @@ assertions and why mutation testing supplements coverage numbers.</p>
 </span><span id="__span-28-6"><a id="__codelineno-28-6" name="__codelineno-28-6" href="#__codelineno-28-6"></a>
 </span><span id="__span-28-7"><a id="__codelineno-28-7" name="__codelineno-28-7" href="#__codelineno-28-7"></a><span class="c1"># HTML report for visual inspection</span>
 </span><span id="__span-28-8"><a id="__codelineno-28-8" name="__codelineno-28-8" href="#__codelineno-28-8"></a>pytest<span class="w"> </span>--cov<span class="o">=</span>src<span class="w"> </span>--cov-report<span class="o">=</span>html<span class="w"> </span>--cov-branch
-</span><span id="__span-28-9"><a id="__codelineno-28-9" name="__codelineno-28-9" href="#__codelineno-28-9"></a><span class="c1"># Open htmlcov/index.html — yellow lines show partial branches</span>
+</span><span id="__span-28-9"><a id="__codelineno-28-9" name="__codelineno-28-9" href="#__codelineno-28-9"></a><span class="c1"># Open htmlcov/index.html: yellow lines show partial branches</span>
 </span><span id="__span-28-10"><a id="__codelineno-28-10" name="__codelineno-28-10" href="#__codelineno-28-10"></a>
 </span><span id="__span-28-11"><a id="__codelineno-28-11" name="__codelineno-28-11" href="#__codelineno-28-11"></a><span class="c1"># Fail CI when below threshold</span>
 </span><span id="__span-28-12"><a id="__codelineno-28-12" name="__codelineno-28-12" href="#__codelineno-28-12"></a>pytest<span class="w"> </span>--cov<span class="o">=</span>src<span class="w"> </span>--cov-fail-under<span class="o">=</span><span class="m">80</span><span class="w"> </span>--cov-branch
@@ -3832,7 +3832,7 @@ against each mutant.</p>
 that no test distinguishes between these conditions. This is a blind
 spot your tests should address.</p>
 <p>Target &gt;60% mutation score on critical modules. Mutation testing is
-computationally expensive — apply it selectively, not to the entire
+computationally expensive: apply it selectively, not to the entire
 codebase.</p>
 <h3 id="property-based-testing-with-hypothesis">Property-Based Testing with Hypothesis<a class="headerlink" href="#property-based-testing-with-hypothesis" title="Permanent link">&para;</a></h3>
 <p>Where example-based tests check specific cases, property-based tests
@@ -3898,25 +3898,25 @@ ports, external files) need per-worker uniqueness.</p>
 <hr />
 <h2 id="10-anti-patterns-explained">10. Anti-Patterns Explained<a class="headerlink" href="#10-anti-patterns-explained" title="Permanent link">&para;</a></h2>
 <h3 id="testing-implementation-instead-of-behavior">Testing Implementation Instead of Behavior<a class="headerlink" href="#testing-implementation-instead-of-behavior" title="Permanent link">&para;</a></h3>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-34-1"><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a><span class="c1"># BAD — breaks when internal storage changes from dict to database</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-34-1"><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a><span class="c1"># BAD: breaks when internal storage changes from dict to database</span>
 </span><span id="__span-34-2"><a id="__codelineno-34-2" name="__codelineno-34-2" href="#__codelineno-34-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_user_stored_internally</span><span class="p">():</span>
 </span><span id="__span-34-3"><a id="__codelineno-34-3" name="__codelineno-34-3" href="#__codelineno-34-3"></a>    <span class="n">service</span> <span class="o">=</span> <span class="n">UserService</span><span class="p">()</span>
 </span><span id="__span-34-4"><a id="__codelineno-34-4" name="__codelineno-34-4" href="#__codelineno-34-4"></a>    <span class="n">service</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s2">&quot;alice@example.com&quot;</span><span class="p">)</span>
 </span><span id="__span-34-5"><a id="__codelineno-34-5" name="__codelineno-34-5" href="#__codelineno-34-5"></a>    <span class="k">assert</span> <span class="s2">&quot;alice@example.com&quot;</span> <span class="ow">in</span> <span class="n">service</span><span class="o">.</span><span class="n">_users</span>  <span class="c1"># private attribute!</span>
 </span><span id="__span-34-6"><a id="__codelineno-34-6" name="__codelineno-34-6" href="#__codelineno-34-6"></a>
-</span><span id="__span-34-7"><a id="__codelineno-34-7" name="__codelineno-34-7" href="#__codelineno-34-7"></a><span class="c1"># GOOD — tests observable behavior through public interface</span>
+</span><span id="__span-34-7"><a id="__codelineno-34-7" name="__codelineno-34-7" href="#__codelineno-34-7"></a><span class="c1"># GOOD: tests observable behavior through public interface</span>
 </span><span id="__span-34-8"><a id="__codelineno-34-8" name="__codelineno-34-8" href="#__codelineno-34-8"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_user_retrievable_after_creation</span><span class="p">():</span>
 </span><span id="__span-34-9"><a id="__codelineno-34-9" name="__codelineno-34-9" href="#__codelineno-34-9"></a>    <span class="n">service</span> <span class="o">=</span> <span class="n">UserService</span><span class="p">()</span>
 </span><span id="__span-34-10"><a id="__codelineno-34-10" name="__codelineno-34-10" href="#__codelineno-34-10"></a>    <span class="n">service</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s2">&quot;alice@example.com&quot;</span><span class="p">)</span>
 </span><span id="__span-34-11"><a id="__codelineno-34-11" name="__codelineno-34-11" href="#__codelineno-34-11"></a>    <span class="k">assert</span> <span class="n">service</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;alice@example.com&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
 </span></code></pre></div>
 <h3 id="assert-free-tests">Assert-Free Tests<a class="headerlink" href="#assert-free-tests" title="Permanent link">&para;</a></h3>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-35-1"><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a><span class="c1"># BAD — runs code but verifies nothing</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-35-1"><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a><span class="c1"># BAD: runs code but verifies nothing</span>
 </span><span id="__span-35-2"><a id="__codelineno-35-2" name="__codelineno-35-2" href="#__codelineno-35-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_process_data</span><span class="p">():</span>
 </span><span id="__span-35-3"><a id="__codelineno-35-3" name="__codelineno-35-3" href="#__codelineno-35-3"></a>    <span class="n">result</span> <span class="o">=</span> <span class="n">process_data</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
 </span><span id="__span-35-4"><a id="__codelineno-35-4" name="__codelineno-35-4" href="#__codelineno-35-4"></a>    <span class="c1"># oops, forgot the assert</span>
 </span><span id="__span-35-5"><a id="__codelineno-35-5" name="__codelineno-35-5" href="#__codelineno-35-5"></a>
-</span><span id="__span-35-6"><a id="__codelineno-35-6" name="__codelineno-35-6" href="#__codelineno-35-6"></a><span class="c1"># WORSE — comparison without assert (easy to miss in review)</span>
+</span><span id="__span-35-6"><a id="__codelineno-35-6" name="__codelineno-35-6" href="#__codelineno-35-6"></a><span class="c1"># WORSE: comparison without assert (easy to miss in review)</span>
 </span><span id="__span-35-7"><a id="__codelineno-35-7" name="__codelineno-35-7" href="#__codelineno-35-7"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_calculate</span><span class="p">():</span>
 </span><span id="__span-35-8"><a id="__codelineno-35-8" name="__codelineno-35-8" href="#__codelineno-35-8"></a>    <span class="n">result</span> <span class="o">=</span> <span class="n">calculate</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
 </span><span id="__span-35-9"><a id="__codelineno-35-9" name="__codelineno-35-9" href="#__codelineno-35-9"></a>    <span class="n">result</span> <span class="o">==</span> <span class="mi">25</span>  <span class="c1"># this is a comparison expression, not an assertion!</span>
@@ -3927,7 +3927,7 @@ ports, external files) need per-worker uniqueness.</p>
 </span><span id="__span-35-14"><a id="__codelineno-35-14" name="__codelineno-35-14" href="#__codelineno-35-14"></a>    <span class="k">assert</span> <span class="n">result</span> <span class="o">==</span> <span class="mi">25</span>
 </span></code></pre></div>
 <h3 id="shared-mutable-state">Shared Mutable State<a class="headerlink" href="#shared-mutable-state" title="Permanent link">&para;</a></h3>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-36-1"><a id="__codelineno-36-1" name="__codelineno-36-1" href="#__codelineno-36-1"></a><span class="c1"># BAD — tests pollute each other via module-level variable</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-36-1"><a id="__codelineno-36-1" name="__codelineno-36-1" href="#__codelineno-36-1"></a><span class="c1"># BAD: tests pollute each other via module-level variable</span>
 </span><span id="__span-36-2"><a id="__codelineno-36-2" name="__codelineno-36-2" href="#__codelineno-36-2"></a><span class="n">_cache</span> <span class="o">=</span> <span class="p">{}</span>
 </span><span id="__span-36-3"><a id="__codelineno-36-3" name="__codelineno-36-3" href="#__codelineno-36-3"></a>
 </span><span id="__span-36-4"><a id="__codelineno-36-4" name="__codelineno-36-4" href="#__codelineno-36-4"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_first</span><span class="p">():</span>
@@ -3937,20 +3937,20 @@ ports, external files) need per-worker uniqueness.</p>
 </span><span id="__span-36-8"><a id="__codelineno-36-8" name="__codelineno-36-8" href="#__codelineno-36-8"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_second</span><span class="p">():</span>
 </span><span id="__span-36-9"><a id="__codelineno-36-9" name="__codelineno-36-9" href="#__codelineno-36-9"></a>    <span class="k">assert</span> <span class="n">get_cached</span><span class="p">(</span><span class="s2">&quot;key&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span>  <span class="c1"># FAILS because test_first left data</span>
 </span><span id="__span-36-10"><a id="__codelineno-36-10" name="__codelineno-36-10" href="#__codelineno-36-10"></a>
-</span><span id="__span-36-11"><a id="__codelineno-36-11" name="__codelineno-36-11" href="#__codelineno-36-11"></a><span class="c1"># GOOD — fixture isolates state</span>
+</span><span id="__span-36-11"><a id="__codelineno-36-11" name="__codelineno-36-11" href="#__codelineno-36-11"></a><span class="c1"># GOOD: fixture isolates state</span>
 </span><span id="__span-36-12"><a id="__codelineno-36-12" name="__codelineno-36-12" href="#__codelineno-36-12"></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">autouse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span><span id="__span-36-13"><a id="__codelineno-36-13" name="__codelineno-36-13" href="#__codelineno-36-13"></a><span class="k">def</span><span class="w"> </span><span class="nf">_clean_cache</span><span class="p">():</span>
 </span><span id="__span-36-14"><a id="__codelineno-36-14" name="__codelineno-36-14" href="#__codelineno-36-14"></a>    <span class="k">yield</span>
 </span><span id="__span-36-15"><a id="__codelineno-36-15" name="__codelineno-36-15" href="#__codelineno-36-15"></a>    <span class="n">_cache</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
 </span></code></pre></div>
 <h3 id="testing-private-methods">Testing Private Methods<a class="headerlink" href="#testing-private-methods" title="Permanent link">&para;</a></h3>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-37-1"><a id="__codelineno-37-1" name="__codelineno-37-1" href="#__codelineno-37-1"></a><span class="c1"># BAD — coupled to internal implementation</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-37-1"><a id="__codelineno-37-1" name="__codelineno-37-1" href="#__codelineno-37-1"></a><span class="c1"># BAD: coupled to internal implementation</span>
 </span><span id="__span-37-2"><a id="__codelineno-37-2" name="__codelineno-37-2" href="#__codelineno-37-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_apply_discount_formula</span><span class="p">():</span>
 </span><span id="__span-37-3"><a id="__codelineno-37-3" name="__codelineno-37-3" href="#__codelineno-37-3"></a>    <span class="n">service</span> <span class="o">=</span> <span class="n">PricingService</span><span class="p">()</span>
 </span><span id="__span-37-4"><a id="__codelineno-37-4" name="__codelineno-37-4" href="#__codelineno-37-4"></a>    <span class="n">result</span> <span class="o">=</span> <span class="n">service</span><span class="o">.</span><span class="n">_apply_discount</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">)</span>  <span class="c1"># testing private method</span>
 </span><span id="__span-37-5"><a id="__codelineno-37-5" name="__codelineno-37-5" href="#__codelineno-37-5"></a>    <span class="k">assert</span> <span class="n">result</span> <span class="o">==</span> <span class="mi">80</span>
 </span><span id="__span-37-6"><a id="__codelineno-37-6" name="__codelineno-37-6" href="#__codelineno-37-6"></a>
-</span><span id="__span-37-7"><a id="__codelineno-37-7" name="__codelineno-37-7" href="#__codelineno-37-7"></a><span class="c1"># GOOD — test through public interface</span>
+</span><span id="__span-37-7"><a id="__codelineno-37-7" name="__codelineno-37-7" href="#__codelineno-37-7"></a><span class="c1"># GOOD: test through public interface</span>
 </span><span id="__span-37-8"><a id="__codelineno-37-8" name="__codelineno-37-8" href="#__codelineno-37-8"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_premium_price_reflects_discount</span><span class="p">():</span>
 </span><span id="__span-37-9"><a id="__codelineno-37-9" name="__codelineno-37-9" href="#__codelineno-37-9"></a>    <span class="n">service</span> <span class="o">=</span> <span class="n">PricingService</span><span class="p">()</span>
 </span><span id="__span-37-10"><a id="__codelineno-37-10" name="__codelineno-37-10" href="#__codelineno-37-10"></a>    <span class="n">price</span> <span class="o">=</span> <span class="n">service</span><span class="o">.</span><span class="n">calculate_price</span><span class="p">(</span><span class="n">item</span><span class="o">=</span><span class="n">Item</span><span class="p">(</span><span class="n">base</span><span class="o">=</span><span class="mi">100</span><span class="p">),</span> <span class="n">tier</span><span class="o">=</span><span class="s2">&quot;premium&quot;</span><span class="p">)</span>
@@ -3959,7 +3959,7 @@ ports, external files) need per-worker uniqueness.</p>
 <p>If a private method is complex enough to warrant direct testing, that's
 a signal to extract it into a separate public utility function.</p>
 <h3 id="over-mocking">Over-Mocking<a class="headerlink" href="#over-mocking" title="Permanent link">&para;</a></h3>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-38-1"><a id="__codelineno-38-1" name="__codelineno-38-1" href="#__codelineno-38-1"></a><span class="c1"># BAD — 15 lines of mock setup for 2 lines of actual test</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-38-1"><a id="__codelineno-38-1" name="__codelineno-38-1" href="#__codelineno-38-1"></a><span class="c1"># BAD: 15 lines of mock setup for 2 lines of actual test</span>
 </span><span id="__span-38-2"><a id="__codelineno-38-2" name="__codelineno-38-2" href="#__codelineno-38-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_process_order</span><span class="p">(</span><span class="n">mocker</span><span class="p">):</span>
 </span><span id="__span-38-3"><a id="__codelineno-38-3" name="__codelineno-38-3" href="#__codelineno-38-3"></a>    <span class="n">mock_db</span> <span class="o">=</span> <span class="n">mocker</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s2">&quot;app.db.get_connection&quot;</span><span class="p">)</span>
 </span><span id="__span-38-4"><a id="__codelineno-38-4" name="__codelineno-38-4" href="#__codelineno-38-4"></a>    <span class="n">mock_cursor</span> <span class="o">=</span> <span class="n">MagicMock</span><span class="p">()</span>
@@ -3972,7 +3972,7 @@ a signal to extract it into a separate public utility function.</p>
 </span><span id="__span-38-11"><a id="__codelineno-38-11" name="__codelineno-38-11" href="#__codelineno-38-11"></a>    <span class="n">mock_notify</span> <span class="o">=</span> <span class="n">mocker</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s2">&quot;app.notifications.send&quot;</span><span class="p">)</span>
 </span><span id="__span-38-12"><a id="__codelineno-38-12" name="__codelineno-38-12" href="#__codelineno-38-12"></a>    <span class="c1"># ... test is testing the mocks, not the code</span>
 </span><span id="__span-38-13"><a id="__codelineno-38-13" name="__codelineno-38-13" href="#__codelineno-38-13"></a>
-</span><span id="__span-38-14"><a id="__codelineno-38-14" name="__codelineno-38-14" href="#__codelineno-38-14"></a><span class="c1"># GOOD — use a fake repository</span>
+</span><span id="__span-38-14"><a id="__codelineno-38-14" name="__codelineno-38-14" href="#__codelineno-38-14"></a><span class="c1"># GOOD: use a fake repository</span>
 </span><span id="__span-38-15"><a id="__codelineno-38-15" name="__codelineno-38-15" href="#__codelineno-38-15"></a><span class="k">class</span><span class="w"> </span><span class="nc">FakeOrderRepo</span><span class="p">:</span>
 </span><span id="__span-38-16"><a id="__codelineno-38-16" name="__codelineno-38-16" href="#__codelineno-38-16"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 </span><span id="__span-38-17"><a id="__codelineno-38-17" name="__codelineno-38-17" href="#__codelineno-38-17"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_orders</span> <span class="o">=</span> <span class="p">{}</span>
@@ -3996,7 +3996,7 @@ a signal to extract it into a separate public utility function.</p>
 <h3 id="why-three-tiers">Why Three Tiers?<a class="headerlink" href="#why-three-tiers" title="Permanent link">&para;</a></h3>
 <p>The fundamental challenge with AI-integrated code is that the same input
 can produce different outputs across calls. But not <em>all</em> the code around
-AI is non-deterministic — most of it (prompt construction, response parsing,
+AI is non-deterministic: most of it (prompt construction, response parsing,
 retry logic, cost tracking) is entirely deterministic and should be tested
 like any other function. The three-tier model separates these concerns so
 that the vast majority of your AI code has fast, deterministic tests that
@@ -4021,7 +4021,7 @@ with appropriate statistical rigor on a schedule.</p>
 </span></code></pre></div>
 <h3 id="tier-1-deterministic-unit-tests">Tier 1: Deterministic Unit Tests<a class="headerlink" href="#tier-1-deterministic-unit-tests" title="Permanent link">&para;</a></h3>
 <p>Most AI-integrated code is scaffolding around the API call. Test it like
-any other code — with mocks, exact assertions, and full coverage.</p>
+any other code: with mocks, exact assertions, and full coverage.</p>
 <p><strong>Testing prompt construction:</strong></p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-40-1"><a id="__codelineno-40-1" name="__codelineno-40-1" href="#__codelineno-40-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_build_quality_prompt_includes_image_metadata</span><span class="p">():</span>
 </span><span id="__span-40-2"><a id="__codelineno-40-2" name="__codelineno-40-2" href="#__codelineno-40-2"></a>    <span class="c1"># Arrange</span>
@@ -4032,7 +4032,7 @@ any other code — with mocks, exact assertions, and full coverage.</p>
 </span><span id="__span-40-7"><a id="__codelineno-40-7" name="__codelineno-40-7" href="#__codelineno-40-7"></a>    <span class="c1"># Act</span>
 </span><span id="__span-40-8"><a id="__codelineno-40-8" name="__codelineno-40-8" href="#__codelineno-40-8"></a>    <span class="n">prompt</span> <span class="o">=</span> <span class="n">build_quality_assessment_prompt</span><span class="p">(</span><span class="n">image_meta</span><span class="p">)</span>
 </span><span id="__span-40-9"><a id="__codelineno-40-9" name="__codelineno-40-9" href="#__codelineno-40-9"></a>
-</span><span id="__span-40-10"><a id="__codelineno-40-10" name="__codelineno-40-10" href="#__codelineno-40-10"></a>    <span class="c1"># Assert — exact string matching is appropriate for prompts</span>
+</span><span id="__span-40-10"><a id="__codelineno-40-10" name="__codelineno-40-10" href="#__codelineno-40-10"></a>    <span class="c1"># Assert: exact string matching is appropriate for prompts</span>
 </span><span id="__span-40-11"><a id="__codelineno-40-11" name="__codelineno-40-11" href="#__codelineno-40-11"></a>    <span class="k">assert</span> <span class="s2">&quot;1024x768&quot;</span> <span class="ow">in</span> <span class="n">prompt</span>
 </span><span id="__span-40-12"><a id="__codelineno-40-12" name="__codelineno-40-12" href="#__codelineno-40-12"></a>    <span class="k">assert</span> <span class="s2">&quot;300 DPI&quot;</span> <span class="ow">in</span> <span class="n">prompt</span>
 </span><span id="__span-40-13"><a id="__codelineno-40-13" name="__codelineno-40-13" href="#__codelineno-40-13"></a>    <span class="k">assert</span> <span class="s2">&quot;TIFF&quot;</span> <span class="ow">in</span> <span class="n">prompt</span>
@@ -4069,7 +4069,7 @@ any other code — with mocks, exact assertions, and full coverage.</p>
 </span></code></pre></div>
 <p><strong>Testing retry and error handling:</strong></p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-42-1"><a id="__codelineno-42-1" name="__codelineno-42-1" href="#__codelineno-42-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_llm_client_retries_on_rate_limit</span><span class="p">(</span><span class="n">mocker</span><span class="p">):</span>
-</span><span id="__span-42-2"><a id="__codelineno-42-2" name="__codelineno-42-2" href="#__codelineno-42-2"></a>    <span class="c1"># Arrange — simulate 429, 429, then success</span>
+</span><span id="__span-42-2"><a id="__codelineno-42-2" name="__codelineno-42-2" href="#__codelineno-42-2"></a>    <span class="c1"># Arrange: simulate 429, 429, then success</span>
 </span><span id="__span-42-3"><a id="__codelineno-42-3" name="__codelineno-42-3" href="#__codelineno-42-3"></a>    <span class="n">mock_post</span> <span class="o">=</span> <span class="n">mocker</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s2">&quot;myapp.llm.httpx.AsyncClient.post&quot;</span><span class="p">)</span>
 </span><span id="__span-42-4"><a id="__codelineno-42-4" name="__codelineno-42-4" href="#__codelineno-42-4"></a>    <span class="n">mock_post</span><span class="o">.</span><span class="n">side_effect</span> <span class="o">=</span> <span class="p">[</span>
 </span><span id="__span-42-5"><a id="__codelineno-42-5" name="__codelineno-42-5" href="#__codelineno-42-5"></a>        <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">(</span><span class="mi">429</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;retry-after&quot;</span><span class="p">:</span> <span class="s2">&quot;1&quot;</span><span class="p">}),</span>
@@ -4134,7 +4134,7 @@ and structured output failures.</p>
 </span><span id="__span-44-22"><a id="__codelineno-44-22" name="__codelineno-44-22" href="#__codelineno-44-22"></a>        <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">quality_score</span> <span class="o">==</span> <span class="mf">0.85</span>
 </span><span id="__span-44-23"><a id="__codelineno-44-23" name="__codelineno-44-23" href="#__codelineno-44-23"></a>
 </span><span id="__span-44-24"><a id="__codelineno-44-24" name="__codelineno-44-24" href="#__codelineno-44-24"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">test_extra_fields_ignored</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="__span-44-25"><a id="__codelineno-44-25" name="__codelineno-44-25" href="#__codelineno-44-25"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward compatibility — new fields from model don&#39;t break parsing.&quot;&quot;&quot;</span>
+</span><span id="__span-44-25"><a id="__codelineno-44-25" name="__codelineno-44-25" href="#__codelineno-44-25"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward compatibility: new fields from model don&#39;t break parsing.&quot;&quot;&quot;</span>
 </span><span id="__span-44-26"><a id="__codelineno-44-26" name="__codelineno-44-26" href="#__codelineno-44-26"></a>        <span class="n">raw</span> <span class="o">=</span> <span class="p">{</span>
 </span><span id="__span-44-27"><a id="__codelineno-44-27" name="__codelineno-44-27" href="#__codelineno-44-27"></a>            <span class="s2">&quot;quality_score&quot;</span><span class="p">:</span> <span class="mf">0.85</span><span class="p">,</span>
 </span><span id="__span-44-28"><a id="__codelineno-44-28" name="__codelineno-44-28" href="#__codelineno-44-28"></a>            <span class="s2">&quot;issues&quot;</span><span class="p">:</span> <span class="p">[],</span>
@@ -4207,7 +4207,7 @@ component produce <em>good enough</em> output?"</p>
 </span><span id="__span-45-43"><a id="__codelineno-45-43" name="__codelineno-45-43" href="#__codelineno-45-43"></a>        <span class="sa">f</span><span class="s2">&quot;Got: &#39;</span><span class="si">{</span><span class="n">actual</span><span class="p">[:</span><span class="mi">80</span><span class="p">]</span><span class="si">}</span><span class="s2">...&#39;&quot;</span>
 </span><span id="__span-45-44"><a id="__codelineno-45-44" name="__codelineno-45-44" href="#__codelineno-45-44"></a>    <span class="p">)</span>
 </span></code></pre></div>
-<p><strong>CER-based evaluation (stack-specific — for OCR/DIQA work):</strong></p>
+<p><strong>CER-based evaluation (stack-specific: for OCR/DIQA work):</strong></p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-46-1"><a id="__codelineno-46-1" name="__codelineno-46-1" href="#__codelineno-46-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">character_error_rate</span><span class="p">(</span><span class="n">reference</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">hypothesis</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 </span><span id="__span-46-2"><a id="__codelineno-46-2" name="__codelineno-46-2" href="#__codelineno-46-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute Character Error Rate using edit distance.&quot;&quot;&quot;</span>
 </span><span id="__span-46-3"><a id="__codelineno-46-3" name="__codelineno-46-3" href="#__codelineno-46-3"></a>    <span class="kn">import</span><span class="w"> </span><span class="nn">editdistance</span>
@@ -4291,7 +4291,7 @@ component produce <em>good enough</em> output?"</p>
 </span><span id="__span-48-9"><a id="__codelineno-48-9" name="__codelineno-48-9" href="#__codelineno-48-9"></a>        <span class="n">scores</span> <span class="o">=</span> <span class="n">ensemble_scorer</span><span class="o">.</span><span class="n">score_all_models</span><span class="p">(</span><span class="n">case</span><span class="o">.</span><span class="n">image</span><span class="p">)</span>
 </span><span id="__span-48-10"><a id="__codelineno-48-10" name="__codelineno-48-10" href="#__codelineno-48-10"></a>        <span class="n">spread</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">scores</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="o">-</span> <span class="nb">min</span><span class="p">(</span><span class="n">scores</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
 </span><span id="__span-48-11"><a id="__codelineno-48-11" name="__codelineno-48-11" href="#__codelineno-48-11"></a>        <span class="k">assert</span> <span class="n">spread</span> <span class="o">&lt;</span> <span class="mf">1.5</span><span class="p">,</span> <span class="p">(</span>
-</span><span id="__span-48-12"><a id="__codelineno-48-12" name="__codelineno-48-12" href="#__codelineno-48-12"></a>            <span class="sa">f</span><span class="s2">&quot;ID input &#39;</span><span class="si">{</span><span class="n">case</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; has spread </span><span class="si">{</span><span class="n">spread</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> — &quot;</span>
+</span><span id="__span-48-12"><a id="__codelineno-48-12" name="__codelineno-48-12" href="#__codelineno-48-12"></a>            <span class="sa">f</span><span class="s2">&quot;ID input &#39;</span><span class="si">{</span><span class="n">case</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; has spread </span><span class="si">{</span><span class="n">spread</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">: &quot;</span>
 </span><span id="__span-48-13"><a id="__codelineno-48-13" name="__codelineno-48-13" href="#__codelineno-48-13"></a>            <span class="sa">f</span><span class="s2">&quot;expected &lt;1.5 for in-distribution&quot;</span>
 </span><span id="__span-48-14"><a id="__codelineno-48-14" name="__codelineno-48-14" href="#__codelineno-48-14"></a>        <span class="p">)</span>
 </span><span id="__span-48-15"><a id="__codelineno-48-15" name="__codelineno-48-15" href="#__codelineno-48-15"></a>
@@ -4308,7 +4308,7 @@ component produce <em>good enough</em> output?"</p>
 </span><span id="__span-48-26"><a id="__codelineno-48-26" name="__codelineno-48-26" href="#__codelineno-48-26"></a>        <span class="sa">f</span><span class="s2">&quot;OOD detection rate </span><span class="si">{</span><span class="n">detection_rate</span><span class="si">:</span><span class="s2">.1%</span><span class="si">}</span><span class="s2"> below 80% threshold&quot;</span>
 </span><span id="__span-48-27"><a id="__codelineno-48-27" name="__codelineno-48-27" href="#__codelineno-48-27"></a>    <span class="p">)</span>
 </span></code></pre></div>
-<p><strong>Calibration bias detection (stack-specific — for Qwen +1.3 bias scenario):</strong></p>
+<p><strong>Calibration bias detection (stack-specific: for Qwen +1.3 bias scenario):</strong></p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-49-1"><a id="__codelineno-49-1" name="__codelineno-49-1" href="#__codelineno-49-1"></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">llm_eval</span>
 </span><span id="__span-49-2"><a id="__codelineno-49-2" name="__codelineno-49-2" href="#__codelineno-49-2"></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">parametrize</span><span class="p">(</span><span class="s2">&quot;model_id&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;gemini-flash&quot;</span><span class="p">,</span> <span class="s2">&quot;gpt-4.1&quot;</span><span class="p">,</span> <span class="s2">&quot;qwen-flash&quot;</span><span class="p">])</span>
 </span><span id="__span-49-3"><a id="__codelineno-49-3" name="__codelineno-49-3" href="#__codelineno-49-3"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_model_scoring_bias_within_tolerance</span><span class="p">(</span>
@@ -4421,7 +4421,7 @@ indirect injection (retrieved documents contain adversarial instructions).</p>
 </span><span id="__span-51-36"><a id="__codelineno-51-36" name="__codelineno-51-36" href="#__codelineno-51-36"></a>    <span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">ai_security</span>
 </span><span id="__span-51-37"><a id="__codelineno-51-37" name="__codelineno-51-37" href="#__codelineno-51-37"></a>    <span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">parametrize</span><span class="p">(</span><span class="s2">&quot;payload&quot;</span><span class="p">,</span> <span class="n">DIRECT_INJECTION_PAYLOADS</span><span class="p">)</span>
 </span><span id="__span-51-38"><a id="__codelineno-51-38" name="__codelineno-51-38" href="#__codelineno-51-38"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">test_direct_injection_blocked</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">payload</span><span class="p">,</span> <span class="n">app_client</span><span class="p">):</span>
-</span><span id="__span-51-39"><a id="__codelineno-51-39" name="__codelineno-51-39" href="#__codelineno-51-39"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;v5.0.0-1.1.1 — Verify injection payloads do not alter system behavior.&quot;&quot;&quot;</span>
+</span><span id="__span-51-39"><a id="__codelineno-51-39" name="__codelineno-51-39" href="#__codelineno-51-39"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;v5.0.0-1.1.1: Verify injection payloads do not alter system behavior.&quot;&quot;&quot;</span>
 </span><span id="__span-51-40"><a id="__codelineno-51-40" name="__codelineno-51-40" href="#__codelineno-51-40"></a>        <span class="n">response</span> <span class="o">=</span> <span class="n">app_client</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="n">user_message</span><span class="o">=</span><span class="n">payload</span><span class="p">)</span>
 </span><span id="__span-51-41"><a id="__codelineno-51-41" name="__codelineno-51-41" href="#__codelineno-51-41"></a>
 </span><span id="__span-51-42"><a id="__codelineno-51-42" name="__codelineno-51-42" href="#__codelineno-51-42"></a>        <span class="c1"># System prompt should never appear in output</span>
@@ -4568,7 +4568,7 @@ indirect injection (retrieved documents contain adversarial instructions).</p>
 </span><span id="__span-53-38"><a id="__codelineno-53-38" name="__codelineno-53-38" href="#__codelineno-53-38"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">test_context_poisoning_resistance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agent</span><span class="p">,</span> <span class="n">mocker</span><span class="p">):</span>
 </span><span id="__span-53-39"><a id="__codelineno-53-39" name="__codelineno-53-39" href="#__codelineno-53-39"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Verify poisoned conversation history cannot alter agent behavior.</span>
 </span><span id="__span-53-40"><a id="__codelineno-53-40" name="__codelineno-53-40" href="#__codelineno-53-40"></a>
-</span><span id="__span-53-41"><a id="__codelineno-53-41" name="__codelineno-53-41" href="#__codelineno-53-41"></a><span class="sd">        Ref: ATLAS AML.T0056 (AI Agent Context Poisoning — Memory)</span>
+</span><span id="__span-53-41"><a id="__codelineno-53-41" name="__codelineno-53-41" href="#__codelineno-53-41"></a><span class="sd">        Ref: ATLAS AML.T0056 (AI Agent Context Poisoning: Memory)</span>
 </span><span id="__span-53-42"><a id="__codelineno-53-42" name="__codelineno-53-42" href="#__codelineno-53-42"></a><span class="sd">        &quot;&quot;&quot;</span>
 </span><span id="__span-53-43"><a id="__codelineno-53-43" name="__codelineno-53-43" href="#__codelineno-53-43"></a>        <span class="c1"># Inject adversarial content into the agent&#39;s memory/context</span>
 </span><span id="__span-53-44"><a id="__codelineno-53-44" name="__codelineno-53-44" href="#__codelineno-53-44"></a>        <span class="n">poisoned_memory</span> <span class="o">=</span> <span class="p">{</span>
@@ -4606,7 +4606,7 @@ the VLM pseudo-labeling pipeline with OpenRouter models:</p>
 </span><span id="__span-54-2"><a id="__codelineno-54-2" name="__codelineno-54-2" href="#__codelineno-54-2"></a><span class="k">class</span><span class="w"> </span><span class="nc">TestModelCalibrationIntegrity</span><span class="p">:</span>
 </span><span id="__span-54-3"><a id="__codelineno-54-3" name="__codelineno-54-3" href="#__codelineno-54-3"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Verify calibration corrections are applied and ensemble scoring is robust.</span>
 </span><span id="__span-54-4"><a id="__codelineno-54-4" name="__codelineno-54-4" href="#__codelineno-54-4"></a>
-</span><span id="__span-54-5"><a id="__codelineno-54-5" name="__codelineno-54-5" href="#__codelineno-54-5"></a><span class="sd">    Ref: ATLAS AML.T0043 (Craft Adversarial Data — Adversarial Example)</span>
+</span><span id="__span-54-5"><a id="__codelineno-54-5" name="__codelineno-54-5" href="#__codelineno-54-5"></a><span class="sd">    Ref: ATLAS AML.T0043 (Craft Adversarial Data: Adversarial Example)</span>
 </span><span id="__span-54-6"><a id="__codelineno-54-6" name="__codelineno-54-6" href="#__codelineno-54-6"></a><span class="sd">    Context: Qwen Flash +1.3 bias detection and correction</span>
 </span><span id="__span-54-7"><a id="__codelineno-54-7" name="__codelineno-54-7" href="#__codelineno-54-7"></a><span class="sd">    &quot;&quot;&quot;</span>
 </span><span id="__span-54-8"><a id="__codelineno-54-8" name="__codelineno-54-8" href="#__codelineno-54-8"></a>
@@ -4615,7 +4615,7 @@ the VLM pseudo-labeling pipeline with OpenRouter models:</p>
 </span><span id="__span-54-11"><a id="__codelineno-54-11" name="__codelineno-54-11" href="#__codelineno-54-11"></a>        <span class="n">raw_score</span> <span class="o">=</span> <span class="n">scorer</span><span class="o">.</span><span class="n">score_raw</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">&quot;qwen-flash&quot;</span><span class="p">,</span> <span class="n">image</span><span class="o">=</span><span class="n">REFERENCE_IMAGE</span><span class="p">)</span>
 </span><span id="__span-54-12"><a id="__codelineno-54-12" name="__codelineno-54-12" href="#__codelineno-54-12"></a>        <span class="n">calibrated</span> <span class="o">=</span> <span class="n">scorer</span><span class="o">.</span><span class="n">score_calibrated</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">&quot;qwen-flash&quot;</span><span class="p">,</span> <span class="n">image</span><span class="o">=</span><span class="n">REFERENCE_IMAGE</span><span class="p">)</span>
 </span><span id="__span-54-13"><a id="__codelineno-54-13" name="__codelineno-54-13" href="#__codelineno-54-13"></a>
-</span><span id="__span-54-14"><a id="__codelineno-54-14" name="__codelineno-54-14" href="#__codelineno-54-14"></a>        <span class="c1"># Qwen has a known +1.3 positive bias — calibration should reduce it</span>
+</span><span id="__span-54-14"><a id="__codelineno-54-14" name="__codelineno-54-14" href="#__codelineno-54-14"></a>        <span class="c1"># Qwen has a known +1.3 positive bias: calibration should reduce it</span>
 </span><span id="__span-54-15"><a id="__codelineno-54-15" name="__codelineno-54-15" href="#__codelineno-54-15"></a>        <span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="n">calibrated</span> <span class="o">-</span> <span class="n">REFERENCE_GROUND_TRUTH</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">abs</span><span class="p">(</span>
 </span><span id="__span-54-16"><a id="__codelineno-54-16" name="__codelineno-54-16" href="#__codelineno-54-16"></a>            <span class="n">raw_score</span> <span class="o">-</span> <span class="n">REFERENCE_GROUND_TRUTH</span>
 </span><span id="__span-54-17"><a id="__codelineno-54-17" name="__codelineno-54-17" href="#__codelineno-54-17"></a>        <span class="p">),</span> <span class="s2">&quot;Calibration correction did not reduce Qwen bias&quot;</span>
@@ -4625,7 +4625,7 @@ the VLM pseudo-labeling pipeline with OpenRouter models:</p>
 </span><span id="__span-54-21"><a id="__codelineno-54-21" name="__codelineno-54-21" href="#__codelineno-54-21"></a>        <span class="n">scores</span> <span class="o">=</span> <span class="p">{</span>
 </span><span id="__span-54-22"><a id="__codelineno-54-22" name="__codelineno-54-22" href="#__codelineno-54-22"></a>            <span class="s2">&quot;gemini-flash&quot;</span><span class="p">:</span> <span class="mf">3.5</span><span class="p">,</span>
 </span><span id="__span-54-23"><a id="__codelineno-54-23" name="__codelineno-54-23" href="#__codelineno-54-23"></a>            <span class="s2">&quot;gpt-4.1&quot;</span><span class="p">:</span> <span class="mf">3.7</span><span class="p">,</span>
-</span><span id="__span-54-24"><a id="__codelineno-54-24" name="__codelineno-54-24" href="#__codelineno-54-24"></a>            <span class="s2">&quot;qwen-flash&quot;</span><span class="p">:</span> <span class="mf">9.9</span><span class="p">,</span>  <span class="c1"># anomalous — far outside expected range</span>
+</span><span id="__span-54-24"><a id="__codelineno-54-24" name="__codelineno-54-24" href="#__codelineno-54-24"></a>            <span class="s2">&quot;qwen-flash&quot;</span><span class="p">:</span> <span class="mf">9.9</span><span class="p">,</span>  <span class="c1"># anomalous: far outside expected range</span>
 </span><span id="__span-54-25"><a id="__codelineno-54-25" name="__codelineno-54-25" href="#__codelineno-54-25"></a>        <span class="p">}</span>
 </span><span id="__span-54-26"><a id="__codelineno-54-26" name="__codelineno-54-26" href="#__codelineno-54-26"></a>
 </span><span id="__span-54-27"><a id="__codelineno-54-27" name="__codelineno-54-27" href="#__codelineno-54-27"></a>        <span class="n">result</span> <span class="o">=</span> <span class="n">ensemble_scorer</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span>
@@ -4647,7 +4647,7 @@ before tests even execute. Consider this function:</p>
 <p>Without type checking, you need unit tests for: passing a string instead
 of a list, passing a list of strings instead of floats, passing None,
 passing an empty list (ZeroDivisionError). With <code>basedpyright --strict</code>,
-the first three are caught statically — you only need runtime tests for the
+the first three are caught statically: you only need runtime tests for the
 empty list and the happy path. Type checking doesn't replace testing, but
 it dramatically narrows what runtime tests need to cover.</p>
 <h3 id="practical-basedpyright-configuration">Practical basedpyright Configuration<a class="headerlink" href="#practical-basedpyright-configuration" title="Permanent link">&para;</a></h3>
@@ -4661,7 +4661,7 @@ it dramatically narrows what runtime tests need to cover.</p>
 </span><span id="__span-56-8"><a id="__codelineno-56-8" name="__codelineno-56-8" href="#__codelineno-56-8"></a><span class="k">[tool.basedpyright.defineConstant]</span>
 </span><span id="__span-56-9"><a id="__codelineno-56-9" name="__codelineno-56-9" href="#__codelineno-56-9"></a><span class="c1"># Use pyrightconfig.json for per-path ignores if needed</span>
 </span><span id="__span-56-10"><a id="__codelineno-56-10" name="__codelineno-56-10" href="#__codelineno-56-10"></a>
-</span><span id="__span-56-11"><a id="__codelineno-56-11" name="__codelineno-56-11" href="#__codelineno-56-11"></a><span class="c1"># Relax for test files — pytest&#39;s dynamic nature resists full typing</span>
+</span><span id="__span-56-11"><a id="__codelineno-56-11" name="__codelineno-56-11" href="#__codelineno-56-11"></a><span class="c1"># Relax for test files: pytest&#39;s dynamic nature resists full typing</span>
 </span><span id="__span-56-12"><a id="__codelineno-56-12" name="__codelineno-56-12" href="#__codelineno-56-12"></a><span class="k">[[tool.basedpyright.executionEnvironments]]</span>
 </span><span id="__span-56-13"><a id="__codelineno-56-13" name="__codelineno-56-13" href="#__codelineno-56-13"></a><span class="n">root</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;tests&quot;</span>
 </span><span id="__span-56-14"><a id="__codelineno-56-14" name="__codelineno-56-14" href="#__codelineno-56-14"></a><span class="n">reportUnknownMemberType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span>
@@ -4669,7 +4669,7 @@ it dramatically narrows what runtime tests need to cover.</p>
 </span></code></pre></div>
 <h3 id="annotations-that-pay-off">Annotations That Pay Off<a class="headerlink" href="#annotations-that-pay-off" title="Permanent link">&para;</a></h3>
 <p>Focus type annotation effort where it provides the most value:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-57-1"><a id="__codelineno-57-1" name="__codelineno-57-1" href="#__codelineno-57-1"></a><span class="c1"># Public API boundaries — highest value</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-57-1"><a id="__codelineno-57-1" name="__codelineno-57-1" href="#__codelineno-57-1"></a><span class="c1"># Public API boundaries: highest value</span>
 </span><span id="__span-57-2"><a id="__codelineno-57-2" name="__codelineno-57-2" href="#__codelineno-57-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">calculate_portfolio_return</span><span class="p">(</span>
 </span><span id="__span-57-3"><a id="__codelineno-57-3" name="__codelineno-57-3" href="#__codelineno-57-3"></a>    <span class="n">holdings</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Decimal</span><span class="p">],</span>
 </span><span id="__span-57-4"><a id="__codelineno-57-4" name="__codelineno-57-4" href="#__codelineno-57-4"></a>    <span class="n">prices</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Decimal</span><span class="p">],</span>
@@ -4677,7 +4677,7 @@ it dramatically narrows what runtime tests need to cover.</p>
 </span><span id="__span-57-6"><a id="__codelineno-57-6" name="__codelineno-57-6" href="#__codelineno-57-6"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PortfolioReturn</span><span class="p">:</span>
 </span><span id="__span-57-7"><a id="__codelineno-57-7" name="__codelineno-57-7" href="#__codelineno-57-7"></a>    <span class="o">...</span>
 </span><span id="__span-57-8"><a id="__codelineno-57-8" name="__codelineno-57-8" href="#__codelineno-57-8"></a>
-</span><span id="__span-57-9"><a id="__codelineno-57-9" name="__codelineno-57-9" href="#__codelineno-57-9"></a><span class="c1"># Type aliases for complex types — improves readability</span>
+</span><span id="__span-57-9"><a id="__codelineno-57-9" name="__codelineno-57-9" href="#__codelineno-57-9"></a><span class="c1"># Type aliases for complex types: improves readability</span>
 </span><span id="__span-57-10"><a id="__codelineno-57-10" name="__codelineno-57-10" href="#__codelineno-57-10"></a><span class="n">IdentifierMap</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span>   <span class="c1"># {isin: {figi: &quot;...&quot;, cusip: &quot;...&quot;}}</span>
 </span><span id="__span-57-11"><a id="__codelineno-57-11" name="__codelineno-57-11" href="#__codelineno-57-11"></a><span class="n">CoverageGaps</span> <span class="o">=</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span>   <span class="c1"># [(file, start_line, end_line)]</span>
 </span><span id="__span-57-12"><a id="__codelineno-57-12" name="__codelineno-57-12" href="#__codelineno-57-12"></a>
@@ -4739,7 +4739,7 @@ and per-test overrides:</p>
 </span><span id="__span-58-41"><a id="__codelineno-58-41" name="__codelineno-58-41" href="#__codelineno-58-41"></a>        <span class="k">else</span><span class="p">:</span>
 </span><span id="__span-58-42"><a id="__codelineno-58-42" name="__codelineno-58-42" href="#__codelineno-58-42"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">holdings</span> <span class="o">=</span> <span class="n">HoldingFactory</span><span class="o">.</span><span class="n">create_batch</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
 </span></code></pre></div>
-<p>Usage in tests — clean and focused on what varies:</p>
+<p>Usage in tests: clean and focused on what varies:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-59-1"><a id="__codelineno-59-1" name="__codelineno-59-1" href="#__codelineno-59-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_portfolio_total_value_sums_holdings</span><span class="p">():</span>
 </span><span id="__span-59-2"><a id="__codelineno-59-2" name="__codelineno-59-2" href="#__codelineno-59-2"></a>    <span class="n">holdings</span> <span class="o">=</span> <span class="p">[</span>
 </span><span id="__span-59-3"><a id="__codelineno-59-3" name="__codelineno-59-3" href="#__codelineno-59-3"></a>        <span class="n">HoldingFactory</span><span class="p">(</span><span class="n">quantity</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">cost_basis</span><span class="o">=</span><span class="n">Decimal</span><span class="p">(</span><span class="s2">&quot;50.00&quot;</span><span class="p">)),</span>
@@ -4878,7 +4878,7 @@ representative data:</p>
 <h3 id="asvs-test-traceability-pattern">ASVS Test Traceability Pattern<a class="headerlink" href="#asvs-test-traceability-pattern" title="Permanent link">&para;</a></h3>
 <p>Reference ASVS requirement IDs in test docstrings for audit traceability:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-62-1"><a id="__codelineno-62-1" name="__codelineno-62-1" href="#__codelineno-62-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_password_minimum_length</span><span class="p">():</span>
-</span><span id="__span-62-2"><a id="__codelineno-62-2" name="__codelineno-62-2" href="#__codelineno-62-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;v5.0.0-2.1.1 — Verify password minimum length is at least 12 characters.</span>
+</span><span id="__span-62-2"><a id="__codelineno-62-2" name="__codelineno-62-2" href="#__codelineno-62-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;v5.0.0-2.1.1: Verify password minimum length is at least 12 characters.</span>
 </span><span id="__span-62-3"><a id="__codelineno-62-3" name="__codelineno-62-3" href="#__codelineno-62-3"></a>
 </span><span id="__span-62-4"><a id="__codelineno-62-4" name="__codelineno-62-4" href="#__codelineno-62-4"></a><span class="sd">    ASVS L2 | NIST SP 800-63B alignment</span>
 </span><span id="__span-62-5"><a id="__codelineno-62-5" name="__codelineno-62-5" href="#__codelineno-62-5"></a><span class="sd">    &quot;&quot;&quot;</span>
@@ -4908,10 +4908,10 @@ representative data:</p>
 </span><span id="__span-63-13"><a id="__codelineno-63-13" name="__codelineno-63-13" href="#__codelineno-63-13"></a>
 </span><span id="__span-63-14"><a id="__codelineno-63-14" name="__codelineno-63-14" href="#__codelineno-63-14"></a>    <span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">parametrize</span><span class="p">(</span><span class="s2">&quot;payload&quot;</span><span class="p">,</span> <span class="n">SQL_INJECTION_PAYLOADS</span><span class="p">)</span>
 </span><span id="__span-63-15"><a id="__codelineno-63-15" name="__codelineno-63-15" href="#__codelineno-63-15"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">test_sql_injection_rejected</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">payload</span><span class="p">,</span> <span class="n">client</span><span class="p">):</span>
-</span><span id="__span-63-16"><a id="__codelineno-63-16" name="__codelineno-63-16" href="#__codelineno-63-16"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;v5.0.0-1.2.1 — Verify SQL injection payloads are rejected.&quot;&quot;&quot;</span>
+</span><span id="__span-63-16"><a id="__codelineno-63-16" name="__codelineno-63-16" href="#__codelineno-63-16"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;v5.0.0-1.2.1: Verify SQL injection payloads are rejected.&quot;&quot;&quot;</span>
 </span><span id="__span-63-17"><a id="__codelineno-63-17" name="__codelineno-63-17" href="#__codelineno-63-17"></a>        <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;/api/users?search=</span><span class="si">{</span><span class="n">payload</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </span><span id="__span-63-18"><a id="__codelineno-63-18" name="__codelineno-63-18" href="#__codelineno-63-18"></a>
-</span><span id="__span-63-19"><a id="__codelineno-63-19" name="__codelineno-63-19" href="#__codelineno-63-19"></a>        <span class="c1"># Should not return 200 with data — either 400 or empty results</span>
+</span><span id="__span-63-19"><a id="__codelineno-63-19" name="__codelineno-63-19" href="#__codelineno-63-19"></a>        <span class="c1"># Should not return 200 with data: either 400 or empty results</span>
 </span><span id="__span-63-20"><a id="__codelineno-63-20" name="__codelineno-63-20" href="#__codelineno-63-20"></a>        <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
 </span><span id="__span-63-21"><a id="__codelineno-63-21" name="__codelineno-63-21" href="#__codelineno-63-21"></a>            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;results&quot;</span><span class="p">,</span> <span class="p">[]))</span> <span class="o">==</span> <span class="mi">0</span>
 </span><span id="__span-63-22"><a id="__codelineno-63-22" name="__codelineno-63-22" href="#__codelineno-63-22"></a>
@@ -4924,7 +4924,7 @@ representative data:</p>
 </span><span id="__span-63-29"><a id="__codelineno-63-29" name="__codelineno-63-29" href="#__codelineno-63-29"></a>
 </span><span id="__span-63-30"><a id="__codelineno-63-30" name="__codelineno-63-30" href="#__codelineno-63-30"></a>    <span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">parametrize</span><span class="p">(</span><span class="s2">&quot;payload&quot;</span><span class="p">,</span> <span class="n">COMMAND_INJECTION_PAYLOADS</span><span class="p">)</span>
 </span><span id="__span-63-31"><a id="__codelineno-63-31" name="__codelineno-63-31" href="#__codelineno-63-31"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">test_command_injection_rejected</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">payload</span><span class="p">,</span> <span class="n">client</span><span class="p">):</span>
-</span><span id="__span-63-32"><a id="__codelineno-63-32" name="__codelineno-63-32" href="#__codelineno-63-32"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;v5.0.0-1.2.5 — Verify OS command injection is prevented.&quot;&quot;&quot;</span>
+</span><span id="__span-63-32"><a id="__codelineno-63-32" name="__codelineno-63-32" href="#__codelineno-63-32"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;v5.0.0-1.2.5: Verify OS command injection is prevented.&quot;&quot;&quot;</span>
 </span><span id="__span-63-33"><a id="__codelineno-63-33" name="__codelineno-63-33" href="#__codelineno-63-33"></a>        <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/api/export&quot;</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;filename&quot;</span><span class="p">:</span> <span class="n">payload</span><span class="p">})</span>
 </span><span id="__span-63-34"><a id="__codelineno-63-34" name="__codelineno-63-34" href="#__codelineno-63-34"></a>
 </span><span id="__span-63-35"><a id="__codelineno-63-35" name="__codelineno-63-35" href="#__codelineno-63-35"></a>        <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="mi">422</span><span class="p">)</span>
@@ -4941,7 +4941,7 @@ representative data:</p>
 </span><span id="__span-63-46"><a id="__codelineno-63-46" name="__codelineno-63-46" href="#__codelineno-63-46"></a>
 </span><span id="__span-63-47"><a id="__codelineno-63-47" name="__codelineno-63-47" href="#__codelineno-63-47"></a>    <span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">parametrize</span><span class="p">(</span><span class="s2">&quot;payload&quot;</span><span class="p">,</span> <span class="n">PATH_TRAVERSAL_PAYLOADS</span><span class="p">)</span>
 </span><span id="__span-63-48"><a id="__codelineno-63-48" name="__codelineno-63-48" href="#__codelineno-63-48"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">test_path_traversal_rejected</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">payload</span><span class="p">,</span> <span class="n">client</span><span class="p">):</span>
-</span><span id="__span-63-49"><a id="__codelineno-63-49" name="__codelineno-63-49" href="#__codelineno-63-49"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;v5.0.0-1.6.2 — Verify path traversal payloads are blocked.&quot;&quot;&quot;</span>
+</span><span id="__span-63-49"><a id="__codelineno-63-49" name="__codelineno-63-49" href="#__codelineno-63-49"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;v5.0.0-1.6.2: Verify path traversal payloads are blocked.&quot;&quot;&quot;</span>
 </span><span id="__span-63-50"><a id="__codelineno-63-50" name="__codelineno-63-50" href="#__codelineno-63-50"></a>        <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;/api/files/</span><span class="si">{</span><span class="n">payload</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </span><span id="__span-63-51"><a id="__codelineno-63-51" name="__codelineno-63-51" href="#__codelineno-63-51"></a>        <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="mi">403</span><span class="p">,</span> <span class="mi">404</span><span class="p">)</span>
 </span></code></pre></div>
@@ -4953,7 +4953,7 @@ representative data:</p>
 </span><span id="__span-64-5"><a id="__codelineno-64-5" name="__codelineno-64-5" href="#__codelineno-64-5"></a><span class="sd">    &quot;&quot;&quot;</span>
 </span><span id="__span-64-6"><a id="__codelineno-64-6" name="__codelineno-64-6" href="#__codelineno-64-6"></a>
 </span><span id="__span-64-7"><a id="__codelineno-64-7" name="__codelineno-64-7" href="#__codelineno-64-7"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">test_password_hashed_with_approved_algorithm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db_session</span><span class="p">):</span>
-</span><span id="__span-64-8"><a id="__codelineno-64-8" name="__codelineno-64-8" href="#__codelineno-64-8"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;v5.0.0-2.4.1 — Verify passwords use bcrypt/argon2/scrypt.&quot;&quot;&quot;</span>
+</span><span id="__span-64-8"><a id="__codelineno-64-8" name="__codelineno-64-8" href="#__codelineno-64-8"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;v5.0.0-2.4.1: Verify passwords use bcrypt/argon2/scrypt.&quot;&quot;&quot;</span>
 </span><span id="__span-64-9"><a id="__codelineno-64-9" name="__codelineno-64-9" href="#__codelineno-64-9"></a>        <span class="kn">from</span><span class="w"> </span><span class="nn">myapp.auth</span><span class="w"> </span><span class="kn">import</span> <span class="n">hash_password</span>
 </span><span id="__span-64-10"><a id="__codelineno-64-10" name="__codelineno-64-10" href="#__codelineno-64-10"></a>
 </span><span id="__span-64-11"><a id="__codelineno-64-11" name="__codelineno-64-11" href="#__codelineno-64-11"></a>        <span class="n">hashed</span> <span class="o">=</span> <span class="n">hash_password</span><span class="p">(</span><span class="s2">&quot;test_password_123&quot;</span><span class="p">)</span>
@@ -4965,7 +4965,7 @@ representative data:</p>
 </span><span id="__span-64-17"><a id="__codelineno-64-17" name="__codelineno-64-17" href="#__codelineno-64-17"></a>        <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Password hash uses unapproved algorithm: </span><span class="si">{</span><span class="n">hashed</span><span class="p">[:</span><span class="mi">10</span><span class="p">]</span><span class="si">}</span><span class="s2">...&quot;</span>
 </span><span id="__span-64-18"><a id="__codelineno-64-18" name="__codelineno-64-18" href="#__codelineno-64-18"></a>
 </span><span id="__span-64-19"><a id="__codelineno-64-19" name="__codelineno-64-19" href="#__codelineno-64-19"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">test_credential_comparison_is_constant_time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="__span-64-20"><a id="__codelineno-64-20" name="__codelineno-64-20" href="#__codelineno-64-20"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;v5.0.0-2.4.3 — Verify credential comparison prevents timing attacks.&quot;&quot;&quot;</span>
+</span><span id="__span-64-20"><a id="__codelineno-64-20" name="__codelineno-64-20" href="#__codelineno-64-20"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;v5.0.0-2.4.3: Verify credential comparison prevents timing attacks.&quot;&quot;&quot;</span>
 </span><span id="__span-64-21"><a id="__codelineno-64-21" name="__codelineno-64-21" href="#__codelineno-64-21"></a>        <span class="kn">from</span><span class="w"> </span><span class="nn">myapp.auth</span><span class="w"> </span><span class="kn">import</span> <span class="n">verify_password</span>
 </span><span id="__span-64-22"><a id="__codelineno-64-22" name="__codelineno-64-22" href="#__codelineno-64-22"></a>        <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 </span><span id="__span-64-23"><a id="__codelineno-64-23" name="__codelineno-64-23" href="#__codelineno-64-23"></a>
@@ -4986,14 +4986,14 @@ representative data:</p>
 </span><span id="__span-64-38"><a id="__codelineno-64-38" name="__codelineno-64-38" href="#__codelineno-64-38"></a>            <span class="n">verify_password</span><span class="p">(</span><span class="n">wrong_pw_different</span><span class="p">,</span> <span class="n">hash_password</span><span class="p">(</span><span class="n">correct_pw</span><span class="p">))</span>
 </span><span id="__span-64-39"><a id="__codelineno-64-39" name="__codelineno-64-39" href="#__codelineno-64-39"></a>        <span class="n">time_wrong</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span>
 </span><span id="__span-64-40"><a id="__codelineno-64-40" name="__codelineno-64-40" href="#__codelineno-64-40"></a>
-</span><span id="__span-64-41"><a id="__codelineno-64-41" name="__codelineno-64-41" href="#__codelineno-64-41"></a>        <span class="c1"># Timing difference should be within 20% — constant-time comparison</span>
+</span><span id="__span-64-41"><a id="__codelineno-64-41" name="__codelineno-64-41" href="#__codelineno-64-41"></a>        <span class="c1"># Timing difference should be within 20%: constant-time comparison</span>
 </span><span id="__span-64-42"><a id="__codelineno-64-42" name="__codelineno-64-42" href="#__codelineno-64-42"></a>        <span class="n">ratio</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">time_correct</span><span class="p">,</span> <span class="n">time_wrong</span><span class="p">)</span> <span class="o">/</span> <span class="nb">min</span><span class="p">(</span><span class="n">time_correct</span><span class="p">,</span> <span class="n">time_wrong</span><span class="p">)</span>
 </span><span id="__span-64-43"><a id="__codelineno-64-43" name="__codelineno-64-43" href="#__codelineno-64-43"></a>        <span class="k">assert</span> <span class="n">ratio</span> <span class="o">&lt;</span> <span class="mf">1.2</span><span class="p">,</span> <span class="p">(</span>
 </span><span id="__span-64-44"><a id="__codelineno-64-44" name="__codelineno-64-44" href="#__codelineno-64-44"></a>            <span class="sa">f</span><span class="s2">&quot;Timing ratio </span><span class="si">{</span><span class="n">ratio</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> suggests non-constant-time comparison&quot;</span>
 </span><span id="__span-64-45"><a id="__codelineno-64-45" name="__codelineno-64-45" href="#__codelineno-64-45"></a>        <span class="p">)</span>
 </span><span id="__span-64-46"><a id="__codelineno-64-46" name="__codelineno-64-46" href="#__codelineno-64-46"></a>
 </span><span id="__span-64-47"><a id="__codelineno-64-47" name="__codelineno-64-47" href="#__codelineno-64-47"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">test_failed_login_is_rate_limited</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">):</span>
-</span><span id="__span-64-48"><a id="__codelineno-64-48" name="__codelineno-64-48" href="#__codelineno-64-48"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;v5.0.0-2.2.1 — Verify brute force protection via rate limiting.&quot;&quot;&quot;</span>
+</span><span id="__span-64-48"><a id="__codelineno-64-48" name="__codelineno-64-48" href="#__codelineno-64-48"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;v5.0.0-2.2.1: Verify brute force protection via rate limiting.&quot;&quot;&quot;</span>
 </span><span id="__span-64-49"><a id="__codelineno-64-49" name="__codelineno-64-49" href="#__codelineno-64-49"></a>        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
 </span><span id="__span-64-50"><a id="__codelineno-64-50" name="__codelineno-64-50" href="#__codelineno-64-50"></a>            <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/auth/login&quot;</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="p">{</span>
 </span><span id="__span-64-51"><a id="__codelineno-64-51" name="__codelineno-64-51" href="#__codelineno-64-51"></a>                <span class="s2">&quot;email&quot;</span><span class="p">:</span> <span class="s2">&quot;target@example.com&quot;</span><span class="p">,</span>
@@ -5009,7 +5009,7 @@ representative data:</p>
 </span><span id="__span-64-61"><a id="__codelineno-64-61" name="__codelineno-64-61" href="#__codelineno-64-61"></a>        <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">429</span>
 </span><span id="__span-64-62"><a id="__codelineno-64-62" name="__codelineno-64-62" href="#__codelineno-64-62"></a>
 </span><span id="__span-64-63"><a id="__codelineno-64-63" name="__codelineno-64-63" href="#__codelineno-64-63"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">test_session_invalidated_on_logout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">make_user</span><span class="p">):</span>
-</span><span id="__span-64-64"><a id="__codelineno-64-64" name="__codelineno-64-64" href="#__codelineno-64-64"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;v5.0.0-2.8.2 — Verify session tokens are invalidated on logout.&quot;&quot;&quot;</span>
+</span><span id="__span-64-64"><a id="__codelineno-64-64" name="__codelineno-64-64" href="#__codelineno-64-64"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;v5.0.0-2.8.2: Verify session tokens are invalidated on logout.&quot;&quot;&quot;</span>
 </span><span id="__span-64-65"><a id="__codelineno-64-65" name="__codelineno-64-65" href="#__codelineno-64-65"></a>        <span class="n">user</span> <span class="o">=</span> <span class="n">make_user</span><span class="p">()</span>
 </span><span id="__span-64-66"><a id="__codelineno-64-66" name="__codelineno-64-66" href="#__codelineno-64-66"></a>        <span class="n">login_response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/auth/login&quot;</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="p">{</span>
 </span><span id="__span-64-67"><a id="__codelineno-64-67" name="__codelineno-64-67" href="#__codelineno-64-67"></a>            <span class="s2">&quot;email&quot;</span><span class="p">:</span> <span class="n">user</span><span class="o">.</span><span class="n">email</span><span class="p">,</span> <span class="s2">&quot;password&quot;</span><span class="p">:</span> <span class="s2">&quot;test_password&quot;</span>
@@ -5031,7 +5031,7 @@ representative data:</p>
 </span><span id="__span-65-5"><a id="__codelineno-65-5" name="__codelineno-65-5" href="#__codelineno-65-5"></a><span class="sd">    &quot;&quot;&quot;</span>
 </span><span id="__span-65-6"><a id="__codelineno-65-6" name="__codelineno-65-6" href="#__codelineno-65-6"></a>
 </span><span id="__span-65-7"><a id="__codelineno-65-7" name="__codelineno-65-7" href="#__codelineno-65-7"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">test_500_error_does_not_leak_stack_trace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">mocker</span><span class="p">):</span>
-</span><span id="__span-65-8"><a id="__codelineno-65-8" name="__codelineno-65-8" href="#__codelineno-65-8"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;v5.0.0-7.4.1 — Verify stack traces are not exposed to users.&quot;&quot;&quot;</span>
+</span><span id="__span-65-8"><a id="__codelineno-65-8" name="__codelineno-65-8" href="#__codelineno-65-8"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;v5.0.0-7.4.1: Verify stack traces are not exposed to users.&quot;&quot;&quot;</span>
 </span><span id="__span-65-9"><a id="__codelineno-65-9" name="__codelineno-65-9" href="#__codelineno-65-9"></a>        <span class="n">mocker</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span>
 </span><span id="__span-65-10"><a id="__codelineno-65-10" name="__codelineno-65-10" href="#__codelineno-65-10"></a>            <span class="s2">&quot;myapp.api.handlers.process_request&quot;</span><span class="p">,</span>
 </span><span id="__span-65-11"><a id="__codelineno-65-11" name="__codelineno-65-11" href="#__codelineno-65-11"></a>            <span class="n">side_effect</span><span class="o">=</span><span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Database connection pool exhausted&quot;</span><span class="p">),</span>
@@ -5052,7 +5052,7 @@ representative data:</p>
 </span><span id="__span-65-26"><a id="__codelineno-65-26" name="__codelineno-65-26" href="#__codelineno-65-26"></a>    <span class="p">]</span>
 </span><span id="__span-65-27"><a id="__codelineno-65-27" name="__codelineno-65-27" href="#__codelineno-65-27"></a>
 </span><span id="__span-65-28"><a id="__codelineno-65-28" name="__codelineno-65-28" href="#__codelineno-65-28"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">test_error_responses_contain_no_secrets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">mocker</span><span class="p">):</span>
-</span><span id="__span-65-29"><a id="__codelineno-65-29" name="__codelineno-65-29" href="#__codelineno-65-29"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;v5.0.0-7.4.2 — Verify error messages do not leak secrets.&quot;&quot;&quot;</span>
+</span><span id="__span-65-29"><a id="__codelineno-65-29" name="__codelineno-65-29" href="#__codelineno-65-29"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;v5.0.0-7.4.2: Verify error messages do not leak secrets.&quot;&quot;&quot;</span>
 </span><span id="__span-65-30"><a id="__codelineno-65-30" name="__codelineno-65-30" href="#__codelineno-65-30"></a>        <span class="n">mocker</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span>
 </span><span id="__span-65-31"><a id="__codelineno-65-31" name="__codelineno-65-31" href="#__codelineno-65-31"></a>            <span class="s2">&quot;myapp.external.api_call&quot;</span><span class="p">,</span>
 </span><span id="__span-65-32"><a id="__codelineno-65-32" name="__codelineno-65-32" href="#__codelineno-65-32"></a>            <span class="n">side_effect</span><span class="o">=</span><span class="ne">ConnectionError</span><span class="p">(</span>
@@ -5069,7 +5069,7 @@ representative data:</p>
 </span><span id="__span-65-43"><a id="__codelineno-65-43" name="__codelineno-65-43" href="#__codelineno-65-43"></a>            <span class="p">)</span>
 </span><span id="__span-65-44"><a id="__codelineno-65-44" name="__codelineno-65-44" href="#__codelineno-65-44"></a>
 </span><span id="__span-65-45"><a id="__codelineno-65-45" name="__codelineno-65-45" href="#__codelineno-65-45"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">test_authentication_events_are_logged</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">make_user</span><span class="p">,</span> <span class="n">caplog</span><span class="p">):</span>
-</span><span id="__span-65-46"><a id="__codelineno-65-46" name="__codelineno-65-46" href="#__codelineno-65-46"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;v5.0.0-7.2.1 — Verify security events are logged.&quot;&quot;&quot;</span>
+</span><span id="__span-65-46"><a id="__codelineno-65-46" name="__codelineno-65-46" href="#__codelineno-65-46"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;v5.0.0-7.2.1: Verify security events are logged.&quot;&quot;&quot;</span>
 </span><span id="__span-65-47"><a id="__codelineno-65-47" name="__codelineno-65-47" href="#__codelineno-65-47"></a>        <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 </span><span id="__span-65-48"><a id="__codelineno-65-48" name="__codelineno-65-48" href="#__codelineno-65-48"></a>        <span class="n">user</span> <span class="o">=</span> <span class="n">make_user</span><span class="p">()</span>
 </span><span id="__span-65-49"><a id="__codelineno-65-49" name="__codelineno-65-49" href="#__codelineno-65-49"></a>
@@ -5088,7 +5088,7 @@ representative data:</p>
 </span><span id="__span-65-62"><a id="__codelineno-65-62" name="__codelineno-65-62" href="#__codelineno-65-62"></a>        <span class="k">assert</span> <span class="nb">any</span><span class="p">(</span><span class="s2">&quot;login_failure&quot;</span> <span class="ow">in</span> <span class="n">r</span><span class="o">.</span><span class="n">message</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">auth_logs</span><span class="p">)</span>
 </span><span id="__span-65-63"><a id="__codelineno-65-63" name="__codelineno-65-63" href="#__codelineno-65-63"></a>
 </span><span id="__span-65-64"><a id="__codelineno-65-64" name="__codelineno-65-64" href="#__codelineno-65-64"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">test_logging_does_not_record_passwords</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">caplog</span><span class="p">):</span>
-</span><span id="__span-65-65"><a id="__codelineno-65-65" name="__codelineno-65-65" href="#__codelineno-65-65"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;v5.0.0-7.3.1 — Verify sensitive data is not logged.&quot;&quot;&quot;</span>
+</span><span id="__span-65-65"><a id="__codelineno-65-65" name="__codelineno-65-65" href="#__codelineno-65-65"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;v5.0.0-7.3.1: Verify sensitive data is not logged.&quot;&quot;&quot;</span>
 </span><span id="__span-65-66"><a id="__codelineno-65-66" name="__codelineno-65-66" href="#__codelineno-65-66"></a>        <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 </span><span id="__span-65-67"><a id="__codelineno-65-67" name="__codelineno-65-67" href="#__codelineno-65-67"></a>
 </span><span id="__span-65-68"><a id="__codelineno-65-68" name="__codelineno-65-68" href="#__codelineno-65-68"></a>        <span class="k">with</span> <span class="n">caplog</span><span class="o">.</span><span class="n">at_level</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">):</span>
@@ -5214,7 +5214,7 @@ multiple CI runners:</p>
 </span><span id="__span-68-6"><a id="__codelineno-68-6" name="__codelineno-68-6" href="#__codelineno-68-6"></a>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;chore: update test duration data for sharding&quot;</span>
 </span></code></pre></div>
 <h3 id="flaky-test-quarantine-workflow">Flaky Test Quarantine Workflow<a class="headerlink" href="#flaky-test-quarantine-workflow" title="Permanent link">&para;</a></h3>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-69-1"><a id="__codelineno-69-1" name="__codelineno-69-1" href="#__codelineno-69-1"></a><span class="c1"># conftest.py — track flaky tests</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-69-1"><a id="__codelineno-69-1" name="__codelineno-69-1" href="#__codelineno-69-1"></a><span class="c1"># conftest.py: track flaky tests</span>
 </span><span id="__span-69-2"><a id="__codelineno-69-2" name="__codelineno-69-2" href="#__codelineno-69-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">pytest</span>
 </span><span id="__span-69-3"><a id="__codelineno-69-3" name="__codelineno-69-3" href="#__codelineno-69-3"></a>
 </span><span id="__span-69-4"><a id="__codelineno-69-4" name="__codelineno-69-4" href="#__codelineno-69-4"></a>
@@ -5226,7 +5226,7 @@ multiple CI runners:</p>
 </span><span id="__span-69-10"><a id="__codelineno-69-10" name="__codelineno-69-10" href="#__codelineno-69-10"></a>    <span class="k">if</span> <span class="n">reruns</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
 </span><span id="__span-69-11"><a id="__codelineno-69-11" name="__codelineno-69-11" href="#__codelineno-69-11"></a>        <span class="n">record_property</span><span class="p">(</span><span class="s2">&quot;retries&quot;</span><span class="p">,</span> <span class="n">reruns</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
 </span></code></pre></div>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-70-1"><a id="__codelineno-70-1" name="__codelineno-70-1" href="#__codelineno-70-1"></a><span class="c1"># In CI — use pytest-rerunfailures</span>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-70-1"><a id="__codelineno-70-1" name="__codelineno-70-1" href="#__codelineno-70-1"></a><span class="c1"># In CI: use pytest-rerunfailures</span>
 </span><span id="__span-70-2"><a id="__codelineno-70-2" name="__codelineno-70-2" href="#__codelineno-70-2"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
 </span><span id="__span-70-3"><a id="__codelineno-70-3" name="__codelineno-70-3" href="#__codelineno-70-3"></a><span class="w">    </span><span class="no">pytest tests/unit/ \</span>
 </span><span id="__span-70-4"><a id="__codelineno-70-4" name="__codelineno-70-4" href="#__codelineno-70-4"></a><span class="w">      </span><span class="no">--reruns 2 \</span>
@@ -5234,7 +5234,7 @@ multiple CI runners:</p>
 </span><span id="__span-70-6"><a id="__codelineno-70-6" name="__codelineno-70-6" href="#__codelineno-70-6"></a><span class="w">      </span><span class="no">--junitxml=reports/test-results.xml</span>
 </span></code></pre></div>
 <p>Tests that repeatedly need retries should be flagged and quarantined:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-71-1"><a id="__codelineno-71-1" name="__codelineno-71-1" href="#__codelineno-71-1"></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">flaky</span><span class="p">(</span><span class="n">reason</span><span class="o">=</span><span class="s2">&quot;Intermittent timeout on CI — issue #456&quot;</span><span class="p">)</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-71-1"><a id="__codelineno-71-1" name="__codelineno-71-1" href="#__codelineno-71-1"></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">flaky</span><span class="p">(</span><span class="n">reason</span><span class="o">=</span><span class="s2">&quot;Intermittent timeout on CI: issue #456&quot;</span><span class="p">)</span>
 </span><span id="__span-71-2"><a id="__codelineno-71-2" name="__codelineno-71-2" href="#__codelineno-71-2"></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">timeout</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span>
 </span><span id="__span-71-3"><a id="__codelineno-71-3" name="__codelineno-71-3" href="#__codelineno-71-3"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_external_service_response_time</span><span class="p">():</span>
 </span><span id="__span-71-4"><a id="__codelineno-71-4" name="__codelineno-71-4" href="#__codelineno-71-4"></a>    <span class="o">...</span>
@@ -5245,7 +5245,7 @@ multiple CI runners:</p>
 <h3 id="using-standard-terms-in-parametrize-design">Using Standard Terms in Parametrize Design<a class="headerlink" href="#using-standard-terms-in-parametrize-design" title="Permanent link">&para;</a></h3>
 <p>The ISTQB techniques map directly to how you design parametrize cases:</p>
 <p><strong>Equivalence Partitioning → Group inputs into classes:</strong></p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-72-1"><a id="__codelineno-72-1" name="__codelineno-72-1" href="#__codelineno-72-1"></a><span class="c1"># EP: age input has three partitions — below range, in range, above range</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-72-1"><a id="__codelineno-72-1" name="__codelineno-72-1" href="#__codelineno-72-1"></a><span class="c1"># EP: age input has three partitions: below range, in range, above range</span>
 </span><span id="__span-72-2"><a id="__codelineno-72-2" name="__codelineno-72-2" href="#__codelineno-72-2"></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">parametrize</span><span class="p">(</span><span class="s2">&quot;age, partition, expected_valid&quot;</span><span class="p">,</span> <span class="p">[</span>
 </span><span id="__span-72-3"><a id="__codelineno-72-3" name="__codelineno-72-3" href="#__codelineno-72-3"></a>    <span class="n">pytest</span><span class="o">.</span><span class="n">param</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span>  <span class="s2">&quot;below-range&quot;</span><span class="p">,</span>  <span class="kc">False</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;EP-below&quot;</span><span class="p">),</span>
 </span><span id="__span-72-4"><a id="__codelineno-72-4" name="__codelineno-72-4" href="#__codelineno-72-4"></a>    <span class="n">pytest</span><span class="o">.</span><span class="n">param</span><span class="p">(</span><span class="mi">30</span><span class="p">,</span>  <span class="s2">&quot;in-range&quot;</span><span class="p">,</span>     <span class="kc">True</span><span class="p">,</span>  <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;EP-valid&quot;</span><span class="p">),</span>
@@ -5467,19 +5467,19 @@ available at: https://github.com/OWASP/ASVS/tree/v5.0.0</p>
 <hr />
 <h2 id="18-recommended-reading">18. Recommended Reading<a class="headerlink" href="#18-recommended-reading" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>Python Testing with pytest</strong> (Brian Okken, 2<sup>nd</sup> edition) — the
+<li><strong>Python Testing with pytest</strong> (Brian Okken, 2<sup>nd</sup> edition): the
   definitive pytest reference, covers fixtures, parametrize, plugins,
   and project configuration in depth.</li>
-<li><strong>Software Engineering at Google</strong>, Chapter 12–13 (Winters, Manshreck,
-  Wright) — testing philosophy, test doubles, and why Google prefers
+<li><strong>Software Engineering at Google</strong>, Chapter 12-13 (Winters, Manshreck,
+  Wright): testing philosophy, test doubles, and why Google prefers
   fakes over mocks. Available free at abseil.io/resources/swe-book.</li>
-<li><strong>pytest official documentation</strong> — docs.pytest.org, particularly the
+<li><strong>pytest official documentation</strong> at docs.pytest.org, particularly the
   "Good Integration Practices" and "How-to" sections.</li>
-<li><strong>"Don't Mock What You Don't Own"</strong> (Hynek Schlawack) — hynek.me,
+<li><strong>"Don't Mock What You Don't Own"</strong> (Hynek Schlawack) at hynek.me,
   concise explanation of when mocking helps vs. when it hurts.</li>
-<li><strong>"Tests Too DRY? Make Them DAMP!"</strong> (Google Testing Blog) —
+<li><strong>"Tests Too DRY? Make Them DAMP!"</strong> (Google Testing Blog):
   testing.googleblog.com, the case for readability over DRY in tests.</li>
-<li><strong>coverage.py documentation</strong> — coverage.readthedocs.io, configuration
+<li><strong>coverage.py documentation</strong> at coverage.readthedocs.io, configuration
   reference and branch coverage explanation.</li>
 </ul>
 <hr />
@@ -5511,11 +5511,6 @@ available at: https://github.com/OWASP/ASVS/tree/v5.0.0</p>
 <tr>
 <td><code>basedpyright</code></td>
 <td>Static type checking (strict mode)</td>
-<td>§12</td>
-</tr>
-<tr>
-<td><code>mypy</code></td>
-<td>Alternative static type checker</td>
 <td>§12</td>
 </tr>
 <tr>
@@ -5592,7 +5587,7 @@ available at: https://github.com/OWASP/ASVS/tree/v5.0.0</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 7, 2026 03:26:23 UTC">April 7, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 27, 2026 22:56:05 UTC">April 27, 2026</span>
   </span>
 
     

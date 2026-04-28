@@ -2499,17 +2499,17 @@
 <h2 id="context">Context<a class="headerlink" href="#context" title="Permanent link">&para;</a></h2>
 <p>The repo provides four mechanisms for extending Claude's behavior:</p>
 <ol>
-<li><strong>Agents</strong> — files in <code>.claude/agents/</code>. Invoked explicitly via the <code>Agent</code> tool with <code>subagent_type</code>. Run in a fresh context with their own tool restrictions. Best for multi-step, domain-isolated work.</li>
-<li><strong>Skills</strong> — directories in <code>.claude/skills/</code>. Invoked via the <code>Skill</code> tool, usually triggered by a keyword or slash command in the user's prompt. Best for short, deterministic automations.</li>
-<li><strong>Rules</strong> — markdown files in <code>.claude/rules/</code>. Loaded into every session's system prompt via <code>CLAUDE.md</code> references. Best for behaviors that must influence every turn.</li>
-<li><strong>Standards</strong> — markdown files in <code>.claude/standards/</code>. Never auto-loaded. Read on demand when a task calls for reference material. Best for canonical reference that should not bloat the system prompt.</li>
+<li><strong>Agents</strong>: files in <code>.claude/agents/</code>. Invoked explicitly via the <code>Agent</code> tool with <code>subagent_type</code>. Run in a fresh context with their own tool restrictions. Best for multi-step, domain-isolated work.</li>
+<li><strong>Skills</strong>: directories in <code>.claude/skills/</code>. Invoked via the <code>Skill</code> tool, usually triggered by a keyword or slash command in the user's prompt. Best for short, deterministic automations.</li>
+<li><strong>Rules</strong>: markdown files in <code>.claude/rules/</code>. Loaded into every session's system prompt via <code>CLAUDE.md</code> references. Best for behaviors that must influence every turn.</li>
+<li><strong>Standards</strong>: markdown files in <code>.claude/standards/</code>. Never auto-loaded. Read on demand when a task calls for reference material. Best for canonical reference that should not bloat the system prompt.</li>
 </ol>
 <p>Misclassifying a capability causes real problems:</p>
 <ul>
 <li>A <strong>skill that should be an agent</strong> fires automatically when keywords match, without the explicit invocation that a multi-step, high-stakes task warrants.</li>
 <li>An <strong>agent that should be a skill</strong> requires knowing the exact <code>subagent_type</code> string; simple automations that should be one-click become multi-step invocations.</li>
 <li>A <strong>rule that should be a standard</strong> bloats every session's system prompt with content that is only relevant for specific tasks.</li>
-<li>A <strong>standard that should be a rule</strong> means the behavior silently never fires — the document sits in <code>standards/</code> but nothing ever loads it into the session context.</li>
+<li>A <strong>standard that should be a rule</strong> means the behavior silently never fires: the document sits in <code>standards/</code> but nothing ever loads it into the session context.</li>
 </ul>
 <p>This ADR documents the classification rubric and absorbs the flat-directory convention for agents, since that is an implementation detail of the same decision.</p>
 <h2 id="decision">Decision<a class="headerlink" href="#decision" title="Permanent link">&para;</a></h2>
@@ -2567,11 +2567,11 @@
 <h3 id="flat-agent-directory-with-domain-prefixes">Flat agent directory with domain prefixes<a class="headerlink" href="#flat-agent-directory-with-domain-prefixes" title="Permanent link">&para;</a></h3>
 <p>All 43 agents live in a single flat directory: <code>.claude/agents/</code>. There is no nesting (<code>security/</code>, <code>testing/</code>, etc.).</p>
 <p>Reason: <code>setup.sh</code> creates a single symlink <code>~/.claude/agents/ → ~/dev/.claude/.claude/agents/</code>. Supporting nested directories would require either recursive symlink creation or a different install topology. The flat layout also makes <code>ls ~/.claude/agents/</code> a complete inventory at a glance.</p>
-<p>Domain grouping is preserved via file name prefixes: <code>owasp-web.md</code>, <code>owasp-api.md</code>, <code>owasp-llm.md</code> cluster together alphabetically. The prefix convention is a social norm, not enforced by tooling — but deviating from it makes the catalog harder to scan.</p>
+<p>Domain grouping is preserved via file name prefixes: <code>owasp-web.md</code>, <code>owasp-api.md</code>, <code>owasp-llm.md</code> cluster together alphabetically. The prefix convention is a social norm, not enforced by tooling: but deviating from it makes the catalog harder to scan.</p>
 <h2 id="alternatives-considered">Alternatives Considered<a class="headerlink" href="#alternatives-considered" title="Permanent link">&para;</a></h2>
 <p><strong>Everything as agents</strong>: Agents require explicit invocation with a <code>subagent_type</code> parameter. Simple automations like commit message generation would require knowing the exact agent name and constructing an explicit tool call. The ergonomic advantage of skills (keyword trigger, slash command, one keystroke) is lost entirely.</p>
 <p><strong>Everything as skills</strong>: Skills auto-trigger on keyword matches. Multi-step, high-stakes operations (security audit, full test suite generation, database migration review) would fire without explicit user confirmation. Auto-triggering a security audit on every mention of "vulnerable" is noisy and potentially misleading.</p>
-<p><strong>Nested agent directories</strong>: <code>.claude/agents/security/</code>, <code>.claude/agents/testing/</code>, etc. <code>setup.sh</code> would need to either symlink each subdirectory individually or recurse into the directory tree. Neither is simpler than a flat directory with a prefix convention. Nesting also makes the catalog less discoverable — <code>ls ~/.claude/agents/</code> stops being a complete inventory.</p>
+<p><strong>Nested agent directories</strong>: <code>.claude/agents/security/</code>, <code>.claude/agents/testing/</code>, etc. <code>setup.sh</code> would need to either symlink each subdirectory individually or recurse into the directory tree. Neither is simpler than a flat directory with a prefix convention. Nesting also makes the catalog less discoverable: <code>ls ~/.claude/agents/</code> stops being a complete inventory.</p>
 <p><strong>Single <code>.claude/doctrine/</code> directory for rules and standards</strong>: Removes the semantic distinction between session-injected behavior and on-demand reference. A contributor who mis-files a standard in the rules directory bloats every session. A contributor who mis-files a rule in the standards directory silently breaks the intended behavior. Two directories make the distinction legible.</p>
 <h2 id="consequences">Consequences<a class="headerlink" href="#consequences" title="Permanent link">&para;</a></h2>
 <h3 id="positive">Positive<a class="headerlink" href="#positive" title="Permanent link">&para;</a></h3>
@@ -2591,15 +2591,15 @@
 </ul>
 <h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
 <ul>
-<li><code>.claude/rules/supervisor.md</code> — agent assignment patterns for common task types</li>
-<li><code>.claude/agents/</code> — the 43 agent files</li>
-<li><code>.claude/skills/</code> — the 40+ skill directories</li>
-<li><code>.claude/rules/</code> — session-injected rules</li>
-<li><code>.claude/standards/</code> — on-demand reference standards</li>
-<li><code>AGENTS-AND-SKILLS.md</code> — the canonical agent and skill catalog</li>
-<li><code>docs/architecture/agent-dispatch.md</code> — narrative explanation with embedded diagram</li>
-<li><code>docs/architecture/diagrams/agent_skill_dispatch.svg</code> — runtime dispatch flow diagram</li>
-<li><a href="../ADR-006-rules-vs-standards/">ADR-006</a> — the rules vs standards loading semantics decision</li>
+<li><code>.claude/rules/supervisor.md</code>: agent assignment patterns for common task types</li>
+<li><code>.claude/agents/</code>: the 43 agent files</li>
+<li><code>.claude/skills/</code>: the 40+ skill directories</li>
+<li><code>.claude/rules/</code>: session-injected rules</li>
+<li><code>.claude/standards/</code>: on-demand reference standards</li>
+<li><code>AGENTS-AND-SKILLS.md</code>: the canonical agent and skill catalog</li>
+<li><code>docs/architecture/agent-dispatch.md</code>: narrative explanation with embedded diagram</li>
+<li><code>docs/architecture/diagrams/agent_skill_dispatch.svg</code>: runtime dispatch flow diagram</li>
+<li><a href="../ADR-006-rules-vs-standards/">ADR-006</a>: the rules vs standards loading semantics decision</li>
 </ul>
 
 
@@ -2623,7 +2623,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 11, 2026 22:24:49 UTC">April 11, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 27, 2026 22:56:05 UTC">April 27, 2026</span>
   </span>
 
     

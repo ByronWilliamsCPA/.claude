@@ -2487,7 +2487,7 @@
   <h1>Agents Catalog</h1>
 
 <p>Agents are invoked explicitly via the <code>Agent</code> tool with <code>subagent_type</code>. Each runs in an isolated context with its own tool restrictions. See <a href="../../architecture/agent-dispatch/">Agent Dispatch</a> for how invocation works and <a href="../../architecture/adr/ADR-004-skill-vs-agent-boundary/">ADR-004</a> for the classification rubric.</p>
-<p>All agent files live in <code>.claude/agents/</code> (symlinked to <code>~/.claude/agents/</code>). The <code>subagent_type</code> value is the <code>name:</code> field in the agent's frontmatter — not necessarily the filename.</p>
+<p>All agent files live in <code>.claude/agents/</code> (symlinked to <code>~/.claude/agents/</code>). The <code>subagent_type</code> value is the <code>name:</code> field in the agent's frontmatter: not necessarily the filename.</p>
 <h2 id="code-quality">Code Quality<a class="headerlink" href="#code-quality" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -2590,32 +2590,32 @@
 <tr>
 <td><code>owasp-web</code></td>
 <td><code>owasp-web.md</code></td>
-<td>OWASP Top 10 for Web Applications (2025) — reviews A01–A10 vulnerabilities</td>
+<td>OWASP Top 10 for Web Applications (2025): reviews A01–A10 vulnerabilities</td>
 </tr>
 <tr>
 <td><code>owasp-api</code></td>
 <td><code>owasp-api.md</code></td>
-<td>OWASP API Security Top 10 (2023) — REST, GraphQL, gRPC, WebSocket</td>
+<td>OWASP API Security Top 10 (2023): REST, GraphQL, gRPC, WebSocket</td>
 </tr>
 <tr>
 <td><code>owasp-llm</code></td>
 <td><code>owasp-llm.md</code></td>
-<td>OWASP Top 10 for LLM Applications (2025) — LLM01–LLM10</td>
+<td>OWASP Top 10 for LLM Applications (2025): LLM01–LLM10</td>
 </tr>
 <tr>
 <td><code>owasp-agent</code></td>
 <td><code>owasp-agent.md</code></td>
-<td>OWASP Top 10 for Agentic Applications (2026) — AG01–AG10</td>
+<td>OWASP Top 10 for Agentic Applications (2026): AG01–AG10</td>
 </tr>
 <tr>
 <td><code>owasp-ml</code></td>
 <td><code>owasp-ml.md</code></td>
-<td>OWASP ML Security Top 10 (v0.3, 2023) — ML01–ML10 for training pipelines</td>
+<td>OWASP ML Security Top 10 (v0.3, 2023): ML01–ML10 for training pipelines</td>
 </tr>
 <tr>
 <td><code>owasp-citizen</code></td>
 <td><code>owasp-citizen.md</code></td>
-<td>OWASP Citizen Developer Top 10 (2025) — AI-assisted and low-code/no-code</td>
+<td>OWASP Citizen Developer Top 10 (2025): AI-assisted and low-code/no-code</td>
 </tr>
 </tbody>
 </table>
@@ -2637,17 +2637,17 @@
 <tr>
 <td><code>scope-analyzer</code></td>
 <td><code>scope-analyzer.md</code></td>
-<td>Produces a scope boundary document for a project phase (internal — phase-gate skill)</td>
+<td>Produces a scope boundary document for a project phase (internal: phase-gate skill)</td>
 </tr>
 <tr>
 <td><code>plan-validator</code></td>
 <td><code>plan-validator.md</code></td>
-<td>Validates an action plan against scope boundaries to detect creep (internal — phase-gate skill)</td>
+<td>Validates an action plan against scope boundaries to detect creep (internal: phase-gate skill)</td>
 </tr>
 <tr>
 <td><code>phase-reviewer</code></td>
 <td><code>phase-reviewer.md</code></td>
-<td>Executes quality gates to determine if a phase is complete (internal — phase-gate skill)</td>
+<td>Executes quality gates to determine if a phase is complete (internal: phase-gate skill)</td>
 </tr>
 </tbody>
 </table>
@@ -2805,7 +2805,7 @@
 <td><code>writing-style-editor</code></td>
 <td><code>writing-style-editor.md</code></td>
 <td>Stage 3</td>
-<td>Persona fidelity and AI pattern detection — ensures documents sound human</td>
+<td>Persona fidelity and AI pattern detection: ensures documents sound human</td>
 </tr>
 <tr>
 <td><code>tone-rewriter</code></td>
@@ -2829,9 +2829,9 @@
 </table>
 <h2 id="see-also">See Also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="../skills/">Skills Catalog</a> — the 40+ skills and their triggers</li>
-<li><a href="../../architecture/agent-dispatch/">Architecture → Agent Dispatch</a> — how agents are invoked at runtime</li>
-<li><a href="../../contributing/adding-agents/">Contributing → Adding an Agent</a> — how to add a new agent</li>
+<li><a href="../skills/">Skills Catalog</a>: the 40+ skills and their triggers</li>
+<li><a href="../../architecture/agent-dispatch/">Architecture → Agent Dispatch</a>: how agents are invoked at runtime</li>
+<li><a href="../../contributing/adding-agents/">Contributing → Adding an Agent</a>: how to add a new agent</li>
 </ul>
 
 
@@ -2855,7 +2855,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 11, 2026 22:24:49 UTC">April 11, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 27, 2026 22:56:05 UTC">April 27, 2026</span>
   </span>
 
     

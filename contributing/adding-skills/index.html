@@ -2420,9 +2420,9 @@
 </span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>
 </span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="gu">## Workflow</span>
 </span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>
-</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="k">1.</span> Step one — what Claude does first
-</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="k">2.</span> Step two — what Claude does next
-</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="k">3.</span> Step three — what the skill produces
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="k">1.</span> Step one: what Claude does first
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="k">2.</span> Step two: what Claude does next
+</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="k">3.</span> Step three: what the skill produces
 </span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>
 </span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="gu">## Output</span>
 </span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>
@@ -2430,9 +2430,9 @@
 </span></code></pre></div>
 <h2 id="triggers">Triggers<a class="headerlink" href="#triggers" title="Permanent link">&para;</a></h2>
 <p>Skills can be triggered two ways:</p>
-<p><strong>Slash commands</strong> — the user types <code>/my-skill</code> explicitly. This is the most reliable trigger and should be used for workflows that the user intentionally invokes. The <code>git</code> skill is triggered this way (<code>/commit</code>, <code>/git pr</code>).</p>
-<p><strong>Keyword patterns</strong> — the <code>Skill</code> tool fires when matching words appear in the user's prompt. These are registered in the skill system's matcher configuration. Keyword triggers are appropriate for skills that should fire contextually (e.g., <code>frontend-design</code> fires on "build UI", "create component", "design page").</p>
-<p>For most new skills, start with an explicit slash command trigger. Keyword triggers require more care — they can fire unexpectedly if the trigger words are too common.</p>
+<p><strong>Slash commands</strong>: the user types <code>/my-skill</code> explicitly. This is the most reliable trigger and should be used for workflows that the user intentionally invokes. The <code>git</code> skill is triggered this way (<code>/commit</code>, <code>/git pr</code>).</p>
+<p><strong>Keyword patterns</strong>: the <code>Skill</code> tool fires when matching words appear in the user's prompt. These are registered in the skill system's matcher configuration. Keyword triggers are appropriate for skills that should fire contextually (e.g., <code>frontend-design</code> fires on "build UI", "create component", "design page").</p>
+<p>For most new skills, start with an explicit slash command trigger. Keyword triggers require more care: they can fire unexpectedly if the trigger words are too common.</p>
 <h2 id="the-planning-bridge-gate">The Planning Bridge Gate<a class="headerlink" href="#the-planning-bridge-gate" title="Permanent link">&para;</a></h2>
 <p>The <code>Skill</code> PreToolUse hook includes a planning bridge gate (<code>scripts/planning-bridge-gate.sh</code>). For skills that involve significant code changes or architecture decisions, the gate may require a plan to be approved first. If your skill should bypass this gate, document the reason in <code>SKILL.md</code>.</p>
 <h2 id="testing">Testing<a class="headerlink" href="#testing" title="Permanent link">&para;</a></h2>
@@ -2448,10 +2448,10 @@
 <p>After testing, add the skill to <code>AGENTS-AND-SKILLS.md</code> at the repo root and to the <a href="../../reference/skills/">Skills Catalog</a> under the appropriate section.</p>
 <h2 id="see-also">See Also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="../../architecture/adr/ADR-004-skill-vs-agent-boundary/">ADR-004 Skill vs Agent Boundary</a> — the classification rubric</li>
-<li><a href="../../architecture/agent-dispatch/">Architecture → Agent Dispatch</a> — how skills are dispatched at runtime</li>
-<li><a href="../../reference/skills/">Skills Catalog</a> — the current full catalog</li>
-<li><a href="../adding-hooks/">Adding a Hook</a> — if your skill needs a dedicated hook entry</li>
+<li><a href="../../architecture/adr/ADR-004-skill-vs-agent-boundary/">ADR-004 Skill vs Agent Boundary</a>: the classification rubric</li>
+<li><a href="../../architecture/agent-dispatch/">Architecture → Agent Dispatch</a>: how skills are dispatched at runtime</li>
+<li><a href="../../reference/skills/">Skills Catalog</a>: the current full catalog</li>
+<li><a href="../adding-hooks/">Adding a Hook</a>: if your skill needs a dedicated hook entry</li>
 </ul>
 
 
@@ -2475,7 +2475,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 11, 2026 22:24:49 UTC">April 11, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 27, 2026 22:56:05 UTC">April 27, 2026</span>
   </span>
 
     

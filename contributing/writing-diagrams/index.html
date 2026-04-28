@@ -2381,7 +2381,7 @@
 <li>Store <code>.puml</code> sources under <code>docs/architecture/diagrams/</code>.</li>
 <li>Commit both the <code>.puml</code> source and a rendered <code>.svg</code> sibling.</li>
 <li>Use plain PlantUML (no external <code>!include</code> directives that require network access).</li>
-<li>Keep each diagram focused on one concept — if you need to show two things, use two diagrams.</li>
+<li>Keep each diagram focused on one concept: if you need to show two things, use two diagrams.</li>
 </ul>
 <h2 id="offline-rendering">Offline Rendering<a class="headerlink" href="#offline-rendering" title="Permanent link">&para;</a></h2>
 <p>We do <strong>not</strong> render diagrams in CI. Rationale: no Graphviz/Java dependency at build time, faster mkdocs builds, and the <code>.svg</code> commit gives every reviewer a byte-identical artifact to inspect in PR diffs. This policy replaces the standalone ADR that v1 of the plan proposed.</p>
@@ -2391,9 +2391,9 @@
 <p>Renders all <code>docs/architecture/diagrams/*.puml</code>. Pass a specific path to render one.</p>
 <p>Alternatives:</p>
 <ul>
-<li><strong><code>diagram-maintenance</code> skill</strong> — use in a Claude Code session on a <code>.puml</code> source.</li>
-<li><strong>VS Code</strong> — PlantUML extension, <code>Alt+D</code> to preview.</li>
-<li><strong><code>plantuml -tsvg &lt;file&gt;.puml</code></strong> — direct CLI if <code>plantuml</code> is on PATH.</li>
+<li><strong><code>diagram-maintenance</code> skill</strong>: use in a Claude Code session on a <code>.puml</code> source.</li>
+<li><strong>VS Code</strong>: PlantUML extension, <code>Alt+D</code> to preview.</li>
+<li><strong><code>plantuml -tsvg &lt;file&gt;.puml</code></strong>: direct CLI if <code>plantuml</code> is on PATH.</li>
 </ul>
 <h2 id="when-to-commit-svg-siblings">When to Commit SVG Siblings<a class="headerlink" href="#when-to-commit-svg-siblings" title="Permanent link">&para;</a></h2>
 <p>Always, in the same commit as the <code>.puml</code> source change. Reviewers see the <code>.svg</code> diff without having to render locally.</p>
@@ -2426,7 +2426,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 11, 2026 22:24:49 UTC">April 11, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 27, 2026 22:56:05 UTC">April 27, 2026</span>
   </span>
 
     

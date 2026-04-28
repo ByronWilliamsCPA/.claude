@@ -2354,7 +2354,7 @@
 
   <h1>3. Your First Skill</h1>
 
-<p>Skills are automations. A skill fires when you trigger it — usually with a slash command typed in the Claude Code prompt. It runs inside the main conversation window, uses the same context and tools as your session, and produces a deterministic result for a common workflow.</p>
+<p>Skills are automations. A skill fires when you trigger it: usually with a slash command typed in the Claude Code prompt. It runs inside the main conversation window, uses the same context and tools as your session, and produces a deterministic result for a common workflow.</p>
 <h2 id="what-a-skill-is">What a Skill Is<a class="headerlink" href="#what-a-skill-is" title="Permanent link">&para;</a></h2>
 <p>A skill directory in <code>.claude/skills/</code> (visible as <code>~/.claude/skills/</code> after install) contains a <code>SKILL.md</code> file with instructions for a specific task. When you type a matching trigger, Claude loads those instructions and executes the workflow. Skills are fast and reliable for repeated, well-defined tasks: creating a commit, generating a PR, running a quality review.</p>
 <p>The key difference from agents: skills run <em>in</em> the main conversation; agents run <em>outside</em> it. Skills share your session context; agents get a fresh one.</p>
@@ -2399,12 +2399,12 @@
 <p>When a skill is triggered:</p>
 <ol>
 <li>Claude recognizes the trigger pattern (slash command or keyword match).</li>
-<li>The <code>Skill</code> tool fires the <code>PreToolUse</code> hook pipeline — specifically the planning bridge gate (if relevant) and the hookify dispatch.</li>
+<li>The <code>Skill</code> tool fires the <code>PreToolUse</code> hook pipeline: specifically the planning bridge gate (if relevant) and the hookify dispatch.</li>
 <li>The <code>SKILL.md</code> for the matched skill loads into the current conversation context.</li>
 <li>Claude executes the skill's workflow steps using the available tools.</li>
 <li><code>PostToolUse</code> fires when the skill's tool calls complete.</li>
 </ol>
-<p>The skill runs inline — you will see Claude's tool calls and output in the main conversation window in real time.</p>
+<p>The skill runs inline: you will see Claude's tool calls and output in the main conversation window in real time.</p>
 <h2 id="read-the-output">Read the Output<a class="headerlink" href="#read-the-output" title="Permanent link">&para;</a></h2>
 <p>Skills produce visible output in the main conversation: file edits, bash command results, formatted summaries. You can follow along as the skill works. After it completes, you can ask Claude to explain any step, adjust the result, or continue with the next task.</p>
 <p>If a skill does not trigger when you expect it to, check:</p>
@@ -2413,7 +2413,7 @@
 <li>The planning bridge gate: if a plan is required before certain skills fire, you will see a gate message.</li>
 </ul>
 <h2 id="next">Next<a class="headerlink" href="#next" title="Permanent link">&para;</a></h2>
-<p><a href="../picking/">Picking Agents vs Skills</a> — a quick reference for when to reach for each.</p>
+<p><a href="../picking/">Picking Agents vs Skills</a>: a quick reference for when to reach for each.</p>
 
 
 
@@ -2436,7 +2436,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 11, 2026 22:24:49 UTC">April 11, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 27, 2026 22:56:05 UTC">April 27, 2026</span>
   </span>
 
     

@@ -2511,24 +2511,24 @@
 <p>Current hook definitions by type:</p>
 <p><strong>PreToolUse</strong> (fires before each tool call, in this order):</p>
 <ol>
-<li><strong>Secrets file guard</strong> — matcher <code>Edit|Write</code>. Blocks writes to <code>.env</code> and <code>settings.local.json</code> with exit code 2.</li>
-<li><strong>Planning bridge gate</strong> — matcher <code>Skill</code>. Calls <code>scripts/planning-bridge-gate.sh</code> before any Skill invocation to enforce plan-approval workflow.</li>
-<li><strong>Security guidance reminder</strong> — matcher <code>Edit|Write|MultiEdit</code>. Runs <code>security_reminder_hook.py</code> from <code>anthropics-plugins/security-guidance</code> to surface security patterns.</li>
-<li><strong>hookify PreToolUse</strong> — no matcher (all tools). Dispatches to the hookify plugin engine, which runs any plugins registered for PreToolUse events.</li>
+<li><strong>Secrets file guard</strong>: matcher <code>Edit|Write</code>. Blocks writes to <code>.env</code> and <code>settings.local.json</code> with exit code 2.</li>
+<li><strong>Planning bridge gate</strong>: matcher <code>Skill</code>. Calls <code>scripts/planning-bridge-gate.sh</code> before any Skill invocation to enforce plan-approval workflow.</li>
+<li><strong>Security guidance reminder</strong>: matcher <code>Edit|Write|MultiEdit</code>. Runs <code>security_reminder_hook.py</code> from <code>anthropics-plugins/security-guidance</code> to surface security patterns.</li>
+<li><strong>hookify PreToolUse</strong>: no matcher (all tools). Dispatches to the hookify plugin engine, which runs any plugins registered for PreToolUse events.</li>
 </ol>
 <p><strong>PostToolUse</strong> (fires after each tool call, in this order):</p>
 <ol>
-<li><strong>py310-compat-check</strong> — matcher <code>Edit|Write</code>. Checks modified Python files for syntax incompatible with Python 3.10.</li>
-<li><strong>hookify PostToolUse</strong> — no matcher (all tools). Dispatches to hookify plugin engine for PostToolUse plugins.</li>
+<li><strong>py310-compat-check</strong>: matcher <code>Edit|Write</code>. Checks modified Python files for syntax incompatible with Python 3.10.</li>
+<li><strong>hookify PostToolUse</strong>: no matcher (all tools). Dispatches to hookify plugin engine for PostToolUse plugins.</li>
 </ol>
 <p><strong>Stop</strong> (fires at end of model turn):</p>
 <ol>
-<li><strong>hookify Stop</strong> — dispatches to hookify plugin engine's stop handler.</li>
+<li><strong>hookify Stop</strong>: dispatches to hookify plugin engine's stop handler.</li>
 </ol>
 <p><strong>UserPromptSubmit</strong> (fires on each user message, in this order):</p>
 <ol>
-<li><strong>hookify UserPromptSubmit</strong> — dispatches to hookify plugin engine. Runs first, before any project-specific logic.</li>
-<li><strong>PR review reminder</strong> — runs <code>scripts/pr-review-reminder.py</code> to detect PR review intent and inject reminders.</li>
+<li><strong>hookify UserPromptSubmit</strong>: dispatches to hookify plugin engine. Runs first, before any project-specific logic.</li>
+<li><strong>PR review reminder</strong>: runs <code>scripts/pr-review-reminder.py</code> to detect PR review intent and inject reminders.</li>
 </ol>
 <h3 id="execution-ordering-across-a-conversation-turn">Execution ordering across a conversation turn<a class="headerlink" href="#execution-ordering-across-a-conversation-turn" title="Permanent link">&para;</a></h3>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>User sends message
@@ -2556,7 +2556,7 @@
 <h3 id="positive">Positive<a class="headerlink" href="#positive" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Hook definitions are version-controlled, diffable, and reproducible on any machine.</li>
-<li>Execution order within each hook type is explicit in <code>hooks.json</code> — no hidden dispatch logic.</li>
+<li>Execution order within each hook type is explicit in <code>hooks.json</code>: no hidden dispatch logic.</li>
 <li>Adding a new gate is a two-step change: add the script to <code>scripts/</code>, add an entry to <code>hooks.json</code>, re-run <code>setup.sh</code>.</li>
 <li>hookify plugins (from upstream <code>anthropics-plugins</code>) compose cleanly alongside project-specific gates because each is a separate array entry.</li>
 </ul>
@@ -2571,16 +2571,16 @@
 </ul>
 <h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
 <ul>
-<li><code>hooks.json</code> — the authoritative hook definitions</li>
-<li><code>setup.sh</code> — the jq merge command (<code>merge_hooks</code> function)</li>
-<li><code>scripts/planning-bridge-gate.sh</code> — Skill PreToolUse gate</li>
-<li><code>scripts/py310-compat-check.sh</code> — Edit/Write PostToolUse compatibility check</li>
-<li><code>scripts/pr-review-reminder.py</code> — UserPromptSubmit PR review detector</li>
-<li><code>.submodules/anthropics-plugins/plugins/hookify/</code> — the hookify plugin engine</li>
-<li><code>.submodules/anthropics-plugins/plugins/security-guidance/</code> — security reminder hook</li>
-<li><code>docs/architecture/hook-pipeline.md</code> — narrative explanation with embedded diagram</li>
-<li><code>docs/architecture/diagrams/hook_pipeline.svg</code> — sequence diagram of a full turn</li>
-<li><a href="../ADR-001-two-layer-symlink-install/">ADR-001</a> — explains why <code>hooks.json</code> is separate from <code>settings.json</code></li>
+<li><code>hooks.json</code>: the authoritative hook definitions</li>
+<li><code>setup.sh</code>: the jq merge command (<code>merge_hooks</code> function)</li>
+<li><code>scripts/planning-bridge-gate.sh</code>: Skill PreToolUse gate</li>
+<li><code>scripts/py310-compat-check.sh</code>: Edit/Write PostToolUse compatibility check</li>
+<li><code>scripts/pr-review-reminder.py</code>: UserPromptSubmit PR review detector</li>
+<li><code>.submodules/anthropics-plugins/plugins/hookify/</code>: the hookify plugin engine</li>
+<li><code>.submodules/anthropics-plugins/plugins/security-guidance/</code>: security reminder hook</li>
+<li><code>docs/architecture/hook-pipeline.md</code>: narrative explanation with embedded diagram</li>
+<li><code>docs/architecture/diagrams/hook_pipeline.svg</code>: sequence diagram of a full turn</li>
+<li><a href="../ADR-001-two-layer-symlink-install/">ADR-001</a>: explains why <code>hooks.json</code> is separate from <code>settings.json</code></li>
 </ul>
 
 
@@ -2604,7 +2604,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 11, 2026 22:24:49 UTC">April 11, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 27, 2026 22:56:05 UTC">April 27, 2026</span>
   </span>
 
     

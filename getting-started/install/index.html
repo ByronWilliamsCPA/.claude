@@ -656,7 +656,7 @@
   <a href="#install-the-python-toolchain-optional-required-for-contributing" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Install the Python Toolchain (Optional — Required for Contributing)
+        Install the Python Toolchain (Optional: Required for Contributing)
       
     </span>
   </a>
@@ -2347,7 +2347,7 @@
   <a href="#install-the-python-toolchain-optional-required-for-contributing" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Install the Python Toolchain (Optional — Required for Contributing)
+        Install the Python Toolchain (Optional: Required for Contributing)
       
     </span>
   </a>
@@ -2398,14 +2398,14 @@
 
   <h1>1. Install</h1>
 
-<p>This page walks through installing Claude Code Configuration from scratch. The install creates symlinks from <code>~/.claude/</code> into the repo — Claude Code sees the agents, skills, and rules as native config, while the repo stays version-controlled at <code>~/dev/.claude</code>.</p>
+<p>This page walks through installing Claude Code Configuration from scratch. The install creates symlinks from <code>~/.claude/</code> into the repo: Claude Code sees the agents, skills, and rules as native config, while the repo stays version-controlled at <code>~/dev/.claude</code>.</p>
 <p>For the design rationale behind this two-layer approach, see <a href="../../architecture/install-model/">Architecture → Install Model</a>.</p>
 <h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>Git</strong> with SSH or HTTPS access to GitHub</li>
 <li><strong>Python 3.10+</strong> (<code>python3 --version</code>)</li>
-<li><strong>uv</strong> (<code>uv --version</code> — if missing, see <a href="https://docs.astral.sh/uv/getting-started/installation/">uv install docs</a>)</li>
-<li><strong>jq</strong> (<code>jq --version</code> — if missing: <code>apt install jq</code> or <code>brew install jq</code>)</li>
+<li><strong>uv</strong> (<code>uv --version</code>: if missing, see <a href="https://docs.astral.sh/uv/getting-started/installation/">uv install docs</a>)</li>
+<li><strong>jq</strong> (<code>jq --version</code>: if missing: <code>apt install jq</code> or <code>brew install jq</code>)</li>
 <li>A working Claude Code installation</li>
 </ul>
 <h2 id="clone-the-repository">Clone the Repository<a class="headerlink" href="#clone-the-repository" title="Permanent link">&para;</a></h2>
@@ -2420,7 +2420,7 @@
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nb">cd</span><span class="w"> </span>~/dev/.claude
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>./setup.sh
 </span></code></pre></div>
-<p><code>setup.sh</code> is safe to re-run at any time — every operation is idempotent. It will:</p>
+<p><code>setup.sh</code> is safe to re-run at any time: every operation is idempotent. It will:</p>
 <ol>
 <li>Check for required commands (<code>ln</code>, <code>git</code>) and warn if <code>jq</code> is missing.</li>
 <li>Initialize any uninitialized submodules.</li>
@@ -2443,7 +2443,7 @@
 </span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>jq<span class="w"> </span><span class="s1">&#39;.hooks | keys&#39;</span><span class="w"> </span>~/.claude/settings.json
 </span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="c1"># Expected: [&quot;PostToolUse&quot;, &quot;PreToolUse&quot;, &quot;Stop&quot;, &quot;UserPromptSubmit&quot;]</span>
 </span></code></pre></div>
-<h2 id="install-the-python-toolchain-optional-required-for-contributing">Install the Python Toolchain (Optional — Required for Contributing)<a class="headerlink" href="#install-the-python-toolchain-optional-required-for-contributing" title="Permanent link">&para;</a></h2>
+<h2 id="install-the-python-toolchain-optional-required-for-contributing">Install the Python Toolchain (Optional: Required for Contributing)<a class="headerlink" href="#install-the-python-toolchain-optional-required-for-contributing" title="Permanent link">&para;</a></h2>
 <p>If you plan to run tests, lint, or pre-commit hooks:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nb">cd</span><span class="w"> </span>~/dev/.claude
 </span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>uv<span class="w"> </span>sync<span class="w"> </span>--all-extras
@@ -2465,7 +2465,7 @@
 </span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="c1"># Optionally: remove the hooks block from ~/.claude/settings.json manually</span>
 </span></code></pre></div>
 <h2 id="next">Next<a class="headerlink" href="#next" title="Permanent link">&para;</a></h2>
-<p><a href="../first-agent/">Your First Agent</a> — invoke a specialist agent in a Claude Code session.</p>
+<p><a href="../first-agent/">Your First Agent</a>: invoke a specialist agent in a Claude Code session.</p>
 
 
 
@@ -2488,7 +2488,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 12, 2026 01:23:33 UTC">April 12, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 27, 2026 22:56:05 UTC">April 27, 2026</span>
   </span>
 
     

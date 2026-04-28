@@ -2475,21 +2475,21 @@
 <p><strong>Deciders</strong>: Byron Williams</p>
 </blockquote>
 <h2 id="context">Context<a class="headerlink" href="#context" title="Permanent link">&para;</a></h2>
-<p>The Model Context Protocol (MCP) allows Claude Code to call external tools — database clients, browser automation, observability platforms, diagram renderers, and more. This repo's MCP configuration exposes roughly 80 tools across multiple servers.</p>
+<p>The Model Context Protocol (MCP) allows Claude Code to call external tools: database clients, browser automation, observability platforms, diagram renderers, and more. This repo's MCP configuration exposes roughly 80 tools across multiple servers.</p>
 <p>The problem: every tool loaded into a session consumes context tokens to describe its schema. Before tiered loading, all 80+ tools were present in every session. Measured token cost: approximately 55,000 tokens at session start, before a single line of user input. That left under half the context window for actual work in a 128K-token session, and made long coding sessions hit context limits before completing multi-file tasks.</p>
 <p>Most of those tools are irrelevant to most sessions. A session writing Python unit tests does not need Docker, Playwright, or Postgres tools. A session reviewing a database migration does not need image-generation tools. Loading everything always is wasteful and actively harmful.</p>
 <p><code>.claude/rules/mcp-strategy.md</code> defines the solution: a three-tier partition. This ADR records why that partition exists, how tools are assigned to tiers, and what it takes to move a tool between tiers.</p>
 <h2 id="decision">Decision<a class="headerlink" href="#decision" title="Permanent link">&para;</a></h2>
 <p>MCP tools are partitioned into three tiers. Each tier has a distinct loading trigger:</p>
-<p><strong>Tier 1 — Always loaded</strong> (session start, every session)</p>
+<p><strong>Tier 1: Always loaded</strong> (session start, every session)</p>
 <p>Tier 1 contains tools used in the majority of sessions, regardless of task type. The cost of loading them is paid once at session start; the cost of not loading them is re-injecting them on demand for nearly every session.</p>
 <p>Current Tier 1 servers: <code>zen</code> (thinkdeep, codereview, tiered_consensus, chat), <code>context7</code> (resolve_library_id, get_library_docs), <code>github</code> (get_file_contents).</p>
-<p>Token budget for Tier 1: ~3,000 tokens (vs. ~55,000 before tiering — an 85–95% reduction).</p>
-<p><strong>Tier 2 — Agent-bundled</strong> (loaded when a specific agent is invoked)</p>
+<p>Token budget for Tier 1: ~3,000 tokens (vs. ~55,000 before tiering: an 85–95% reduction).</p>
+<p><strong>Tier 2: Agent-bundled</strong> (loaded when a specific agent is invoked)</p>
 <p>Tier 2 tools are specialized enough that they are only needed when a particular agent is active. The agent's invocation is the loading trigger; when the agent finishes, the tools are no longer active in the session.</p>
 <p>Example bundles: <code>security-auditor</code> loads <code>zen.secaudit</code>, <code>sentry.*</code>, <code>github.code_security</code>; <code>code-reviewer</code> loads <code>zen.precommit</code>, <code>zen.challenge</code>, <code>github.pull_requests</code>; <code>database-operations-agent</code> loads <code>postgres.*</code>.</p>
 <p>Skill bundles follow the same pattern: <code>/git pr</code> loads <code>zen.codereview</code>, <code>github.pull_requests</code>, <code>github.issues</code>, <code>sentry.list_releases</code>.</p>
-<p><strong>Tier 3 — Keyword-triggered</strong> (loaded when matching terms appear in the user's prompt)</p>
+<p><strong>Tier 3: Keyword-triggered</strong> (loaded when matching terms appear in the user's prompt)</p>
 <p>Tier 3 tools are loaded dynamically by the <code>keyword-tool-trigger.sh</code> PreToolUse hook when specific words appear in the conversation. This handles tools that are neither universal enough for Tier 1 nor cleanly associated with a single agent.</p>
 <p>Example trigger: any prompt containing "dockerfile", "container", "deploy", or "kubernetes" loads <code>docker.*</code>.</p>
 <h3 id="promotion-rules">Promotion rules<a class="headerlink" href="#promotion-rules" title="Permanent link">&para;</a></h3>
@@ -2523,12 +2523,12 @@
 </ul>
 <h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
 <ul>
-<li><code>.claude/rules/mcp-strategy.md</code> — the operative tier definitions and tool assignments</li>
-<li><code>scripts/track-mcp-usage.sh</code> — usage data collection for tier promotion decisions</li>
-<li><code>scripts/mcp-tool-loader.sh</code> — agent/skill bundle loading script</li>
-<li><code>scripts/keyword-tool-trigger.sh</code> — Tier 3 keyword detection PreToolUse hook</li>
-<li><code>docs/architecture/mcp-tiered-loading.md</code> — narrative explanation with embedded diagram</li>
-<li><code>docs/architecture/diagrams/mcp_tier_loading.svg</code> — state diagram of tier transitions</li>
+<li><code>.claude/rules/mcp-strategy.md</code>: the operative tier definitions and tool assignments</li>
+<li><code>scripts/track-mcp-usage.sh</code>: usage data collection for tier promotion decisions</li>
+<li><code>scripts/mcp-tool-loader.sh</code>: agent/skill bundle loading script</li>
+<li><code>scripts/keyword-tool-trigger.sh</code>: Tier 3 keyword detection PreToolUse hook</li>
+<li><code>docs/architecture/mcp-tiered-loading.md</code>: narrative explanation with embedded diagram</li>
+<li><code>docs/architecture/diagrams/mcp_tier_loading.svg</code>: state diagram of tier transitions</li>
 </ul>
 
 
@@ -2552,7 +2552,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 11, 2026 22:24:49 UTC">April 11, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 27, 2026 22:56:05 UTC">April 27, 2026</span>
   </span>
 
     

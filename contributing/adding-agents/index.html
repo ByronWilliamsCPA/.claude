@@ -2490,10 +2490,10 @@
 <h2 id="writing-the-system-prompt">Writing the System Prompt<a class="headerlink" href="#writing-the-system-prompt" title="Permanent link">&para;</a></h2>
 <p>The prompt body after the frontmatter is the agent's complete system prompt. Structure it with:</p>
 <ol>
-<li><strong>Role statement</strong> — who the agent is and its domain</li>
-<li><strong>Responsibilities</strong> — what tasks it performs</li>
-<li><strong>Output format</strong> — how results should be structured (what to include, length constraints, headers)</li>
-<li><strong>References</strong> — any files, standards, or ADRs the agent should consult</li>
+<li><strong>Role statement</strong>: who the agent is and its domain</li>
+<li><strong>Responsibilities</strong>: what tasks it performs</li>
+<li><strong>Output format</strong>: how results should be structured (what to include, length constraints, headers)</li>
+<li><strong>References</strong>: any files, standards, or ADRs the agent should consult</li>
 </ol>
 <p>Keep the prompt focused. Agents with well-scoped prompts produce more reliable results than generalists.</p>
 <h2 id="testing">Testing<a class="headerlink" href="#testing" title="Permanent link">&para;</a></h2>
@@ -2503,7 +2503,7 @@
 <p>Verify:</p>
 <ul>
 <li>The agent is found (no "unknown agent type" error)</li>
-<li>The tool set is correct — the agent should not attempt tools you did not list</li>
+<li>The tool set is correct: the agent should not attempt tools you did not list</li>
 <li>The output shape matches what the prompt specifies</li>
 <li>The agent completes without requesting more permissions</li>
 </ul>
@@ -2511,9 +2511,9 @@
 <p>After testing, add the agent to <code>AGENTS-AND-SKILLS.md</code> at the repo root. This is the canonical human-readable catalog referenced from the docs site.</p>
 <h2 id="see-also">See Also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="../../architecture/adr/ADR-004-skill-vs-agent-boundary/">ADR-004 Skill vs Agent Boundary</a> — the classification rubric</li>
-<li><a href="../../architecture/agent-dispatch/">Architecture → Agent Dispatch</a> — how agents are invoked at runtime</li>
-<li><a href="../../reference/agents/">Agents Catalog</a> — the current full catalog</li>
+<li><a href="../../architecture/adr/ADR-004-skill-vs-agent-boundary/">ADR-004 Skill vs Agent Boundary</a>: the classification rubric</li>
+<li><a href="../../architecture/agent-dispatch/">Architecture → Agent Dispatch</a>: how agents are invoked at runtime</li>
+<li><a href="../../reference/agents/">Agents Catalog</a>: the current full catalog</li>
 </ul>
 
 
@@ -2537,7 +2537,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 11, 2026 22:24:49 UTC">April 11, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 27, 2026 22:56:05 UTC">April 27, 2026</span>
   </span>
 
     

@@ -2393,34 +2393,34 @@
 <h2 id="new-to-this-project">New to This Project?<a class="headerlink" href="#new-to-this-project" title="Permanent link">&para;</a></h2>
 <p><strong>New developer path</strong> (15 minutes):</p>
 <ol>
-<li><a href="getting-started/install/">Install</a> — clone, submodules, <code>setup.sh</code></li>
-<li><a href="getting-started/first-agent/">Your First Agent</a> — invoke an agent via the <code>Agent</code> tool</li>
-<li><a href="getting-started/first-skill/">Your First Skill</a> — trigger a skill by keyword</li>
-<li><a href="getting-started/troubleshooting/">Troubleshooting</a> — common symlink and hook issues</li>
+<li><a href="getting-started/install/">Install</a>: clone, submodules, <code>setup.sh</code></li>
+<li><a href="getting-started/first-agent/">Your First Agent</a>: invoke an agent via the <code>Agent</code> tool</li>
+<li><a href="getting-started/first-skill/">Your First Skill</a>: trigger a skill by keyword</li>
+<li><a href="getting-started/troubleshooting/">Troubleshooting</a>: common symlink and hook issues</li>
 </ol>
 <p><strong>Architecture path</strong> (60 minutes, in order):</p>
 <ol>
-<li><a href="architecture/">Architecture Overview</a> — the mental model</li>
-<li><a href="architecture/install-model/">Install Model</a> — two-layer symlink diagram + <a href="architecture/adr/ADR-001-two-layer-symlink-install/">ADR-001</a></li>
-<li><a href="architecture/hook-pipeline/">Hook Pipeline</a> — lifecycle diagram + <a href="architecture/adr/ADR-002-hook-composition/">ADR-002</a></li>
-<li><a href="architecture/agent-dispatch/">Agent Dispatch</a> — runtime flow + <a href="architecture/adr/ADR-004-skill-vs-agent-boundary/">ADR-004</a></li>
-<li><a href="architecture/mcp-tiered-loading/">MCP Tiered Loading</a> — context budget + <a href="architecture/adr/ADR-003-tiered-mcp-loading/">ADR-003</a></li>
-<li><a href="architecture/adr/">ADR Index</a> — full decision log</li>
+<li><a href="architecture/">Architecture Overview</a>: the mental model</li>
+<li><a href="architecture/install-model/">Install Model</a>: two-layer symlink diagram + <a href="architecture/adr/ADR-001-two-layer-symlink-install/">ADR-001</a></li>
+<li><a href="architecture/hook-pipeline/">Hook Pipeline</a>: lifecycle diagram + <a href="architecture/adr/ADR-002-hook-composition/">ADR-002</a></li>
+<li><a href="architecture/agent-dispatch/">Agent Dispatch</a>: runtime flow + <a href="architecture/adr/ADR-004-skill-vs-agent-boundary/">ADR-004</a></li>
+<li><a href="architecture/mcp-tiered-loading/">MCP Tiered Loading</a>: context budget + <a href="architecture/adr/ADR-003-tiered-mcp-loading/">ADR-003</a></li>
+<li><a href="architecture/adr/">ADR Index</a>: full decision log</li>
 </ol>
 <h2 id="system-at-a-glance">System at a Glance<a class="headerlink" href="#system-at-a-glance" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>43 agents</strong> — one-shot specialized prompts. See <a href="reference/agents/">Agents Catalog</a>.</li>
-<li><strong>40+ skills</strong> — trigger-based automations. See <a href="reference/skills/">Skills Catalog</a>.</li>
-<li><strong>5 hook types</strong> — PreToolUse, PostToolUse, UserPromptSubmit, SessionStart, Stop. See <a href="reference/hooks/">Hooks Reference</a>.</li>
-<li><strong>5 submodules</strong> — reference-library, anthropics-plugins, anthropics-skills, image-generation, superpowers. See <a href="architecture/submodule-strategy/">Submodule Strategy</a>.</li>
-<li><strong>11+ rules and standards</strong> — in <code>.claude/rules/</code> and <code>.claude/standards/</code>. See <a href="architecture/rules-vs-standards/">Rules vs Standards</a>.</li>
+<li><strong>43 agents</strong>: one-shot specialized prompts. See <a href="reference/agents/">Agents Catalog</a>.</li>
+<li><strong>40+ skills</strong>: trigger-based automations. See <a href="reference/skills/">Skills Catalog</a>.</li>
+<li><strong>5 hook types</strong>: PreToolUse, PostToolUse, UserPromptSubmit, SessionStart, Stop. See <a href="reference/hooks/">Hooks Reference</a>.</li>
+<li><strong>5 submodules</strong>: reference-library, anthropics-plugins, anthropics-skills, image-generation, superpowers. See <a href="architecture/submodule-strategy/">Submodule Strategy</a>.</li>
+<li><strong>11+ rules and standards</strong>: in <code>.claude/rules/</code> and <code>.claude/standards/</code>. See <a href="architecture/rules-vs-standards/">Rules vs Standards</a>.</li>
 </ul>
 <h2 id="see-also">See Also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="architecture/adr/">Architecture Decision Records</a> — load-bearing design decisions with rationale.</li>
-<li><a href="contributing/">Contributing</a> — how to add an agent, skill, hook, ADR, or diagram.</li>
-<li><code>CLAUDE.md</code> at the repo root — global development standards.</li>
-<li><code>AGENTS-AND-SKILLS.md</code> at the repo root — canonical agent and skill catalog.</li>
+<li><a href="architecture/adr/">Architecture Decision Records</a>: load-bearing design decisions with rationale.</li>
+<li><a href="contributing/">Contributing</a>: how to add an agent, skill, hook, ADR, or diagram.</li>
+<li><code>CLAUDE.md</code> at the repo root: global development standards.</li>
+<li><code>AGENTS-AND-SKILLS.md</code> at the repo root: canonical agent and skill catalog.</li>
 </ul>
 
 
@@ -2444,7 +2444,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 11, 2026 22:24:49 UTC">April 11, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 27, 2026 22:56:05 UTC">April 27, 2026</span>
   </span>
 
     

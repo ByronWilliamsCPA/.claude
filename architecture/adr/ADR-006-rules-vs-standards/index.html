@@ -2441,27 +2441,27 @@
 <p><strong>Deciders</strong>: Byron Williams</p>
 </blockquote>
 <h2 id="context">Context<a class="headerlink" href="#context" title="Permanent link">&para;</a></h2>
-<p><code>.claude/rules/</code> and <code>.claude/standards/</code> are both directories under <code>.claude/</code>. Both contain markdown files. From a filesystem perspective they look identical. Their difference is entirely in loading semantics — and that difference is load-bearing.</p>
+<p><code>.claude/rules/</code> and <code>.claude/standards/</code> are both directories under <code>.claude/</code>. Both contain markdown files. From a filesystem perspective they look identical. Their difference is entirely in loading semantics: and that difference is load-bearing.</p>
 <p><strong>Rules</strong> are session-injected behavior. <code>CLAUDE.md</code> at repo root contains explicit references to rule files (e.g., <code>&gt; Python linting and function quality gates: see .claude/rules/python.md</code>). Claude Code reads <code>CLAUDE.md</code> at session start and loads the referenced rules into the system prompt. A rule file in <code>.claude/rules/</code> that is referenced from <code>CLAUDE.md</code> influences every single turn of every session where it applies. Rules are path-scoped where possible: <code>python.md</code> includes a note that it applies to Python files; <code>git-workflow.md</code> applies to git operations. But they are all loaded at session start, regardless of whether the current task is Python or git.</p>
-<p><strong>Standards</strong> are on-demand reference material. They are never referenced from <code>CLAUDE.md</code>. Nothing loads them automatically. They exist to answer the question "what is the canonical approach for X?" when a task touches X. A standard is read explicitly — either by the model when it decides to look something up, or by an agent whose prompt instructs it to consult a specific standard. Examples: <code>packages.md</code> (canonical package choices), <code>writing-quality.md</code> (prose quality thresholds), <code>testing.md</code> (coverage requirements and test patterns).</p>
+<p><strong>Standards</strong> are on-demand reference material. They are never referenced from <code>CLAUDE.md</code>. Nothing loads them automatically. They exist to answer the question "what is the canonical approach for X?" when a task touches X. A standard is read explicitly: either by the model when it decides to look something up, or by an agent whose prompt instructs it to consult a specific standard. Examples: <code>packages.md</code> (canonical package choices), <code>writing-quality.md</code> (prose quality thresholds), <code>testing.md</code> (coverage requirements and test patterns).</p>
 <p>Mixing them creates two distinct failure modes:</p>
 <ol>
 <li>
-<p><strong>Standard mis-filed as a rule</strong>: The content is loaded into every session's system prompt. If <code>writing-quality.md</code> were in <code>rules/</code>, its detailed quality thresholds would consume context on every coding session, every debugging session, every git operation — regardless of whether prose quality is relevant.</p>
+<p><strong>Standard mis-filed as a rule</strong>: The content is loaded into every session's system prompt. If <code>writing-quality.md</code> were in <code>rules/</code>, its detailed quality thresholds would consume context on every coding session, every debugging session, every git operation: regardless of whether prose quality is relevant.</p>
 </li>
 <li>
 <p><strong>Rule mis-filed as a standard</strong>: The behavior silently stops firing. If <code>git-workflow.md</code> were in <code>standards/</code>, contributors could commit to main directly, skip signing, or use non-conventional commit formats, and nothing in the session would stop them.</p>
 </li>
 </ol>
-<p>Both failure modes are invisible to the contributor making the placement decision. A mis-filed document passes all syntax checks, renders in the docs site, and looks correct. The failure only manifests at runtime — either as unexpected context bloat or as a missing behavioral guard.</p>
+<p>Both failure modes are invisible to the contributor making the placement decision. A mis-filed document passes all syntax checks, renders in the docs site, and looks correct. The failure only manifests at runtime: either as unexpected context bloat or as a missing behavioral guard.</p>
 <h2 id="decision">Decision<a class="headerlink" href="#decision" title="Permanent link">&para;</a></h2>
 <p>The two directories are maintained as separate conceptual categories, not just filesystem conventions. The distinguishing criterion is a single question:</p>
 <blockquote>
 <p><strong>Must this content influence behavior in every session, from the very first turn?</strong></p>
 </blockquote>
 <p>If yes: <code>.claude/rules/</code>. If no: <code>.claude/standards/</code>.</p>
-<p>This question is intentionally conservative. A document that influences behavior in <em>most</em> sessions but not <em>every</em> session still goes in <code>standards/</code> — load it on demand in the sessions where it applies, rather than burdening sessions where it does not. The cost of an occasionally-missed lookup (a session that should have checked a standard but did not) is lower than the cost of constant context bloat.</p>
-<p>To make a rule's scope explicit, rules files include a path-scoping note near the top (e.g., <code>&gt; path-scoped to Python files</code>). This is documented convention, not technical enforcement — Claude Code does not filter rules by file type at load time.</p>
+<p>This question is intentionally conservative. A document that influences behavior in <em>most</em> sessions but not <em>every</em> session still goes in <code>standards/</code>: load it on demand in the sessions where it applies, rather than burdening sessions where it does not. The cost of an occasionally-missed lookup (a session that should have checked a standard but did not) is lower than the cost of constant context bloat.</p>
+<p>To make a rule's scope explicit, rules files include a path-scoping note near the top (e.g., <code>&gt; path-scoped to Python files</code>). This is documented convention, not technical enforcement: Claude Code does not filter rules by file type at load time.</p>
 <h2 id="alternatives-considered">Alternatives Considered<a class="headerlink" href="#alternatives-considered" title="Permanent link">&para;</a></h2>
 <p><strong>Single <code>.claude/doctrine/</code> directory with naming conventions</strong> (<code>rule_*.md</code> / <code>std_*.md</code>): The naming convention carries the semantic distinction, but the loading behavior still depends on whether <code>CLAUDE.md</code> references the file. A contributor who adds a rule with the wrong prefix, or forgets to add a <code>CLAUDE.md</code> reference, creates the same silent failure as a mis-filed file. Two directories make the distinction structural, not cosmetic.</p>
 <p><strong>Load everything from <code>.claude/</code> into the system prompt</strong>: Eliminates the mis-filing failure mode by removing the distinction. Cost: every session pays the context cost of all reference material. At current file counts, this is approximately 15,000–25,000 additional tokens per session. Combined with the MCP tool load problem (see <a href="../ADR-003-tiered-mcp-loading/">ADR-003</a>), this leaves insufficient context for substantive work in a 128K-token session.</p>
@@ -2484,11 +2484,11 @@
 </ul>
 <h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
 <ul>
-<li><code>.claude/rules/</code> — session-injected behavioral constraints</li>
-<li><code>.claude/standards/</code> — on-demand reference material</li>
-<li><code>CLAUDE.md</code> — the session entry point that references rule files</li>
-<li><code>docs/architecture/rules-vs-standards.md</code> — narrative explanation of loading semantics</li>
-<li><a href="../ADR-004-skill-vs-agent-boundary/">ADR-004</a> — the broader capability taxonomy (skills, agents, rules, standards)</li>
+<li><code>.claude/rules/</code>: session-injected behavioral constraints</li>
+<li><code>.claude/standards/</code>: on-demand reference material</li>
+<li><code>CLAUDE.md</code>: the session entry point that references rule files</li>
+<li><code>docs/architecture/rules-vs-standards.md</code>: narrative explanation of loading semantics</li>
+<li><a href="../ADR-004-skill-vs-agent-boundary/">ADR-004</a>: the broader capability taxonomy (skills, agents, rules, standards)</li>
 </ul>
 
 
@@ -2512,7 +2512,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 11, 2026 22:24:49 UTC">April 11, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 27, 2026 22:56:05 UTC">April 27, 2026</span>
   </span>
 
     

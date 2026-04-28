@@ -2448,17 +2448,17 @@
 <tbody>
 <tr>
 <td><code>0</code></td>
-<td>Success — proceed</td>
+<td>Success: proceed</td>
 <td>All hook types</td>
 </tr>
 <tr>
 <td><code>2</code></td>
-<td>Block — abort the tool call and show stderr as error</td>
+<td>Block: abort the tool call and show stderr as error</td>
 <td><code>PreToolUse</code> only</td>
 </tr>
 <tr>
 <td><code>1</code></td>
-<td>Hook error — the script itself failed</td>
+<td>Hook error: the script itself failed</td>
 <td>All hook types</td>
 </tr>
 </tbody>
@@ -2499,7 +2499,7 @@
 </span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="w">  </span><span class="p">]</span>
 </span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="p">}</span>
 </span></code></pre></div>
-<p>Place the new entry in the correct position within the type's array. Array order is execution order — read <a href="../../architecture/adr/ADR-002-hook-composition/">ADR-002</a> for the contract around ordering.</p>
+<p>Place the new entry in the correct position within the type's array. Array order is execution order: read <a href="../../architecture/adr/ADR-002-hook-composition/">ADR-002</a> for the contract around ordering.</p>
 <h2 id="write-the-script">Write the Script<a class="headerlink" href="#write-the-script" title="Permanent link">&para;</a></h2>
 <p>Place the script in <code>scripts/</code>. Use <code>$HOME/.claude/scripts/</code> as the path prefix in <code>hooks.json</code> (the symlink from <code>setup.sh</code> makes the repo's <code>scripts/</code> available at that path).</p>
 <p>Script requirements:</p>
@@ -2508,7 +2508,7 @@
 <li>Must exit 0 on success</li>
 <li>For PreToolUse gates: exit 2 to block with an error message printed to stderr</li>
 <li>Must complete within the <code>timeout</code> (in seconds). Hooks that time out are treated as failures.</li>
-<li>Should not produce unnecessary stdout — status messages appear via <code>statusMessage</code>, not stdout</li>
+<li>Should not produce unnecessary stdout: status messages appear via <code>statusMessage</code>, not stdout</li>
 </ul>
 <h2 id="re-run-setupsh">Re-run <code>setup.sh</code><a class="headerlink" href="#re-run-setupsh" title="Permanent link">&para;</a></h2>
 <p>After editing <code>hooks.json</code>, merge the change into <code>~/.claude/settings.json</code>:</p>
@@ -2519,9 +2519,9 @@
 <p>Open a Claude Code session and trigger the relevant tool type. You should see the <code>statusMessage</code> appear during the hook execution. Check that the exit code behavior matches your intent.</p>
 <h2 id="see-also">See Also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="../../architecture/adr/ADR-002-hook-composition/">ADR-002 Hook Composition and Ordering</a> — source-of-truth decision and execution ordering contract</li>
-<li><a href="../../architecture/hook-pipeline/">Architecture → Hook Pipeline</a> — turn-level execution sequence</li>
-<li><a href="../../reference/hooks/">Hooks Reference</a> — current hook scripts and their matchers</li>
+<li><a href="../../architecture/adr/ADR-002-hook-composition/">ADR-002 Hook Composition and Ordering</a>: source-of-truth decision and execution ordering contract</li>
+<li><a href="../../architecture/hook-pipeline/">Architecture → Hook Pipeline</a>: turn-level execution sequence</li>
+<li><a href="../../reference/hooks/">Hooks Reference</a>: current hook scripts and their matchers</li>
 </ul>
 
 
@@ -2545,7 +2545,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 11, 2026 22:24:49 UTC">April 11, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 27, 2026 22:56:05 UTC">April 27, 2026</span>
   </span>
 
     

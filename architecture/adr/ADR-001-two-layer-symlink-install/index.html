@@ -2441,12 +2441,12 @@
 <p><strong>Deciders</strong>: Byron Williams</p>
 </blockquote>
 <h2 id="context">Context<a class="headerlink" href="#context" title="Permanent link">&para;</a></h2>
-<p>Claude Code reads configuration from <code>~/.claude/</code>. That directory must contain <code>CLAUDE.md</code>, <code>agents/</code>, <code>skills/</code>, <code>commands/</code>, <code>rules/</code>, <code>standards/</code>, and a <code>settings.json</code> with merged hook definitions. The natural instinct is to clone the configuration repository directly into <code>~/.claude/</code> — one directory, one location, done.</p>
+<p>Claude Code reads configuration from <code>~/.claude/</code>. That directory must contain <code>CLAUDE.md</code>, <code>agents/</code>, <code>skills/</code>, <code>commands/</code>, <code>rules/</code>, <code>standards/</code>, and a <code>settings.json</code> with merged hook definitions. The natural instinct is to clone the configuration repository directly into <code>~/.claude/</code>: one directory, one location, done.</p>
 <p>But the configuration repository is not a simple dotfiles collection. It has:</p>
 <ul>
 <li><strong>Git submodules</strong> (<code>reference-library</code>, <code>anthropics-plugins</code>, <code>anthropics-skills</code>, <code>superpowers</code>, <code>image-generation</code>) that must be initialized and updated independently.</li>
 <li><strong>A Python toolchain</strong> (<code>uv</code>, <code>pytest</code>, <code>pre-commit</code>, BasedPyright) that expects to live in a conventional project directory with <code>pyproject.toml</code> at the root.</li>
-<li><strong>A <code>hooks.json</code></strong> file that must be jq-merged into <code>~/.claude/settings.json</code> by <code>setup.sh</code> — a merge that requires the script to be outside the merge target.</li>
+<li><strong>A <code>hooks.json</code></strong> file that must be jq-merged into <code>~/.claude/settings.json</code> by <code>setup.sh</code>: a merge that requires the script to be outside the merge target.</li>
 <li><strong>Repository-local scripts</strong> (<code>scripts/</code>, <code>tools/</code>) that need to reference each other by relative path without being exposed inside <code>~/.claude/</code> at runtime.</li>
 </ul>
 <p>Cloning directly into <code>~/.claude/</code> breaks all four of these. The git working tree becomes the Claude Code config directory, which means <code>git status</code>, <code>git log</code>, and <code>pre-commit</code> all run against the user's live Claude config. Submodule paths that should be private to the repo (<code>.submodules/</code>) sit directly inside <code>~/.claude/</code>. The <code>settings.json</code> that <code>setup.sh</code> is supposed to write already exists as a committed file. The jq merge step has no stable file to write to.</p>
@@ -2521,12 +2521,12 @@
 </ul>
 <h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
 <ul>
-<li><code>setup.sh</code> — the installer; <code>--doctor</code> flag shows current symlink topology</li>
-<li><code>hooks.json</code> — source of truth for the hooks block merged into <code>settings.json</code></li>
-<li><code>.gitmodules</code> — the five submodule definitions</li>
-<li><code>docs/architecture/install-model.md</code> — narrative explanation with embedded diagram</li>
-<li><code>docs/architecture/diagrams/install_layer.svg</code> — component diagram of this topology</li>
-<li><a href="../ADR-002-hook-composition/">ADR-002</a> — explains the <code>hooks.json</code> merge in detail</li>
+<li><code>setup.sh</code>: the installer; <code>--doctor</code> flag shows current symlink topology</li>
+<li><code>hooks.json</code>: source of truth for the hooks block merged into <code>settings.json</code></li>
+<li><code>.gitmodules</code>: the five submodule definitions</li>
+<li><code>docs/architecture/install-model.md</code>: narrative explanation with embedded diagram</li>
+<li><code>docs/architecture/diagrams/install_layer.svg</code>: component diagram of this topology</li>
+<li><a href="../ADR-002-hook-composition/">ADR-002</a>: explains the <code>hooks.json</code> merge in detail</li>
 </ul>
 
 
@@ -2550,7 +2550,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 11, 2026 22:24:49 UTC">April 11, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 27, 2026 22:56:05 UTC">April 27, 2026</span>
   </span>
 
     
