@@ -1150,7 +1150,7 @@ Run a four-category documentation health audit and produce a persistent report.
 
 ```
 /doc-audit [scope]
-```
+```markdown
 
 `scope` is optional (default: `docs/`). Examples:
 - `/doc-audit` — audit all of `docs/`
@@ -1183,7 +1183,7 @@ Count claims   ✅ PASS     0 issues
 Version refs   ⚠️  WARN    4 stale references
 ─────────────────────────────────────────────────────
 6 issues found. Full report: docs/audit-report.md
-```
+```markdown
 
 Status per category:
 - `✅ PASS` — error=0 and warn=0
@@ -1226,7 +1226,7 @@ Generated: YYYY-MM-DD  Scope: docs/
 ## Stale Version References
 
 - `docs/setup.md` line 7: Python 3.8 is outside declared range >=3.10,<3.15 in pyproject.toml
-```
+```markdown
 
 For sections with no findings, write `(none)` as the body.
 
@@ -1285,7 +1285,7 @@ Read the current `.gitignore` to find an appropriate insertion point (near other
 
 In `/home/byron/dev/.claude/.gitignore`, find the section that contains generated or temporary file patterns and add:
 
-```
+```text
 docs/audit-report.md
 ```
 

@@ -39,6 +39,30 @@ Before committing ANY changes, verify all items:
 - [ ] **Copilot review** (optional): for complex logic changes, request from the
       Reviewers menu on GitHub; review instructions are in `.github/copilot-instructions.md`
 
+## Linting Alignment Invariants
+
+These checks ensure that local pre-commit hooks and Qlty Cloud use the same linting rules, preventing files that pass locally from failing in CI.
+
+### PC-YAMLLINT-FILE-REF
+
+**Invariant:** The yamllint hook in `.pre-commit-config.yaml` must reference a config file (using `--config-file <file>`) rather than an inline `-d` config string. The referenced file must be the single source of truth used by both pre-commit and Qlty Cloud.
+
+**Why:** Inline configs and file-ref configs can silently diverge. If the hook uses `-d "{rules: ...}"` and Qlty uses `.yamllint`, a YAML file can pass locally and fail in CI.
+
+**Audit check:** In `.pre-commit-config.yaml`, find the yamllint hook. Verify `args:` contains `--config-file` (not `-d`). Verify the referenced file exists in the repo root.
+
+**Remediation:** Change the hook `args` to `[--config-file, .yamllint]`. If no `.yamllint` file exists, create one.
+
+### PC-MARKDOWNLINT-MD040
+
+**Invariant:** The markdownlint hook in `.pre-commit-config.yaml` must be present and configured with a config file where MD040 (fenced-code-blocks-language) is active (set to `true` or not explicitly disabled).
+
+**Why:** MD040 is the rule that requires every fenced code block to declare its language. Without it, bare fences accumulate silently and Qlty Cloud flags them as quality issues that pre-commit never catches.
+
+**Audit check:** In `.pre-commit-config.yaml`, find the markdownlint hook. Verify it uses `--config <file>`. In the referenced config file, verify MD040 is not set to `false`.
+
+**Remediation:** Add the markdownlint hook if missing. In the config file, set `"MD040": true` or remove any `"MD040": false` entry.
+
 ## Sources
 
 - pre-commit documentation: <https://pre-commit.com/>

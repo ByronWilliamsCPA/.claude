@@ -20,14 +20,14 @@ Single source of truth for commit types, usage, and version impact.
 
 Append `!` to any type to indicate a breaking change. This triggers a Major version bump.
 
-```
+```text
 feat!: redesign authentication API
 fix!: remove deprecated endpoint
 ```
 
 Always include a `BREAKING CHANGE:` footer explaining the migration path:
 
-```
+```text
 feat(api)!: change response envelope format
 
 BREAKING CHANGE: API responses now use { data, meta, errors }
@@ -38,7 +38,7 @@ Migration: Update response handlers to access .data property.
 
 ## Format Rules
 
-```
+```text
 <type>(<scope>): <subject>
 
 <body>

@@ -36,7 +36,7 @@ The design follows a **multi-agent writer/reviewer pattern** validated in produc
 
 ## 3. Architecture Overview
 
-```
+```text
 ┌──────────────────────────────────────────────────────────────────┐
 │                    CLAUDE CODE HOST SESSION                      │
 │                                                                  │
@@ -107,7 +107,7 @@ The design follows a **multi-agent writer/reviewer pattern** validated in produc
 
 **Location:** `.claude/skills/test-coverage/SKILL.md`
 
-```markdown
+````markdown
 ---
 name: test-coverage
 description: >
@@ -207,11 +207,11 @@ Coverage reports use this structure:
 - Before/after comparison (when generating)
 
 $ARGUMENTS
-```
+````
 
 **Supporting Scripts:**
 
-```
+```text
 .claude/skills/test-coverage/
 ├── SKILL.md
 ├── scripts/
@@ -407,7 +407,7 @@ The MCP server wraps deterministic operations (running pytest-cov, parsing JSON,
 
 The generation loop follows CoverUp's validated approach, adapted for Claude Code's subagent model:
 
-```
+```text
 ┌─────────────────┐
 │  1. MEASURE      │
 │  pytest --cov    │──────────────────────────────────────┐
@@ -585,7 +585,7 @@ if __name__ == "__main__":
 
 The test-writer subagent receives this structured context:
 
-```
+````markdown
 ## Source File: {file_path}
 
 ```python
@@ -611,7 +611,7 @@ pattern, use parametrize for multiple cases, include edge cases (empty,
 None, boundary, error paths). Use monkeypatch for simple replacements,
 mocker with spec=True for call verification. Run the tests after writing
 to confirm they pass.
-```
+````
 
 ---
 
@@ -848,7 +848,7 @@ max_review_iterations = 2
 
 ## 9. Directory Structure
 
-```
+```text
 project-root/
 ├── .claude/
 │   ├── settings.json              # Hooks configuration

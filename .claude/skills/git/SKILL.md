@@ -50,7 +50,7 @@ git status
 
 ### Branch Format
 
-```
+```text
 {type}/{descriptive-slug}
 ```
 

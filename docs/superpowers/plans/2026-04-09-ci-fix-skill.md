@@ -58,7 +58,7 @@ all gates are green.
 
 ```
 /ci-fix
-```
+```markdown
 
 No arguments. Always runs the full gate sequence.
 
@@ -95,7 +95,7 @@ pytest        ⏳ PENDING
 bandit        ⏳ PENDING
 pip-audit     ⏳ PENDING
 ─────────────────────────────────────────────────────
-```
+```markdown
 
 Status values:
 - `⏳ PENDING` — not yet run
@@ -118,7 +118,7 @@ pip-audit findings are always reported but never count as a blocker for the comm
 
 ```
 All 7 gates green. Commit now? (yes/no)
-```
+```text
 
 - **Yes**: invoke the `/git` skill to prepare a conventional commit
 - **No**: stop — present the green status table and hand back
@@ -132,7 +132,7 @@ All 7 gates green. Commit now? (yes/no)
   ❌ bandit     — HIGH severity B608 at src/query.py:45 (see output above)
 
 These require manual investigation before committing.
-```
+```text
 
 No commit offer when blockers remain.
 ```
@@ -171,13 +171,13 @@ Expected: a line matching `### 1. Gather Context` — the prerequisite block goe
 
 In `/home/byron/dev/.claude/.claude/skills/git/workflows/pr.md`, replace:
 
-```
+```markdown
 ### 1. Gather Context
 ```
 
 With:
 
-```
+```markdown
 ### 0. Confirm CI gates are green
 
 Before creating the PR, confirm `/ci-fix` has been run and all gates are green. If not,
@@ -185,7 +185,7 @@ run it now:
 
 ```
 /ci-fix
-```
+```markdown
 
 Do not proceed with PR creation until all blockers are resolved. pip-audit findings
 should be documented in the PR description if they cannot be resolved immediately.
@@ -227,14 +227,14 @@ Expected: `## PR (if creating PR)` section with `Branch Safety` as the first che
 
 In `/home/byron/dev/.claude/.claude/rules/pre-commit.md`, replace:
 
-```
+```markdown
 ## PR (if creating PR)
 - [ ] **Branch Safety**: PR preparation validates branch strategy
 ```
 
 With:
 
-```
+```markdown
 ## PR (if creating PR)
 - [ ] **CI gates**: `/ci-fix` run and all gates green (or blockers documented in the PR)
 - [ ] **Branch Safety**: PR preparation validates branch strategy

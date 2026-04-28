@@ -35,7 +35,7 @@ When a user says "sonarlint issues", "sonarqube issues", "sonarcloud issues", or
 
 Understanding the data flow prevents confusion about where issues come from:
 
-```
+```text
 Developer writes code
        |
        v

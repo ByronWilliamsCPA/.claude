@@ -311,7 +311,7 @@ bash /tmp/test_validate_frontmatter.sh
 ```
 
 Expected output:
-```
+```text
 PASS [non-skill file silent]
 PASS [valid SKILL.md silent]
 PASS [missing name warns]
@@ -524,7 +524,7 @@ bash /tmp/test_bash_pre_hook.sh
 ```
 
 Expected output:
-```
+```text
 PASS [normal push allowed]
 PASS [force push to main blocked]
 PASS [force push -f to main blocked]
@@ -565,7 +565,7 @@ echo '{"tool_name":"Bash","tool_input":{"command":"git push --force origin main"
 ```
 
 Expected output:
-```
+```yaml
 BLOCKED: force-push to main/master is prohibited. Use a PR instead.
 exit: 2
 ```
@@ -765,7 +765,7 @@ bash /tmp/test_bash_notify.sh
 ```
 
 Expected output:
-```
+```text
 PASS [short command silent]
 PASS [long command notifies]
 PASS [missing start file silent]

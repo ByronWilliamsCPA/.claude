@@ -2,12 +2,15 @@
 # yamllint configuration for Claude Code Configuration
 extends: default
 
+ignore: |
+  .venv/
+  node_modules/
+
 rules:
   line-length:
     max: 120
     level: warning
 
-  # Allow duplicate keys in GitHub Actions workflows (common for matrix strategies)
   key-duplicates:
     forbid-duplicated-merge-keys: true
 
@@ -16,10 +19,10 @@ rules:
     spaces: 2
     indent-sequences: true
 
-  # Allow comments without space after #
+  # Align with Qlty Cloud default: require 2 spaces before inline comments
   comments:
     require-starting-space: true
-    min-spaces-from-content: 1
+    min-spaces-from-content: 2
 
   # Allow longer lines in comments
   comments-indentation: {}

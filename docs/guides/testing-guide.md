@@ -74,7 +74,7 @@ masking missing files, broken `__init__.py`, or packaging errors. The pytest
 documentation and PyPA both recommend this layout for any package intended
 for distribution.
 
-```
+```text
 my_project/
 ├── pyproject.toml
 ├── CLAUDE.md
@@ -225,7 +225,7 @@ def test_expired_discount_is_ignored():
 Good test names eliminate the need to read the test body when diagnosing
 failures. The pattern `test_<unit>_<scenario>_<expected>` works reliably:
 
-```
+```text
 test_login_with_valid_credentials_returns_token        ✓ clear
 test_login_with_expired_token_raises_auth_error        ✓ clear
 test_parse_date_with_invalid_format_raises_value_error ✓ clear
@@ -905,7 +905,7 @@ that the vast majority of your AI code has fast, deterministic tests that
 run on every PR, while the genuinely non-deterministic parts are tested
 with appropriate statistical rigor on a schedule.
 
-```
+```text
 ┌─────────────────────────────────────────┐
 │           Tier 3: Behavioral            │  ← Scheduled (nightly/weekly)
 │  "Does the output meet quality bars?"   │     Non-deterministic, statistical

@@ -11,7 +11,7 @@ purpose: Describes how to maintain consistency between this Claude configuration
 
 ## Repository Relationship
 
-```
+```text
 ┌─────────────────────────────────────────┐
 │ /home/byron/dev/.claude/                │
 │ (This Repository - Template Source)     │

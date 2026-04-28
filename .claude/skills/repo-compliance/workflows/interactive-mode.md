@@ -40,7 +40,7 @@ Collect all FINDING blocks. Filter out any finding whose ID is in the override l
 
 Present findings in this format:
 
-```
+```html
 COMPLIANCE AUDIT: <repo-name>
 Standards version: <manifest last_updated>
 Overrides applied: N

@@ -48,7 +48,7 @@ qlty check
 
 ### Project Structure
 
-```
+```text
 claude_config/
 ├── src/claude_config/       # Main package
 │   ├── __init__.py
@@ -264,7 +264,7 @@ We follow [Conventional Commits](https://www.conventionalcommits.org/) specifica
 
 ### Commit Message Format
 
-```
+```html
 <type>(<scope>): <subject>
 
 <body>

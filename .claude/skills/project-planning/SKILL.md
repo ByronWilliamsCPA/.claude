@@ -117,7 +117,7 @@ Generate documents sequentially, as later documents reference earlier ones:
 
 After generating each document, use the zen-mcp-server consensus tool to get expert review:
 
-```
+```text
 Use mcp__pal__consensus with gemini-3-pro-preview to review:
 
 "Review this [document type] for sufficiency to begin development.
@@ -302,7 +302,7 @@ When user says: "I want to build a CLI tool for managing personal finances..."
 
 ### Consensus Review Prompt Template
 
-```
+```text
 mcp__pal__consensus with gemini-3-pro-preview:
 
 Review this Project Vision & Scope document for Claude Code Configuration.

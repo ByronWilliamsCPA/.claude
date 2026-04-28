@@ -37,7 +37,7 @@ Run `/plan <project description>` to generate initial ADRs alongside other plann
 
 When making a new architectural decision:
 
-```
+```text
 Create an ADR for [decision topic].
 Use template: .claude/skills/project-planning/templates/adr-template.md
 Save to: docs/planning/adr/adr-NNN-[decision-slug].md
@@ -47,7 +47,7 @@ Save to: docs/planning/adr/adr-NNN-[decision-slug].md
 
 ADRs follow this naming pattern:
 
-```
+```text
 adr-NNN-short-description.md
 
 Examples:
@@ -68,7 +68,7 @@ Create an ADR when:
 
 ## ADR Lifecycle
 
-```
+```text
 Proposed → Accepted → [Deprecated | Superseded]
 ```
 

@@ -50,7 +50,7 @@ The system evaluates six domains:
 
 ## Architecture
 
-```
+```text
 ┌─────────────────────────────────────────────────────────┐
 │  Entry Points                                            │
 │  /repo-audit (interactive)  |  cron trigger (scheduled) │
@@ -309,7 +309,7 @@ asks the user to review it before the next scheduled run.
 
 ### Interactive Mode (`/repo-audit`)
 
-```
+```text
 1. Detect target repo (current working directory)
 2. Load standards-manifest.yaml from ~/.claude/docs/
 3. Load .claude/compliance-overrides.md from target repo (if present)
@@ -333,7 +333,7 @@ asks the user to review it before the next scheduled run.
 
 ### Scheduled Mode (cron trigger)
 
-```
+```text
 1. Discover repos:
      Local: find ~/dev -maxdepth 2 -name ".git" -type d (excludes .worktrees/)
      Remote: gh repo list williaby --limit 100
@@ -415,7 +415,7 @@ Repos reviewed: N | Total findings: N | Overrides applied: N
   description: "..."
   verify: "..."
   override_eligible: true
-```
+```markdown
 
 ## Agent Scope Expansion Candidates
 - <agent>: consider adding <check> based on pattern seen in <repos>
@@ -425,7 +425,7 @@ Repos reviewed: N | Total findings: N | Overrides applied: N
 
 ## Self-Improvement Loop
 
-```
+```text
 Review run
     -> lessons-learned doc written
          -> user reviews and approves proposals
@@ -442,7 +442,7 @@ discovered.
 
 ## File Structure Summary
 
-```
+```text
 ~/.claude/
   docs/
     standards-manifest.yaml          # authoritative check registry
