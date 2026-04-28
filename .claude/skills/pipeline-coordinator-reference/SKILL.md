@@ -38,7 +38,7 @@ Use simpler alternatives when:
 
 Decision guide:
 
-```
+```text
 Is there a natural sequence of dependencies?
   No  -> Use dispatching-parallel-agents or a single agent
   Yes -> How many stages?

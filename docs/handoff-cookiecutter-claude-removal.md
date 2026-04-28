@@ -37,7 +37,7 @@ aligns with how the superpowers community plugin works.
 
 The template repo itself has a `.claude/` folder used during template development. Remove it:
 
-```
+```text
 .claude/
   commands/pr.md          ← delete
   skills/                 ← delete entire directory
@@ -47,7 +47,7 @@ The template repo itself has a `.claude/` folder used during template developmen
 
 This is what gets generated into new projects. Delete entirely:
 
-```
+```text
 {{cookiecutter.project_slug}}/.claude/
   README.md
   settings.local.json.example
@@ -113,7 +113,7 @@ Extends global CLAUDE.md standards at ~/.claude/CLAUDE.md.
 
 Replace the Claude Code setup section with:
 
-```markdown
+````markdown
 ## Claude Code Setup (User-Level)
 
 This template no longer manages Claude Code configuration at the project level.
@@ -127,8 +127,8 @@ Configure once at the user level and all projects inherit it automatically.
    git clone https://github.com/ByronWilliamsCPA/.claude.git ~/.claude
    ```
 
-1. That's it. All projects on your machine now have the full agent/skill suite.
-```
+3. That's it. All projects on your machine now have the full agent/skill suite.
+````
 
 ### `DEVELOPMENT.md`
 

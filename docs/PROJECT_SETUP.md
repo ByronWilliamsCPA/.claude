@@ -91,7 +91,7 @@ This template includes an integrated AI-assisted project planning workflow that 
 
 The planning workflow generates 4 core documents, then synthesizes them into a comprehensive project plan:
 
-```
+```text
 Project Description
         │
         ▼
@@ -143,7 +143,7 @@ Technical constraints: must work offline, SQLite for storage.
 
 **Or provide a more detailed description:**
 
-```
+```text
 Generate planning documents for this project:
 
 I'm building a REST API for inventory management. Target users are
@@ -254,21 +254,21 @@ When you complete a phase:
 
 **Load context for a task:**
 
-```
+```text
 Load context from project-vision.md sections 2-3 and adr/adr-001-*.md,
 then implement [feature] per tech-spec.md section [X].
 ```
 
 **Validate code against specs:**
 
-```
+```text
 Review this code against tech-spec.md section 6 (security).
 Flag any violations.
 ```
 
 **Check phase progress:**
 
-```
+```text
 Review PROJECT-PLAN.md Phase 1 deliverables and update status.
 ```
 
@@ -523,7 +523,7 @@ This project enforces:
 
 ### Project Structure
 
-```
+```text
 claude_config/
 ├── src/claude_config/    # Main package
 │   ├── core/                               # Core functionality

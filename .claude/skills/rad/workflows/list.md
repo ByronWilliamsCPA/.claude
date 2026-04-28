@@ -137,7 +137,7 @@ Consider adding assumption tags during development:
 
 // #EDGE: browser: Clipboard API available in all browsers
 // #VERIFY: Add fallback for unsupported browsers
-```
+```markdown
 
 ## Resources
 

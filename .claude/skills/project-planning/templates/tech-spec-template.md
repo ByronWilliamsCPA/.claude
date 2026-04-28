@@ -2,7 +2,7 @@
 
 ## Structure
 
-```markdown
+````markdown
 # Technical Implementation Spec: [Project Name]
 
 > **Status**: Draft | Approved | Implemented
@@ -39,7 +39,7 @@
 [Monolith | Microservices | Serverless | etc] - See [ADR-XXX]
 
 ### Component Diagram
-```
+```text
 ┌─────────────────────────────────────────┐
 │              [Component]                │
 ├─────────────┬─────────────┬─────────────┤
@@ -151,7 +151,7 @@ class [Entity]:
 - [Project Vision](./project-vision.md)
 - [Architecture Decisions](./adr/)
 - [Development Roadmap](./roadmap.md)
-```
+````
 
 ## Generation Notes
 

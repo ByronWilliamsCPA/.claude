@@ -58,7 +58,7 @@ This configuration is now tracked in git and can be:
 
 ## Files Structure
 
-```
+```text
 $HOME/.claude/
 ├── .claude.json              # Main configuration file (git-tracked)
 ├── settings.json             # Project-specific settings (git-tracked)

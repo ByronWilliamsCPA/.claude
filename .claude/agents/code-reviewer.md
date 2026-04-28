@@ -67,6 +67,6 @@ Review code changes for quality, maintainability, and adherence to project stand
 
 ## Invocation
 
-```
+```text
 Via Agent tool: subagent_type="code-reviewer"
 ```

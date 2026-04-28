@@ -14,7 +14,7 @@ all gates are green.
 
 ## Invocation
 
-```
+```text
 /ci-fix
 ```
 
@@ -45,7 +45,7 @@ attempts, mark it `❌ BLOCKER` and advance to the next gate.
 Print the full table after each gate completes. Always print all 7 rows regardless of
 how many have completed.
 
-```
+```bash
 CI Fix Status
 ─────────────────────────────────────────────────────
 Gate          Status       Notes
@@ -80,7 +80,7 @@ pip-audit status is always `✅ PASS` or `✅ PASS (advisories found — see not
 
 **All non-pip-audit gates green:**
 
-```
+```text
 All 6 required gates green (pip-audit findings noted above). Commit now? (yes/no)
 ```
 
@@ -89,7 +89,7 @@ All 6 required gates green (pip-audit findings noted above). Commit now? (yes/no
 
 **Any blocker remains:**
 
-```
+```text
 5/7 gates pass. Blockers:
 
   ❌ pytest     — 2 tests failing in tests/unit/test_processor.py (see output above)

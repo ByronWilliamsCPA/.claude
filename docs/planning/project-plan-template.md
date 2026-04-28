@@ -77,7 +77,7 @@ Claude Code Configuration is a [brief description of what the project does]. Thi
 
 [Describe the overall system design]
 
-```
+```text
 ┌─────────────────────────────────────┐
 │   Component/Module 1                 │
 ├─────────────────────────────────────┤
@@ -114,7 +114,7 @@ Claude Code Configuration is a [brief description of what the project does]. Thi
 
 [Describe how data flows through the system]
 
-```
+```text
 Input → Processing → Output
   ↓         ↓          ↓
 Step1    Step2       Step3

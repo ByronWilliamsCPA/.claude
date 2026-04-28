@@ -9,7 +9,7 @@ Security validation, vulnerability scanning, and compliance checking.
 
 ## Invocation
 
-```
+```text
 /security [scope]
 ```
 

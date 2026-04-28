@@ -97,7 +97,7 @@ repos:
   # ============================================================================
   # Runs on pre-push, scoped to dep file changes only, to avoid per-commit overhead.
   # Exit code 64 = advisory found. Medium+ severity blocks push.
-  # Audits the active virtualenv — ensure 'uv sync' has been run before push.
+  # Audits the active virtualenv; run 'uv sync' before push if needed.
   - repo: local
     hooks:
       - id: pip-audit
@@ -135,6 +135,26 @@ repos:
     rev: 37cd56d9d154dfb0648eaee8efc1040512700c47  # 0.29.4
     hooks:
       - id: check-github-workflows
+        stages: [pre-commit]
+
+  # ============================================================================
+  # YAML Linting
+  # ============================================================================
+  - repo: https://github.com/adrienverge/yamllint
+    rev: cba56bcde1fdd01c1deb3f945e69764c291a6530  # v1.38.0  # pragma: allowlist secret
+    hooks:
+      - id: yamllint
+        args: [--config-file, .yamllint]
+        stages: [pre-commit]
+
+  # ============================================================================
+  # Markdown Linting
+  # ============================================================================
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: e72a3ca1632f0b11a07d171449fe447a7ff6795e  # v0.48.0  # pragma: allowlist secret
+    hooks:
+      - id: markdownlint
+        args: [--config, .markdownlint.json]
         stages: [pre-commit]
 
   # ============================================================================
@@ -271,36 +291,6 @@ repos:
           - pydantic>=2.0.0
           - pydantic-settings>=2.0.0
           - structlog>=23.1.0
-
-  # ============================================================================
-  # YAML Linting (PC-009)
-  # ============================================================================
-  - repo: https://github.com/adrienverge/yamllint
-    rev: 81e9f98ffd059efe8aa9c1b1a42e5cce61b640c6  # v1.35.1
-    hooks:
-      - id: yamllint
-        args: [-d, relaxed]
-        stages: [pre-commit]
-
-  # ============================================================================
-  # Markdown Linting (PC-010)
-  # ============================================================================
-  - repo: https://github.com/DavidAnson/markdownlint-cli2
-    rev: 3766ad839ad3a74558031510b3bc9872bb1d9980  # v0.22.0
-    hooks:
-      - id: markdownlint-cli2
-        stages: [pre-commit]
-        exclude: >-
-          (?x)^(
-            docs/superpowers/|
-            CHANGELOG\.md|
-            \.claude/skills/|
-            \.claude/agents/|
-            \.claude/standards/|
-            \.claude/rules/|
-            \.claude/cowork/|
-            \.claude/context/
-          )
 
 # Exclude patterns
 # .submodules/ is excluded because submodule contents are owned by their upstream

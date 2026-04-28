@@ -144,7 +144,7 @@ Then use `claude-project` instead of `claude` when starting from a project direc
 
 4. **Git Ignore Local Configs**: Add to `.gitignore`:
 
-   ```
+   ```text
    .mcp.json
    .env.local
    .claude/settings.local.json

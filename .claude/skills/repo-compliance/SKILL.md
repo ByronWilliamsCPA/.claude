@@ -12,7 +12,7 @@ Orchestrates a full compliance audit and optional remediation run against any re
 
 ## Invocation
 
-```
+```text
 /repo-audit                          # interactive mode, current directory
 /repo-audit /path/to/repo            # interactive mode, specified path
 /repo-audit --scheduled              # report-only mode for cron trigger
@@ -50,7 +50,7 @@ Follow the appropriate workflow file for the selected mode. Both modes share the
 
 When dispatching each domain agent, include in the prompt:
 
-```
+```yaml
 Mode: <audit|remediation>
 Target repo: <absolute path>
 Manifest checks for this domain:
@@ -61,7 +61,7 @@ Override entries (skip these check IDs):
 
 For the `ossf-compliance-auditor` specifically, also include:
 
-```
+```html
 Repo slug: <owner/repo GitHub slug>
 ```
 

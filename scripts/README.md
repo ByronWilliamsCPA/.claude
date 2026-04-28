@@ -25,6 +25,28 @@ Updates the Claude Code standards from the upstream repository.
 
 **Note**: The update uses `git subtree pull --squash` to maintain a clean commit history.
 
+### install-hooks.sh
+
+Installs the pre-push hook from `.github/hooks/pre-push` into the active `.git/hooks/` directory.
+
+**Usage**:
+
+```bash
+./scripts/install-hooks.sh
+```
+
+**What it does**:
+
+- Copies `.github/hooks/pre-push` to the correct hooks directory (uses `git rev-parse --git-common-dir` so it works in git worktrees)
+- Makes the installed hook executable
+
+**When to run**:
+
+- Once after cloning the repository
+- Safe to re-run at any time; re-running overwrites the previous install with no side effects
+
+**Note**: To skip the hook on a specific push, use `git push --no-verify`.
+
 ## Adding New Scripts
 
 When adding new scripts to this directory:

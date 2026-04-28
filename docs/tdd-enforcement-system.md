@@ -72,7 +72,7 @@ tail -f $HOME/.claude/logs/hook-debug.log
 ```
 
 ### Log Format
-```
+```text
 TIMESTAMP,ACTION,REASON,FILE_PATH
 2025-01-06 19:30:15,BLOCK,NO_TESTS,src/calculator.py
 2025-01-06 19:31:20,ALLOW,HAS_TESTS,src/math_utils.py

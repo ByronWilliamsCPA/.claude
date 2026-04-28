@@ -14,7 +14,7 @@ Run a four-category documentation health audit and produce a persistent report.
 
 ## Invocation
 
-```
+```text
 /doc-audit [scope]
 ```
 
@@ -38,7 +38,7 @@ Run a four-category documentation health audit and produce a persistent report.
 
 Print this table after parsing the JSON:
 
-```
+```text
 Doc Audit Summary
 ─────────────────────────────────────────────────────
 Category       Status      Issues
