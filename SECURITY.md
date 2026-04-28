@@ -1,6 +1,25 @@
 # Security Guide for Claude Global Configuration
 
-## 🔐 API Key Management
+## Reporting Security Vulnerabilities
+
+Report vulnerabilities privately via GitHub Security Advisories. Navigate to
+the Security tab of this repository and click "Report a vulnerability". Do not
+file public issues for security vulnerabilities; public disclosure before a
+fix is available puts all users at risk.
+
+The Security tab is at:
+`https://github.com/ByronWilliamsCPA/.claude/security/advisories`
+
+We will acknowledge your report within 14 days of receipt. The maximum initial
+response time is 14 days. After acknowledgment, we will provide a timeline for
+a fix and coordinate disclosure with you before any public announcement.
+
+For questions about the scope of this policy, contact the maintainer directly
+via the GitHub Security Advisories channel above.
+
+---
+
+## API Key Management
 
 ### Overview
 This configuration uses environment variables to securely manage API keys for MCP servers. **NEVER commit actual API keys to Git repositories**.

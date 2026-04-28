@@ -22,7 +22,7 @@ This page summarizes the MCP tool loading strategy. The authoritative definition
 | Tier 2 | Agent or skill invocation | Per-bundle | Tools needed only with specific agents |
 | Tier 3 | Keyword in user prompt | Per-trigger | Tools needed for specific task domains |
 
-## Tier 1 — Always Loaded
+## Tier 1: Always Loaded
 
 | Server | Tools |
 | --- | --- |
@@ -30,7 +30,7 @@ This page summarizes the MCP tool loading strategy. The authoritative definition
 | `context7` | `resolve_library_id`, `get_library_docs` |
 | `github` | `get_file_contents` |
 
-## Tier 2 — Agent Bundles (Selected)
+## Tier 2: Agent Bundles (Selected)
 
 | Agent or Skill | MCP tools loaded |
 | --- | --- |
@@ -44,7 +44,7 @@ This page summarizes the MCP tool loading strategy. The authoritative definition
 
 Full bundle list: `.claude/rules/mcp-strategy.md`.
 
-## Tier 3 — Keyword Triggers
+## Tier 3: Keyword Triggers
 
 | Keywords | Tools loaded |
 | --- | --- |
@@ -65,7 +65,7 @@ All new MCP tools default to Tier 3. To request promotion:
 
 ## See Also
 
-- `.claude/rules/mcp-strategy.md` — operative tier definitions and full tool list
-- [Architecture → MCP Tiered Loading](../architecture/mcp-tiered-loading.md) — narrative with context budget analysis
-- [ADR-003 Tiered MCP Loading](../architecture/adr/ADR-003-tiered-mcp-loading.md) — design decisions and alternatives
-- `scripts/track-mcp-usage.sh` — usage tracking for evidence-based promotion decisions
+- `.claude/rules/mcp-strategy.md`: operative tier definitions and full tool list
+- [Architecture → MCP Tiered Loading](../architecture/mcp-tiered-loading.md): narrative with context budget analysis
+- [ADR-003 Tiered MCP Loading](../architecture/adr/ADR-003-tiered-mcp-loading.md): design decisions and alternatives
+- `scripts/track-mcp-usage.sh`: usage tracking for evidence-based promotion decisions

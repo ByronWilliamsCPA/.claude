@@ -11,7 +11,7 @@ tags:
   - installation
 ---
 
-This page walks through installing Claude Code Configuration from scratch. The install creates symlinks from `~/.claude/` into the repo — Claude Code sees the agents, skills, and rules as native config, while the repo stays version-controlled at `~/dev/.claude`.
+This page walks through installing Claude Code Configuration from scratch. The install creates symlinks from `~/.claude/` into the repo: Claude Code sees the agents, skills, and rules as native config, while the repo stays version-controlled at `~/dev/.claude`.
 
 For the design rationale behind this two-layer approach, see [Architecture → Install Model](../architecture/install-model.md).
 
@@ -19,8 +19,8 @@ For the design rationale behind this two-layer approach, see [Architecture → I
 
 - **Git** with SSH or HTTPS access to GitHub
 - **Python 3.10+** (`python3 --version`)
-- **uv** (`uv --version` — if missing, see [uv install docs](https://docs.astral.sh/uv/getting-started/installation/))
-- **jq** (`jq --version` — if missing: `apt install jq` or `brew install jq`)
+- **uv** (`uv --version`: if missing, see [uv install docs](https://docs.astral.sh/uv/getting-started/installation/))
+- **jq** (`jq --version`: if missing: `apt install jq` or `brew install jq`)
 - A working Claude Code installation
 
 ## Clone the Repository
@@ -45,7 +45,7 @@ cd ~/dev/.claude
 ./setup.sh
 ```
 
-`setup.sh` is safe to re-run at any time — every operation is idempotent. It will:
+`setup.sh` is safe to re-run at any time: every operation is idempotent. It will:
 
 1. Check for required commands (`ln`, `git`) and warn if `jq` is missing.
 2. Initialize any uninitialized submodules.
@@ -77,7 +77,7 @@ jq '.hooks | keys' ~/.claude/settings.json
 # Expected: ["PostToolUse", "PreToolUse", "Stop", "UserPromptSubmit"]
 ```
 
-## Install the Python Toolchain (Optional — Required for Contributing)
+## Install the Python Toolchain (Optional: Required for Contributing)
 
 If you plan to run tests, lint, or pre-commit hooks:
 
@@ -114,4 +114,4 @@ rm ~/.claude/reference-library ~/.claude/scripts
 
 ## Next
 
-[Your First Agent](first-agent.md) — invoke a specialist agent in a Claude Code session.
+[Your First Agent](first-agent.md): invoke a specialist agent in a Claude Code session.

@@ -70,10 +70,10 @@ Avoid giving agents `Write` or `Bash` unless the task genuinely requires it. Age
 
 The prompt body after the frontmatter is the agent's complete system prompt. Structure it with:
 
-1. **Role statement** — who the agent is and its domain
-2. **Responsibilities** — what tasks it performs
-3. **Output format** — how results should be structured (what to include, length constraints, headers)
-4. **References** — any files, standards, or ADRs the agent should consult
+1. **Role statement**: who the agent is and its domain
+2. **Responsibilities**: what tasks it performs
+3. **Output format**: how results should be structured (what to include, length constraints, headers)
+4. **References**: any files, standards, or ADRs the agent should consult
 
 Keep the prompt focused. Agents with well-scoped prompts produce more reliable results than generalists.
 
@@ -88,7 +88,7 @@ Use the [my-agent] agent to [specific task].
 Verify:
 
 - The agent is found (no "unknown agent type" error)
-- The tool set is correct — the agent should not attempt tools you did not list
+- The tool set is correct: the agent should not attempt tools you did not list
 - The output shape matches what the prompt specifies
 - The agent completes without requesting more permissions
 
@@ -98,6 +98,6 @@ After testing, add the agent to `AGENTS-AND-SKILLS.md` at the repo root. This is
 
 ## See Also
 
-- [ADR-004 Skill vs Agent Boundary](../architecture/adr/ADR-004-skill-vs-agent-boundary.md) — the classification rubric
-- [Architecture → Agent Dispatch](../architecture/agent-dispatch.md) — how agents are invoked at runtime
-- [Agents Catalog](../reference/agents.md) — the current full catalog
+- [ADR-004 Skill vs Agent Boundary](../architecture/adr/ADR-004-skill-vs-agent-boundary.md): the classification rubric
+- [Architecture → Agent Dispatch](../architecture/agent-dispatch.md): how agents are invoked at runtime
+- [Agents Catalog](../reference/agents.md): the current full catalog

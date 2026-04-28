@@ -2,6 +2,7 @@
 
 ## Quality & Security
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/ByronWilliamsCPA/claude_config/badge)](https://securityscorecards.dev/viewer/?uri=github.com/ByronWilliamsCPA/claude_config)
+<!-- TODO: OpenSSF Best Practices badge pending. Apply at https://bestpractices.coreinfrastructure.org/en/projects/new then replace this comment with the badge. -->
 [![REUSE Compliance](https://github.com/ByronWilliamsCPA/claude_config/actions/workflows/reuse.yml/badge.svg)](https://github.com/ByronWilliamsCPA/claude_config/actions/workflows/reuse.yml)
 
 ## CI/CD Status
@@ -42,8 +43,8 @@ This project provides:
 
 Full docs live under `docs/` and build with `uv run mkdocs serve`. The site has two audience tracks:
 
-- **Getting Started** (`docs/getting-started/`) — for new developers: clone, `setup.sh`, run your first agent, trigger your first skill, troubleshoot.
-- **Architecture** (`docs/architecture/`) — for maintainers: mental model, hook pipeline, agent dispatch, MCP tiered loading, plus a numbered [ADR log](docs/architecture/adr/index.md) and committed [PUML diagrams](docs/architecture/diagrams/index.md) explaining *why* load-bearing decisions were made.
+- **Getting Started** (`docs/getting-started/`) for new developers: clone, `setup.sh`, run your first agent, trigger your first skill, troubleshoot.
+- **Architecture** (`docs/architecture/`) for maintainers: mental model, hook pipeline, agent dispatch, MCP tiered loading, plus a numbered [ADR log](docs/architecture/adr/index.md) and committed [PUML diagrams](docs/architecture/diagrams/index.md) explaining *why* load-bearing decisions were made.
 
 See [`docs/index.md`](docs/index.md) for the role-based landing page.
 
@@ -568,7 +569,7 @@ This project uses [Semantic Versioning](https://semver.org/):
 - **MINOR** version: Backwards-compatible functionality additions
 - **PATCH** version: Backwards-compatible bug fixes
 
-Current version: **1.0.0**
+Current version: **0.13.0**
 
 ### Automated Releases with Semantic Release
 

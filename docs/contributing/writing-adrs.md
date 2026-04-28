@@ -13,19 +13,19 @@ tags:
 
 ## When to Write an ADR
 
-Write an ADR when a decision is *load-bearing* — meaning silently changing it would break behavior, break the install, or break the mental model a reader needs. If the decision is easily reversible and affects only one file, it is probably an implementation detail, not an ADR.
+Write an ADR when a decision is *load-bearing*: meaning silently changing it would break behavior, break the install, or break the mental model a reader needs. If the decision is easily reversible and affects only one file, it is probably an implementation detail, not an ADR.
 
 See [ADR-007](../architecture/adr/ADR-007-dual-audience-docs.md) for the reasoning behind the dual-audience layout this doc is part of.
 
 ## The Slim Template
 
-Start from the slim template at `docs/architecture/adr/_template.md` (open it directly in the repo — it is excluded from the built site). The full template sections are:
+Start from the slim template at `docs/architecture/adr/_template.md` (open it directly in the repo: it is excluded from the built site). The full template sections are:
 
-1. **Context** — the problem and forces at play.
-2. **Decision** — a single declarative sentence.
-3. **Alternatives Considered** — what you rejected and why.
-4. **Consequences** — positive, negative, neutral.
-5. **References** — code files, related ADRs, external sources.
+1. **Context**: the problem and forces at play.
+2. **Decision**: a single declarative sentence.
+3. **Alternatives Considered**: what you rejected and why.
+4. **Consequences**: positive, negative, neutral.
+5. **References**: code files, related ADRs, external sources.
 
 There is a longer reference variant at `docs/ADRs/adr-template.md` (excluded from the built site); use it for unusually consequential decisions.
 

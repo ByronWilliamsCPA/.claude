@@ -42,9 +42,9 @@ This skill is invoked with `/my-skill` or when the user asks to [description of 
 
 ## Workflow
 
-1. Step one — what Claude does first
-2. Step two — what Claude does next
-3. Step three — what the skill produces
+1. Step one: what Claude does first
+2. Step two: what Claude does next
+3. Step three: what the skill produces
 
 ## Output
 
@@ -55,11 +55,11 @@ Describe what the user should expect when the skill completes.
 
 Skills can be triggered two ways:
 
-**Slash commands** — the user types `/my-skill` explicitly. This is the most reliable trigger and should be used for workflows that the user intentionally invokes. The `git` skill is triggered this way (`/commit`, `/git pr`).
+**Slash commands**: the user types `/my-skill` explicitly. This is the most reliable trigger and should be used for workflows that the user intentionally invokes. The `git` skill is triggered this way (`/commit`, `/git pr`).
 
-**Keyword patterns** — the `Skill` tool fires when matching words appear in the user's prompt. These are registered in the skill system's matcher configuration. Keyword triggers are appropriate for skills that should fire contextually (e.g., `frontend-design` fires on "build UI", "create component", "design page").
+**Keyword patterns**: the `Skill` tool fires when matching words appear in the user's prompt. These are registered in the skill system's matcher configuration. Keyword triggers are appropriate for skills that should fire contextually (e.g., `frontend-design` fires on "build UI", "create component", "design page").
 
-For most new skills, start with an explicit slash command trigger. Keyword triggers require more care — they can fire unexpectedly if the trigger words are too common.
+For most new skills, start with an explicit slash command trigger. Keyword triggers require more care: they can fire unexpectedly if the trigger words are too common.
 
 ## The Planning Bridge Gate
 
@@ -82,7 +82,7 @@ After testing, add the skill to `AGENTS-AND-SKILLS.md` at the repo root and to t
 
 ## See Also
 
-- [ADR-004 Skill vs Agent Boundary](../architecture/adr/ADR-004-skill-vs-agent-boundary.md) — the classification rubric
-- [Architecture → Agent Dispatch](../architecture/agent-dispatch.md) — how skills are dispatched at runtime
-- [Skills Catalog](../reference/skills.md) — the current full catalog
-- [Adding a Hook](adding-hooks.md) — if your skill needs a dedicated hook entry
+- [ADR-004 Skill vs Agent Boundary](../architecture/adr/ADR-004-skill-vs-agent-boundary.md): the classification rubric
+- [Architecture → Agent Dispatch](../architecture/agent-dispatch.md): how skills are dispatched at runtime
+- [Skills Catalog](../reference/skills.md): the current full catalog
+- [Adding a Hook](adding-hooks.md): if your skill needs a dedicated hook entry

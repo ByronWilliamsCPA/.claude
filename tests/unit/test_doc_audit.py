@@ -1,11 +1,11 @@
-"""Tests for scripts/doc-audit.py — documentation health audit script.
+"""Tests for scripts/doc-audit.py: documentation health audit script.
 
 Five spec scenarios tested:
-1. Clean repo — all checks produce zero findings
-2. Missing required frontmatter field — produces WARN
-3. Broken internal link — produces ERROR
-4. Count claim mismatch — produces WARN
-5. Stale Python version reference — produces WARN
+1. Clean repo: all checks produce zero findings
+2. Missing required frontmatter field: produces WARN
+3. Broken internal link: produces ERROR
+4. Count claim mismatch: produces WARN
+5. Stale Python version reference: produces WARN
 
 Sixth scenario: CLI produces valid JSON and exits 0.
 """
@@ -106,17 +106,17 @@ def docs_root(tmp_path: Path) -> Path:
 @pytest.fixture
 def repo_root(tmp_path: Path, docs_root: Path) -> Path:
     """Return tmp_path as repo root (docs/ already created by docs_root fixture)."""
-    _ = docs_root  # pytest fixture dependency — ensures docs/ exists before tests run
+    _ = docs_root  # pytest fixture dependency: ensures docs/ exists before tests run
     return tmp_path
 
 
 # ---------------------------------------------------------------------------
-# Scenario 1: Clean repo — all checks pass
+# Scenario 1: Clean repo: all checks pass
 # ---------------------------------------------------------------------------
 
 
 class TestCleanRepo:
-    """All docs valid — each checker returns an empty findings list."""
+    """All docs valid: each checker returns an empty findings list."""
 
     @pytest.mark.unit
     def test_frontmatter_clean(

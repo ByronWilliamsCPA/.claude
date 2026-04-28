@@ -85,6 +85,7 @@ Documentation build and deployment:
 - Deployment to GitHub Pages (on push to main)
 
 **Triggers**: Push/PR affecting docs, manual dispatch
+
 ---
 
 ### Publish to PyPI (`publish-pypi.yml`)

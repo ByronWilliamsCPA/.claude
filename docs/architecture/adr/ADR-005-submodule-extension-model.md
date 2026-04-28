@@ -62,7 +62,7 @@ git commit -m "chore(submodules): update <name> to latest upstream"
 ### Positive
 
 - Upstream improvements (new agents, bug fixes, new hookify plugins) flow in via a single `git submodule update --remote --merge` command.
-- Each submodule is pinned to a specific commit. This repo controls exactly which upstream version is in use — updates are opt-in, not automatic.
+- Each submodule is pinned to a specific commit. This repo controls exactly which upstream version is in use: updates are opt-in, not automatic.
 - Contributors only run `./setup.sh` once after clone. `setup.sh` calls `git submodule update --init --recursive` as part of its preflight, so submodule initialization is handled automatically.
 
 ### Negative
@@ -77,12 +77,12 @@ git commit -m "chore(submodules): update <name> to latest upstream"
 
 ## References
 
-- `.gitmodules` — the five submodule definitions with upstream URLs
-- `setup.sh` — `ensure_submodules()` function handles init; symlink targets reference submodule paths
-- `.submodules/reference-library/` — agent templates
-- `.submodules/superpowers/` — community skills
-- `.submodules/anthropics-skills/` — official Anthropic skills
-- `.submodules/anthropics-plugins/` — hookify and security-guidance
-- `.submodules/image-generation/` — image generation utilities
-- `docs/architecture/submodule-strategy.md` — narrative explanation of the five submodules
-- [ADR-001](ADR-001-two-layer-symlink-install.md) — the two-layer install model that wires submodules into `~/.claude/`
+- `.gitmodules`: the five submodule definitions with upstream URLs
+- `setup.sh`: `ensure_submodules()` function handles init; symlink targets reference submodule paths
+- `.submodules/reference-library/`: agent templates
+- `.submodules/superpowers/`: community skills
+- `.submodules/anthropics-skills/`: official Anthropic skills
+- `.submodules/anthropics-plugins/`: hookify and security-guidance
+- `.submodules/image-generation/`: image generation utilities
+- `docs/architecture/submodule-strategy.md`: narrative explanation of the five submodules
+- [ADR-001](ADR-001-two-layer-symlink-install.md): the two-layer install model that wires submodules into `~/.claude/`

@@ -30,6 +30,6 @@ This section is for adding new agents, skills, hooks, ADRs, or diagrams to the r
 
 ## Existing References
 
-- `CONTRIBUTING.md` — top-level contribution guide.
-- `.claude/rules/git-workflow.md` — branch, commit, and PR conventions.
-- `.claude/rules/pre-commit.md` — pre-commit checklist.
+- `CONTRIBUTING.md`: top-level contribution guide.
+- `.claude/rules/git-workflow.md`: branch, commit, and PR conventions.
+- `.claude/rules/pre-commit.md`: pre-commit checklist.

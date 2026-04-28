@@ -61,7 +61,7 @@ was included.
 | --- | --- | --- |
 | 14 | 3-5 parallel worktrees, shell aliases (2a/2b/2c), analysis worktree | partially covered |
 | 15 | Start every complex task in Plan mode; second Claude reviews as staff engineer | partially covered |
-| 16 | Invest in `CLAUDE.md` — update after every correction | already covered |
+| 16 | Invest in `CLAUDE.md`: update after every correction | already covered |
 | 17 | Commit skills to git: `/techdebt`, Slack+GDrive+Asana sync skill | partially covered |
 | 18 | Claude fixes most bugs alone: paste Slack thread, "fix CI", docker logs | partially covered |
 | 19 | Level up prompting: challenge Claude, "scrap and reimplement", detailed specs | already covered |
@@ -152,7 +152,7 @@ was included.
 
 ### HIGH priority
 
-**Gap 1: SessionStart hook for dynamic context injection**
+#### Gap 1: SessionStart hook for dynamic context injection
 - **Tip:** Use a `SessionStart` hook to evaluate the active branch or modified
   files and load only the relevant rule file from `.claude/rules/` into context.
 - **Why it matters:** We have `git-workflow.md`, `mcp-strategy.md`,
@@ -164,7 +164,7 @@ was included.
 - **Effort:** M
 - **Priority:** high
 
-**Gap 2: Fork session via `/branch` and `--fork-session`**
+#### Gap 2: Fork session via `/branch` and `--fork-session`
 - **Tip:** `/branch` or `claude --resume <id> --fork-session` branches the
   current conversation. You can explore a destructive refactor in the fork and
   discard it, returning to the parent session unchanged.
@@ -176,7 +176,7 @@ was included.
 - **Effort:** S (documentation only)
 - **Priority:** high
 
-**Gap 3: `/loop` and `/schedule` for babysit-style automation**
+#### Gap 3: `/loop` and `/schedule` for babysit-style automation
 - **Tip:** `/loop 5m /ci-fix` or `/loop 30m /doc-audit` runs a skill on interval
   for up to a week. Boris uses it for auto-rebase, PR pruning, and
   post-merge sweeping.
@@ -192,7 +192,7 @@ was included.
   continuously and the loop runs as background watcher, not polling. Worth a
   trial, not a full commitment.
 
-**Gap 4: On-demand hooks inside skills (T18: `/careful`, `/freeze` pattern)**
+#### Gap 4: On-demand hooks inside skills (T18: `/careful`, `/freeze` pattern)
 - **Tip:** Skills can register hooks that are active only for the session in
   which the skill is invoked. Example: `/freeze` blocks edits outside the
   current branch directory; `/careful` blocks `rm -rf`, `DROP TABLE`,
@@ -206,7 +206,7 @@ was included.
 - **Effort:** M
 - **Priority:** high
 
-**Gap 5: `--bare` flag for SDK / non-interactive startup**
+#### Gap 5: `--bare` flag for SDK / non-interactive startup
 - **Tip:** `claude -p "..." --bare` skips the auto-scan for local `CLAUDE.md`,
   settings, and MCPs. Up to 10x faster startup.
 - **Why it matters:** Our `ci-fix` and doc audit hooks already invoke
@@ -218,7 +218,7 @@ was included.
 
 ### MEDIUM priority
 
-**Gap 6: `${CLAUDE_PLUGIN_DATA}` stable storage for skill memory**
+#### Gap 6: `${CLAUDE_PLUGIN_DATA}` stable storage for skill memory
 - **Tip:** Skills can persist state across sessions via
   `${CLAUDE_PLUGIN_DATA}`. Anthropic uses it for append-only logs, JSON
   caches, SQLite.
@@ -231,7 +231,7 @@ was included.
 - **Effort:** M
 - **Priority:** medium
 
-**Gap 7: Data Fetching / Runbook / Infra Ops skill categories (T3, T8, T9)**
+#### Gap 7: Data Fetching / Runbook / Infra Ops skill categories (T3, T8, T9)
 - **Tip:** Thariq's taxonomy shows three categories we have zero coverage in.
   Runbooks take a symptom (Slack thread, alert, error signature), walk a
   multi-tool investigation, and produce a structured report.
@@ -245,7 +245,7 @@ was included.
 - **Effort:** M
 - **Priority:** medium (depends on whether we operate services)
 
-**Gap 8: Progressive disclosure audit across existing 41 skills (T12)**
+#### Gap 8: Progressive disclosure audit across existing 41 skills (T12)
 - **Tip:** A skill is a folder, not just a markdown file. Claude should read
   `references/` and `examples/` on demand, not eagerly.
 - **Why it matters:** Gemini flagged this as "implicit but not verified." We
@@ -257,7 +257,7 @@ was included.
 - **Effort:** L
 - **Priority:** medium
 
-**Gap 9: Gotchas sections across existing skills (T11)**
+#### Gap 9: Gotchas sections across existing skills (T11)
 - **Tip:** Build up a Gotchas section in every skill from common failure
   points. Highest-signal content.
 - **Why it matters:** We likely have partial coverage. Systematic audit
@@ -266,18 +266,18 @@ was included.
 - **Effort:** M
 - **Priority:** medium
 
-**Gap 10: Second Claude as staff-engineer plan reviewer (tip 15)**
+#### Gap 10: Second Claude as staff-engineer plan reviewer (tip 15)
 - **Tip:** One Claude writes the plan, a second Claude reviews it as a staff
   engineer before switching to auto-accept mode.
 - **Why it matters:** Our `plan-validator` agent is close but the pattern of
   "spin up a fresh session specifically to review the plan" is a workflow
   primitive we should document, not a new tool.
 - **Where it would land:** `.claude/skills/writing-plans/` or
-  `.claude/skills/executing-plans/` — add a two-session review pattern.
+  `.claude/skills/executing-plans/`: add a two-session review pattern.
 - **Effort:** S
 - **Priority:** medium
 
-**Gap 11: Skill usage measurement via PreToolUse log (T22)**
+#### Gap 11: Skill usage measurement via PreToolUse log (T22)
 - **Tip:** PreToolUse hook logs every skill invocation so you can see
   which are popular and which are undertriggered.
 - **Why it matters:** With 41 skills, we don't know which are unused. A
@@ -288,7 +288,7 @@ was included.
 - **Effort:** S
 - **Priority:** medium
 
-**Gap 12: `--add-dir` / `additionalDirectories` for multi-repo work**
+#### Gap 12: `--add-dir` / `additionalDirectories` for multi-repo work
 - **Tip:** When working across repos, start Claude in one and use `--add-dir`
   to give it visibility plus permissions on siblings.
 - **Why it matters:** We often touch `.claude/` globals while in a project
@@ -301,7 +301,7 @@ was included.
 
 ### LOW priority
 
-**Gap 13: Output styles (Explanatory / Learning)**
+#### Gap 13: Output styles (Explanatory / Learning)
 - **Tip:** `/config` sets an output style. Explanatory explains the why.
   Learning coaches you through changes.
 - **Why it matters:** Nice for onboarding unfamiliar codebases. Not
@@ -309,7 +309,7 @@ was included.
 - **Effort:** S
 - **Priority:** low
 
-**Gap 14: `/sandbox` file and network isolation**
+#### Gap 14: `/sandbox` file and network isolation
 - **Tip:** Claude Code ships a sandbox runtime with file and network
   isolation.
 - **Why it matters:** Would reduce permission prompts and offer defense in
@@ -317,19 +317,19 @@ was included.
 - **Effort:** M
 - **Priority:** low
 
-**Gap 15: `/btw` for side queries**
+#### Gap 15: `/btw` for side queries
 - **Tip:** Ask a quick side question without interrupting the agent.
 - **Why it matters:** Minor quality-of-life improvement.
 - **Effort:** S (no setup required, just habit)
 - **Priority:** low
 
-**Gap 16: `/statusline`, spinner verbs, keybindings, terminal theme**
+#### Gap 16: `/statusline`, spinner verbs, keybindings, terminal theme
 - **Tip:** Purely cosmetic customization (tips 24, 30, 31, 33).
 - **Why it matters:** Zero effect on code quality.
 - **Effort:** S
 - **Priority:** low (skip unless craving)
 
-**Gap 17: Chrome extension for frontend feedback loop**
+#### Gap 17: Chrome extension for frontend feedback loop
 - **Tip:** Give Claude a browser so it can iterate on frontend code with
   visual feedback.
 - **Why it matters:** Our `frontend-design` skill has no visual feedback

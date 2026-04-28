@@ -196,7 +196,7 @@ git checkout -b feat/phase-1-core
 - [ ] All tests pass (80%+ coverage)
 - [ ] All pre-commit hooks pass
 - [ ] Documentation builds without errors
-- [ ] Team can run `poetry install` and start development
+- [ ] Team can run `uv sync` and start development
 
 ---
 
