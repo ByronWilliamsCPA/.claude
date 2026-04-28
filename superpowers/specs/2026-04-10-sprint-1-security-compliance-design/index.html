@@ -2283,7 +2283,7 @@
 closing gaps identified in the 2026-04-09 cross-project CLAUDE.md audit. All items appeared
 in 3+ project CLAUDE.md files but were absent from the global standard.</p>
 <p><strong>Approach</strong>: Documentation-only for three items; one tooling change (pip-audit hook). No
-enforcement hook for SHA pinning — CodeRabbit's existing <code>.github/workflows/**</code> path
+enforcement hook for SHA pinning - CodeRabbit's existing <code>.github/workflows/**</code> path
 instructions provide the review-time gate.</p>
 <hr />
 <h2 id="item-1-pip-audit-pre-push-hook">Item 1: pip-audit Pre-Push Hook<a class="headerlink" href="#item-1-pip-audit-pre-push-hook" title="Permanent link">&para;</a></h2>
@@ -2292,7 +2292,7 @@ instructions provide the review-time gate.</p>
 vulnerable dependencies without triggering a scan.</p>
 <p><strong>Solution</strong>: Add a local hook to <code>.pre-commit-config.yaml</code> at the <code>pre-push</code> stage,
 scoped to trigger only when dependency files change.</p>
-<p><strong>Hook definition</strong> — add after the Bandit section, before Conventional Commits:</p>
+<p><strong>Hook definition</strong> - add after the Bandit section, before Conventional Commits:</p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># ============================================================================</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="c1"># Dependency Vulnerability Scanning - pip-audit</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="c1"># ============================================================================</span>
@@ -2308,16 +2308,16 @@ scoped to trigger only when dependency files change.</p>
 </span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">      </span><span class="nt">stages</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">pre-push</span><span class="p p-Indicator">]</span>
 </span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="w">      </span><span class="nt">files</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">^(pyproject\.toml|requirements.*\.txt|uv\.lock)$</span>
 </span></code></pre></div>
-<p><strong>CI skip list</strong> — add <code>pip-audit</code> to the existing <code>ci: skip:</code> line:</p>
+<p><strong>CI skip list</strong> - add <code>pip-audit</code> to the existing <code>ci: skip:</code> line:</p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">skip</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">validate-front-matter</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">qlty-check</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">qlty-full</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">trufflehog</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">darglint</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">bandit</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">bandit-full</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">pip-audit</span><span class="p p-Indicator">]</span>
 </span></code></pre></div>
-<p><strong><code>rules/pre-commit.md</code> Security section</strong> — replace the current pip-audit manual step.</p>
+<p><strong><code>rules/pre-commit.md</code> Security section</strong> - replace the current pip-audit manual step.</p>
 <p>Before:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>- [ ] **Security Scanning**: No known vulnerabilities — medium+ severity blocks commit (`uv run pip-audit`; exit code 64 = advisory found)
+<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>- [ ] **Security Scanning**: No known vulnerabilities - medium+ severity blocks commit (`uv run pip-audit`; exit code 64 = advisory found)
 </span></code></pre></div>
 <p>After:</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>- [ ] **Security Scanning**: pip-audit runs automatically on pre-push when dependency files
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>      change (pyproject.toml, requirements*.txt, uv.lock). Exit code 64 = advisory found —
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>      change (pyproject.toml, requirements*.txt, uv.lock). Exit code 64 = advisory found -
 </span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>      medium+ severity blocks push. For manual audit: `uv run pip-audit`
 </span></code></pre></div>
 <hr />
@@ -2326,7 +2326,7 @@ scoped to trigger only when dependency files change.</p>
 but the global <code>rules/python.md</code> has no mention of prohibited algorithms, approved alternatives,
 or the <code>usedforsecurity=False</code> pattern.</p>
 <p><strong>Solution</strong>: Add a new section to <code>rules/python.md</code> after "Type Checking with BasedPyright"
-and before "PyStrict-Aligned Ruff Rules". No frontmatter change needed — the existing <code>paths:</code>
+and before "PyStrict-Aligned Ruff Rules". No frontmatter change needed - the existing <code>paths:</code>
 filter (<code>**/*.py</code>, <code>pyproject.toml</code>) correctly scopes this to Python contexts.</p>
 <p><strong>Section content to add:</strong></p>
 <div class="language-markdown highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="gu">## FIPS 140-2/3 Compliance</span>
@@ -2354,7 +2354,7 @@ filter (<code>**/*.py</code>, <code>pyproject.toml</code>) correctly scopes this
 Projects can reference actions by mutable version tags, which are vulnerable to supply chain
 attacks via tag mutation.</p>
 <p><strong>Solution</strong>: Add a new section to <code>rules/git-workflow.md</code> after the Gate System section and
-before Git Worktrees. Guidance-only — CodeRabbit's existing <code>.github/workflows/**</code> path
+before Git Worktrees. Guidance-only - CodeRabbit's existing <code>.github/workflows/**</code> path
 instructions provide review-time enforcement.</p>
 <p><strong>Section content to add:</strong></p>
 <div class="language-markdown highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="gu">## GitHub Actions: Pin to Commit SHAs</span>
@@ -2364,10 +2364,10 @@ instructions provide review-time enforcement.</p>
 </span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>
 </span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>Always pin to the full commit SHA:
 </span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>
-</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>    # Bad — tag is mutable, can be rewritten after you reference it
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>    # Bad - tag is mutable, can be rewritten after you reference it
 </span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">    </span><span class="k">-</span><span class="w"> </span>uses: actions/checkout@v4
 </span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>
-</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>    # Good — SHA is immutable
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>    # Good - SHA is immutable
 </span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="w">    </span><span class="k">-</span><span class="w"> </span>uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
 </span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>
 </span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>To find the SHA: navigate to the action&#39;s releases page on GitHub, click the commit link for
@@ -2387,7 +2387,7 @@ documentation.</p>
 projects, and add a policy reference to <code>CLAUDE.md</code>.</p>
 <p>Projects create their own <code>docs/known-vulnerabilities.md</code> by copying from this template; the
 template itself lives in the global <code>.claude</code> repo.</p>
-<p><strong><code>docs/known-vulnerabilities-template.md</code></strong> — must include valid frontmatter to pass the
+<p><strong><code>docs/known-vulnerabilities-template.md</code></strong> - must include valid frontmatter to pass the
 <code>validate-front-matter</code> pre-commit hook (which scans all <code>docs/**/*.md</code> files):</p>
 <div class="language-markdown highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>---
 </span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>schema_type: common
@@ -2403,9 +2403,9 @@ template itself lives in the global <code>.claude</code> repo.</p>
 </span><span id="__span-6-12"><a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a><span class="gh"># Known Vulnerabilities</span>
 </span><span id="__span-6-13"><a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>
 </span><span id="__span-6-14"><a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a><span class="k">&gt; </span><span class="ge">Tracks CVEs that cannot be immediately resolved. Review quarterly.</span>
-</span><span id="__span-6-15"><a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a><span class="k">&gt; </span><span class="ge">No entry may age past 90 days without reassessment — escalate or resolve.</span>
+</span><span id="__span-6-15"><a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a><span class="k">&gt; </span><span class="ge">No entry may age past 90 days without reassessment - escalate or resolve.</span>
 </span><span id="__span-6-16"><a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a>
-</span><span id="__span-6-17"><a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a><span class="gu">## CVE-YYYY-XXXXX — Package Name vX.Y</span>
+</span><span id="__span-6-17"><a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a><span class="gu">## CVE-YYYY-XXXXX - Package Name vX.Y</span>
 </span><span id="__span-6-18"><a id="__codelineno-6-18" name="__codelineno-6-18" href="#__codelineno-6-18"></a>
 </span><span id="__span-6-19"><a id="__codelineno-6-19" name="__codelineno-6-19" href="#__codelineno-6-19"></a>| Field | Value |
 </span><span id="__span-6-20"><a id="__codelineno-6-20" name="__codelineno-6-20" href="#__codelineno-6-20"></a>| --- | --- |
@@ -2418,13 +2418,13 @@ template itself lives in the global <code>.claude</code> repo.</p>
 </span><span id="__span-6-27"><a id="__codelineno-6-27" name="__codelineno-6-27" href="#__codelineno-6-27"></a>
 </span><span id="__span-6-28"><a id="__codelineno-6-28" name="__codelineno-6-28" href="#__codelineno-6-28"></a><span class="gs">**Exploitation scenario**</span>: Describe what an attacker needs to exploit this in your context.
 </span><span id="__span-6-29"><a id="__codelineno-6-29" name="__codelineno-6-29" href="#__codelineno-6-29"></a>
-</span><span id="__span-6-30"><a id="__codelineno-6-30" name="__codelineno-6-30" href="#__codelineno-6-30"></a><span class="gs">**Why deferred**</span>: Specific reason — upstream unpatched, breaking API change required, etc.
+</span><span id="__span-6-30"><a id="__codelineno-6-30" name="__codelineno-6-30" href="#__codelineno-6-30"></a><span class="gs">**Why deferred**</span>: Specific reason - upstream unpatched, breaking API change required, etc.
 </span><span id="__span-6-31"><a id="__codelineno-6-31" name="__codelineno-6-31" href="#__codelineno-6-31"></a>
 </span><span id="__span-6-32"><a id="__codelineno-6-32" name="__codelineno-6-32" href="#__codelineno-6-32"></a><span class="gs">**Compensating control**</span>: What reduces the risk while the CVE remains open.
 </span><span id="__span-6-33"><a id="__codelineno-6-33" name="__codelineno-6-33" href="#__codelineno-6-33"></a>
 </span><span id="__span-6-34"><a id="__codelineno-6-34" name="__codelineno-6-34" href="#__codelineno-6-34"></a><span class="gs">**Planned resolution**</span>: Target version, migration path, or timeline.
 </span></code></pre></div>
-<p><strong><code>CLAUDE.md</code> addition</strong> — after the last blockquote in Core Development Standards
+<p><strong><code>CLAUDE.md</code> addition</strong> - after the last blockquote in Core Development Standards
 (after <code>&gt; **Writing quality thresholds...</code>):</p>
 <div class="language-markdown highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="k">&gt; </span><span class="ge">**Unfixed CVEs**: When pip-audit finds a vulnerability that cannot be immediately resolved,</span>
 </span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="k">&gt; </span><span class="ge">document it in `docs/known-vulnerabilities.md` using the template at</span>
@@ -2482,7 +2482,7 @@ template itself lives in the global <code>.claude</code> repo.</p>
 <li><strong>pip-audit hook skips</strong>: Run the hook against a commit with only <code>.py</code> changes,
    confirm it does not run</li>
 <li><strong>CI skip</strong>: Confirm <code>pip-audit</code> appears in the <code>ci: skip:</code> list</li>
-<li><strong>FIPS content visible</strong>: Open a <code>.py</code> file — <code>rules/python.md</code> is context-injected,
+<li><strong>FIPS content visible</strong>: Open a <code>.py</code> file - <code>rules/python.md</code> is context-injected,
    making FIPS rules visible to Claude</li>
 <li><strong>SHA pinning section</strong>: Confirm section appears in <code>git-workflow.md</code> between Gate System
    and Git Worktrees</li>
@@ -2518,7 +2518,7 @@ template itself lives in the global <code>.claude</code> repo.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 12, 2026 21:52:50 UTC">April 12, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 28, 2026 15:00:04 UTC">April 28, 2026</span>
   </span>
 
     

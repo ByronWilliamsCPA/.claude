@@ -2261,7 +2261,7 @@
 <p><strong>For agentic workers:</strong> REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (<code>- [ ]</code>) syntax for tracking.</p>
 </blockquote>
 <p><strong>Goal:</strong> Wire four advisory/guard hooks into the global Claude Code settings so shellcheck, frontmatter validation, force-push blocking, and long-Bash notifications run automatically.</p>
-<p><strong>Architecture:</strong> Hook 1 (shellcheck) is an inline command appended to the existing PostToolUse <code>Edit|Write</code> array — no new file. Hooks 2-4 are standalone bash scripts in <code>scripts/</code> (symlinked from <code>~/.claude/scripts/</code>) each following the stdin-JSON pattern established by <code>py310-compat-check.sh</code> and <code>planning-bridge-gate.sh</code>. Hooks 3 and 4 share a single PreToolUse Bash script (<code>bash-pre-hook.sh</code>) that handles force-push detection and records a start timestamp; a separate PostToolUse script (<code>bash-notify.sh</code>) reads that timestamp and fires the notification.</p>
+<p><strong>Architecture:</strong> Hook 1 (shellcheck) is an inline command appended to the existing PostToolUse <code>Edit|Write</code> array - no new file. Hooks 2-4 are standalone bash scripts in <code>scripts/</code> (symlinked from <code>~/.claude/scripts/</code>) each following the stdin-JSON pattern established by <code>py310-compat-check.sh</code> and <code>planning-bridge-gate.sh</code>. Hooks 3 and 4 share a single PreToolUse Bash script (<code>bash-pre-hook.sh</code>) that handles force-push detection and records a start timestamp; a separate PostToolUse script (<code>bash-notify.sh</code>) reads that timestamp and fires the notification.</p>
 <p><strong>Tech Stack:</strong> Bash, shellcheck 0.11.0, python3 <code>re</code> module, jq, powershell.exe (WSL2 toast), <code>~/.claude/settings.json</code></p>
 <hr />
 <h2 id="file-structure">File Structure<a class="headerlink" href="#file-structure" title="Permanent link">&para;</a></h2>
@@ -2302,7 +2302,7 @@
 <h3 id="task-1-shellcheck-inline-hook">Task 1: Shellcheck inline hook<a class="headerlink" href="#task-1-shellcheck-inline-hook" title="Permanent link">&para;</a></h3>
 <p><strong>Files:</strong>
 - Modify: <code>~/.claude/settings.json</code> (PostToolUse <code>(Edit|Write)</code> hooks array, add one entry)</p>
-<p>No new script. Shellcheck is advisory (<code>|| true</code>) — Claude sees the output but the edit is never blocked.</p>
+<p>No new script. Shellcheck is advisory (<code>|| true</code>) - Claude sees the output but the edit is never blocked.</p>
 <ul class="task-list">
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> <strong>Step 1: Verify shellcheck is installed and the .shellcheckrc is respected</strong></li>
 </ul>
@@ -2340,7 +2340,7 @@
 <ul class="task-list">
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> <strong>Step 3: Smoke-test by editing a shell script with a known issue</strong></li>
 </ul>
-<p>Open <code>/home/byron/dev/.claude/scripts/validate-frontmatter.sh</code> (which does not exist yet — create it empty first):</p>
+<p>Open <code>/home/byron/dev/.claude/scripts/validate-frontmatter.sh</code> (which does not exist yet - create it empty first):</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nb">echo</span><span class="w"> </span><span class="s1">&#39;#!/usr/bin/env bash&#39;</span><span class="w"> </span>&gt;<span class="w"> </span>/home/byron/dev/.claude/scripts/validate-frontmatter.sh
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="nb">echo</span><span class="w"> </span><span class="s1">&#39;UNUSED_VAR=&quot;hello&quot;&#39;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>/home/byron/dev/.claude/scripts/validate-frontmatter.sh
 </span></code></pre></div>
@@ -2405,13 +2405,13 @@
 </span><span id="__span-4-42"><a id="__codelineno-4-42" name="__codelineno-4-42" href="#__codelineno-4-42"></a><span class="s">    echo &quot;{\&quot;tool_name\&quot;:\&quot;Edit\&quot;,\&quot;tool_input\&quot;:{\&quot;file_path\&quot;:\&quot;$path\&quot;}}&quot;</span>
 </span><span id="__span-4-43"><a id="__codelineno-4-43" name="__codelineno-4-43" href="#__codelineno-4-43"></a><span class="s">}</span>
 </span><span id="__span-4-44"><a id="__codelineno-4-44" name="__codelineno-4-44" href="#__codelineno-4-44"></a>
-</span><span id="__span-4-45"><a id="__codelineno-4-45" name="__codelineno-4-45" href="#__codelineno-4-45"></a><span class="s"># Case 1: non-SKILL.md file — silent pass</span>
+</span><span id="__span-4-45"><a id="__codelineno-4-45" name="__codelineno-4-45" href="#__codelineno-4-45"></a><span class="s"># Case 1: non-SKILL.md file - silent pass</span>
 </span><span id="__span-4-46"><a id="__codelineno-4-46" name="__codelineno-4-46" href="#__codelineno-4-46"></a><span class="s">TMP=$(mktemp /tmp/test_other.py)</span>
 </span><span id="__span-4-47"><a id="__codelineno-4-47" name="__codelineno-4-47" href="#__codelineno-4-47"></a><span class="s">OUT=$(make_payload &quot;$TMP&quot; | bash &quot;$SCRIPT&quot; 2&gt;&amp;1); CODE=$?</span>
 </span><span id="__span-4-48"><a id="__codelineno-4-48" name="__codelineno-4-48" href="#__codelineno-4-48"></a><span class="s">check &quot;non-skill file silent&quot; &quot;&quot; &quot;$OUT&quot; $CODE</span>
 </span><span id="__span-4-49"><a id="__codelineno-4-49" name="__codelineno-4-49" href="#__codelineno-4-49"></a><span class="s">rm -f &quot;$TMP&quot;</span>
 </span><span id="__span-4-50"><a id="__codelineno-4-50" name="__codelineno-4-50" href="#__codelineno-4-50"></a>
-</span><span id="__span-4-51"><a id="__codelineno-4-51" name="__codelineno-4-51" href="#__codelineno-4-51"></a><span class="s"># Case 2: valid SKILL.md with name and description — silent pass</span>
+</span><span id="__span-4-51"><a id="__codelineno-4-51" name="__codelineno-4-51" href="#__codelineno-4-51"></a><span class="s"># Case 2: valid SKILL.md with name and description - silent pass</span>
 </span><span id="__span-4-52"><a id="__codelineno-4-52" name="__codelineno-4-52" href="#__codelineno-4-52"></a><span class="s">TMP=$(mktemp /tmp/test_SKILL.XXXXXX.md)</span>
 </span><span id="__span-4-53"><a id="__codelineno-4-53" name="__codelineno-4-53" href="#__codelineno-4-53"></a><span class="s"># rename to match */SKILL.md glob</span>
 </span><span id="__span-4-54"><a id="__codelineno-4-54" name="__codelineno-4-54" href="#__codelineno-4-54"></a><span class="s">SKILL_PATH=&quot;${TMPDIR:-/tmp}/skills_test_$(date +%s)/SKILL.md&quot;</span>
@@ -2427,7 +2427,7 @@
 </span><span id="__span-4-64"><a id="__codelineno-4-64" name="__codelineno-4-64" href="#__codelineno-4-64"></a><span class="s">check &quot;valid SKILL.md silent&quot; &quot;&quot; &quot;$OUT&quot; $CODE</span>
 </span><span id="__span-4-65"><a id="__codelineno-4-65" name="__codelineno-4-65" href="#__codelineno-4-65"></a><span class="s">rm -rf &quot;$(dirname &quot;$SKILL_PATH&quot;)&quot;</span>
 </span><span id="__span-4-66"><a id="__codelineno-4-66" name="__codelineno-4-66" href="#__codelineno-4-66"></a>
-</span><span id="__span-4-67"><a id="__codelineno-4-67" name="__codelineno-4-67" href="#__codelineno-4-67"></a><span class="s"># Case 3: SKILL.md missing name — should warn</span>
+</span><span id="__span-4-67"><a id="__codelineno-4-67" name="__codelineno-4-67" href="#__codelineno-4-67"></a><span class="s"># Case 3: SKILL.md missing name - should warn</span>
 </span><span id="__span-4-68"><a id="__codelineno-4-68" name="__codelineno-4-68" href="#__codelineno-4-68"></a><span class="s">SKILL_PATH=&quot;${TMPDIR:-/tmp}/skills_missing_$(date +%s)/SKILL.md&quot;</span>
 </span><span id="__span-4-69"><a id="__codelineno-4-69" name="__codelineno-4-69" href="#__codelineno-4-69"></a><span class="s">mkdir -p &quot;$(dirname &quot;$SKILL_PATH&quot;)&quot;</span>
 </span><span id="__span-4-70"><a id="__codelineno-4-70" name="__codelineno-4-70" href="#__codelineno-4-70"></a><span class="s">cat &gt; &quot;$SKILL_PATH&quot; &lt;&lt; &#39;FM&#39;</span>
@@ -2440,7 +2440,7 @@
 </span><span id="__span-4-77"><a id="__codelineno-4-77" name="__codelineno-4-77" href="#__codelineno-4-77"></a><span class="s">check &quot;missing name warns&quot; &quot;WARN.*name&quot; &quot;$OUT&quot; $CODE</span>
 </span><span id="__span-4-78"><a id="__codelineno-4-78" name="__codelineno-4-78" href="#__codelineno-4-78"></a><span class="s">rm -rf &quot;$(dirname &quot;$SKILL_PATH&quot;)&quot;</span>
 </span><span id="__span-4-79"><a id="__codelineno-4-79" name="__codelineno-4-79" href="#__codelineno-4-79"></a>
-</span><span id="__span-4-80"><a id="__codelineno-4-80" name="__codelineno-4-80" href="#__codelineno-4-80"></a><span class="s"># Case 4: SKILL.md missing description — should warn</span>
+</span><span id="__span-4-80"><a id="__codelineno-4-80" name="__codelineno-4-80" href="#__codelineno-4-80"></a><span class="s"># Case 4: SKILL.md missing description - should warn</span>
 </span><span id="__span-4-81"><a id="__codelineno-4-81" name="__codelineno-4-81" href="#__codelineno-4-81"></a><span class="s">SKILL_PATH=&quot;${TMPDIR:-/tmp}/skills_nodesc_$(date +%s)/SKILL.md&quot;</span>
 </span><span id="__span-4-82"><a id="__codelineno-4-82" name="__codelineno-4-82" href="#__codelineno-4-82"></a><span class="s">mkdir -p &quot;$(dirname &quot;$SKILL_PATH&quot;)&quot;</span>
 </span><span id="__span-4-83"><a id="__codelineno-4-83" name="__codelineno-4-83" href="#__codelineno-4-83"></a><span class="s">cat &gt; &quot;$SKILL_PATH&quot; &lt;&lt; &#39;FM&#39;</span>
@@ -2453,7 +2453,7 @@
 </span><span id="__span-4-90"><a id="__codelineno-4-90" name="__codelineno-4-90" href="#__codelineno-4-90"></a><span class="s">check &quot;missing description warns&quot; &quot;WARN.*description&quot; &quot;$OUT&quot; $CODE</span>
 </span><span id="__span-4-91"><a id="__codelineno-4-91" name="__codelineno-4-91" href="#__codelineno-4-91"></a><span class="s">rm -rf &quot;$(dirname &quot;$SKILL_PATH&quot;)&quot;</span>
 </span><span id="__span-4-92"><a id="__codelineno-4-92" name="__codelineno-4-92" href="#__codelineno-4-92"></a>
-</span><span id="__span-4-93"><a id="__codelineno-4-93" name="__codelineno-4-93" href="#__codelineno-4-93"></a><span class="s"># Case 5: SKILL.md no frontmatter at all — should warn</span>
+</span><span id="__span-4-93"><a id="__codelineno-4-93" name="__codelineno-4-93" href="#__codelineno-4-93"></a><span class="s"># Case 5: SKILL.md no frontmatter at all - should warn</span>
 </span><span id="__span-4-94"><a id="__codelineno-4-94" name="__codelineno-4-94" href="#__codelineno-4-94"></a><span class="s">SKILL_PATH=&quot;${TMPDIR:-/tmp}/skills_nofm_$(date +%s)/SKILL.md&quot;</span>
 </span><span id="__span-4-95"><a id="__codelineno-4-95" name="__codelineno-4-95" href="#__codelineno-4-95"></a><span class="s">mkdir -p &quot;$(dirname &quot;$SKILL_PATH&quot;)&quot;</span>
 </span><span id="__span-4-96"><a id="__codelineno-4-96" name="__codelineno-4-96" href="#__codelineno-4-96"></a><span class="s">echo &quot;# No frontmatter&quot; &gt; &quot;$SKILL_PATH&quot;</span>
@@ -2461,7 +2461,7 @@
 </span><span id="__span-4-98"><a id="__codelineno-4-98" name="__codelineno-4-98" href="#__codelineno-4-98"></a><span class="s">check &quot;no frontmatter warns&quot; &quot;WARN.*frontmatter&quot; &quot;$OUT&quot; $CODE</span>
 </span><span id="__span-4-99"><a id="__codelineno-4-99" name="__codelineno-4-99" href="#__codelineno-4-99"></a><span class="s">rm -rf &quot;$(dirname &quot;$SKILL_PATH&quot;)&quot;</span>
 </span><span id="__span-4-100"><a id="__codelineno-4-100" name="__codelineno-4-100" href="#__codelineno-4-100"></a>
-</span><span id="__span-4-101"><a id="__codelineno-4-101" name="__codelineno-4-101" href="#__codelineno-4-101"></a><span class="s"># Case 6: agents/*.md file missing description — should warn</span>
+</span><span id="__span-4-101"><a id="__codelineno-4-101" name="__codelineno-4-101" href="#__codelineno-4-101"></a><span class="s"># Case 6: agents/*.md file missing description - should warn</span>
 </span><span id="__span-4-102"><a id="__codelineno-4-102" name="__codelineno-4-102" href="#__codelineno-4-102"></a><span class="s">AGENT_PATH=&quot;${TMPDIR:-/tmp}/agents_test_$(date +%s)/code-reviewer.md&quot;</span>
 </span><span id="__span-4-103"><a id="__codelineno-4-103" name="__codelineno-4-103" href="#__codelineno-4-103"></a><span class="s">mkdir -p &quot;$(dirname &quot;$AGENT_PATH&quot;)&quot;</span>
 </span><span id="__span-4-104"><a id="__codelineno-4-104" name="__codelineno-4-104" href="#__codelineno-4-104"></a><span class="s">cat &gt; &quot;$AGENT_PATH&quot; &lt;&lt; &#39;FM&#39;</span>
@@ -2474,7 +2474,7 @@
 </span><span id="__span-4-111"><a id="__codelineno-4-111" name="__codelineno-4-111" href="#__codelineno-4-111"></a><span class="s">check &quot;agent missing description warns&quot; &quot;WARN.*description&quot; &quot;$OUT&quot; $CODE</span>
 </span><span id="__span-4-112"><a id="__codelineno-4-112" name="__codelineno-4-112" href="#__codelineno-4-112"></a><span class="s">rm -rf &quot;$(dirname &quot;$AGENT_PATH&quot;)&quot;</span>
 </span><span id="__span-4-113"><a id="__codelineno-4-113" name="__codelineno-4-113" href="#__codelineno-4-113"></a>
-</span><span id="__span-4-114"><a id="__codelineno-4-114" name="__codelineno-4-114" href="#__codelineno-4-114"></a><span class="s"># Case 7: empty stdin — silent pass</span>
+</span><span id="__span-4-114"><a id="__codelineno-4-114" name="__codelineno-4-114" href="#__codelineno-4-114"></a><span class="s"># Case 7: empty stdin - silent pass</span>
 </span><span id="__span-4-115"><a id="__codelineno-4-115" name="__codelineno-4-115" href="#__codelineno-4-115"></a><span class="s">OUT=$(echo &quot;&quot; | bash &quot;$SCRIPT&quot; 2&gt;&amp;1); CODE=$?</span>
 </span><span id="__span-4-116"><a id="__codelineno-4-116" name="__codelineno-4-116" href="#__codelineno-4-116"></a><span class="s">check &quot;empty stdin silent&quot; &quot;&quot; &quot;$OUT&quot; $CODE</span>
 </span><span id="__span-4-117"><a id="__codelineno-4-117" name="__codelineno-4-117" href="#__codelineno-4-117"></a>
@@ -2496,12 +2496,12 @@
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>cat<span class="w"> </span>&gt;<span class="w"> </span>/home/byron/dev/.claude/scripts/validate-frontmatter.sh<span class="w"> </span><span class="s">&lt;&lt; &#39;SCRIPT&#39;</span>
 </span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="s">#!/usr/bin/env bash</span>
 </span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="s"># =============================================================================</span>
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="s"># Frontmatter Validator — PostToolUse Hook</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="s"># Frontmatter Validator - PostToolUse Hook</span>
 </span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="s"># =============================================================================</span>
 </span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="s"># Fires after Edit or Write. Checks that SKILL.md and agents/*.md files</span>
 </span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="s"># contain the required frontmatter fields: name and description.</span>
 </span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="s">#</span>
-</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="s"># Exit codes: always 0 — advisory only, never blocks</span>
+</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="s"># Exit codes: always 0 - advisory only, never blocks</span>
 </span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="s"># =============================================================================</span>
 </span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>
 </span><span id="__span-6-12"><a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a><span class="s">set -euo pipefail</span>
@@ -2601,7 +2601,7 @@
 <p><strong>Files:</strong>
 - Create: <code>dev/.claude/scripts/bash-pre-hook.sh</code>
 - Modify: <code>~/.claude/settings.json</code> (add new PreToolUse Bash entry)</p>
-<p>The script does two things: (1) block <code>git push --force</code> or <code>push -f</code> targeting main or master (exit 2), and (2) write a Unix timestamp to <code>/tmp/claude-bash-start</code> so Task 4's notification script can compute duration. The force-push check runs first; if it blocks, the timestamp is never written (correct behavior — no dangling start time for a blocked command).</p>
+<p>The script does two things: (1) block <code>git push --force</code> or <code>push -f</code> targeting main or master (exit 2), and (2) write a Unix timestamp to <code>/tmp/claude-bash-start</code> so Task 4's notification script can compute duration. The force-push check runs first; if it blocks, the timestamp is never written (correct behavior - no dangling start time for a blocked command).</p>
 <ul class="task-list">
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> <strong>Step 1: Write the test harness</strong></li>
 </ul>
@@ -2642,31 +2642,31 @@
 </span><span id="__span-12-35"><a id="__codelineno-12-35" name="__codelineno-12-35" href="#__codelineno-12-35"></a><span class="s">    echo &quot;{\&quot;tool_name\&quot;:\&quot;Bash\&quot;,\&quot;tool_input\&quot;:{\&quot;command\&quot;:\&quot;$cmd\&quot;}}&quot;</span>
 </span><span id="__span-12-36"><a id="__codelineno-12-36" name="__codelineno-12-36" href="#__codelineno-12-36"></a><span class="s">}</span>
 </span><span id="__span-12-37"><a id="__codelineno-12-37" name="__codelineno-12-37" href="#__codelineno-12-37"></a>
-</span><span id="__span-12-38"><a id="__codelineno-12-38" name="__codelineno-12-38" href="#__codelineno-12-38"></a><span class="s"># Case 1: normal git push — allow (exit 0)</span>
+</span><span id="__span-12-38"><a id="__codelineno-12-38" name="__codelineno-12-38" href="#__codelineno-12-38"></a><span class="s"># Case 1: normal git push - allow (exit 0)</span>
 </span><span id="__span-12-39"><a id="__codelineno-12-39" name="__codelineno-12-39" href="#__codelineno-12-39"></a><span class="s">OUT=$(make_payload &quot;git push origin feat/foo&quot; | bash &quot;$SCRIPT&quot; 2&gt;&amp;1); CODE=$?</span>
 </span><span id="__span-12-40"><a id="__codelineno-12-40" name="__codelineno-12-40" href="#__codelineno-12-40"></a><span class="s">check &quot;normal push allowed&quot; 0 &quot;&quot; &quot;$OUT&quot; $CODE</span>
 </span><span id="__span-12-41"><a id="__codelineno-12-41" name="__codelineno-12-41" href="#__codelineno-12-41"></a>
-</span><span id="__span-12-42"><a id="__codelineno-12-42" name="__codelineno-12-42" href="#__codelineno-12-42"></a><span class="s"># Case 2: force push to main — block (exit 2)</span>
+</span><span id="__span-12-42"><a id="__codelineno-12-42" name="__codelineno-12-42" href="#__codelineno-12-42"></a><span class="s"># Case 2: force push to main - block (exit 2)</span>
 </span><span id="__span-12-43"><a id="__codelineno-12-43" name="__codelineno-12-43" href="#__codelineno-12-43"></a><span class="s">OUT=$(make_payload &quot;git push --force origin main&quot; | bash &quot;$SCRIPT&quot; 2&gt;&amp;1); CODE=$?</span>
 </span><span id="__span-12-44"><a id="__codelineno-12-44" name="__codelineno-12-44" href="#__codelineno-12-44"></a><span class="s">check &quot;force push to main blocked&quot; 2 &quot;BLOCKED&quot; &quot;$OUT&quot; $CODE</span>
 </span><span id="__span-12-45"><a id="__codelineno-12-45" name="__codelineno-12-45" href="#__codelineno-12-45"></a>
-</span><span id="__span-12-46"><a id="__codelineno-12-46" name="__codelineno-12-46" href="#__codelineno-12-46"></a><span class="s"># Case 3: -f shorthand to main — block (exit 2)</span>
+</span><span id="__span-12-46"><a id="__codelineno-12-46" name="__codelineno-12-46" href="#__codelineno-12-46"></a><span class="s"># Case 3: -f shorthand to main - block (exit 2)</span>
 </span><span id="__span-12-47"><a id="__codelineno-12-47" name="__codelineno-12-47" href="#__codelineno-12-47"></a><span class="s">OUT=$(make_payload &quot;git push -f origin main&quot; | bash &quot;$SCRIPT&quot; 2&gt;&amp;1); CODE=$?</span>
 </span><span id="__span-12-48"><a id="__codelineno-12-48" name="__codelineno-12-48" href="#__codelineno-12-48"></a><span class="s">check &quot;force push -f to main blocked&quot; 2 &quot;BLOCKED&quot; &quot;$OUT&quot; $CODE</span>
 </span><span id="__span-12-49"><a id="__codelineno-12-49" name="__codelineno-12-49" href="#__codelineno-12-49"></a>
-</span><span id="__span-12-50"><a id="__codelineno-12-50" name="__codelineno-12-50" href="#__codelineno-12-50"></a><span class="s"># Case 4: force push to master — block (exit 2)</span>
+</span><span id="__span-12-50"><a id="__codelineno-12-50" name="__codelineno-12-50" href="#__codelineno-12-50"></a><span class="s"># Case 4: force push to master - block (exit 2)</span>
 </span><span id="__span-12-51"><a id="__codelineno-12-51" name="__codelineno-12-51" href="#__codelineno-12-51"></a><span class="s">OUT=$(make_payload &quot;git push --force origin master&quot; | bash &quot;$SCRIPT&quot; 2&gt;&amp;1); CODE=$?</span>
 </span><span id="__span-12-52"><a id="__codelineno-12-52" name="__codelineno-12-52" href="#__codelineno-12-52"></a><span class="s">check &quot;force push to master blocked&quot; 2 &quot;BLOCKED&quot; &quot;$OUT&quot; $CODE</span>
 </span><span id="__span-12-53"><a id="__codelineno-12-53" name="__codelineno-12-53" href="#__codelineno-12-53"></a>
-</span><span id="__span-12-54"><a id="__codelineno-12-54" name="__codelineno-12-54" href="#__codelineno-12-54"></a><span class="s"># Case 5: force push to a feature branch — allow (exit 0)</span>
+</span><span id="__span-12-54"><a id="__codelineno-12-54" name="__codelineno-12-54" href="#__codelineno-12-54"></a><span class="s"># Case 5: force push to a feature branch - allow (exit 0)</span>
 </span><span id="__span-12-55"><a id="__codelineno-12-55" name="__codelineno-12-55" href="#__codelineno-12-55"></a><span class="s">OUT=$(make_payload &quot;git push --force origin feat/my-branch&quot; | bash &quot;$SCRIPT&quot; 2&gt;&amp;1); CODE=$?</span>
 </span><span id="__span-12-56"><a id="__codelineno-12-56" name="__codelineno-12-56" href="#__codelineno-12-56"></a><span class="s">check &quot;force push to feature branch allowed&quot; 0 &quot;&quot; &quot;$OUT&quot; $CODE</span>
 </span><span id="__span-12-57"><a id="__codelineno-12-57" name="__codelineno-12-57" href="#__codelineno-12-57"></a>
-</span><span id="__span-12-58"><a id="__codelineno-12-58" name="__codelineno-12-58" href="#__codelineno-12-58"></a><span class="s"># Case 6: force-with-lease to main — block (exit 2)</span>
+</span><span id="__span-12-58"><a id="__codelineno-12-58" name="__codelineno-12-58" href="#__codelineno-12-58"></a><span class="s"># Case 6: force-with-lease to main - block (exit 2)</span>
 </span><span id="__span-12-59"><a id="__codelineno-12-59" name="__codelineno-12-59" href="#__codelineno-12-59"></a><span class="s">OUT=$(make_payload &quot;git push --force-with-lease origin main&quot; | bash &quot;$SCRIPT&quot; 2&gt;&amp;1); CODE=$?</span>
 </span><span id="__span-12-60"><a id="__codelineno-12-60" name="__codelineno-12-60" href="#__codelineno-12-60"></a><span class="s">check &quot;force-with-lease to main blocked&quot; 2 &quot;BLOCKED&quot; &quot;$OUT&quot; $CODE</span>
 </span><span id="__span-12-61"><a id="__codelineno-12-61" name="__codelineno-12-61" href="#__codelineno-12-61"></a>
-</span><span id="__span-12-62"><a id="__codelineno-12-62" name="__codelineno-12-62" href="#__codelineno-12-62"></a><span class="s"># Case 7: non-git command — allow (exit 0) and writes timestamp</span>
+</span><span id="__span-12-62"><a id="__codelineno-12-62" name="__codelineno-12-62" href="#__codelineno-12-62"></a><span class="s"># Case 7: non-git command - allow (exit 0) and writes timestamp</span>
 </span><span id="__span-12-63"><a id="__codelineno-12-63" name="__codelineno-12-63" href="#__codelineno-12-63"></a><span class="s">rm -f /tmp/claude-bash-start</span>
 </span><span id="__span-12-64"><a id="__codelineno-12-64" name="__codelineno-12-64" href="#__codelineno-12-64"></a><span class="s">OUT=$(make_payload &quot;pytest tests/&quot; | bash &quot;$SCRIPT&quot; 2&gt;&amp;1); CODE=$?</span>
 </span><span id="__span-12-65"><a id="__codelineno-12-65" name="__codelineno-12-65" href="#__codelineno-12-65"></a><span class="s">check &quot;non-git command allowed&quot; 0 &quot;&quot; &quot;$OUT&quot; $CODE</span>
@@ -2678,7 +2678,7 @@
 </span><span id="__span-12-71"><a id="__codelineno-12-71" name="__codelineno-12-71" href="#__codelineno-12-71"></a><span class="s">    ((FAIL++))</span>
 </span><span id="__span-12-72"><a id="__codelineno-12-72" name="__codelineno-12-72" href="#__codelineno-12-72"></a><span class="s">fi</span>
 </span><span id="__span-12-73"><a id="__codelineno-12-73" name="__codelineno-12-73" href="#__codelineno-12-73"></a>
-</span><span id="__span-12-74"><a id="__codelineno-12-74" name="__codelineno-12-74" href="#__codelineno-12-74"></a><span class="s"># Case 8: empty stdin — allow (exit 0)</span>
+</span><span id="__span-12-74"><a id="__codelineno-12-74" name="__codelineno-12-74" href="#__codelineno-12-74"></a><span class="s"># Case 8: empty stdin - allow (exit 0)</span>
 </span><span id="__span-12-75"><a id="__codelineno-12-75" name="__codelineno-12-75" href="#__codelineno-12-75"></a><span class="s">OUT=$(echo &quot;&quot; | bash &quot;$SCRIPT&quot; 2&gt;&amp;1); CODE=$?</span>
 </span><span id="__span-12-76"><a id="__codelineno-12-76" name="__codelineno-12-76" href="#__codelineno-12-76"></a><span class="s">check &quot;empty stdin allowed&quot; 0 &quot;&quot; &quot;$OUT&quot; $CODE</span>
 </span><span id="__span-12-77"><a id="__codelineno-12-77" name="__codelineno-12-77" href="#__codelineno-12-77"></a>
@@ -2707,8 +2707,8 @@
 </span><span id="__span-14-8"><a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a><span class="s">#   2. Write start timestamp for bash-notify.sh duration tracking</span>
 </span><span id="__span-14-9"><a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a><span class="s">#</span>
 </span><span id="__span-14-10"><a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a><span class="s"># Exit codes:</span>
-</span><span id="__span-14-11"><a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a><span class="s">#   0  — allow command to proceed</span>
-</span><span id="__span-14-12"><a id="__codelineno-14-12" name="__codelineno-14-12" href="#__codelineno-14-12"></a><span class="s">#   2  — block command; stdout message surfaced to Claude</span>
+</span><span id="__span-14-11"><a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a><span class="s">#   0  - allow command to proceed</span>
+</span><span id="__span-14-12"><a id="__codelineno-14-12" name="__codelineno-14-12" href="#__codelineno-14-12"></a><span class="s">#   2  - block command; stdout message surfaced to Claude</span>
 </span><span id="__span-14-13"><a id="__codelineno-14-13" name="__codelineno-14-13" href="#__codelineno-14-13"></a><span class="s"># =============================================================================</span>
 </span><span id="__span-14-14"><a id="__codelineno-14-14" name="__codelineno-14-14" href="#__codelineno-14-14"></a>
 </span><span id="__span-14-15"><a id="__codelineno-14-15" name="__codelineno-14-15" href="#__codelineno-14-15"></a><span class="s">set -euo pipefail</span>
@@ -2850,22 +2850,22 @@
 </span><span id="__span-21-41"><a id="__codelineno-21-41" name="__codelineno-21-41" href="#__codelineno-21-41"></a><span class="s">    echo &quot;{\&quot;tool_name\&quot;:\&quot;Bash\&quot;,\&quot;tool_input\&quot;:{\&quot;command\&quot;:\&quot;$cmd\&quot;},\&quot;tool_response\&quot;:{\&quot;output\&quot;:\&quot;\&quot;}}&quot;</span>
 </span><span id="__span-21-42"><a id="__codelineno-21-42" name="__codelineno-21-42" href="#__codelineno-21-42"></a><span class="s">}</span>
 </span><span id="__span-21-43"><a id="__codelineno-21-43" name="__codelineno-21-43" href="#__codelineno-21-43"></a>
-</span><span id="__span-21-44"><a id="__codelineno-21-44" name="__codelineno-21-44" href="#__codelineno-21-44"></a><span class="s"># Case 1: duration &lt; 30s — silent (no notification)</span>
+</span><span id="__span-21-44"><a id="__codelineno-21-44" name="__codelineno-21-44" href="#__codelineno-21-44"></a><span class="s"># Case 1: duration &lt; 30s - silent (no notification)</span>
 </span><span id="__span-21-45"><a id="__codelineno-21-45" name="__codelineno-21-45" href="#__codelineno-21-45"></a><span class="s">echo &quot;$(date +%s)&quot; &gt; /tmp/claude-bash-start   # start = now</span>
 </span><span id="__span-21-46"><a id="__codelineno-21-46" name="__codelineno-21-46" href="#__codelineno-21-46"></a><span class="s">OUT=$(make_payload &quot;pytest tests/&quot; | bash &quot;$SCRIPT&quot; 2&gt;&amp;1); CODE=$?</span>
 </span><span id="__span-21-47"><a id="__codelineno-21-47" name="__codelineno-21-47" href="#__codelineno-21-47"></a><span class="s">check &quot;short command silent&quot; &quot;&quot; &quot;$OUT&quot; $CODE</span>
 </span><span id="__span-21-48"><a id="__codelineno-21-48" name="__codelineno-21-48" href="#__codelineno-21-48"></a>
-</span><span id="__span-21-49"><a id="__codelineno-21-49" name="__codelineno-21-49" href="#__codelineno-21-49"></a><span class="s"># Case 2: duration &gt; 30s — notification logged</span>
+</span><span id="__span-21-49"><a id="__codelineno-21-49" name="__codelineno-21-49" href="#__codelineno-21-49"></a><span class="s"># Case 2: duration &gt; 30s - notification logged</span>
 </span><span id="__span-21-50"><a id="__codelineno-21-50" name="__codelineno-21-50" href="#__codelineno-21-50"></a><span class="s">echo &quot;$(($(date +%s) - 35))&quot; &gt; /tmp/claude-bash-start   # start = 35s ago</span>
 </span><span id="__span-21-51"><a id="__codelineno-21-51" name="__codelineno-21-51" href="#__codelineno-21-51"></a><span class="s">OUT=$(make_payload &quot;pytest tests/&quot; | bash &quot;$SCRIPT&quot; 2&gt;&amp;1); CODE=$?</span>
 </span><span id="__span-21-52"><a id="__codelineno-21-52" name="__codelineno-21-52" href="#__codelineno-21-52"></a><span class="s">check &quot;long command notifies&quot; &quot;NOTIFY&quot; &quot;$OUT&quot; $CODE</span>
 </span><span id="__span-21-53"><a id="__codelineno-21-53" name="__codelineno-21-53" href="#__codelineno-21-53"></a>
-</span><span id="__span-21-54"><a id="__codelineno-21-54" name="__codelineno-21-54" href="#__codelineno-21-54"></a><span class="s"># Case 3: no start file — silent (graceful missing file)</span>
+</span><span id="__span-21-54"><a id="__codelineno-21-54" name="__codelineno-21-54" href="#__codelineno-21-54"></a><span class="s"># Case 3: no start file - silent (graceful missing file)</span>
 </span><span id="__span-21-55"><a id="__codelineno-21-55" name="__codelineno-21-55" href="#__codelineno-21-55"></a><span class="s">rm -f /tmp/claude-bash-start</span>
 </span><span id="__span-21-56"><a id="__codelineno-21-56" name="__codelineno-21-56" href="#__codelineno-21-56"></a><span class="s">OUT=$(make_payload &quot;some command&quot; | bash &quot;$SCRIPT&quot; 2&gt;&amp;1); CODE=$?</span>
 </span><span id="__span-21-57"><a id="__codelineno-21-57" name="__codelineno-21-57" href="#__codelineno-21-57"></a><span class="s">check &quot;missing start file silent&quot; &quot;&quot; &quot;$OUT&quot; $CODE</span>
 </span><span id="__span-21-58"><a id="__codelineno-21-58" name="__codelineno-21-58" href="#__codelineno-21-58"></a>
-</span><span id="__span-21-59"><a id="__codelineno-21-59" name="__codelineno-21-59" href="#__codelineno-21-59"></a><span class="s"># Case 4: empty stdin — silent</span>
+</span><span id="__span-21-59"><a id="__codelineno-21-59" name="__codelineno-21-59" href="#__codelineno-21-59"></a><span class="s"># Case 4: empty stdin - silent</span>
 </span><span id="__span-21-60"><a id="__codelineno-21-60" name="__codelineno-21-60" href="#__codelineno-21-60"></a><span class="s">OUT=$(echo &quot;&quot; | bash &quot;$SCRIPT&quot; 2&gt;&amp;1); CODE=$?</span>
 </span><span id="__span-21-61"><a id="__codelineno-21-61" name="__codelineno-21-61" href="#__codelineno-21-61"></a><span class="s">check &quot;empty stdin silent&quot; &quot;&quot; &quot;$OUT&quot; $CODE</span>
 </span><span id="__span-21-62"><a id="__codelineno-21-62" name="__codelineno-21-62" href="#__codelineno-21-62"></a>
@@ -2896,7 +2896,7 @@
 </span><span id="__span-23-10"><a id="__codelineno-23-10" name="__codelineno-23-10" href="#__codelineno-23-10"></a><span class="s"># Prints &quot;NOTIFY: ...&quot; to stdout when a notification fires (visible to Claude</span>
 </span><span id="__span-23-11"><a id="__codelineno-23-11" name="__codelineno-23-11" href="#__codelineno-23-11"></a><span class="s"># and captured by tests).</span>
 </span><span id="__span-23-12"><a id="__codelineno-23-12" name="__codelineno-23-12" href="#__codelineno-23-12"></a><span class="s">#</span>
-</span><span id="__span-23-13"><a id="__codelineno-23-13" name="__codelineno-23-13" href="#__codelineno-23-13"></a><span class="s"># Exit codes: always 0 — never blocks</span>
+</span><span id="__span-23-13"><a id="__codelineno-23-13" name="__codelineno-23-13" href="#__codelineno-23-13"></a><span class="s"># Exit codes: always 0 - never blocks</span>
 </span><span id="__span-23-14"><a id="__codelineno-23-14" name="__codelineno-23-14" href="#__codelineno-23-14"></a><span class="s"># =============================================================================</span>
 </span><span id="__span-23-15"><a id="__codelineno-23-15" name="__codelineno-23-15" href="#__codelineno-23-15"></a>
 </span><span id="__span-23-16"><a id="__codelineno-23-16" name="__codelineno-23-16" href="#__codelineno-23-16"></a><span class="s">set -euo pipefail</span>
@@ -2986,7 +2986,7 @@
 <ul class="task-list">
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> <strong>Step 5: Add the PostToolUse Bash entry to settings.json</strong></li>
 </ul>
-<p>In <code>/home/byron/.claude/settings.json</code>, add a second entry to the <code>PostToolUse</code> array (the existing entry is the <code>(Edit|Write)</code> one — this is a new top-level matcher entry):</p>
+<p>In <code>/home/byron/.claude/settings.json</code>, add a second entry to the <code>PostToolUse</code> array (the existing entry is the <code>(Edit|Write)</code> one - this is a new top-level matcher entry):</p>
 <div class="language-json highlight"><pre><span></span><code><span id="__span-26-1"><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="p">{</span>
 </span><span id="__span-26-2"><a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a><span class="w">  </span><span class="nt">&quot;matcher&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Bash&quot;</span><span class="p">,</span>
 </span><span id="__span-26-3"><a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a><span class="w">  </span><span class="nt">&quot;hooks&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
@@ -3058,7 +3058,7 @@ Expected side effect: a Windows balloon notification appears in the system tray.
 </table>
 <p><strong>Placeholder scan:</strong> No TBD/TODO/placeholder content found.</p>
 <p><strong>Type consistency:</strong> All scripts use consistent variable names (<code>CONTEXT</code>, <code>CMD</code>, <code>FILE_PATH</code>). Timestamp file is <code>/tmp/claude-bash-start</code> in both bash-pre-hook.sh and bash-notify.sh.</p>
-<p><strong>Known limitation:</strong> The <code>NOTIFY</code> stdout output from <code>bash-notify.sh</code> is visible to Claude in the session (it is not a warning — it is informational). If this becomes noisy, change <code>echo "NOTIFY: ..."</code> to write to the log file only.</p>
+<p><strong>Known limitation:</strong> The <code>NOTIFY</code> stdout output from <code>bash-notify.sh</code> is visible to Claude in the session (it is not a warning - it is informational). If this becomes noisy, change <code>echo "NOTIFY: ..."</code> to write to the log file only.</p>
 
 
 
@@ -3081,7 +3081,7 @@ Expected side effect: a Windows balloon notification appears in the system tray.
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 27, 2026 23:28:39 UTC">April 27, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 28, 2026 15:00:04 UTC">April 28, 2026</span>
   </span>
 
     

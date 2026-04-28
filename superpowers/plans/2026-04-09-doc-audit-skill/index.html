@@ -2310,14 +2310,14 @@
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> <strong>Step 2: Create tests/unit/test_doc_audit.py</strong></li>
 </ul>
 <p>Create <code>/home/byron/dev/.claude/tests/unit/test_doc_audit.py</code> with this exact content:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="sd">&quot;&quot;&quot;Tests for scripts/doc-audit.py — documentation health audit script.</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="sd">&quot;&quot;&quot;Tests for scripts/doc-audit.py - documentation health audit script.</span>
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
 </span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="sd">Five spec scenarios tested:</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="sd">1. Clean repo — all checks produce zero findings</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="sd">2. Missing required frontmatter field — produces WARN</span>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="sd">3. Broken internal link — produces ERROR</span>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="sd">4. Count claim mismatch — produces WARN</span>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="sd">5. Stale Python version reference — produces WARN</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="sd">1. Clean repo - all checks produce zero findings</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="sd">2. Missing required frontmatter field - produces WARN</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="sd">3. Broken internal link - produces ERROR</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="sd">4. Count claim mismatch - produces WARN</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="sd">5. Stale Python version reference - produces WARN</span>
 </span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>
 </span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="sd">Sixth scenario: CLI produces valid JSON and exits 0.</span>
 </span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="sd">&quot;&quot;&quot;</span>
@@ -2394,12 +2394,12 @@
 </span><span id="__span-1-82"><a id="__codelineno-1-82" name="__codelineno-1-82" href="#__codelineno-1-82"></a>
 </span><span id="__span-1-83"><a id="__codelineno-1-83" name="__codelineno-1-83" href="#__codelineno-1-83"></a>
 </span><span id="__span-1-84"><a id="__codelineno-1-84" name="__codelineno-1-84" href="#__codelineno-1-84"></a><span class="c1"># ---------------------------------------------------------------------------</span>
-</span><span id="__span-1-85"><a id="__codelineno-1-85" name="__codelineno-1-85" href="#__codelineno-1-85"></a><span class="c1"># Scenario 1: Clean repo — all checks pass</span>
+</span><span id="__span-1-85"><a id="__codelineno-1-85" name="__codelineno-1-85" href="#__codelineno-1-85"></a><span class="c1"># Scenario 1: Clean repo - all checks pass</span>
 </span><span id="__span-1-86"><a id="__codelineno-1-86" name="__codelineno-1-86" href="#__codelineno-1-86"></a><span class="c1"># ---------------------------------------------------------------------------</span>
 </span><span id="__span-1-87"><a id="__codelineno-1-87" name="__codelineno-1-87" href="#__codelineno-1-87"></a>
 </span><span id="__span-1-88"><a id="__codelineno-1-88" name="__codelineno-1-88" href="#__codelineno-1-88"></a>
 </span><span id="__span-1-89"><a id="__codelineno-1-89" name="__codelineno-1-89" href="#__codelineno-1-89"></a><span class="k">class</span><span class="w"> </span><span class="nc">TestCleanRepo</span><span class="p">:</span>
-</span><span id="__span-1-90"><a id="__codelineno-1-90" name="__codelineno-1-90" href="#__codelineno-1-90"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;All docs valid — each checker returns an empty findings list.&quot;&quot;&quot;</span>
+</span><span id="__span-1-90"><a id="__codelineno-1-90" name="__codelineno-1-90" href="#__codelineno-1-90"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;All docs valid - each checker returns an empty findings list.&quot;&quot;&quot;</span>
 </span><span id="__span-1-91"><a id="__codelineno-1-91" name="__codelineno-1-91" href="#__codelineno-1-91"></a>
 </span><span id="__span-1-92"><a id="__codelineno-1-92" name="__codelineno-1-92" href="#__codelineno-1-92"></a>    <span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">unit</span>
 </span><span id="__span-1-93"><a id="__codelineno-1-93" name="__codelineno-1-93" href="#__codelineno-1-93"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">test_frontmatter_clean</span><span class="p">(</span>
@@ -2805,7 +2805,7 @@
 </span><span id="__span-4-80"><a id="__codelineno-4-80" name="__codelineno-4-80" href="#__codelineno-4-80"></a>
 </span><span id="__span-4-81"><a id="__codelineno-4-81" name="__codelineno-4-81" href="#__codelineno-4-81"></a>
 </span><span id="__span-4-82"><a id="__codelineno-4-82" name="__codelineno-4-82" href="#__codelineno-4-82"></a><span class="c1"># ---------------------------------------------------------------------------</span>
-</span><span id="__span-4-83"><a id="__codelineno-4-83" name="__codelineno-4-83" href="#__codelineno-4-83"></a><span class="c1"># Frontmatter parsing (stdlib only — no PyYAML)</span>
+</span><span id="__span-4-83"><a id="__codelineno-4-83" name="__codelineno-4-83" href="#__codelineno-4-83"></a><span class="c1"># Frontmatter parsing (stdlib only - no PyYAML)</span>
 </span><span id="__span-4-84"><a id="__codelineno-4-84" name="__codelineno-4-84" href="#__codelineno-4-84"></a><span class="c1"># ---------------------------------------------------------------------------</span>
 </span><span id="__span-4-85"><a id="__codelineno-4-85" name="__codelineno-4-85" href="#__codelineno-4-85"></a>
 </span><span id="__span-4-86"><a id="__codelineno-4-86" name="__codelineno-4-86" href="#__codelineno-4-86"></a>
@@ -3126,7 +3126,7 @@
 </span><span id="__span-4-401"><a id="__codelineno-4-401" name="__codelineno-4-401" href="#__codelineno-4-401"></a>                            <span class="n">line</span><span class="o">=</span><span class="n">line_no</span><span class="p">,</span>
 </span><span id="__span-4-402"><a id="__codelineno-4-402" name="__codelineno-4-402" href="#__codelineno-4-402"></a>                            <span class="n">message</span><span class="o">=</span><span class="p">(</span>
 </span><span id="__span-4-403"><a id="__codelineno-4-403" name="__codelineno-4-403" href="#__codelineno-4-403"></a>                                <span class="sa">f</span><span class="s2">&quot;claims &#39;</span><span class="si">{</span><span class="n">claimed</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="si">}</span><span class="s2">&#39; &quot;</span>
-</span><span id="__span-4-404"><a id="__codelineno-4-404" name="__codelineno-4-404" href="#__codelineno-4-404"></a>                                <span class="sa">f</span><span class="s2">&quot;— actual: </span><span class="si">{</span><span class="n">real</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span id="__span-4-404"><a id="__codelineno-4-404" name="__codelineno-4-404" href="#__codelineno-4-404"></a>                                <span class="sa">f</span><span class="s2">&quot;- actual: </span><span class="si">{</span><span class="n">real</span><span class="si">}</span><span class="s2">&quot;</span>
 </span><span id="__span-4-405"><a id="__codelineno-4-405" name="__codelineno-4-405" href="#__codelineno-4-405"></a>                            <span class="p">),</span>
 </span><span id="__span-4-406"><a id="__codelineno-4-406" name="__codelineno-4-406" href="#__codelineno-4-406"></a>                        <span class="p">)</span>
 </span><span id="__span-4-407"><a id="__codelineno-4-407" name="__codelineno-4-407" href="#__codelineno-4-407"></a>                    <span class="p">)</span>
@@ -3351,7 +3351,7 @@
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> <strong>Step 6: Commit tests and implementation together</strong></li>
 </ul>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="nb">cd</span><span class="w"> </span>/home/byron/dev/.claude<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>git<span class="w"> </span>add<span class="w"> </span>scripts/doc-audit.py<span class="w"> </span>tests/unit/test_doc_audit.py
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;feat: add doc-audit.py — four-category documentation health audit script&quot;</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;feat: add doc-audit.py - four-category documentation health audit script&quot;</span>
 </span></code></pre></div>
 <hr />
 <h3 id="task-3-create-claudeskillsdoc-auditskillmd">Task 3: Create .claude/skills/doc-audit/SKILL.md<a class="headerlink" href="#task-3-create-claudeskillsdoc-auditskillmd" title="Permanent link">&para;</a></h3>
@@ -3360,9 +3360,9 @@
 <ul class="task-list">
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> <strong>Step 1: Verify the target directory does not already exist</strong></li>
 </ul>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>ls<span class="w"> </span>/home/byron/dev/.claude/.claude/skills/doc-audit/<span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;directory does not exist — safe to create&quot;</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>ls<span class="w"> </span>/home/byron/dev/.claude/.claude/skills/doc-audit/<span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;directory does not exist - safe to create&quot;</span>
 </span></code></pre></div>
-<p>Expected: "directory does not exist — safe to create"</p>
+<p>Expected: "directory does not exist - safe to create"</p>
 <ul class="task-list">
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> <strong>Step 2: Create the SKILL.md</strong></li>
 </ul>
@@ -3388,8 +3388,8 @@
 </span><span id="__span-10-19"><a id="__codelineno-10-19" name="__codelineno-10-19" href="#__codelineno-10-19"></a><span class="sb">```markdown</span>
 </span><span id="__span-10-20"><a id="__codelineno-10-20" name="__codelineno-10-20" href="#__codelineno-10-20"></a>
 </span><span id="__span-10-21"><a id="__codelineno-10-21" name="__codelineno-10-21" href="#__codelineno-10-21"></a><span class="sb">`scope` is optional (default: `docs/`). Examples:</span>
-</span><span id="__span-10-22"><a id="__codelineno-10-22" name="__codelineno-10-22" href="#__codelineno-10-22"></a><span class="sb">- `/doc-audit` — audit all of `docs/`</span>
-</span><span id="__span-10-23"><a id="__codelineno-10-23" name="__codelineno-10-23" href="#__codelineno-10-23"></a><span class="sb">- `/doc-audit docs/superpowers/specs` — audit a subdirectory</span>
+</span><span id="__span-10-22"><a id="__codelineno-10-22" name="__codelineno-10-22" href="#__codelineno-10-22"></a><span class="sb">- `/doc-audit` - audit all of `docs/`</span>
+</span><span id="__span-10-23"><a id="__codelineno-10-23" name="__codelineno-10-23" href="#__codelineno-10-23"></a><span class="sb">- `/doc-audit docs/superpowers/specs` - audit a subdirectory</span>
 </span><span id="__span-10-24"><a id="__codelineno-10-24" name="__codelineno-10-24" href="#__codelineno-10-24"></a>
 </span><span id="__span-10-25"><a id="__codelineno-10-25" name="__codelineno-10-25" href="#__codelineno-10-25"></a><span class="sb">## Workflow</span>
 </span><span id="__span-10-26"><a id="__codelineno-10-26" name="__codelineno-10-26" href="#__codelineno-10-26"></a>
@@ -3421,9 +3421,9 @@
 </span><span id="__span-10-52"><a id="__codelineno-10-52" name="__codelineno-10-52" href="#__codelineno-10-52"></a>```markdown
 </span><span id="__span-10-53"><a id="__codelineno-10-53" name="__codelineno-10-53" href="#__codelineno-10-53"></a>
 </span><span id="__span-10-54"><a id="__codelineno-10-54" name="__codelineno-10-54" href="#__codelineno-10-54"></a>Status per category:
-</span><span id="__span-10-55"><a id="__codelineno-10-55" name="__codelineno-10-55" href="#__codelineno-10-55"></a><span class="k">-</span><span class="w"> </span><span class="sb">`✅ PASS`</span> — error=0 and warn=0
-</span><span id="__span-10-56"><a id="__codelineno-10-56" name="__codelineno-10-56" href="#__codelineno-10-56"></a><span class="k">-</span><span class="w"> </span><span class="sb">`⚠️  WARN`</span> — warn&gt;0, error=0
-</span><span id="__span-10-57"><a id="__codelineno-10-57" name="__codelineno-10-57" href="#__codelineno-10-57"></a><span class="k">-</span><span class="w"> </span><span class="sb">`❌ ERROR`</span> — error&gt;0 (regardless of warn count)
+</span><span id="__span-10-55"><a id="__codelineno-10-55" name="__codelineno-10-55" href="#__codelineno-10-55"></a><span class="k">-</span><span class="w"> </span><span class="sb">`✅ PASS`</span> - error=0 and warn=0
+</span><span id="__span-10-56"><a id="__codelineno-10-56" name="__codelineno-10-56" href="#__codelineno-10-56"></a><span class="k">-</span><span class="w"> </span><span class="sb">`⚠️  WARN`</span> - warn&gt;0, error=0
+</span><span id="__span-10-57"><a id="__codelineno-10-57" name="__codelineno-10-57" href="#__codelineno-10-57"></a><span class="k">-</span><span class="w"> </span><span class="sb">`❌ ERROR`</span> - error&gt;0 (regardless of warn count)
 </span><span id="__span-10-58"><a id="__codelineno-10-58" name="__codelineno-10-58" href="#__codelineno-10-58"></a>
 </span><span id="__span-10-59"><a id="__codelineno-10-59" name="__codelineno-10-59" href="#__codelineno-10-59"></a>Issue count in the summary line: sum of all findings with severity ERROR or WARN across
 </span><span id="__span-10-60"><a id="__codelineno-10-60" name="__codelineno-10-60" href="#__codelineno-10-60"></a>all categories.
@@ -3456,7 +3456,7 @@
 </span><span id="__span-10-87"><a id="__codelineno-10-87" name="__codelineno-10-87" href="#__codelineno-10-87"></a>
 </span><span id="__span-10-88"><a id="__codelineno-10-88" name="__codelineno-10-88" href="#__codelineno-10-88"></a><span class="gu">## Count Drift</span>
 </span><span id="__span-10-89"><a id="__codelineno-10-89" name="__codelineno-10-89" href="#__codelineno-10-89"></a>
-</span><span id="__span-10-90"><a id="__codelineno-10-90" name="__codelineno-10-90" href="#__codelineno-10-90"></a><span class="k">-</span><span class="w"> </span><span class="sb">`docs/overview.md`</span> line 14: claims &#39;15 agents&#39; — actual: 18
+</span><span id="__span-10-90"><a id="__codelineno-10-90" name="__codelineno-10-90" href="#__codelineno-10-90"></a><span class="k">-</span><span class="w"> </span><span class="sb">`docs/overview.md`</span> line 14: claims &#39;15 agents&#39; - actual: 18
 </span><span id="__span-10-91"><a id="__codelineno-10-91" name="__codelineno-10-91" href="#__codelineno-10-91"></a>
 </span><span id="__span-10-92"><a id="__codelineno-10-92" name="__codelineno-10-92" href="#__codelineno-10-92"></a><span class="gu">## Stale Version References</span>
 </span><span id="__span-10-93"><a id="__codelineno-10-93" name="__codelineno-10-93" href="#__codelineno-10-93"></a>
@@ -3491,7 +3491,7 @@
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> <strong>Step 5: Commit</strong></li>
 </ul>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="nb">cd</span><span class="w"> </span>/home/byron/dev/.claude<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>git<span class="w"> </span>add<span class="w"> </span>.claude/skills/doc-audit/SKILL.md
-</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;feat: add /doc-audit skill — terminal summary and audit-report.md writer&quot;</span>
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;feat: add /doc-audit skill - terminal summary and audit-report.md writer&quot;</span>
 </span></code></pre></div>
 <hr />
 <h3 id="task-4-update-gitignore-and-run-integration-smoke-test">Task 4: Update .gitignore and run integration smoke test<a class="headerlink" href="#task-4-update-gitignore-and-run-integration-smoke-test" title="Permanent link">&para;</a></h3>
@@ -3500,9 +3500,9 @@
 <ul class="task-list">
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> <strong>Step 1: Verify docs/audit-report.md is not already in .gitignore</strong></li>
 </ul>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>grep<span class="w"> </span><span class="s2">&quot;audit-report&quot;</span><span class="w"> </span>/home/byron/dev/.claude/.gitignore<span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;not present — safe to add&quot;</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>grep<span class="w"> </span><span class="s2">&quot;audit-report&quot;</span><span class="w"> </span>/home/byron/dev/.claude/.gitignore<span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;not present - safe to add&quot;</span>
 </span></code></pre></div>
-<p>Expected: "not present — safe to add"</p>
+<p>Expected: "not present - safe to add"</p>
 <ul class="task-list">
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> <strong>Step 2: Add docs/audit-report.md to .gitignore</strong></li>
 </ul>
@@ -3638,10 +3638,10 @@
 <p><strong>Placeholder scan:</strong> None found. All steps have complete code.</p>
 <p><strong>Type consistency:</strong>
 - <code>check_frontmatter(scope: str, repo_root: str = ".")</code> used consistently in tests and implementation
-- <code>check_links(scope: str)</code> — no repo_root needed, consistent
-- <code>check_counts(scope: str, repo_root: str = ".")</code> — consistent
-- <code>check_versions(scope: str, repo_root: str = ".")</code> — consistent
-- All return <code>list[Finding]</code> — consistent with test assertions (<code>findings[0]["severity"]</code>)</p>
+- <code>check_links(scope: str)</code> - no repo_root needed, consistent
+- <code>check_counts(scope: str, repo_root: str = ".")</code> - consistent
+- <code>check_versions(scope: str, repo_root: str = ".")</code> - consistent
+- All return <code>list[Finding]</code> - consistent with test assertions (<code>findings[0]["severity"]</code>)</p>
 
 
 
@@ -3664,7 +3664,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 27, 2026 23:28:39 UTC">April 27, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 28, 2026 15:00:04 UTC">April 28, 2026</span>
   </span>
 
     

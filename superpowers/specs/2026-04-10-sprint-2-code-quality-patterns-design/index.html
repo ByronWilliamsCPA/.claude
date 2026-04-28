@@ -2312,7 +2312,7 @@ redefining correctness to match broken behavior.</p>
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
 </span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>When tests use golden files (reference snapshots in <span class="sb">`tests/golden/`</span>, <span class="sb">`tests/fixtures/`</span>,
 </span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>or <span class="sb">`*.snap`</span> files), never edit those files manually to make a failing test pass. Golden
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>files represent the verified correct output — changing them to match broken behavior
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>files represent the verified correct output - changing them to match broken behavior
 </span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>destroys the test&#39;s value.
 </span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>
 </span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>To update golden files legitimately (behavior changed intentionally):
@@ -2343,7 +2343,7 @@ subsection style added in Item 1.</p>
 <p><strong>Replacement content:</strong></p>
 <div class="language-markdown highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="gu">### Documentation</span>
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="k">-</span><span class="w"> </span><span class="gs">**Docstrings**</span>: Required on all public functions — purpose, args, returns, raises
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="k">-</span><span class="w"> </span><span class="gs">**Docstrings**</span>: Required on all public functions - purpose, args, returns, raises
 </span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>  (Google style)
 </span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="k">-</span><span class="w"> </span><span class="gs">**Type Hints**</span>: Required on all function signatures (BasedPyright strict enforces this)
 </span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>
@@ -2352,16 +2352,16 @@ subsection style added in Item 1.</p>
 </span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>
 </span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="gs">**Docstring argument validation**</span>: <span class="sb">`darglint`</span> runs at pre-commit and validates that
 </span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>documented <span class="sb">`Args`</span>, <span class="sb">`Returns`</span>, and <span class="sb">`Raises`</span> sections match the actual function signature.
-</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>Strictness: <span class="sb">`long`</span> — all parameters must be documented. Excluded: <span class="sb">`tests/`</span>, <span class="sb">`scripts/`</span>,
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>Strictness: <span class="sb">`long`</span> - all parameters must be documented. Excluded: <span class="sb">`tests/`</span>, <span class="sb">`scripts/`</span>,
 </span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="sb">`benchmarks/`</span>, <span class="sb">`tools/`</span>.
 </span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>
-</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>When darglint flags a mismatch, fix the docstring — do not add a <span class="sb">`# noqa`</span> suppression.
+</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>When darglint flags a mismatch, fix the docstring - do not add a <span class="sb">`# noqa`</span> suppression.
 </span></code></pre></div>
-<p><strong>Solution — <code>rules/pre-commit.md</code></strong>: Add two checklist items to the Code Quality
+<p><strong>Solution - <code>rules/pre-commit.md</code></strong>: Add two checklist items to the Code Quality
 section, after the existing linter line.</p>
 <p><strong>Checklist items to add:</strong></p>
-<div class="language-markdown highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">- [ ]</span> <span class="gs">**Docstring Coverage**</span>: <span class="sb">`interrogate`</span> passes at 85% threshold for <span class="sb">`scripts/`</span> — add missing docstrings rather than suppressing
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="k">- [ ]</span> <span class="gs">**Docstring Arguments**</span>: <span class="sb">`darglint`</span> passes — documented <span class="sb">`Args`</span>/<span class="sb">`Returns`</span>/<span class="sb">`Raises`</span> match signatures
+<div class="language-markdown highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">- [ ]</span> <span class="gs">**Docstring Coverage**</span>: <span class="sb">`interrogate`</span> passes at 85% threshold for <span class="sb">`scripts/`</span> - add missing docstrings rather than suppressing
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="k">- [ ]</span> <span class="gs">**Docstring Arguments**</span>: <span class="sb">`darglint`</span> passes - documented <span class="sb">`Args`</span>/<span class="sb">`Returns`</span>/<span class="sb">`Raises`</span> match signatures
 </span></code></pre></div>
 <hr />
 <h2 id="files-modified">Files Modified<a class="headerlink" href="#files-modified" title="Permanent link">&para;</a></h2>
@@ -2394,7 +2394,7 @@ section, after the existing linter line.</p>
 <hr />
 <h2 id="verification">Verification<a class="headerlink" href="#verification" title="Permanent link">&para;</a></h2>
 <ol>
-<li><strong>Exception section visible</strong>: Open a <code>.py</code> file — <code>rules/python.md</code> is context-injected, making the exception hierarchy pattern visible to Claude</li>
+<li><strong>Exception section visible</strong>: Open a <code>.py</code> file - <code>rules/python.md</code> is context-injected, making the exception hierarchy pattern visible to Claude</li>
 <li><strong>Golden file section present</strong>: <code>grep "Golden File Protection" CLAUDE.md</code> returns one match</li>
 <li><strong>Docstring gate documented</strong>: <code>grep -n "interrogate\|darglint" .claude/rules/python.md</code> shows the new content</li>
 <li><strong>Pre-commit checklist updated</strong>: <code>grep "Docstring" .claude/rules/pre-commit.md</code> returns two matches</li>
@@ -2431,7 +2431,7 @@ section, after the existing linter line.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 13, 2026 03:51:13 UTC">April 13, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 28, 2026 15:00:04 UTC">April 28, 2026</span>
   </span>
 
     

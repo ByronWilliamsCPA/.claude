@@ -25,7 +25,7 @@
     
     
       
-        <title>CLAUDE.md Global Standards Additions — Three Behavioral Rules - Claude Code Configuration</title>
+        <title>CLAUDE.md Global Standards Additions - Three Behavioral Rules - Claude Code Configuration</title>
       
     
     
@@ -122,7 +122,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              CLAUDE.md Global Standards Additions — Three Behavioral Rules
+              CLAUDE.md Global Standards Additions - Three Behavioral Rules
             
           </span>
         </div>
@@ -2223,7 +2223,7 @@
   <a href="#addition-1-project-context" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Addition 1 — ## Project Context
+        Addition 1 - ## Project Context
       
     </span>
   </a>
@@ -2234,7 +2234,7 @@
   <a href="#addition-2-code-quality" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Addition 2 — ## Code Quality
+        Addition 2 - ## Code Quality
       
     </span>
   </a>
@@ -2245,7 +2245,7 @@
   <a href="#addition-3-system-shell" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Addition 3 — ## System / Shell
+        Addition 3 - ## System / Shell
       
     </span>
   </a>
@@ -2310,7 +2310,7 @@
   
 
 
-  <h1>CLAUDE.md Global Standards Additions — Three Behavioral Rules</h1>
+  <h1>CLAUDE.md Global Standards Additions - Three Behavioral Rules</h1>
 
 <blockquote>
 <p><strong>Date</strong>: 2026-04-09
@@ -2333,20 +2333,20 @@
 <h2 id="goals">Goals<a class="headerlink" href="#goals" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Encode all three corrections into CLAUDE.md so they apply automatically in every session</li>
-<li>Keep additions minimal — one to three sentences each, inline in the relevant section</li>
+<li>Keep additions minimal - one to three sentences each, inline in the relevant section</li>
 <li>Preserve the document's scan-friendly structure (short sections, no new headings)</li>
 </ul>
 <h2 id="non-goals">Non-Goals<a class="headerlink" href="#non-goals" title="Permanent link">&para;</a></h2>
 <ul>
-<li>No new CLAUDE.md sections — all additions are inline in existing sections</li>
-<li>No changes to project-level CLAUDE.md files — this is global scope only</li>
+<li>No new CLAUDE.md sections - all additions are inline in existing sections</li>
+<li>No changes to project-level CLAUDE.md files - this is global scope only</li>
 <li>No changes to rule files (git-workflow.md, pre-commit.md, etc.)</li>
 </ul>
 <h2 id="design">Design<a class="headerlink" href="#design" title="Permanent link">&para;</a></h2>
 <h3 id="approach-minimal-inline-additions-option-a">Approach: Minimal Inline Additions (Option A)<a class="headerlink" href="#approach-minimal-inline-additions-option-a" title="Permanent link">&para;</a></h3>
 <p>Append one to three sentences to each of three existing sections. No structural changes.</p>
 <hr />
-<h3 id="addition-1-project-context">Addition 1 — <code>## Project Context</code><a class="headerlink" href="#addition-1-project-context" title="Permanent link">&para;</a></h3>
+<h3 id="addition-1-project-context">Addition 1 - <code>## Project Context</code><a class="headerlink" href="#addition-1-project-context" title="Permanent link">&para;</a></h3>
 <p><strong>Location</strong>: Append after "Do not search memory or make assumptions about organizational priorities."</p>
 <p><strong>Text to add</strong>:</p>
 <blockquote>
@@ -2354,7 +2354,7 @@
 </blockquote>
 <p><strong>Behavior change</strong>: The assistant must now (a) read project files before answering context questions, and (b) explicitly flag when falling back to general knowledge, naming what was searched.</p>
 <hr />
-<h3 id="addition-2-code-quality">Addition 2 — <code>## Code Quality</code><a class="headerlink" href="#addition-2-code-quality" title="Permanent link">&para;</a></h3>
+<h3 id="addition-2-code-quality">Addition 2 - <code>## Code Quality</code><a class="headerlink" href="#addition-2-code-quality" title="Permanent link">&para;</a></h3>
 <p><strong>Location</strong>: Append after "Only exclude files if explicitly approved by the user."</p>
 <p><strong>Text to add</strong>:</p>
 <blockquote>
@@ -2362,13 +2362,13 @@
 </blockquote>
 <p><strong>Behavior change</strong>: Generalizes the existing SonarCloud rule to cover all suppression and bypass mechanisms. Adds an explicit escape hatch for third-party code and tracked suppressions to avoid over-blocking legitimate use cases.</p>
 <hr />
-<h3 id="addition-3-system-shell">Addition 3 — <code>## System / Shell</code><a class="headerlink" href="#addition-3-system-shell" title="Permanent link">&para;</a></h3>
+<h3 id="addition-3-system-shell">Addition 3 - <code>## System / Shell</code><a class="headerlink" href="#addition-3-system-shell" title="Permanent link">&para;</a></h3>
 <p><strong>Location</strong>: Append after "When commands fail due to permissions (e.g., mkdir, mount), try with sudo immediately."</p>
 <p><strong>Text to add</strong>:</p>
 <blockquote>
 <p>When a connection error, socket failure, or service-unreachable symptom appears, check platform-level causes first: WSL2 port forwarding rules, Docker bridge networking, Unix socket paths, and container health. Do not exhaust code-level fixes before ruling out the environment.</p>
 </blockquote>
-<p><strong>Trigger</strong>: Narrow — applies only to connection errors, socket/IPC failures, and service-unreachable symptoms. Does not apply to pure logic bugs, test failures, or import errors.</p>
+<p><strong>Trigger</strong>: Narrow - applies only to connection errors, socket/IPC failures, and service-unreachable symptoms. Does not apply to pure logic bugs, test failures, or import errors.</p>
 <hr />
 <h2 id="implementation">Implementation<a class="headerlink" href="#implementation" title="Permanent link">&para;</a></h2>
 <p>Three text edits to a single file: <code>CLAUDE.md</code> (source at <code>/home/byron/dev/.claude/CLAUDE.md</code>, symlinked to <code>~/.claude/CLAUDE.md</code>).</p>
@@ -2412,7 +2412,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 10, 2026 13:58:04 UTC">April 10, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 28, 2026 15:00:04 UTC">April 28, 2026</span>
   </span>
 
     

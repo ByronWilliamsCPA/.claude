@@ -2242,9 +2242,9 @@
 <ul class="task-list">
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> <strong>Step 1: Verify the target directory does not already exist</strong></li>
 </ul>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>ls<span class="w"> </span>/home/byron/dev/.claude/.claude/skills/ci-fix/<span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;directory does not exist — safe to create&quot;</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>ls<span class="w"> </span>/home/byron/dev/.claude/.claude/skills/ci-fix/<span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;directory does not exist - safe to create&quot;</span>
 </span></code></pre></div>
-<p>Expected: "directory does not exist — safe to create"</p>
+<p>Expected: "directory does not exist - safe to create"</p>
 <ul class="task-list">
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> <strong>Step 2: Create the SKILL.md</strong></li>
 </ul>
@@ -2252,7 +2252,7 @@
 <p><div class="language-markdown highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>---
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>description: &gt;
 </span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>  Full CI gate sequence with auto-fix loop. Runs ruff format, ruff lint, qlty check,
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>  pre-commit, pytest, bandit, and pip-audit in order — fixing what it can and reporting
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>  pre-commit, pytest, bandit, and pip-audit in order - fixing what it can and reporting
 </span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>  blockers. Triggers on: ci-fix, fix ci, fix gates, all gates green, pre-commit failing,
 </span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>  tests failing, ci failing, fix everything, gates failing.
 </span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="gu">tools: [&quot;Read&quot;, &quot;Bash&quot;, &quot;Grep&quot;, &quot;Glob&quot;, &quot;Edit&quot;, &quot;Write&quot;]</span>
@@ -2277,11 +2277,11 @@
 </span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>|---|------|---------|-------------------|
 </span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>| 1 | ruff format | <span class="sb">`uv run ruff format --check .`</span> | <span class="sb">`uv run ruff format .`</span> (deterministic) |
 </span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>| 2 | ruff lint | <span class="sb">`uv run ruff check .`</span> | <span class="sb">`uv run ruff check --fix .`</span>; remaining unfixable rules: edit manually |
-</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>| 3 | qlty check | <span class="sb">`qlty check`</span> | No auto-fix — refactor functions exceeding complexity/nesting thresholds |
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>| 3 | qlty check | <span class="sb">`qlty check`</span> | No auto-fix - refactor functions exceeding complexity/nesting thresholds |
 </span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>| 4 | pre-commit | <span class="sb">`pre-commit run --all-files`</span> | Re-run after ruff fixes; remaining failures: fix and re-run |
 </span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>| 5 | pytest | <span class="sb">`uv run pytest`</span> | Read failure output, fix test or implementation issues, re-run |
 </span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>| 6 | bandit | <span class="sb">`uv run bandit -r src/ -c pyproject.toml`</span> | Fix code issues; false positives: add <span class="sb">`# nosec`</span> with an open tracking reference |
-</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>| 7 | pip-audit | <span class="sb">`uv run pip-audit`</span> | Report only — dependency upgrades require user decision |
+</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>| 7 | pip-audit | <span class="sb">`uv run pip-audit`</span> | Report only - dependency upgrades require user decision |
 </span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>
 </span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span class="gu">## Status Table</span>
 </span><span id="__span-2-19"><a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a>
@@ -2301,16 +2301,16 @@ bandit        ⏳ PENDING
 pip-audit     ⏳ PENDING
 ─────────────────────────────────────────────────────
 <div class="language-markdown highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>Status values:
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="k">-</span><span class="w"> </span><span class="sb">`⏳ PENDING`</span> — not yet run
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="k">-</span><span class="w"> </span><span class="sb">`🔧 FIXING`</span> — fix in progress
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="k">-</span><span class="w"> </span><span class="sb">`✅ PASS`</span> — gate green (include note if fixes were applied)
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="k">-</span><span class="w"> </span><span class="sb">`❌ BLOCKER`</span> — failed after fix attempt; manual intervention required
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="k">-</span><span class="w"> </span><span class="sb">`⏳ PENDING`</span> - not yet run
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="k">-</span><span class="w"> </span><span class="sb">`🔧 FIXING`</span> - fix in progress
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="k">-</span><span class="w"> </span><span class="sb">`✅ PASS`</span> - gate green (include note if fixes were applied)
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="k">-</span><span class="w"> </span><span class="sb">`❌ BLOCKER`</span> - failed after fix attempt; manual intervention required
 </span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
 </span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="gu">## Blocker Behavior</span>
 </span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>
 </span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>When a gate fails and cannot be resolved in one fix attempt:
 </span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="k">-</span><span class="w"> </span>Mark it <span class="sb">`❌ BLOCKER`</span> in the table
-</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="k">-</span><span class="w"> </span>Continue running the remaining gates — report the full picture
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="k">-</span><span class="w"> </span>Continue running the remaining gates - report the full picture
 </span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="k">-</span><span class="w"> </span>Do not stop early
 </span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>
 </span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>pip-audit findings are always reported but never count as a blocker for the commit offer.
@@ -2321,13 +2321,13 @@ pip-audit     ⏳ PENDING
 </span></code></pre></div>
 All 7 gates green. Commit now? (yes/no)
 <div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>- **Yes**: invoke the `/git` skill to prepare a conventional commit
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>- **No**: stop — present the green status table and hand back
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>- **No**: stop - present the green status table and hand back
 </span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
 </span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>**Any blocker remains:**
 </span></code></pre></div>
 5/7 gates pass. Blockers:</p>
-<p>❌ pytest     — 2 tests failing in tests/unit/test_processor.py (see output above)
-  ❌ bandit     — HIGH severity B608 at src/query.py:45 (see output above)</p>
+<p>❌ pytest     - 2 tests failing in tests/unit/test_processor.py (see output above)
+  ❌ bandit     - HIGH severity B608 at src/query.py:45 (see output above)</p>
 <p>These require manual investigation before committing.
 <div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>No commit offer when blockers remain.
 </span></code></pre></div></p>
@@ -2341,7 +2341,7 @@ All 7 gates green. Commit now? (yes/no)
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> <strong>Step 4: Commit</strong></li>
 </ul>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>git<span class="w"> </span>-C<span class="w"> </span>/home/byron/dev/.claude<span class="w"> </span>add<span class="w"> </span>.claude/skills/ci-fix/SKILL.md
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>git<span class="w"> </span>-C<span class="w"> </span>/home/byron/dev/.claude<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;feat: add /ci-fix skill — 7-gate CI fix loop with auto-fix and commit offer&quot;</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>git<span class="w"> </span>-C<span class="w"> </span>/home/byron/dev/.claude<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;feat: add /ci-fix skill - 7-gate CI fix loop with auto-fix and commit offer&quot;</span>
 </span></code></pre></div>
 <hr />
 <h3 id="task-2-add-ci-fix-prerequisite-to-git-pr-workflow">Task 2: Add /ci-fix prerequisite to git PR workflow<a class="headerlink" href="#task-2-add-ci-fix-prerequisite-to-git-pr-workflow" title="Permanent link">&para;</a></h3>
@@ -2352,7 +2352,7 @@ All 7 gates green. Commit now? (yes/no)
 </ul>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>grep<span class="w"> </span>-n<span class="w"> </span><span class="s2">&quot;Gather Context\|### 1&quot;</span><span class="w"> </span>/home/byron/dev/.claude/.claude/skills/git/workflows/pr.md
 </span></code></pre></div>
-<p>Expected: a line matching <code>### 1. Gather Context</code> — the prerequisite block goes immediately before it.</p>
+<p>Expected: a line matching <code>### 1. Gather Context</code> - the prerequisite block goes immediately before it.</p>
 <ul class="task-list">
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> <strong>Step 2: Insert the /ci-fix prerequisite before step 1</strong></li>
 </ul>
@@ -2437,7 +2437,7 @@ All 7 gates green. Commit now? (yes/no)
 </ul>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>grep<span class="w"> </span>-n<span class="w"> </span><span class="s2">&quot;ci-fix\|### 0&quot;</span><span class="w"> </span>/home/byron/dev/.claude/.claude/skills/git/workflows/pr.md
 </span></code></pre></div>
-<p>Expected: at least 2 matches — the step header and the skill invocation.</p>
+<p>Expected: at least 2 matches - the step header and the skill invocation.</p>
 <ul class="task-list">
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> <strong>Step 3: Verify pre-commit.md has the checkbox</strong></li>
 </ul>
@@ -2472,7 +2472,7 @@ All 7 gates green. Commit now? (yes/no)
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 27, 2026 23:28:39 UTC">April 27, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 28, 2026 15:00:04 UTC">April 28, 2026</span>
   </span>
 
     

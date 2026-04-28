@@ -25,7 +25,7 @@
     
     
       
-        <title>/doc-audit Skill — Documentation Health Audit - Claude Code Configuration</title>
+        <title>/doc-audit Skill - Documentation Health Audit - Claude Code Configuration</title>
       
     
     
@@ -122,7 +122,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              /doc-audit Skill — Documentation Health Audit
+              /doc-audit Skill - Documentation Health Audit
             
           </span>
         </div>
@@ -2382,7 +2382,7 @@
   
 
 
-  <h1>/doc-audit Skill — Documentation Health Audit</h1>
+  <h1>/doc-audit Skill - Documentation Health Audit</h1>
 
 <blockquote>
 <p><strong>Date</strong>: 2026-04-09
@@ -2404,10 +2404,10 @@ lived only in the conversation and were re-discovered in the next session.</p>
 </ul>
 <h2 id="non-goals">Non-Goals<a class="headerlink" href="#non-goals" title="Permanent link">&para;</a></h2>
 <ul>
-<li>No inline annotation of source files — findings go to the report only</li>
-<li>No auto-fix — the skill flags issues; Claude or the user decides what to fix</li>
-<li>No incremental mode — always full sweep of the specified scope</li>
-<li><code>docs/audit-report.md</code> is not committed — it is a generated artifact</li>
+<li>No inline annotation of source files - findings go to the report only</li>
+<li>No auto-fix - the skill flags issues; Claude or the user decides what to fix</li>
+<li>No incremental mode - always full sweep of the specified scope</li>
+<li><code>docs/audit-report.md</code> is not committed - it is a generated artifact</li>
 </ul>
 <h2 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">&para;</a></h2>
 <p>Two files:</p>
@@ -2421,18 +2421,18 @@ lived only in the conversation and were re-discovered in the next session.</p>
 <tbody>
 <tr>
 <td><code>.claude/skills/doc-audit/SKILL.md</code></td>
-<td>New skill — orchestrates the script and writes the report</td>
+<td>New skill - orchestrates the script and writes the report</td>
 </tr>
 <tr>
 <td><code>scripts/doc-audit.py</code></td>
-<td>New Python script — mechanical scanning, outputs JSON to stdout</td>
+<td>New Python script - mechanical scanning, outputs JSON to stdout</td>
 </tr>
 </tbody>
 </table>
 <p><code>docs/audit-report.md</code> is written on each run but added to <code>.gitignore</code>.</p>
 <h2 id="script-scriptsdoc-auditpy">Script: <code>scripts/doc-audit.py</code><a class="headerlink" href="#script-scriptsdoc-auditpy" title="Permanent link">&para;</a></h2>
 <p>Standalone Python script using stdlib only (<code>os</code>, <code>re</code>, <code>json</code>, <code>pathlib</code>, <code>yaml</code> via
-manual YAML frontmatter parsing — no PyYAML dependency).</p>
+manual YAML frontmatter parsing - no PyYAML dependency).</p>
 <h3 id="invocation">Invocation<a class="headerlink" href="#invocation" title="Permanent link">&para;</a></h3>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>python3<span class="w"> </span>scripts/doc-audit.py<span class="w"> </span>--scope<span class="w"> </span>docs/
 </span></code></pre></div>
@@ -2534,8 +2534,8 @@ outside the declared range as <code>WARN</code>.</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>/doc-audit [scope]
 </span></code></pre></div>
 <p><code>scope</code> is optional (default: <code>docs/</code>). Examples:
-- <code>/doc-audit</code> — audit all of <code>docs/</code>
-- <code>/doc-audit docs/superpowers/specs</code> — audit a subdirectory</p>
+- <code>/doc-audit</code> - audit all of <code>docs/</code>
+- <code>/doc-audit docs/superpowers/specs</code> - audit a subdirectory</p>
 <h3 id="workflow">Workflow<a class="headerlink" href="#workflow" title="Permanent link">&para;</a></h3>
 <ol>
 <li>Determine scope from argument or default <code>docs/</code></li>
@@ -2585,20 +2585,20 @@ outside the declared range as <code>WARN</code>.</p>
 </span><span id="__span-5-21"><a id="__codelineno-5-21" name="__codelineno-5-21" href="#__codelineno-5-21"></a>
 </span><span id="__span-5-22"><a id="__codelineno-5-22" name="__codelineno-5-22" href="#__codelineno-5-22"></a><span class="gu">## Count Drift</span>
 </span><span id="__span-5-23"><a id="__codelineno-5-23" name="__codelineno-5-23" href="#__codelineno-5-23"></a>
-</span><span id="__span-5-24"><a id="__codelineno-5-24" name="__codelineno-5-24" href="#__codelineno-5-24"></a><span class="k">-</span><span class="w"> </span><span class="sb">`docs/overview.md`</span> line 14: claims &quot;15 agents&quot; — actual: 18
+</span><span id="__span-5-24"><a id="__codelineno-5-24" name="__codelineno-5-24" href="#__codelineno-5-24"></a><span class="k">-</span><span class="w"> </span><span class="sb">`docs/overview.md`</span> line 14: claims &quot;15 agents&quot; - actual: 18
 </span><span id="__span-5-25"><a id="__codelineno-5-25" name="__codelineno-5-25" href="#__codelineno-5-25"></a>
 </span><span id="__span-5-26"><a id="__codelineno-5-26" name="__codelineno-5-26" href="#__codelineno-5-26"></a><span class="gu">## Stale Version References</span>
 </span><span id="__span-5-27"><a id="__codelineno-5-27" name="__codelineno-5-27" href="#__codelineno-5-27"></a>
-</span><span id="__span-5-28"><a id="__codelineno-5-28" name="__codelineno-5-28" href="#__codelineno-5-28"></a><span class="k">-</span><span class="w"> </span><span class="sb">`docs/setup.md`</span> line 7: <span class="sb">`Python 3.10`</span> — pyproject.toml requires &gt;=3.10,&lt;3.15
+</span><span id="__span-5-28"><a id="__codelineno-5-28" name="__codelineno-5-28" href="#__codelineno-5-28"></a><span class="k">-</span><span class="w"> </span><span class="sb">`docs/setup.md`</span> line 7: <span class="sb">`Python 3.10`</span> - pyproject.toml requires &gt;=3.10,&lt;3.15
 </span></code></pre></div>
 <h2 id="gitignore-addition"><code>.gitignore</code> Addition<a class="headerlink" href="#gitignore-addition" title="Permanent link">&para;</a></h2>
-<p>Add <code>docs/audit-report.md</code> to <code>.gitignore</code> — generated artifact, not source.</p>
+<p>Add <code>docs/audit-report.md</code> to <code>.gitignore</code> - generated artifact, not source.</p>
 <h2 id="testing">Testing<a class="headerlink" href="#testing" title="Permanent link">&para;</a></h2>
 <p>Three manual scenarios:</p>
 <ol>
-<li><strong>Clean repo</strong>: run on a repo with no issues — all categories show <code>✅ PASS</code>, report says "No issues found"</li>
-<li><strong>Known violation</strong>: add a doc missing a required frontmatter field — frontmatter check reports it</li>
-<li><strong>Broken link</strong>: add a markdown link to a non-existent file — broken links check reports it</li>
+<li><strong>Clean repo</strong>: run on a repo with no issues - all categories show <code>✅ PASS</code>, report says "No issues found"</li>
+<li><strong>Known violation</strong>: add a doc missing a required frontmatter field - frontmatter check reports it</li>
+<li><strong>Broken link</strong>: add a markdown link to a non-existent file - broken links check reports it</li>
 </ol>
 
 
@@ -2622,7 +2622,7 @@ outside the declared range as <code>WARN</code>.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 27, 2026 23:28:39 UTC">April 27, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 28, 2026 15:00:04 UTC">April 28, 2026</span>
   </span>
 
     
