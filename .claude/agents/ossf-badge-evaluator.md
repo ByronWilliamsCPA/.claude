@@ -30,13 +30,28 @@ CRITERION [criterion_id]
   ACTION:        <what to do if Unmet — skip if Met or N/A>
 ```
 
-After all criteria, emit:
+After all criteria, always emit all three automation URLs regardless of the `level` input:
 
 1. **Summary table** — criterion ID, STATUS, CONFIDENCE — one row per criterion
-2. **Automation URL** — a single `https://www.bestpractices.dev/en/projects/{project_id}/{level}/edit?` URL with all Met and N/A criteria pre-filled as query parameters, URL-encoded. Format each param as `{criterion_id}_status=Met&{criterion_id}_justification={encoded_text}`. Only include criteria where CONFIDENCE is High or Medium. By default this URL only pre-fills blank fields; add `&overrides=*` to the URL to force-override existing answers (useful for correction runs).
-3. **Human attestation list** — criteria marked HUMAN that require the project owner to self-certify
+2. **Three automation URLs** — one for each badge level. For each level, construct a URL containing only the criteria applicable to that level where STATUS is Met or N/A and CONFIDENCE is High or Medium:
+   - **Passing URL**: `https://www.bestpractices.dev/en/projects/{project_id}/passing/edit?{params}`
+   - **Silver URL**: `https://www.bestpractices.dev/en/projects/{project_id}/silver/edit?{params}` (silver-level criteria only, not passing repeats)
+   - **Gold URL**: `https://www.bestpractices.dev/en/projects/{project_id}/gold/edit?{params}` (gold-level criteria only)
+   By default these URLs only pre-fill blank (`?`) fields. Append `&overrides=*` to force-override existing answers for correction runs.
+3. **Human attestation list** — criteria marked HUMAN at any level, grouped by level, that require the project owner to self-certify
 
 ## Evaluation Workflow
+
+### Step 0: Load criteria reference
+
+Read the companion reference file before evaluating anything:
+
+```
+~/.claude/.claude/agents/ossf-criteria-reference.md
+```
+
+This file contains the authoritative slug list for all three levels, N/A eligibility, and
+URL construction rules. Use it to ensure no criterion is omitted from the automation URLs.
 
 ### Step 1: Inventory key files
 
@@ -338,35 +353,42 @@ If `level` is `silver` or `gold`, evaluate the additional criteria from those le
 
 ---
 
-## Generating the Automation URL
+## Generating the Automation URLs
 
-After evaluating all criteria, construct a bulk pre-fill URL. Only include criteria where:
+Always produce all three automation URLs, one per level, regardless of which level was evaluated.
+Use the slug tables in `ossf-criteria-reference.md` to ensure complete coverage.
+
+**Critical rule**: each level's URL contains only the slugs introduced at that level.
+Passing slugs do not appear in the silver URL; passing and silver slugs do not appear in the gold URL.
+The bestpractices.dev form carries forward answers from lower levels automatically.
+
+Include a criterion in the URL only when:
 - STATUS is Met or N/A
 - CONFIDENCE is High or Medium
-- The criterion is not auto-detected (auto-detected ones are already filled)
+- The criterion belongs to the URL's level (per the reference file)
 
-URL format:
+Omit: HUMAN status, Unmet status, LOW confidence, criteria from a different level.
+
+URL format per level:
 ```
-https://www.bestpractices.dev/en/projects/{project_id}/{level}/edit?{params}
+https://www.bestpractices.dev/en/projects/{project_id}/passing/edit?{params}
+https://www.bestpractices.dev/en/projects/{project_id}/silver/edit?{params}
+https://www.bestpractices.dev/en/projects/{project_id}/gold/edit?{params}
 ```
 
-Where `{level}` is `passing`, `silver`, or `gold`, and `{params}` is a `&`-separated list of:
-```
-{criterion_id}_status={Met|Unmet|N/A}&{criterion_id}_justification={URL_encoded_justification}
-```
+`{params}` is a `&`-separated list of `{slug}_status={Met|N%2FA}` pairs.
+URL-encode N/A as `N%2FA`. Include justification text only when it meaningfully aids a reviewer:
+`{slug}_justification={URL_encoded_text}` (spaces as `+`, encode `&`, `=`, `#`).
 
-URL-encode justification text: replace spaces with `+`, encode `&`, `=`, `#`, etc.
+Emit each URL as a labelled code block. Note any criteria excluded due to LOW confidence.
 
-**Default behavior**: the form pre-fills only blank (`?`) fields. Existing answers are preserved.
-**Correction runs**: append `&overrides=*` to the URL to force-override all fields, including
-already-answered ones. Use this when updating a submission after making recommended changes.
+**Default behavior**: pre-fills only blank (`?`) fields. Existing answers are preserved.
+**Correction runs**: append `&overrides=*` to force-override all fields including answered ones.
 
 **Visual indicators in the form after loading the URL**:
-- Yellow with robot icon: proposal fills a previously blank field (normal fill)
-- Orange with warning icon: forced override of an existing value (only with `overrides=*`)
-- Blue with not-equal icon: divergent proposal that was not applied (no matching override pattern)
-
-Emit the full URL as a code block. Note which criteria were excluded (auto-detected or LOW confidence).
+- Yellow + robot icon: proposal fills a previously blank field (normal)
+- Orange + warning icon: forced override of an existing value (`overrides=*` mode)
+- Blue + not-equal icon: divergent proposal not applied (no matching override pattern)
 
 ---
 
