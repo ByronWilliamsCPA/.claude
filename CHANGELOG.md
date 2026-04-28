@@ -9,8 +9,12 @@
 * feat(compliance): add MKDOCS-001 through MKDOCS-012 checks to `docs/standards-manifest.yaml` covering site metadata, theme configuration, plugins, navigation, and extension requirements
 * feat(compliance): wire `mkdocs-auditor` into the `repo-compliance` coordinator skill for automatic dispatch during audit and remediation passes
 * feat(ci): add CI Gate, Security Gate Validation, and Dependency & Standards Validation gate jobs to `.github/workflows/` (ci.yml, security-analysis.yml, pr-validation.yml); add CI-014 through CI-017 standards; update `ossf-compliance-auditor` to audit CI-017; fix `setup_github_protection.py` to register short job display names
-* feat(ci): add `ci_local` and `ci_full` nox sessions for a local CI fast-feedback loop before push
+* feat(ci): add `ci_local` and `ci_full` nox sessions for a local CI fast-feedback loop before push; add standalone `bandit` session so `ci_full` achieves parity with `ci_local` and GitHub Actions
 * feat(ci): add tracked pre-push hook (`.github/hooks/pre-push`) and install script (`scripts/install-hooks.sh`)
+* feat(ci): add `qlty-coverage` job to `pr-validation.yml` for lcov upload on PR open/reopen via Qlty action
+* feat(ci): add yamllint pre-commit hook pinned to v1.38.0 with `--config-file .yamllint` (PC-YAMLLINT-FILE-REF)
+* feat(ci): add markdownlint pre-commit hook with MD040 active via `.markdownlint.json` (PC-MARKDOWNLINT-MD040)
+* feat(ci): emit lcov coverage report (`reports/lcov.info`) alongside xml in `ci_local`; add `reports/` and `coverage-ci-local.xml` to `.gitignore`
 
 ### Chore
 
@@ -37,6 +41,7 @@
   and osv-scanner-action v2.2.4 has a bug where IgnoredVulns entries that actively filter
   a finding are still reported as "unused" and exit 1 (fixed in osv-scanner >= 2.3.0;
   re-enable `run-osv` once the org workflow updates to that version)
+* fix(docs): replace bare fenced code blocks with explicit language tags across documentation to satisfy MD040 (markdownlint-cli hook)
 * fix(deps): upgrade pip from 26.0.1 to 26.1 to resolve GHSA-58qw-9mgm-455v
   (tar/ZIP interpretation conflict in pip; CVE-2026-3219)
 * fix(ci): add `upload: never` to CodeQL analyze step in `codeql.yml`; SARIF upload

@@ -45,6 +45,7 @@ reports/
 .cache
 nosetests.xml
 coverage.xml
+coverage-ci-local.xml
 *.cover
 *.py,cover
 .hypothesis/

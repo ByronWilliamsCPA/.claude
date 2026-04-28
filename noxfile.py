@@ -440,6 +440,17 @@ def typecheck(session: nox.Session) -> None:
     session.run("basedpyright", "src")
 
 
+@nox.session(python="3.12")
+def bandit(session: nox.Session) -> None:
+    """Run Bandit SAST scan on source code.
+
+    Mirrors the bandit step in ci.yml and ci_local so ci_full covers the
+    same static security analysis as the GitHub Actions matrix.
+    """
+    session.install("-e", DEV_EXTRAS)
+    session.run("bandit", "-r", "src/", "-c", PYPROJECT_TOML)
+
+
 # ==========================================
 # LOCAL CI SESSIONS
 # ==========================================
@@ -474,8 +485,8 @@ def ci_local(session: nox.Session) -> None:
 def ci_full(session: nox.Session) -> None:
     """Run full CI matrix across all Python versions (3.10-3.14).
 
-    Chains the existing multi-version test, lint, and typecheck sessions.
+    Chains the existing multi-version test, lint, typecheck, and bandit sessions.
     Use before opening a PR to get the same coverage as the GitHub matrix.
     """
     # No install needed: each delegated session manages its own venv.
-    session.run("nox", "-s", "test", "lint", "typecheck", external=True)
+    session.run("nox", "-s", "test", "lint", "typecheck", "bandit", external=True)

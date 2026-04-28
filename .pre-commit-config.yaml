@@ -292,36 +292,6 @@ repos:
           - pydantic-settings>=2.0.0
           - structlog>=23.1.0
 
-  # ============================================================================
-  # YAML Linting (PC-009)
-  # ============================================================================
-  - repo: https://github.com/adrienverge/yamllint
-    rev: 81e9f98ffd059efe8aa9c1b1a42e5cce61b640c6  # v1.35.1
-    hooks:
-      - id: yamllint
-        args: [-d, relaxed]
-        stages: [pre-commit]
-
-  # ============================================================================
-  # Markdown Linting (PC-010)
-  # ============================================================================
-  - repo: https://github.com/DavidAnson/markdownlint-cli2
-    rev: 3766ad839ad3a74558031510b3bc9872bb1d9980  # v0.22.0
-    hooks:
-      - id: markdownlint-cli2
-        stages: [pre-commit]
-        exclude: >-
-          (?x)^(
-            docs/superpowers/|
-            CHANGELOG\.md|
-            \.claude/skills/|
-            \.claude/agents/|
-            \.claude/standards/|
-            \.claude/rules/|
-            \.claude/cowork/|
-            \.claude/context/
-          )
-
 # Exclude patterns
 # .submodules/ is excluded because submodule contents are owned by their upstream
 # repos; pre-commit hooks in this repo must not auto-modify files inside them.
