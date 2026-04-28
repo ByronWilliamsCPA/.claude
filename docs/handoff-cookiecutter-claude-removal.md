@@ -113,7 +113,7 @@ Extends global CLAUDE.md standards at ~/.claude/CLAUDE.md.
 
 Replace the Claude Code setup section with:
 
-```markdown
+````markdown
 ## Claude Code Setup (User-Level)
 
 This template no longer manages Claude Code configuration at the project level.
@@ -128,7 +128,7 @@ Configure once at the user level and all projects inherit it automatically.
    ```
 
 3. That's it. All projects on your machine now have the full agent/skill suite.
-```
+````
 
 ### `DEVELOPMENT.md`
 
