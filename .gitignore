@@ -308,3 +308,7 @@ docs/compliance-reports/
 
 # Local MCP server configuration (contains auth tokens and local paths)
 .mcp.json
+
+# Task Observer runtime data (gitignored; populated at runtime, never committed)
+skill-observations/
+skill-updates/
