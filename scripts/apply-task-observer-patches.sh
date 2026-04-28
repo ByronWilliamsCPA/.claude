@@ -18,6 +18,8 @@ REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 UPSTREAM="${REPO_ROOT}/.submodules/one-skill-to-rule-them-all/SKILL.md"
 OUTPUT="${HOME}/.claude/skills/task-observer/SKILL.md"
+# Intentionally hardcoded: this string is embedded in the installed SKILL.md output,
+# so it must be the actual runtime deployment path, not derived from REPO_ROOT.
 REPO_PATH="/home/byron/dev/.claude"
 MANIFEST_PATH="${REPO_PATH}/skill-observations/available-skills.md"
 STRIP_SECTION="### Without Persistent Storage"
@@ -35,6 +37,7 @@ mkdir -p "$(dirname "${OUTPUT}")"
 # Patch 3: awk strips the "Without Persistent Storage" section.
 #   Termination matches ## or ### headings (section is ### level;
 #   #### subsections within it are also stripped).
+TMP="$(mktemp)"
 sed \
     -e "s|\[your shared folder\]|${REPO_PATH}|g" \
     -e "s|<available_skills>|${MANIFEST_PATH}|g" \
@@ -43,6 +46,6 @@ awk -v section="${STRIP_SECTION}" '
     $0 == section           { skip=1; next }
     /^## |^### / && skip    { skip=0 }
     !skip                   { print }
-' > "${OUTPUT}"
+' > "${TMP}" && mv "${TMP}" "${OUTPUT}"
 
 echo "Installed: ${OUTPUT}"
