@@ -320,16 +320,14 @@ def _collect_md_files(paths: list[str], exclude: list[str] | None = None) -> lis
     exclude_resolved = [Path(e).resolve() for e in (exclude or [])]
     md_files: list[Path] = []
     for path_str in paths:
-        path = Path(path_str)
+        path = Path(path_str).resolve()
         if path.is_dir():
             md_files.extend(
                 md
                 for md in path.rglob("*.md")
                 if not _is_excluded(md.resolve(), exclude_resolved)
             )
-        elif path.suffix.lower() == ".md" and not _is_excluded(
-            path.resolve(), exclude_resolved
-        ):
+        elif path.suffix.lower() == ".md" and not _is_excluded(path, exclude_resolved):
             md_files.append(path)
     return md_files
 
