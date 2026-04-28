@@ -58,7 +58,7 @@ All use `ln -sfn` (force-replace, no-dereference), so re-running after a structu
 
 **4. Hook merge**: reads `hooks.json` from the repo root and uses `jq` to write its contents into the `.hooks` key of `~/.claude/settings.json`. If `settings.json` does not exist, it creates one. If it exists, it merges in-place, preserving all other keys (API keys, model preferences). A timestamped backup is created before any write.
 
-**5. claudeMdExcludes merge**: adds two path patterns to `settings.json`'s `.claudeMdExcludes` array: one for `~/dev/.claude/CLAUDE.md` and one for `~/dev/.claude/.claude/**`: so Claude Code does not double-load the repo-local CLAUDE.md. Deduplicates before writing.
+**5. claudeMdExcludes merge**: adds two path patterns to `settings.json`'s `.claudeMdExcludes` array: one for `~/dev/.claude/CLAUDE.md` and one for `~/dev/.claude/.claude/**`. This prevents Claude Code from double-loading the repo-local CLAUDE.md. Deduplicates before writing.
 
 ## Verifying the Install
 

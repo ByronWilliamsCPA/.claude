@@ -3,10 +3,16 @@
 name: CI
 
 on:
+  push:
+    branches: [main, master, develop]
   pull_request:
     types: [opened, synchronize, reopened]
     branches: [main, master, develop]
   workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
