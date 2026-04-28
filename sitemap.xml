@@ -388,4 +388,8 @@
          <loc>https://.claude.readthedocs.io/superpowers/specs/2026-04-27-mkdocs-agents-design/</loc>
          <lastmod>2026-04-28</lastmod>
     </url>
+    <url>
+         <loc>https://.claude.readthedocs.io/superpowers/specs/2026-04-28-task-observer-design/</loc>
+         <lastmod>2026-04-28</lastmod>
+    </url>
 </urlset>
