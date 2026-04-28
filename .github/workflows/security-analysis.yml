@@ -3,6 +3,8 @@
 name: Security Analysis
 
 on:
+  push:
+    branches: ["**"]
   pull_request:
     branches: [main, master]
   schedule:
@@ -48,6 +50,10 @@ jobs:
     needs: [security]
     if: always()
     steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7  # v2.10.1
+        with:
+          egress-policy: audit
       - name: Check security scan results
         env:
           SECURITY_RESULT: ${{ needs.security.result }}

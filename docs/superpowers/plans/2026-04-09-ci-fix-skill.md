@@ -30,10 +30,10 @@ tags:
 - [ ] **Step 1: Verify the target directory does not already exist**
 
 ```bash
-ls /home/byron/dev/.claude/.claude/skills/ci-fix/ 2>/dev/null || echo "directory does not exist — safe to create"
+ls /home/byron/dev/.claude/.claude/skills/ci-fix/ 2>/dev/null || echo "directory does not exist - safe to create"
 ```
 
-Expected: "directory does not exist — safe to create"
+Expected: "directory does not exist - safe to create"
 
 - [ ] **Step 2: Create the SKILL.md**
 
@@ -43,7 +43,7 @@ Create `/home/byron/dev/.claude/.claude/skills/ci-fix/SKILL.md` with this exact 
 ---
 description: >
   Full CI gate sequence with auto-fix loop. Runs ruff format, ruff lint, qlty check,
-  pre-commit, pytest, bandit, and pip-audit in order — fixing what it can and reporting
+  pre-commit, pytest, bandit, and pip-audit in order - fixing what it can and reporting
   blockers. Triggers on: ci-fix, fix ci, fix gates, all gates green, pre-commit failing,
   tests failing, ci failing, fix everything, gates failing.
 tools: ["Read", "Bash", "Grep", "Glob", "Edit", "Write"]
@@ -71,11 +71,11 @@ Never skip a gate. Never change the order.
 |---|------|---------|-------------------|
 | 1 | ruff format | `uv run ruff format --check .` | `uv run ruff format .` (deterministic) |
 | 2 | ruff lint | `uv run ruff check .` | `uv run ruff check --fix .`; remaining unfixable rules: edit manually |
-| 3 | qlty check | `qlty check` | No auto-fix — refactor functions exceeding complexity/nesting thresholds |
+| 3 | qlty check | `qlty check` | No auto-fix - refactor functions exceeding complexity/nesting thresholds |
 | 4 | pre-commit | `pre-commit run --all-files` | Re-run after ruff fixes; remaining failures: fix and re-run |
 | 5 | pytest | `uv run pytest` | Read failure output, fix test or implementation issues, re-run |
 | 6 | bandit | `uv run bandit -r src/ -c pyproject.toml` | Fix code issues; false positives: add `# nosec` with an open tracking reference |
-| 7 | pip-audit | `uv run pip-audit` | Report only — dependency upgrades require user decision |
+| 7 | pip-audit | `uv run pip-audit` | Report only - dependency upgrades require user decision |
 
 ## Status Table
 
@@ -98,16 +98,16 @@ pip-audit     ⏳ PENDING
 ```markdown
 
 Status values:
-- `⏳ PENDING` — not yet run
-- `🔧 FIXING` — fix in progress
-- `✅ PASS` — gate green (include note if fixes were applied)
-- `❌ BLOCKER` — failed after fix attempt; manual intervention required
+- `⏳ PENDING` - not yet run
+- `🔧 FIXING` - fix in progress
+- `✅ PASS` - gate green (include note if fixes were applied)
+- `❌ BLOCKER` - failed after fix attempt; manual intervention required
 
 ## Blocker Behavior
 
 When a gate fails and cannot be resolved in one fix attempt:
 - Mark it `❌ BLOCKER` in the table
-- Continue running the remaining gates — report the full picture
+- Continue running the remaining gates - report the full picture
 - Do not stop early
 
 pip-audit findings are always reported but never count as a blocker for the commit offer.
@@ -121,15 +121,15 @@ All 7 gates green. Commit now? (yes/no)
 ```text
 
 - **Yes**: invoke the `/git` skill to prepare a conventional commit
-- **No**: stop — present the green status table and hand back
+- **No**: stop - present the green status table and hand back
 
 **Any blocker remains:**
 
 ```
 5/7 gates pass. Blockers:
 
-  ❌ pytest     — 2 tests failing in tests/unit/test_processor.py (see output above)
-  ❌ bandit     — HIGH severity B608 at src/query.py:45 (see output above)
+  ❌ pytest     - 2 tests failing in tests/unit/test_processor.py (see output above)
+  ❌ bandit     - HIGH severity B608 at src/query.py:45 (see output above)
 
 These require manual investigation before committing.
 ```text
@@ -149,7 +149,7 @@ Expected: frontmatter block starting with `---`, description field present, no t
 
 ```bash
 git -C /home/byron/dev/.claude add .claude/skills/ci-fix/SKILL.md
-git -C /home/byron/dev/.claude commit -m "feat: add /ci-fix skill — 7-gate CI fix loop with auto-fix and commit offer"
+git -C /home/byron/dev/.claude commit -m "feat: add /ci-fix skill - 7-gate CI fix loop with auto-fix and commit offer"
 ```
 
 ---
@@ -165,7 +165,7 @@ git -C /home/byron/dev/.claude commit -m "feat: add /ci-fix skill — 7-gate CI 
 grep -n "Gather Context\|### 1" /home/byron/dev/.claude/.claude/skills/git/workflows/pr.md
 ```
 
-Expected: a line matching `### 1. Gather Context` — the prerequisite block goes immediately before it.
+Expected: a line matching `### 1. Gather Context` - the prerequisite block goes immediately before it.
 
 - [ ] **Step 2: Insert the /ci-fix prerequisite before step 1**
 
@@ -283,7 +283,7 @@ Expected: at least 7 matches (one per gate command).
 grep -n "ci-fix\|### 0" /home/byron/dev/.claude/.claude/skills/git/workflows/pr.md
 ```
 
-Expected: at least 2 matches — the step header and the skill invocation.
+Expected: at least 2 matches - the step header and the skill invocation.
 
 - [ ] **Step 3: Verify pre-commit.md has the checkbox**
 

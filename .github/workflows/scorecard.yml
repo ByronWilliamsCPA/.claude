@@ -63,8 +63,7 @@ jobs:
         with:
           results_file: scorecard-results.sarif
           results_format: sarif
-          # publish_results requires a public repo; set to false for private repos
-          publish_results: false
+          publish_results: true
           repo_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Scorecard results to GitHub Code Scanning

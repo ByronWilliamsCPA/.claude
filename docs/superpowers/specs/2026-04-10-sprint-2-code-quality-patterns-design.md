@@ -77,7 +77,7 @@ redefining correctness to match broken behavior.
 
 When tests use golden files (reference snapshots in `tests/golden/`, `tests/fixtures/`,
 or `*.snap` files), never edit those files manually to make a failing test pass. Golden
-files represent the verified correct output — changing them to match broken behavior
+files represent the verified correct output - changing them to match broken behavior
 destroys the test's value.
 
 To update golden files legitimately (behavior changed intentionally):
@@ -115,7 +115,7 @@ subsection style added in Item 1.
 ```markdown
 ### Documentation
 
-- **Docstrings**: Required on all public functions — purpose, args, returns, raises
+- **Docstrings**: Required on all public functions - purpose, args, returns, raises
   (Google style)
 - **Type Hints**: Required on all function signatures (BasedPyright strict enforces this)
 
@@ -124,20 +124,20 @@ coverage in `scripts/`. Functions missing docstrings block the commit.
 
 **Docstring argument validation**: `darglint` runs at pre-commit and validates that
 documented `Args`, `Returns`, and `Raises` sections match the actual function signature.
-Strictness: `long` — all parameters must be documented. Excluded: `tests/`, `scripts/`,
+Strictness: `long` - all parameters must be documented. Excluded: `tests/`, `scripts/`,
 `benchmarks/`, `tools/`.
 
-When darglint flags a mismatch, fix the docstring — do not add a `# noqa` suppression.
+When darglint flags a mismatch, fix the docstring - do not add a `# noqa` suppression.
 ```
 
-**Solution — `rules/pre-commit.md`**: Add two checklist items to the Code Quality
+**Solution - `rules/pre-commit.md`**: Add two checklist items to the Code Quality
 section, after the existing linter line.
 
 **Checklist items to add:**
 
 ```markdown
-- [ ] **Docstring Coverage**: `interrogate` passes at 85% threshold for `scripts/` — add missing docstrings rather than suppressing
-- [ ] **Docstring Arguments**: `darglint` passes — documented `Args`/`Returns`/`Raises` match signatures
+- [ ] **Docstring Coverage**: `interrogate` passes at 85% threshold for `scripts/` - add missing docstrings rather than suppressing
+- [ ] **Docstring Arguments**: `darglint` passes - documented `Args`/`Returns`/`Raises` match signatures
 ```
 
 ---
@@ -154,7 +154,7 @@ section, after the existing linter line.
 
 ## Verification
 
-1. **Exception section visible**: Open a `.py` file — `rules/python.md` is context-injected, making the exception hierarchy pattern visible to Claude
+1. **Exception section visible**: Open a `.py` file - `rules/python.md` is context-injected, making the exception hierarchy pattern visible to Claude
 2. **Golden file section present**: `grep "Golden File Protection" CLAUDE.md` returns one match
 3. **Docstring gate documented**: `grep -n "interrogate\|darglint" .claude/rules/python.md` shows the new content
 4. **Pre-commit checklist updated**: `grep "Docstring" .claude/rules/pre-commit.md` returns two matches
