@@ -46,7 +46,7 @@ Total payload: roughly 169 KB across 9 files, 125+ dated entries, ~6 weeks of hi
 
 **Example entry** (from `claude-commands/changelog.md`):
 
-> `Add /schedule [description] to Remote tag — Create, update, list, or run Cloud scheduled tasks | COMPLETE (added as #56 in Remote tag, count updated 63 -> 64)`
+> `Add /schedule [description] to Remote tag: Create, update, list, or run Cloud scheduled tasks | COMPLETE (added as #56 in Remote tag, count updated 63 -> 64)`
 
 **Links to best-practice and implementation guides.** Entries reference sibling docs inside `best-practice/` and `implementation/` by relative path. The README's CONCEPTS table has explicit "Best Practice" and "Implemented" badges that link the two layers. The changelog files do not themselves link out, but they describe which best-practice file was updated.
 

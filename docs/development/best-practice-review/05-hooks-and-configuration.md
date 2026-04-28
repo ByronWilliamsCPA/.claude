@@ -29,7 +29,7 @@ scripts, hook event coverage, and the parallel `.codex/` configuration.
 ## Our local files reviewed
 
 - `/home/byron/dev/.claude/settings.json` (top-level, 103 lines)
-- `/home/byron/dev/.claude/.claude/settings.json` (inner, 70 lines — the
+- `/home/byron/dev/.claude/.claude/settings.json` (inner, 70 lines: the
   real hook wiring lives here)
 - `/home/byron/dev/.claude/.claude/settings.local.json.example`
 - `/home/byron/dev/.claude/scripts/bash-pre-hook.sh`
@@ -92,11 +92,11 @@ scripts, hook event coverage, and the parallel `.codex/` configuration.
 | `ElicitationResult` | yes | no | external-only |
 | `StopFailure` | yes | no | external-only |
 | `CwdChanged` | yes | no | external-only |
-| `FileChanged` | yes (matcher: `.envrc|.env|.env.local`) | no | external-only |
+| `FileChanged` | yes (matcher: `.envrc`, `.env`, `.env.local`) | no | external-only |
 | `PermissionDenied` | yes | no | external-only |
 
 27 external vs 4 ours. Quantitative gap is stark, but coverage alone is
-not a proxy for value — see the lifecycle-events recommendation below for
+not a proxy for value: see the lifecycle-events recommendation below for
 which are worth wiring.
 
 ## Hook architecture comparison
@@ -106,7 +106,7 @@ which are worth wiring.
 - **External**: one monolithic `hooks.py` handles all 27 events, dispatches
   by `hook_event_name` from stdin JSON, plays an MP3/WAV for the matching
   event folder. Config toggles live in `hooks-config.json` with local
-  override via `hooks-config.local.json`. Disabling is runtime-side — the
+  override via `hooks-config.local.json`. Disabling is runtime-side: the
   script still boots and reads config on every event.
 - **Ours**: multiple targeted scripts. Each script has one job:
   - `bash-pre-hook.sh` enforces the force-push-to-main guard and records a
@@ -126,9 +126,9 @@ which are worth wiring.
 | Disable UX | Config file toggles via `disable<Event>Hook` keys | Edit `settings.json` to remove the entry (or disable via env var like `PR_REVIEW_REMINDER_DISABLED=1`) |
 | Blast radius of bugs | One syntax error breaks every event | Broken script breaks only the one event that calls it |
 | Shared state | In-process (but not persistent since script exits immediately each run) | File-based via `/tmp/claude-bash-start`, `~/.claude/tmp_cleanup/.mcp-loaded-tools` |
-| Cross-script logic | Easy — single file | Harder but we solved the only real case (pre/post Bash timing) with atomic file write |
+| Cross-script logic | Easy: single file | Harder but we solved the only real case (pre/post Bash timing) with atomic file write |
 | Cross-platform audio | Detects `afplay`, `paplay`, `aplay`, `ffplay`, `winsound`, falls back silently | `powershell.exe` for Windows toast; no macOS/Linux equivalent wired |
-| Event payload interpretation | `hooks.py` mostly ignores payload except for Bash command regex — it is a router, not a validator | Each script parses its own payload via `jq` and reacts meaningfully |
+| Event payload interpretation | `hooks.py` mostly ignores payload except for Bash command regex: it is a router, not a validator | Each script parses its own payload via `jq` and reacts meaningfully |
 
 ### Sound and notification patterns
 
@@ -200,12 +200,12 @@ noting.
 
 | External pattern | Our equivalent | Verdict |
 | --- | --- | --- |
-| A. Single-binary dispatcher | Multiple targeted scripts | we-do-differently (ours is better for this workload — see tradeoffs) |
+| A. Single-binary dispatcher | Multiple targeted scripts | we-do-differently (ours is better for this workload: see tradeoffs) |
 | B. File-based disable flags | Remove entry from settings.json, or env var (`PR_REVIEW_REMINDER_DISABLED`) | we-do-differently (our approach skips the python boot cost but lacks a central toggle doc) |
 | C. JSONL audit log | `bash-pre-hook.log`, `bash-notify.log`, `mcp-usage.log`, `keyword-triggers.log` (per-script logs) | overlap (different structure) |
 | D. `ask` list for dangerous commands | Partial in `settings.local.json.example` (4 entries) | gap |
 | E. `${CLAUDE_PROJECT_DIR}` in commands | `$HOME/.claude/scripts/...` | we-do-differently (home-scoped is fine for our user-wide scripts) |
-| F. `once: true` on lifecycle events | Not applicable — we do not wire those events | no-equivalent |
+| F. `once: true` on lifecycle events | Not applicable: we do not wire those events | no-equivalent |
 | G. `async: true` on every hook | Not set on any of our hooks | gap (worth investigating) |
 | H. `FileChanged` with `.env*` matcher | No FileChanged hook | gap (sensitive-file audit is a real use case) |
 | I. Attribution strings | Not set | gap |

@@ -4,9 +4,10 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-import httpx
+if TYPE_CHECKING:
+    import httpx
 
 logger = logging.getLogger(__name__)
 
@@ -60,4 +61,5 @@ async def fetch_with_retry(
         await asyncio.sleep(delay)
         delay *= 2
 
-    raise RuntimeError("unreachable")  # pragma: no cover
+    msg = "unreachable"
+    raise RuntimeError(msg)  # pragma: no cover

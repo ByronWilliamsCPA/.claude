@@ -11,20 +11,20 @@ tags:
 ---
 
 Systematic review of all `.md` files that affect Claude's behavior, organized by criticality.
-Pulled together from various sources — goal is to verify each file has accurate, complete content.
+Pulled together from various sources; goal is to verify each file has accurate, complete content.
 
 ## Status Legend
 
 | Symbol | Meaning |
 |--------|---------|
 | `[ ]` | Not yet reviewed |
-| `[x]` | Reviewed — OK |
-| `[~]` | Reviewed — needs update |
-| `[!]` | Reviewed — missing or broken content |
+| `[x]` | Reviewed: OK |
+| `[~]` | Reviewed: needs update |
+| `[!]` | Reviewed: missing or broken content |
 
 ---
 
-## Priority 1 — Very Critical
+## Priority 1: Very Critical
 > Always-loaded files that directly govern Claude's behavior.
 
 | Status | File | Issues / Notes |
@@ -38,8 +38,8 @@ Pulled together from various sources — goal is to verify each file has accurat
 
 ---
 
-## Priority 2 — Critical
-> Agent definitions and skill entry points — invoked directly.
+## Priority 2: Critical
+> Agent definitions and skill entry points: invoked directly.
 
 ### Agent Definitions (`.claude/agents/`)
 
@@ -91,7 +91,7 @@ Pulled together from various sources — goal is to verify each file has accurat
 | `[x]` | [security/SKILL.md](../.claude/skills/security/SKILL.md) | Fixed: added frontmatter |
 | `[x]` | [git/SKILL.md](../.claude/skills/git/SKILL.md) | |
 | `[x]` | [debug-tests/SKILL.md](../.claude/skills/debug-tests/SKILL.md) | |
-| `[~]` | [handoff/SKILL.md](../.claude/skills/handoff/SKILL.md) | Minor: no workflows/ subdirectory (optional improvement — skill is functional) |
+| `[~]` | [handoff/SKILL.md](../.claude/skills/handoff/SKILL.md) | Minor: no workflows/ subdirectory (optional improvement: skill is functional) |
 | `[x]` | [phase-gate/SKILL.md](../.claude/skills/phase-gate/SKILL.md) | |
 | `[x]` | [rad/SKILL.md](../.claude/skills/rad/SKILL.md) | |
 | `[x]` | [skill-creator/SKILL.md](../.claude/skills/skill-creator/SKILL.md) | |
@@ -110,7 +110,7 @@ Pulled together from various sources — goal is to verify each file has accurat
 
 ---
 
-## Priority 3 — Important
+## Priority 3: Important
 > Loaded at runtime by skills/agents. Wrong content here causes bad outputs.
 
 ### Quality Workflows
@@ -209,8 +209,8 @@ Pulled together from various sources — goal is to verify each file has accurat
 
 ---
 
-## Priority 4 — Supporting
-> Informational — consulted but not auto-loaded. Lower urgency.
+## Priority 4: Supporting
+> Informational: consulted but not auto-loaded. Lower urgency.
 
 | Status | File | Issues / Notes |
 |--------|------|----------------|
@@ -233,7 +233,7 @@ Pulled together from various sources — goal is to verify each file has accurat
 
 ---
 
-## Priority 5 — Not Critical
+## Priority 5: Not Critical
 > Project meta files and informational READMEs. Review last.
 
 | Status | File | Issues / Notes |
@@ -260,15 +260,15 @@ Pulled together from various sources — goal is to verify each file has accurat
 
 | Priority | Total | Reviewed OK | Needs Update | Missing/Broken | Not Started |
 |----------|-------|-------------|--------------|----------------|-------------|
-| 1 — Very Critical | 6 | 0 | 6 | 0 | 0 |
-| 2 — Critical | 52 | 51 | 1 | 0 | 0 |
-| 3 — Important | 44 | 24 | 20 | 0 | 0 |
-| 4 — Supporting | 16 | 9 | 7 | 0 | 0 |
-| 5 — Not Critical | 15 | 13 | 2 | 0 | 0 |
+| 1: Very Critical | 6 | 0 | 6 | 0 | 0 |
+| 2: Critical | 52 | 51 | 1 | 0 | 0 |
+| 3: Important | 44 | 24 | 20 | 0 | 0 |
+| 4: Supporting | 16 | 9 | 7 | 0 | 0 |
+| 5: Not Critical | 15 | 13 | 2 | 0 | 0 |
 | **Total** | **133** | **97** | **36** | **0** | **0** |
 
 ---
 
 ## Known Issues (active)
 
-No active issues — all known issues resolved.
+No active issues: all known issues resolved.

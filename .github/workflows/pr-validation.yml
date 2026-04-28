@@ -156,6 +156,11 @@ jobs:
     needs: [core-validation, dead-code, changelog, link-check]
     if: always()
     steps:
+      - name: Harden the runner
+        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
+        with:
+          egress-policy: audit
+
       - name: Check validation results
         run: |
           echo "## PR Validation Summary" >> $GITHUB_STEP_SUMMARY

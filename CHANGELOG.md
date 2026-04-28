@@ -10,11 +10,35 @@
 * feat(compliance): wire `mkdocs-auditor` into the `repo-compliance` coordinator skill for automatic dispatch during audit and remediation passes
 * feat(ci): add CI-014 through CI-017 standards to enforce gate job presence and correct blocking check contexts; update `ossf-compliance-auditor` to audit CI-017 at audit time; fix `setup_github_protection.py` to register short job display names instead of the stale `Workflow / Job` composite format
 
+### Chore
+
+* chore(compliance): remediate OSSF Scorecard compliance gaps: add CodeQL, SonarCloud, Qlty
+  coverage, REUSE, and release-signing workflows; harden all CI jobs with pinned action SHAs;
+  add AGENTS.md, GEMINI.md, .codecov.yml, sonar-project.properties; expand pre-commit hooks
+
 ### Fix
 
+* fix(ci): grant `pull-requests: write` and `checks: write` to `ci.yml` caller; GitHub rejects
+  reusable workflow callers at parse time when the caller's permissions block does not cover every
+  scope the callee's `permissions:` block declares
+* fix(ci): add `actions: read` to `security-analysis.yml` caller to cover the CodeQL job's
+  job-level permission; strip caller to minimal structure to resolve callee-specific parse failure
 * fix(tools): add `--exclude` flag to `validate_front_matter.py` to skip specified directories and files during front matter validation; update `.pre-commit-config.yaml` to exclude activity report and plan directories
 * fix(tests): declare `_collect_md_files` in `ValidateFrontMatterModule` Protocol so type checkers and tests can access the internal function without bypassing the module interface
 * fix(release): add `build_command = "uv lock"` to prevent uv.lock version drift after semantic releases
+* fix(ci): remove stale `CVE-2022-42969` and `GHSA-w596-4wvx-j9j6` ignore entries from
+  `osv-scanner.toml`; OSV database now tracks this vulnerability exclusively under
+  `PYSEC-2022-42969`, making the CVE and GHSA aliases unused and causing scan failure
+* fix(ci): disable `run-safety`, `run-codeql`, `run-dependency-review`, and `run-osv` in
+  `security-analysis.yml` caller; Safety is not a project dependency (pip-audit covers the
+  same surface), CodeQL SARIF upload and Dependency Review require GHAS on private repos,
+  and osv-scanner-action v2.2.4 has a bug where IgnoredVulns entries that actively filter
+  a finding are still reported as "unused" and exit 1 (fixed in osv-scanner >= 2.3.0;
+  re-enable `run-osv` once the org workflow updates to that version)
+* fix(deps): upgrade pip from 26.0.1 to 26.1 to resolve GHSA-58qw-9mgm-455v
+  (tar/ZIP interpretation conflict in pip; CVE-2026-3219)
+* fix(ci): add `upload: never` to CodeQL analyze step in `codeql.yml`; SARIF upload
+  requires GitHub Advanced Security which is not enabled on this private repo
 
 ## v0.13.0 (2026-04-21)
 ### Documentation

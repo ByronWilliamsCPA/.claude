@@ -81,7 +81,7 @@ _COUNT_WORD_MAP: dict[str, str] = {
 
 
 # ---------------------------------------------------------------------------
-# Frontmatter parsing (stdlib only — no PyYAML)
+# Frontmatter parsing (stdlib only: no PyYAML)
 # ---------------------------------------------------------------------------
 
 
@@ -442,7 +442,7 @@ def check_counts(scope: str, *, repo_root: str = ".") -> list[Finding]:
                             file=str(md_file),
                             line=line_no,
                             message=(
-                                f"count claim '{match.group(2)}' — "
+                                f"count claim '{match.group(2)}': "
                                 "unrecognized category, flagged for manual review"
                             ),
                         )
@@ -457,7 +457,7 @@ def check_counts(scope: str, *, repo_root: str = ".") -> list[Finding]:
                             file=str(md_file),
                             line=line_no,
                             message=(
-                                f"claims '{claimed} {match.group(2)}' — actual: {real}"
+                                f"claims '{claimed} {match.group(2)}': actual: {real}"
                             ),
                         )
                     )
@@ -593,7 +593,7 @@ def _check_schema_version_refs(
             file=file_path,
             line=line_no,
             message=(
-                f"schema_version reference '{m.group(0)}' — flagged for manual review"
+                f"schema_version reference '{m.group(0)}': flagged for manual review"
             ),
         )
         for m in _SCHEMA_VER_RE.finditer(line)

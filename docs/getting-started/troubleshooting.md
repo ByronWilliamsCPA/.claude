@@ -47,14 +47,14 @@ jq '.hooks | keys' ~/.claude/settings.json
 # Expected: ["PostToolUse", "PreToolUse", "Stop", "UserPromptSubmit"]
 ```
 
-**Cause 1 — jq was not installed when you ran `setup.sh`**: Install jq and re-run:
+**Cause 1: jq was not installed when you ran `setup.sh`**: Install jq and re-run:
 
 ```bash
 apt install jq   # or brew install jq
 ./setup.sh
 ```
 
-**Cause 2 — `settings.json` has a syntax error or unexpected structure**:
+**Cause 2: `settings.json` has a syntax error or unexpected structure**:
 
 ```bash
 jq '.' ~/.claude/settings.json
@@ -112,7 +112,7 @@ The `subagent_type` must match the `name:` field exactly (not the filename).
 
 **Symptom**: `git commit` fails because a pre-commit hook exits non-zero.
 
-**Fix**: Read the error output carefully — pre-commit failures identify exactly which check failed and what to fix. The most common causes are Ruff lint errors, BasedPyright type errors, or frontmatter validation failures.
+**Fix**: Read the error output carefully: pre-commit failures identify exactly which check failed and what to fix. The most common causes are Ruff lint errors, BasedPyright type errors, or frontmatter validation failures.
 
 Do not use `--no-verify` to bypass hooks. Fix the underlying issue.
 

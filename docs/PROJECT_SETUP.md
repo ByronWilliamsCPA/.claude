@@ -72,7 +72,7 @@ uv run basedpyright src/
 
 ### 5. Generate Project Planning Documents
 
-Use Claude Code to generate comprehensive planning documents for your project:
+Use Claude Code to generate complete planning documents for your project:
 
 ```bash
 # Open Claude Code and describe your project, then run:
@@ -519,7 +519,7 @@ This project enforces:
 - **80%+ test coverage** (enforced via pytest-cov)
 - **Zero linting errors** (enforced via Ruff)
 - **Type safety** (enforced via BasedPyright)
-- **Security scanning** (enforced via Bandit, Safety)
+- **Security scanning** (enforced via Bandit, pip-audit)
 
 ### Project Structure
 

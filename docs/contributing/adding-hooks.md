@@ -26,9 +26,9 @@ Before adding a hook, read [ADR-002](../architecture/adr/ADR-002-hook-compositio
 
 | Exit code | Meaning | Applies to |
 | --- | --- | --- |
-| `0` | Success — proceed | All hook types |
-| `2` | Block — abort the tool call and show stderr as error | `PreToolUse` only |
-| `1` | Hook error — the script itself failed | All hook types |
+| `0` | Success: proceed | All hook types |
+| `2` | Block: abort the tool call and show stderr as error | `PreToolUse` only |
+| `1` | Hook error: the script itself failed | All hook types |
 
 `PostToolUse` hooks must always exit 0. A non-zero exit from a PostToolUse hook is a hook-level error, not a tool block. Never use PostToolUse to block behavior.
 
@@ -75,7 +75,7 @@ Before adding a hook, read [ADR-002](../architecture/adr/ADR-002-hook-compositio
 }
 ```
 
-Place the new entry in the correct position within the type's array. Array order is execution order — read [ADR-002](../architecture/adr/ADR-002-hook-composition.md) for the contract around ordering.
+Place the new entry in the correct position within the type's array. Array order is execution order: read [ADR-002](../architecture/adr/ADR-002-hook-composition.md) for the contract around ordering.
 
 ## Write the Script
 
@@ -87,7 +87,7 @@ Script requirements:
 - Must exit 0 on success
 - For PreToolUse gates: exit 2 to block with an error message printed to stderr
 - Must complete within the `timeout` (in seconds). Hooks that time out are treated as failures.
-- Should not produce unnecessary stdout — status messages appear via `statusMessage`, not stdout
+- Should not produce unnecessary stdout: status messages appear via `statusMessage`, not stdout
 
 ## Re-run `setup.sh`
 
@@ -105,6 +105,6 @@ Open a Claude Code session and trigger the relevant tool type. You should see th
 
 ## See Also
 
-- [ADR-002 Hook Composition and Ordering](../architecture/adr/ADR-002-hook-composition.md) — source-of-truth decision and execution ordering contract
-- [Architecture → Hook Pipeline](../architecture/hook-pipeline.md) — turn-level execution sequence
-- [Hooks Reference](../reference/hooks.md) — current hook scripts and their matchers
+- [ADR-002 Hook Composition and Ordering](../architecture/adr/ADR-002-hook-composition.md): source-of-truth decision and execution ordering contract
+- [Architecture → Hook Pipeline](../architecture/hook-pipeline.md): turn-level execution sequence
+- [Hooks Reference](../reference/hooks.md): current hook scripts and their matchers

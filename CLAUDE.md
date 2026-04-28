@@ -90,8 +90,8 @@ exhaust code-level fixes before ruling out the environment.
 **Never use em-dashes (`—`) in any output.** This covers documentation, code
 comments, commit messages, ADRs, rules files, standards, scripts, and all
 other text. This is a hard rule, not a preference. Replace with a comma,
-semicolon, colon, or restructured sentence. Pre-commit does not yet enforce
-this automatically, so it must be applied manually before every commit.
+semicolon, colon, or restructured sentence. The `no-em-dash` pre-commit hook
+(PC-011) enforces this automatically on every commit.
 
 > Full writing rules (AI pattern blacklist, grammar authority):
 > see `.claude/rules/writing.md`

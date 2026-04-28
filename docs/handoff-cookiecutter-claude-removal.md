@@ -122,12 +122,12 @@ Configure once at the user level and all projects inherit it automatically.
 1. Install superpowers (community plugin maintained at github.com/obra/superpowers):
    Follow install instructions at that repo for your platform.
 
-2. Clone the ByronWilliamsCPA custom agents and skills:
+1. Clone the ByronWilliamsCPA custom agents and skills:
    ```bash
    git clone https://github.com/ByronWilliamsCPA/.claude.git ~/.claude
    ```
 
-3. That's it. All projects on your machine now have the full agent/skill suite.
+1. That's it. All projects on your machine now have the full agent/skill suite.
 ```
 
 ### `DEVELOPMENT.md`

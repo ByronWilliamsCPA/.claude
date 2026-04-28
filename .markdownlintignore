@@ -1,0 +1,8 @@
+docs/superpowers/**
+CHANGELOG.md
+.claude/skills/**
+.claude/agents/**
+.claude/standards/**
+.claude/rules/**
+.claude/cowork/**
+.claude/context/**

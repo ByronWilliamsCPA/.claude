@@ -19,7 +19,7 @@ tags:
 
 ## Context
 
-The Model Context Protocol (MCP) allows Claude Code to call external tools — database clients, browser automation, observability platforms, diagram renderers, and more. This repo's MCP configuration exposes roughly 80 tools across multiple servers.
+The Model Context Protocol (MCP) allows Claude Code to call external tools: database clients, browser automation, observability platforms, diagram renderers, and more. This repo's MCP configuration exposes roughly 80 tools across multiple servers.
 
 The problem: every tool loaded into a session consumes context tokens to describe its schema. Before tiered loading, all 80+ tools were present in every session. Measured token cost: approximately 55,000 tokens at session start, before a single line of user input. That left under half the context window for actual work in a 128K-token session, and made long coding sessions hit context limits before completing multi-file tasks.
 
@@ -31,15 +31,15 @@ Most of those tools are irrelevant to most sessions. A session writing Python un
 
 MCP tools are partitioned into three tiers. Each tier has a distinct loading trigger:
 
-**Tier 1 — Always loaded** (session start, every session)
+**Tier 1: Always loaded** (session start, every session)
 
 Tier 1 contains tools used in the majority of sessions, regardless of task type. The cost of loading them is paid once at session start; the cost of not loading them is re-injecting them on demand for nearly every session.
 
 Current Tier 1 servers: `zen` (thinkdeep, codereview, tiered_consensus, chat), `context7` (resolve_library_id, get_library_docs), `github` (get_file_contents).
 
-Token budget for Tier 1: ~3,000 tokens (vs. ~55,000 before tiering — an 85–95% reduction).
+Token budget for Tier 1: ~3,000 tokens (vs. ~55,000 before tiering: an 85–95% reduction).
 
-**Tier 2 — Agent-bundled** (loaded when a specific agent is invoked)
+**Tier 2: Agent-bundled** (loaded when a specific agent is invoked)
 
 Tier 2 tools are specialized enough that they are only needed when a particular agent is active. The agent's invocation is the loading trigger; when the agent finishes, the tools are no longer active in the session.
 
@@ -47,7 +47,7 @@ Example bundles: `security-auditor` loads `zen.secaudit`, `sentry.*`, `github.co
 
 Skill bundles follow the same pattern: `/git pr` loads `zen.codereview`, `github.pull_requests`, `github.issues`, `sentry.list_releases`.
 
-**Tier 3 — Keyword-triggered** (loaded when matching terms appear in the user's prompt)
+**Tier 3: Keyword-triggered** (loaded when matching terms appear in the user's prompt)
 
 Tier 3 tools are loaded dynamically by the `keyword-tool-trigger.sh` PreToolUse hook when specific words appear in the conversation. This handles tools that are neither universal enough for Tier 1 nor cleanly associated with a single agent.
 
@@ -92,9 +92,9 @@ Demotion follows the same logic in reverse: a Tier 1 tool that stops appearing i
 
 ## References
 
-- `.claude/rules/mcp-strategy.md` — the operative tier definitions and tool assignments
-- `scripts/track-mcp-usage.sh` — usage data collection for tier promotion decisions
-- `scripts/mcp-tool-loader.sh` — agent/skill bundle loading script
-- `scripts/keyword-tool-trigger.sh` — Tier 3 keyword detection PreToolUse hook
-- `docs/architecture/mcp-tiered-loading.md` — narrative explanation with embedded diagram
-- `docs/architecture/diagrams/mcp_tier_loading.svg` — state diagram of tier transitions
+- `.claude/rules/mcp-strategy.md`: the operative tier definitions and tool assignments
+- `scripts/track-mcp-usage.sh`: usage data collection for tier promotion decisions
+- `scripts/mcp-tool-loader.sh`: agent/skill bundle loading script
+- `scripts/keyword-tool-trigger.sh`: Tier 3 keyword detection PreToolUse hook
+- `docs/architecture/mcp-tiered-loading.md`: narrative explanation with embedded diagram
+- `docs/architecture/diagrams/mcp_tier_loading.svg`: state diagram of tier transitions

@@ -158,7 +158,7 @@ extra:
     provider: google
     property: !ENV GOOGLE_ANALYTICS_KEY
 
-# Navigation — persona-first (see ADR-007)
+# Navigation: persona-first (see ADR-007)
 nav:
   - Home: index.md
 

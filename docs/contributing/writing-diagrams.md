@@ -15,7 +15,7 @@ tags:
 - Store `.puml` sources under `docs/architecture/diagrams/`.
 - Commit both the `.puml` source and a rendered `.svg` sibling.
 - Use plain PlantUML (no external `!include` directives that require network access).
-- Keep each diagram focused on one concept — if you need to show two things, use two diagrams.
+- Keep each diagram focused on one concept: if you need to show two things, use two diagrams.
 
 ## Offline Rendering
 
@@ -31,9 +31,9 @@ Renders all `docs/architecture/diagrams/*.puml`. Pass a specific path to render 
 
 Alternatives:
 
-- **`diagram-maintenance` skill** — use in a Claude Code session on a `.puml` source.
-- **VS Code** — PlantUML extension, `Alt+D` to preview.
-- **`plantuml -tsvg <file>.puml`** — direct CLI if `plantuml` is on PATH.
+- **`diagram-maintenance` skill**: use in a Claude Code session on a `.puml` source.
+- **VS Code**: PlantUML extension, `Alt+D` to preview.
+- **`plantuml -tsvg <file>.puml`**: direct CLI if `plantuml` is on PATH.
 
 ## When to Commit SVG Siblings
 
