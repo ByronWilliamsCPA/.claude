@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# setup.sh — Bootstrap ~/.claude/ symlinks for this Claude config repo
+# setup.sh: Bootstrap ~/.claude/ symlinks for this Claude config repo
 #
 # Run once after cloning:
 #   git clone --recurse-submodules https://github.com/ByronWilliamsCPA/.claude.git ~/dev/.claude

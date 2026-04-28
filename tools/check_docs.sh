@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# check_docs.sh — local documentation validation gate
+# check_docs.sh: local documentation validation gate
 #
 # Runs four checks:
 #   1. Frontmatter schema validation (new docs directories only; legacy dirs exempt)
@@ -39,7 +39,7 @@ echo ""
 echo "docs validation"
 echo "============================================================"
 
-# 1. Frontmatter schema — scoped to new persona directories only
+# 1. Frontmatter schema: scoped to new persona directories only
 # Legacy dirs (docs/development/, docs/guides/, etc.) are explicitly exempt per ADR-007.
 NEW_DOC_DIRS=(
     docs/getting-started
@@ -56,7 +56,7 @@ else
     check "frontmatter schema (new dirs)" "$fm_errors"
 fi
 
-# 2. MkDocs strict build — suppress known-benign noise:
+# 2. MkDocs strict build: suppress known-benign noise:
 #    - git-revision-date timestamp ordering warnings (cosmetic, not structural)
 #    - MkDocs 2 deprecation banner (framework-level, not docs-level)
 mkdocs_out=$(DISABLE_MKDOCS_2_WARNING=true uv run mkdocs build --strict 2>&1 || true)

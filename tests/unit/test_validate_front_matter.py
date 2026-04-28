@@ -18,6 +18,8 @@ from pathlib import Path
 from typing import Any, Protocol
 
 import pytest
+from hypothesis import given
+from hypothesis import strategies as st
 
 
 class ValidateFrontMatterModule(Protocol):
@@ -176,3 +178,54 @@ class TestCollectMdFiles:
         result_names = {p.name for p in result}
         assert "keep.md" in result_names
         assert "skip.md" not in result_names
+
+
+# ---------------------------------------------------------------------------
+# Property-based tests (Hypothesis)
+# ---------------------------------------------------------------------------
+
+
+class TestStripCodeBlocksProperties:
+    """Property-based tests for _strip_code_blocks using Hypothesis.
+
+    These tests verify structural invariants that hold for all inputs,
+    catching edge cases that example-based tests do not cover.
+    """
+
+    @given(  # type: ignore[misc]
+        content=st.text(
+            alphabet=st.characters(blacklist_categories=("Cs",)), max_size=500
+        )
+    )
+    def test_idempotent(self, vfm: Any, content: str) -> None:
+        """Stripping once equals stripping twice for any input."""
+        once = vfm._strip_code_blocks(content)
+        twice = vfm._strip_code_blocks(once)
+        assert once == twice, (
+            f"_strip_code_blocks is not idempotent.\n"
+            f"Input:       {content!r}\n"
+            f"After one:   {once!r}\n"
+            f"After two:   {twice!r}"
+        )
+
+    @given(  # type: ignore[misc]
+        content=st.text(
+            alphabet=st.characters(blacklist_categories=("Cs",)), max_size=500
+        )
+    )
+    def test_output_never_longer_than_input(self, vfm: Any, content: str) -> None:
+        """Stripping code blocks never increases the length of the content."""
+        result = vfm._strip_code_blocks(content)
+        assert len(result) <= len(content)
+
+    @given(  # type: ignore[misc]
+        content=st.text(
+            alphabet=st.characters(
+                blacklist_categories=("Cs",), blacklist_characters="`~"
+            ),
+            max_size=300,
+        )
+    )
+    def test_fence_free_content_unchanged(self, vfm: Any, content: str) -> None:
+        """Content with no fence markers passes through unmodified."""
+        assert vfm._strip_code_blocks(content) == content

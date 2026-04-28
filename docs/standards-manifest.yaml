@@ -267,14 +267,14 @@ checks:
     domain: ci
     severity: important
     description: "CI workflow uses org reusable python-ci.yml"
-    verify: "content_present: .github/workflows/ci.yml, williaby/.github"
+    verify: "content_present: .github/workflows/ci.yml, ByronWilliamsCPA/.github"
     override_eligible: true
 
   - id: CI-002
     domain: ci
     severity: important
     description: "Security workflow uses org reusable security analysis workflow"
-    verify: "content_present: .github/workflows/security.yml, williaby/.github"
+    verify: "content_present: .github/workflows/security-analysis.yml, ByronWilliamsCPA/.github"
     override_eligible: true
 
   - id: CI-003
@@ -350,8 +350,8 @@ checks:
   - id: CI-013
     domain: ci
     severity: important
-    description: "No unregistered GitHub Actions workflows -- any .yml in .github/workflows/ not matching the org-standard set (ci.yml, security.yml, sonarcloud.yml, coverage.yml) is flagged for evaluation"
-    verify: "workflow_inventory: .github/workflows/, expected_set=[ci.yml,security.yml,sonarcloud.yml,coverage.yml], report_extras=true"
+    description: "No unregistered GitHub Actions workflows -- any .yml in .github/workflows/ not in the registered set is flagged for evaluation"
+    verify: "workflow_inventory: .github/workflows/, expected_set=[ci.yml,codeql.yml,coverage.yml,docs.yml,pr-validation.yml,python-compatibility.yml,release-sign.yml,release.yml,reuse.yml,sbom.yml,scorecard.yml,security-analysis.yml,sonarcloud.yml], report_extras=true"
     override_eligible: true
 
   - id: CI-014

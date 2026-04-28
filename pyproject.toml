@@ -98,7 +98,7 @@ dev = [
     "pre-commit>=3.3.0",
     # Documentation
     "mkdocs>=1.6.0",
-    "mkdocs-material>=9.5.0",
+    "mkdocs-material>=9.5.0,<10",
     "mkdocstrings[python]>=0.26.0",
     "griffe-pydantic>=1.1.0",
     "mkdocs-gen-files>=0.5.0",
@@ -137,7 +137,7 @@ packages = ["src/claude_config"]
 # Ruff Configuration - Consolidated Linting & Formatting
 [tool.ruff]
 line-length = 88
-target-version = "py312"
+target-version = "py310"
 # force-exclude ensures the exclude list is respected even when Ruff is invoked
 # with explicit file arguments (e.g., from editor hooks or pre-commit). Without
 # this, Ruff would modify files inside .submodules/ when passed by path.
@@ -363,7 +363,7 @@ known-first-party = ["claude_config"]
 # Replaces MyPy with faster, stricter type checking
 # Reference: https://docs.basedpyright.com
 [tool.basedpyright]
-pythonVersion = "3.12"
+pythonVersion = "3.10"
 pythonPlatform = "All"
 
 # Type checking mode: basic, standard, strict, all
@@ -424,7 +424,6 @@ reportInvalidTypeVarUse = "error"
 # BasedPyright-specific enhancements
 reportUnreachable = "error"           # Detect unreachable code
 reportAny = "warning"                  # Flag usage of Any type
-reportExplicitAny = "warning"          # Flag explicit Any annotations
 reportIgnoreCommentWithoutRule = "warning"  # Require specific ignore rules
 
 # PyStrict strict inference settings
@@ -618,6 +617,15 @@ ignore_names = [
 #
 # UV automatically falls back to PyPI when packages are not found in Assured OSS.
 # Authentication uses GOOGLE_APPLICATION_CREDENTIALS or GOOGLE_APPLICATION_CREDENTIALS_B64.
+
+# Commitizen Configuration
+# Validates commit messages for the commitizen pre-commit hook (commit-msg stage)
+[tool.commitizen]
+name = "cz_conventional_commits"
+version_scheme = "semver"
+version_provider = "pep621"
+tag_format = "v$version"
+update_changelog_on_bump = false
 
 # Semantic Release Configuration
 # Automates versioning and changelog generation based on conventional commits

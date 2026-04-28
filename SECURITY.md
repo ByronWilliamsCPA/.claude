@@ -7,8 +7,11 @@ the Security tab of this repository and click "Report a vulnerability". Do not
 file public issues for security vulnerabilities; public disclosure before a
 fix is available puts all users at risk.
 
-The Security tab is at:
-`https://github.com/ByronWilliamsCPA/.claude/security/advisories`
+Report a new vulnerability at:
+https://github.com/ByronWilliamsCPA/.claude/security/advisories/new
+
+The full Security Advisories tab is at:
+https://github.com/ByronWilliamsCPA/.claude/security/advisories
 
 We will acknowledge your report within 14 days of receipt. The maximum initial
 response time is 14 days. After acknowledgment, we will provide a timeline for

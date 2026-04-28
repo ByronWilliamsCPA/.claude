@@ -24,6 +24,23 @@
 
 ### Fix
 
+* fix(hooks): correct Claude Code hook JSON field names in `tdd-enforcement-hook.sh` (`.tool` and
+  `.args` -> `.tool_name` and `.tool_input`); hook was 100% inoperative as written
+* fix(hooks): remove `-e` from `set -euo pipefail` in `tdd-enforcement-hook.sh`; PreToolUse hooks
+  must not use `set -e` because any unhandled error exits non-zero and silently blocks all
+  Write/Edit/MultiEdit tool calls
+* fix(hooks): replace `exit 1` with `exit 2` in `tdd-enforcement-hook.sh` to match this repo's
+  PreToolUse hook contract (exit 2 causes Claude Code to surface stdout as the block reason)
+* fix(hooks): replace hardcoded `/home/byron/.claude/logs/` with `$HOME/.claude/logs/` and add
+  `|| true` guards to `mkdir -p` and `log_tdd` so log-write failures do not block tool calls
+* fix(hooks): guard `${TEST_FILES[@]}` array access under `set -u` to prevent unbound variable
+  crash for `.go`, `.rs`, and `.php` files where no test path patterns are defined
+* fix(docs): align CONTRIBUTING.md Python prerequisite with `requires-python = ">=3.10"` in
+  `pyproject.toml` (was "Python 3.12 or higher")
+* fix(ci): revert `security-analysis.yml` push trigger from `branches: ["**"]` to
+  `branches: [main, master]` to avoid running security scans on every feature branch push
+* fix(writing): remove em-dashes from `setup.sh` and `tools/check_docs.sh`; exposed by the
+  no-em-dash hook scope extension that now covers `.sh` files
 * fix(ci): grant `pull-requests: write` and `checks: write` to `ci.yml` caller; GitHub rejects
   reusable workflow callers at parse time when the caller's permissions block does not cover every
   scope the callee's `permissions:` block declares
@@ -51,6 +68,10 @@
   GHSA-rpm5-65cw-6hj4 (command injection via Git options bypass, fixed in 3.1.47),
   GHSA-7545-fcxq-7j24 (path traversal in reference APIs, fixed in 3.1.48);
   GitPython is a transitive dependency; only `uv.lock` changes
+* fix(hooks): add `|| true` guards to `mkdir -p` and `log()` write in
+  `planning-bridge-gate.sh`; `set -euo pipefail` is present and unguarded
+  failures in either call would silently block all tool calls matched by this
+  PreToolUse hook (same class of defect as C-3/C-4 in tdd-enforcement-hook.sh)
 
 ## v0.13.0 (2026-04-21)
 ### Documentation
