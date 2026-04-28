@@ -64,7 +64,7 @@ Update one or more diagrams to reflect code changes.
 1. Identify which diagrams are affected (ask if unclear)
 2. Delegate to `diagram-maintenance-agent` with this prompt:
 
-```sql
+```text
 Update the following diagrams to reflect these changes: [USER_CHANGES]
 
 Steps:
@@ -88,7 +88,7 @@ Create a new diagram for an undocumented component or workflow.
 1. Clarify: what component/workflow, which hierarchy level, which parent diagram
 2. Delegate to `diagram-maintenance-agent` with this prompt:
 
-```sql
+```text
 Create a new [LEVEL] diagram for [COMPONENT/WORKFLOW].
 
 Requirements:

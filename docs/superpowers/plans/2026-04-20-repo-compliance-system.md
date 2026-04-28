@@ -541,7 +541,7 @@ git commit -m "feat(compliance): add support files -- exclusions, report gitigno
 
 - [ ] **Step 1: Write the agent file**
 
-```markdown
+````markdown
 ---
 name: repo-foundations-auditor
 description: Repository foundations compliance auditor and remediator. Checks OpenSSF required files (SECURITY.md, CONTRIBUTING.md, CHANGELOG.md), CODEOWNERS, .gitignore entries, pyproject.toml metadata, and docs structure against FOUND-* checks in the standards manifest. In audit mode returns a findings list. In remediation mode creates or patches files.
@@ -584,26 +584,26 @@ Report each action taken: file created, file patched, or entry appended.
 
 Audit mode findings (emit one block per failing check):
 
-```
+```yaml
 FINDING:
   id: FOUND-001
   severity: critical
   description: SECURITY.md absent from project root
   status: fail
   current_value: file not found
-```text
+```
 
 Remediation mode (emit one line per action):
 
-```
+```yaml
 ACTION: Created SECURITY.md from template /home/byron/dev/.github/SECURITY.md
 ACTION: Appended .worktrees/ to .gitignore
-```markdown
+```
 
 ## Use Cases
 
 Invoked by the repo-compliance coordinator skill for the foundations domain in both audit and remediation modes.
-```
+````
 
 - [ ] **Step 2: Run pre-commit to validate frontmatter**
 
@@ -630,7 +630,7 @@ git commit -m "feat(compliance): add repo-foundations-auditor agent"
 
 - [ ] **Step 1: Write the agent file**
 
-```markdown
+````markdown
 ---
 name: python-toolchain-auditor
 description: Python toolchain compliance auditor and remediator. Checks dev dependency presence/absence (ruff, basedpyright, pip-audit, darglint, interrogate), Ruff rule set completeness against PyStrict-aligned codes, BasedPyright config block, qlty config, and target-version setting against TOOL-* checks in the standards manifest.
@@ -680,14 +680,14 @@ typeCheckingMode = "strict"
 strictListInference = true
 strictDictionaryInference = true
 strictSetInference = true
-```sql
+```
 
 - Missing `.qlty/qlty.toml`: Create it with:
 
 ```toml
 [plugins]
 enabled = ["ruff", "basedpyright", "bandit"]
-```markdown
+```
 
 After remediation, emit: "NOTE: Adding/removing dependencies and enabling new Ruff rules will surface new violations. Run the full toolchain and fix violations before committing. Do not add noqa or type: ignore suppressions."
 
@@ -698,7 +698,7 @@ Same structure as repo-foundations-auditor: FINDING blocks in audit mode, ACTION
 ## Use Cases
 
 Invoked by the repo-compliance coordinator for the toolchain domain in both modes.
-```
+````
 
 - [ ] **Step 2: Validate frontmatter**
 
@@ -725,7 +725,7 @@ git commit -m "feat(compliance): add python-toolchain-auditor agent"
 
 - [ ] **Step 1: Write the agent file**
 
-```markdown
+````markdown
 ---
 name: pre-commit-auditor
 description: Pre-commit configuration compliance auditor and remediator. Checks .pre-commit-config.yaml presence, required hook inventory (ruff, basedpyright, bandit, detect-secrets, darglint, interrogate, commitizen, yamllint, markdownlint, no-em-dash), and SHA pinning of all rev fields against PC-* checks in the standards manifest.
@@ -759,7 +759,7 @@ Return findings with: id, severity, description, status, current_value (list of 
 
 ```bash
 git ls-remote https://github.com/<owner>/<repo>.git refs/tags/<version> | cut -f1
-```text
+```
 
 The required hook repositories and their hook IDs are:
 - `https://github.com/astral-sh/ruff-pre-commit`: `ruff`, `ruff-format`
@@ -784,7 +784,7 @@ FINDING blocks in audit mode, ACTION lines in remediation mode. Include the full
 ## Use Cases
 
 Invoked by the repo-compliance coordinator for the pre_commit domain in both modes.
-```
+````
 
 - [ ] **Step 2: Validate frontmatter**
 
@@ -811,7 +811,7 @@ git commit -m "feat(compliance): add pre-commit-auditor agent"
 
 - [ ] **Step 1: Write the agent file**
 
-```markdown
+````markdown
 ---
 name: claude-docs-auditor
 description: Claude configuration and documentation compliance auditor and remediator. Checks CLAUDE.md section presence (Model Selection, RAD, cross-references), .claude/settings.json, AGENTS.md and GEMINI.md file locations, and delegates em-dash and AI pattern scanning to writing-style-editor. Covers CLAUDE-* checks in the standards manifest.
@@ -848,7 +848,7 @@ Merge the writing-style-editor results into your findings list under CLAUDE-007 
 **Missing CLAUDE.md sections:** Append the following blocks. Read the current CLAUDE.md first; do not duplicate sections that already exist.
 
 For missing Model Selection section, append:
-```markdown
+```text
 ## Model Selection
 
 | Task type | Model | When |
@@ -856,10 +856,11 @@ For missing Model Selection section, append:
 | Architecture, planning, ADRs | Opus 4.7 | Multi-step decisions, deep code review |
 | Standard development | Sonnet 4.6 | Most coding and editing |
 | Read-only exploration | Haiku 4.5 | File scanning, quick lookups |
-```text
+```
 
 For missing RAD section, append:
-```markdown
+
+```text
 ## Response-Aware Development (RAD)
 
 Tag assumptions that could cause production failures using `#CRITICAL`, `#ASSUME`,
@@ -868,16 +869,17 @@ timing dependencies, external resources, data integrity, concurrency, security,
 payment and financial.
 
 See `docs/response-aware-development.md` for full tagging syntax and examples.
-```sql
+```
 
 **Missing .claude/settings.json:** Create with a minimal permissions block:
+
 ```json
 {
   "permissions": {
     "allow": []
   }
 }
-```markdown
+```
 
 Note: the allow list should be populated based on the project's actual tool usage. Flag this to the user after creation.
 
@@ -894,7 +896,7 @@ FINDING blocks in audit mode, ACTION lines in remediation mode. For CLAUDE-007 a
 ## Use Cases
 
 Invoked by the repo-compliance coordinator for the claude_docs domain in both modes.
-```
+````
 
 - [ ] **Step 2: Validate frontmatter**
 
@@ -994,7 +996,7 @@ git commit -m "feat(compliance): add general-compliance-auditor agent"
 
 - [ ] **Step 1: Write the agent file**
 
-```markdown
+````markdown
 ---
 name: compliance-retrospective
 description: Post-run compliance retrospective agent. Reads all findings from the current session (domain agent findings plus general-compliance-auditor candidates), groups unclassified candidates by pattern, identifies checks appearing in three or more repos as manifest candidates, and writes a lessons-learned document with proposed manifest entries as ready-to-paste YAML snippets.
@@ -1066,12 +1068,12 @@ For each pattern promoted to candidate status, include a ready-to-paste YAML blo
 ## High-Frequency Existing Checks
 
 <List checks from the manifest that failed in 50% or more of repos reviewed this session. These warrant prioritized remediation.>
-```markdown
+```
 
 ## Use Cases
 
 Invoked by the repo-compliance coordinator as the final step after all repos in a session have been audited. Runs in both interactive and scheduled modes.
-```
+````
 
 - [ ] **Step 2: Validate frontmatter**
 
@@ -1106,7 +1108,7 @@ Read `.claude/agents/devops-deployment-agent.md` in full before editing.
 
 Append the following section before the `## Use Cases` line:
 
-```markdown
+````markdown
 ## CI Compliance Audit Mode
 
 When invoked by the repo-compliance coordinator with audit or remediation mode context, this agent evaluates or remediates CI-* checks from the standards manifest.
@@ -1139,13 +1141,13 @@ jobs:
       python-versions: '["3.11", "3.12"]'
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-```text
+```
 
 **CI-005 (SHA pinning):** For each unpinned `uses:` reference, resolve the SHA by running:
 
 ```bash
 git ls-remote https://github.com/<owner>/<repo>.git refs/tags/<version> | cut -f1
-```html
+```
 
 Replace the tag ref with the 40-char SHA and add the version as a comment: `@<sha>  # v1.2.3`
 
@@ -1156,13 +1158,13 @@ Replace the tag ref with the 40-char SHA and add the version as a comment: `@<sh
   uses: step-security/harden-runner@<current-sha>  # v2.x.x
   with:
     egress-policy: audit
-```sql
+```
 
 **CI-007 (blocking security scan):** Remove `continue-on-error: true` from security workflow jobs using Edit.
 
 **CI-008 (copilot-instructions.md):** Create `.github/copilot-instructions.md` with:
 
-```markdown
+```text
 # GitHub Copilot Code Review Instructions
 
 Focus on: business logic correctness, error handling completeness, edge cases,
@@ -1170,12 +1172,12 @@ concurrency issues, and security logic flaws.
 
 Exclude from review: code style, formatting, and whitespace. These are enforced
 by pre-commit hooks and ruff -- do not flag them.
-```markdown
+```
 
 ### Output Format
 
 FINDING blocks in audit mode (include file path and line number in current_value). ACTION lines in remediation mode.
-```
+````
 
 - [ ] **Step 3: Validate frontmatter**
 
@@ -1299,7 +1301,7 @@ git commit -m "feat(compliance): add repo-compliance skill entry point"
 
 - [ ] **Step 1: Write the workflow file**
 
-```markdown
+````markdown
 # Interactive Mode Workflow
 
 Full audit-approve-remediate-PR flow for a single target repo.
@@ -1313,7 +1315,7 @@ Full audit-approve-remediate-PR flow for a single target repo.
 TARGET_REPO="${1:-$(pwd)}"
 cd "$TARGET_REPO"
 git status  # confirm it is a git repo
-```markdown
+```
 
 Read `~/.claude/docs/standards-manifest.yaml`.
 Read `$TARGET_REPO/.claude/compliance-overrides.md` if it exists; extract the Check ID column.
@@ -1340,7 +1342,7 @@ Collect all FINDING blocks. Filter out any finding whose ID is in the override l
 
 Present findings in this format:
 
-```
+```text
 COMPLIANCE AUDIT: <repo-name>
 Standards version: <manifest last_updated>
 Overrides applied: N
@@ -1359,7 +1361,7 @@ SUGGESTED (N findings)
 UNCLASSIFIED CANDIDATES (N items -- for retrospective review)
   [candidate] .editorconfig absent -- proposed domain: foundations, severity: suggested
   ...
-```markdown
+```
 
 ### 4. Approval Loop
 
@@ -1415,7 +1417,7 @@ Applied by the repo-compliance system against standards manifest v<version>.
 <list of skipped findings>
 EOF
 )"
-```markdown
+```
 
 ### 7. Retrospective
 
@@ -1423,7 +1425,7 @@ Dispatch `compliance-retrospective` with: session date, target repo path, all do
 
 After it writes the lessons-learned doc, print:
 "Retrospective written to docs/compliance-reports/lessons-learned/<date>.md -- review before the next scheduled run."
-```
+````
 
 - [ ] **Step 2: Commit**
 
@@ -1442,7 +1444,7 @@ git commit -m "feat(compliance): add interactive mode workflow"
 
 - [ ] **Step 1: Write scheduled-mode.md**
 
-```markdown
+````markdown
 # Scheduled Mode Workflow
 
 Report-only org-wide sweep. No approval loop and no remediation.
@@ -1467,7 +1469,7 @@ gh repo list ByronWilliamsCPA --limit 100 --json nameWithOwner,sshUrl \
   | jq -r '.[].sshUrl' >> /tmp/remote-repos.txt
 
 sort -u /tmp/local-repos.txt /tmp/remote-repos.txt > /tmp/all-repos.txt
-```markdown
+```
 
 Read `~/.claude/docs/compliance-exclusions.yaml`. For each exclusion entry, remove matching repos from the list.
 
@@ -1494,8 +1496,8 @@ Print: "Scheduled run complete. Reports written to ~/.claude/docs/compliance-rep
 ```bash
 rm -rf /tmp/compliance-<date>/
 rm -f /tmp/local-repos.txt /tmp/remote-repos.txt /tmp/all-repos.txt
-```text
 ```
+````
 
 - [ ] **Step 2: Write compliance-report.md template**
 

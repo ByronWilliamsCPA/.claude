@@ -254,7 +254,7 @@ When you complete a phase:
 
 **Load context for a task:**
 
-```sql
+```text
 Load context from project-vision.md sections 2-3 and adr/adr-001-*.md,
 then implement [feature] per tech-spec.md section [X].
 ```
@@ -268,7 +268,7 @@ Flag any violations.
 
 **Check phase progress:**
 
-```sql
+```text
 Review PROJECT-PLAN.md Phase 1 deliverables and update status.
 ```
 

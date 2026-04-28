@@ -17,7 +17,7 @@ How to effectively use planning documents during AI-assisted development.
 
 Load only relevant sections, not entire documents:
 
-```sql
+```text
 Load context from:
 - project-vision.md sections 2-3 (solution overview, scope)
 - adr/adr-001-database-choice.md (we're working on data layer)
@@ -39,7 +39,7 @@ Implement login endpoint.
 
 ### Resuming After Break
 
-```sql
+```text
 Resuming development after [X] days.
 
 Current state from roadmap.md:
@@ -79,7 +79,7 @@ Then implement to make tests pass.
 
 ### Component by Component
 
-```sql
+```text
 From tech-spec.md section 2 (Architecture):
 
 Implement [Component A] first:
@@ -107,7 +107,7 @@ Flag any violations or improvements.
 
 ### Architecture Compliance
 
-```sql
+```text
 This PR adds a caching layer.
 
 Check against:
@@ -138,7 +138,7 @@ Report any violations.
 
 ### After Completing a Task
 
-```sql
+```text
 Completed US-001 from roadmap.md Phase 1.
 
 Update roadmap.md:
@@ -151,7 +151,7 @@ Then proceed to US-002.
 
 ### After Making a Decision
 
-```sql
+```text
 Decided to use Redis for caching instead of in-memory.
 
 Create docs/planning/adr/adr-004-caching-strategy.md:
@@ -165,7 +165,7 @@ Update tech-spec.md section 1 (Technology Stack) to include Redis.
 
 ### After Scope Change
 
-```sql
+```text
 Stakeholder requested: Add export to CSV feature.
 
 Update documents:
@@ -189,7 +189,7 @@ Now implement feature X.
 ```
 
 **Good**:
-```sql
+```text
 From tech-spec.md section 4.2 and ADR-001,
 implement the database migration for User entity.
 ```
@@ -230,7 +230,7 @@ We changed the approach but the docs still say the old way.
 ```
 
 **Good**:
-```sql
+```text
 Implementation differs from tech-spec.md section 3.
 
 Either:
@@ -247,7 +247,7 @@ Create ADR if this is a significant architectural change.
 ### Prompt Templates
 
 **Implement Feature**:
-```sql
+```text
 Per [doc] section [X], implement [feature].
 Reference [ADR-XXX] for [specific decision].
 Success criteria from roadmap.md: [criteria].
@@ -262,7 +262,7 @@ Flag violations.
 ```
 
 **Update Documents**:
-```sql
+```text
 Completed [task/decision].
 Update:
 - [doc]: [what to change]
@@ -270,7 +270,7 @@ Update:
 ```
 
 **Start Session**:
-```sql
+```text
 Load from:
 - [doc] sections [X-Y]
 - [ADR-XXX]

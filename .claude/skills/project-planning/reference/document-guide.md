@@ -216,7 +216,7 @@ As mentioned elsewhere...
 
 ### Starting a New Session
 
-```sql
+```text
 Load context from:
 - PVS sections 2-3 (core features)
 - ADR-001, ADR-002 (key decisions)

@@ -225,7 +225,7 @@ def test_expired_discount_is_ignored():
 Good test names eliminate the need to read the test body when diagnosing
 failures. The pattern `test_<unit>_<scenario>_<expected>` works reliably:
 
-```sql
+```text
 test_login_with_valid_credentials_returns_token        ✓ clear
 test_login_with_expired_token_raises_auth_error        ✓ clear
 test_parse_date_with_invalid_format_raises_value_error ✓ clear
