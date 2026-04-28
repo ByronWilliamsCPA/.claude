@@ -46,6 +46,11 @@
   (tar/ZIP interpretation conflict in pip; CVE-2026-3219)
 * fix(ci): add `upload: never` to CodeQL analyze step in `codeql.yml`; SARIF upload
   requires GitHub Advanced Security which is not enabled on this private repo
+* fix(deps): upgrade GitPython 3.1.46 to 3.1.48 to resolve three high-severity advisories:
+  GHSA-x2qx-6953-8485 (unsafe multi_options before shlex.split, fixed in 3.1.47),
+  GHSA-rpm5-65cw-6hj4 (command injection via Git options bypass, fixed in 3.1.47),
+  GHSA-7545-fcxq-7j24 (path traversal in reference APIs, fixed in 3.1.48);
+  GitPython is a transitive dependency; only `uv.lock` changes
 
 ## v0.13.0 (2026-04-21)
 ### Documentation
