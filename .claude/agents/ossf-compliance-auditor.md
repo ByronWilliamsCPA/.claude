@@ -86,9 +86,11 @@ Check for: `required_pull_request_reviews.required_approving_review_count >= 1`,
 
 **Required blocking check contexts (CI-017):**
 ```bash
-CONTEXTS_RAW=$(gh api "repos/${REPO_SLUG}/branches/main/protection" --jq '.required_status_checks.contexts // []' 2>/tmp/gh_stderr_contexts)
+GH_STDERR_FILE=$(mktemp)
+trap 'rm -f "$GH_STDERR_FILE"' EXIT
+CONTEXTS_RAW=$(gh api "repos/${REPO_SLUG}/branches/main/protection" --jq '.required_status_checks.contexts // []' 2>"$GH_STDERR_FILE")
 CONTEXTS_STATUS=$?
-GH_STDERR=$(cat /tmp/gh_stderr_contexts)
+GH_STDERR=$(cat "$GH_STDERR_FILE")
 ```
 If `CONTEXTS_STATUS` is non-zero (API failure, auth error, network error, or 404), emit a note: "CI-017 check could not run: `gh api` exited ${CONTEXTS_STATUS}; stderr: ${GH_STDERR}" and skip the context comparison. Do not emit a false CI-017 FINDING from a failed API call.
 
