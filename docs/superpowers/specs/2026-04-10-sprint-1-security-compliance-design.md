@@ -22,7 +22,7 @@ closing gaps identified in the 2026-04-09 cross-project CLAUDE.md audit. All ite
 in 3+ project CLAUDE.md files but were absent from the global standard.
 
 **Approach**: Documentation-only for three items; one tooling change (pip-audit hook). No
-enforcement hook for SHA pinning — CodeRabbit's existing `.github/workflows/**` path
+enforcement hook for SHA pinning - CodeRabbit's existing `.github/workflows/**` path
 instructions provide the review-time gate.
 
 ---
@@ -36,7 +36,7 @@ vulnerable dependencies without triggering a scan.
 **Solution**: Add a local hook to `.pre-commit-config.yaml` at the `pre-push` stage,
 scoped to trigger only when dependency files change.
 
-**Hook definition** — add after the Bandit section, before Conventional Commits:
+**Hook definition** - add after the Bandit section, before Conventional Commits:
 
 ```yaml
 # ============================================================================
@@ -55,25 +55,25 @@ scoped to trigger only when dependency files change.
       files: ^(pyproject\.toml|requirements.*\.txt|uv\.lock)$
 ```
 
-**CI skip list** — add `pip-audit` to the existing `ci: skip:` line:
+**CI skip list** - add `pip-audit` to the existing `ci: skip:` line:
 
 ```yaml
 skip: [validate-front-matter, qlty-check, qlty-full, trufflehog, darglint, bandit, bandit-full, pip-audit]
 ```
 
-**`rules/pre-commit.md` Security section** — replace the current pip-audit manual step.
+**`rules/pre-commit.md` Security section** - replace the current pip-audit manual step.
 
 Before:
 
 ```text
-- [ ] **Security Scanning**: No known vulnerabilities — medium+ severity blocks commit (`uv run pip-audit`; exit code 64 = advisory found)
+- [ ] **Security Scanning**: No known vulnerabilities - medium+ severity blocks commit (`uv run pip-audit`; exit code 64 = advisory found)
 ```
 
 After:
 
 ```text
 - [ ] **Security Scanning**: pip-audit runs automatically on pre-push when dependency files
-      change (pyproject.toml, requirements*.txt, uv.lock). Exit code 64 = advisory found —
+      change (pyproject.toml, requirements*.txt, uv.lock). Exit code 64 = advisory found -
       medium+ severity blocks push. For manual audit: `uv run pip-audit`
 ```
 
@@ -86,7 +86,7 @@ but the global `rules/python.md` has no mention of prohibited algorithms, approv
 or the `usedforsecurity=False` pattern.
 
 **Solution**: Add a new section to `rules/python.md` after "Type Checking with BasedPyright"
-and before "PyStrict-Aligned Ruff Rules". No frontmatter change needed — the existing `paths:`
+and before "PyStrict-Aligned Ruff Rules". No frontmatter change needed - the existing `paths:`
 filter (`**/*.py`, `pyproject.toml`) correctly scopes this to Python contexts.
 
 **Section content to add:**
@@ -121,7 +121,7 @@ Projects can reference actions by mutable version tags, which are vulnerable to 
 attacks via tag mutation.
 
 **Solution**: Add a new section to `rules/git-workflow.md` after the Gate System section and
-before Git Worktrees. Guidance-only — CodeRabbit's existing `.github/workflows/**` path
+before Git Worktrees. Guidance-only - CodeRabbit's existing `.github/workflows/**` path
 instructions provide review-time enforcement.
 
 **Section content to add:**
@@ -134,10 +134,10 @@ author after the fact, enabling supply chain attacks via tag mutation.
 
 Always pin to the full commit SHA:
 
-    # Bad — tag is mutable, can be rewritten after you reference it
+    # Bad - tag is mutable, can be rewritten after you reference it
     - uses: actions/checkout@v4
 
-    # Good — SHA is immutable
+    # Good - SHA is immutable
     - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
 
 To find the SHA: navigate to the action's releases page on GitHub, click the commit link for
@@ -163,7 +163,7 @@ projects, and add a policy reference to `CLAUDE.md`.
 Projects create their own `docs/known-vulnerabilities.md` by copying from this template; the
 template itself lives in the global `.claude` repo.
 
-**`docs/known-vulnerabilities-template.md`** — must include valid frontmatter to pass the
+**`docs/known-vulnerabilities-template.md`** - must include valid frontmatter to pass the
 `validate-front-matter` pre-commit hook (which scans all `docs/**/*.md` files):
 
 ```markdown
@@ -181,9 +181,9 @@ tags:
 # Known Vulnerabilities
 
 > Tracks CVEs that cannot be immediately resolved. Review quarterly.
-> No entry may age past 90 days without reassessment — escalate or resolve.
+> No entry may age past 90 days without reassessment - escalate or resolve.
 
-## CVE-YYYY-XXXXX — Package Name vX.Y
+## CVE-YYYY-XXXXX - Package Name vX.Y
 
 | Field | Value |
 | --- | --- |
@@ -196,14 +196,14 @@ tags:
 
 **Exploitation scenario**: Describe what an attacker needs to exploit this in your context.
 
-**Why deferred**: Specific reason — upstream unpatched, breaking API change required, etc.
+**Why deferred**: Specific reason - upstream unpatched, breaking API change required, etc.
 
 **Compensating control**: What reduces the risk while the CVE remains open.
 
 **Planned resolution**: Target version, migration path, or timeline.
 ```
 
-**`CLAUDE.md` addition** — after the last blockquote in Core Development Standards
+**`CLAUDE.md` addition** - after the last blockquote in Core Development Standards
 (after `> **Writing quality thresholds...`):
 
 ```markdown
@@ -235,7 +235,7 @@ tags:
 2. **pip-audit hook skips**: Run the hook against a commit with only `.py` changes,
    confirm it does not run
 3. **CI skip**: Confirm `pip-audit` appears in the `ci: skip:` list
-4. **FIPS content visible**: Open a `.py` file — `rules/python.md` is context-injected,
+4. **FIPS content visible**: Open a `.py` file - `rules/python.md` is context-injected,
    making FIPS rules visible to Claude
 5. **SHA pinning section**: Confirm section appears in `git-workflow.md` between Gate System
    and Git Worktrees

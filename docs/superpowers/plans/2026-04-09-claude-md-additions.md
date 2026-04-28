@@ -16,7 +16,7 @@ tags:
 
 **Goal:** Add three inline sentences to the global CLAUDE.md that encode recurring session corrections as permanent behavioral rules.
 
-**Architecture:** Three text edits to a single file. No new files. No scripts. No hooks. The source file is `/home/byron/dev/.claude/CLAUDE.md`, symlinked to `~/.claude/CLAUDE.md` — editing the source is sufficient.
+**Architecture:** Three text edits to a single file. No new files. No scripts. No hooks. The source file is `/home/byron/dev/.claude/CLAUDE.md`, symlinked to `~/.claude/CLAUDE.md` - editing the source is sufficient.
 
 **Tech Stack:** Markdown (text edit only)
 
@@ -70,7 +70,7 @@ Expected: both paragraphs present, blank line between them, no truncation.
 
 - [ ] **Step 4: Verify the exact anchor text for the Code Quality addition**
 
-Read lines 13-20 of `/home/byron/dev/.claude/CLAUDE.md` (line numbers will have shifted by the lines added in Step 2 — read by content, not line number).
+Read lines 13-20 of `/home/byron/dev/.claude/CLAUDE.md` (line numbers will have shifted by the lines added in Step 2 - read by content, not line number).
 
 Expected content:
 

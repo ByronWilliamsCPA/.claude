@@ -155,14 +155,14 @@ review tools: CodeRabbit (automatic), GitHub Copilot (manual, configured), and
 **Current Layer 2 text** (to be replaced):
 
 ```text
-**Layer 2 — PR gates (run manually after PR creation):**
+**Layer 2 - PR gates (run manually after PR creation):**
 - `/code-review`: runs 5 parallel agents (CLAUDE.md compliance x2, bug scan, git-history context, comment compliance), scores each issue 0-100, and posts only issues ≥80 confidence as a PR comment.
 ```
 
 **Replacement text:**
 
 ```text
-**Layer 2 — PR gates (automatic and manual, after PR creation):**
+**Layer 2 - PR gates (automatic and manual, after PR creation):**
 - `CodeRabbit`: fires automatically on every PR targeting `main`, `master`, or `develop`.
   Profile: assertive. Provides high-level summary, file-by-file walkthrough, inline
   comments, and suggested labels. Runs ruff, gitleaks, markdownlint, and yamllint as

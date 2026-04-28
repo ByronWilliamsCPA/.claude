@@ -1,0 +1,66 @@
+@startuml compliance_pipeline
+' Compliance Pipeline - backs docs/superpowers/specs/2026-04-20-repo-compliance-design.md.
+' Activity diagram of the full /repo-audit coordinator flow: parallel domain agents,
+' override suppression, interactive vs. scheduled branching, and retrospective.
+' Last verified: 2026-04-23 against .claude/skills/repo-compliance/ and agent files.
+
+title Repo Compliance Pipeline
+
+skinparam activityDiamondBackgroundColor #fefefe
+skinparam shadowing false
+skinparam defaultFontName Roboto
+
+start
+
+:User invokes /repo-audit [path] [--scheduled];
+
+:Coordinator loads\nstandards-manifest.yaml\ncompliance-overrides.md\ncompliance-exclusions.yaml;
+
+note right
+  Exclusions list repos skipped
+  entirely in scheduled sweeps.
+  Overrides suppress approved
+  exceptions per check ID.
+end note
+
+fork
+  :repo-foundations-auditor\n- - - - - - - - - - - - - -\nFOUND-001..011\nFile presence, .gitignore,\npyproject.toml metadata;
+fork again
+  :python-toolchain-auditor\n- - - - - - - - - - - - - -\nTOOL-001..012\nDev deps, Ruff rule set,\nBasedPyright config, qlty;
+fork again
+  :pre-commit-auditor\n- - - - - - - - - - - - - -\nPC-001..010\nHook inventory, SHA pins,\nno-em-dash hook;
+fork again
+  :ossf-compliance-auditor\n- - - - - - - - - - - - - -\nOSSF-001..005\nSCORECARD checks\nCI-017 branch protection\nLive Scorecard + Badge APIs;
+fork again
+  :claude-docs-auditor\n- - - - - - - - - - - - - -\nCLAUDE-001..007\nCLAUDE.md sections,\nRAD cross-references,\nem-dash scan (delegates\nto writing-style-editor);
+fork again
+  :ci-compliance\n- - - - - - - - - - - - - -\nCI-001..017\nWorkflow inventory,\ngate jobs, SHA pins,\nbranch protection contexts;
+fork again
+  :general-compliance-auditor\n- - - - - - - - - - - - - -\nunclassified candidates\nReceives covered check IDs\nas negative filter; audits\ngaps domain agents cannot see;
+end fork
+
+:Merge all FINDING blocks\nApply override suppression\nSort: critical -> important -> suggested -> unclassified;
+
+if (--scheduled mode?) then (yes)
+  :Write per-repo compliance report\ndocs/compliance-reports/<repo>.md;
+  :Emit summary to session output;
+  note right
+    Scheduled sweeps produce
+    report-only output.
+    No code changes are made.
+  end note
+else (no, interactive)
+  :Present findings to user\n(grouped by severity);
+  repeat
+    :User selects findings\nto remediate or dismiss;
+    :Domain agents execute\napproved fixes in-repo;
+  repeat while (findings remain?) is (yes)
+  ->no;
+  :Commit changes and\nopen pull request;
+endif
+
+:compliance-retrospective\n- - - - - - - - - - - - - -\nPattern detection across session findings\nGroup unclassified candidates by pattern\nFlag checks appearing in 3+ repos\nWrite lessons-learned doc\nPropose manifest entries as YAML snippets;
+
+stop
+
+@enduml

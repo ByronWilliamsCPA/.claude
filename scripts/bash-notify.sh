@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Bash Notify — PostToolUse Hook
+# Bash Notify - PostToolUse Hook
 # =============================================================================
 # Reads the timing start timestamp written by bash-pre-hook.sh, computes the
 # duration of the completed Bash command, and fires a Windows balloon
 # notification via powershell.exe if the duration exceeds the threshold.
 #
-# Always exits 0 (advisory — never blocks Claude Code).
+# Always exits 0 (advisory - never blocks Claude Code).
 #
 # Expected stdin: JSON payload from Claude Code PostToolUse hook:
 #   {"tool_name":"Bash","tool_input":{"command":"..."},"tool_response":{...}}
@@ -52,7 +52,7 @@ DURATION=$(( NOW - START ))
 # Reject implausible durations (stale file from crashed session, clock skew)
 MAX_SANE_DURATION=3600
 if [[ $DURATION -lt 0 ]] || [[ $DURATION -gt $MAX_SANE_DURATION ]]; then
-    log "WARN: implausible duration ${DURATION}s (START=${START}, NOW=${NOW}) — stale file discarded"
+    log "WARN: implausible duration ${DURATION}s (START=${START}, NOW=${NOW}) - stale file discarded"
     exit 0
 fi
 
@@ -61,7 +61,7 @@ if [[ $DURATION -le $NOTIFY_THRESHOLD_SECONDS ]]; then
 fi
 
 # ---------------------------------------------------------------------------
-# Duration exceeded threshold — build notification message
+# Duration exceeded threshold - build notification message
 # ---------------------------------------------------------------------------
 
 # Try to extract command from stdin JSON (optional)
@@ -97,7 +97,7 @@ PS_CMD="Add-Type -AssemblyName System.Windows.Forms; \$n = New-Object System.Win
 if command -v powershell.exe &>/dev/null; then
     powershell.exe -NonInteractive -command "$PS_CMD" &>/dev/null & disown 2>/dev/null || true
 else
-    log "WARN: powershell.exe not found — balloon notification skipped"
+    log "WARN: powershell.exe not found - balloon notification skipped"
 fi
 
 # ---------------------------------------------------------------------------

@@ -25,7 +25,7 @@
   "packageRules": [
     {
       "description": "Group Python dependencies by type",
-      "matchManagers": ["poetry"],
+      "matchManagers": ["uv"],
       "matchDepTypes": ["dependencies"],
       "groupName": "Python dependencies",
       "automerge": false,
@@ -33,7 +33,7 @@
     },
     {
       "description": "Group Python dev dependencies",
-      "matchManagers": ["poetry"],
+      "matchManagers": ["uv"],
       "matchDepTypes": ["devDependencies"],
       "groupName": "Python dev dependencies",
       "automerge": false,
@@ -98,9 +98,9 @@
   "python": {
     "enabled": true
   },
-  "poetry": {
+  "uv": {
     "enabled": true,
-    "fileMatch": ["(^|/)pyproject\\.toml$"]
+    "fileMatch": ["(^|/)pyproject\\.toml$", "(^|/)uv\\.lock$"]
   },
   "lockFileMaintenance": {
     "enabled": true,
@@ -125,9 +125,7 @@
   },
   "osvVulnerabilityAlerts": true,
   "transitiveRemediation": true,
-  "postUpdateOptions": [
-    "poetryMassage"
-  ],
+  "postUpdateOptions": [],
   "customManagers": [
     {
       "customType": "regex",
@@ -138,7 +136,7 @@
     }
   ],
   "enabledManagers": [
-    "poetry",
+    "uv",
     "github-actions"
   ]
 }

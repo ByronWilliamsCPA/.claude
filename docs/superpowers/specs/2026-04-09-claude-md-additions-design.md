@@ -1,6 +1,6 @@
 ---
 schema_type: common
-title: "CLAUDE.md Global Standards Additions — Three Behavioral Rules"
+title: "CLAUDE.md Global Standards Additions - Three Behavioral Rules"
 status: draft
 owner: core-maintainer
 purpose: "Design spec for three targeted additions to the global CLAUDE.md that encode recurring session corrections into permanent behavioral rules: environment debugging order, no-workaround generalization, and project docs over memory."
@@ -27,13 +27,13 @@ Three patterns appeared repeatedly across 110 sessions in the March–April 2026
 ## Goals
 
 - Encode all three corrections into CLAUDE.md so they apply automatically in every session
-- Keep additions minimal — one to three sentences each, inline in the relevant section
+- Keep additions minimal - one to three sentences each, inline in the relevant section
 - Preserve the document's scan-friendly structure (short sections, no new headings)
 
 ## Non-Goals
 
-- No new CLAUDE.md sections — all additions are inline in existing sections
-- No changes to project-level CLAUDE.md files — this is global scope only
+- No new CLAUDE.md sections - all additions are inline in existing sections
+- No changes to project-level CLAUDE.md files - this is global scope only
 - No changes to rule files (git-workflow.md, pre-commit.md, etc.)
 
 ## Design
@@ -44,7 +44,7 @@ Append one to three sentences to each of three existing sections. No structural 
 
 ---
 
-### Addition 1 — `## Project Context`
+### Addition 1 - `## Project Context`
 
 **Location**: Append after "Do not search memory or make assumptions about organizational priorities."
 
@@ -56,7 +56,7 @@ Append one to three sentences to each of three existing sections. No structural 
 
 ---
 
-### Addition 2 — `## Code Quality`
+### Addition 2 - `## Code Quality`
 
 **Location**: Append after "Only exclude files if explicitly approved by the user."
 
@@ -68,7 +68,7 @@ Append one to three sentences to each of three existing sections. No structural 
 
 ---
 
-### Addition 3 — `## System / Shell`
+### Addition 3 - `## System / Shell`
 
 **Location**: Append after "When commands fail due to permissions (e.g., mkdir, mount), try with sudo immediately."
 
@@ -76,7 +76,7 @@ Append one to three sentences to each of three existing sections. No structural 
 
 > When a connection error, socket failure, or service-unreachable symptom appears, check platform-level causes first: WSL2 port forwarding rules, Docker bridge networking, Unix socket paths, and container health. Do not exhaust code-level fixes before ruling out the environment.
 
-**Trigger**: Narrow — applies only to connection errors, socket/IPC failures, and service-unreachable symptoms. Does not apply to pure logic bugs, test failures, or import errors.
+**Trigger**: Narrow - applies only to connection errors, socket/IPC failures, and service-unreachable symptoms. Does not apply to pure logic bugs, test failures, or import errors.
 
 ---
 
