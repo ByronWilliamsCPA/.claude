@@ -44,6 +44,7 @@ Follow the appropriate workflow file for the selected mode. Both modes share the
 | claude_docs | `claude-docs-auditor` | CLAUDE-* |
 | ossf | `ossf-compliance-auditor` | OSSF-* + live Scorecard/Badge API results |
 | general | `general-compliance-auditor` | unclassified |
+| mkdocs | `mkdocs-auditor` | MKDOCS-* (skipped when mkdocs.yml absent) |
 
 ## Coordinator Prompt Template
 
