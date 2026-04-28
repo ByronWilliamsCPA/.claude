@@ -166,8 +166,8 @@ Evaluates a repository against OpenSSF Best Practices Badge criteria (passing, s
 produces a criterion-by-criterion assessment for form submission. For each criterion it inspects the
 local repo, returns the recommended radio button selection (Met/Unmet/N/A/?) with confidence level,
 generates ready-to-paste justification text, lists supporting evidence, and flags required actions.
-Generates a bulk-fill automation URL so all Met/N/A answers can be pre-loaded into the submission
-form in one click. Use before filling out or updating a Best Practices Badge submission.
+Generates three automation URLs (passing/silver/gold) so all Met/N/A answers for each badge level
+can be pre-loaded into the submission form in one click. Use before filling out or updating a Best Practices Badge submission.
 
 **[general-compliance-auditor](/.claude/agents/general-compliance-auditor.md)**
 Freeform compliance auditor for gaps outside the standards manifest. Receives covered check IDs as

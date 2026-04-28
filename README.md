@@ -82,25 +82,13 @@ pipx install uv
 ```bash
 # Clone repository
 git clone https://github.com/ByronWilliamsCPA/.claude.git
-cd claude_config
+cd .claude
 
 # Install dependencies (includes dev tools - REQUIRED for development)
 uv sync --all-extras
 
 # Setup pre-commit hooks (required)
 uv run pre-commit install
-```
-
-### Basic Usage
-
-```python
-# Import and use the package
-from claude_config import YourModule
-
-# Example: Create an instance and use it
-module = YourModule()
-result = module.process()
-print(result)
 ```
 
 ## Google Assured OSS Integration
@@ -463,7 +451,7 @@ qlty check --plugin osv_scanner
 ## Project Structure
 
 ```text
-claude_config/
+.claude/
 ├── src/claude_config/     # Main package
 │   ├── __init__.py
 │   ├── core.py                           # Core functionality

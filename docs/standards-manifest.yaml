@@ -94,7 +94,7 @@ checks:
     severity: important
     description: "CODE_OF_CONDUCT.md present at project root or satisfied by org-level ByronWilliamsCPA/.github/CODE_OF_CONDUCT.md (OpenSSF Silver: code_of_conduct)"
     verify: "file_exists: CODE_OF_CONDUCT.md OR org_community_health: CODE_OF_CONDUCT.md"
-    source_template: "/home/byron/dev/.github/CODE_OF_CONDUCT.md"
+    source_template: "/home/byron/dev/.github/CODE_OF_CONDUCT.md"  # machine-specific; adjust to your local .github checkout path
     override_eligible: true
 
   - id: FOUND-013
@@ -102,7 +102,7 @@ checks:
     severity: important
     description: "GOVERNANCE.md present at project root or satisfied by org-level ByronWilliamsCPA/.github/GOVERNANCE.md (OpenSSF Silver: governance + roles_responsibilities)"
     verify: "file_exists: GOVERNANCE.md OR org_community_health: GOVERNANCE.md"
-    source_template: "/home/byron/dev/.github/GOVERNANCE.md"
+    source_template: "/home/byron/dev/.github/GOVERNANCE.md"  # machine-specific; adjust to your local .github checkout path
     override_eligible: true
 
   - id: FOUND-014
