@@ -1,18 +1,17 @@
 # Claude Code Configuration
 
 ## Quality & Security
-[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/ByronWilliamsCPA/claude_config/badge)](https://securityscorecards.dev/viewer/?uri=github.com/ByronWilliamsCPA/claude_config)
-<!-- TODO: OpenSSF Best Practices badge pending. Apply at https://bestpractices.coreinfrastructure.org/en/projects/new then replace this comment with the badge. -->
-[![REUSE Compliance](https://github.com/ByronWilliamsCPA/claude_config/actions/workflows/reuse.yml/badge.svg)](https://github.com/ByronWilliamsCPA/claude_config/actions/workflows/reuse.yml)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/ByronWilliamsCPA/.claude/badge)](https://securityscorecards.dev/viewer/?uri=github.com/ByronWilliamsCPA/.claude)
+[![OpenSSF Best Practices](https://bestpractices.coreinfrastructure.org/projects/12684/badge)](https://bestpractices.coreinfrastructure.org/projects/12684)
+[![REUSE Compliance](https://github.com/ByronWilliamsCPA/.claude/actions/workflows/reuse.yml/badge.svg)](https://github.com/ByronWilliamsCPA/.claude/actions/workflows/reuse.yml)
 
 ## CI/CD Status
-[![CI Pipeline](https://github.com/ByronWilliamsCPA/claude_config/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/ByronWilliamsCPA/claude_config/actions/workflows/ci.yml?query=branch%3Amain)
-[![Security Analysis](https://github.com/ByronWilliamsCPA/claude_config/actions/workflows/security-analysis.yml/badge.svg?branch=main)](https://github.com/ByronWilliamsCPA/claude_config/actions/workflows/security-analysis.yml?query=branch%3Amain)
-[![Documentation](https://github.com/ByronWilliamsCPA/claude_config/actions/workflows/docs.yml/badge.svg?branch=main)](https://github.com/ByronWilliamsCPA/claude_config/actions/workflows/docs.yml?query=branch%3Amain)
-[![SBOM & Security Scan](https://github.com/ByronWilliamsCPA/claude_config/actions/workflows/sbom.yml/badge.svg?branch=main)](https://github.com/ByronWilliamsCPA/claude_config/actions/workflows/sbom.yml?query=branch%3Amain)
-[![PR Validation](https://github.com/ByronWilliamsCPA/claude_config/actions/workflows/pr-validation.yml/badge.svg)](https://github.com/ByronWilliamsCPA/claude_config/actions/workflows/pr-validation.yml)
-[![Release](https://github.com/ByronWilliamsCPA/claude_config/actions/workflows/release.yml/badge.svg)](https://github.com/ByronWilliamsCPA/claude_config/actions/workflows/release.yml)
-[![PyPI Publish](https://github.com/ByronWilliamsCPA/claude_config/actions/workflows/publish-pypi.yml/badge.svg)](https://github.com/ByronWilliamsCPA/claude_config/actions/workflows/publish-pypi.yml)
+[![CI Pipeline](https://github.com/ByronWilliamsCPA/.claude/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/ByronWilliamsCPA/.claude/actions/workflows/ci.yml?query=branch%3Amain)
+[![Security Analysis](https://github.com/ByronWilliamsCPA/.claude/actions/workflows/security-analysis.yml/badge.svg?branch=main)](https://github.com/ByronWilliamsCPA/.claude/actions/workflows/security-analysis.yml?query=branch%3Amain)
+[![Documentation](https://github.com/ByronWilliamsCPA/.claude/actions/workflows/docs.yml/badge.svg?branch=main)](https://github.com/ByronWilliamsCPA/.claude/actions/workflows/docs.yml?query=branch%3Amain)
+[![SBOM & Security Scan](https://github.com/ByronWilliamsCPA/.claude/actions/workflows/sbom.yml/badge.svg?branch=main)](https://github.com/ByronWilliamsCPA/.claude/actions/workflows/sbom.yml?query=branch%3Amain)
+[![PR Validation](https://github.com/ByronWilliamsCPA/.claude/actions/workflows/pr-validation.yml/badge.svg)](https://github.com/ByronWilliamsCPA/.claude/actions/workflows/pr-validation.yml)
+[![Release](https://github.com/ByronWilliamsCPA/.claude/actions/workflows/release.yml/badge.svg)](https://github.com/ByronWilliamsCPA/.claude/actions/workflows/release.yml)
 
 ## Project Info
 
