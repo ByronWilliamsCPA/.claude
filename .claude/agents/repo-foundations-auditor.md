@@ -1,6 +1,6 @@
 ---
 name: repo-foundations-auditor
-description: Repository foundations compliance auditor and remediator. Checks OpenSSF required files (SECURITY.md, CONTRIBUTING.md, CHANGELOG.md), CODEOWNERS, .gitignore entries, pyproject.toml metadata, and docs structure against FOUND-* checks in the standards manifest. In audit mode returns a findings list. In remediation mode creates or patches files.
+description: Repository foundations compliance auditor and remediator. Checks OpenSSF required files (SECURITY.md, CONTRIBUTING.md, CHANGELOG.md, CODE_OF_CONDUCT.md, GOVERNANCE.md), CODEOWNERS, .gitignore entries, pyproject.toml metadata, architecture docs presence, and docs structure against FOUND-* checks in the standards manifest. Org-level community health files in ByronWilliamsCPA/.github satisfy per-repo requirements. In audit mode returns a findings list. In remediation mode creates or patches files.
 model: sonnet
 tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
 ---
