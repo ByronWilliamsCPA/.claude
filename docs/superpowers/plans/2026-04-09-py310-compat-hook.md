@@ -26,7 +26,7 @@ tags:
 
 | File | Action | Responsibility |
 | ---- | ------ | -------------- |
-| `dev/.claude/scripts/py310-compat-check.sh` | Create | Hook script — grep + AST scan, structured output |
+| `dev/.claude/scripts/py310-compat-check.sh` | Create | Hook script - grep + AST scan, structured output |
 | `~/.claude/settings.json` | Modify | Wire PostToolUse hook on Edit\|Write matcher |
 
 Note: `~/.claude/scripts/` is a symlink to `dev/.claude/scripts/`, so writing the script to
@@ -37,7 +37,7 @@ Note: `~/.claude/scripts/` is a symlink to `dev/.claude/scripts/`, so writing th
 ### Task 1: Write the test harness
 
 **Files:**
-- Create: `/tmp/py310_hook_tests.sh` (temporary — not committed)
+- Create: `/tmp/py310_hook_tests.sh` (temporary - not committed)
 
 Verify the script contract before writing the implementation. This test harness pipes
 mock PostToolUse JSON payloads to the script and checks stdout.
@@ -77,7 +77,7 @@ hook_json() {
     echo "{\"tool_name\":\"Edit\",\"tool_input\":{\"file_path\":\"${filepath}\"}}"
 }
 
-# Test 1: floor violation — datetime.UTC
+# Test 1: floor violation - datetime.UTC
 cat > /tmp/t1_floor.py << 'EOF'
 from datetime import datetime, UTC
 result = datetime.now(UTC)
@@ -85,7 +85,7 @@ EOF
 out=$(hook_json /tmp/t1_floor.py | bash "$SCRIPT" 2>/dev/null)
 check "floor violation (datetime.UTC)" "found" "$out"
 
-# Test 2: ceiling violation — datetime.datetime.utcnow() (fully-qualified form)
+# Test 2: ceiling violation - datetime.datetime.utcnow() (fully-qualified form)
 # The pattern matches both datetime.utcnow() and datetime.datetime.utcnow() as a substring.
 cat > /tmp/t2_ceiling.py << 'EOF'
 import datetime
@@ -109,8 +109,8 @@ EOF
 out=$(hook_json /tmp/t4_readme.md | bash "$SCRIPT" 2>/dev/null)
 check "non-Python file (no output)" "silent" "$out"
 
-# Test 5: AST pattern — except* (exception groups, Python 3.11+)
-# Note: match/case is NOT flagged — it is valid Python 3.10+ syntax and the project
+# Test 5: AST pattern - except* (exception groups, Python 3.11+)
+# Note: match/case is NOT flagged - it is valid Python 3.10+ syntax and the project
 # floor is 3.10. Only except* (TryStar) is flagged by the AST tier.
 cat > /tmp/t5_except_star.py << 'EOF'
 async def handle():
@@ -130,7 +130,7 @@ chmod +x /tmp/py310_hook_tests.sh
 echo "Test harness written to /tmp/py310_hook_tests.sh"
 ```
 
-- [ ] **Step 2: Run the tests — confirm they all fail**
+- [ ] **Step 2: Run the tests - confirm they all fail**
 
 ```bash
 bash /tmp/py310_hook_tests.sh
@@ -152,18 +152,18 @@ or `FAIL` on all five tests. This confirms the tests are exercising the real scr
 cat > /home/byron/dev/.claude/scripts/py310-compat-check.sh << 'SCRIPT'
 #!/usr/bin/env bash
 # =============================================================================
-# Python Version Compatibility Check — PostToolUse Hook
+# Python Version Compatibility Check - PostToolUse Hook
 # =============================================================================
 # Fires after Edit or Write tool calls. Scans modified .py files for patterns
 # that violate Python 3.10 floor or 3.14 ceiling compatibility boundaries.
 #
-# Tier 1: grep scan — floor (3.11+ APIs/imports) and ceiling (3.14 removed)
-# Tier 2: Python AST scan — syntactic patterns (match/case, except*)
+# Tier 1: grep scan - floor (3.11+ APIs/imports) and ceiling (3.14 removed)
+# Tier 2: Python AST scan - syntactic patterns (match/case, except*)
 #
 # Both tiers always run. Output goes to stdout (Claude reads it). Findings
 # also appended to ~/.claude/logs/py310-compat-check.log.
 #
-# Exit codes: always 0 — PostToolUse hooks must never fail
+# Exit codes: always 0 - PostToolUse hooks must never fail
 # =============================================================================
 
 set -euo pipefail
@@ -177,7 +177,7 @@ log() {
 
 # ---- jq guard ----------------------------------------------------------------
 if ! command -v jq &>/dev/null; then
-    log "WARN jq not found — py310 compat check skipped"
+    log "WARN jq not found - py310 compat check skipped"
     exit 0
 fi
 
@@ -196,7 +196,7 @@ FILE_PATH=$(jq -r '.tool_input.file_path // empty' 2>/dev/null <<< "$CONTEXT")
 [[ ! -f "$FILE_PATH" ]] && exit 0
 
 # ============================================================
-# TIER 1: grep scan — API/import patterns
+# TIER 1: grep scan - API/import patterns
 # ============================================================
 FINDINGS=()
 
@@ -217,56 +217,56 @@ run_grep() {
     done < <(grep -nP "$pattern" "$FILE_PATH" 2>/dev/null || true)
 }
 
-# Floor — Python 3.11+ required, breaks 3.10 floor
+# Floor - Python 3.11+ required, breaks 3.10 floor
 run_grep "[FLOOR 3.11+]" \
     'datetime\.UTC' \
-    "\`datetime.UTC\` — requires Python 3.11+" \
+    "\`datetime.UTC\` - requires Python 3.11+" \
     "use \`datetime.timezone.utc\` or a compat layer"
 
 run_grep "[FLOOR 3.11+]" \
     '^(import tomllib|from tomllib\b)' \
-    "\`tomllib\` — stdlib module requires Python 3.11+" \
+    "\`tomllib\` - stdlib module requires Python 3.11+" \
     "use \`import tomli as tomllib\` inside try/except ImportError"
 
 run_grep "[FLOOR 3.11+]" \
     '\b(ExceptionGroup|BaseExceptionGroup)\b' \
-    "\`ExceptionGroup\` / \`BaseExceptionGroup\` — requires Python 3.11+" \
+    "\`ExceptionGroup\` / \`BaseExceptionGroup\` - requires Python 3.11+" \
     "install and use the \`exceptiongroup\` backport package"
 
 run_grep "[FLOOR 3.11+]" \
     'from typing import[^#\n]*\bSelf\b' \
-    "\`Self\` from \`typing\` — requires Python 3.11+" \
+    "\`Self\` from \`typing\` - requires Python 3.11+" \
     "use \`from typing_extensions import Self\`"
 
 run_grep "[FLOOR 3.11+]" \
     'from typing import[^#\n]*\bLiteralString\b' \
-    "\`LiteralString\` from \`typing\` — requires Python 3.11+" \
+    "\`LiteralString\` from \`typing\` - requires Python 3.11+" \
     "use \`from typing_extensions import LiteralString\`"
 
 run_grep "[FLOOR 3.11+]" \
     "fromisoformat\(.*Z['\"]" \
-    "\`fromisoformat\` with Z suffix — Z parsing requires Python 3.11+ (best-effort)" \
+    "\`fromisoformat\` with Z suffix - Z parsing requires Python 3.11+ (best-effort)" \
     "normalize first: replace trailing Z with +00:00 before calling fromisoformat"
 
-# Ceiling — deprecated 3.12, removed 3.14
+# Ceiling - deprecated 3.12, removed 3.14
 run_grep "[CEILING 3.14]" \
     'datetime\.utcnow\(\)' \
-    "\`datetime.utcnow()\` — deprecated in 3.12, removed in 3.14" \
+    "\`datetime.utcnow()\` - deprecated in 3.12, removed in 3.14" \
     "use \`datetime.datetime.now(datetime.timezone.utc)\`"
 
 run_grep "[CEILING 3.14]" \
     'datetime\.utcfromtimestamp\(' \
-    "\`datetime.utcfromtimestamp()\` — deprecated in 3.12, removed in 3.14" \
+    "\`datetime.utcfromtimestamp()\` - deprecated in 3.12, removed in 3.14" \
     "use \`datetime.datetime.fromtimestamp(ts, datetime.timezone.utc)\`"
 
 # ============================================================
-# TIER 2: Python AST scan — syntactic patterns
+# TIER 2: Python AST scan - syntactic patterns
 # ============================================================
 AST_SKIP_REASON=""
 
 if ! command -v python3 &>/dev/null; then
     AST_SKIP_REASON="python3 not in PATH"
-    log "WARN python3 not found — AST scan skipped for ${FILE_PATH}"
+    log "WARN python3 not found - AST scan skipped for ${FILE_PATH}"
 else
     AST_OUTPUT=$(python3 - "$FILE_PATH" 2>/dev/null <<'PYEOF'
 import ast, sys
@@ -282,10 +282,10 @@ except Exception:
     sys.exit(0)
 
 for node in ast.walk(tree):
-    # match/case — structural pattern matching, Python 3.10+ syntax node
+    # match/case - structural pattern matching, Python 3.10+ syntax node
     if type(node).__name__ == "Match":
         print(f"FLOOR_MATCH:{node.lineno}")
-    # except* — exception groups, Python 3.11+ TryStar node
+    # except* - exception groups, Python 3.11+ TryStar node
     if type(node).__name__ == "TryStar":
         print(f"FLOOR_EXCEPT_STAR:{node.lineno}")
 PYEOF
@@ -301,13 +301,13 @@ PYEOF
             case "$line" in
                 FLOOR_MATCH:*)
                     lineno="${line#FLOOR_MATCH:}"
-                    FINDINGS+=("  [FLOOR 3.10+] line ${lineno}: \`match\` statement — requires Python 3.10+ syntax")
+                    FINDINGS+=("  [FLOOR 3.10+] line ${lineno}: \`match\` statement - requires Python 3.10+ syntax")
                     FINDINGS+=("$(printf "%26s" '')Fix: rewrite as if/elif chain for 3.10 floor compatibility")
                     log "FINDING FLOOR_MATCH line=${lineno} file=${FILE_PATH}"
                     ;;
                 FLOOR_EXCEPT_STAR:*)
                     lineno="${line#FLOOR_EXCEPT_STAR:}"
-                    FINDINGS+=("  [FLOOR 3.11+] line ${lineno}: \`except*\` — requires Python 3.11+")
+                    FINDINGS+=("  [FLOOR 3.11+] line ${lineno}: \`except*\` - requires Python 3.11+")
                     FINDINGS+=("$(printf "%26s" '')Fix: restructure to standard try/except handlers")
                     log "FINDING FLOOR_EXCEPT_STAR line=${lineno} file=${FILE_PATH}"
                     ;;
@@ -332,7 +332,7 @@ done
 
 if [[ -n "$AST_SKIP_REASON" ]]; then
     echo ""
-    echo "  Note: AST scan skipped (${AST_SKIP_REASON}) — syntactic patterns not checked"
+    echo "  Note: AST scan skipped (${AST_SKIP_REASON}) - syntactic patterns not checked"
 fi
 
 echo ""
@@ -348,7 +348,7 @@ SCRIPT
 chmod +x /home/byron/dev/.claude/scripts/py310-compat-check.sh
 ```
 
-- [ ] **Step 3: Run the test harness — all five tests must pass**
+- [ ] **Step 3: Run the test harness - all five tests must pass**
 
 ```bash
 bash /tmp/py310_hook_tests.sh
@@ -367,7 +367,7 @@ Results: 5 passed, 0 failed
 
 If Test 5 fails, check the Python version: `python3 --version`. The `TryStar` AST node
 (for `except*`) exists in Python 3.11+. If `python3` is 3.10 or older, Test 5 may fail
-because the test fixture itself is a syntax error on those versions — the script will
+because the test fixture itself is a syntax error on those versions - the script will
 emit a parse-failure log entry, which is expected degradation behavior (not a bug).
 
 - [ ] **Step 4: Verify the output format for a floor violation looks correct**
@@ -382,7 +382,7 @@ Expected:
 
 ⚠ Python compatibility issue(s) detected: /tmp/t1_floor.py
 
-  [FLOOR 3.11+] line 1: `datetime.UTC` — requires Python 3.11+
+  [FLOOR 3.11+] line 1: `datetime.UTC` - requires Python 3.11+
                          Fix: use `datetime.timezone.utc` or a compat layer
 
 Fix all items above before committing. Python 3.10 (floor) and 3.14 (ceiling) compatibility required.
@@ -500,7 +500,7 @@ Expected: After the edit, Claude Code surfaces a PostToolUse annotation containi
 ### Task 4: Clean up and verify log output
 
 **Files:**
-- No new files — verification only
+- No new files - verification only
 
 - [ ] **Step 1: Check the log file was created with correct entries**
 
@@ -547,14 +547,14 @@ git log --oneline -3
 ```
 
 Expected: the script commit from Task 2 Step 6 in the log. No additional commit needed
-for `settings.json` — it is not tracked in the dev repo.
+for `settings.json` - it is not tracked in the dev repo.
 
 ---
 
 ## Known Limitations
 
 - **Parenthesized `with` statements**: The Python AST does not distinguish
-  `with (a, b):` (3.10+ syntax) from `with a, b:` (valid since 2.7) — both produce
+  `with (a, b):` (3.10+ syntax) from `with a, b:` (valid since 2.7) - both produce
   identical AST nodes. This pattern is omitted from detection to avoid false positives.
   The spec listed it under Tier 2 but accurate detection is not achievable via AST alone.
 

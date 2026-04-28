@@ -52,11 +52,11 @@ PostToolUse hook (settings.json) → bash $HOME/.claude/scripts/py310-compat-che
   Guard: not a .py file → exit 0 (silent)
   Guard: file does not exist → exit 0 (silent)
       ↓
-  Tier 1: grep scan — always runs
+  Tier 1: grep scan - always runs
     Floor patterns (3.11+ APIs/imports that break Python 3.10)
     Ceiling patterns (deprecated in 3.12, removed in 3.14)
       ↓
-  Tier 2: Python AST scan — runs if python3 in PATH, always alongside Tier 1
+  Tier 2: Python AST scan - runs if python3 in PATH, always alongside Tier 1
     Syntactic patterns grep cannot reliably detect
     (match/case, except*, parenthesized with statements)
       ↓
@@ -149,11 +149,11 @@ Note: Parenthesized `with` statements are not detectable via AST alone (both
 ```text
 ⚠ Python compatibility issue(s) detected: src/pipeline/processor.py
 
-  [FLOOR 3.11+] line 14: `import tomllib` — requires Python 3.11+
+  [FLOOR 3.11+] line 14: `import tomllib` - requires Python 3.11+
                           Fix: use `import tomli as tomllib` with a try/except
-  [FLOOR 3.11+] line 42: `datetime.UTC` — requires Python 3.11+
+  [FLOOR 3.11+] line 42: `datetime.UTC` - requires Python 3.11+
                           Fix: use `datetime.timezone.utc` or a compat layer
-  [CEILING 3.14] line 88: `datetime.utcnow()` — deprecated 3.12, removed 3.14
+  [CEILING 3.14] line 88: `datetime.utcnow()` - deprecated 3.12, removed 3.14
                            Fix: use `datetime.datetime.now(datetime.timezone.utc)`
 
 Fix all items above before committing. Python 3.10 (floor) and 3.14 (ceiling) compatibility required.
@@ -180,7 +180,7 @@ Findings and degradation events are appended to `~/.claude/logs/py310-compat-che
 ```text
 [2026-04-09 14:23:01] FINDING floor:datetime.UTC line=42 file=src/pipeline/processor.py
 [2026-04-09 14:23:01] FINDING ceiling:utcnow line=88 file=src/pipeline/processor.py
-[2026-04-09 14:23:01] WARN python3 not found — AST scan skipped
+[2026-04-09 14:23:01] WARN python3 not found - AST scan skipped
 ```
 
 Clean runs produce no log entries (log file stays small).

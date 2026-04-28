@@ -16,7 +16,7 @@ tags:
 
 **Goal:** Add four security and compliance standards to the global Claude implementation: pip-audit pre-push hook, FIPS 140-2/3 compliance guidance, GitHub Actions SHA pinning guidance, and known vulnerability documentation template.
 
-**Architecture:** All changes are additive to existing files — no existing content removed. One tooling change (`.pre-commit-config.yaml`), four documentation additions to rules files, one new template file. No code to write; no tests to generate. Verification is manual hook execution and content inspection.
+**Architecture:** All changes are additive to existing files - no existing content removed. One tooling change (`.pre-commit-config.yaml`), four documentation additions to rules files, one new template file. No code to write; no tests to generate. Verification is manual hook execution and content inspection.
 
 **Tech Stack:** pre-commit, uv, pip-audit, YAML, Markdown
 
@@ -154,7 +154,7 @@ Expected: `YAML valid`
 pre-commit run pip-audit --hook-stage pre-push --all-files
 ```
 
-Expected: Either `pip-audit...Passed` or `pip-audit...Failed` (with CVE output) — either confirms the hook runs. If output is `pip-audit (no files to check)Skipped`, the `files:` filter is working and no dep files matched (unlikely since `pyproject.toml` exists — if this happens, check the regex).
+Expected: Either `pip-audit...Passed` or `pip-audit...Failed` (with CVE output) - either confirms the hook runs. If output is `pip-audit (no files to check)Skipped`, the `files:` filter is working and no dep files matched (unlikely since `pyproject.toml` exists - if this happens, check the regex).
 
 ### Step 2c: Update pre-commit checklist
 
@@ -164,20 +164,20 @@ Expected: Either `pip-audit...Passed` or `pip-audit...Failed` (with CVE output) 
 grep -n "Security Scanning" .claude/rules/pre-commit.md
 ```
 
-Expected: `26:- [ ] **Security Scanning**: No known vulnerabilities — medium+ severity blocks commit...`
+Expected: `26:- [ ] **Security Scanning**: No known vulnerabilities - medium+ severity blocks commit...`
 
 - [ ] **Step 9: Replace the manual pip-audit checklist item**
 
 In `.claude/rules/pre-commit.md`, replace:
 
 ```text
-- [ ] **Security Scanning**: No known vulnerabilities — medium+ severity blocks commit (`uv run pip-audit`; exit code 64 = advisory found)
+- [ ] **Security Scanning**: No known vulnerabilities - medium+ severity blocks commit (`uv run pip-audit`; exit code 64 = advisory found)
 ```
 
 With:
 
 ```text
-- [ ] **Security Scanning**: pip-audit runs automatically on pre-push when dependency files change (pyproject.toml, requirements*.txt, uv.lock). Exit code 64 = advisory found — medium+ severity blocks push. For manual audit: `uv run pip-audit`
+- [ ] **Security Scanning**: pip-audit runs automatically on pre-push when dependency files change (pyproject.toml, requirements*.txt, uv.lock). Exit code 64 = advisory found - medium+ severity blocks push. For manual audit: `uv run pip-audit`
 ```
 
 - [ ] **Step 10: Verify the change**
@@ -239,7 +239,7 @@ pass `usedforsecurity=False`:
 ```
 
 Then immediately after the table block, add the python example as an indented code block
-and the closing rule — here is the complete `new_string` value for the Edit call:
+and the closing rule - here is the complete `new_string` value for the Edit call:
 
 ```text
 ## FIPS 140-2/3 Compliance
@@ -285,7 +285,7 @@ Expected heading order:
 ## Type Checking with BasedPyright
 ## FIPS 140-2/3 Compliance
 ## PyStrict-Aligned Ruff Rules
-## Code Generation — Python-Specific
+## Code Generation - Python-Specific
 ```
 
 - [ ] **Step 5: Commit Task 3**
@@ -318,7 +318,7 @@ In `.claude/rules/git-workflow.md`, use the Edit tool with:
 - `old_string`: `## Git Worktrees`
 - `new_string`: the full section below followed by `## Git Worktrees`
 
-Complete `new_string` value — the yaml example uses indented code blocks to avoid nesting:
+Complete `new_string` value - the yaml example uses indented code blocks to avoid nesting:
 
 ```text
 ## GitHub Actions: Pin to Commit SHAs
@@ -328,10 +328,10 @@ author after the fact, enabling supply chain attacks via tag mutation.
 
 Always pin to the full commit SHA:
 
-    # Bad — tag is mutable, can be rewritten after you reference it
+    # Bad - tag is mutable, can be rewritten after you reference it
     - uses: actions/checkout@v4
 
-    # Good — SHA is immutable
+    # Good - SHA is immutable
     - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
 
 To find the SHA: navigate to the action's releases page on GitHub, click the commit link for
@@ -396,11 +396,11 @@ tags:
 # Known Vulnerabilities
 
 > Tracks CVEs that cannot be immediately resolved. Review quarterly.
-> No entry may age past 90 days without reassessment — escalate or resolve.
+> No entry may age past 90 days without reassessment - escalate or resolve.
 
 <!-- Copy the entry below for each new CVE. Delete this comment in your project's file. -->
 
-## CVE-YYYY-XXXXX — Package Name vX.Y
+## CVE-YYYY-XXXXX - Package Name vX.Y
 
 | Field | Value |
 | --- | --- |
@@ -413,7 +413,7 @@ tags:
 
 **Exploitation scenario**: Describe what an attacker needs to exploit this in your context.
 
-**Why deferred**: Specific reason — upstream unpatched, breaking API change required, etc.
+**Why deferred**: Specific reason - upstream unpatched, breaking API change required, etc.
 
 **Compensating control**: What reduces the risk while the CVE remains open.
 
@@ -428,7 +428,7 @@ pre-commit run validate-front-matter --files docs/known-vulnerabilities-template
 
 Expected: `validate-front-matter...Passed`
 
-If it fails, the frontmatter schema is more strict than expected — read the error output from `tools/validate_front_matter.py` and adjust the frontmatter fields accordingly before proceeding.
+If it fails, the frontmatter schema is more strict than expected - read the error output from `tools/validate_front_matter.py` and adjust the frontmatter fields accordingly before proceeding.
 
 ### Step 5b: Add CLAUDE.md policy reference
 
@@ -498,7 +498,7 @@ Expected: all hooks pass. If `validate-front-matter` fails on the new template f
 pre-commit run pip-audit --hook-stage pre-push --all-files
 ```
 
-Expected: `pip-audit...Passed` (no vulnerabilities) or `pip-audit...Failed` with CVE output. Either outcome confirms the hook is wired. A `Skipped` result means the `files:` regex didn't match — check the pattern against `pyproject.toml`.
+Expected: `pip-audit...Passed` (no vulnerabilities) or `pip-audit...Failed` with CVE output. Either outcome confirms the hook is wired. A `Skipped` result means the `files:` regex didn't match - check the pattern against `pyproject.toml`.
 
 - [ ] **Step 3: Confirm all six section headings are present**
 
@@ -527,7 +527,7 @@ Expected:
 ...## Type Checking with BasedPyright
 ## FIPS 140-2/3 Compliance
 ## PyStrict-Aligned Ruff Rules
-## Code Generation — Python-Specific
+## Code Generation - Python-Specific
 ```
 
 - [ ] **Step 5: Verify section ordering in git-workflow.md**

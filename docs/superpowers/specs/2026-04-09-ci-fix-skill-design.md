@@ -1,6 +1,6 @@
 ---
 schema_type: common
-title: "/ci-fix Skill — Full Gate CI Fix Loop"
+title: "/ci-fix Skill - Full Gate CI Fix Loop"
 status: draft
 owner: core-maintainer
 purpose: "Design spec for a /ci-fix skill that runs a consistent 7-gate quality sequence, auto-fixes where possible, and asks to commit when all gates are green."
@@ -35,9 +35,9 @@ and qlty complexity violations still require a coordinated fix loop that no sing
 
 ## Non-Goals
 
-- No hook implementation — gates requiring Claude judgment cannot run in a hook context
-- No scope flags (`/ci-fix lint`) — full sweep is the only mode
-- No parallel gate execution — gates run sequentially; some fixes affect later gates
+- No hook implementation - gates requiring Claude judgment cannot run in a hook context
+- No scope flags (`/ci-fix lint`) - full sweep is the only mode
+- No parallel gate execution - gates run sequentially; some fixes affect later gates
 - Does not replace pre-commit (which runs as a hook on file edits automatically)
 
 ## Architecture
@@ -58,11 +58,11 @@ Gates run in this fixed order. Each gate re-runs after fixes to confirm green be
 |---|------|---------|-------------------|
 | 1 | ruff format | `uv run ruff format --check .` | `uv run ruff format .` (deterministic) |
 | 2 | ruff lint | `uv run ruff check .` | `uv run ruff check --fix .`; unfixable rules: Claude edits manually |
-| 3 | qlty check | `qlty check` | No auto-fix — Claude refactors functions exceeding complexity/nesting thresholds |
+| 3 | qlty check | `qlty check` | No auto-fix - Claude refactors functions exceeding complexity/nesting thresholds |
 | 4 | pre-commit | `pre-commit run --all-files` | Re-run after ruff fixes; remaining failures Claude fixes and re-runs |
 | 5 | pytest | `uv run pytest` | Claude reads failure output, fixes test/implementation issues, re-runs |
 | 6 | bandit | `uv run bandit -r src/ -c pyproject.toml` | Claude fixes code issues; false positives: `# nosec` + open tracking reference |
-| 7 | pip-audit | `uv run pip-audit` | Report only — dependency upgrades require user decision |
+| 7 | pip-audit | `uv run pip-audit` | Report only - dependency upgrades require user decision |
 
 **Blocker definition**: a gate that fails and cannot be resolved by the auto-fix strategy in
 one attempt. The skill continues running remaining gates (does not stop at first blocker) to
@@ -108,8 +108,8 @@ All 7 gates green. Commit now? (yes/no)
 ```text
 5/7 gates pass. Blockers:
 
-  ❌ pytest     — 2 tests failing in tests/unit/test_processor.py (see above)
-  ❌ bandit     — HIGH severity B608 at src/query.py:45 (see above)
+  ❌ pytest     - 2 tests failing in tests/unit/test_processor.py (see above)
+  ❌ bandit     - HIGH severity B608 at src/query.py:45 (see above)
 
 These require manual investigation before committing.
 ```
@@ -139,9 +139,9 @@ No arguments. Always runs the full 7-gate sequence.
 
 Manual verification with three scenarios:
 
-1. **All green**: Run on a clean repo state — all 7 gates pass, commit offer appears
-2. **Ruff failure**: Introduce a formatting violation — gate 1 auto-fixes, re-runs green
-3. **pytest failure**: Introduce a failing test — skill reads failure, attempts fix, reports
+1. **All green**: Run on a clean repo state - all 7 gates pass, commit offer appears
+2. **Ruff failure**: Introduce a formatting violation - gate 1 auto-fixes, re-runs green
+3. **pytest failure**: Introduce a failing test - skill reads failure, attempts fix, reports
    blocker if fix fails after one attempt
 
 ## File Locations

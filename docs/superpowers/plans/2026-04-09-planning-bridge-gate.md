@@ -5,7 +5,7 @@ status: draft
 owner: core-maintainer
 purpose: "Implementation plan for the PreToolUse hook that gates writing-plans until the project-planning bridge mode has generated ADR and Roadmap documents."
 component: Development-Tools
-source: "inline — design is documented in the Architecture section of this plan"
+source: "inline - design is documented in the Architecture section of this plan"
 tags:
   - automation
   - planning
@@ -16,7 +16,7 @@ tags:
 
 **Goal:** Intercept brainstorming's automatic `writing-plans` invocation with a PreToolUse hook that redirects Claude to run `project-planning` in bridge mode first, ensuring ADR and Roadmap are generated from the approved spec before implementation planning begins.
 
-**Architecture:** A bash hook script checks three conditions on every Skill tool call targeting `writing-plans` — spec exists, no ADR yet, no Roadmap yet — and exits 2 (blocking) with a redirect message when all three are true. The `project-planning` skill gains two modes: `entry` (PVS generation before brainstorming) and `bridge` (ADR + Roadmap generation after spec approval). Bridge mode is idempotent, skipping documents that already exist.
+**Architecture:** A bash hook script checks three conditions on every Skill tool call targeting `writing-plans` - spec exists, no ADR yet, no Roadmap yet - and exits 2 (blocking) with a redirect message when all three are true. The `project-planning` skill gains two modes: `entry` (PVS generation before brainstorming) and `bridge` (ADR + Roadmap generation after spec approval). Bridge mode is idempotent, skipping documents that already exist.
 
 **Tech Stack:** Bash (hook script), JSON/jq (hook input parsing), Markdown (skill update)
 
@@ -54,7 +54,7 @@ bash /home/byron/.claude/scripts/planning-bridge-gate.sh <<< '{"tool_name":"Skil
 echo "Exit: $?"
 ```
 
-Expected: FAIL — script does not exist yet.
+Expected: FAIL - script does not exist yet.
 
 - [ ] **Step 3: Write the script**
 
@@ -62,7 +62,7 @@ Expected: FAIL — script does not exist yet.
 cat > /home/byron/.claude/scripts/planning-bridge-gate.sh << 'SCRIPT'
 #!/usr/bin/env bash
 # =============================================================================
-# Planning Bridge Gate — PreToolUse Hook
+# Planning Bridge Gate - PreToolUse Hook
 # =============================================================================
 # Intercepts Skill tool calls targeting "writing-plans". When brainstorming
 # has produced a spec but bridge mode has not yet run (no ADR, no Roadmap),
@@ -70,8 +70,8 @@ cat > /home/byron/.claude/scripts/planning-bridge-gate.sh << 'SCRIPT'
 # in bridge mode first.
 #
 # Exit codes:
-#   0 — allow tool call to proceed
-#   2 — block tool call; stdout message fed back to Claude
+#   0 - allow tool call to proceed
+#   2 - block tool call; stdout message fed back to Claude
 # =============================================================================
 
 set -euo pipefail
@@ -106,7 +106,7 @@ PROJECT_DIR="${PWD}"
 SPEC_FILE=$(find "${PROJECT_DIR}/docs/superpowers/specs" -name "*.md" 2>/dev/null | sort | tail -1)
 
 if [[ -z "$SPEC_FILE" ]]; then
-    # No spec — brainstorming hasn't run; let writing-plans proceed normally
+    # No spec - brainstorming hasn't run; let writing-plans proceed normally
     log "No spec found, passing through writing-plans"
     exit 0
 fi
@@ -123,7 +123,7 @@ if [[ -z "$ADR_FILE" ]] && [[ ! -f "$ROADMAP" ]]; then
     exit 2
 fi
 
-# ADR or Roadmap already exists — bridge has run, allow writing-plans
+# ADR or Roadmap already exists - bridge has run, allow writing-plans
 log "Bridge already complete, passing through writing-plans"
 exit 0
 SCRIPT
@@ -216,7 +216,7 @@ Expected: empty output (no hooks section yet)
 jq '.hooks // "NO_HOOKS"' /home/byron/.claude/settings.json
 ```
 
-Expected: `"NO_HOOKS"` — confirms no hooks key exists.
+Expected: `"NO_HOOKS"` - confirms no hooks key exists.
 
 - [ ] **Step 3: Add the hooks section to settings.json**
 
@@ -312,10 +312,10 @@ This skill operates in two modes depending on where you are in the planning flow
 **What it does:**
 1. Collect the project description from the user
 2. Read `pyproject.toml` and existing project structure for constraints
-3. Generate `docs/planning/project-vision.md` (PVS only — no ADR, Tech Spec, or Roadmap yet)
+3. Generate `docs/planning/project-vision.md` (PVS only - no ADR, Tech Spec, or Roadmap yet)
 4. Run `mcp__pal__consensus` review on the PVS (see review prompt below); revise until READY
 5. Commit the PVS to version control
-6. Tell Claude: "PVS saved to `docs/planning/project-vision.md`. Invoke the brainstorming skill now — it will read the PVS as existing project context in step 1 and skip re-discovering scope."
+6. Tell Claude: "PVS saved to `docs/planning/project-vision.md`. Invoke the brainstorming skill now - it will read the PVS as existing project context in step 1 and skip re-discovering scope."
 
 **Output:** `docs/planning/project-vision.md` only.
 
@@ -325,7 +325,7 @@ This skill operates in two modes depending on where you are in the planning flow
 
 **When to use:** After brainstorming has completed and the user has approved the spec, before writing-plans. The planning-bridge-gate hook will redirect Claude here automatically.
 
-**What it does (idempotent — safe to run twice):**
+**What it does (idempotent - safe to run twice):**
 
 1. **Find the approved spec:** Locate the most recent file in `docs/superpowers/specs/*.md`
 2. **Generate ADR** (skip if `docs/planning/adr/adr-001-*.md` already exists):
@@ -373,8 +373,8 @@ Replace the existing `## When to Use This Skill` content with:
 
 | Invocation | When |
 |---|---|
-| `/project-planning entry` | Starting a new project — generates PVS and hands off to brainstorming |
-| `/project-planning bridge` | After brainstorming spec is approved — generates ADR + Roadmap before writing-plans |
+| `/project-planning entry` | Starting a new project - generates PVS and hands off to brainstorming |
+| `/project-planning bridge` | After brainstorming spec is approved - generates ADR + Roadmap before writing-plans |
 | `/project-planning` | Default: generates all four documents for projects not using the brainstorming flow |
 ```
 
@@ -398,7 +398,7 @@ git -C /home/byron/dev/.claude commit -m "feat: add entry and bridge modes to pr
 
 ### Task 4: Smoke test the full integration
 
-**Files:** No changes — read-only verification.
+**Files:** No changes - read-only verification.
 
 - [ ] **Step 1: Confirm hook script is executable and parseable**
 
@@ -430,7 +430,7 @@ RESULT=$(cd "$FIXTURE" && echo '{"tool_name":"Skill","tool_input":{"skill":"writ
 echo "$RESULT" | grep -q "Bridge mode required" && echo "BLOCK: pass" || echo "BLOCK: FAIL"
 echo "$RESULT" | grep -q "exit:2" && echo "EXIT2: pass" || echo "EXIT2: FAIL"
 
-# Add ADR — should now pass through
+# Add ADR - should now pass through
 echo "# ADR" > "$FIXTURE/docs/planning/adr/adr-001-db.md"
 cd "$FIXTURE" && echo '{"tool_name":"Skill","tool_input":{"skill":"writing-plans"}}' \
   | bash /home/byron/.claude/scripts/planning-bridge-gate.sh

@@ -16,7 +16,7 @@ tags:
 
 **Goal:** Add five workflow governance patterns (remote verification, branch override, scope tracing, AI review integration, cookiecutter sync) to the global Claude rules files.
 
-**Architecture:** Documentation-only sprint. All five items are additive edits to existing Markdown files — no tooling changes, no new hooks. Three items land in `.claude/rules/git-workflow.md` (two new sections plus Layer 2 expansion), two land in `CLAUDE.md` and `rules/supervisor.md`, one in `rules/pre-commit.md`, and one in `docs/handoff-cookiecutter-claude-removal.md`. Four commits, one per file or logical group.
+**Architecture:** Documentation-only sprint. All five items are additive edits to existing Markdown files - no tooling changes, no new hooks. Three items land in `.claude/rules/git-workflow.md` (two new sections plus Layer 2 expansion), two land in `CLAUDE.md` and `rules/supervisor.md`, one in `rules/pre-commit.md`, and one in `docs/handoff-cookiecutter-claude-removal.md`. Four commits, one per file or logical group.
 
 **Tech Stack:** Markdown, git, pre-commit hooks.
 
@@ -64,7 +64,7 @@ grep -n "Layer 2\|/code-review.*5 parallel" .claude/rules/git-workflow.md
 Expected output:
 
 ```text
-49:**Layer 2 — PR gates (run manually after PR creation):**
+49:**Layer 2 - PR gates (run manually after PR creation):**
 50:- `/code-review`: runs 5 parallel agents (CLAUDE.md compliance x2, bug scan, git-history context, comment compliance), scores each issue 0-100, and posts only issues ≥80 confidence as a PR comment.
 ```
 
@@ -125,7 +125,7 @@ Record this as a comment in the commit message footer:
 grep -n "^## Remote Verification\|^## Branch Workflow Override\|^## Gate System" .claude/rules/git-workflow.md
 ```
 
-Expected: three matches in order — Remote Verification, Branch Workflow Override, Gate System.
+Expected: three matches in order - Remote Verification, Branch Workflow Override, Gate System.
 
 - [ ] **Step 5: Replace the Layer 2 block**
 
@@ -134,14 +134,14 @@ In `.claude/rules/git-workflow.md`, use the Edit tool with:
 `old_string`:
 
 ```text
-**Layer 2 — PR gates (run manually after PR creation):**
+**Layer 2 - PR gates (run manually after PR creation):**
 - `/code-review`: runs 5 parallel agents (CLAUDE.md compliance x2, bug scan, git-history context, comment compliance), scores each issue 0-100, and posts only issues ≥80 confidence as a PR comment.
 ```
 
 `new_string`:
 
 ```text
-**Layer 2 — PR gates (automatic and manual, after PR creation):**
+**Layer 2 - PR gates (automatic and manual, after PR creation):**
 - `CodeRabbit`: fires automatically on every PR targeting `main`, `master`, or `develop`.
   Profile: assertive. Provides high-level summary, file-by-file walkthrough, inline
   comments, and suggested labels. Runs ruff, gitleaks, markdownlint, and yamllint as
@@ -338,7 +338,7 @@ In `.claude/rules/pre-commit.md`, use the Edit tool with:
 grep -n "CodeRabbit\|Copilot" .claude/rules/pre-commit.md
 ```
 
-Expected: two matches — one for CodeRabbit, one for Copilot.
+Expected: two matches - one for CodeRabbit, one for Copilot.
 
 - [ ] **Step 4: Commit Task 3**
 
@@ -373,7 +373,7 @@ Expected output:
 140:### cookiecutter.json
 ```
 
-(Exact line numbers may differ — the order is what matters.)
+(Exact line numbers may differ - the order is what matters.)
 
 - [ ] **Step 2: Insert the AI Review Configuration subsection**
 
@@ -431,7 +431,7 @@ auto-review settings are intentionally the same and should stay in sync.
 grep -n "AI Review Configuration\|ruff format" docs/handoff-cookiecutter-claude-removal.md
 ```
 
-Expected: at least two matches — one for the heading, one or more for `ruff format`.
+Expected: at least two matches - one for the heading, one or more for `ruff format`.
 
 - [ ] **Step 4: Confirm the DoD insertion point**
 
@@ -468,7 +468,7 @@ In `docs/handoff-cookiecutter-claude-removal.md`, use the Edit tool with:
 grep -n "ruff format\|coderabbit.yaml.*compared" docs/handoff-cookiecutter-claude-removal.md
 ```
 
-Expected: at least two matches — one in the subsection body, one in the DoD checklist.
+Expected: at least two matches - one in the subsection body, one in the DoD checklist.
 
 - [ ] **Step 7: Commit Task 4**
 

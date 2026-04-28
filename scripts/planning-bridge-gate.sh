@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Planning Bridge Gate — PreToolUse Hook
+# Planning Bridge Gate - PreToolUse Hook
 # =============================================================================
 # Intercepts Skill tool calls targeting "writing-plans". When brainstorming
 # has produced a spec but bridge mode has not yet run (no ADR, no Roadmap),
@@ -8,8 +8,8 @@
 # in bridge mode first.
 #
 # Exit codes:
-#   0 — allow tool call to proceed
-#   2 — block tool call; stdout message fed back to Claude
+#   0 - allow tool call to proceed
+#   2 - block tool call; stdout message fed back to Claude
 # =============================================================================
 
 set -euo pipefail
@@ -26,7 +26,7 @@ log() {
 # jq is required to parse the hook's JSON context. Fail open (exit 0) if absent
 # so a missing dependency never blocks PreToolUse execution.
 if ! command -v jq &>/dev/null; then
-    log "WARN jq not found — planning bridge gate skipped"
+    log "WARN jq not found - planning bridge gate skipped"
     exit 0
 fi
 
@@ -53,7 +53,7 @@ PROJECT_DIR="${PWD}"
 SPEC_FILE=$(find "${PROJECT_DIR}/docs/superpowers/specs" -name "*.md" 2>/dev/null | sort | tail -1 || true)
 
 if [[ -z "$SPEC_FILE" ]]; then
-    # No spec — brainstorming hasn't run; let writing-plans proceed normally
+    # No spec - brainstorming hasn't run; let writing-plans proceed normally
     log "No spec found, passing through writing-plans"
     exit 0
 fi
@@ -70,6 +70,6 @@ if [[ -z "$ADR_FILE" ]] && [[ ! -f "$ROADMAP" ]]; then
     exit 2
 fi
 
-# ADR or Roadmap already exists — bridge has run, allow writing-plans
+# ADR or Roadmap already exists - bridge has run, allow writing-plans
 log "Bridge already complete, passing through writing-plans"
 exit 0

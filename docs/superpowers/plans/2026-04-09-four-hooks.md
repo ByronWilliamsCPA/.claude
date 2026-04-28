@@ -15,7 +15,7 @@ tags:
 
 **Goal:** Wire four advisory/guard hooks into the global Claude Code settings so shellcheck, frontmatter validation, force-push blocking, and long-Bash notifications run automatically.
 
-**Architecture:** Hook 1 (shellcheck) is an inline command appended to the existing PostToolUse `Edit|Write` array — no new file. Hooks 2-4 are standalone bash scripts in `scripts/` (symlinked from `~/.claude/scripts/`) each following the stdin-JSON pattern established by `py310-compat-check.sh` and `planning-bridge-gate.sh`. Hooks 3 and 4 share a single PreToolUse Bash script (`bash-pre-hook.sh`) that handles force-push detection and records a start timestamp; a separate PostToolUse script (`bash-notify.sh`) reads that timestamp and fires the notification.
+**Architecture:** Hook 1 (shellcheck) is an inline command appended to the existing PostToolUse `Edit|Write` array - no new file. Hooks 2-4 are standalone bash scripts in `scripts/` (symlinked from `~/.claude/scripts/`) each following the stdin-JSON pattern established by `py310-compat-check.sh` and `planning-bridge-gate.sh`. Hooks 3 and 4 share a single PreToolUse Bash script (`bash-pre-hook.sh`) that handles force-push detection and records a start timestamp; a separate PostToolUse script (`bash-notify.sh`) reads that timestamp and fires the notification.
 
 **Tech Stack:** Bash, shellcheck 0.11.0, python3 `re` module, jq, powershell.exe (WSL2 toast), `~/.claude/settings.json`
 
@@ -40,7 +40,7 @@ Note: `~/.claude/scripts/` is a symlink to `dev/.claude/scripts/`, so scripts wr
 **Files:**
 - Modify: `~/.claude/settings.json` (PostToolUse `(Edit|Write)` hooks array, add one entry)
 
-No new script. Shellcheck is advisory (`|| true`) — Claude sees the output but the edit is never blocked.
+No new script. Shellcheck is advisory (`|| true`) - Claude sees the output but the edit is never blocked.
 
 - [ ] **Step 1: Verify shellcheck is installed and the .shellcheckrc is respected**
 
@@ -82,7 +82,7 @@ Open `/home/byron/.claude/settings.json`. Locate the PostToolUse `(Edit|Write)` 
 
 - [ ] **Step 3: Smoke-test by editing a shell script with a known issue**
 
-Open `/home/byron/dev/.claude/scripts/validate-frontmatter.sh` (which does not exist yet — create it empty first):
+Open `/home/byron/dev/.claude/scripts/validate-frontmatter.sh` (which does not exist yet - create it empty first):
 
 ```bash
 echo '#!/usr/bin/env bash' > /home/byron/dev/.claude/scripts/validate-frontmatter.sh
@@ -156,13 +156,13 @@ make_payload() {
     echo "{\"tool_name\":\"Edit\",\"tool_input\":{\"file_path\":\"$path\"}}"
 }
 
-# Case 1: non-SKILL.md file — silent pass
+# Case 1: non-SKILL.md file - silent pass
 TMP=$(mktemp /tmp/test_other.py)
 OUT=$(make_payload "$TMP" | bash "$SCRIPT" 2>&1); CODE=$?
 check "non-skill file silent" "" "$OUT" $CODE
 rm -f "$TMP"
 
-# Case 2: valid SKILL.md with name and description — silent pass
+# Case 2: valid SKILL.md with name and description - silent pass
 TMP=$(mktemp /tmp/test_SKILL.XXXXXX.md)
 # rename to match */SKILL.md glob
 SKILL_PATH="${TMPDIR:-/tmp}/skills_test_$(date +%s)/SKILL.md"
@@ -178,7 +178,7 @@ OUT=$(make_payload "$SKILL_PATH" | bash "$SCRIPT" 2>&1); CODE=$?
 check "valid SKILL.md silent" "" "$OUT" $CODE
 rm -rf "$(dirname "$SKILL_PATH")"
 
-# Case 3: SKILL.md missing name — should warn
+# Case 3: SKILL.md missing name - should warn
 SKILL_PATH="${TMPDIR:-/tmp}/skills_missing_$(date +%s)/SKILL.md"
 mkdir -p "$(dirname "$SKILL_PATH")"
 cat > "$SKILL_PATH" << 'FM'
@@ -191,7 +191,7 @@ OUT=$(make_payload "$SKILL_PATH" | bash "$SCRIPT" 2>&1); CODE=$?
 check "missing name warns" "WARN.*name" "$OUT" $CODE
 rm -rf "$(dirname "$SKILL_PATH")"
 
-# Case 4: SKILL.md missing description — should warn
+# Case 4: SKILL.md missing description - should warn
 SKILL_PATH="${TMPDIR:-/tmp}/skills_nodesc_$(date +%s)/SKILL.md"
 mkdir -p "$(dirname "$SKILL_PATH")"
 cat > "$SKILL_PATH" << 'FM'
@@ -204,7 +204,7 @@ OUT=$(make_payload "$SKILL_PATH" | bash "$SCRIPT" 2>&1); CODE=$?
 check "missing description warns" "WARN.*description" "$OUT" $CODE
 rm -rf "$(dirname "$SKILL_PATH")"
 
-# Case 5: SKILL.md no frontmatter at all — should warn
+# Case 5: SKILL.md no frontmatter at all - should warn
 SKILL_PATH="${TMPDIR:-/tmp}/skills_nofm_$(date +%s)/SKILL.md"
 mkdir -p "$(dirname "$SKILL_PATH")"
 echo "# No frontmatter" > "$SKILL_PATH"
@@ -212,7 +212,7 @@ OUT=$(make_payload "$SKILL_PATH" | bash "$SCRIPT" 2>&1); CODE=$?
 check "no frontmatter warns" "WARN.*frontmatter" "$OUT" $CODE
 rm -rf "$(dirname "$SKILL_PATH")"
 
-# Case 6: agents/*.md file missing description — should warn
+# Case 6: agents/*.md file missing description - should warn
 AGENT_PATH="${TMPDIR:-/tmp}/agents_test_$(date +%s)/code-reviewer.md"
 mkdir -p "$(dirname "$AGENT_PATH")"
 cat > "$AGENT_PATH" << 'FM'
@@ -225,7 +225,7 @@ OUT=$(make_payload "$AGENT_PATH" | bash "$SCRIPT" 2>&1); CODE=$?
 check "agent missing description warns" "WARN.*description" "$OUT" $CODE
 rm -rf "$(dirname "$AGENT_PATH")"
 
-# Case 7: empty stdin — silent pass
+# Case 7: empty stdin - silent pass
 OUT=$(echo "" | bash "$SCRIPT" 2>&1); CODE=$?
 check "empty stdin silent" "" "$OUT" $CODE
 
@@ -250,12 +250,12 @@ Expected: all cases FAIL (script does not exist yet).
 cat > /home/byron/dev/.claude/scripts/validate-frontmatter.sh << 'SCRIPT'
 #!/usr/bin/env bash
 # =============================================================================
-# Frontmatter Validator — PostToolUse Hook
+# Frontmatter Validator - PostToolUse Hook
 # =============================================================================
 # Fires after Edit or Write. Checks that SKILL.md and agents/*.md files
 # contain the required frontmatter fields: name and description.
 #
-# Exit codes: always 0 — advisory only, never blocks
+# Exit codes: always 0 - advisory only, never blocks
 # =============================================================================
 
 set -euo pipefail
@@ -367,7 +367,7 @@ git commit -m "feat: add frontmatter validator PostToolUse hook for skills and a
 - Create: `dev/.claude/scripts/bash-pre-hook.sh`
 - Modify: `~/.claude/settings.json` (add new PreToolUse Bash entry)
 
-The script does two things: (1) block `git push --force` or `push -f` targeting main or master (exit 2), and (2) write a Unix timestamp to `/tmp/claude-bash-start` so Task 4's notification script can compute duration. The force-push check runs first; if it blocks, the timestamp is never written (correct behavior — no dangling start time for a blocked command).
+The script does two things: (1) block `git push --force` or `push -f` targeting main or master (exit 2), and (2) write a Unix timestamp to `/tmp/claude-bash-start` so Task 4's notification script can compute duration. The force-push check runs first; if it blocks, the timestamp is never written (correct behavior - no dangling start time for a blocked command).
 
 - [ ] **Step 1: Write the test harness**
 
@@ -409,31 +409,31 @@ make_payload() {
     echo "{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"$cmd\"}}"
 }
 
-# Case 1: normal git push — allow (exit 0)
+# Case 1: normal git push - allow (exit 0)
 OUT=$(make_payload "git push origin feat/foo" | bash "$SCRIPT" 2>&1); CODE=$?
 check "normal push allowed" 0 "" "$OUT" $CODE
 
-# Case 2: force push to main — block (exit 2)
+# Case 2: force push to main - block (exit 2)
 OUT=$(make_payload "git push --force origin main" | bash "$SCRIPT" 2>&1); CODE=$?
 check "force push to main blocked" 2 "BLOCKED" "$OUT" $CODE
 
-# Case 3: -f shorthand to main — block (exit 2)
+# Case 3: -f shorthand to main - block (exit 2)
 OUT=$(make_payload "git push -f origin main" | bash "$SCRIPT" 2>&1); CODE=$?
 check "force push -f to main blocked" 2 "BLOCKED" "$OUT" $CODE
 
-# Case 4: force push to master — block (exit 2)
+# Case 4: force push to master - block (exit 2)
 OUT=$(make_payload "git push --force origin master" | bash "$SCRIPT" 2>&1); CODE=$?
 check "force push to master blocked" 2 "BLOCKED" "$OUT" $CODE
 
-# Case 5: force push to a feature branch — allow (exit 0)
+# Case 5: force push to a feature branch - allow (exit 0)
 OUT=$(make_payload "git push --force origin feat/my-branch" | bash "$SCRIPT" 2>&1); CODE=$?
 check "force push to feature branch allowed" 0 "" "$OUT" $CODE
 
-# Case 6: force-with-lease to main — block (exit 2)
+# Case 6: force-with-lease to main - block (exit 2)
 OUT=$(make_payload "git push --force-with-lease origin main" | bash "$SCRIPT" 2>&1); CODE=$?
 check "force-with-lease to main blocked" 2 "BLOCKED" "$OUT" $CODE
 
-# Case 7: non-git command — allow (exit 0) and writes timestamp
+# Case 7: non-git command - allow (exit 0) and writes timestamp
 rm -f /tmp/claude-bash-start
 OUT=$(make_payload "pytest tests/" | bash "$SCRIPT" 2>&1); CODE=$?
 check "non-git command allowed" 0 "" "$OUT" $CODE
@@ -445,7 +445,7 @@ else
     ((FAIL++))
 fi
 
-# Case 8: empty stdin — allow (exit 0)
+# Case 8: empty stdin - allow (exit 0)
 OUT=$(echo "" | bash "$SCRIPT" 2>&1); CODE=$?
 check "empty stdin allowed" 0 "" "$OUT" $CODE
 
@@ -477,8 +477,8 @@ cat > /home/byron/dev/.claude/scripts/bash-pre-hook.sh << 'SCRIPT'
 #   2. Write start timestamp for bash-notify.sh duration tracking
 #
 # Exit codes:
-#   0  — allow command to proceed
-#   2  — block command; stdout message surfaced to Claude
+#   0  - allow command to proceed
+#   2  - block command; stdout message surfaced to Claude
 # =============================================================================
 
 set -euo pipefail
@@ -634,22 +634,22 @@ make_payload() {
     echo "{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"$cmd\"},\"tool_response\":{\"output\":\"\"}}"
 }
 
-# Case 1: duration < 30s — silent (no notification)
+# Case 1: duration < 30s - silent (no notification)
 echo "$(date +%s)" > /tmp/claude-bash-start   # start = now
 OUT=$(make_payload "pytest tests/" | bash "$SCRIPT" 2>&1); CODE=$?
 check "short command silent" "" "$OUT" $CODE
 
-# Case 2: duration > 30s — notification logged
+# Case 2: duration > 30s - notification logged
 echo "$(($(date +%s) - 35))" > /tmp/claude-bash-start   # start = 35s ago
 OUT=$(make_payload "pytest tests/" | bash "$SCRIPT" 2>&1); CODE=$?
 check "long command notifies" "NOTIFY" "$OUT" $CODE
 
-# Case 3: no start file — silent (graceful missing file)
+# Case 3: no start file - silent (graceful missing file)
 rm -f /tmp/claude-bash-start
 OUT=$(make_payload "some command" | bash "$SCRIPT" 2>&1); CODE=$?
 check "missing start file silent" "" "$OUT" $CODE
 
-# Case 4: empty stdin — silent
+# Case 4: empty stdin - silent
 OUT=$(echo "" | bash "$SCRIPT" 2>&1); CODE=$?
 check "empty stdin silent" "" "$OUT" $CODE
 
@@ -683,7 +683,7 @@ cat > /home/byron/dev/.claude/scripts/bash-notify.sh << 'SCRIPT'
 # Prints "NOTIFY: ..." to stdout when a notification fires (visible to Claude
 # and captured by tests).
 #
-# Exit codes: always 0 — never blocks
+# Exit codes: always 0 - never blocks
 # =============================================================================
 
 set -euo pipefail
@@ -776,7 +776,7 @@ Results: 4 passed, 0 failed
 
 - [ ] **Step 5: Add the PostToolUse Bash entry to settings.json**
 
-In `/home/byron/.claude/settings.json`, add a second entry to the `PostToolUse` array (the existing entry is the `(Edit|Write)` one — this is a new top-level matcher entry):
+In `/home/byron/.claude/settings.json`, add a second entry to the `PostToolUse` array (the existing entry is the `(Edit|Write)` one - this is a new top-level matcher entry):
 
 ```json
 {
@@ -835,4 +835,4 @@ git commit -m "feat: add WSL2 toast notification PostToolUse hook for long Bash 
 
 **Type consistency:** All scripts use consistent variable names (`CONTEXT`, `CMD`, `FILE_PATH`). Timestamp file is `/tmp/claude-bash-start` in both bash-pre-hook.sh and bash-notify.sh.
 
-**Known limitation:** The `NOTIFY` stdout output from `bash-notify.sh` is visible to Claude in the session (it is not a warning — it is informational). If this becomes noisy, change `echo "NOTIFY: ..."` to write to the log file only.
+**Known limitation:** The `NOTIFY` stdout output from `bash-notify.sh` is visible to Claude in the session (it is not a warning - it is informational). If this becomes noisy, change `echo "NOTIFY: ..."` to write to the log file only.

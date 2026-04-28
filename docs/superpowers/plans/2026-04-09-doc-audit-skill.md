@@ -52,14 +52,14 @@ Expected: `__init__.py`, `test_settings.py`, and other existing test files.
 Create `/home/byron/dev/.claude/tests/unit/test_doc_audit.py` with this exact content:
 
 ```python
-"""Tests for scripts/doc-audit.py — documentation health audit script.
+"""Tests for scripts/doc-audit.py - documentation health audit script.
 
 Five spec scenarios tested:
-1. Clean repo — all checks produce zero findings
-2. Missing required frontmatter field — produces WARN
-3. Broken internal link — produces ERROR
-4. Count claim mismatch — produces WARN
-5. Stale Python version reference — produces WARN
+1. Clean repo - all checks produce zero findings
+2. Missing required frontmatter field - produces WARN
+3. Broken internal link - produces ERROR
+4. Count claim mismatch - produces WARN
+5. Stale Python version reference - produces WARN
 
 Sixth scenario: CLI produces valid JSON and exits 0.
 """
@@ -136,12 +136,12 @@ def repo_root(tmp_path: Path, docs_root: Path) -> Path:
 
 
 # ---------------------------------------------------------------------------
-# Scenario 1: Clean repo — all checks pass
+# Scenario 1: Clean repo - all checks pass
 # ---------------------------------------------------------------------------
 
 
 class TestCleanRepo:
-    """All docs valid — each checker returns an empty findings list."""
+    """All docs valid - each checker returns an empty findings list."""
 
     @pytest.mark.unit
     def test_frontmatter_clean(
@@ -556,7 +556,7 @@ _COUNT_WORD_MAP: dict[str, str] = {
 
 
 # ---------------------------------------------------------------------------
-# Frontmatter parsing (stdlib only — no PyYAML)
+# Frontmatter parsing (stdlib only - no PyYAML)
 # ---------------------------------------------------------------------------
 
 
@@ -877,7 +877,7 @@ def check_counts(scope: str, repo_root: str = ".") -> list[Finding]:
                             line=line_no,
                             message=(
                                 f"claims '{claimed} {match.group(2)}' "
-                                f"— actual: {real}"
+                                f"- actual: {real}"
                             ),
                         )
                     )
@@ -1109,7 +1109,7 @@ Expected: all hooks pass.
 
 ```bash
 cd /home/byron/dev/.claude && git add scripts/doc-audit.py tests/unit/test_doc_audit.py
-git commit -m "feat: add doc-audit.py — four-category documentation health audit script"
+git commit -m "feat: add doc-audit.py - four-category documentation health audit script"
 ```
 
 ---
@@ -1122,10 +1122,10 @@ git commit -m "feat: add doc-audit.py — four-category documentation health aud
 - [ ] **Step 1: Verify the target directory does not already exist**
 
 ```bash
-ls /home/byron/dev/.claude/.claude/skills/doc-audit/ 2>/dev/null || echo "directory does not exist — safe to create"
+ls /home/byron/dev/.claude/.claude/skills/doc-audit/ 2>/dev/null || echo "directory does not exist - safe to create"
 ```
 
-Expected: "directory does not exist — safe to create"
+Expected: "directory does not exist - safe to create"
 
 - [ ] **Step 2: Create the SKILL.md**
 
@@ -1153,8 +1153,8 @@ Run a four-category documentation health audit and produce a persistent report.
 ```markdown
 
 `scope` is optional (default: `docs/`). Examples:
-- `/doc-audit` — audit all of `docs/`
-- `/doc-audit docs/superpowers/specs` — audit a subdirectory
+- `/doc-audit` - audit all of `docs/`
+- `/doc-audit docs/superpowers/specs` - audit a subdirectory
 
 ## Workflow
 
@@ -1186,9 +1186,9 @@ Version refs   ⚠️  WARN    4 stale references
 ```markdown
 
 Status per category:
-- `✅ PASS` — error=0 and warn=0
-- `⚠️  WARN` — warn>0, error=0
-- `❌ ERROR` — error>0 (regardless of warn count)
+- `✅ PASS` - error=0 and warn=0
+- `⚠️  WARN` - warn>0, error=0
+- `❌ ERROR` - error>0 (regardless of warn count)
 
 Issue count in the summary line: sum of all findings with severity ERROR or WARN across
 all categories.
@@ -1221,7 +1221,7 @@ Generated: YYYY-MM-DD  Scope: docs/
 
 ## Count Drift
 
-- `docs/overview.md` line 14: claims '15 agents' — actual: 18
+- `docs/overview.md` line 14: claims '15 agents' - actual: 18
 
 ## Stale Version References
 
@@ -1261,7 +1261,7 @@ Expected: all hooks pass.
 
 ```bash
 cd /home/byron/dev/.claude && git add .claude/skills/doc-audit/SKILL.md
-git commit -m "feat: add /doc-audit skill — terminal summary and audit-report.md writer"
+git commit -m "feat: add /doc-audit skill - terminal summary and audit-report.md writer"
 ```
 
 ---
@@ -1274,10 +1274,10 @@ git commit -m "feat: add /doc-audit skill — terminal summary and audit-report.
 - [ ] **Step 1: Verify docs/audit-report.md is not already in .gitignore**
 
 ```bash
-grep "audit-report" /home/byron/dev/.claude/.gitignore || echo "not present — safe to add"
+grep "audit-report" /home/byron/dev/.claude/.gitignore || echo "not present - safe to add"
 ```
 
-Expected: "not present — safe to add"
+Expected: "not present - safe to add"
 
 - [ ] **Step 2: Add docs/audit-report.md to .gitignore**
 
@@ -1364,7 +1364,7 @@ git commit -m "chore: add docs/audit-report.md to .gitignore (generated artifact
 
 **Type consistency:**
 - `check_frontmatter(scope: str, repo_root: str = ".")` used consistently in tests and implementation
-- `check_links(scope: str)` — no repo_root needed, consistent
-- `check_counts(scope: str, repo_root: str = ".")` — consistent
-- `check_versions(scope: str, repo_root: str = ".")` — consistent
-- All return `list[Finding]` — consistent with test assertions (`findings[0]["severity"]`)
+- `check_links(scope: str)` - no repo_root needed, consistent
+- `check_counts(scope: str, repo_root: str = ".")` - consistent
+- `check_versions(scope: str, repo_root: str = ".")` - consistent
+- All return `list[Finding]` - consistent with test assertions (`findings[0]["severity"]`)

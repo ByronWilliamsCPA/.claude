@@ -112,12 +112,11 @@ repos:
   # Conventional Commits Enforcement
   # ============================================================================
   # Enforces conventional commit message format for semantic versioning
-  - repo: https://github.com/compilerla/conventional-pre-commit
-    rev: 8dc49e5ea0cab89785161620aa22a26f263661ca  # v3.4.0
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: cc981fcb065527b6de0033b0cbf0432e69781901  # v4.9.1  # pragma: allowlist secret
     hooks:
-      - id: conventional-pre-commit
+      - id: commitizen
         stages: [commit-msg]
-        args: [feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert]
 
   # ============================================================================
   # pyproject.toml Validation
@@ -272,7 +271,7 @@ repos:
         name: no-em-dash
         language: pygrep
         entry: "—"
-        files: \.(md|txt|rst|yaml|yml|toml|py)$
+        files: \.(md|txt|rst|yaml|yml|toml|py|sh)$
         exclude: ^(\.claude/|\.pre-commit-config\.yaml|CHANGELOG\.md|CLAUDE\.md|docs/superpowers/)
         description: "Prevents em-dash characters in source files (excludes .claude/ legacy content)"
         stages: [pre-commit]
@@ -280,10 +279,10 @@ repos:
   # ============================================================================
   # BasedPyright Type Checking (PC-003)
   # ============================================================================
-  - repo: https://github.com/RobertCraigie/pyright-python
-    rev: 81b795a41ddcc3c77218d8c8e406983e39852285  # v1.1.408
+  - repo: https://github.com/DetachHead/basedpyright
+    rev: 3001a37849ae1f3e1176b0662007ab79320b8db3  # v1.9.1  # pragma: allowlist secret
     hooks:
-      - id: pyright
+      - id: basedpyright
         stages: [pre-commit]
         pass_filenames: false
         args: [src]

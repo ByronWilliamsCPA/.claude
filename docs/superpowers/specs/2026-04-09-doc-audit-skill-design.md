@@ -1,6 +1,6 @@
 ---
 schema_type: common
-title: "/doc-audit Skill — Documentation Health Audit"
+title: "/doc-audit Skill - Documentation Health Audit"
 status: draft
 owner: core-maintainer
 purpose: "Design spec for a /doc-audit skill that runs four check categories across the docs/ directory, outputs a terminal summary table, and writes a persistent audit-report.md."
@@ -32,10 +32,10 @@ lived only in the conversation and were re-discovered in the next session.
 
 ## Non-Goals
 
-- No inline annotation of source files — findings go to the report only
-- No auto-fix — the skill flags issues; Claude or the user decides what to fix
-- No incremental mode — always full sweep of the specified scope
-- `docs/audit-report.md` is not committed — it is a generated artifact
+- No inline annotation of source files - findings go to the report only
+- No auto-fix - the skill flags issues; Claude or the user decides what to fix
+- No incremental mode - always full sweep of the specified scope
+- `docs/audit-report.md` is not committed - it is a generated artifact
 
 ## Architecture
 
@@ -43,15 +43,15 @@ Two files:
 
 | File | Action |
 |------|--------|
-| `.claude/skills/doc-audit/SKILL.md` | New skill — orchestrates the script and writes the report |
-| `scripts/doc-audit.py` | New Python script — mechanical scanning, outputs JSON to stdout |
+| `.claude/skills/doc-audit/SKILL.md` | New skill - orchestrates the script and writes the report |
+| `scripts/doc-audit.py` | New Python script - mechanical scanning, outputs JSON to stdout |
 
 `docs/audit-report.md` is written on each run but added to `.gitignore`.
 
 ## Script: `scripts/doc-audit.py`
 
 Standalone Python script using stdlib only (`os`, `re`, `json`, `pathlib`, `yaml` via
-manual YAML frontmatter parsing — no PyYAML dependency).
+manual YAML frontmatter parsing - no PyYAML dependency).
 
 ### Invocation
 
@@ -165,8 +165,8 @@ References to models not in this list → `WARN` with message "model may be outd
 ```
 
 `scope` is optional (default: `docs/`). Examples:
-- `/doc-audit` — audit all of `docs/`
-- `/doc-audit docs/superpowers/specs` — audit a subdirectory
+- `/doc-audit` - audit all of `docs/`
+- `/doc-audit docs/superpowers/specs` - audit a subdirectory
 
 ### Workflow
 
@@ -220,21 +220,21 @@ Generated: 2026-04-09  Scope: docs/
 
 ## Count Drift
 
-- `docs/overview.md` line 14: claims "15 agents" — actual: 18
+- `docs/overview.md` line 14: claims "15 agents" - actual: 18
 
 ## Stale Version References
 
-- `docs/setup.md` line 7: `Python 3.10` — pyproject.toml requires >=3.10,<3.15
+- `docs/setup.md` line 7: `Python 3.10` - pyproject.toml requires >=3.10,<3.15
 ```
 
 ## `.gitignore` Addition
 
-Add `docs/audit-report.md` to `.gitignore` — generated artifact, not source.
+Add `docs/audit-report.md` to `.gitignore` - generated artifact, not source.
 
 ## Testing
 
 Three manual scenarios:
 
-1. **Clean repo**: run on a repo with no issues — all categories show `✅ PASS`, report says "No issues found"
-2. **Known violation**: add a doc missing a required frontmatter field — frontmatter check reports it
-3. **Broken link**: add a markdown link to a non-existent file — broken links check reports it
+1. **Clean repo**: run on a repo with no issues - all categories show `✅ PASS`, report says "No issues found"
+2. **Known violation**: add a doc missing a required frontmatter field - frontmatter check reports it
+3. **Broken link**: add a markdown link to a non-existent file - broken links check reports it
