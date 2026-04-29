@@ -94,6 +94,16 @@
             "statusMessage": "Detecting session context..."
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/scripts/generate-skills-manifest.sh",
+            "timeout": 10,
+            "statusMessage": "Generating skills manifest..."
+          }
+        ]
       }
     ]
   },
