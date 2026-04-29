@@ -13,3 +13,6 @@
 [submodule ".submodules/anthropics-plugins"]
 	path = .submodules/anthropics-plugins
 	url = https://github.com/anthropics/claude-plugins-official.git
+[submodule ".submodules/one-skill-to-rule-them-all"]
+	path = .submodules/one-skill-to-rule-them-all
+	url = https://github.com/rebelytics/one-skill-to-rule-them-all.git

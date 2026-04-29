@@ -220,3 +220,18 @@ Do not preserve:
 
 Full agent catalog, skill catalog, and install instructions:
 see `AGENTS-AND-SKILLS.md` and `README.md` at the repo root.
+
+## Task observation
+
+At the start of any task-oriented session (any interaction where you will
+use tools and produce deliverables), invoke the task-observer skill before
+beginning work.
+
+When loading any skill, check the observation log for OPEN observations
+tagged to that skill at ~/.claude/skill-observations/log.md.
+Apply their insights to the current work before beginning.
+
+Available skills are listed in
+~/.claude/skill-observations/available-skills.md
+(regenerated each session start). Use this file when the task-observer
+skill references <available_skills>.
