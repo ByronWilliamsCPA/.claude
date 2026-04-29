@@ -4,9 +4,10 @@
 # =============================================================================
 # Fires after Edit or Write tool calls. Checks SKILL.md and agents/*.md files
 # for required YAML frontmatter fields: name and description.
+# Also validates status: field; rejects 'template' and unknown values.
 #
-# Prints WARN lines to stdout (Claude reads them). Silent on valid files.
-# Exit codes: always 0 (PostToolUse hooks must never fail)
+# Prints WARN/ERROR lines to stdout (Claude reads them). Silent on valid files.
+# Exit codes: always 0 (PostToolUse hook contract: non-zero exit aborts the tool result)
 # =============================================================================
 
 set -uo pipefail
@@ -80,6 +81,26 @@ fi
 if ! echo "$FRONTMATTER" | grep -q '^description:'; then
     log "WARN missing description: ${FILE_PATH}"
     echo "WARN: missing 'description:' in frontmatter of $FILE_PATH; add: description: <one-line summary>"
+fi
+
+# ---- Validate status: field if present --------------------------------------
+# Valid values: draft, in-review, published, active, deprecated
+# 'template' is reserved for actual template files; using it on a real skill or agent
+# definition causes the validate-frontmatter pre-commit hook (not this PostToolUse hook) to fail.
+STATUS_VALUE=$(echo "$FRONTMATTER" | grep '^status:' | head -1 | sed "s/^status:[[:space:]]*//; s/^['\"]//; s/['\"]$//; s/\r//")
+if [[ -n "$STATUS_VALUE" ]]; then
+    case "$STATUS_VALUE" in
+        draft|in-review|published|active|deprecated)
+            ;;
+        template)
+            log "ERROR invalid status 'template' in ${FILE_PATH}"
+            echo "ERROR: status: template is reserved for template files only. Use draft, in-review, published, active, or deprecated in $FILE_PATH; fix before committing."
+            ;;
+        *)
+            log "WARN unknown status '${STATUS_VALUE}' in ${FILE_PATH}"
+            echo "WARN: unknown status '${STATUS_VALUE}' in $FILE_PATH; valid values: draft, in-review, published, active, deprecated"
+            ;;
+    esac
 fi
 
 exit 0

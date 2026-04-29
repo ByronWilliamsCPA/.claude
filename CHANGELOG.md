@@ -77,6 +77,19 @@
 * fix(ci): eliminate duplicate Bandit runs by setting `run-bandit: false` in `security-analysis.yml` caller (Bandit already runs twice via python-ci.yml); add SLSA Generic Generator provenance job to `release.yml`; migrate Scorecard to org-level reusable workflow at `ByronWilliamsCPA/.github`
 * fix(docs): correct OpenSSF Best Practices badge ID from 12684 to 12685 in README.md and badge URLs; update all badge URL slugs from `claude_config` to `.claude`
 * fix(agents): correct `ossf-badge-evaluator` automation URL base domain to `bestpractices.dev` and prefill path to `/{level}/edit`
+* fix(config): remove PreToolUse/Bash hook that ran `pre-commit run --all-files` before every
+  Bash call (including git status and ls); the Stop hook covers pre-commit validation at
+  commit time without the per-call overhead
+* fix(config): add force-push prohibition section to `.claude/rules/git-workflow.md` covering
+  main, master, and develop; closes the gap where the branch-first rule blocked direct commits
+  but said nothing about `git push --force`
+* fix(hooks): fix `validate-frontmatter.sh` status-field extraction: add `head -1` to prevent
+  multi-line match from causing spurious WARN on valid files; strip optional YAML quote characters
+  from extracted value; fold `tr -d '\r'` into the `sed` expression; combine guard and extraction
+  into a single pipeline
+* fix(docs): tighten CLAUDE.md project-context instruction with a concrete `grep -rl` command
+  to surface existing tier/standards docs before drafting new guides; replaces the vague
+  "search docs/" instruction that caused documentation rework incidents
 
 ## v0.13.0 (2026-04-21)
 ### Documentation
