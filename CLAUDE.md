@@ -19,6 +19,20 @@ state what was searched and answer from training knowledge, prefixed with:
 Do not assume organizational priorities without verifying them in the
 project tree.
 
+### Before writing any guide, doc, or standards file
+
+Run this before drafting:
+
+```bash
+grep -rl "tier\|framework\|standard\|template" docs/ --include="*.md" 2>/dev/null | head -20
+```
+
+Read the results before writing. If an existing tier framework, standards template, or
+guide structure covers the topic, align with it rather than inventing a new structure.
+Common culprits: audience tier docs, platform audit checklists, contributing guides,
+and ADRs that constrain the approach. Missing this search is the most common cause of
+documentation rework.
+
 ### Repository structure
 
 ```text
