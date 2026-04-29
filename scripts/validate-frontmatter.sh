@@ -7,7 +7,7 @@
 # Also validates status: field; rejects 'template' and unknown values.
 #
 # Prints WARN/ERROR lines to stdout (Claude reads them). Silent on valid files.
-# Exit codes: always 0 (PostToolUse hooks must not block writes)
+# Exit codes: always 0 (PostToolUse hook contract: non-zero exit aborts the tool result)
 # =============================================================================
 
 set -uo pipefail
@@ -85,10 +85,10 @@ fi
 
 # ---- Validate status: field if present --------------------------------------
 # Valid values: draft, in-review, published, active, deprecated
-# 'template' is reserved for actual template files; using it on a real
-# skill or agent definition causes the validate-front-matter pre-commit hook to fail.
-if echo "$FRONTMATTER" | grep -q '^status:'; then
-    STATUS_VALUE=$(echo "$FRONTMATTER" | grep '^status:' | sed 's/^status:[[:space:]]*//' | tr -d '\r')
+# 'template' is reserved for actual template files; using it on a real skill or agent
+# definition causes the validate-frontmatter pre-commit hook (not this PostToolUse hook) to fail.
+STATUS_VALUE=$(echo "$FRONTMATTER" | grep '^status:' | head -1 | sed "s/^status:[[:space:]]*//; s/^['\"]//; s/['\"]$//; s/\r//")
+if [[ -n "$STATUS_VALUE" ]]; then
     case "$STATUS_VALUE" in
         draft|in-review|published|active|deprecated)
             ;;
