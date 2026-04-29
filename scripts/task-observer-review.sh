@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Task Observer scheduled review -- invoke Claude non-interactively with the review prompt.
+# Task Observer scheduled review: invoke Claude non-interactively with the review prompt.
 #
 # Install in user crontab (crontab -e):
 #   0 8 * * 1,3,5 /home/byron/dev/.claude/scripts/task-observer-review.sh
@@ -10,20 +10,32 @@
 
 set -euo pipefail
 
+# Restore the minimal PATH cron needs to find standard tools.
+# Must appear before any external command (including date, grep, printf).
+export PATH="/home/byron/.local/bin:/usr/local/bin:/usr/bin:/bin"
+export HOME="/home/byron"
+
+# #ASSUME: hardcoded deploy path; #VERIFY: confirm REPO_ROOT matches actual install location
 REPO_ROOT="/home/byron/dev/.claude"
 OBS_LOG="${REPO_ROOT}/skill-observations/log.md"
 RUN_LOG="${REPO_ROOT}/skill-observations/review-run.log"
+# #ASSUME: claude installed at this path; #VERIFY: run `which claude` after upgrades
 CLAUDE_BIN="/home/byron/.local/bin/claude"
 
-# Bail early if there are no OPEN observations -- avoids an unnecessary claude invocation.
+# Ensure the runtime directory exists (gitignored, absent on fresh install).
+mkdir -p "$(dirname "${RUN_LOG}")"
+
+# Preflight: confirm claude binary is executable before any work.
+if [[ ! -x "${CLAUDE_BIN}" ]]; then
+    printf '%s: claude binary not found or not executable at %s\n' "$(date -Is)" "${CLAUDE_BIN}" >> "${RUN_LOG}"
+    exit 1
+fi
+
+# Bail early if there are no OPEN observations: avoids an unnecessary claude invocation.
 if [[ ! -f "${OBS_LOG}" ]] || ! grep -q "Status: OPEN" "${OBS_LOG}"; then
     printf '%s: no OPEN observations, skipping review\n' "$(date -Is)" >> "${RUN_LOG}"
     exit 0
 fi
-
-# Restore the minimal PATH cron needs to find standard tools.
-export PATH="/home/byron/.local/bin:/usr/local/bin:/usr/bin:/bin"
-export HOME="/home/byron"
 
 TODAY="$(date +%Y-%m-%d)"
 
@@ -57,6 +69,9 @@ Repo root: ${REPO_ROOT}"
 cd "${REPO_ROOT}"
 printf '%s: starting review run\n' "$(date -Is)" >> "${RUN_LOG}"
 # --dangerously-skip-permissions is required for unattended execution.
-# This script runs locally with bounded operations (read/write within REPO_ROOT only).
-"${CLAUDE_BIN}" -p "${REVIEW_PROMPT}" --dangerously-skip-permissions >> "${RUN_LOG}" 2>&1
-printf '%s: review run complete\n' "$(date -Is)" >> "${RUN_LOG}"
+# WARNING: this flag removes ALL Claude Code permission guardrails; the blast radius
+# is not bounded to REPO_ROOT. Review the prompt carefully before modifying this script.
+CLAUDE_EXIT=0
+"${CLAUDE_BIN}" -p "${REVIEW_PROMPT}" --dangerously-skip-permissions >> "${RUN_LOG}" 2>&1 || CLAUDE_EXIT=$?
+printf '%s: review run complete (exit %d)\n' "$(date -Is)" "${CLAUDE_EXIT}" >> "${RUN_LOG}"
+exit "${CLAUDE_EXIT}"

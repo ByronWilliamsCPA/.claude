@@ -38,14 +38,18 @@ mkdir -p "$(dirname "${OUTPUT}")"
 #   Termination matches ## or ### headings (section is ### level;
 #   #### subsections within it are also stripped).
 TMP="$(mktemp)"
+trap 'rm -f "${TMP}"' EXIT
 sed \
     -e "s|\[your shared folder\]|${REPO_PATH}|g" \
     -e "s|<available_skills>|${MANIFEST_PATH}|g" \
     "${UPSTREAM}" | \
 awk -v section="${STRIP_SECTION}" '
+    { sub(/[[:space:]]+$/, "") }
     $0 == section           { skip=1; next }
     /^## |^### / && skip    { skip=0 }
     !skip                   { print }
-' > "${TMP}" && mv "${TMP}" "${OUTPUT}"
+' > "${TMP}"
+[[ -s "${TMP}" ]] || { echo "ERROR: patch produced empty output" >&2; exit 1; }
+mv "${TMP}" "${OUTPUT}"
 
 echo "Installed: ${OUTPUT}"
