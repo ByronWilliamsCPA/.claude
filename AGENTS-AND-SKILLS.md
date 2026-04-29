@@ -287,6 +287,12 @@ keywords.
 Evaluates phase readiness by analyzing scope completion and running quality gates. Use when
 transitioning between implementation phases or checking whether a phase is ready for completion.
 
+**[/task-observer](/.claude/skills/task-observer/SKILL.md)**
+Session observation skill that records behavioral patterns and tool use during task execution,
+synthesizes cross-cutting insights, and logs observations for autonomous scheduled review.
+Surfaces relevant past observations when loading other skills. Invoke at the start of any
+task-oriented session (any session where you will use tools and produce deliverables).
+
 ### Code Quality
 
 **[/quality](/.claude/skills/quality/SKILL.md)**
