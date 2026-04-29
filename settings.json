@@ -99,7 +99,9 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude/scripts/generate-skills-manifest.sh"
+            "command": "$HOME/.claude/scripts/generate-skills-manifest.sh",
+            "timeout": 10,
+            "statusMessage": "Generating skills manifest..."
           }
         ]
       }
