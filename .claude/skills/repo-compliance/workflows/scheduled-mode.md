@@ -26,6 +26,8 @@ sort -u /tmp/local-repos.txt /tmp/remote-repos.txt > /tmp/all-repos.txt
 
 Read `~/.claude/docs/compliance-exclusions.yaml`. For each exclusion entry, remove matching repos from the list. Match against the GitHub repository name (the basename of the SSH URL or the local directory name). The sweep normalizes both sources to the GitHub repo slug before applying exclusions.
 
+Read `~/.claude/docs/reference/github-repos.json` if it exists. For each repo in the sweep list, look up its slug in the catalog's `repos[]` array. If found, extract the `review` object to pre-populate domain agent prompts with cached data. Note the `_meta.lastUpdated` date at the top of the sweep report; flag cached data older than 30 days as potentially stale.
+
 ### 2. For Each Repo
 
 For local repos: use the path directly.
