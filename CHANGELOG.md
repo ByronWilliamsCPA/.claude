@@ -4,6 +4,8 @@
 
 ### Feature
 
+* feat(task-observer): integrate `one-skill-to-rule-them-all` upstream as a thin local adaptation; add `apply-task-observer-patches.sh` to patch and install the skill, `generate-skills-manifest.sh` as a SessionStart hook that enumerates available skills into `skill-observations/available-skills.md`, `task-observer-review.sh` as a Mon/Wed/Fri cron-scheduled unattended review agent, and a "Task observation" section to CLAUDE.md for observer activation
+
 * feat(agents): add `mkdocs-auditor` agent with four lifecycle modes (create, audit, remediate, update) for automated MkDocs `mkdocs.yml` validation against the standards manifest
 * feat(agents): add `mkdocs-specialist` agent for MkDocs page content creation and style enforcement, including nav label alignment and front matter validation
 * feat(compliance): add MKDOCS-001 through MKDOCS-012 checks to `docs/standards-manifest.yaml` covering site metadata, theme configuration, plugins, navigation, and extension requirements
