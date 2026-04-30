@@ -286,6 +286,7 @@ tmp_cleanup/
 
 docs/content_reviews/
 docs/audit-report.md
+docs/reference/github-repos.md
 
 # Skill workspace and A/B test variant directories (not user-facing skills)
 .claude/skills/*-workspace/

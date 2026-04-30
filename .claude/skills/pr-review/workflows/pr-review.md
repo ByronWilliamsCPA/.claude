@@ -480,6 +480,15 @@ Find every place where errors could be swallowed silently:
 - Missing error handling on IO, network, or DB operations
 - Fallback values that hide the real error
 - Async errors that are not awaited or caught
+- Exception handlers that do not cover the full call surface inside the
+  try block: parsing calls (resp.json(), datetime.fromisoformat(), etc.)
+  nested inside network try blocks that only catch network exception types
+  (HTTPError, RequestException) — json.JSONDecodeError and ValueError are
+  NOT subclasses of those types, so a 200 response with a non-JSON body
+  propagates uncaught and aborts the script rather than being treated as a
+  per-item warning. For each try block, enumerate every call inside it and
+  verify the except clauses cover all raised types, not just the primary
+  network call.
 
 Do NOT dismiss anything as minor. Report every case: file, line, pattern,
 what failure scenario it silences, recommended fix.
