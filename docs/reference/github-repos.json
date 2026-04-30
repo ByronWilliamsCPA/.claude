@@ -127,58 +127,110 @@
         "description": "Deployed Python application, no PyPI publishing.",
         "scorecardFloor": 7.0,
         "scorecardTarget": 8.5,
-        "exemptWorkflows": ["release.yml", "release-sign.yml", "sbom.yml"],
+        "exemptWorkflows": [
+          "release.yml",
+          "release-sign.yml",
+          "sbom.yml"
+        ],
         "exemptHooks": []
       },
       "python-script": {
         "description": "Python scripts and automation tooling without formal packaging.",
         "scorecardFloor": 6.0,
         "scorecardTarget": 7.5,
-        "exemptWorkflows": ["release.yml", "release-sign.yml", "sbom.yml", "reuse.yml"],
-        "exemptHooks": ["basedpyright", "interrogate", "darglint"]
+        "exemptWorkflows": [
+          "release.yml",
+          "release-sign.yml",
+          "sbom.yml",
+          "reuse.yml"
+        ],
+        "exemptHooks": [
+          "basedpyright",
+          "interrogate",
+          "darglint"
+        ]
       },
       "config": {
         "description": "Configuration files, dotfiles, and settings repositories.",
         "scorecardFloor": 5.0,
         "scorecardTarget": 7.0,
         "exemptWorkflows": [
-          "release.yml", "release-sign.yml", "sbom.yml",
-          "coverage.yml", "python-compatibility.yml", "reuse.yml"
+          "release.yml",
+          "release-sign.yml",
+          "sbom.yml",
+          "coverage.yml",
+          "python-compatibility.yml",
+          "reuse.yml"
         ],
-        "exemptHooks": ["ruff", "basedpyright", "bandit", "darglint", "interrogate"]
+        "exemptHooks": [
+          "ruff",
+          "basedpyright",
+          "bandit",
+          "darglint",
+          "interrogate"
+        ]
       },
       "infrastructure": {
         "description": "IaC, homelab, networking, Terraform, Ansible, or Helm repositories.",
         "scorecardFloor": 5.0,
         "scorecardTarget": 7.0,
         "exemptWorkflows": [
-          "release.yml", "release-sign.yml", "sbom.yml",
-          "coverage.yml", "python-compatibility.yml", "reuse.yml"
+          "release.yml",
+          "release-sign.yml",
+          "sbom.yml",
+          "coverage.yml",
+          "python-compatibility.yml",
+          "reuse.yml"
         ],
-        "exemptHooks": ["ruff", "basedpyright", "bandit", "darglint", "interrogate"]
+        "exemptHooks": [
+          "ruff",
+          "basedpyright",
+          "bandit",
+          "darglint",
+          "interrogate"
+        ]
       },
       "docs-only": {
         "description": "Documentation sites, reference material, and GitHub Pages repos.",
         "scorecardFloor": 4.0,
         "scorecardTarget": 6.0,
         "exemptWorkflows": [
-          "release.yml", "release-sign.yml", "sbom.yml",
-          "coverage.yml", "python-compatibility.yml", "reuse.yml", "codeql.yml"
+          "release.yml",
+          "release-sign.yml",
+          "sbom.yml",
+          "coverage.yml",
+          "python-compatibility.yml",
+          "reuse.yml",
+          "codeql.yml"
         ],
-        "exemptHooks": ["ruff", "basedpyright", "bandit", "darglint", "interrogate"]
+        "exemptHooks": [
+          "ruff",
+          "basedpyright",
+          "bandit",
+          "darglint",
+          "interrogate"
+        ]
       },
       "template": {
         "description": "Cookiecutter or other project templates; may contain placeholder code.",
         "scorecardFloor": 5.0,
         "scorecardTarget": 7.5,
-        "exemptWorkflows": ["coverage.yml", "sbom.yml"],
-        "exemptHooks": ["basedpyright", "interrogate", "darglint"]
+        "exemptWorkflows": [
+          "coverage.yml",
+          "sbom.yml"
+        ],
+        "exemptHooks": [
+          "basedpyright",
+          "interrogate",
+          "darglint"
+        ]
       }
     }
   },
   "repos": [
     {
       "org": "ByronWilliamsCPA",
+      "repositoryType": "config",
       "name": ".claude",
       "url": "https://github.com/ByronWilliamsCPA/.claude",
       "defaultBranch": "main",
@@ -307,6 +359,7 @@
     },
     {
       "org": "ByronWilliamsCPA",
+      "repositoryType": "config",
       "name": ".github",
       "url": "https://github.com/ByronWilliamsCPA/.github",
       "defaultBranch": "main",
@@ -444,6 +497,7 @@
     },
     {
       "org": "ByronWilliamsCPA",
+      "repositoryType": "python-package",
       "name": "audio-processor",
       "url": "https://github.com/ByronWilliamsCPA/audio-processor",
       "defaultBranch": "main",
@@ -581,6 +635,7 @@
     },
     {
       "org": "ByronWilliamsCPA",
+      "repositoryType": "template",
       "name": "cookiecutter-python-template",
       "url": "https://github.com/ByronWilliamsCPA/cookiecutter-python-template",
       "defaultBranch": "main",
@@ -687,6 +742,7 @@
     },
     {
       "org": "ByronWilliamsCPA",
+      "repositoryType": "template",
       "name": "cookiecutter-template-sample",
       "url": "https://github.com/ByronWilliamsCPA/cookiecutter-template-sample",
       "defaultBranch": "main",
@@ -789,6 +845,7 @@
     },
     {
       "org": "ByronWilliamsCPA",
+      "repositoryType": "docs-only",
       "name": "DeQA-Doc",
       "url": "https://github.com/ByronWilliamsCPA/DeQA-Doc",
       "defaultBranch": "main",
@@ -883,6 +940,7 @@
     },
     {
       "org": "ByronWilliamsCPA",
+      "repositoryType": "python-app",
       "name": "fragrance-rater",
       "url": "https://github.com/ByronWilliamsCPA/fragrance-rater",
       "defaultBranch": "main",
@@ -1003,6 +1061,7 @@
     },
     {
       "org": "ByronWilliamsCPA",
+      "repositoryType": "python-package",
       "name": "gleif",
       "url": "https://github.com/ByronWilliamsCPA/gleif",
       "defaultBranch": "main",
@@ -1119,6 +1178,7 @@
     },
     {
       "org": "ByronWilliamsCPA",
+      "repositoryType": "infrastructure",
       "name": "homelab-infra",
       "url": "https://github.com/ByronWilliamsCPA/homelab-infra",
       "defaultBranch": "main",
@@ -1265,6 +1325,7 @@
     },
     {
       "org": "ByronWilliamsCPA",
+      "repositoryType": "python-app",
       "name": "llc-manager",
       "url": "https://github.com/ByronWilliamsCPA/llc-manager",
       "defaultBranch": "main",
@@ -1405,6 +1466,7 @@
     },
     {
       "org": "ByronWilliamsCPA",
+      "repositoryType": "python-script",
       "name": "maester-tests",
       "url": "https://github.com/ByronWilliamsCPA/maester-tests",
       "defaultBranch": "main",
@@ -1533,6 +1595,7 @@
     },
     {
       "org": "ByronWilliamsCPA",
+      "repositoryType": "python-package",
       "name": "python-libs",
       "url": "https://github.com/ByronWilliamsCPA/python-libs",
       "defaultBranch": "main",
@@ -1651,6 +1714,7 @@
     },
     {
       "org": "ByronWilliamsCPA",
+      "repositoryType": "python-package",
       "name": "rag-processor",
       "url": "https://github.com/ByronWilliamsCPA/rag-processor",
       "defaultBranch": "main",
@@ -1788,6 +1852,7 @@
     },
     {
       "org": "ByronWilliamsCPA",
+      "repositoryType": "docs-only",
       "name": "reference-library",
       "url": "https://github.com/ByronWilliamsCPA/reference-library",
       "defaultBranch": "main",
@@ -1879,6 +1944,7 @@
     },
     {
       "org": "ByronWilliamsCPA",
+      "repositoryType": "python-app",
       "name": "taxdome",
       "url": "https://github.com/ByronWilliamsCPA/taxdome",
       "defaultBranch": "main",
@@ -1970,6 +2036,7 @@
     },
     {
       "org": "ByronWilliamsCPA",
+      "repositoryType": "template",
       "name": "template-sample",
       "url": "https://github.com/ByronWilliamsCPA/template-sample",
       "defaultBranch": "main",
@@ -2079,6 +2146,7 @@
     },
     {
       "org": "ByronWilliamsCPA",
+      "repositoryType": "python-package",
       "name": "xero-crypto",
       "url": "https://github.com/ByronWilliamsCPA/xero-crypto",
       "defaultBranch": "master",
@@ -2178,6 +2246,7 @@
     },
     {
       "org": "williaby",
+      "repositoryType": "config",
       "name": ".claude",
       "url": "https://github.com/williaby/.claude",
       "defaultBranch": "main",
@@ -2269,6 +2338,7 @@
     },
     {
       "org": "williaby",
+      "repositoryType": "docs-only",
       "name": "backpacking",
       "url": "https://github.com/williaby/backpacking",
       "defaultBranch": "master",
@@ -2360,6 +2430,7 @@
     },
     {
       "org": "williaby",
+      "repositoryType": "config",
       "name": "CR-10-",
       "url": "https://github.com/williaby/CR-10-",
       "defaultBranch": "main",
@@ -2451,6 +2522,7 @@
     },
     {
       "org": "williaby",
+      "repositoryType": "docs-only",
       "name": "dart-frog-paludarium",
       "url": "https://github.com/williaby/dart-frog-paludarium",
       "defaultBranch": "master",
@@ -2542,6 +2614,7 @@
     },
     {
       "org": "williaby",
+      "repositoryType": "python-app",
       "name": "data_ingestor",
       "url": "https://github.com/williaby/data_ingestor",
       "defaultBranch": "main",
@@ -2645,6 +2718,7 @@
     },
     {
       "org": "williaby",
+      "repositoryType": "python-script",
       "name": "dna",
       "url": "https://github.com/williaby/dna",
       "defaultBranch": "main",
@@ -2769,6 +2843,7 @@
     },
     {
       "org": "williaby",
+      "repositoryType": "python-app",
       "name": "exercise-competition",
       "url": "https://github.com/williaby/exercise-competition",
       "defaultBranch": "main",
@@ -2897,6 +2972,7 @@
     },
     {
       "org": "williaby",
+      "repositoryType": "python-app",
       "name": "family_office",
       "url": "https://github.com/williaby/family_office",
       "defaultBranch": "master",
@@ -2988,6 +3064,7 @@
     },
     {
       "org": "williaby",
+      "repositoryType": "python-app",
       "name": "FISProject",
       "url": "https://github.com/williaby/FISProject",
       "defaultBranch": "master",
@@ -3083,6 +3160,7 @@
     },
     {
       "org": "williaby",
+      "repositoryType": "python-app",
       "name": "GCS",
       "url": "https://github.com/williaby/GCS",
       "defaultBranch": "main",
@@ -3174,6 +3252,7 @@
     },
     {
       "org": "williaby",
+      "repositoryType": "config",
       "name": "homelab-agent-configs",
       "url": "https://github.com/williaby/homelab-agent-configs",
       "defaultBranch": "agent/hermes",
@@ -3265,6 +3344,7 @@
     },
     {
       "org": "williaby",
+      "repositoryType": "python-app",
       "name": "image-generation",
       "url": "https://github.com/williaby/image-generation",
       "defaultBranch": "main",
@@ -3371,6 +3451,7 @@
     },
     {
       "org": "williaby",
+      "repositoryType": "python-app",
       "name": "image-preprocessing-detector",
       "url": "https://github.com/williaby/image-preprocessing-detector",
       "defaultBranch": "main",
@@ -3513,6 +3594,7 @@
     },
     {
       "org": "williaby",
+      "repositoryType": "config",
       "name": "klipper-octoprint-configs",
       "url": "https://github.com/williaby/klipper-octoprint-configs",
       "defaultBranch": "main",
@@ -3604,6 +3686,7 @@
     },
     {
       "org": "williaby",
+      "repositoryType": "python-app",
       "name": "ledgerbase",
       "url": "https://github.com/williaby/ledgerbase",
       "defaultBranch": "main",
@@ -3737,6 +3820,7 @@
     },
     {
       "org": "williaby",
+      "repositoryType": "docs-only",
       "name": "library",
       "url": "https://github.com/williaby/library",
       "defaultBranch": "main",
@@ -3828,6 +3912,7 @@
     },
     {
       "org": "williaby",
+      "repositoryType": "python-app",
       "name": "LifeSphere",
       "url": "https://github.com/williaby/LifeSphere",
       "defaultBranch": "main",
@@ -3919,6 +4004,7 @@
     },
     {
       "org": "williaby",
+      "repositoryType": "python-app",
       "name": "magg",
       "url": "https://github.com/williaby/magg",
       "defaultBranch": "main",
@@ -4020,6 +4106,7 @@
     },
     {
       "org": "williaby",
+      "repositoryType": "python-script",
       "name": "monte_carlo",
       "url": "https://github.com/williaby/monte_carlo",
       "defaultBranch": "main",
@@ -4114,6 +4201,7 @@
     },
     {
       "org": "williaby",
+      "repositoryType": "config",
       "name": "OPNS",
       "url": "https://github.com/williaby/OPNS",
       "defaultBranch": "main",
@@ -4205,6 +4293,7 @@
     },
     {
       "org": "williaby",
+      "repositoryType": "config",
       "name": "OPNSense",
       "url": "https://github.com/williaby/OPNSense",
       "defaultBranch": "main",
@@ -4296,6 +4385,7 @@
     },
     {
       "org": "williaby",
+      "repositoryType": "python-app",
       "name": "pp-security-master",
       "url": "https://github.com/williaby/pp-security-master",
       "defaultBranch": "main",
@@ -4395,6 +4485,7 @@
     },
     {
       "org": "williaby",
+      "repositoryType": "python-app",
       "name": "PromptCraft",
       "url": "https://github.com/williaby/PromptCraft",
       "defaultBranch": "main",
@@ -4510,6 +4601,7 @@
     },
     {
       "org": "williaby",
+      "repositoryType": "config",
       "name": "superslicer-configs",
       "url": "https://github.com/williaby/superslicer-configs",
       "defaultBranch": "main",
@@ -4601,6 +4693,7 @@
     },
     {
       "org": "williaby",
+      "repositoryType": "python-script",
       "name": "testing",
       "url": "https://github.com/williaby/testing",
       "defaultBranch": "claude/initial-project-setup-01Ki3S5kK8CmVAnFLY7vpJCh",
@@ -4696,6 +4789,7 @@
     },
     {
       "org": "williaby",
+      "repositoryType": "python-app",
       "name": "xero-practice-management",
       "url": "https://github.com/williaby/xero-practice-management",
       "defaultBranch": "main",
@@ -4787,6 +4881,7 @@
     },
     {
       "org": "williaby",
+      "repositoryType": "python-package",
       "name": "zen-mcp-server",
       "url": "https://github.com/williaby/zen-mcp-server",
       "defaultBranch": "main",
