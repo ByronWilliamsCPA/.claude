@@ -327,6 +327,8 @@ known-first-party = ["claude_config"]
     "EM",     # Tool exceptions
     "BLE",    # Blind except (error handling in tools)
     "C901",   # Complexity allowed in utility scripts
+    "S603",   # Subprocess with controlled, non-user input
+    "S607",   # Partial path for known CLI tools
 ]
 
 # Nox configuration

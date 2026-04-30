@@ -33,6 +33,35 @@ Follow the appropriate workflow file for the selected mode. Both modes share the
 4. Merge findings, filter overrides, sort by severity
 5. Run `compliance-retrospective` after all repos are processed
 
+## Local Repo Inventory
+
+A pre-built catalog of all 44 repos across both orgs lives at:
+
+- `~/.claude/docs/reference/github-repos.json`: structured compliance data (local only, gitignored)
+- `~/.claude/docs/reference/github-repos.md`: human-readable index with refresh commands
+
+The JSON contains a `review` object per repo with pre-fetched values for:
+`branchProtection`, `codeql`, `scorecard`, `sonarcloud`, `codecov`, `reuse`, `dependabot`,
+`ossfBadge`, `workflows`, `foundations`, `preCommit`, `toolchain`.
+
+**When to consult it:** At the start of any compliance audit:
+
+1. Load `_meta.idealEntry` as the compliance target. Every key in `idealEntry` is the
+   expected value for a fully-compliant repo. Pass it to domain agents so they can diff
+   the actual repo against the ideal rather than evaluating each field in isolation.
+2. Look up the target repo slug (`org/name`) in `repos[]`. If found, extract the `review`
+   object and pass it to each domain agent as pre-fetched context to skip redundant GitHub
+   API calls and focus on local file verification.
+
+In scheduled mode, use the catalog to pre-populate known state before cloning and
+dispatching agents.
+
+**Limitations:** The catalog is local-only (gitignored) and must be refreshed manually using
+the commands in `github-repos.md`. Treat cached data as a starting hint, not a definitive
+answer. Agents should still verify anything time-sensitive (CI runs, live Scorecard scores).
+The `_meta.lastUpdated` field shows the refresh date; flag data older than 30 days as
+potentially stale.
+
 ## Domain Agents
 
 | Domain | Agent | Checks |
