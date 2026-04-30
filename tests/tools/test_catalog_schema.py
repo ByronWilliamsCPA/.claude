@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import TypedDict, cast
 
 import pytest
 
@@ -19,16 +20,50 @@ VALID_TYPES = {
 }
 
 
+class TypeProfile(TypedDict):
+    """A single type profile entry from _meta.typeProfiles."""
+
+    description: str
+    exemptWorkflows: list[str]
+    exemptHooks: list[str]
+
+
+class IdealEntryWorkflows(TypedDict):
+    """Workflow-related fields from _meta.idealEntry."""
+
+    presentFromExpected: list[str]
+
+
+class IdealEntryPreCommit(TypedDict):
+    """Pre-commit fields from _meta.idealEntry."""
+
+    hooks: dict[str, object]
+
+
+class CatalogMeta(TypedDict):
+    """The _meta block of the catalog JSON."""
+
+    typeProfiles: dict[str, TypeProfile]
+    idealEntry: dict[str, object]
+
+
+class Catalog(TypedDict):
+    """Top-level structure of docs/reference/github-repos.json."""
+
+    _meta: CatalogMeta
+    repos: list[dict[str, object]]
+
+
 @pytest.fixture(scope="module")
-def catalog() -> dict[str, object]:
+def catalog() -> Catalog:
     """Load and return the catalog JSON."""
-    return json.loads(CATALOG.read_text())  # type: ignore[return-value]
+    return cast("Catalog", json.loads(CATALOG.read_text()))
 
 
 @pytest.fixture(scope="module")
-def repo_entries(catalog: dict[str, object]) -> list[dict[str, object]]:
+def repo_entries(catalog: Catalog) -> list[dict[str, object]]:
     """Return all repo entries from the repos array."""
-    return catalog["repos"]  # type: ignore[return-value]
+    return catalog["repos"]
 
 
 @pytest.mark.unit
@@ -56,27 +91,31 @@ def test_all_repository_types_are_valid(repo_entries: list[dict[str, object]]) -
 
 
 @pytest.mark.unit
-def test_type_profiles_cover_all_types(catalog: dict[str, object]) -> None:
+def test_type_profiles_cover_all_types(catalog: Catalog) -> None:
     """typeProfiles in _meta must define all valid taxonomy types."""
-    defined = set(catalog["_meta"]["typeProfiles"].keys())  # type: ignore[index]
+    defined = set(catalog["_meta"]["typeProfiles"].keys())
     assert defined == VALID_TYPES, f"Profile mismatch: {defined ^ VALID_TYPES}"
 
 
 @pytest.mark.unit
-def test_exempt_workflows_are_valid(catalog: dict[str, object]) -> None:
+def test_exempt_workflows_are_valid(catalog: Catalog) -> None:
     """All exempted workflows must be in idealEntry.workflows.presentFromExpected."""
-    all_workflows = set(
-        catalog["_meta"]["idealEntry"]["workflows"]["presentFromExpected"]  # type: ignore[index]
+    ideal_workflows = cast(
+        "IdealEntryWorkflows", catalog["_meta"]["idealEntry"]["workflows"]
     )
-    for type_name, profile in catalog["_meta"]["typeProfiles"].items():  # type: ignore[union-attr]
-        invalid = [w for w in profile["exemptWorkflows"] if w not in all_workflows]  # type: ignore[index]
+    all_workflows = set(ideal_workflows["presentFromExpected"])
+    for type_name, profile in catalog["_meta"]["typeProfiles"].items():
+        invalid = [w for w in profile["exemptWorkflows"] if w not in all_workflows]
         assert not invalid, f"{type_name} exempts invalid workflows: {invalid}"
 
 
 @pytest.mark.unit
-def test_exempt_hooks_are_valid(catalog: dict[str, object]) -> None:
+def test_exempt_hooks_are_valid(catalog: Catalog) -> None:
     """All exempted hooks must be in idealEntry.preCommit.hooks."""
-    all_hooks = set(catalog["_meta"]["idealEntry"]["preCommit"]["hooks"].keys())  # type: ignore[index]
-    for type_name, profile in catalog["_meta"]["typeProfiles"].items():  # type: ignore[union-attr]
-        invalid = [h for h in profile["exemptHooks"] if h not in all_hooks]  # type: ignore[index]
+    ideal_precommit = cast(
+        "IdealEntryPreCommit", catalog["_meta"]["idealEntry"]["preCommit"]
+    )
+    all_hooks = set(ideal_precommit["hooks"].keys())
+    for type_name, profile in catalog["_meta"]["typeProfiles"].items():
+        invalid = [h for h in profile["exemptHooks"] if h not in all_hooks]
         assert not invalid, f"{type_name} exempts invalid hooks: {invalid}"
