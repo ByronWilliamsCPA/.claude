@@ -184,3 +184,11 @@ def test_enable_secret_scanning_script_exists() -> None:
     script = Path(__file__).parents[2] / "tools" / "enable_secret_scanning.py"
     assert script.exists(), "tools/enable_secret_scanning.py not found"
     assert script.stat().st_mode & 0o111, "Script must be executable"
+
+
+@pytest.mark.unit
+def test_refresh_catalog_release_health_script_exists() -> None:
+    """The release health refresh script must exist and be executable."""
+    script = Path(__file__).parents[2] / "tools" / "refresh_catalog_release_health.py"
+    assert script.exists(), "tools/refresh_catalog_release_health.py not found"
+    assert script.stat().st_mode & 0o111, "Script must be executable"
