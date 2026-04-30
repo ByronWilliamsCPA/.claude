@@ -154,3 +154,25 @@ def test_all_entries_have_secret_scanning(
         if "secretScanning" not in cast("dict[str, object]", e.get("review", {}))
     ]
     assert not missing, f"Missing secretScanning field on: {missing}"
+
+
+@pytest.mark.unit
+def test_all_entries_have_release_health(repo_entries: list[dict[str, object]]) -> None:
+    """Every catalog entry must have a releaseHealth field in review."""
+    missing = [
+        f"{e.get('org', '?')}/{e.get('name', '?')}"
+        for e in repo_entries
+        if "releaseHealth" not in cast("dict[str, object]", e.get("review", {}))
+    ]
+    assert not missing, f"Missing releaseHealth field on: {missing}"
+
+
+@pytest.mark.unit
+def test_all_entries_have_template_drift(repo_entries: list[dict[str, object]]) -> None:
+    """Every catalog entry must have a templateDrift field in review."""
+    missing = [
+        f"{e.get('org', '?')}/{e.get('name', '?')}"
+        for e in repo_entries
+        if "templateDrift" not in cast("dict[str, object]", e.get("review", {}))
+    ]
+    assert not missing, f"Missing templateDrift field on: {missing}"
