@@ -1,0 +1,4834 @@
+{
+  "_meta": {
+    "linkedDoc": "docs/reference/github-repos.md",
+    "lastUpdated": "2026-04-29",
+    "refreshCommands": {
+      "repoList": "gh repo list <org> --limit 100 --json name,url,defaultBranchRef,description,isPrivate,isArchived",
+      "branchProtection": "gh api repos/<org>/<repo>/branches/<branch>/protection",
+      "standards": "See docs/reference/github-repos.md for per-section refresh commands"
+    },
+    "idealEntry": {
+      "_note": "Target state for all repos. Each review key shows the value a fully-compliant repo should have. Use this as a diff baseline during audits.",
+      "branchProtection": {
+        "enabled": true,
+        "enforceAdmins": true,
+        "requiredSignatures": true,
+        "requiredLinearHistory": true,
+        "allowForcePushes": false,
+        "allowDeletions": false,
+        "blockCreations": false,
+        "requiredConversationResolution": true,
+        "lockBranch": false,
+        "requiredStatusChecks": {
+          "strict": true,
+          "contexts": [
+            "CI Gate",
+            "Security Gate Validation",
+            "Dependency & Standards Validation",
+            "Check REUSE Compliance"
+          ]
+        },
+        "requiredPullRequestReviews": {
+          "requiredApprovingReviewCount": 0,
+          "dismissStaleReviews": false,
+          "requireCodeOwnerReviews": false,
+          "requireLastPushApproval": false
+        }
+      },
+      "codeql": {
+        "workflowPresent": true
+      },
+      "scorecard": {
+        "workflowPresent": true,
+        "floor": 7.0,
+        "target": 8.5,
+        "_scoreNote": "Solo-dev structural ceiling ~7.5-8.0: Code-Review and Contributors checks require multiple contributors by definition. Floor 7.0 triggers investigation. Target 8.5 is achievable with automation."
+      },
+      "sonarcloud": {
+        "configPresent": true,
+        "workflowPresent": true
+      },
+      "codecov": {
+        "configPresent": true,
+        "workflowPresent": true
+      },
+      "reuse": {
+        "workflowPresent": true
+      },
+      "dependabot": {
+        "configured": true
+      },
+      "ossfBadge": {
+        "badgeId": "<registered>",
+        "level": "passing",
+        "percentagePassing": 100,
+        "_levelNote": "Passing is the achievable solo-dev target. Silver is blocked by bus_factor>=2 and two_person_review. Gold adds contributors_unassociated. All three are structural blockers, not process gaps."
+      },
+      "workflows": {
+        "presentFromExpected": [
+          "ci.yml",
+          "codeql.yml",
+          "coverage.yml",
+          "docs.yml",
+          "pr-validation.yml",
+          "python-compatibility.yml",
+          "release-sign.yml",
+          "release.yml",
+          "reuse.yml",
+          "sbom.yml",
+          "scorecard.yml",
+          "security-analysis.yml",
+          "sonarcloud.yml"
+        ],
+        "missingFromExpected": [],
+        "extras": []
+      },
+      "foundations": {
+        "securityMd": true,
+        "contributingMd": true,
+        "changelogMd": true,
+        "codeOfConduct": true,
+        "governanceMd": true,
+        "agentsMd": true,
+        "geminiMd": true,
+        "claudeMd": true,
+        "knownVulnerabilities": true,
+        "codeowners": true
+      },
+      "preCommit": {
+        "configPresent": true,
+        "hooks": {
+          "ruff": true,
+          "basedpyright": true,
+          "bandit": true,
+          "detectSecrets": true,
+          "darglint": true,
+          "interrogate": true,
+          "commitizen": true,
+          "yamllint": true,
+          "markdownlint": true,
+          "noEmDash": true
+        }
+      },
+      "toolchain": {
+        "pyprojectToml": true,
+        "qltyConfig": true
+      }
+    }
+  },
+  "repos": [
+    {
+      "org": "ByronWilliamsCPA",
+      "name": ".claude",
+      "url": "https://github.com/ByronWilliamsCPA/.claude",
+      "defaultBranch": "main",
+      "description": "Claude Code global configuration and development standards",
+      "isPrivate": false,
+      "isArchived": false,
+      "review": {
+        "branchProtection": {
+          "enabled": true,
+          "enforceAdmins": true,
+          "requiredSignatures": true,
+          "requiredLinearHistory": true,
+          "allowForcePushes": false,
+          "allowDeletions": false,
+          "blockCreations": false,
+          "requiredConversationResolution": true,
+          "lockBranch": false,
+          "requiredStatusChecks": {
+            "strict": true,
+            "contexts": [
+              "CI Gate",
+              "Security Gate Validation",
+              "Dependency & Standards Validation",
+              "Check REUSE Compliance"
+            ]
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": 0,
+            "dismissStaleReviews": false,
+            "requireCodeOwnerReviews": false,
+            "requireLastPushApproval": false
+          }
+        },
+        "codeql": {
+          "workflowPresent": true
+        },
+        "scorecard": {
+          "workflowPresent": true,
+          "score": 7.6,
+          "lastChecked": "2026-04-28T21:40:19Z"
+        },
+        "sonarcloud": {
+          "configPresent": true,
+          "workflowPresent": true
+        },
+        "codecov": {
+          "configPresent": true,
+          "workflowPresent": true
+        },
+        "reuse": {
+          "workflowPresent": true
+        },
+        "dependabot": {
+          "configured": true
+        },
+        "ossfBadge": {
+          "badgeId": 12685,
+          "percentagePassing": 100
+        },
+        "workflows": {
+          "files": [
+            "ci.yml",
+            "codeql.yml",
+            "coverage.yml",
+            "docs.yml",
+            "pr-validation.yml",
+            "python-compatibility.yml",
+            "release-sign.yml",
+            "release.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml",
+            "sonarcloud.yml"
+          ],
+          "presentFromExpected": [
+            "ci.yml",
+            "codeql.yml",
+            "coverage.yml",
+            "docs.yml",
+            "pr-validation.yml",
+            "python-compatibility.yml",
+            "release-sign.yml",
+            "release.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml",
+            "sonarcloud.yml"
+          ],
+          "missingFromExpected": [],
+          "extras": []
+        },
+        "foundations": {
+          "securityMd": true,
+          "contributingMd": true,
+          "changelogMd": true,
+          "codeOfConduct": false,
+          "governanceMd": false,
+          "agentsMd": true,
+          "geminiMd": true,
+          "claudeMd": true,
+          "knownVulnerabilities": true,
+          "codeowners": true
+        },
+        "preCommit": {
+          "configPresent": true,
+          "hooks": {
+            "ruff": true,
+            "basedpyright": true,
+            "bandit": true,
+            "detectSecrets": true,
+            "darglint": true,
+            "interrogate": true,
+            "commitizen": true,
+            "yamllint": true,
+            "markdownlint": true,
+            "noEmDash": true
+          }
+        },
+        "toolchain": {
+          "pyprojectToml": true,
+          "qltyConfig": true
+        }
+      }
+    },
+    {
+      "org": "ByronWilliamsCPA",
+      "name": ".github",
+      "url": "https://github.com/ByronWilliamsCPA/.github",
+      "defaultBranch": "main",
+      "description": "Org-level community health files",
+      "isPrivate": false,
+      "isArchived": false,
+      "review": {
+        "branchProtection": {
+          "enabled": false
+        },
+        "codeql": {
+          "workflowPresent": false
+        },
+        "scorecard": {
+          "workflowPresent": true,
+          "score": null,
+          "lastChecked": null
+        },
+        "sonarcloud": {
+          "configPresent": false,
+          "workflowPresent": true
+        },
+        "codecov": {
+          "configPresent": false,
+          "workflowPresent": true
+        },
+        "reuse": {
+          "workflowPresent": true
+        },
+        "dependabot": {
+          "configured": false
+        },
+        "ossfBadge": {
+          "badgeId": null,
+          "percentagePassing": null
+        },
+        "workflows": {
+          "files": [
+            "python-ci.yml",
+            "python-codecov.yml",
+            "python-compatibility.yml",
+            "python-container-security.yml",
+            "python-docker.yml",
+            "python-docs.yml",
+            "python-fips-compatibility.yml",
+            "python-fuzzing.yml",
+            "python-mutation.yml",
+            "python-performance-regression.yml",
+            "python-pr-validation.yml",
+            "python-publish-pypi.yml",
+            "python-qlty-coverage.yml",
+            "python-release.yml",
+            "python-reuse.yml",
+            "python-sbom.yml",
+            "python-scorecard.yml",
+            "python-security-analysis.yml",
+            "python-slsa.yml",
+            "python-sonarcloud.yml",
+            "python-supplemental-checks.yml",
+            "shell-tests.yml"
+          ],
+          "presentFromExpected": [
+            "python-compatibility.yml"
+          ],
+          "missingFromExpected": [
+            "ci.yml",
+            "codeql.yml",
+            "coverage.yml",
+            "docs.yml",
+            "pr-validation.yml",
+            "release-sign.yml",
+            "release.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml",
+            "sonarcloud.yml"
+          ],
+          "extras": [
+            "python-ci.yml",
+            "python-codecov.yml",
+            "python-container-security.yml",
+            "python-docker.yml",
+            "python-docs.yml",
+            "python-fips-compatibility.yml",
+            "python-fuzzing.yml",
+            "python-mutation.yml",
+            "python-performance-regression.yml",
+            "python-pr-validation.yml",
+            "python-publish-pypi.yml",
+            "python-qlty-coverage.yml",
+            "python-release.yml",
+            "python-reuse.yml",
+            "python-sbom.yml",
+            "python-scorecard.yml",
+            "python-security-analysis.yml",
+            "python-slsa.yml",
+            "python-sonarcloud.yml",
+            "python-supplemental-checks.yml",
+            "shell-tests.yml"
+          ]
+        },
+        "foundations": {
+          "securityMd": true,
+          "contributingMd": true,
+          "changelogMd": true,
+          "codeOfConduct": true,
+          "governanceMd": true,
+          "agentsMd": false,
+          "geminiMd": false,
+          "claudeMd": false,
+          "knownVulnerabilities": false,
+          "codeowners": false
+        },
+        "preCommit": {
+          "configPresent": false,
+          "hooks": {
+            "ruff": false,
+            "basedpyright": false,
+            "bandit": false,
+            "detectSecrets": false,
+            "darglint": false,
+            "interrogate": false,
+            "commitizen": false,
+            "yamllint": false,
+            "markdownlint": false,
+            "noEmDash": false
+          }
+        },
+        "toolchain": {
+          "pyprojectToml": false,
+          "qltyConfig": true
+        }
+      }
+    },
+    {
+      "org": "ByronWilliamsCPA",
+      "name": "audio-processor",
+      "url": "https://github.com/ByronWilliamsCPA/audio-processor",
+      "defaultBranch": "main",
+      "description": "Audio file conversion and processing for RAG content pipelines",
+      "isPrivate": false,
+      "isArchived": false,
+      "review": {
+        "branchProtection": {
+          "enabled": true,
+          "enforceAdmins": true,
+          "requiredSignatures": true,
+          "requiredLinearHistory": true,
+          "allowForcePushes": false,
+          "allowDeletions": false,
+          "blockCreations": false,
+          "requiredConversationResolution": false,
+          "lockBranch": false,
+          "requiredStatusChecks": null,
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": 0,
+            "dismissStaleReviews": true,
+            "requireCodeOwnerReviews": true,
+            "requireLastPushApproval": false
+          }
+        },
+        "codeql": {
+          "workflowPresent": false
+        },
+        "scorecard": {
+          "workflowPresent": true,
+          "score": null,
+          "lastChecked": null
+        },
+        "sonarcloud": {
+          "configPresent": true,
+          "workflowPresent": true
+        },
+        "codecov": {
+          "configPresent": true,
+          "workflowPresent": true
+        },
+        "reuse": {
+          "workflowPresent": true
+        },
+        "dependabot": {
+          "configured": true
+        },
+        "ossfBadge": {
+          "badgeId": null,
+          "percentagePassing": null
+        },
+        "workflows": {
+          "files": [
+            "ci.yml",
+            "cifuzzy.yml",
+            "codecov.yml",
+            "container-security.yml",
+            "dependency-review.yml",
+            "docs.yml",
+            "fips-compatibility.yml",
+            "mutation-testing.yml",
+            "pr-validation.yml",
+            "publish-pypi.yml",
+            "python-compatibility.yml",
+            "release.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml",
+            "slsa-provenance.yml",
+            "sonarcloud.yml",
+            "validate-cruft.yml"
+          ],
+          "presentFromExpected": [
+            "ci.yml",
+            "docs.yml",
+            "pr-validation.yml",
+            "python-compatibility.yml",
+            "release.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml",
+            "sonarcloud.yml"
+          ],
+          "missingFromExpected": [
+            "codeql.yml",
+            "coverage.yml",
+            "release-sign.yml"
+          ],
+          "extras": [
+            "cifuzzy.yml",
+            "codecov.yml",
+            "container-security.yml",
+            "dependency-review.yml",
+            "fips-compatibility.yml",
+            "mutation-testing.yml",
+            "publish-pypi.yml",
+            "slsa-provenance.yml",
+            "validate-cruft.yml"
+          ]
+        },
+        "foundations": {
+          "securityMd": false,
+          "contributingMd": true,
+          "changelogMd": true,
+          "codeOfConduct": false,
+          "governanceMd": false,
+          "agentsMd": false,
+          "geminiMd": false,
+          "claudeMd": true,
+          "knownVulnerabilities": false,
+          "codeowners": true
+        },
+        "preCommit": {
+          "configPresent": true,
+          "hooks": {
+            "ruff": true,
+            "basedpyright": false,
+            "bandit": true,
+            "detectSecrets": false,
+            "darglint": true,
+            "interrogate": true,
+            "commitizen": false,
+            "yamllint": false,
+            "markdownlint": false,
+            "noEmDash": false
+          }
+        },
+        "toolchain": {
+          "pyprojectToml": true,
+          "qltyConfig": true
+        }
+      }
+    },
+    {
+      "org": "ByronWilliamsCPA",
+      "name": "cookiecutter-python-template",
+      "url": "https://github.com/ByronWilliamsCPA/cookiecutter-python-template",
+      "defaultBranch": "main",
+      "description": "Cookiecutter template for Python projects with modern development standards",
+      "isPrivate": false,
+      "isArchived": false,
+      "review": {
+        "branchProtection": {
+          "enabled": false
+        },
+        "codeql": {
+          "workflowPresent": false
+        },
+        "scorecard": {
+          "workflowPresent": false,
+          "score": null,
+          "lastChecked": null
+        },
+        "sonarcloud": {
+          "configPresent": true,
+          "workflowPresent": true
+        },
+        "codecov": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "reuse": {
+          "workflowPresent": false
+        },
+        "dependabot": {
+          "configured": false
+        },
+        "ossfBadge": {
+          "badgeId": null,
+          "percentagePassing": null
+        },
+        "workflows": {
+          "files": [
+            "ci.yml",
+            "cruft-update.yml",
+            "release-drafter.yml",
+            "scheduled-validation.yml",
+            "sonarcloud.yml",
+            "test-template.yml",
+            "validate-template.yml"
+          ],
+          "presentFromExpected": [
+            "ci.yml",
+            "sonarcloud.yml"
+          ],
+          "missingFromExpected": [
+            "codeql.yml",
+            "coverage.yml",
+            "docs.yml",
+            "pr-validation.yml",
+            "python-compatibility.yml",
+            "release-sign.yml",
+            "release.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml"
+          ],
+          "extras": [
+            "cruft-update.yml",
+            "release-drafter.yml",
+            "scheduled-validation.yml",
+            "test-template.yml",
+            "validate-template.yml"
+          ]
+        },
+        "foundations": {
+          "securityMd": false,
+          "contributingMd": false,
+          "changelogMd": true,
+          "codeOfConduct": true,
+          "governanceMd": true,
+          "agentsMd": false,
+          "geminiMd": false,
+          "claudeMd": true,
+          "knownVulnerabilities": false,
+          "codeowners": false
+        },
+        "preCommit": {
+          "configPresent": true,
+          "hooks": {
+            "ruff": true,
+            "basedpyright": false,
+            "bandit": false,
+            "detectSecrets": false,
+            "darglint": false,
+            "interrogate": true,
+            "commitizen": false,
+            "yamllint": true,
+            "markdownlint": true,
+            "noEmDash": false
+          }
+        },
+        "toolchain": {
+          "pyprojectToml": true,
+          "qltyConfig": true
+        }
+      }
+    },
+    {
+      "org": "ByronWilliamsCPA",
+      "name": "cookiecutter-template-sample",
+      "url": "https://github.com/ByronWilliamsCPA/cookiecutter-template-sample",
+      "defaultBranch": "main",
+      "description": "Sample project generated from cookiecutter-python-template for validation",
+      "isPrivate": false,
+      "isArchived": false,
+      "review": {
+        "branchProtection": {
+          "enabled": false
+        },
+        "codeql": {
+          "workflowPresent": false
+        },
+        "scorecard": {
+          "workflowPresent": true,
+          "score": 5.2,
+          "lastChecked": "2026-02-03T21:34:31Z"
+        },
+        "sonarcloud": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "codecov": {
+          "configPresent": true,
+          "workflowPresent": false
+        },
+        "reuse": {
+          "workflowPresent": false
+        },
+        "dependabot": {
+          "configured": true
+        },
+        "ossfBadge": {
+          "badgeId": null,
+          "percentagePassing": null
+        },
+        "workflows": {
+          "files": [
+            "ci.yml",
+            "docs.yml",
+            "publish-pypi.yml",
+            "release.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml"
+          ],
+          "presentFromExpected": [
+            "ci.yml",
+            "docs.yml",
+            "release.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml"
+          ],
+          "missingFromExpected": [
+            "codeql.yml",
+            "coverage.yml",
+            "pr-validation.yml",
+            "python-compatibility.yml",
+            "release-sign.yml",
+            "reuse.yml",
+            "sonarcloud.yml"
+          ],
+          "extras": [
+            "publish-pypi.yml"
+          ]
+        },
+        "foundations": {
+          "securityMd": false,
+          "contributingMd": true,
+          "changelogMd": true,
+          "codeOfConduct": true,
+          "governanceMd": true,
+          "agentsMd": false,
+          "geminiMd": false,
+          "claudeMd": false,
+          "knownVulnerabilities": false,
+          "codeowners": true
+        },
+        "preCommit": {
+          "configPresent": true,
+          "hooks": {
+            "ruff": true,
+            "basedpyright": false,
+            "bandit": false,
+            "detectSecrets": false,
+            "darglint": false,
+            "interrogate": true,
+            "commitizen": false,
+            "yamllint": false,
+            "markdownlint": false,
+            "noEmDash": false
+          }
+        },
+        "toolchain": {
+          "pyprojectToml": true,
+          "qltyConfig": true
+        }
+      }
+    },
+    {
+      "org": "ByronWilliamsCPA",
+      "name": "DeQA-Doc",
+      "url": "https://github.com/ByronWilliamsCPA/DeQA-Doc",
+      "defaultBranch": "main",
+      "description": "Fork of DeQA-Doc (VQualA 2025 DIQA Champion) extended with confidence-weighted pseudo-labeling pipeline",
+      "isPrivate": false,
+      "isArchived": false,
+      "review": {
+        "branchProtection": {
+          "enabled": false
+        },
+        "codeql": {
+          "workflowPresent": false
+        },
+        "scorecard": {
+          "workflowPresent": false,
+          "score": null,
+          "lastChecked": null
+        },
+        "sonarcloud": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "codecov": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "reuse": {
+          "workflowPresent": false
+        },
+        "dependabot": {
+          "configured": false
+        },
+        "ossfBadge": {
+          "badgeId": null,
+          "percentagePassing": null
+        },
+        "workflows": {
+          "files": [
+            "ci.yml"
+          ],
+          "presentFromExpected": [
+            "ci.yml"
+          ],
+          "missingFromExpected": [
+            "codeql.yml",
+            "coverage.yml",
+            "docs.yml",
+            "pr-validation.yml",
+            "python-compatibility.yml",
+            "release-sign.yml",
+            "release.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml",
+            "sonarcloud.yml"
+          ],
+          "extras": []
+        },
+        "foundations": {
+          "securityMd": false,
+          "contributingMd": false,
+          "changelogMd": false,
+          "codeOfConduct": true,
+          "governanceMd": true,
+          "agentsMd": false,
+          "geminiMd": false,
+          "claudeMd": true,
+          "knownVulnerabilities": false,
+          "codeowners": false
+        },
+        "preCommit": {
+          "configPresent": false,
+          "hooks": {
+            "ruff": false,
+            "basedpyright": false,
+            "bandit": false,
+            "detectSecrets": false,
+            "darglint": false,
+            "interrogate": false,
+            "commitizen": false,
+            "yamllint": false,
+            "markdownlint": false,
+            "noEmDash": false
+          }
+        },
+        "toolchain": {
+          "pyprojectToml": false,
+          "qltyConfig": true
+        }
+      }
+    },
+    {
+      "org": "ByronWilliamsCPA",
+      "name": "fragrance-rater",
+      "url": "https://github.com/ByronWilliamsCPA/fragrance-rater",
+      "defaultBranch": "main",
+      "description": "Personal fragrance evaluation and recommendation system with LLM-powered recommendations",
+      "isPrivate": false,
+      "isArchived": false,
+      "review": {
+        "branchProtection": {
+          "enabled": false
+        },
+        "codeql": {
+          "workflowPresent": false
+        },
+        "scorecard": {
+          "workflowPresent": true,
+          "score": null,
+          "lastChecked": null
+        },
+        "sonarcloud": {
+          "configPresent": true,
+          "workflowPresent": true
+        },
+        "codecov": {
+          "configPresent": true,
+          "workflowPresent": true
+        },
+        "reuse": {
+          "workflowPresent": true
+        },
+        "dependabot": {
+          "configured": true
+        },
+        "ossfBadge": {
+          "badgeId": null,
+          "percentagePassing": null
+        },
+        "workflows": {
+          "files": [
+            "ci.yml",
+            "codecov.yml",
+            "container-security.yml",
+            "dependency-review.yml",
+            "docs.yml",
+            "fips-compatibility.yml",
+            "mutation-testing.yml",
+            "pr-validation.yml",
+            "publish-pypi.yml",
+            "python-compatibility.yml",
+            "release.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml",
+            "slsa-provenance.yml",
+            "sonarcloud.yml",
+            "validate-cruft.yml"
+          ],
+          "presentFromExpected": [
+            "ci.yml",
+            "docs.yml",
+            "pr-validation.yml",
+            "python-compatibility.yml",
+            "release.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml",
+            "sonarcloud.yml"
+          ],
+          "missingFromExpected": [
+            "codeql.yml",
+            "coverage.yml",
+            "release-sign.yml"
+          ],
+          "extras": [
+            "codecov.yml",
+            "container-security.yml",
+            "dependency-review.yml",
+            "fips-compatibility.yml",
+            "mutation-testing.yml",
+            "publish-pypi.yml",
+            "slsa-provenance.yml",
+            "validate-cruft.yml"
+          ]
+        },
+        "foundations": {
+          "securityMd": false,
+          "contributingMd": true,
+          "changelogMd": true,
+          "codeOfConduct": true,
+          "governanceMd": true,
+          "agentsMd": false,
+          "geminiMd": false,
+          "claudeMd": true,
+          "knownVulnerabilities": false,
+          "codeowners": true
+        },
+        "preCommit": {
+          "configPresent": true,
+          "hooks": {
+            "ruff": true,
+            "basedpyright": false,
+            "bandit": true,
+            "detectSecrets": false,
+            "darglint": true,
+            "interrogate": true,
+            "commitizen": false,
+            "yamllint": false,
+            "markdownlint": false,
+            "noEmDash": false
+          }
+        },
+        "toolchain": {
+          "pyprojectToml": true,
+          "qltyConfig": true
+        }
+      }
+    },
+    {
+      "org": "ByronWilliamsCPA",
+      "name": "gleif",
+      "url": "https://github.com/ByronWilliamsCPA/gleif",
+      "defaultBranch": "main",
+      "description": "GLEIF golden copy dataset downloader and LEI relationship query tool",
+      "isPrivate": false,
+      "isArchived": false,
+      "review": {
+        "branchProtection": {
+          "enabled": true,
+          "enforceAdmins": false,
+          "requiredSignatures": false,
+          "requiredLinearHistory": false,
+          "allowForcePushes": false,
+          "allowDeletions": false,
+          "blockCreations": false,
+          "requiredConversationResolution": false,
+          "lockBranch": false,
+          "requiredStatusChecks": {
+            "strict": true,
+            "contexts": [
+              "CI Gate"
+            ]
+          },
+          "requiredPullRequestReviews": null
+        },
+        "codeql": {
+          "workflowPresent": true
+        },
+        "scorecard": {
+          "workflowPresent": true,
+          "score": null,
+          "lastChecked": null
+        },
+        "sonarcloud": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "codecov": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "reuse": {
+          "workflowPresent": false
+        },
+        "dependabot": {
+          "configured": true
+        },
+        "ossfBadge": {
+          "badgeId": null,
+          "percentagePassing": null
+        },
+        "workflows": {
+          "files": [
+            "ci.yml",
+            "codeql.yml",
+            "qlty.yml",
+            "release.yml",
+            "scorecard.yml",
+            "security-analysis.yml"
+          ],
+          "presentFromExpected": [
+            "ci.yml",
+            "codeql.yml",
+            "release.yml",
+            "scorecard.yml",
+            "security-analysis.yml"
+          ],
+          "missingFromExpected": [
+            "coverage.yml",
+            "docs.yml",
+            "pr-validation.yml",
+            "python-compatibility.yml",
+            "release-sign.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "sonarcloud.yml"
+          ],
+          "extras": [
+            "qlty.yml"
+          ]
+        },
+        "foundations": {
+          "securityMd": true,
+          "contributingMd": true,
+          "changelogMd": true,
+          "codeOfConduct": false,
+          "governanceMd": false,
+          "agentsMd": false,
+          "geminiMd": false,
+          "claudeMd": false,
+          "knownVulnerabilities": true,
+          "codeowners": true
+        },
+        "preCommit": {
+          "configPresent": true,
+          "hooks": {
+            "ruff": true,
+            "basedpyright": true,
+            "bandit": true,
+            "detectSecrets": true,
+            "darglint": true,
+            "interrogate": true,
+            "commitizen": true,
+            "yamllint": true,
+            "markdownlint": true,
+            "noEmDash": true
+          }
+        },
+        "toolchain": {
+          "pyprojectToml": true,
+          "qltyConfig": true
+        }
+      }
+    },
+    {
+      "org": "ByronWilliamsCPA",
+      "name": "homelab-infra",
+      "url": "https://github.com/ByronWilliamsCPA/homelab-infra",
+      "defaultBranch": "main",
+      "description": "Infrastructure automation and management for homelab environments",
+      "isPrivate": true,
+      "isArchived": false,
+      "review": {
+        "branchProtection": {
+          "enabled": true,
+          "enforceAdmins": true,
+          "requiredSignatures": true,
+          "requiredLinearHistory": true,
+          "allowForcePushes": false,
+          "allowDeletions": false,
+          "blockCreations": false,
+          "requiredConversationResolution": false,
+          "lockBranch": false,
+          "requiredStatusChecks": null,
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": 0,
+            "dismissStaleReviews": true,
+            "requireCodeOwnerReviews": true,
+            "requireLastPushApproval": false
+          }
+        },
+        "codeql": {
+          "workflowPresent": false
+        },
+        "scorecard": {
+          "workflowPresent": true,
+          "score": 4.8,
+          "lastChecked": "2025-11-22T11:54:37Z"
+        },
+        "sonarcloud": {
+          "configPresent": true,
+          "workflowPresent": false
+        },
+        "codecov": {
+          "configPresent": true,
+          "workflowPresent": true
+        },
+        "reuse": {
+          "workflowPresent": true
+        },
+        "dependabot": {
+          "configured": true
+        },
+        "ossfBadge": {
+          "badgeId": null,
+          "percentagePassing": null
+        },
+        "workflows": {
+          "files": [
+            "ci.yml",
+            "codecov.yml",
+            "compose-validation.yml",
+            "container-security.yml",
+            "dependency-review.yml",
+            "dhi-build.yml",
+            "docker.yml",
+            "docs.yml",
+            "fips-compatibility.yml",
+            "mirror-hardened-images.yml",
+            "mutation-testing.yml",
+            "pr-validation.yml",
+            "publish-pypi.yml",
+            "python-compatibility.yml",
+            "release.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml",
+            "slsa-provenance.yml",
+            "supplemental-checks.yml",
+            "trivy-compose-scan.yml",
+            "validate-cruft.yml"
+          ],
+          "presentFromExpected": [
+            "ci.yml",
+            "docs.yml",
+            "pr-validation.yml",
+            "python-compatibility.yml",
+            "release.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml"
+          ],
+          "missingFromExpected": [
+            "codeql.yml",
+            "coverage.yml",
+            "release-sign.yml",
+            "sonarcloud.yml"
+          ],
+          "extras": [
+            "codecov.yml",
+            "compose-validation.yml",
+            "container-security.yml",
+            "dependency-review.yml",
+            "dhi-build.yml",
+            "docker.yml",
+            "fips-compatibility.yml",
+            "mirror-hardened-images.yml",
+            "mutation-testing.yml",
+            "publish-pypi.yml",
+            "slsa-provenance.yml",
+            "supplemental-checks.yml",
+            "trivy-compose-scan.yml",
+            "validate-cruft.yml"
+          ]
+        },
+        "foundations": {
+          "securityMd": false,
+          "contributingMd": true,
+          "changelogMd": true,
+          "codeOfConduct": false,
+          "governanceMd": false,
+          "agentsMd": true,
+          "geminiMd": false,
+          "claudeMd": true,
+          "knownVulnerabilities": true,
+          "codeowners": true
+        },
+        "preCommit": {
+          "configPresent": true,
+          "hooks": {
+            "ruff": true,
+            "basedpyright": false,
+            "bandit": true,
+            "detectSecrets": true,
+            "darglint": true,
+            "interrogate": true,
+            "commitizen": false,
+            "yamllint": true,
+            "markdownlint": false,
+            "noEmDash": false
+          }
+        },
+        "toolchain": {
+          "pyprojectToml": true,
+          "qltyConfig": true
+        }
+      }
+    },
+    {
+      "org": "ByronWilliamsCPA",
+      "name": "llc-manager",
+      "url": "https://github.com/ByronWilliamsCPA/llc-manager",
+      "defaultBranch": "main",
+      "description": "Web application for managing LLC entities, tracking compliance dates and ownership structures",
+      "isPrivate": false,
+      "isArchived": false,
+      "review": {
+        "branchProtection": {
+          "enabled": true,
+          "enforceAdmins": false,
+          "requiredSignatures": false,
+          "requiredLinearHistory": false,
+          "allowForcePushes": false,
+          "allowDeletions": false,
+          "blockCreations": false,
+          "requiredConversationResolution": false,
+          "lockBranch": false,
+          "requiredStatusChecks": {
+            "strict": true,
+            "contexts": [
+              "CI Gate"
+            ]
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": 0,
+            "dismissStaleReviews": true,
+            "requireCodeOwnerReviews": false,
+            "requireLastPushApproval": false
+          }
+        },
+        "codeql": {
+          "workflowPresent": false
+        },
+        "scorecard": {
+          "workflowPresent": true,
+          "score": null,
+          "lastChecked": null
+        },
+        "sonarcloud": {
+          "configPresent": true,
+          "workflowPresent": true
+        },
+        "codecov": {
+          "configPresent": true,
+          "workflowPresent": true
+        },
+        "reuse": {
+          "workflowPresent": true
+        },
+        "dependabot": {
+          "configured": true
+        },
+        "ossfBadge": {
+          "badgeId": 12703,
+          "percentagePassing": 100
+        },
+        "workflows": {
+          "files": [
+            "ci.yml",
+            "codecov.yml",
+            "container-security.yml",
+            "dependency-review.yml",
+            "docs.yml",
+            "fips-compatibility.yml",
+            "mutation-testing.yml",
+            "pr-validation.yml",
+            "publish-pypi.yml",
+            "python-compatibility.yml",
+            "release.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml",
+            "slsa-provenance.yml",
+            "sonarcloud.yml",
+            "validate-cruft.yml"
+          ],
+          "presentFromExpected": [
+            "ci.yml",
+            "docs.yml",
+            "pr-validation.yml",
+            "python-compatibility.yml",
+            "release.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml",
+            "sonarcloud.yml"
+          ],
+          "missingFromExpected": [
+            "codeql.yml",
+            "coverage.yml",
+            "release-sign.yml"
+          ],
+          "extras": [
+            "codecov.yml",
+            "container-security.yml",
+            "dependency-review.yml",
+            "fips-compatibility.yml",
+            "mutation-testing.yml",
+            "publish-pypi.yml",
+            "slsa-provenance.yml",
+            "validate-cruft.yml"
+          ]
+        },
+        "foundations": {
+          "securityMd": true,
+          "contributingMd": true,
+          "changelogMd": true,
+          "codeOfConduct": false,
+          "governanceMd": false,
+          "agentsMd": false,
+          "geminiMd": false,
+          "claudeMd": true,
+          "knownVulnerabilities": true,
+          "codeowners": true
+        },
+        "preCommit": {
+          "configPresent": true,
+          "hooks": {
+            "ruff": true,
+            "basedpyright": true,
+            "bandit": true,
+            "detectSecrets": true,
+            "darglint": true,
+            "interrogate": true,
+            "commitizen": true,
+            "yamllint": true,
+            "markdownlint": true,
+            "noEmDash": true
+          }
+        },
+        "toolchain": {
+          "pyprojectToml": true,
+          "qltyConfig": true
+        }
+      }
+    },
+    {
+      "org": "ByronWilliamsCPA",
+      "name": "maester-tests",
+      "url": "https://github.com/ByronWilliamsCPA/maester-tests",
+      "defaultBranch": "main",
+      "description": "",
+      "isPrivate": true,
+      "isArchived": false,
+      "review": {
+        "branchProtection": {
+          "enabled": true,
+          "enforceAdmins": true,
+          "requiredSignatures": true,
+          "requiredLinearHistory": true,
+          "allowForcePushes": false,
+          "allowDeletions": false,
+          "blockCreations": false,
+          "requiredConversationResolution": false,
+          "lockBranch": false,
+          "requiredStatusChecks": {
+            "strict": true,
+            "contexts": [
+              "Check REUSE Compliance"
+            ]
+          },
+          "requiredPullRequestReviews": null
+        },
+        "codeql": {
+          "workflowPresent": false
+        },
+        "scorecard": {
+          "workflowPresent": true,
+          "score": null,
+          "lastChecked": null
+        },
+        "sonarcloud": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "codecov": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "reuse": {
+          "workflowPresent": true
+        },
+        "dependabot": {
+          "configured": true
+        },
+        "ossfBadge": {
+          "badgeId": null,
+          "percentagePassing": null
+        },
+        "workflows": {
+          "files": [
+            "ci.yml",
+            "docs.yml",
+            "fips-compatibility.yml",
+            "maester-tests.yml",
+            "mutation-testing.yml",
+            "pr-validation.yml",
+            "python-compatibility.yml",
+            "release.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml",
+            "slsa-provenance.yml",
+            "validate-cruft.yml"
+          ],
+          "presentFromExpected": [
+            "ci.yml",
+            "docs.yml",
+            "pr-validation.yml",
+            "python-compatibility.yml",
+            "release.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml"
+          ],
+          "missingFromExpected": [
+            "codeql.yml",
+            "coverage.yml",
+            "release-sign.yml",
+            "sonarcloud.yml"
+          ],
+          "extras": [
+            "fips-compatibility.yml",
+            "maester-tests.yml",
+            "mutation-testing.yml",
+            "slsa-provenance.yml",
+            "validate-cruft.yml"
+          ]
+        },
+        "foundations": {
+          "securityMd": false,
+          "contributingMd": true,
+          "changelogMd": true,
+          "codeOfConduct": false,
+          "governanceMd": false,
+          "agentsMd": false,
+          "geminiMd": false,
+          "claudeMd": true,
+          "knownVulnerabilities": false,
+          "codeowners": true
+        },
+        "preCommit": {
+          "configPresent": true,
+          "hooks": {
+            "ruff": true,
+            "basedpyright": true,
+            "bandit": true,
+            "detectSecrets": false,
+            "darglint": true,
+            "interrogate": true,
+            "commitizen": false,
+            "yamllint": false,
+            "markdownlint": false,
+            "noEmDash": false
+          }
+        },
+        "toolchain": {
+          "pyprojectToml": true,
+          "qltyConfig": true
+        }
+      }
+    },
+    {
+      "org": "ByronWilliamsCPA",
+      "name": "python-libs",
+      "url": "https://github.com/ByronWilliamsCPA/python-libs",
+      "defaultBranch": "main",
+      "description": "Shared Python libraries for ByronWilliamsCPA projects (JWT auth, GCS utilities)",
+      "isPrivate": false,
+      "isArchived": false,
+      "review": {
+        "branchProtection": {
+          "enabled": false
+        },
+        "codeql": {
+          "workflowPresent": false
+        },
+        "scorecard": {
+          "workflowPresent": true,
+          "score": null,
+          "lastChecked": null
+        },
+        "sonarcloud": {
+          "configPresent": true,
+          "workflowPresent": true
+        },
+        "codecov": {
+          "configPresent": true,
+          "workflowPresent": true
+        },
+        "reuse": {
+          "workflowPresent": true
+        },
+        "dependabot": {
+          "configured": true
+        },
+        "ossfBadge": {
+          "badgeId": null,
+          "percentagePassing": null
+        },
+        "workflows": {
+          "files": [
+            "ci.yml",
+            "codecov.yml",
+            "docs.yml",
+            "fips-compatibility.yml",
+            "mutation-testing.yml",
+            "pr-validation.yml",
+            "publish-artifact-registry.yml",
+            "publish.yml",
+            "python-compatibility.yml",
+            "release.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml",
+            "slsa-provenance.yml",
+            "sonarcloud.yml",
+            "validate-cruft.yml"
+          ],
+          "presentFromExpected": [
+            "ci.yml",
+            "docs.yml",
+            "pr-validation.yml",
+            "python-compatibility.yml",
+            "release.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml",
+            "sonarcloud.yml"
+          ],
+          "missingFromExpected": [
+            "codeql.yml",
+            "coverage.yml",
+            "release-sign.yml"
+          ],
+          "extras": [
+            "codecov.yml",
+            "fips-compatibility.yml",
+            "mutation-testing.yml",
+            "publish-artifact-registry.yml",
+            "publish.yml",
+            "slsa-provenance.yml",
+            "validate-cruft.yml"
+          ]
+        },
+        "foundations": {
+          "securityMd": false,
+          "contributingMd": true,
+          "changelogMd": true,
+          "codeOfConduct": true,
+          "governanceMd": true,
+          "agentsMd": false,
+          "geminiMd": false,
+          "claudeMd": true,
+          "knownVulnerabilities": false,
+          "codeowners": true
+        },
+        "preCommit": {
+          "configPresent": true,
+          "hooks": {
+            "ruff": true,
+            "basedpyright": false,
+            "bandit": true,
+            "detectSecrets": false,
+            "darglint": true,
+            "interrogate": true,
+            "commitizen": false,
+            "yamllint": false,
+            "markdownlint": false,
+            "noEmDash": false
+          }
+        },
+        "toolchain": {
+          "pyprojectToml": true,
+          "qltyConfig": true
+        }
+      }
+    },
+    {
+      "org": "ByronWilliamsCPA",
+      "name": "rag-processor",
+      "url": "https://github.com/ByronWilliamsCPA/rag-processor",
+      "defaultBranch": "main",
+      "description": "React-based frontend for RAG pipeline with FastAPI backend integration",
+      "isPrivate": false,
+      "isArchived": false,
+      "review": {
+        "branchProtection": {
+          "enabled": true,
+          "enforceAdmins": true,
+          "requiredSignatures": true,
+          "requiredLinearHistory": true,
+          "allowForcePushes": false,
+          "allowDeletions": false,
+          "blockCreations": false,
+          "requiredConversationResolution": false,
+          "lockBranch": false,
+          "requiredStatusChecks": null,
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": 0,
+            "dismissStaleReviews": true,
+            "requireCodeOwnerReviews": true,
+            "requireLastPushApproval": false
+          }
+        },
+        "codeql": {
+          "workflowPresent": false
+        },
+        "scorecard": {
+          "workflowPresent": true,
+          "score": null,
+          "lastChecked": null
+        },
+        "sonarcloud": {
+          "configPresent": true,
+          "workflowPresent": true
+        },
+        "codecov": {
+          "configPresent": true,
+          "workflowPresent": true
+        },
+        "reuse": {
+          "workflowPresent": true
+        },
+        "dependabot": {
+          "configured": true
+        },
+        "ossfBadge": {
+          "badgeId": null,
+          "percentagePassing": null
+        },
+        "workflows": {
+          "files": [
+            "ci.yml",
+            "cifuzzy.yml",
+            "codecov.yml",
+            "container-security.yml",
+            "dependency-review.yml",
+            "docs.yml",
+            "fips-compatibility.yml",
+            "mutation-testing.yml",
+            "pr-validation.yml",
+            "publish-pypi.yml",
+            "python-compatibility.yml",
+            "release.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml",
+            "slsa-provenance.yml",
+            "sonarcloud.yml",
+            "validate-cruft.yml"
+          ],
+          "presentFromExpected": [
+            "ci.yml",
+            "docs.yml",
+            "pr-validation.yml",
+            "python-compatibility.yml",
+            "release.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml",
+            "sonarcloud.yml"
+          ],
+          "missingFromExpected": [
+            "codeql.yml",
+            "coverage.yml",
+            "release-sign.yml"
+          ],
+          "extras": [
+            "cifuzzy.yml",
+            "codecov.yml",
+            "container-security.yml",
+            "dependency-review.yml",
+            "fips-compatibility.yml",
+            "mutation-testing.yml",
+            "publish-pypi.yml",
+            "slsa-provenance.yml",
+            "validate-cruft.yml"
+          ]
+        },
+        "foundations": {
+          "securityMd": false,
+          "contributingMd": true,
+          "changelogMd": true,
+          "codeOfConduct": false,
+          "governanceMd": false,
+          "agentsMd": false,
+          "geminiMd": false,
+          "claudeMd": true,
+          "knownVulnerabilities": false,
+          "codeowners": true
+        },
+        "preCommit": {
+          "configPresent": true,
+          "hooks": {
+            "ruff": true,
+            "basedpyright": false,
+            "bandit": true,
+            "detectSecrets": false,
+            "darglint": true,
+            "interrogate": true,
+            "commitizen": false,
+            "yamllint": false,
+            "markdownlint": false,
+            "noEmDash": false
+          }
+        },
+        "toolchain": {
+          "pyprojectToml": true,
+          "qltyConfig": true
+        }
+      }
+    },
+    {
+      "org": "ByronWilliamsCPA",
+      "name": "reference-library",
+      "url": "https://github.com/ByronWilliamsCPA/reference-library",
+      "defaultBranch": "main",
+      "description": "Authoritative style, drafting, and writing standards (Oregon legal, writing quality pipeline, grammar references)",
+      "isPrivate": false,
+      "isArchived": false,
+      "review": {
+        "branchProtection": {
+          "enabled": false
+        },
+        "codeql": {
+          "workflowPresent": false
+        },
+        "scorecard": {
+          "workflowPresent": false,
+          "score": null,
+          "lastChecked": null
+        },
+        "sonarcloud": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "codecov": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "reuse": {
+          "workflowPresent": false
+        },
+        "dependabot": {
+          "configured": false
+        },
+        "ossfBadge": {
+          "badgeId": null,
+          "percentagePassing": null
+        },
+        "workflows": {
+          "files": [],
+          "presentFromExpected": [],
+          "missingFromExpected": [
+            "ci.yml",
+            "codeql.yml",
+            "coverage.yml",
+            "docs.yml",
+            "pr-validation.yml",
+            "python-compatibility.yml",
+            "release-sign.yml",
+            "release.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml",
+            "sonarcloud.yml"
+          ],
+          "extras": []
+        },
+        "foundations": {
+          "securityMd": true,
+          "contributingMd": false,
+          "changelogMd": false,
+          "codeOfConduct": true,
+          "governanceMd": true,
+          "agentsMd": false,
+          "geminiMd": false,
+          "claudeMd": true,
+          "knownVulnerabilities": false,
+          "codeowners": false
+        },
+        "preCommit": {
+          "configPresent": false,
+          "hooks": {
+            "ruff": false,
+            "basedpyright": false,
+            "bandit": false,
+            "detectSecrets": false,
+            "darglint": false,
+            "interrogate": false,
+            "commitizen": false,
+            "yamllint": false,
+            "markdownlint": false,
+            "noEmDash": false
+          }
+        },
+        "toolchain": {
+          "pyprojectToml": false,
+          "qltyConfig": true
+        }
+      }
+    },
+    {
+      "org": "ByronWilliamsCPA",
+      "name": "taxdome",
+      "url": "https://github.com/ByronWilliamsCPA/taxdome",
+      "defaultBranch": "main",
+      "description": "Tax practice workflows, processes, and templates for TaxDome practice management",
+      "isPrivate": true,
+      "isArchived": false,
+      "review": {
+        "branchProtection": {
+          "enabled": false
+        },
+        "codeql": {
+          "workflowPresent": false
+        },
+        "scorecard": {
+          "workflowPresent": false,
+          "score": null,
+          "lastChecked": null
+        },
+        "sonarcloud": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "codecov": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "reuse": {
+          "workflowPresent": false
+        },
+        "dependabot": {
+          "configured": false
+        },
+        "ossfBadge": {
+          "badgeId": null,
+          "percentagePassing": null
+        },
+        "workflows": {
+          "files": [],
+          "presentFromExpected": [],
+          "missingFromExpected": [
+            "ci.yml",
+            "codeql.yml",
+            "coverage.yml",
+            "docs.yml",
+            "pr-validation.yml",
+            "python-compatibility.yml",
+            "release-sign.yml",
+            "release.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml",
+            "sonarcloud.yml"
+          ],
+          "extras": []
+        },
+        "foundations": {
+          "securityMd": false,
+          "contributingMd": false,
+          "changelogMd": false,
+          "codeOfConduct": true,
+          "governanceMd": true,
+          "agentsMd": false,
+          "geminiMd": false,
+          "claudeMd": true,
+          "knownVulnerabilities": false,
+          "codeowners": false
+        },
+        "preCommit": {
+          "configPresent": false,
+          "hooks": {
+            "ruff": false,
+            "basedpyright": false,
+            "bandit": false,
+            "detectSecrets": false,
+            "darglint": false,
+            "interrogate": false,
+            "commitizen": false,
+            "yamllint": false,
+            "markdownlint": false,
+            "noEmDash": false
+          }
+        },
+        "toolchain": {
+          "pyprojectToml": false,
+          "qltyConfig": false
+        }
+      }
+    },
+    {
+      "org": "ByronWilliamsCPA",
+      "name": "template-sample",
+      "url": "https://github.com/ByronWilliamsCPA/template-sample",
+      "defaultBranch": "main",
+      "description": "Comprehensive test project with all template features enabled",
+      "isPrivate": false,
+      "isArchived": false,
+      "review": {
+        "branchProtection": {
+          "enabled": false
+        },
+        "codeql": {
+          "workflowPresent": false
+        },
+        "scorecard": {
+          "workflowPresent": true,
+          "score": 5.7,
+          "lastChecked": "2026-02-03T21:33:34Z"
+        },
+        "sonarcloud": {
+          "configPresent": true,
+          "workflowPresent": true
+        },
+        "codecov": {
+          "configPresent": true,
+          "workflowPresent": false
+        },
+        "reuse": {
+          "workflowPresent": true
+        },
+        "dependabot": {
+          "configured": true
+        },
+        "ossfBadge": {
+          "badgeId": null,
+          "percentagePassing": null
+        },
+        "workflows": {
+          "files": [
+            "ci.yml",
+            "cifuzzy.yml",
+            "docs.yml",
+            "pr-validation.yml",
+            "publish-pypi.yml",
+            "release.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml",
+            "sonarcloud.yml",
+            "validate-cruft.yml"
+          ],
+          "presentFromExpected": [
+            "ci.yml",
+            "docs.yml",
+            "pr-validation.yml",
+            "release.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml",
+            "sonarcloud.yml"
+          ],
+          "missingFromExpected": [
+            "codeql.yml",
+            "coverage.yml",
+            "python-compatibility.yml",
+            "release-sign.yml"
+          ],
+          "extras": [
+            "cifuzzy.yml",
+            "publish-pypi.yml",
+            "validate-cruft.yml"
+          ]
+        },
+        "foundations": {
+          "securityMd": false,
+          "contributingMd": true,
+          "changelogMd": true,
+          "codeOfConduct": true,
+          "governanceMd": true,
+          "agentsMd": false,
+          "geminiMd": false,
+          "claudeMd": true,
+          "knownVulnerabilities": false,
+          "codeowners": true
+        },
+        "preCommit": {
+          "configPresent": true,
+          "hooks": {
+            "ruff": true,
+            "basedpyright": false,
+            "bandit": false,
+            "detectSecrets": false,
+            "darglint": false,
+            "interrogate": true,
+            "commitizen": false,
+            "yamllint": false,
+            "markdownlint": false,
+            "noEmDash": false
+          }
+        },
+        "toolchain": {
+          "pyprojectToml": true,
+          "qltyConfig": true
+        }
+      }
+    },
+    {
+      "org": "ByronWilliamsCPA",
+      "name": "xero-crypto",
+      "url": "https://github.com/ByronWilliamsCPA/xero-crypto",
+      "defaultBranch": "master",
+      "description": "Three-way crypto reconciliation across blockchain, Awaken.tax, and Xero",
+      "isPrivate": true,
+      "isArchived": false,
+      "review": {
+        "branchProtection": {
+          "enabled": false
+        },
+        "codeql": {
+          "workflowPresent": false
+        },
+        "scorecard": {
+          "workflowPresent": false,
+          "score": null,
+          "lastChecked": null
+        },
+        "sonarcloud": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "codecov": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "reuse": {
+          "workflowPresent": false
+        },
+        "dependabot": {
+          "configured": false
+        },
+        "ossfBadge": {
+          "badgeId": null,
+          "percentagePassing": null
+        },
+        "workflows": {
+          "files": [
+            "ci.yml",
+            "pr-validation.yml",
+            "security-analysis.yml",
+            "test.yml"
+          ],
+          "presentFromExpected": [
+            "ci.yml",
+            "pr-validation.yml",
+            "security-analysis.yml"
+          ],
+          "missingFromExpected": [
+            "codeql.yml",
+            "coverage.yml",
+            "docs.yml",
+            "python-compatibility.yml",
+            "release-sign.yml",
+            "release.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "sonarcloud.yml"
+          ],
+          "extras": [
+            "test.yml"
+          ]
+        },
+        "foundations": {
+          "securityMd": false,
+          "contributingMd": false,
+          "changelogMd": false,
+          "codeOfConduct": true,
+          "governanceMd": true,
+          "agentsMd": false,
+          "geminiMd": true,
+          "claudeMd": true,
+          "knownVulnerabilities": false,
+          "codeowners": true
+        },
+        "preCommit": {
+          "configPresent": false,
+          "hooks": {
+            "ruff": false,
+            "basedpyright": false,
+            "bandit": false,
+            "detectSecrets": false,
+            "darglint": false,
+            "interrogate": false,
+            "commitizen": false,
+            "yamllint": false,
+            "markdownlint": false,
+            "noEmDash": false
+          }
+        },
+        "toolchain": {
+          "pyprojectToml": true,
+          "qltyConfig": false
+        }
+      }
+    },
+    {
+      "org": "williaby",
+      "name": ".claude",
+      "url": "https://github.com/williaby/.claude",
+      "defaultBranch": "main",
+      "description": "Global Claude Code configuration and standards for all development projects",
+      "isPrivate": false,
+      "isArchived": false,
+      "review": {
+        "branchProtection": {
+          "enabled": false
+        },
+        "codeql": {
+          "workflowPresent": false
+        },
+        "scorecard": {
+          "workflowPresent": false,
+          "score": null,
+          "lastChecked": null
+        },
+        "sonarcloud": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "codecov": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "reuse": {
+          "workflowPresent": false
+        },
+        "dependabot": {
+          "configured": false
+        },
+        "ossfBadge": {
+          "badgeId": null,
+          "percentagePassing": null
+        },
+        "workflows": {
+          "files": [],
+          "presentFromExpected": [],
+          "missingFromExpected": [
+            "ci.yml",
+            "codeql.yml",
+            "coverage.yml",
+            "docs.yml",
+            "pr-validation.yml",
+            "python-compatibility.yml",
+            "release-sign.yml",
+            "release.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml",
+            "sonarcloud.yml"
+          ],
+          "extras": []
+        },
+        "foundations": {
+          "securityMd": true,
+          "contributingMd": false,
+          "changelogMd": true,
+          "codeOfConduct": true,
+          "governanceMd": true,
+          "agentsMd": false,
+          "geminiMd": false,
+          "claudeMd": true,
+          "knownVulnerabilities": false,
+          "codeowners": false
+        },
+        "preCommit": {
+          "configPresent": false,
+          "hooks": {
+            "ruff": false,
+            "basedpyright": false,
+            "bandit": false,
+            "detectSecrets": false,
+            "darglint": false,
+            "interrogate": false,
+            "commitizen": false,
+            "yamllint": false,
+            "markdownlint": false,
+            "noEmDash": false
+          }
+        },
+        "toolchain": {
+          "pyprojectToml": false,
+          "qltyConfig": true
+        }
+      }
+    },
+    {
+      "org": "williaby",
+      "name": "backpacking",
+      "url": "https://github.com/williaby/backpacking",
+      "defaultBranch": "master",
+      "description": "Personal backpacking gear tracker and trip planner",
+      "isPrivate": false,
+      "isArchived": false,
+      "review": {
+        "branchProtection": {
+          "enabled": false
+        },
+        "codeql": {
+          "workflowPresent": false
+        },
+        "scorecard": {
+          "workflowPresent": false,
+          "score": null,
+          "lastChecked": null
+        },
+        "sonarcloud": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "codecov": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "reuse": {
+          "workflowPresent": false
+        },
+        "dependabot": {
+          "configured": false
+        },
+        "ossfBadge": {
+          "badgeId": null,
+          "percentagePassing": null
+        },
+        "workflows": {
+          "files": [],
+          "presentFromExpected": [],
+          "missingFromExpected": [
+            "ci.yml",
+            "codeql.yml",
+            "coverage.yml",
+            "docs.yml",
+            "pr-validation.yml",
+            "python-compatibility.yml",
+            "release-sign.yml",
+            "release.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml",
+            "sonarcloud.yml"
+          ],
+          "extras": []
+        },
+        "foundations": {
+          "securityMd": false,
+          "contributingMd": false,
+          "changelogMd": false,
+          "codeOfConduct": true,
+          "governanceMd": true,
+          "agentsMd": false,
+          "geminiMd": false,
+          "claudeMd": false,
+          "knownVulnerabilities": false,
+          "codeowners": false
+        },
+        "preCommit": {
+          "configPresent": false,
+          "hooks": {
+            "ruff": false,
+            "basedpyright": false,
+            "bandit": false,
+            "detectSecrets": false,
+            "darglint": false,
+            "interrogate": false,
+            "commitizen": false,
+            "yamllint": false,
+            "markdownlint": false,
+            "noEmDash": false
+          }
+        },
+        "toolchain": {
+          "pyprojectToml": false,
+          "qltyConfig": false
+        }
+      }
+    },
+    {
+      "org": "williaby",
+      "name": "CR-10-",
+      "url": "https://github.com/williaby/CR-10-",
+      "defaultBranch": "main",
+      "description": "",
+      "isPrivate": false,
+      "isArchived": false,
+      "review": {
+        "branchProtection": {
+          "enabled": false
+        },
+        "codeql": {
+          "workflowPresent": false
+        },
+        "scorecard": {
+          "workflowPresent": false,
+          "score": null,
+          "lastChecked": null
+        },
+        "sonarcloud": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "codecov": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "reuse": {
+          "workflowPresent": false
+        },
+        "dependabot": {
+          "configured": false
+        },
+        "ossfBadge": {
+          "badgeId": null,
+          "percentagePassing": null
+        },
+        "workflows": {
+          "files": [],
+          "presentFromExpected": [],
+          "missingFromExpected": [
+            "ci.yml",
+            "codeql.yml",
+            "coverage.yml",
+            "docs.yml",
+            "pr-validation.yml",
+            "python-compatibility.yml",
+            "release-sign.yml",
+            "release.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml",
+            "sonarcloud.yml"
+          ],
+          "extras": []
+        },
+        "foundations": {
+          "securityMd": false,
+          "contributingMd": false,
+          "changelogMd": false,
+          "codeOfConduct": true,
+          "governanceMd": true,
+          "agentsMd": false,
+          "geminiMd": false,
+          "claudeMd": false,
+          "knownVulnerabilities": false,
+          "codeowners": false
+        },
+        "preCommit": {
+          "configPresent": false,
+          "hooks": {
+            "ruff": false,
+            "basedpyright": false,
+            "bandit": false,
+            "detectSecrets": false,
+            "darglint": false,
+            "interrogate": false,
+            "commitizen": false,
+            "yamllint": false,
+            "markdownlint": false,
+            "noEmDash": false
+          }
+        },
+        "toolchain": {
+          "pyprojectToml": false,
+          "qltyConfig": false
+        }
+      }
+    },
+    {
+      "org": "williaby",
+      "name": "dart-frog-paludarium",
+      "url": "https://github.com/williaby/dart-frog-paludarium",
+      "defaultBranch": "master",
+      "description": "Comprehensive planning documentation for a Dendrobates tinctorius 'Peacock' paludarium build",
+      "isPrivate": true,
+      "isArchived": false,
+      "review": {
+        "branchProtection": {
+          "enabled": false
+        },
+        "codeql": {
+          "workflowPresent": false
+        },
+        "scorecard": {
+          "workflowPresent": false,
+          "score": null,
+          "lastChecked": null
+        },
+        "sonarcloud": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "codecov": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "reuse": {
+          "workflowPresent": false
+        },
+        "dependabot": {
+          "configured": false
+        },
+        "ossfBadge": {
+          "badgeId": null,
+          "percentagePassing": null
+        },
+        "workflows": {
+          "files": [],
+          "presentFromExpected": [],
+          "missingFromExpected": [
+            "ci.yml",
+            "codeql.yml",
+            "coverage.yml",
+            "docs.yml",
+            "pr-validation.yml",
+            "python-compatibility.yml",
+            "release-sign.yml",
+            "release.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml",
+            "sonarcloud.yml"
+          ],
+          "extras": []
+        },
+        "foundations": {
+          "securityMd": false,
+          "contributingMd": false,
+          "changelogMd": true,
+          "codeOfConduct": true,
+          "governanceMd": true,
+          "agentsMd": false,
+          "geminiMd": false,
+          "claudeMd": false,
+          "knownVulnerabilities": false,
+          "codeowners": false
+        },
+        "preCommit": {
+          "configPresent": false,
+          "hooks": {
+            "ruff": false,
+            "basedpyright": false,
+            "bandit": false,
+            "detectSecrets": false,
+            "darglint": false,
+            "interrogate": false,
+            "commitizen": false,
+            "yamllint": false,
+            "markdownlint": false,
+            "noEmDash": false
+          }
+        },
+        "toolchain": {
+          "pyprojectToml": false,
+          "qltyConfig": false
+        }
+      }
+    },
+    {
+      "org": "williaby",
+      "name": "data_ingestor",
+      "url": "https://github.com/williaby/data_ingestor",
+      "defaultBranch": "main",
+      "description": "Production-grade RAG data ingestion pipeline with intelligent PDF processing and adaptive OCR",
+      "isPrivate": false,
+      "isArchived": false,
+      "review": {
+        "branchProtection": {
+          "enabled": false
+        },
+        "codeql": {
+          "workflowPresent": false
+        },
+        "scorecard": {
+          "workflowPresent": true,
+          "score": 4,
+          "lastChecked": "2026-01-20T21:30:59Z"
+        },
+        "sonarcloud": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "codecov": {
+          "configPresent": false,
+          "workflowPresent": true
+        },
+        "reuse": {
+          "workflowPresent": false
+        },
+        "dependabot": {
+          "configured": false
+        },
+        "ossfBadge": {
+          "badgeId": null,
+          "percentagePassing": null
+        },
+        "workflows": {
+          "files": [
+            "ci.yml",
+            "cifuzzy.yml",
+            "codecov.yml",
+            "pr-validation.yml",
+            "release.yml",
+            "scorecard.yml",
+            "security-analysis.yml"
+          ],
+          "presentFromExpected": [
+            "ci.yml",
+            "pr-validation.yml",
+            "release.yml",
+            "scorecard.yml",
+            "security-analysis.yml"
+          ],
+          "missingFromExpected": [
+            "codeql.yml",
+            "coverage.yml",
+            "docs.yml",
+            "python-compatibility.yml",
+            "release-sign.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "sonarcloud.yml"
+          ],
+          "extras": [
+            "cifuzzy.yml",
+            "codecov.yml"
+          ]
+        },
+        "foundations": {
+          "securityMd": false,
+          "contributingMd": false,
+          "changelogMd": false,
+          "codeOfConduct": true,
+          "governanceMd": true,
+          "agentsMd": false,
+          "geminiMd": false,
+          "claudeMd": true,
+          "knownVulnerabilities": false,
+          "codeowners": true
+        },
+        "preCommit": {
+          "configPresent": false,
+          "hooks": {
+            "ruff": false,
+            "basedpyright": false,
+            "bandit": false,
+            "detectSecrets": false,
+            "darglint": false,
+            "interrogate": false,
+            "commitizen": false,
+            "yamllint": false,
+            "markdownlint": false,
+            "noEmDash": false
+          }
+        },
+        "toolchain": {
+          "pyprojectToml": true,
+          "qltyConfig": false
+        }
+      }
+    },
+    {
+      "org": "williaby",
+      "name": "dna",
+      "url": "https://github.com/williaby/dna",
+      "defaultBranch": "main",
+      "description": "DNA analysis tool for family genealogy and ancestry research",
+      "isPrivate": true,
+      "isArchived": false,
+      "review": {
+        "branchProtection": {
+          "enabled": false
+        },
+        "codeql": {
+          "workflowPresent": false
+        },
+        "scorecard": {
+          "workflowPresent": true,
+          "score": null,
+          "lastChecked": null
+        },
+        "sonarcloud": {
+          "configPresent": true,
+          "workflowPresent": true
+        },
+        "codecov": {
+          "configPresent": true,
+          "workflowPresent": true
+        },
+        "reuse": {
+          "workflowPresent": true
+        },
+        "dependabot": {
+          "configured": true
+        },
+        "ossfBadge": {
+          "badgeId": null,
+          "percentagePassing": null
+        },
+        "workflows": {
+          "files": [
+            "ci-test-minimal.yml",
+            "ci.yml",
+            "cifuzzy-scheduled.yml",
+            "cifuzzy.yml",
+            "codecov.yml",
+            "dependency-review.yml",
+            "docs.yml",
+            "fips-compatibility.yml",
+            "mutation-testing.yml",
+            "pr-validation.yml",
+            "publish-pypi.yml",
+            "python-compatibility.yml",
+            "release.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml",
+            "slsa-provenance.yml",
+            "sonarcloud.yml",
+            "validate-cruft.yml"
+          ],
+          "presentFromExpected": [
+            "ci.yml",
+            "docs.yml",
+            "pr-validation.yml",
+            "python-compatibility.yml",
+            "release.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml",
+            "sonarcloud.yml"
+          ],
+          "missingFromExpected": [
+            "codeql.yml",
+            "coverage.yml",
+            "release-sign.yml"
+          ],
+          "extras": [
+            "ci-test-minimal.yml",
+            "cifuzzy-scheduled.yml",
+            "cifuzzy.yml",
+            "codecov.yml",
+            "dependency-review.yml",
+            "fips-compatibility.yml",
+            "mutation-testing.yml",
+            "publish-pypi.yml",
+            "slsa-provenance.yml",
+            "validate-cruft.yml"
+          ]
+        },
+        "foundations": {
+          "securityMd": true,
+          "contributingMd": true,
+          "changelogMd": true,
+          "codeOfConduct": true,
+          "governanceMd": true,
+          "agentsMd": false,
+          "geminiMd": false,
+          "claudeMd": true,
+          "knownVulnerabilities": true,
+          "codeowners": true
+        },
+        "preCommit": {
+          "configPresent": true,
+          "hooks": {
+            "ruff": true,
+            "basedpyright": false,
+            "bandit": true,
+            "detectSecrets": false,
+            "darglint": true,
+            "interrogate": true,
+            "commitizen": false,
+            "yamllint": false,
+            "markdownlint": false,
+            "noEmDash": false
+          }
+        },
+        "toolchain": {
+          "pyprojectToml": true,
+          "qltyConfig": true
+        }
+      }
+    },
+    {
+      "org": "williaby",
+      "name": "exercise-competition",
+      "url": "https://github.com/williaby/exercise-competition",
+      "defaultBranch": "main",
+      "description": "",
+      "isPrivate": false,
+      "isArchived": false,
+      "review": {
+        "branchProtection": {
+          "enabled": true,
+          "enforceAdmins": false,
+          "requiredSignatures": false,
+          "requiredLinearHistory": false,
+          "allowForcePushes": false,
+          "allowDeletions": false,
+          "blockCreations": false,
+          "requiredConversationResolution": false,
+          "lockBranch": false,
+          "requiredStatusChecks": {
+            "strict": true,
+            "contexts": [
+              "Test (Python 3.12)",
+              "Frontend (Node 22)"
+            ]
+          },
+          "requiredPullRequestReviews": null
+        },
+        "codeql": {
+          "workflowPresent": false
+        },
+        "scorecard": {
+          "workflowPresent": true,
+          "score": null,
+          "lastChecked": null
+        },
+        "sonarcloud": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "codecov": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "reuse": {
+          "workflowPresent": false
+        },
+        "dependabot": {
+          "configured": true
+        },
+        "ossfBadge": {
+          "badgeId": null,
+          "percentagePassing": null
+        },
+        "workflows": {
+          "files": [
+            "ci.yml",
+            "container-security.yml",
+            "fips-compatibility.yml",
+            "mutation-testing.yml",
+            "pr-validation.yml",
+            "publish-pypi.yml",
+            "python-compatibility.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml",
+            "slsa-provenance.yml",
+            "validate-cruft.yml"
+          ],
+          "presentFromExpected": [
+            "ci.yml",
+            "pr-validation.yml",
+            "python-compatibility.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml"
+          ],
+          "missingFromExpected": [
+            "codeql.yml",
+            "coverage.yml",
+            "docs.yml",
+            "release-sign.yml",
+            "release.yml",
+            "reuse.yml",
+            "sonarcloud.yml"
+          ],
+          "extras": [
+            "container-security.yml",
+            "fips-compatibility.yml",
+            "mutation-testing.yml",
+            "publish-pypi.yml",
+            "slsa-provenance.yml",
+            "validate-cruft.yml"
+          ]
+        },
+        "foundations": {
+          "securityMd": false,
+          "contributingMd": false,
+          "changelogMd": true,
+          "codeOfConduct": false,
+          "governanceMd": false,
+          "agentsMd": false,
+          "geminiMd": false,
+          "claudeMd": true,
+          "knownVulnerabilities": false,
+          "codeowners": true
+        },
+        "preCommit": {
+          "configPresent": true,
+          "hooks": {
+            "ruff": true,
+            "basedpyright": false,
+            "bandit": true,
+            "detectSecrets": false,
+            "darglint": true,
+            "interrogate": true,
+            "commitizen": false,
+            "yamllint": false,
+            "markdownlint": false,
+            "noEmDash": false
+          }
+        },
+        "toolchain": {
+          "pyprojectToml": true,
+          "qltyConfig": true
+        }
+      }
+    },
+    {
+      "org": "williaby",
+      "name": "family_office",
+      "url": "https://github.com/williaby/family_office",
+      "defaultBranch": "master",
+      "description": "",
+      "isPrivate": true,
+      "isArchived": false,
+      "review": {
+        "branchProtection": {
+          "enabled": false
+        },
+        "codeql": {
+          "workflowPresent": false
+        },
+        "scorecard": {
+          "workflowPresent": false,
+          "score": null,
+          "lastChecked": null
+        },
+        "sonarcloud": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "codecov": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "reuse": {
+          "workflowPresent": false
+        },
+        "dependabot": {
+          "configured": false
+        },
+        "ossfBadge": {
+          "badgeId": null,
+          "percentagePassing": null
+        },
+        "workflows": {
+          "files": [],
+          "presentFromExpected": [],
+          "missingFromExpected": [
+            "ci.yml",
+            "codeql.yml",
+            "coverage.yml",
+            "docs.yml",
+            "pr-validation.yml",
+            "python-compatibility.yml",
+            "release-sign.yml",
+            "release.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml",
+            "sonarcloud.yml"
+          ],
+          "extras": []
+        },
+        "foundations": {
+          "securityMd": false,
+          "contributingMd": false,
+          "changelogMd": false,
+          "codeOfConduct": true,
+          "governanceMd": true,
+          "agentsMd": false,
+          "geminiMd": false,
+          "claudeMd": false,
+          "knownVulnerabilities": false,
+          "codeowners": false
+        },
+        "preCommit": {
+          "configPresent": false,
+          "hooks": {
+            "ruff": false,
+            "basedpyright": false,
+            "bandit": false,
+            "detectSecrets": false,
+            "darglint": false,
+            "interrogate": false,
+            "commitizen": false,
+            "yamllint": false,
+            "markdownlint": false,
+            "noEmDash": false
+          }
+        },
+        "toolchain": {
+          "pyprojectToml": false,
+          "qltyConfig": false
+        }
+      }
+    },
+    {
+      "org": "williaby",
+      "name": "FISProject",
+      "url": "https://github.com/williaby/FISProject",
+      "defaultBranch": "master",
+      "description": "",
+      "isPrivate": true,
+      "isArchived": false,
+      "review": {
+        "branchProtection": {
+          "enabled": false
+        },
+        "codeql": {
+          "workflowPresent": false
+        },
+        "scorecard": {
+          "workflowPresent": false,
+          "score": null,
+          "lastChecked": null
+        },
+        "sonarcloud": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "codecov": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "reuse": {
+          "workflowPresent": false
+        },
+        "dependabot": {
+          "configured": false
+        },
+        "ossfBadge": {
+          "badgeId": null,
+          "percentagePassing": null
+        },
+        "workflows": {
+          "files": [
+            "main.yml"
+          ],
+          "presentFromExpected": [],
+          "missingFromExpected": [
+            "ci.yml",
+            "codeql.yml",
+            "coverage.yml",
+            "docs.yml",
+            "pr-validation.yml",
+            "python-compatibility.yml",
+            "release-sign.yml",
+            "release.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml",
+            "sonarcloud.yml"
+          ],
+          "extras": [
+            "main.yml"
+          ]
+        },
+        "foundations": {
+          "securityMd": false,
+          "contributingMd": false,
+          "changelogMd": false,
+          "codeOfConduct": true,
+          "governanceMd": true,
+          "agentsMd": false,
+          "geminiMd": false,
+          "claudeMd": false,
+          "knownVulnerabilities": false,
+          "codeowners": false
+        },
+        "preCommit": {
+          "configPresent": false,
+          "hooks": {
+            "ruff": false,
+            "basedpyright": false,
+            "bandit": false,
+            "detectSecrets": false,
+            "darglint": false,
+            "interrogate": false,
+            "commitizen": false,
+            "yamllint": false,
+            "markdownlint": false,
+            "noEmDash": false
+          }
+        },
+        "toolchain": {
+          "pyprojectToml": false,
+          "qltyConfig": false
+        }
+      }
+    },
+    {
+      "org": "williaby",
+      "name": "GCS",
+      "url": "https://github.com/williaby/GCS",
+      "defaultBranch": "main",
+      "description": "",
+      "isPrivate": false,
+      "isArchived": false,
+      "review": {
+        "branchProtection": {
+          "enabled": false
+        },
+        "codeql": {
+          "workflowPresent": false
+        },
+        "scorecard": {
+          "workflowPresent": false,
+          "score": null,
+          "lastChecked": null
+        },
+        "sonarcloud": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "codecov": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "reuse": {
+          "workflowPresent": false
+        },
+        "dependabot": {
+          "configured": false
+        },
+        "ossfBadge": {
+          "badgeId": null,
+          "percentagePassing": null
+        },
+        "workflows": {
+          "files": [],
+          "presentFromExpected": [],
+          "missingFromExpected": [
+            "ci.yml",
+            "codeql.yml",
+            "coverage.yml",
+            "docs.yml",
+            "pr-validation.yml",
+            "python-compatibility.yml",
+            "release-sign.yml",
+            "release.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml",
+            "sonarcloud.yml"
+          ],
+          "extras": []
+        },
+        "foundations": {
+          "securityMd": false,
+          "contributingMd": false,
+          "changelogMd": false,
+          "codeOfConduct": true,
+          "governanceMd": true,
+          "agentsMd": false,
+          "geminiMd": false,
+          "claudeMd": false,
+          "knownVulnerabilities": false,
+          "codeowners": false
+        },
+        "preCommit": {
+          "configPresent": false,
+          "hooks": {
+            "ruff": false,
+            "basedpyright": false,
+            "bandit": false,
+            "detectSecrets": false,
+            "darglint": false,
+            "interrogate": false,
+            "commitizen": false,
+            "yamllint": false,
+            "markdownlint": false,
+            "noEmDash": false
+          }
+        },
+        "toolchain": {
+          "pyprojectToml": true,
+          "qltyConfig": false
+        }
+      }
+    },
+    {
+      "org": "williaby",
+      "name": "homelab-agent-configs",
+      "url": "https://github.com/williaby/homelab-agent-configs",
+      "defaultBranch": "agent/hermes",
+      "description": "",
+      "isPrivate": true,
+      "isArchived": false,
+      "review": {
+        "branchProtection": {
+          "enabled": false
+        },
+        "codeql": {
+          "workflowPresent": false
+        },
+        "scorecard": {
+          "workflowPresent": false,
+          "score": null,
+          "lastChecked": null
+        },
+        "sonarcloud": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "codecov": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "reuse": {
+          "workflowPresent": false
+        },
+        "dependabot": {
+          "configured": false
+        },
+        "ossfBadge": {
+          "badgeId": null,
+          "percentagePassing": null
+        },
+        "workflows": {
+          "files": [],
+          "presentFromExpected": [],
+          "missingFromExpected": [
+            "ci.yml",
+            "codeql.yml",
+            "coverage.yml",
+            "docs.yml",
+            "pr-validation.yml",
+            "python-compatibility.yml",
+            "release-sign.yml",
+            "release.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml",
+            "sonarcloud.yml"
+          ],
+          "extras": []
+        },
+        "foundations": {
+          "securityMd": false,
+          "contributingMd": false,
+          "changelogMd": false,
+          "codeOfConduct": true,
+          "governanceMd": true,
+          "agentsMd": true,
+          "geminiMd": false,
+          "claudeMd": false,
+          "knownVulnerabilities": false,
+          "codeowners": false
+        },
+        "preCommit": {
+          "configPresent": false,
+          "hooks": {
+            "ruff": false,
+            "basedpyright": false,
+            "bandit": false,
+            "detectSecrets": false,
+            "darglint": false,
+            "interrogate": false,
+            "commitizen": false,
+            "yamllint": false,
+            "markdownlint": false,
+            "noEmDash": false
+          }
+        },
+        "toolchain": {
+          "pyprojectToml": false,
+          "qltyConfig": false
+        }
+      }
+    },
+    {
+      "org": "williaby",
+      "name": "image-generation",
+      "url": "https://github.com/williaby/image-generation",
+      "defaultBranch": "main",
+      "description": "",
+      "isPrivate": false,
+      "isArchived": false,
+      "review": {
+        "branchProtection": {
+          "enabled": true,
+          "enforceAdmins": true,
+          "requiredSignatures": true,
+          "requiredLinearHistory": false,
+          "allowForcePushes": false,
+          "allowDeletions": false,
+          "blockCreations": false,
+          "requiredConversationResolution": false,
+          "lockBranch": false,
+          "requiredStatusChecks": null,
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": 0,
+            "dismissStaleReviews": false,
+            "requireCodeOwnerReviews": false,
+            "requireLastPushApproval": false
+          }
+        },
+        "codeql": {
+          "workflowPresent": false
+        },
+        "scorecard": {
+          "workflowPresent": false,
+          "score": null,
+          "lastChecked": null
+        },
+        "sonarcloud": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "codecov": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "reuse": {
+          "workflowPresent": false
+        },
+        "dependabot": {
+          "configured": false
+        },
+        "ossfBadge": {
+          "badgeId": null,
+          "percentagePassing": null
+        },
+        "workflows": {
+          "files": [],
+          "presentFromExpected": [],
+          "missingFromExpected": [
+            "ci.yml",
+            "codeql.yml",
+            "coverage.yml",
+            "docs.yml",
+            "pr-validation.yml",
+            "python-compatibility.yml",
+            "release-sign.yml",
+            "release.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml",
+            "sonarcloud.yml"
+          ],
+          "extras": []
+        },
+        "foundations": {
+          "securityMd": true,
+          "contributingMd": true,
+          "changelogMd": true,
+          "codeOfConduct": false,
+          "governanceMd": false,
+          "agentsMd": false,
+          "geminiMd": false,
+          "claudeMd": false,
+          "knownVulnerabilities": true,
+          "codeowners": false
+        },
+        "preCommit": {
+          "configPresent": true,
+          "hooks": {
+            "ruff": true,
+            "basedpyright": true,
+            "bandit": false,
+            "detectSecrets": false,
+            "darglint": false,
+            "interrogate": false,
+            "commitizen": false,
+            "yamllint": false,
+            "markdownlint": false,
+            "noEmDash": true
+          }
+        },
+        "toolchain": {
+          "pyprojectToml": true,
+          "qltyConfig": false
+        }
+      }
+    },
+    {
+      "org": "williaby",
+      "name": "image-preprocessing-detector",
+      "url": "https://github.com/williaby/image-preprocessing-detector",
+      "defaultBranch": "main",
+      "description": "Intelligent image preprocessing detection system for RAG applications",
+      "isPrivate": false,
+      "isArchived": false,
+      "review": {
+        "branchProtection": {
+          "enabled": true,
+          "enforceAdmins": true,
+          "requiredSignatures": true,
+          "requiredLinearHistory": true,
+          "allowForcePushes": false,
+          "allowDeletions": false,
+          "blockCreations": false,
+          "requiredConversationResolution": false,
+          "lockBranch": false,
+          "requiredStatusChecks": {
+            "strict": true,
+            "contexts": [
+              "CI Gate",
+              "Security Gate Validation",
+              "Check REUSE Compliance",
+              "Dependency & Standards Validation"
+            ]
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": 0,
+            "dismissStaleReviews": true,
+            "requireCodeOwnerReviews": true,
+            "requireLastPushApproval": false
+          }
+        },
+        "codeql": {
+          "workflowPresent": false
+        },
+        "scorecard": {
+          "workflowPresent": true,
+          "score": 6.5,
+          "lastChecked": "2026-04-27T09:43:59Z"
+        },
+        "sonarcloud": {
+          "configPresent": true,
+          "workflowPresent": true
+        },
+        "codecov": {
+          "configPresent": true,
+          "workflowPresent": true
+        },
+        "reuse": {
+          "workflowPresent": true
+        },
+        "dependabot": {
+          "configured": false
+        },
+        "ossfBadge": {
+          "badgeId": 11445,
+          "percentagePassing": 100
+        },
+        "workflows": {
+          "files": [
+            "benchmark-results.yml",
+            "ci.yml",
+            "cifuzzy.yml",
+            "codecov.yml",
+            "compatibility.yml",
+            "docs.yml",
+            "mutation-testing.yml",
+            "performance-regression.yml",
+            "pr-validation.yml",
+            "publish-pypi.yml",
+            "qlty.yml",
+            "release.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml",
+            "sonarcloud.yml"
+          ],
+          "presentFromExpected": [
+            "ci.yml",
+            "docs.yml",
+            "pr-validation.yml",
+            "release.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml",
+            "sonarcloud.yml"
+          ],
+          "missingFromExpected": [
+            "codeql.yml",
+            "coverage.yml",
+            "python-compatibility.yml",
+            "release-sign.yml"
+          ],
+          "extras": [
+            "benchmark-results.yml",
+            "cifuzzy.yml",
+            "codecov.yml",
+            "compatibility.yml",
+            "mutation-testing.yml",
+            "performance-regression.yml",
+            "publish-pypi.yml",
+            "qlty.yml"
+          ]
+        },
+        "foundations": {
+          "securityMd": true,
+          "contributingMd": true,
+          "changelogMd": true,
+          "codeOfConduct": true,
+          "governanceMd": false,
+          "agentsMd": true,
+          "geminiMd": false,
+          "claudeMd": true,
+          "knownVulnerabilities": false,
+          "codeowners": true
+        },
+        "preCommit": {
+          "configPresent": true,
+          "hooks": {
+            "ruff": true,
+            "basedpyright": false,
+            "bandit": true,
+            "detectSecrets": false,
+            "darglint": false,
+            "interrogate": true,
+            "commitizen": false,
+            "yamllint": true,
+            "markdownlint": true,
+            "noEmDash": false
+          }
+        },
+        "toolchain": {
+          "pyprojectToml": true,
+          "qltyConfig": true
+        }
+      }
+    },
+    {
+      "org": "williaby",
+      "name": "klipper-octoprint-configs",
+      "url": "https://github.com/williaby/klipper-octoprint-configs",
+      "defaultBranch": "main",
+      "description": "",
+      "isPrivate": true,
+      "isArchived": false,
+      "review": {
+        "branchProtection": {
+          "enabled": false
+        },
+        "codeql": {
+          "workflowPresent": false
+        },
+        "scorecard": {
+          "workflowPresent": false,
+          "score": null,
+          "lastChecked": null
+        },
+        "sonarcloud": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "codecov": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "reuse": {
+          "workflowPresent": false
+        },
+        "dependabot": {
+          "configured": false
+        },
+        "ossfBadge": {
+          "badgeId": null,
+          "percentagePassing": null
+        },
+        "workflows": {
+          "files": [],
+          "presentFromExpected": [],
+          "missingFromExpected": [
+            "ci.yml",
+            "codeql.yml",
+            "coverage.yml",
+            "docs.yml",
+            "pr-validation.yml",
+            "python-compatibility.yml",
+            "release-sign.yml",
+            "release.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml",
+            "sonarcloud.yml"
+          ],
+          "extras": []
+        },
+        "foundations": {
+          "securityMd": false,
+          "contributingMd": false,
+          "changelogMd": false,
+          "codeOfConduct": true,
+          "governanceMd": true,
+          "agentsMd": false,
+          "geminiMd": false,
+          "claudeMd": false,
+          "knownVulnerabilities": false,
+          "codeowners": false
+        },
+        "preCommit": {
+          "configPresent": false,
+          "hooks": {
+            "ruff": false,
+            "basedpyright": false,
+            "bandit": false,
+            "detectSecrets": false,
+            "darglint": false,
+            "interrogate": false,
+            "commitizen": false,
+            "yamllint": false,
+            "markdownlint": false,
+            "noEmDash": false
+          }
+        },
+        "toolchain": {
+          "pyprojectToml": false,
+          "qltyConfig": false
+        }
+      }
+    },
+    {
+      "org": "williaby",
+      "name": "ledgerbase",
+      "url": "https://github.com/williaby/ledgerbase",
+      "defaultBranch": "main",
+      "description": "",
+      "isPrivate": false,
+      "isArchived": false,
+      "review": {
+        "branchProtection": {
+          "enabled": false
+        },
+        "codeql": {
+          "workflowPresent": true
+        },
+        "scorecard": {
+          "workflowPresent": true,
+          "score": 5.8,
+          "lastChecked": "2025-04-24T21:40:43Z"
+        },
+        "sonarcloud": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "codecov": {
+          "configPresent": true,
+          "workflowPresent": false
+        },
+        "reuse": {
+          "workflowPresent": false
+        },
+        "dependabot": {
+          "configured": false
+        },
+        "ossfBadge": {
+          "badgeId": 10417,
+          "percentagePassing": 16
+        },
+        "workflows": {
+          "files": [
+            "auto-merge.yml",
+            "cifuzzy.yml",
+            "dependency-review.yml",
+            "deploy.yml",
+            "dev-checks.yml",
+            "gh-pages.yml",
+            "license.yml",
+            "pre-commit.yml",
+            "prepare-poetry.yml",
+            "release.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-bandit.yml",
+            "security-codeql.yml",
+            "security-pip-audit.yml",
+            "security-semgrep.yml",
+            "security-snyk.yml",
+            "security-trivy.yml",
+            "stale.yml",
+            "weekly-check.yml",
+            "wtd.yml"
+          ],
+          "presentFromExpected": [
+            "release.yml",
+            "sbom.yml",
+            "scorecard.yml"
+          ],
+          "missingFromExpected": [
+            "ci.yml",
+            "codeql.yml",
+            "coverage.yml",
+            "docs.yml",
+            "pr-validation.yml",
+            "python-compatibility.yml",
+            "release-sign.yml",
+            "reuse.yml",
+            "security-analysis.yml",
+            "sonarcloud.yml"
+          ],
+          "extras": [
+            "auto-merge.yml",
+            "cifuzzy.yml",
+            "dependency-review.yml",
+            "deploy.yml",
+            "dev-checks.yml",
+            "gh-pages.yml",
+            "license.yml",
+            "pre-commit.yml",
+            "prepare-poetry.yml",
+            "security-bandit.yml",
+            "security-codeql.yml",
+            "security-pip-audit.yml",
+            "security-semgrep.yml",
+            "security-snyk.yml",
+            "security-trivy.yml",
+            "stale.yml",
+            "weekly-check.yml",
+            "wtd.yml"
+          ]
+        },
+        "foundations": {
+          "securityMd": true,
+          "contributingMd": true,
+          "changelogMd": true,
+          "codeOfConduct": true,
+          "governanceMd": true,
+          "agentsMd": false,
+          "geminiMd": false,
+          "claudeMd": false,
+          "knownVulnerabilities": false,
+          "codeowners": false
+        },
+        "preCommit": {
+          "configPresent": true,
+          "hooks": {
+            "ruff": true,
+            "basedpyright": false,
+            "bandit": true,
+            "detectSecrets": true,
+            "darglint": false,
+            "interrogate": false,
+            "commitizen": false,
+            "yamllint": false,
+            "markdownlint": true,
+            "noEmDash": false
+          }
+        },
+        "toolchain": {
+          "pyprojectToml": true,
+          "qltyConfig": false
+        }
+      }
+    },
+    {
+      "org": "williaby",
+      "name": "library",
+      "url": "https://github.com/williaby/library",
+      "defaultBranch": "main",
+      "description": "Investment Division Data Operations: framework documentation and governance",
+      "isPrivate": true,
+      "isArchived": false,
+      "review": {
+        "branchProtection": {
+          "enabled": false
+        },
+        "codeql": {
+          "workflowPresent": false
+        },
+        "scorecard": {
+          "workflowPresent": false,
+          "score": null,
+          "lastChecked": null
+        },
+        "sonarcloud": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "codecov": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "reuse": {
+          "workflowPresent": false
+        },
+        "dependabot": {
+          "configured": false
+        },
+        "ossfBadge": {
+          "badgeId": null,
+          "percentagePassing": null
+        },
+        "workflows": {
+          "files": [],
+          "presentFromExpected": [],
+          "missingFromExpected": [
+            "ci.yml",
+            "codeql.yml",
+            "coverage.yml",
+            "docs.yml",
+            "pr-validation.yml",
+            "python-compatibility.yml",
+            "release-sign.yml",
+            "release.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml",
+            "sonarcloud.yml"
+          ],
+          "extras": []
+        },
+        "foundations": {
+          "securityMd": false,
+          "contributingMd": false,
+          "changelogMd": false,
+          "codeOfConduct": true,
+          "governanceMd": true,
+          "agentsMd": false,
+          "geminiMd": false,
+          "claudeMd": true,
+          "knownVulnerabilities": false,
+          "codeowners": false
+        },
+        "preCommit": {
+          "configPresent": false,
+          "hooks": {
+            "ruff": false,
+            "basedpyright": false,
+            "bandit": false,
+            "detectSecrets": false,
+            "darglint": false,
+            "interrogate": false,
+            "commitizen": false,
+            "yamllint": false,
+            "markdownlint": false,
+            "noEmDash": false
+          }
+        },
+        "toolchain": {
+          "pyprojectToml": false,
+          "qltyConfig": false
+        }
+      }
+    },
+    {
+      "org": "williaby",
+      "name": "LifeSphere",
+      "url": "https://github.com/williaby/LifeSphere",
+      "defaultBranch": "main",
+      "description": "",
+      "isPrivate": false,
+      "isArchived": false,
+      "review": {
+        "branchProtection": {
+          "enabled": false
+        },
+        "codeql": {
+          "workflowPresent": false
+        },
+        "scorecard": {
+          "workflowPresent": false,
+          "score": null,
+          "lastChecked": null
+        },
+        "sonarcloud": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "codecov": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "reuse": {
+          "workflowPresent": false
+        },
+        "dependabot": {
+          "configured": false
+        },
+        "ossfBadge": {
+          "badgeId": null,
+          "percentagePassing": null
+        },
+        "workflows": {
+          "files": [],
+          "presentFromExpected": [],
+          "missingFromExpected": [
+            "ci.yml",
+            "codeql.yml",
+            "coverage.yml",
+            "docs.yml",
+            "pr-validation.yml",
+            "python-compatibility.yml",
+            "release-sign.yml",
+            "release.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml",
+            "sonarcloud.yml"
+          ],
+          "extras": []
+        },
+        "foundations": {
+          "securityMd": false,
+          "contributingMd": false,
+          "changelogMd": false,
+          "codeOfConduct": true,
+          "governanceMd": true,
+          "agentsMd": false,
+          "geminiMd": false,
+          "claudeMd": false,
+          "knownVulnerabilities": false,
+          "codeowners": false
+        },
+        "preCommit": {
+          "configPresent": false,
+          "hooks": {
+            "ruff": false,
+            "basedpyright": false,
+            "bandit": false,
+            "detectSecrets": false,
+            "darglint": false,
+            "interrogate": false,
+            "commitizen": false,
+            "yamllint": false,
+            "markdownlint": false,
+            "noEmDash": false
+          }
+        },
+        "toolchain": {
+          "pyprojectToml": false,
+          "qltyConfig": false
+        }
+      }
+    },
+    {
+      "org": "williaby",
+      "name": "magg",
+      "url": "https://github.com/williaby/magg",
+      "defaultBranch": "main",
+      "description": "",
+      "isPrivate": false,
+      "isArchived": false,
+      "review": {
+        "branchProtection": {
+          "enabled": false
+        },
+        "codeql": {
+          "workflowPresent": false
+        },
+        "scorecard": {
+          "workflowPresent": false,
+          "score": null,
+          "lastChecked": null
+        },
+        "sonarcloud": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "codecov": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "reuse": {
+          "workflowPresent": false
+        },
+        "dependabot": {
+          "configured": false
+        },
+        "ossfBadge": {
+          "badgeId": null,
+          "percentagePassing": null
+        },
+        "workflows": {
+          "files": [
+            "docker-publish.yml",
+            "manual-publish.yml",
+            "publish.yml",
+            "test.yml"
+          ],
+          "presentFromExpected": [],
+          "missingFromExpected": [
+            "ci.yml",
+            "codeql.yml",
+            "coverage.yml",
+            "docs.yml",
+            "pr-validation.yml",
+            "python-compatibility.yml",
+            "release-sign.yml",
+            "release.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml",
+            "sonarcloud.yml"
+          ],
+          "extras": [
+            "docker-publish.yml",
+            "manual-publish.yml",
+            "publish.yml",
+            "test.yml"
+          ]
+        },
+        "foundations": {
+          "securityMd": false,
+          "contributingMd": true,
+          "changelogMd": false,
+          "codeOfConduct": true,
+          "governanceMd": true,
+          "agentsMd": false,
+          "geminiMd": false,
+          "claudeMd": false,
+          "knownVulnerabilities": false,
+          "codeowners": false
+        },
+        "preCommit": {
+          "configPresent": false,
+          "hooks": {
+            "ruff": false,
+            "basedpyright": false,
+            "bandit": false,
+            "detectSecrets": false,
+            "darglint": false,
+            "interrogate": false,
+            "commitizen": false,
+            "yamllint": false,
+            "markdownlint": false,
+            "noEmDash": false
+          }
+        },
+        "toolchain": {
+          "pyprojectToml": true,
+          "qltyConfig": false
+        }
+      }
+    },
+    {
+      "org": "williaby",
+      "name": "monte_carlo",
+      "url": "https://github.com/williaby/monte_carlo",
+      "defaultBranch": "main",
+      "description": "OST Fee Setting and Revenue Forecasting System using Monte Carlo simulation for Oregon State Treasury",
+      "isPrivate": true,
+      "isArchived": false,
+      "review": {
+        "branchProtection": {
+          "enabled": false
+        },
+        "codeql": {
+          "workflowPresent": false
+        },
+        "scorecard": {
+          "workflowPresent": false,
+          "score": null,
+          "lastChecked": null
+        },
+        "sonarcloud": {
+          "configPresent": true,
+          "workflowPresent": false
+        },
+        "codecov": {
+          "configPresent": true,
+          "workflowPresent": false
+        },
+        "reuse": {
+          "workflowPresent": false
+        },
+        "dependabot": {
+          "configured": false
+        },
+        "ossfBadge": {
+          "badgeId": null,
+          "percentagePassing": null
+        },
+        "workflows": {
+          "files": [
+            "ci.yml"
+          ],
+          "presentFromExpected": [
+            "ci.yml"
+          ],
+          "missingFromExpected": [
+            "codeql.yml",
+            "coverage.yml",
+            "docs.yml",
+            "pr-validation.yml",
+            "python-compatibility.yml",
+            "release-sign.yml",
+            "release.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml",
+            "sonarcloud.yml"
+          ],
+          "extras": []
+        },
+        "foundations": {
+          "securityMd": true,
+          "contributingMd": true,
+          "changelogMd": true,
+          "codeOfConduct": true,
+          "governanceMd": true,
+          "agentsMd": false,
+          "geminiMd": true,
+          "claudeMd": true,
+          "knownVulnerabilities": false,
+          "codeowners": false
+        },
+        "preCommit": {
+          "configPresent": true,
+          "hooks": {
+            "ruff": true,
+            "basedpyright": true,
+            "bandit": true,
+            "detectSecrets": true,
+            "darglint": false,
+            "interrogate": false,
+            "commitizen": false,
+            "yamllint": true,
+            "markdownlint": true,
+            "noEmDash": false
+          }
+        },
+        "toolchain": {
+          "pyprojectToml": true,
+          "qltyConfig": false
+        }
+      }
+    },
+    {
+      "org": "williaby",
+      "name": "OPNS",
+      "url": "https://github.com/williaby/OPNS",
+      "defaultBranch": "main",
+      "description": "",
+      "isPrivate": true,
+      "isArchived": false,
+      "review": {
+        "branchProtection": {
+          "enabled": false
+        },
+        "codeql": {
+          "workflowPresent": false
+        },
+        "scorecard": {
+          "workflowPresent": false,
+          "score": null,
+          "lastChecked": null
+        },
+        "sonarcloud": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "codecov": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "reuse": {
+          "workflowPresent": false
+        },
+        "dependabot": {
+          "configured": false
+        },
+        "ossfBadge": {
+          "badgeId": null,
+          "percentagePassing": null
+        },
+        "workflows": {
+          "files": [],
+          "presentFromExpected": [],
+          "missingFromExpected": [
+            "ci.yml",
+            "codeql.yml",
+            "coverage.yml",
+            "docs.yml",
+            "pr-validation.yml",
+            "python-compatibility.yml",
+            "release-sign.yml",
+            "release.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml",
+            "sonarcloud.yml"
+          ],
+          "extras": []
+        },
+        "foundations": {
+          "securityMd": false,
+          "contributingMd": false,
+          "changelogMd": false,
+          "codeOfConduct": true,
+          "governanceMd": true,
+          "agentsMd": false,
+          "geminiMd": false,
+          "claudeMd": false,
+          "knownVulnerabilities": false,
+          "codeowners": false
+        },
+        "preCommit": {
+          "configPresent": false,
+          "hooks": {
+            "ruff": false,
+            "basedpyright": false,
+            "bandit": false,
+            "detectSecrets": false,
+            "darglint": false,
+            "interrogate": false,
+            "commitizen": false,
+            "yamllint": false,
+            "markdownlint": false,
+            "noEmDash": false
+          }
+        },
+        "toolchain": {
+          "pyprojectToml": false,
+          "qltyConfig": false
+        }
+      }
+    },
+    {
+      "org": "williaby",
+      "name": "OPNSense",
+      "url": "https://github.com/williaby/OPNSense",
+      "defaultBranch": "main",
+      "description": "",
+      "isPrivate": true,
+      "isArchived": false,
+      "review": {
+        "branchProtection": {
+          "enabled": false
+        },
+        "codeql": {
+          "workflowPresent": false
+        },
+        "scorecard": {
+          "workflowPresent": false,
+          "score": null,
+          "lastChecked": null
+        },
+        "sonarcloud": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "codecov": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "reuse": {
+          "workflowPresent": false
+        },
+        "dependabot": {
+          "configured": false
+        },
+        "ossfBadge": {
+          "badgeId": null,
+          "percentagePassing": null
+        },
+        "workflows": {
+          "files": [],
+          "presentFromExpected": [],
+          "missingFromExpected": [
+            "ci.yml",
+            "codeql.yml",
+            "coverage.yml",
+            "docs.yml",
+            "pr-validation.yml",
+            "python-compatibility.yml",
+            "release-sign.yml",
+            "release.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml",
+            "sonarcloud.yml"
+          ],
+          "extras": []
+        },
+        "foundations": {
+          "securityMd": false,
+          "contributingMd": false,
+          "changelogMd": false,
+          "codeOfConduct": true,
+          "governanceMd": true,
+          "agentsMd": false,
+          "geminiMd": false,
+          "claudeMd": false,
+          "knownVulnerabilities": false,
+          "codeowners": false
+        },
+        "preCommit": {
+          "configPresent": false,
+          "hooks": {
+            "ruff": false,
+            "basedpyright": false,
+            "bandit": false,
+            "detectSecrets": false,
+            "darglint": false,
+            "interrogate": false,
+            "commitizen": false,
+            "yamllint": false,
+            "markdownlint": false,
+            "noEmDash": false
+          }
+        },
+        "toolchain": {
+          "pyprojectToml": false,
+          "qltyConfig": false
+        }
+      }
+    },
+    {
+      "org": "williaby",
+      "name": "pp-security-master",
+      "url": "https://github.com/williaby/pp-security-master",
+      "defaultBranch": "main",
+      "description": "",
+      "isPrivate": false,
+      "isArchived": false,
+      "review": {
+        "branchProtection": {
+          "enabled": false
+        },
+        "codeql": {
+          "workflowPresent": true
+        },
+        "scorecard": {
+          "workflowPresent": true,
+          "score": null,
+          "lastChecked": null
+        },
+        "sonarcloud": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "codecov": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "reuse": {
+          "workflowPresent": false
+        },
+        "dependabot": {
+          "configured": false
+        },
+        "ossfBadge": {
+          "badgeId": null,
+          "percentagePassing": null
+        },
+        "workflows": {
+          "files": [
+            "ci.yml",
+            "codeql.yml",
+            "renovate-auto-merge.yml",
+            "scorecard.yml"
+          ],
+          "presentFromExpected": [
+            "ci.yml",
+            "codeql.yml",
+            "scorecard.yml"
+          ],
+          "missingFromExpected": [
+            "coverage.yml",
+            "docs.yml",
+            "pr-validation.yml",
+            "python-compatibility.yml",
+            "release-sign.yml",
+            "release.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "security-analysis.yml",
+            "sonarcloud.yml"
+          ],
+          "extras": [
+            "renovate-auto-merge.yml"
+          ]
+        },
+        "foundations": {
+          "securityMd": true,
+          "contributingMd": true,
+          "changelogMd": true,
+          "codeOfConduct": true,
+          "governanceMd": true,
+          "agentsMd": false,
+          "geminiMd": false,
+          "claudeMd": true,
+          "knownVulnerabilities": true,
+          "codeowners": true
+        },
+        "preCommit": {
+          "configPresent": false,
+          "hooks": {
+            "ruff": false,
+            "basedpyright": false,
+            "bandit": false,
+            "detectSecrets": false,
+            "darglint": false,
+            "interrogate": false,
+            "commitizen": false,
+            "yamllint": false,
+            "markdownlint": false,
+            "noEmDash": false
+          }
+        },
+        "toolchain": {
+          "pyprojectToml": true,
+          "qltyConfig": false
+        }
+      }
+    },
+    {
+      "org": "williaby",
+      "name": "PromptCraft",
+      "url": "https://github.com/williaby/PromptCraft",
+      "defaultBranch": "main",
+      "description": "",
+      "isPrivate": false,
+      "isArchived": false,
+      "review": {
+        "branchProtection": {
+          "enabled": false
+        },
+        "codeql": {
+          "workflowPresent": false
+        },
+        "scorecard": {
+          "workflowPresent": true,
+          "score": null,
+          "lastChecked": null
+        },
+        "sonarcloud": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "codecov": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "reuse": {
+          "workflowPresent": false
+        },
+        "dependabot": {
+          "configured": false
+        },
+        "ossfBadge": {
+          "badgeId": null,
+          "percentagePassing": null
+        },
+        "workflows": {
+          "files": [
+            "auth-service-token-example.yml",
+            "ci.yml",
+            "codespaces-prebuild.yml",
+            "dependency-review.yml",
+            "deploy-docs-production.yml",
+            "deploy-docs.yml",
+            "pr-validation.yml",
+            "renovate-auto-merge.yml",
+            "scorecard.yml",
+            "security-scan-summary.yml",
+            "setup-assured-oss.yml",
+            "ui-testing-pipeline.yml"
+          ],
+          "presentFromExpected": [
+            "ci.yml",
+            "pr-validation.yml",
+            "scorecard.yml"
+          ],
+          "missingFromExpected": [
+            "codeql.yml",
+            "coverage.yml",
+            "docs.yml",
+            "python-compatibility.yml",
+            "release-sign.yml",
+            "release.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "security-analysis.yml",
+            "sonarcloud.yml"
+          ],
+          "extras": [
+            "auth-service-token-example.yml",
+            "codespaces-prebuild.yml",
+            "dependency-review.yml",
+            "deploy-docs-production.yml",
+            "deploy-docs.yml",
+            "renovate-auto-merge.yml",
+            "security-scan-summary.yml",
+            "setup-assured-oss.yml",
+            "ui-testing-pipeline.yml"
+          ]
+        },
+        "foundations": {
+          "securityMd": true,
+          "contributingMd": true,
+          "changelogMd": true,
+          "codeOfConduct": false,
+          "governanceMd": false,
+          "agentsMd": false,
+          "geminiMd": false,
+          "claudeMd": true,
+          "knownVulnerabilities": true,
+          "codeowners": true
+        },
+        "preCommit": {
+          "configPresent": true,
+          "hooks": {
+            "ruff": true,
+            "basedpyright": false,
+            "bandit": true,
+            "detectSecrets": false,
+            "darglint": false,
+            "interrogate": false,
+            "commitizen": false,
+            "yamllint": true,
+            "markdownlint": true,
+            "noEmDash": false
+          }
+        },
+        "toolchain": {
+          "pyprojectToml": true,
+          "qltyConfig": false
+        }
+      }
+    },
+    {
+      "org": "williaby",
+      "name": "superslicer-configs",
+      "url": "https://github.com/williaby/superslicer-configs",
+      "defaultBranch": "main",
+      "description": "Configuration profiles for SuperSlicer on CR-10 with Klipper",
+      "isPrivate": true,
+      "isArchived": false,
+      "review": {
+        "branchProtection": {
+          "enabled": false
+        },
+        "codeql": {
+          "workflowPresent": false
+        },
+        "scorecard": {
+          "workflowPresent": false,
+          "score": null,
+          "lastChecked": null
+        },
+        "sonarcloud": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "codecov": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "reuse": {
+          "workflowPresent": false
+        },
+        "dependabot": {
+          "configured": false
+        },
+        "ossfBadge": {
+          "badgeId": null,
+          "percentagePassing": null
+        },
+        "workflows": {
+          "files": [],
+          "presentFromExpected": [],
+          "missingFromExpected": [
+            "ci.yml",
+            "codeql.yml",
+            "coverage.yml",
+            "docs.yml",
+            "pr-validation.yml",
+            "python-compatibility.yml",
+            "release-sign.yml",
+            "release.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml",
+            "sonarcloud.yml"
+          ],
+          "extras": []
+        },
+        "foundations": {
+          "securityMd": false,
+          "contributingMd": false,
+          "changelogMd": false,
+          "codeOfConduct": true,
+          "governanceMd": true,
+          "agentsMd": false,
+          "geminiMd": false,
+          "claudeMd": false,
+          "knownVulnerabilities": false,
+          "codeowners": false
+        },
+        "preCommit": {
+          "configPresent": false,
+          "hooks": {
+            "ruff": false,
+            "basedpyright": false,
+            "bandit": false,
+            "detectSecrets": false,
+            "darglint": false,
+            "interrogate": false,
+            "commitizen": false,
+            "yamllint": false,
+            "markdownlint": false,
+            "noEmDash": false
+          }
+        },
+        "toolchain": {
+          "pyprojectToml": false,
+          "qltyConfig": false
+        }
+      }
+    },
+    {
+      "org": "williaby",
+      "name": "testing",
+      "url": "https://github.com/williaby/testing",
+      "defaultBranch": "claude/initial-project-setup-01Ki3S5kK8CmVAnFLY7vpJCh",
+      "description": "",
+      "isPrivate": false,
+      "isArchived": false,
+      "review": {
+        "branchProtection": {
+          "enabled": false
+        },
+        "codeql": {
+          "workflowPresent": false
+        },
+        "scorecard": {
+          "workflowPresent": false,
+          "score": null,
+          "lastChecked": null
+        },
+        "sonarcloud": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "codecov": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "reuse": {
+          "workflowPresent": false
+        },
+        "dependabot": {
+          "configured": false
+        },
+        "ossfBadge": {
+          "badgeId": null,
+          "percentagePassing": null
+        },
+        "workflows": {
+          "files": [
+            "test.yml"
+          ],
+          "presentFromExpected": [],
+          "missingFromExpected": [
+            "ci.yml",
+            "codeql.yml",
+            "coverage.yml",
+            "docs.yml",
+            "pr-validation.yml",
+            "python-compatibility.yml",
+            "release-sign.yml",
+            "release.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml",
+            "sonarcloud.yml"
+          ],
+          "extras": [
+            "test.yml"
+          ]
+        },
+        "foundations": {
+          "securityMd": false,
+          "contributingMd": false,
+          "changelogMd": false,
+          "codeOfConduct": true,
+          "governanceMd": true,
+          "agentsMd": false,
+          "geminiMd": false,
+          "claudeMd": false,
+          "knownVulnerabilities": false,
+          "codeowners": false
+        },
+        "preCommit": {
+          "configPresent": false,
+          "hooks": {
+            "ruff": false,
+            "basedpyright": false,
+            "bandit": false,
+            "detectSecrets": false,
+            "darglint": false,
+            "interrogate": false,
+            "commitizen": false,
+            "yamllint": false,
+            "markdownlint": false,
+            "noEmDash": false
+          }
+        },
+        "toolchain": {
+          "pyprojectToml": true,
+          "qltyConfig": false
+        }
+      }
+    },
+    {
+      "org": "williaby",
+      "name": "xero-practice-management",
+      "url": "https://github.com/williaby/xero-practice-management",
+      "defaultBranch": "main",
+      "description": "Tax and bookkeeping practice management system with standardized Chart of Accounts",
+      "isPrivate": true,
+      "isArchived": false,
+      "review": {
+        "branchProtection": {
+          "enabled": false
+        },
+        "codeql": {
+          "workflowPresent": false
+        },
+        "scorecard": {
+          "workflowPresent": false,
+          "score": null,
+          "lastChecked": null
+        },
+        "sonarcloud": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "codecov": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "reuse": {
+          "workflowPresent": false
+        },
+        "dependabot": {
+          "configured": false
+        },
+        "ossfBadge": {
+          "badgeId": null,
+          "percentagePassing": null
+        },
+        "workflows": {
+          "files": [],
+          "presentFromExpected": [],
+          "missingFromExpected": [
+            "ci.yml",
+            "codeql.yml",
+            "coverage.yml",
+            "docs.yml",
+            "pr-validation.yml",
+            "python-compatibility.yml",
+            "release-sign.yml",
+            "release.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml",
+            "sonarcloud.yml"
+          ],
+          "extras": []
+        },
+        "foundations": {
+          "securityMd": false,
+          "contributingMd": false,
+          "changelogMd": true,
+          "codeOfConduct": true,
+          "governanceMd": true,
+          "agentsMd": false,
+          "geminiMd": false,
+          "claudeMd": false,
+          "knownVulnerabilities": false,
+          "codeowners": false
+        },
+        "preCommit": {
+          "configPresent": false,
+          "hooks": {
+            "ruff": false,
+            "basedpyright": false,
+            "bandit": false,
+            "detectSecrets": false,
+            "darglint": false,
+            "interrogate": false,
+            "commitizen": false,
+            "yamllint": false,
+            "markdownlint": false,
+            "noEmDash": false
+          }
+        },
+        "toolchain": {
+          "pyprojectToml": false,
+          "qltyConfig": false
+        }
+      }
+    },
+    {
+      "org": "williaby",
+      "name": "zen-mcp-server",
+      "url": "https://github.com/williaby/zen-mcp-server",
+      "defaultBranch": "main",
+      "description": "The power of Claude Code + multi-model backends (Gemini/OpenAI/Grok/OpenRouter/Ollama) working as one",
+      "isPrivate": false,
+      "isArchived": false,
+      "review": {
+        "branchProtection": {
+          "enabled": false
+        },
+        "codeql": {
+          "workflowPresent": false
+        },
+        "scorecard": {
+          "workflowPresent": false,
+          "score": null,
+          "lastChecked": null
+        },
+        "sonarcloud": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "codecov": {
+          "configPresent": false,
+          "workflowPresent": true
+        },
+        "reuse": {
+          "workflowPresent": false
+        },
+        "dependabot": {
+          "configured": false
+        },
+        "ossfBadge": {
+          "badgeId": null,
+          "percentagePassing": null
+        },
+        "workflows": {
+          "files": [
+            "codecov.yml",
+            "docker-pr.yml",
+            "docker-release.yml",
+            "semantic-pr.yml",
+            "semantic-release.yml",
+            "test.yml"
+          ],
+          "presentFromExpected": [],
+          "missingFromExpected": [
+            "ci.yml",
+            "codeql.yml",
+            "coverage.yml",
+            "docs.yml",
+            "pr-validation.yml",
+            "python-compatibility.yml",
+            "release-sign.yml",
+            "release.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml",
+            "sonarcloud.yml"
+          ],
+          "extras": [
+            "codecov.yml",
+            "docker-pr.yml",
+            "docker-release.yml",
+            "semantic-pr.yml",
+            "semantic-release.yml",
+            "test.yml"
+          ]
+        },
+        "foundations": {
+          "securityMd": true,
+          "contributingMd": false,
+          "changelogMd": true,
+          "codeOfConduct": true,
+          "governanceMd": true,
+          "agentsMd": true,
+          "geminiMd": false,
+          "claudeMd": true,
+          "knownVulnerabilities": false,
+          "codeowners": false
+        },
+        "preCommit": {
+          "configPresent": true,
+          "hooks": {
+            "ruff": true,
+            "basedpyright": false,
+            "bandit": false,
+            "detectSecrets": false,
+            "darglint": false,
+            "interrogate": false,
+            "commitizen": false,
+            "yamllint": false,
+            "markdownlint": false,
+            "noEmDash": false
+          }
+        },
+        "toolchain": {
+          "pyprojectToml": true,
+          "qltyConfig": false
+        }
+      }
+    }
+  ]
+}
