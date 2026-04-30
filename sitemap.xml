@@ -2,394 +2,402 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://.claude.readthedocs.io/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/OPENSSF_COMPLIANCE/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/PROJECT-ORGANIZATION-GUIDE/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/PROJECT_SETUP/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/PYTHON_COMPATIBILITY/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/README-git-trackable-config/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/SYNC-WITH-COOKIECUTTER/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/api-reference/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/context7-setup/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/frontmatter-standard/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/handoff-cookiecutter-claude-removal/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/known-vulnerabilities-template/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/known-vulnerabilities/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/pr-workflow-improvement-plan/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/project-env-loading/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/response-aware-development/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/serena-setup/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/tdd-enforcement-system/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/ADRs/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/architecture/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/architecture/agent-dispatch/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/architecture/hook-pipeline/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/architecture/install-model/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/architecture/mcp-tiered-loading/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/architecture/rules-vs-standards/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/architecture/submodule-strategy/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/architecture/adr/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/architecture/adr/ADR-001-two-layer-symlink-install/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/architecture/adr/ADR-002-hook-composition/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/architecture/adr/ADR-003-tiered-mcp-loading/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/architecture/adr/ADR-004-skill-vs-agent-boundary/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/architecture/adr/ADR-005-submodule-extension-model/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/architecture/adr/ADR-006-rules-vs-standards/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/architecture/adr/ADR-007-dual-audience-docs/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/architecture/diagrams/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/contributing/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/contributing/adding-agents/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/contributing/adding-hooks/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/contributing/adding-skills/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/contributing/writing-adrs/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/contributing/writing-diagrams/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/development/architecture/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/development/code-quality/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/development/contributing/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/development/platform-audit-checklist/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/development/settings-hardening-2026-04-11/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/development/testing/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/development/best-practice-review/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/development/best-practice-review/01-core-concepts-and-architecture/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/development/best-practice-review/02-runnable-implementations/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/development/best-practice-review/03-development-workflows/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/development/best-practice-review/04-tips-harvest/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/development/best-practice-review/05-hooks-and-configuration/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/development/best-practice-review/06-changelog-and-versioning/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/development/best-practice-review/synthesis-report/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/getting-started/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/getting-started/first-agent/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/getting-started/first-skill/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/getting-started/install/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/getting-started/picking/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/getting-started/troubleshooting/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/guides/configuration/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/guides/overview/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/guides/testing-guide/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/guides/usage/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/planning/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/planning/project-vision/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/planning/roadmap/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/planning/tech-spec/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/project/changelog/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/project/license/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/project/roadmap/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/reference/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/reference/agents/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/reference/hooks/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/reference/mcp/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
+    </url>
+    <url>
+         <loc>https://.claude.readthedocs.io/reference/repo-type-taxonomy/</loc>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/reference/skills/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/superpowers/plans/2026-04-09-ci-fix-skill/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/superpowers/plans/2026-04-09-claude-md-additions/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/superpowers/plans/2026-04-09-doc-audit-skill/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/superpowers/plans/2026-04-09-four-hooks/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/superpowers/plans/2026-04-09-planning-bridge-gate/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/superpowers/plans/2026-04-09-py310-compat-hook/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/superpowers/plans/2026-04-10-sprint-1-security-compliance/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/superpowers/plans/2026-04-10-sprint-3-git-workflow-governance/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/superpowers/plans/2026-04-20-repo-compliance-system/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/superpowers/plans/2026-04-27-mkdocs-agents/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
+    </url>
+    <url>
+         <loc>https://.claude.readthedocs.io/superpowers/plans/2026-04-29-compliance-architecture-v2/</loc>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/superpowers/specs/2026-04-09-ci-fix-skill-design/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/superpowers/specs/2026-04-09-claude-md-additions-design/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/superpowers/specs/2026-04-09-doc-audit-skill-design/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/superpowers/specs/2026-04-09-py310-compat-hook-design/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/superpowers/specs/2026-04-10-sprint-1-security-compliance-design/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/superpowers/specs/2026-04-10-sprint-2-code-quality-patterns-design/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/superpowers/specs/2026-04-10-sprint-3-git-workflow-governance-design/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/superpowers/specs/2026-04-20-repo-compliance-design/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/superpowers/specs/2026-04-27-local-ci-and-qlty-coverage-design/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/superpowers/specs/2026-04-27-mkdocs-agents-design/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
     <url>
          <loc>https://.claude.readthedocs.io/superpowers/specs/2026-04-28-task-observer-design/</loc>
-         <lastmod>2026-04-28</lastmod>
+         <lastmod>2026-04-30</lastmod>
     </url>
 </urlset>
