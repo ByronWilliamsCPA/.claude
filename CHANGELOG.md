@@ -19,6 +19,14 @@
 * feat(ci): emit lcov coverage report (`reports/lcov.info`) alongside xml in `ci_local`; add `reports/` and `coverage-ci-local.xml` to `.gitignore`
 * feat(agents): add `ossf-badge-evaluator` agent for OpenSSF Best Practices Badge criterion-by-criterion assessment with three automation URLs (passing/silver/gold) for one-click form pre-filling on bestpractices.dev
 * feat(ossf): add `ossf-criteria-reference.md` with all criterion slugs, N/A eligibility, and URL field names across passing/silver/gold levels; expand `docs/standards-manifest.yaml` with FOUND-012/013/014, CI-018/019, and OSSF-006/007 checks
+* feat(catalog): add `_meta.typeProfiles` map with 7 repository types and per-type `exemptWorkflows`/`exemptHooks`/`scorecard_floor`/`scorecard_target` fields to `docs/reference/github-repos.json`
+* feat(catalog): classify all 44 repos with `repositoryType`; add 13 schema integrity tests in `tests/tools/test_catalog_schema.py`
+* feat(catalog): replace `dependabot` field with `renovate` across all 44 catalog entries; add `secretScanning` tracking field
+* feat(catalog): add `releaseHealth` and `templateDrift` fields to all 44 catalog entries
+* feat(skill): add type-conditional audit logic to `repo-compliance` skill; coordinator prompt now passes `repositoryType`, `scorecard_floor`, `scorecard_target`, `exempt_workflows`, and `exempt_hooks` to each domain agent
+* feat(renovate): add self-hosted Renovate base config (`tools/renovate/renovate.json`) and deployment runbook (`tools/renovate/README.md`)
+* feat(tools): add `tools/enable_secret_scanning.py` to enable GitHub native secret scanning and push protection across all catalog repos
+* feat(tools): add `tools/refresh_catalog_release_health.py` to query GitHub releases API and update `releaseHealth` fields in the catalog
 
 ### Chore
 
@@ -32,6 +40,7 @@
 * chore(compliance): remediate OSSF Scorecard compliance gaps: add CodeQL, SonarCloud, Qlty
   coverage, REUSE, and release-signing workflows; harden all CI jobs with pinned action SHAs;
   add AGENTS.md, GEMINI.md, .codecov.yml, sonar-project.properties; expand pre-commit hooks
+* chore(deps): add `requests>=2.33.1` to runtime dependencies in `pyproject.toml` for catalog tool scripts
 
 ### Fix
 
@@ -99,6 +108,13 @@
 * fix(docs): tighten CLAUDE.md project-context instruction with a concrete `grep -rl` command
   to surface existing tier/standards docs before drafting new guides; replaces the vague
   "search docs/" instruction that caused documentation rework incidents
+* fix(catalog): calibrate `scorecard.floor` to 5.0 and `scorecard.target` to 7.0 and set `ossfBadge.level` to `passing` in `_meta.idealEntry` to reflect solo-developer constraints
+* fix(tests): add `pytest.mark` declarations, full type annotations, `tests/tools/__init__.py`, and repo-anchored `CATALOG` path to catalog schema tests
+* fix(tests): replace `# type: ignore` suppressions with `TypedDict` definitions in catalog schema tests; fixes basedpyright strict-mode failures
+* fix(skill): complete `homelab-infra` exempt workflow and hook lists in `repo-compliance` type-conditional example
+* fix(renovate): align Renovate deployment runbook to GitHub App auth flow; add SHA-pin guidance for the bootstrap workflow
+* fix(tools): restore missing `import json` in `refresh_catalog_release_health.py` after urllib-to-requests refactor
+* fix(tools): guard `None` published_at in `refresh_catalog_release_health.py`; track error/no-release counts; align dry-run behaviour; add releaseHealth shape test
 
 ## v0.13.0 (2026-04-21)
 ### Documentation

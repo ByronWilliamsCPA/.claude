@@ -470,6 +470,7 @@ dependencies = [
     { name = "pydantic" },
     { name = "pydantic-settings" },
     { name = "python-dotenv" },
+    { name = "requests" },
     { name = "rich" },
     { name = "structlog" },
 ]
@@ -540,6 +541,7 @@ requires-dist = [
     { name = "python-dotenv", specifier = ">=1.0.0" },
     { name = "python-dotenv", marker = "extra == 'dev'", specifier = ">=1.0.0" },
     { name = "python-frontmatter", marker = "extra == 'dev'", specifier = ">=1.1.0" },
+    { name = "requests", specifier = ">=2.33.1" },
     { name = "rich", specifier = ">=13.5.0" },
     { name = "ruamel-yaml", marker = "extra == 'dev'", specifier = ">=0.18.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.9.0" },
