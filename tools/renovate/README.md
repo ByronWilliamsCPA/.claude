@@ -28,18 +28,19 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: read  # sufficient when using GitHub App auth; expand if switching to PAT mode
 
 jobs:
   renovate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: renovatebot/github-action@v40
+      - uses: renovatebot/github-action@v40  # TODO: pin to SHA before deploying; Renovate will maintain this once running
         with:
           configurationFile: renovate.json
         env:
-          RENOVATE_TOKEN: ${{ secrets.RENOVATE_TOKEN }}
+          RENOVATE_APP_ID: ${{ secrets.RENOVATE_APP_ID }}
+          RENOVATE_APP_PEM: ${{ secrets.RENOVATE_APP_PEM }}
 ```
 
 ## Initial run: SHA pinning
