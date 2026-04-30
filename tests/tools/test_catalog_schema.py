@@ -119,3 +119,38 @@ def test_exempt_hooks_are_valid(catalog: Catalog) -> None:
     for type_name, profile in catalog["_meta"]["typeProfiles"].items():
         invalid = [h for h in profile["exemptHooks"] if h not in all_hooks]
         assert not invalid, f"{type_name} exempts invalid hooks: {invalid}"
+
+
+@pytest.mark.unit
+def test_no_dependabot_field(repo_entries: list[dict[str, object]]) -> None:
+    """dependabot must be replaced by renovate in all entries."""
+    has_dependabot = [
+        f"{e.get('org', '?')}/{e.get('name', '?')}"
+        for e in repo_entries
+        if "dependabot" in cast("dict[str, object]", e.get("review", {}))
+    ]
+    assert not has_dependabot, f"Still using dependabot: {has_dependabot}"
+
+
+@pytest.mark.unit
+def test_all_entries_have_renovate(repo_entries: list[dict[str, object]]) -> None:
+    """Every catalog entry must have a renovate field."""
+    missing = [
+        f"{e.get('org', '?')}/{e.get('name', '?')}"
+        for e in repo_entries
+        if "renovate" not in cast("dict[str, object]", e.get("review", {}))
+    ]
+    assert not missing, f"Missing renovate field on: {missing}"
+
+
+@pytest.mark.unit
+def test_all_entries_have_secret_scanning(
+    repo_entries: list[dict[str, object]],
+) -> None:
+    """Every catalog entry must have a secretScanning field."""
+    missing = [
+        f"{e.get('org', '?')}/{e.get('name', '?')}"
+        for e in repo_entries
+        if "secretScanning" not in cast("dict[str, object]", e.get("review", {}))
+    ]
+    assert not missing, f"Missing secretScanning field on: {missing}"
