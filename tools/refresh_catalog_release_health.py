@@ -53,14 +53,14 @@ def get_token() -> str:
 
 def fetch_release_health(
     org: str, repo: str, token: str, dry_run: bool
-) -> tuple[bool, int | None]:
+) -> tuple[bool | None, int | None]:
     """Query GitHub for the latest release and compute days since release.
 
     Returns (has_release, days_since_release).
+    None as has_release signals dry-run (no query made) or a fetch error.
     """
     if dry_run:
-        print(f"[DRY RUN] Would query releases for {org}/{repo}")
-        return True, 0
+        return None, None
 
     url = f"{GITHUB_API}/repos/{org}/{repo}/releases/latest"
     headers = {
@@ -74,6 +74,8 @@ def fetch_release_health(
             return False, None
         resp.raise_for_status()
         data = resp.json()
+        if not data.get("published_at"):
+            return False, None
         published = datetime.fromisoformat(data["published_at"].replace("Z", "+00:00"))
         days = (datetime.now(timezone.utc) - published).days
         return True, days
@@ -82,10 +84,10 @@ def fetch_release_health(
             f"[WARN] {org}/{repo}: {exc.response.status_code} {exc.response.text[:120]}",
             file=sys.stderr,
         )
-        return False, None
+        return None, None
     except req_lib.RequestException as exc:
         print(f"[WARN] {org}/{repo}: {exc}", file=sys.stderr)
-        return False, None
+        return None, None
 
 
 def main(dry_run: bool = False) -> int:
@@ -95,6 +97,7 @@ def main(dry_run: bool = False) -> int:
 
     updated = 0
     no_release = 0
+    errors = 0
     skipped = 0
 
     for entry in catalog["repos"]:
@@ -105,6 +108,14 @@ def main(dry_run: bool = False) -> int:
             continue
 
         has_release, days = fetch_release_health(org, name, token, dry_run)
+
+        if dry_run:
+            print(f"[DRY RUN] Would update {org}/{name}")
+            continue
+
+        if has_release is None:
+            errors += 1
+            continue
 
         review = cast("dict[str, object]", entry.get("review", {}))
         rh = cast("dict[str, object]", review.get("releaseHealth", {}))
@@ -128,9 +139,9 @@ def main(dry_run: bool = False) -> int:
 
     print(
         f"\nComplete: {updated} with releases, {no_release} without releases,"
-        f" {skipped} skipped"
+        f" {errors} errors, {skipped} skipped"
     )
-    return 0
+    return 1 if errors else 0
 
 
 if __name__ == "__main__":

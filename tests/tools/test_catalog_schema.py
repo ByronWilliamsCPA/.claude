@@ -192,3 +192,24 @@ def test_refresh_catalog_release_health_script_exists() -> None:
     script = Path(__file__).parents[2] / "tools" / "refresh_catalog_release_health.py"
     assert script.exists(), "tools/refresh_catalog_release_health.py not found"
     assert script.stat().st_mode & 0o111, "Script must be executable"
+
+
+@pytest.mark.unit
+def test_release_health_value_shape(repo_entries: list[dict[str, object]]) -> None:
+    """releaseHealth must have bool|None hasRelease and int|None daysSinceRelease."""
+    invalid = []
+    for e in repo_entries:
+        review = cast("dict[str, object]", e.get("review", {}))
+        rh = cast("dict[str, object]", review.get("releaseHealth", {}))
+        has_release = rh.get("hasRelease")
+        days = rh.get("daysSinceRelease")
+        # None is valid: catalog seeded with null before refresh script runs
+        if has_release is not None and not isinstance(has_release, bool):
+            invalid.append(
+                f"{e.get('org', '?')}/{e.get('name', '?')}: hasRelease={has_release!r}"
+            )
+        if days is not None and (not isinstance(days, int) or days < 0):
+            invalid.append(
+                f"{e.get('org', '?')}/{e.get('name', '?')}: daysSinceRelease={days!r}"
+            )
+    assert not invalid, f"Invalid releaseHealth shape: {invalid}"
