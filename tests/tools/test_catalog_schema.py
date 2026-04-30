@@ -176,3 +176,11 @@ def test_all_entries_have_template_drift(repo_entries: list[dict[str, object]]) 
         if "templateDrift" not in cast("dict[str, object]", e.get("review", {}))
     ]
     assert not missing, f"Missing templateDrift field on: {missing}"
+
+
+@pytest.mark.unit
+def test_enable_secret_scanning_script_exists() -> None:
+    """The secret scanning enablement script must exist and be executable."""
+    script = Path(__file__).parents[2] / "tools" / "enable_secret_scanning.py"
+    assert script.exists(), "tools/enable_secret_scanning.py not found"
+    assert script.stat().st_mode & 0o111, "Script must be executable"
