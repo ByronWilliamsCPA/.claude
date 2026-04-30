@@ -23,9 +23,15 @@ import json
 import subprocess
 import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from pathlib import Path
 
-CATALOG = "docs/reference/github-repos.json"
+# #CRITICAL: path is anchored to __file__ so the script works regardless of cwd
+# #VERIFY: run tools/refresh_catalog_release_health.py to update before bulk runs
+CATALOG = Path(__file__).parent.parent / "docs/reference/github-repos.json"
 BRANCH_NAME = "chore/community-health-pointers"
+
+# #ASSUME: org names are stable; update ALLOWED_ORGS if new orgs are added to the catalog
+ALLOWED_ORGS = frozenset({"ByronWilliamsCPA", "williaby"})
 
 COC_CONTENT = """\
 # Code of Conduct
@@ -46,21 +52,32 @@ def gh(path, method="GET", data=None):
     cmd = ["gh", "api", path, "-X", method]
     if data:
         cmd += ["--input", "-"]
-    result = subprocess.run(
-        cmd,
-        capture_output=True,
-        text=True,
-        input=json.dumps(data) if data else None,
-        check=False,
-    )
+    try:
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            input=json.dumps(data) if data else None,
+            check=False,
+            timeout=30,
+        )
+    except subprocess.TimeoutExpired:
+        return None, f"gh api {path} timed out after 30s"
     if result.returncode != 0:
         return None, result.stderr.strip()
-    return json.loads(result.stdout) if result.stdout.strip() else {}, None
+    if not result.stdout.strip():
+        return {}, None
+    try:
+        return json.loads(result.stdout), None
+    except json.JSONDecodeError as exc:
+        return None, f"gh api {path} returned non-JSON: {exc}"
 
 
 def get_default_branch(org, name):
-    resp, _ = gh(f"repos/{org}/{name}")
-    return (resp or {}).get("default_branch", "main")
+    resp, err = gh(f"repos/{org}/{name}")
+    if resp is None:
+        return None, err
+    return resp.get("default_branch", "main"), None
 
 
 def get_branch_sha(org, name, branch):
@@ -184,14 +201,26 @@ def process_repo(entry, dry_run):
     org = entry["org"]
     name = entry["name"]
     slug = f"{org}/{name}"
-    foundations = entry["review"]["foundations"]
-    has_protection = entry["review"]["branchProtection"].get("enabled", False)
+
+    # #CRITICAL: allowlist prevents writes to unexpected orgs if catalog data is corrupted
+    if org not in ALLOWED_ORGS:
+        return slug, "error", f"unexpected org {org!r}; not in allowlist"
+
+    # #EDGE: catalog entries may have missing nested keys from older script versions
+    review = entry.get("review", {})
+    foundations = review.get("foundations", {})
+    has_protection = review.get("branchProtection", {}).get("enabled", False)
 
     files_to_create = _files_needed(foundations)
     if not files_to_create:
         return slug, "skip", "already compliant"
 
-    default_branch = get_default_branch(org, name)
+    # #CRITICAL: API failure returns (None, err); silently falling back to "main" would
+    # commit to the wrong branch on repos where the default is something else
+    # #VERIFY: gh CLI must be authenticated; run `gh auth status` before bulk runs
+    default_branch, err = get_default_branch(org, name)
+    if default_branch is None:
+        return slug, "error", f"could not get default branch: {err}"
 
     if has_protection:
         status, detail = _via_pr(org, name, default_branch, files_to_create, dry_run)
@@ -204,15 +233,30 @@ def process_repo(entry, dry_run):
             org, name, path, content, default_branch, message, dry_run
         )
         if not ok:
-            if _is_ruleset_error(err) and not created:
-                status, detail = _via_pr(
-                    org, name, default_branch, files_to_create, dry_run
-                )
+            if _is_ruleset_error(err):
+                # #EDGE: pass only remaining files so already-committed files are not re-sent
+                remaining = files_to_create[len(created) :]
+                status, detail = _via_pr(org, name, default_branch, remaining, dry_run)
+                if created:
+                    detail = (
+                        f"{detail} (already committed directly: {', '.join(created)})"
+                    )
                 return slug, status, detail
-            return slug, "error", f"{path} create failed: {err}"
+            already = f"; already committed: {', '.join(created)}" if created else ""
+            return slug, "error", f"{path} create failed: {err}{already}"
         created.append(path)
 
     return slug, "committed", f"wrote {', '.join(created)} to {default_branch}"
+
+
+def _safe_process_repo(entry, dry_run):
+    """Wrap process_repo so thread-worker exceptions are captured as error results."""
+    try:
+        return process_repo(entry, dry_run)
+    except Exception as exc:
+        org = entry.get("org", "?")
+        name = entry.get("name", "?")
+        return f"{org}/{name}", "error", f"unhandled exception: {exc}"
 
 
 def main():
@@ -224,7 +268,7 @@ def main():
     )
     args = parser.parse_args()
 
-    with open(CATALOG) as f:
+    with CATALOG.open() as f:
         data = json.load(f)
     repos = [
         r
@@ -232,8 +276,8 @@ def main():
         if not r["isArchived"]
         and f"{r['org']}/{r['name']}" not in SKIP_REPOS
         and not (
-            r["review"]["foundations"].get("codeOfConduct", False)
-            and r["review"]["foundations"].get("governanceMd", False)
+            r.get("review", {}).get("foundations", {}).get("codeOfConduct", False)
+            and r.get("review", {}).get("foundations", {}).get("governanceMd", False)
         )
     ]
 
@@ -242,8 +286,10 @@ def main():
 
     results = {"pr": [], "committed": [], "error": [], "skip": []}
 
+    # #ASSUME: 6 workers is safe under GitHub secondary rate limits (~80 mutations/minute)
+    # #VERIFY: reduce max_workers to 3 if rate-limit errors appear in output
     with ThreadPoolExecutor(max_workers=6) as pool:
-        futures = {pool.submit(process_repo, r, args.dry_run): r for r in repos}
+        futures = {pool.submit(_safe_process_repo, r, args.dry_run): r for r in repos}
         for future in as_completed(futures):
             slug, status, detail = future.result()
             results[status].append((slug, detail))

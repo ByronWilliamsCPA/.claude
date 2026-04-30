@@ -37,8 +37,8 @@ Follow the appropriate workflow file for the selected mode. Both modes share the
 
 A pre-built catalog of all 44 repos across both orgs lives at:
 
-- `~/.claude/docs/reference/github-repos.json` — structured compliance data (local only, gitignored)
-- `~/.claude/docs/reference/github-repos.md` — human-readable index with refresh commands
+- `~/.claude/docs/reference/github-repos.json`: structured compliance data (local only, gitignored)
+- `~/.claude/docs/reference/github-repos.md`: human-readable index with refresh commands
 
 The JSON contains a `review` object per repo with pre-fetched values for:
 `branchProtection`, `codeql`, `scorecard`, `sonarcloud`, `codecov`, `reuse`, `dependabot`,

@@ -17,7 +17,7 @@ Read `~/.claude/docs/standards-manifest.yaml`.
 Read `$TARGET_REPO/.claude/compliance-overrides.md` if it exists; extract the Check ID column.
 
 **Load pre-fetched catalog data (if available):**
-Read `~/.claude/docs/reference/github-repos.json` if it exists. Derive the repo slug from the target repo's `git remote get-url origin` output (format: `org/repo-name`). Find the matching entry in `repos[]` by `org` + `name`. If found, extract the `review` object. Attach it to each domain agent's prompt under the key `cachedReview` so the agent can skip redundant GitHub API calls. Include the catalog `_meta.lastUpdated` date; if it is older than 30 days, note that cached data may be stale.
+Read `~/.claude/docs/reference/github-repos.json` if it exists. Derive the repo slug from the target repo's `git remote get-url origin` output (format: `org/repo-name`). Find the matching entry in `repos[]` by `org` + `name`. If found, extract the `review` object. Attach it to each domain agent's prompt under the key `cachedReview` so the agent can skip redundant GitHub API calls. Include the catalog `_meta.lastUpdated` date; if it is older than 30 days, flag cached data as potentially stale.
 
 ### 2. Parallel Audit Dispatch
 
