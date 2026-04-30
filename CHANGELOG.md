@@ -22,6 +22,13 @@
 
 ### Chore
 
+* chore(compliance): add `tools/create_community_health_pointers.py` to create
+  `CODE_OF_CONDUCT.md` and `GOVERNANCE.md` pointer files across all org repos that are missing
+  them; commits directly to default branch for unprotected repos, opens a PR for protected
+  ones; add Codecov upload step to `coverage.yml`; add pointer files to this repo; extend
+  `repo-compliance` skill with local catalog inventory section; add catalog paths to
+  `.gitignore`; add S603/S607 per-file-ignores for `tools/**/*.py`
+
 * chore(compliance): remediate OSSF Scorecard compliance gaps: add CodeQL, SonarCloud, Qlty
   coverage, REUSE, and release-signing workflows; harden all CI jobs with pinned action SHAs;
   add AGENTS.md, GEMINI.md, .codecov.yml, sonar-project.properties; expand pre-commit hooks
