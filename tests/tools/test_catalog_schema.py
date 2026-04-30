@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-CATALOG = Path("docs/reference/github-repos.json")
+CATALOG = Path(__file__).parents[2] / "docs" / "reference" / "github-repos.json"
 VALID_TYPES = {
     "python-package",
     "python-app",
@@ -20,18 +20,21 @@ VALID_TYPES = {
 
 
 @pytest.fixture(scope="module")
-def catalog():
+def catalog() -> dict[str, object]:
     """Load and return the catalog JSON."""
-    return json.loads(CATALOG.read_text())
+    return json.loads(CATALOG.read_text())  # type: ignore[return-value]
 
 
 @pytest.fixture(scope="module")
-def repo_entries(catalog):
+def repo_entries(catalog: dict[str, object]) -> list[dict[str, object]]:
     """Return all repo entries from the repos array."""
-    return catalog["repos"]
+    return catalog["repos"]  # type: ignore[return-value]
 
 
-def test_all_entries_have_repository_type(repo_entries):
+@pytest.mark.unit
+def test_all_entries_have_repository_type(
+    repo_entries: list[dict[str, object]],
+) -> None:
     """Every catalog entry must have a repositoryType field."""
     missing = [
         f"{e.get('org', '?')}/{e.get('name', '?')}"
@@ -41,35 +44,39 @@ def test_all_entries_have_repository_type(repo_entries):
     assert not missing, f"Missing repositoryType on: {missing}"
 
 
-def test_all_repository_types_are_valid(repo_entries):
+@pytest.mark.unit
+def test_all_repository_types_are_valid(repo_entries: list[dict[str, object]]) -> None:
     """repositoryType must be one of the defined taxonomy values."""
     invalid = [
-        f"{e.get('org', '?')}/{e.get('name', '?')}: {e['repositoryType']}"
+        f"{e.get('org', '?')}/{e.get('name', '?')}: {e.get('repositoryType', '<missing>')}"
         for e in repo_entries
         if e.get("repositoryType") not in VALID_TYPES
     ]
     assert not invalid, f"Invalid repositoryType values: {invalid}"
 
 
-def test_type_profiles_cover_all_types(catalog):
+@pytest.mark.unit
+def test_type_profiles_cover_all_types(catalog: dict[str, object]) -> None:
     """typeProfiles in _meta must define all valid taxonomy types."""
-    defined = set(catalog["_meta"]["typeProfiles"].keys())
+    defined = set(catalog["_meta"]["typeProfiles"].keys())  # type: ignore[index]
     assert defined == VALID_TYPES, f"Profile mismatch: {defined ^ VALID_TYPES}"
 
 
-def test_exempt_workflows_are_valid(catalog):
+@pytest.mark.unit
+def test_exempt_workflows_are_valid(catalog: dict[str, object]) -> None:
     """All exempted workflows must be in idealEntry.workflows.presentFromExpected."""
     all_workflows = set(
-        catalog["_meta"]["idealEntry"]["workflows"]["presentFromExpected"]
+        catalog["_meta"]["idealEntry"]["workflows"]["presentFromExpected"]  # type: ignore[index]
     )
-    for type_name, profile in catalog["_meta"]["typeProfiles"].items():
-        invalid = [w for w in profile["exemptWorkflows"] if w not in all_workflows]
+    for type_name, profile in catalog["_meta"]["typeProfiles"].items():  # type: ignore[union-attr]
+        invalid = [w for w in profile["exemptWorkflows"] if w not in all_workflows]  # type: ignore[index]
         assert not invalid, f"{type_name} exempts invalid workflows: {invalid}"
 
 
-def test_exempt_hooks_are_valid(catalog):
+@pytest.mark.unit
+def test_exempt_hooks_are_valid(catalog: dict[str, object]) -> None:
     """All exempted hooks must be in idealEntry.preCommit.hooks."""
-    all_hooks = set(catalog["_meta"]["idealEntry"]["preCommit"]["hooks"].keys())
-    for type_name, profile in catalog["_meta"]["typeProfiles"].items():
-        invalid = [h for h in profile["exemptHooks"] if h not in all_hooks]
+    all_hooks = set(catalog["_meta"]["idealEntry"]["preCommit"]["hooks"].keys())  # type: ignore[index]
+    for type_name, profile in catalog["_meta"]["typeProfiles"].items():  # type: ignore[union-attr]
+        invalid = [h for h in profile["exemptHooks"] if h not in all_hooks]  # type: ignore[index]
         assert not invalid, f"{type_name} exempts invalid hooks: {invalid}"
