@@ -74,7 +74,7 @@ Scorecard target: <scorecardTarget from type profile, or 8.5 if not overridden>
 
 **Example:**
 - Repo `homelab-infra` has `repositoryType: "infrastructure"`
-- Type profile exempts `release.yml`, `coverage.yml`, `python-compatibility.yml`
+- Type profile exempts `release.yml`, `release-sign.yml`, `sbom.yml`, `coverage.yml`, `python-compatibility.yml`, `reuse.yml`
 - Absent `release.yml` is logged as `EXEMPT (infrastructure type)`, not a FINDING
 
 ## Coordinator Prompt Template
