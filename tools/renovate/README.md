@@ -13,7 +13,7 @@ each org and processes all repos the GitHub App token has access to.
      Issues (read), Metadata (read), Workflows (read/write)
    - Organization: Members (read)
 2. Install the app on both `ByronWilliamsCPA` and `williaby` orgs
-3. Store the App ID and PEM certificate as GitHub Actions encrypted variables: `RENOVATE_APP_ID` and `RENOVATE_APP_PEM`
+3. Store the App ID and PEM certificate as GitHub Actions secrets: `RENOVATE_APP_ID` and `RENOVATE_APP_PEM`
 
 ## Deploy as GitHub Actions workflow
 
@@ -35,7 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: renovatebot/github-action@v40  # TODO: pin to SHA before deploying; Renovate will maintain this once running
+      - uses: renovatebot/github-action@v40  # TODO: pin to SHA before deploying (deployment prerequisite, tracked in ByronWilliamsCPA/.claude#49); Renovate will maintain this pin once running
         with:
           configurationFile: renovate.json
         env:

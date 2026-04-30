@@ -3,6 +3,7 @@ schema_type: planning
 title: "Compliance Architecture v2 Implementation Plan"
 status: draft
 owner: core-maintainer
+source: "https://github.com/ByronWilliamsCPA/.claude/pull/49"
 purpose: "Calibrate score targets, add repository type classification, replace Dependabot with self-hosted Renovate, and add secret scanning and release health tracking to the repo compliance catalog."
 component: Development-Tools
 tags:
@@ -18,7 +19,7 @@ tags:
 
 **Architecture:** The `docs/reference/github-repos.json` catalog gains a `_meta.typeProfiles` map and per-entry `repositoryType` fields. The universal `idealEntry` is updated with accurate scorecard floor/target values and OSSF Passing-level targets. Four new catalog fields (`renovate`, `secretScanning`, `releaseHealth`, `templateDrift`) replace `dependabot` and extend tracking coverage. A type-conditional audit layer in the compliance skill ensures docs/config repos are not penalized for missing Python toolchain components.
 
-**Tech Stack:** Python 3.12, `jq` (JSON verification), `uv run pytest` (catalog integrity tests), `gh` CLI (GitHub API), `docker` (Renovate self-hosted runner)
+**Tech Stack:** Python 3.10+, `jq` (JSON verification), `uv run pytest` (catalog integrity tests), `gh` CLI (GitHub API), `docker` (Renovate self-hosted runner)
 
 ---
 

@@ -76,7 +76,7 @@ def enable_secret_scanning(org: str, repo: str, token: str, dry_run: bool) -> bo
 def main(dry_run: bool = False) -> int:
     """Enable secret scanning on all repos in the catalog."""
     catalog = cast("Catalog", json.loads(CATALOG.read_text()))
-    token = get_token()
+    token = "" if dry_run else get_token()
     results: list[bool] = []
     for entry in catalog["repos"]:
         org = entry.get("org", "")

@@ -88,12 +88,15 @@ def fetch_release_health(
     except req_lib.RequestException as exc:
         print(f"[WARN] {org}/{repo}: {exc}", file=sys.stderr)
         return None, None
+    except ValueError as exc:
+        print(f"[WARN] {org}/{repo}: unexpected response body: {exc}", file=sys.stderr)
+        return None, None
 
 
 def main(dry_run: bool = False) -> int:
     """Refresh releaseHealth for all repos in the catalog."""
     catalog = cast("Catalog", json.loads(CATALOG.read_text()))
-    token = get_token()
+    token = "" if dry_run else get_token()
 
     updated = 0
     no_release = 0
@@ -135,7 +138,9 @@ def main(dry_run: bool = False) -> int:
         entry["review"] = cast("ReviewFields", review)
 
     if not dry_run:
-        CATALOG.write_text(json.dumps(catalog, indent=2) + "\n")
+        tmp = CATALOG.with_suffix(".json.tmp")
+        tmp.write_text(json.dumps(catalog, indent=2) + "\n")
+        tmp.replace(CATALOG)
 
     print(
         f"\nComplete: {updated} with releases, {no_release} without releases,"

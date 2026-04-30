@@ -200,7 +200,9 @@ repos:
     hooks:
       - id: validate-front-matter
         name: Validate documentation front matter
-        entry: python tools/validate_front_matter.py docs --exclude docs/github-activity-reports docs/reference/github-repos.md docs/superpowers/plans/i-need-you-to-reactive-thompson.md docs/superpowers/plans/2026-04-28-task-observer.md docs/superpowers/plans/2026-04-29-compliance-architecture-v2.md
+        # docs/reference/github-repos.md is a locally-generated catalog companion (not committed);
+        # the two plans are legacy-schema files pending a separate schema migration.
+        entry: python tools/validate_front_matter.py docs --exclude docs/github-activity-reports docs/reference/github-repos.md docs/superpowers/plans/i-need-you-to-reactive-thompson.md docs/superpowers/plans/2026-04-28-task-observer.md
         language: python
         files: ^docs/.*\.md$
         pass_filenames: false

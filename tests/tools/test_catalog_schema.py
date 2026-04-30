@@ -3,10 +3,15 @@
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 from typing import TypedDict, cast
 
 import pytest
+
+_WIN32 = pytest.mark.skipif(
+    sys.platform == "win32", reason="executable bit not meaningful on Windows"
+)
 
 CATALOG = Path(__file__).parents[2] / "docs" / "reference" / "github-repos.json"
 VALID_TYPES = {
@@ -179,6 +184,7 @@ def test_all_entries_have_template_drift(repo_entries: list[dict[str, object]]) 
 
 
 @pytest.mark.unit
+@_WIN32
 def test_enable_secret_scanning_script_exists() -> None:
     """The secret scanning enablement script must exist and be executable."""
     script = Path(__file__).parents[2] / "tools" / "enable_secret_scanning.py"
@@ -187,6 +193,7 @@ def test_enable_secret_scanning_script_exists() -> None:
 
 
 @pytest.mark.unit
+@_WIN32
 def test_refresh_catalog_release_health_script_exists() -> None:
     """The release health refresh script must exist and be executable."""
     script = Path(__file__).parents[2] / "tools" / "refresh_catalog_release_health.py"
