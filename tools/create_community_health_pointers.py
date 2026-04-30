@@ -194,7 +194,9 @@ def _via_pr(org, name, default_branch, files_to_create, dry_run):
             return "error", f"{path} create failed: {err}"
         created.append(path)
     pr_url, err = open_pr(org, name, BRANCH_NAME, default_branch, created, dry_run)
-    return "pr", pr_url or f"PR open failed: {err}"
+    if not pr_url:
+        return "error", f"PR open failed: {err}"
+    return "pr", pr_url
 
 
 def process_repo(entry, dry_run):
