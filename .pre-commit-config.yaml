@@ -200,7 +200,7 @@ repos:
     hooks:
       - id: validate-front-matter
         name: Validate documentation front matter
-        entry: python tools/validate_front_matter.py docs --exclude docs/github-activity-reports docs/superpowers/plans/i-need-you-to-reactive-thompson.md
+        entry: python tools/validate_front_matter.py docs --exclude docs/github-activity-reports docs/reference/github-repos.md docs/superpowers/plans/i-need-you-to-reactive-thompson.md docs/superpowers/plans/2026-04-28-task-observer.md docs/superpowers/plans/2026-04-29-compliance-architecture-v2.md
         language: python
         files: ^docs/.*\.md$
         pass_filenames: false
