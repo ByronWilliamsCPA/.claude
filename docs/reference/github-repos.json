@@ -114,6 +114,66 @@
         "pyprojectToml": true,
         "qltyConfig": true
       }
+    },
+    "typeProfiles": {
+      "python-package": {
+        "description": "Published Python package with src layout and PyPI release workflow.",
+        "scorecardFloor": 7.0,
+        "scorecardTarget": 8.5,
+        "exemptWorkflows": [],
+        "exemptHooks": []
+      },
+      "python-app": {
+        "description": "Deployed Python application, no PyPI publishing.",
+        "scorecardFloor": 7.0,
+        "scorecardTarget": 8.5,
+        "exemptWorkflows": ["release.yml", "release-sign.yml", "sbom.yml"],
+        "exemptHooks": []
+      },
+      "python-script": {
+        "description": "Python scripts and automation tooling without formal packaging.",
+        "scorecardFloor": 6.0,
+        "scorecardTarget": 7.5,
+        "exemptWorkflows": ["release.yml", "release-sign.yml", "sbom.yml", "reuse.yml"],
+        "exemptHooks": ["basedpyright", "interrogate", "darglint"]
+      },
+      "config": {
+        "description": "Configuration files, dotfiles, and settings repositories.",
+        "scorecardFloor": 5.0,
+        "scorecardTarget": 7.0,
+        "exemptWorkflows": [
+          "release.yml", "release-sign.yml", "sbom.yml",
+          "coverage.yml", "python-compatibility.yml", "reuse.yml"
+        ],
+        "exemptHooks": ["ruff", "basedpyright", "bandit", "darglint", "interrogate"]
+      },
+      "infrastructure": {
+        "description": "IaC, homelab, networking, Terraform, Ansible, or Helm repositories.",
+        "scorecardFloor": 5.0,
+        "scorecardTarget": 7.0,
+        "exemptWorkflows": [
+          "release.yml", "release-sign.yml", "sbom.yml",
+          "coverage.yml", "python-compatibility.yml", "reuse.yml"
+        ],
+        "exemptHooks": ["ruff", "basedpyright", "bandit", "darglint", "interrogate"]
+      },
+      "docs-only": {
+        "description": "Documentation sites, reference material, and GitHub Pages repos.",
+        "scorecardFloor": 4.0,
+        "scorecardTarget": 6.0,
+        "exemptWorkflows": [
+          "release.yml", "release-sign.yml", "sbom.yml",
+          "coverage.yml", "python-compatibility.yml", "reuse.yml", "codeql.yml"
+        ],
+        "exemptHooks": ["ruff", "basedpyright", "bandit", "darglint", "interrogate"]
+      },
+      "template": {
+        "description": "Cookiecutter or other project templates; may contain placeholder code.",
+        "scorecardFloor": 5.0,
+        "scorecardTarget": 7.5,
+        "exemptWorkflows": ["coverage.yml", "sbom.yml"],
+        "exemptHooks": ["basedpyright", "interrogate", "darglint"]
+      }
     }
   },
   "repos": [
