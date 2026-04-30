@@ -6,10 +6,10 @@ from __future__ import annotations
 import json
 import os
 import sys
-import urllib.error
-import urllib.request
 from pathlib import Path
 from typing import TypedDict, cast
+
+import requests as req_lib
 
 CATALOG = Path(__file__).parent.parent / "docs" / "reference" / "github-repos.json"
 GITHUB_API = "https://api.github.com"
@@ -23,7 +23,7 @@ class RepoEntry(TypedDict, total=False):
 
 
 class Catalog(TypedDict):
-    """Top-level structure of docs/reference/github-repos.json."""
+    """Subset of docs/reference/github-repos.json used by this script."""
 
     repos: list[RepoEntry]
 
@@ -46,32 +46,30 @@ def enable_secret_scanning(org: str, repo: str, token: str, dry_run: bool) -> bo
         return True
 
     url = f"{GITHUB_API}/repos/{org}/{repo}"
-    payload = json.dumps(
-        {
-            "security_and_analysis": {
-                "secret_scanning": {"status": "enabled"},
-                "secret_scanning_push_protection": {"status": "enabled"},
-            }
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+    }
+    payload = {
+        "security_and_analysis": {
+            "secret_scanning": {"status": "enabled"},
+            "secret_scanning_push_protection": {"status": "enabled"},
         }
-    ).encode()
-    req = urllib.request.Request(  # noqa: S310 - URL scheme is always https (GITHUB_API constant)
-        url,
-        data=payload,
-        method="PATCH",
-        headers={
-            "Authorization": f"Bearer {token}",
-            "Accept": "application/vnd.github+json",
-            "X-GitHub-Api-Version": "2022-11-28",
-            "Content-Type": "application/json",
-        },
-    )
+    }
     try:
-        with urllib.request.urlopen(req, timeout=30):  # noqa: S310 - URL scheme is always https (GITHUB_API constant)
-            print(f"[OK] Enabled secret scanning on {org}/{repo}")
-            return True
-    except urllib.error.HTTPError as exc:
-        body = exc.read(120).decode(errors="replace")
-        print(f"[FAIL] {org}/{repo}: {exc.code} {body}", file=sys.stderr)
+        resp = req_lib.patch(url, headers=headers, json=payload, timeout=30)
+        resp.raise_for_status()
+        print(f"[OK] Enabled secret scanning on {org}/{repo}")
+        return True
+    except req_lib.HTTPError as exc:
+        print(
+            f"[FAIL] {org}/{repo}: {exc.response.status_code} {exc.response.text[:120]}",
+            file=sys.stderr,
+        )
+        return False
+    except req_lib.RequestException as exc:
+        print(f"[FAIL] {org}/{repo}: {exc}", file=sys.stderr)
         return False
 
 
