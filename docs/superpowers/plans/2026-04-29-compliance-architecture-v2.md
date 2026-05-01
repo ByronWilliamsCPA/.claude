@@ -1142,7 +1142,7 @@ pre-commit run validate-front-matter --all-files 2>&1 | grep -i "error\|fail" | 
 If `docs/reference/repo-type-taxonomy.md` fails front matter validation, add it to the exclude list in `.pre-commit-config.yaml`:
 
 ```yaml
-entry: python tools/validate_front_matter.py docs --exclude docs/github-activity-reports docs/superpowers/plans/i-need-you-to-reactive-thompson.md docs/reference/repo-type-taxonomy.md
+entry: python tools/validate_front_matter.py docs --exclude docs/github-activity-reports docs/reference/github-repos.md docs/reference/repo-type-taxonomy.md
 ```
 
 - [ ] **Step 4: Run pre-commit on all changed files**

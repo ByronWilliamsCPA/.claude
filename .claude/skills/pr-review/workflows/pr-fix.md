@@ -214,6 +214,24 @@ All file edits happen inside `WORKTREE_PATH`. Never touch the main working tree.
 Work through issues in this order. CI failures first because they block merge
 and may cause cascading issues.
 
+### Editing constraint: repos with PostToolUse ruff hooks
+
+If the repo has a ruff PostToolUse:Edit hook (check `hooks.json` or the live
+`~/.claude/settings.json` for `"PostToolUse"` entries running ruff or pre-commit;
+per ADR-002 this repo's authoritative hook definitions live in `hooks.json` and
+are merged into `~/.claude/settings.json` by `setup.sh`), each Edit call must
+leave the file in a valid ruff state at hook-fire time, not just at the final
+intended state.
+
+The most common failure mode: adding `import sys` (or any stdlib import) in
+one Edit call, then adding its usage in a second Edit call. Ruff's unused-
+import rule (F401) fires after the first call and removes the import before
+the second call can reference it.
+
+**Rule:** When adding a new import to a file in such a repo, always include
+at least one usage of the symbol in the same Edit call. Plan edits so no
+intermediate state introduces an unused import or unreferenced symbol.
+
 ### Priority 1: CI failures
 
 For each failing check, apply the fix strategy from the Step 1a table.
