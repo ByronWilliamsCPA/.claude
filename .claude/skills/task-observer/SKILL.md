@@ -1,5 +1,6 @@
 ---
 name: task-observer
+user-invocable: false
 description: >
   Monitors task execution for skill improvement opportunities. Use this skill
   during ANY multi-step task, agentic workflow, or substantive work session where
@@ -1205,7 +1206,7 @@ principles. All skills are current."
 
 **Step 2 — Inventory all skills**
 
-Use `/home/byron/dev/.claude/skill-observations/available-skills.md` from the system prompt to identify all skills. In
+Use `[workspace folder]/skill-observations/available-skills.md` from the system prompt to identify all skills. In
 environments where this tag is not present, use the skills directory or
 equivalent listing mechanism to discover available skills.
 
@@ -1442,6 +1443,13 @@ applies as described: observations are logged to a persistent file, the cross-
 cutting principles file is read during skill regeneration, and the log carries
 over between sessions automatically.
 
+### Without Persistent Storage
+
+In environments without file system access (web-based chat, etc.), observations
+cannot be persisted between sessions. Use this handoff doc template at session
+end to surface all observations in a portable, structured format:
+
+```text
 ## Decisions Made
 [numbered list of decisions]
 
@@ -1479,7 +1487,7 @@ environments.
 | What format? | Issue → Suggested improvement → Principle |
 | Author attribution? | Required for open-source skills; use the template |
 | Cross-cutting principle? | Add to principles file, enforce during regeneration |
-| Confidentiality check? | Four layers: observation, pre-creation, post-draft, structural |
+| Confidentiality check? | Five layers: observation, pre-creation, post-draft, structural, cross-product re-identifiability |
 | No persistent storage? | Handoff doc mode — observations surfaced in a structured doc at session end |
 | Scheduler automation? | Step 0 of weekly review auto-checks; silent until tool is available |
 | Observation numbering? | Mandatory pre-logging search ensures no collisions; never use cached numbers |

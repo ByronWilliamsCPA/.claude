@@ -189,7 +189,7 @@ Find `md_files = _collect_md_files(args.paths)` and replace with:
 Then update the `entry:` line in the `validate-front-matter` hook in `.pre-commit-config.yaml`:
 
 ```yaml
-        entry: python tools/validate_front_matter.py docs --exclude docs/github-activity-reports docs/superpowers/plans/i-need-you-to-reactive-thompson.md
+        entry: python tools/validate_front_matter.py docs --exclude docs/github-activity-reports docs/reference/github-repos.md
 ```
 
 - [ ] **Step 7: Run the three tests and confirm all pass**

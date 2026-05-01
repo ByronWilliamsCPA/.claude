@@ -483,7 +483,7 @@ Find every place where errors could be swallowed silently:
 - Exception handlers that do not cover the full call surface inside the
   try block: parsing calls (resp.json(), datetime.fromisoformat(), etc.)
   nested inside network try blocks that only catch network exception types
-  (HTTPError, RequestException) — json.JSONDecodeError and ValueError are
+  (HTTPError, RequestException): json.JSONDecodeError and ValueError are
   NOT subclasses of those types, so a 200 response with a non-JSON body
   propagates uncaught and aborts the script rather than being treated as a
   per-item warning. For each try block, enumerate every call inside it and

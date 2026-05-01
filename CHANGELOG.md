@@ -27,6 +27,7 @@
 * feat(renovate): add self-hosted Renovate base config (`tools/renovate/renovate.json`) and deployment runbook (`tools/renovate/README.md`)
 * feat(tools): add `tools/enable_secret_scanning.py` to enable GitHub native secret scanning and push protection across all catalog repos
 * feat(tools): add `tools/refresh_catalog_release_health.py` to query GitHub releases API and update `releaseHealth` fields in the catalog
+* feat(skills): add `.claude/skills/task-observer/SKILL.md` (verbatim from rebelytics/one-skill-to-rule-them-all); apply PR-49 observations to `pr-review` and `pr-fix` workflows: exception handler coverage check in Agent F, ruff PostToolUse import constraint in pr-fix editing guidance; add `docs/superpowers/plans/` plan documents for task-observer integration and GitHub activity portfolio review
 
 ### Chore
 
@@ -115,6 +116,7 @@
 * fix(renovate): align Renovate deployment runbook to GitHub App auth flow; add SHA-pin guidance for the bootstrap workflow
 * fix(tools): restore missing `import json` in `refresh_catalog_release_health.py` after urllib-to-requests refactor
 * fix(tools): guard `None` published_at in `refresh_catalog_release_health.py`; track error/no-release counts; align dry-run behaviour; add releaseHealth shape test
+* fix(gitignore): remove duplicate `docs/reference/github-repos.md` entry from root `.gitignore`
 
 ## v0.13.0 (2026-04-21)
 ### Documentation

@@ -1,4 +1,12 @@
-# Task Observer Integration Implementation Plan
+---
+schema_type: planning
+title: "Task Observer Integration Implementation Plan"
+status: draft
+owner: core-maintainer
+purpose: "Integration plan for the rebelytics/one-skill-to-rule-them-all Task Observer meta-skill into the ~/.claude skills library with scheduled review cycle."
+component: Development-Tools
+source: "docs/superpowers/specs/2026-04-28-task-observer-design.md"
+---
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 

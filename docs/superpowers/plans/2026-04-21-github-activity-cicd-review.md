@@ -1,8 +1,16 @@
-# Plan: GitHub Activity & CI/CD Comprehensive Review (All 43 Repos)
+---
+schema_type: planning
+title: "GitHub Activity & CI/CD Full Review (All 44 Repos)"
+status: draft
+owner: core-maintainer
+purpose: "Analysis plan for GitHub Actions workflows, CI/CD pipelines, and branch protection rules across 44 repos in williaby and ByronWilliamsCPA orgs."
+component: Development-Tools
+source: "ad-hoc"
+---
 
 ## Context
 
-The user has completed an OpenSSF inventory across 43 repos in two orgs (`williaby` and
+The user has completed an OpenSSF inventory across 44 repos in two orgs (`williaby` and
 `ByronWilliamsCPA`). The next layer of analysis is understanding how GitHub Actions workflows,
 CI/CD pipelines, and branch protection rules are actually configured at each repo -- specifically:
 which checks run on PRs, which are blocking (required status checks) vs non-blocking, and what
@@ -163,7 +171,7 @@ correctly per repo rather than assuming a single org for the whole batch.
 
 ---
 
-## Step 2: Comprehensive Analysis
+## Step 2: Portfolio Analysis
 
 After all 7 batches complete, dispatch a **single synthesis agent** that reads all
 `docs/github-activity-reports/*.md` files and writes
@@ -171,7 +179,7 @@ After all 7 batches complete, dispatch a **single synthesis agent** that reads a
 
 The `00-` prefix causes it to sort to the top of directory listings.
 
-### Comprehensive Report Structure
+### Full Report Structure
 
 ```markdown
 # GitHub Activity & CI/CD Comprehensive Analysis
@@ -258,7 +266,7 @@ theater, no enforcement" category.}
 
 ## Step 3: Cleanup (Optional)
 
-After the user reviews the comprehensive report, the temp directory can be deleted since
+After the user reviews the portfolio report, the temp directory can be deleted since
 everything is gitignored and local-only. No cleanup action is required during execution.
 
 ---
@@ -267,8 +275,8 @@ everything is gitignored and local-only. No cleanup action is required during ex
 
 After all agents complete:
 
-1. Count report files: `ls docs/github-activity-reports/ | wc -l` -- expect 43 per-repo files + 1 comprehensive = 44 total
-2. Check for missing repos: compare filenames against the 43-repo inventory
+1. Count report files: `ls docs/github-activity-reports/ | wc -l` -- expect 44 per-repo files + 1 synthesis = 45 total
+2. Check for missing repos: compare filenames against the 44-repo inventory
 3. Spot-check 2-3 repos manually using `gh api` to confirm the data in individual reports is accurate
 4. Confirm gitignore is working: `git status docs/github-activity-reports/` -- should show no tracked files
 
@@ -279,7 +287,7 @@ After all agents complete:
 | File | Role |
 | ---- | ---- |
 | [docs/compliance-reports/.gitignore](docs/compliance-reports/.gitignore) | Gitignore pattern to copy |
-| [.claude/agents/github-workflow-agent.md](.claude/agents/github-workflow-agent.md) | Agent definition for batches 1-7 |
-| [.claude/agents/ossf-compliance-auditor.md](.claude/agents/ossf-compliance-auditor.md) | Reference for `gh api` patterns used in this project |
+| `.claude/agents/github-workflow-agent.md` | Agent definition for batches 1-7 |
+| `.claude/agents/ossf-compliance-auditor.md` | Reference for `gh api` patterns used in this project |
 | `docs/github-activity-reports/` | New temp directory (to be created) |
 | `docs/github-activity-reports/00-comprehensive-analysis.md` | Final synthesis output |

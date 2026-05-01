@@ -216,8 +216,10 @@ and may cause cascading issues.
 
 ### Editing constraint: repos with PostToolUse ruff hooks
 
-If the repo has a ruff PostToolUse:Edit hook (check `.claude/settings.json`
-for `"PostToolUse"` entries running ruff or pre-commit), each Edit call must
+If the repo has a ruff PostToolUse:Edit hook (check `hooks.json` or the live
+`~/.claude/settings.json` for `"PostToolUse"` entries running ruff or pre-commit;
+per ADR-002 this repo's authoritative hook definitions live in `hooks.json` and
+are merged into `~/.claude/settings.json` by `setup.sh`), each Edit call must
 leave the file in a valid ruff state at hook-fire time, not just at the final
 intended state.
 
