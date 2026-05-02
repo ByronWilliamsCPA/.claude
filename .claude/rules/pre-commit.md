@@ -33,11 +33,20 @@ Before committing ANY changes, verify all items:
 - [ ] **CI gates**: `/ci-fix` run and all gates green (or blockers documented in the PR)
 - [ ] **Branch Safety**: PR preparation validates branch strategy
 - [ ] **PR Creation**: Use `/git pr` skill with `--include_wtd=true`
-- [ ] **Automated Review**: Run `/code-review` after PR is created to get AI review feedback (CLAUDE.md compliance + bug detection + git history analysis)
-- [ ] **CodeRabbit review**: fires automatically on PR creation; address inline comments
-      before merging and use `@coderabbitai` in PR comments to ask follow-up questions
-- [ ] **Copilot review** (optional): for complex logic changes, request from the
-      Reviewers menu on GitHub; review instructions are in `.github/copilot-instructions.md`
+
+### Review tier (choose one)
+
+**Solo / personal project** (single-contributor, no external users):
+- [ ] Run `/code-review` for AI review feedback (5 agents, ~5 min)
+- [ ] CodeRabbit inline comments are advisory; address or dismiss at your discretion
+
+**Production / OSS / client** (external users, revenue-bearing, or multi-contributor):
+- [ ] **Full review**: Run `/pr-review <url>` (8 agents + Copilot + SonarQube, ~15 min)
+- [ ] **CodeRabbit review**: address inline comments before merging; use `@coderabbitai` for follow-ups
+- [ ] **Copilot review** (optional): for complex logic, request from the Reviewers menu; instructions in `.github/copilot-instructions.md`
+
+**Spike branch** (`spike/` prefix):
+- [ ] No PR review required; linting and secrets scanning are sufficient
 
 ## Linting Alignment Invariants
 
