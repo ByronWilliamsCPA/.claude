@@ -71,11 +71,12 @@ When reviewing existing pages, flag:
 
 When receiving a gap list from `mkdocs-auditor`:
 
-1. Read the existing page (if stale) or examine codebase sources to understand the subject
-2. Draft content following the Page Structure Standard above
-3. Apply complete frontmatter
-4. Verify all cross-references resolve to existing files
-5. Report completion: list files written or updated; flag any links that need manual resolution
+1. **Tags pre-check:** For each tag in the new page's planned `tags:` frontmatter list, check whether it appears in `docs/_data/tags.yml`. Read that file first; if any tag is missing, append it to `docs/_data/tags.yml` before writing the page. The `validate_front_matter` pre-commit hook rejects pages with undeclared tags with a non-obvious error message, so resolving this after the fact requires a second commit.
+2. Read the existing page (if stale) or examine codebase sources to understand the subject
+3. Draft content following the Page Structure Standard above
+4. Apply complete frontmatter
+5. Verify all cross-references resolve to existing files
+6. Report completion: list files written or updated; flag any links that need manual resolution
 
 ## PAL Secondary Analysis
 
