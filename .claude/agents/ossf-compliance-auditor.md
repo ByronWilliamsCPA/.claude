@@ -19,10 +19,20 @@ Receive from the coordinator:
 - `repo_path`: absolute local path to the repository
 - `repo_slug`: GitHub slug in `owner/repo` format (e.g., `ByronWilliamsCPA/claude_config`)
 - `overrides`: list of OSSF-* check IDs that have approved overrides
+- `scorecard_api_skip`: boolean; `true` for private repos (the public Scorecard API does not
+  index private repos; skip Stages 1 and 2 entirely when this is `true`)
+- `exempt_check_ids`: list of OSSF-* check IDs exempt due to repo visibility or type (e.g.,
+  `["OSSF-001", "OSSF-006"]` for private repos); log `EXEMPT (private repo)` instead of
+  FINDING for any check ID in this list
 
 ## Audit Workflow
 
 Run these five stages in order. Collect all findings before emitting output.
+
+> **Private repo shortcut:** If `scorecard_api_skip: true`, skip Stages 1 and 2 entirely.
+> Emit this note at the top of your output:
+> `NOTE: Scorecard API skipped — private repo not indexed by api.securityscorecards.dev. Stages 1-2 not run.`
+> Proceed directly to Stage 3.
 
 ### Stage 1: Scorecard REST API
 
@@ -42,7 +52,7 @@ Also check whether `.github/workflows/scorecard.yml` has `publish_results: false
 FINDING
 id: SCORECARD:publish_results
 severity: important
-description: scorecard.yml has publish_results: false -- the public Scorecard REST API and viewer will not show current results; the SARIF fallback in Stage 2 is authoritative until this is changed
+description: scorecard.yml has publish_results: false; the public Scorecard REST API and viewer will not show current results. The SARIF fallback in Stage 2 is authoritative until this is changed.
 status: configuration_gap
 remediation: In .github/workflows/scorecard.yml, set publish_results: true. This requires the repository to be public. Once enabled, results appear at https://securityscorecards.dev/viewer/?uri=github.com/${REPO_SLUG} and the REST API returns fresh scores within 24 hours of the next workflow run.
 ```
@@ -62,13 +72,15 @@ gh run download "${RUN_ID}" --repo "${REPO_SLUG}" --name scorecard-results --dir
 
 Parse `/tmp/scorecard-sarif/scorecard-results.sarif`. Each result's `ruleId` maps to a Scorecard check name. The score appears in `message.text`. Apply the same threshold (score < 4 = FINDING) and remediation reference.
 
-If neither Stage 1 nor Stage 2 yields data, note "Scorecard results not available -- workflow has not run or artifact has expired. Run the scorecard.yml workflow manually to generate fresh results" in the summary. Still run Stages 3-5.
+If neither Stage 1 nor Stage 2 yields data, note "Scorecard results not available: workflow has not run or artifact has expired. Run the scorecard.yml workflow manually to generate fresh results" in the summary. Still run Stages 3-5.
 
 ### Stage 3: Best Practices Badge API
 
 ```bash
 curl -s "https://bestpractices.coreinfrastructure.org/projects.json?url=https://github.com/${REPO_SLUG}"
 ```
+
+If `OSSF-001` is in `exempt_check_ids`, log `EXEMPT (private repo): OSSF-001 badge API does not index private repos` and skip the rest of Stage 3.
 
 If the response is an empty array `[]`: emit OSSF-001 FINDING (no badge application filed).
 

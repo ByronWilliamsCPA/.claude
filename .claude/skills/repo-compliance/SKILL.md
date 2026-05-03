@@ -75,7 +75,7 @@ potentially stale.
 | general | `general-compliance-auditor` | unclassified |
 | mkdocs | `mkdocs-auditor` | MKDOCS-* (skipped when mkdocs.yml absent) |
 
-## Type-Conditional Evaluation
+## Type and Visibility Evaluation
 
 Before dispatching domain agents, read the target repo's entry in
 `docs/reference/github-repos.json`:
@@ -83,28 +83,60 @@ Before dispatching domain agents, read the target repo's entry in
 1. Look up the entry by matching `org` + `name` fields in the `repos[]` array.
 2. Read `repositoryType` from the entry.
 3. Load `_meta.typeProfiles[repositoryType]` to get the type profile.
+4. Read `isPrivate` from the entry. If absent, default to `false` (treat as public): skip
+   loading the visibility profile, set `Scorecard API skip: false`, and leave `exemptChecks`
+   and visibility `exemptWorkflows` empty.
+5. If `isPrivate` is `true`, load `_meta.visibilityProfiles.private` to get the visibility
+   profile. If `_meta.visibilityProfiles.private` is absent or null, treat it as an empty
+   profile: no additional exemptions, no `scopedNotes`, no `Scorecard API skip`.
+6. Merge visibility exemptions with type exemptions (union of both sets): combine
+   `exemptWorkflows` from both profiles, combine `exemptChecks` from the visibility profile
+   with the manifest check-ID override list. Pass `exemptChecks` (from the visibility profile)
+   and override check IDs (from `compliance-overrides.md`) as separate coordinator prompt
+   fields; do not collapse them so domain agents can log `EXEMPT (private repo)` vs
+   `OVERRIDE` with distinct audit trails.
+   #ASSUME both sources use identical check ID formats (e.g., `OSSF-001`); verify if adding
+   a new profile type.
 
 Pass the following to each domain agent in the coordinator prompt:
 
 ```yaml
 Repository type: <repositoryType>
-Exempt workflows (do not raise FINDING for absence): <exemptWorkflows list>
-Exempt hooks (do not raise FINDING for absence): <exemptHooks list>
+Repository visibility: <public|private>
+Exempt workflows (do not raise FINDING for absence): <merged exemptWorkflows from type + visibility profiles>
+Exempt hooks (do not raise FINDING for absence): <exemptHooks list from type profile>
+Exempt check IDs (log EXEMPT, not FINDING): <exemptChecks from visibility profile, if private>
 Scorecard floor: <scorecardFloor from type profile, or 7.0 if not overridden>
 Scorecard target: <scorecardTarget from type profile, or 8.5 if not overridden>
+Scorecard API skip: <true if private repo, false otherwise>
 ```
 
-**Exemption rule:** If a workflow filename appears in `exemptWorkflows`, log
-`EXEMPT` instead of `FINDING` for its absence. Same for `exemptHooks`.
+**Exemption rule:** If a workflow filename appears in the merged `exemptWorkflows`, log
+`EXEMPT (infrastructure type)` or `EXEMPT (private repo)` for its absence; use the
+source that triggered the exemption in the label. Same for `exemptHooks`. For check IDs in
+`exemptChecks`, log `EXEMPT (private repo)` instead of FINDING.
+
+**Exemption label tiebreaker:** When a workflow filename appears in both the type profile
+and the visibility profile `exemptWorkflows`, label the exemption with the type source
+(e.g., `EXEMPT (infrastructure type)`) and omit the visibility label; type takes precedence
+for labeling.
 
 **Scorecard evaluation:** Use the type profile's `scorecardFloor` and
 `scorecardTarget` when they exist; fall back to `idealEntry.scorecard.floor`
-(7.0) and `idealEntry.scorecard.target` (8.5) otherwise.
+(7.0) and `idealEntry.scorecard.target` (8.5) otherwise. When `Scorecard API skip: true`,
+skip the live `api.securityscorecards.dev` lookup entirely; the public API does not
+index private repos and will return no data. Do not raise a FINDING for a missing score.
 
-**Example:**
-- Repo `homelab-infra` has `repositoryType: "infrastructure"`
-- Type profile exempts `release.yml`, `release-sign.yml`, `sbom.yml`, `coverage.yml`, `python-compatibility.yml`, `reuse.yml`
-- Absent `release.yml` is logged as `EXEMPT (infrastructure type)`, not a FINDING
+**Private repo scoped notes** (from `visibilityProfiles.private.scopedNotes`): Include
+these as informational context in the audit report, not as FINDINGs. They explain
+limitations (e.g., GitHub PVR unavailable) rather than compliance gaps.
+
+**Examples:**
+- Repo `homelab-infra` has `repositoryType: "infrastructure"` and `isPrivate: true`
+  - Type profile exempts `release.yml`, `release-sign.yml`, `sbom.yml`, `coverage.yml`, `python-compatibility.yml`, `reuse.yml`
+  - Visibility profile additionally exempts `codeql.yml` (GHAS required) and check IDs `OSSF-001`, `OSSF-006`
+  - Absent `release.yml` is logged as `EXEMPT (infrastructure type)`, absent `codeql.yml` as `EXEMPT (private repo)`
+  - OSSF-001 finding is suppressed with `EXEMPT (private repo: badge API is public OSS only)`
 
 ## Coordinator Prompt Template
 
@@ -119,16 +151,20 @@ Override entries (skip these check IDs):
 <paste entries from compliance-overrides.md, or "none">
 Repository context:
   type: <repositoryType>
-  exempt_workflows: <list from typeProfiles>
-  exempt_hooks: <list from typeProfiles>
+  visibility: <public|private>
+  exempt_workflows: <merged list from type + visibility profiles>
+  exempt_hooks: <list from type profile>
+  exempt_check_ids: <list from visibility profile exemptChecks, or empty>
   scorecard_floor: <floor>
   scorecard_target: <target>
+  scorecard_api_skip: <true|false>
 ```
 
 For the `ossf-compliance-auditor` specifically, also include:
 
 ```html
 Repo slug: <owner/repo GitHub slug>
+Scorecard API skip: <true if private, false if public>
 ```
 
-The OSSF agent queries live APIs (Scorecard REST API, Best Practices Badge API, GitHub API) using the repo slug. It will produce FINDING blocks both for OSSF-* manifest checks and for Scorecard checks that score below 4, even when those checks have no manifest entry.
+The OSSF agent queries live APIs (Scorecard REST API, Best Practices Badge API, GitHub API) using the repo slug. It will produce FINDING blocks both for OSSF-* manifest checks and for Scorecard checks that score below 4, even when those checks have no manifest entry. When `Scorecard API skip: true`, the agent must skip the Scorecard REST API call and suppress score-based FINDINGs; it should still evaluate local file checks (SECURITY.md content, workflow presence) that do not require the API.
