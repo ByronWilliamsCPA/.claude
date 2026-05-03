@@ -23,6 +23,11 @@ For `hook_present` checks: Read `.pre-commit-config.yaml`; search for the hook i
 
 For PC-012 (`sha_pinned`): Read all `rev:` lines in `.pre-commit-config.yaml`. A valid SHA pin is exactly 40 hexadecimal characters. Flag any rev that is a version tag (starts with `v` or contains only digits and dots).
 
+For `baseline_present` (PC-NEW-001): when the `detect-secrets` hook id is present in any repo block, use Glob to check for `.secrets.baseline` at the project root. If absent or zero bytes, report:
+- id: `PC-NEW-001`, severity: `important`, description: `detect-secrets hook present but .secrets.baseline absent or empty`
+- current_value: `file not found` or `file is empty`
+- remediation note: `run: detect-secrets scan > .secrets.baseline && git add .secrets.baseline`
+
 Return findings with: id, severity, description, status, current_value (list of missing hooks or list of unpinned revs).
 
 ## Remediation Workflow
@@ -45,9 +50,30 @@ The required hook repositories and their hook IDs are:
 - `https://github.com/igorshubovych/markdownlint-cli`: `markdownlint`
 - local repo with pygrep entry for em-dash (`\u2014`)
 
+**Before adding the `no-em-dash` hook to any repo:** run a preliminary scan for pre-existing em-dashes:
+
+```bash
+grep -rn -- $'\xe2\x80\x94' docs/ services/ README.md CHANGELOG.md 2>/dev/null
+```
+
+If this returns matches, add an `exclude:` regex to the hook entry covering those paths **before committing**:
+
+```yaml
+  - id: no-em-dash
+    exclude: "^services/|^docs/legacy/"
+```
+
+Never add the hook without the pre-scan. Discovering pre-existing em-dashes at `pre-commit run` time requires a second commit to add the exclude pattern.
+
 **If .pre-commit-config.yaml exists but hooks are missing:** Append only the missing hook entries; do not rewrite the file.
 
-**For unpinned rev fields:** Resolve the SHA for the current tag and replace using Edit. Add the version as a comment on the same line: `rev: <40-char-sha>  # v1.2.3`
+**For unpinned rev fields:** Resolve the SHA for the current tag and replace using Edit. Add the version as a comment on the same line, followed immediately by `  # pragma: allowlist secret`:
+
+```yaml
+rev: "<40-char-sha>"  # v1.2.3  # pragma: allowlist secret
+```
+
+The pragma is mandatory on every SHA-pinned `rev:` line. SHA hashes are 40-char hex strings that trigger `Hex High Entropy String` false positives in detect-secrets. Adding the pragma during pinning prevents a pre-commit failure that would otherwise require a second fix commit.
 
 ## Output Format
 
