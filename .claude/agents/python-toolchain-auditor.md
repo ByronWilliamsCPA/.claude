@@ -28,6 +28,9 @@ Receive the coordinator prompt with: target repo path, list of TOOL-* checks, an
 For `ruff_rules_include`, the required PyStrict-aligned codes are:
 `BLE, EM, SLF, INP, ISC, PGH, RSE, TID, YTT, FA, T10, G, ANN, TCH, FBT, TRY, ERA, FURB, LOG, ASYNC`
 
+- `interrogate_config` checks: when `darglint` or `interrogate` appears in any dev dependency section or in the pre-commit hook IDs (check `.pre-commit-config.yaml` if present), Read `pyproject.toml` and check for a `[tool.interrogate]` section containing a `fail-under` key. If absent, report:
+  - id: `TOOL-NEW-002`, severity: `suggested`, description: `[tool.interrogate] section absent from pyproject.toml despite darglint/interrogate present in dev dependencies`
+
 Return findings with: id, severity, description, status, current_value (list of missing codes for ruff checks, package name for dep checks).
 
 ## Remediation Workflow
@@ -54,6 +57,16 @@ strictSetInference = true
 ```toml
 [plugins]
 enabled = ["ruff", "basedpyright", "bandit"]
+```
+
+- Missing `[tool.interrogate]` block: append to `pyproject.toml`:
+
+```toml
+[tool.interrogate]
+fail-under = 80
+ignore-init-method = true
+ignore-init-module = true
+ignore-magic = true
 ```
 
 After remediation, emit: "NOTE: Adding or removing dependencies and enabling new Ruff rules will surface new violations. Run the full toolchain and fix violations before committing. Do not add noqa or type: ignore suppressions."
