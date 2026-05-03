@@ -126,6 +126,49 @@ gh api "repos/${REPO_SLUG}/contents/.github/dependabot.yml" 2>/dev/null
 ```
 Also check locally: `Glob .github/dependabot.yml` and `Glob renovate.json`. If neither exists: emit SCORECARD:Dependency-Update-Tool FINDING.
 
+If `.github/dependabot.yml` exists, Read it and verify it contains at least one entry with `package-ecosystem: pip` or `package-ecosystem: uv`, AND at least one entry with `package-ecosystem: github-actions`. If either ecosystem is missing, emit:
+
+```text
+FINDING:
+id: OSSF-NEW-001
+severity: important
+description: .github/dependabot.yml is missing required ecosystem entries
+status: configuration_gap
+current_value: ecosystems present: [list found]; missing: [list absent]
+remediation: |
+  Add the missing ecosystem entry to .github/dependabot.yml. Required entries:
+    - package-ecosystem: "pip"   # use "uv" if the project uses uv
+      directory: "/"
+      schedule:
+        interval: "weekly"
+    - package-ecosystem: "github-actions"
+      directory: "/"
+      schedule:
+        interval: "weekly"
+```
+
+**Security gate `continue-on-error` bypass (CI-SEC-002):**
+
+Read all YAML files under `.github/workflows/` using Glob, then Read each one. For any workflow step that meets **both** conditions:
+1. The step's `uses:` field references one of: `anchore/scan-action`, `aquasecurity/trivy-action`, `actions/dependency-review-action`, `ossf/scorecard-action`
+2. The same step has `continue-on-error: true`
+
+Emit one FINDING per offending step:
+
+```text
+FINDING:
+id: CI-SEC-002
+severity: critical
+description: Security gate step has continue-on-error: true, bypassing the gate on failure
+status: configuration_gap
+current_value: [workflow filename]::[job name]::[step name or uses value]
+remediation: |
+  Remove `continue-on-error: true` from the [step] in [workflow file].
+  If you need to capture failure output without failing the job, use a
+  separate reporting step after the security step with `if: failure()`.
+  Never allow a security scanning step to silently continue past a failure.
+```
+
 ### Stage 5: Local File Checks (OSSF-002..005)
 
 **OSSF-002: Private reporting channel in SECURITY.md**
