@@ -244,20 +244,20 @@
     },
     "visibilityProfiles": {
       "private": {
-        "description": "Private repositories -- GitHub features and APIs that require public repo access are not applicable.",
+        "description": "Private repositories: GitHub features and APIs that require public repo access are not applicable.",
         "scorecardApiSkip": true,
         "_scorecardApiSkipNote": "api.securityscorecards.dev does not index private repos; skip floor/target score evaluation and the live Scorecard API lookup entirely.",
         "exemptChecks": [
           "OSSF-001",
           "OSSF-006"
         ],
-        "_exemptChecksNote": "bestpractices.coreinfrastructure.org badge API is designed for public OSS. Private repos are rarely registered; flag as EXEMPT rather than FINDING.",
+        "_exemptChecksNote": "bestpractices.coreinfrastructure.org (also known as bestpractices.dev) badge API is designed for public OSS. Private repos are rarely registered; flag as EXEMPT rather than FINDING.",
         "exemptWorkflows": [
           "codeql.yml"
         ],
         "_exemptWorkflowsNote": "CodeQL GitHub Actions requires GitHub Advanced Security (paid) for private repos. Flag absent codeql.yml as EXEMPT rather than FINDING.",
         "scopedNotes": [
-          "GitHub Private Vulnerability Reporting (the 'Report a vulnerability' button on repo pages) is only available for public repos. The Scorecard 'Vulnerabilities' sub-check will return N/A -- log EXEMPT rather than FINDING.",
+          "GitHub Private Vulnerability Reporting (the 'Report a vulnerability' button on repo pages) is only available for public repos. Log as informational context rather than a FINDING; GitHub Security Advisories can be created manually on private repos as an alternative.",
           "GitHub Secret Scanning and Push Protection may be limited for private repos without GitHub Advanced Security. Treat secretScanning gaps as IMPORTANT rather than CRITICAL for private repos.",
           "OSSF-002 (SECURITY.md private reporting channel) still applies: GitHub Security Advisories can be created manually on private repos. Document the reporting process even if PVR is unavailable."
         ]

@@ -83,9 +83,20 @@ Before dispatching domain agents, read the target repo's entry in
 1. Look up the entry by matching `org` + `name` fields in the `repos[]` array.
 2. Read `repositoryType` from the entry.
 3. Load `_meta.typeProfiles[repositoryType]` to get the type profile.
-4. Read `isPrivate` from the entry.
-5. If `isPrivate` is `true`, load `_meta.visibilityProfiles.private` to get the visibility profile.
-6. Merge visibility exemptions with type exemptions (union of both sets): combine `exemptWorkflows` from both profiles, combine `exemptChecks` from the visibility profile with the manifest check-ID override list.
+4. Read `isPrivate` from the entry. If absent, default to `false` (treat as public): skip
+   loading the visibility profile, set `Scorecard API skip: false`, and leave `exemptChecks`
+   and visibility `exemptWorkflows` empty.
+5. If `isPrivate` is `true`, load `_meta.visibilityProfiles.private` to get the visibility
+   profile. If `_meta.visibilityProfiles.private` is absent or null, treat it as an empty
+   profile: no additional exemptions, no `scopedNotes`, no `Scorecard API skip`.
+6. Merge visibility exemptions with type exemptions (union of both sets): combine
+   `exemptWorkflows` from both profiles, combine `exemptChecks` from the visibility profile
+   with the manifest check-ID override list. Pass `exemptChecks` (from the visibility profile)
+   and override check IDs (from `compliance-overrides.md`) as separate coordinator prompt
+   fields; do not collapse them so domain agents can log `EXEMPT (private repo)` vs
+   `OVERRIDE` with distinct audit trails.
+   #ASSUME both sources use identical check ID formats (e.g., `OSSF-001`); verify if adding
+   a new profile type.
 
 Pass the following to each domain agent in the coordinator prompt:
 
@@ -101,14 +112,19 @@ Scorecard API skip: <true if private repo, false otherwise>
 ```
 
 **Exemption rule:** If a workflow filename appears in the merged `exemptWorkflows`, log
-`EXEMPT (infrastructure type)` or `EXEMPT (private repo)` for its absence -- use the
+`EXEMPT (infrastructure type)` or `EXEMPT (private repo)` for its absence; use the
 source that triggered the exemption in the label. Same for `exemptHooks`. For check IDs in
 `exemptChecks`, log `EXEMPT (private repo)` instead of FINDING.
+
+**Exemption label tiebreaker:** When a workflow filename appears in both the type profile
+and the visibility profile `exemptWorkflows`, label the exemption with the type source
+(e.g., `EXEMPT (infrastructure type)`) and omit the visibility label; type takes precedence
+for labeling.
 
 **Scorecard evaluation:** Use the type profile's `scorecardFloor` and
 `scorecardTarget` when they exist; fall back to `idealEntry.scorecard.floor`
 (7.0) and `idealEntry.scorecard.target` (8.5) otherwise. When `Scorecard API skip: true`,
-skip the live `api.securityscorecards.dev` lookup entirely -- the public API does not
+skip the live `api.securityscorecards.dev` lookup entirely; the public API does not
 index private repos and will return no data. Do not raise a FINDING for a missing score.
 
 **Private repo scoped notes** (from `visibilityProfiles.private.scopedNotes`): Include
@@ -120,7 +136,7 @@ limitations (e.g., GitHub PVR unavailable) rather than compliance gaps.
   - Type profile exempts `release.yml`, `release-sign.yml`, `sbom.yml`, `coverage.yml`, `python-compatibility.yml`, `reuse.yml`
   - Visibility profile additionally exempts `codeql.yml` (GHAS required) and check IDs `OSSF-001`, `OSSF-006`
   - Absent `release.yml` is logged as `EXEMPT (infrastructure type)`, absent `codeql.yml` as `EXEMPT (private repo)`
-  - OSSF-001 finding is suppressed with `EXEMPT (private repo -- badge API is public OSS only)`
+  - OSSF-001 finding is suppressed with `EXEMPT (private repo: badge API is public OSS only)`
 
 ## Coordinator Prompt Template
 
