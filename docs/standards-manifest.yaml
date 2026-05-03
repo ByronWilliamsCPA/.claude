@@ -494,6 +494,7 @@ checks:
     description: "OpenSSF Best Practices Badge application filed (Passing level) -- verified via bestpractices.coreinfrastructure.org API"
     verify: "ossf_badge_api: level=passing"
     override_eligible: true
+    visibility_required: public  # badge API is designed for public OSS; private repos are rarely registered
 
   - id: OSSF-002
     domain: ossf
@@ -529,6 +530,7 @@ checks:
     description: "OpenSSF Best Practices Silver badge application filed -- verified via bestpractices.dev API"
     verify: "ossf_badge_api: level=silver"
     override_eligible: true
+    visibility_required: public  # same rationale as OSSF-001; private repos exempt
 
   - id: OSSF-007
     domain: ossf
