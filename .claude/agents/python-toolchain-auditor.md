@@ -59,7 +59,7 @@ strictSetInference = true
 enabled = ["ruff", "basedpyright", "bandit"]
 ```
 
-- Missing `[tool.interrogate]` block: append to `pyproject.toml`:
+**Interrogate config template:** When the `TOOL-NEW-002` finding is approved, append this section to `pyproject.toml`:
 
 ```toml
 [tool.interrogate]
