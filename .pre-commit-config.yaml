@@ -60,9 +60,15 @@ repos:
     rev: 05cccb53bc9e13bc6d17997db5a6bcc3df44bf2f  # v3.92.3
     hooks:
       - id: trufflehog
-        # In git worktrees .git is a file pointer, not a directory; the git
-        # scanner cannot read the index. Fall back to scanning staged files only.
-        entry: bash -c 'if [ -f .git ]; then staged=$(git diff --cached --name-only 2>/dev/null); [ -z "$staged" ] || echo "$staged" | xargs trufflehog filesystem --fail --no-update; else trufflehog git file://. --since-commit HEAD --fail --no-update; fi'
+        # Scan staged files only. The git-history mode (--since-commit HEAD) also
+        # traverses fetched remote branches in the local object store, producing
+        # false positives from unmerged branches. Staged-file scanning is the
+        # correct scope for a pre-commit hook; git history scanning belongs in CI.
+        # Uses -z / xargs -0 to handle filenames with spaces; --diff-filter=d skips
+        # staged deletions (the file no longer exists on disk to scan).
+        # CHANGELOG.md is excluded: it accumulates hundreds of commit SHAs that
+        # TruffleHog misidentifies as GitHub OAuth2 tokens (same 40-char hex format).
+        entry: bash -c 'git diff --cached -z --name-only --diff-filter=d 2>/dev/null | grep -zv "^CHANGELOG\.md$" | xargs -0 -r trufflehog filesystem --fail --no-update'
         pass_filenames: false
         stages: [pre-commit]
 

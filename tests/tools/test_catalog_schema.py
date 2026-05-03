@@ -220,3 +220,58 @@ def test_release_health_value_shape(repo_entries: list[dict[str, object]]) -> No
                 f"{e.get('org', '?')}/{e.get('name', '?')}: daysSinceRelease={days!r}"
             )
     assert not invalid, f"Invalid releaseHealth shape: {invalid}"
+
+
+@pytest.mark.unit
+def test_visibility_profiles_private_exists(catalog: Catalog) -> None:
+    """_meta.visibilityProfiles.private must exist with required keys."""
+    vp = cast("dict[str, object]", catalog["_meta"].get("visibilityProfiles", {}))
+    private = cast("dict[str, object]", vp.get("private", {}))
+    required = {
+        "description",
+        "scorecardApiSkip",
+        "exemptChecks",
+        "exemptWorkflows",
+        "scopedNotes",
+    }
+    missing = required - private.keys()
+    assert not missing, f"visibilityProfiles.private missing keys: {missing}"
+
+
+@pytest.mark.unit
+def test_visibility_profile_private_scorecard_api_skip_is_bool(
+    catalog: Catalog,
+) -> None:
+    """scorecardApiSkip in visibilityProfiles.private must be a boolean."""
+    vp = cast("dict[str, object]", catalog["_meta"].get("visibilityProfiles", {}))
+    private = cast("dict[str, object]", vp.get("private", {}))
+    skip = private.get("scorecardApiSkip")
+    assert isinstance(skip, bool), (
+        f"scorecardApiSkip must be bool, got {type(skip).__name__}"
+    )
+
+
+@pytest.mark.unit
+def test_visibility_profile_private_exempt_checks_format(catalog: Catalog) -> None:
+    """exemptChecks in visibilityProfiles.private must be OSSF-* identifiers."""
+    vp = cast("dict[str, object]", catalog["_meta"].get("visibilityProfiles", {}))
+    private = cast("dict[str, object]", vp.get("private", {}))
+    exempt = cast("list[object]", private.get("exemptChecks", []))
+    invalid = [c for c in exempt if not isinstance(c, str) or not c.startswith("OSSF-")]
+    assert not invalid, f"exemptChecks must be OSSF-* strings, got: {invalid}"
+
+
+@pytest.mark.unit
+def test_visibility_profile_private_exempt_workflows_in_ideal(catalog: Catalog) -> None:
+    """exemptWorkflows in visibilityProfiles.private must be in idealEntry."""
+    ideal_workflows = cast(
+        "IdealEntryWorkflows", catalog["_meta"]["idealEntry"]["workflows"]
+    )
+    all_workflows = set(ideal_workflows["presentFromExpected"])
+    vp = cast("dict[str, object]", catalog["_meta"].get("visibilityProfiles", {}))
+    private = cast("dict[str, object]", vp.get("private", {}))
+    exempt = cast("list[object]", private.get("exemptWorkflows", []))
+    invalid = [w for w in exempt if w not in all_workflows]
+    assert not invalid, (
+        f"visibilityProfiles.private exempts invalid workflows: {invalid}"
+    )
