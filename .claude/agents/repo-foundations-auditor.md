@@ -23,6 +23,8 @@ Receive the coordinator prompt containing: target repo path, list of FOUND-* che
 - `metadata_value` checks: Read pyproject.toml and compare the field value against the condition
 - `org_community_health` checks: use Glob to check whether the file exists at the project root; if not found there, also check `~/dev/.github/<filename>` (the ByronWilliamsCPA org-level community health repo); if found at the org path, the check passes and the finding note must read "satisfied by org-level file at ByronWilliamsCPA/.github/<filename>"
 - `dir_contains` checks: use Glob to confirm the specified directory exists and contains at least one file matching the given glob pattern; if the directory is absent or no file matches, the check fails
+- `cli_entrypoint` checks: use Glob to search for `src/*/cli.py`. If found, Read `pyproject.toml` and check whether a `[project.scripts]` table is present. If absent, report:
+  - id: `FOUND-NEW-001`, severity: `suggested`, description: `[project.scripts] absent from pyproject.toml despite src/*/cli.py being present`
 
 Return findings as a structured list with fields: id, severity, description, status (pass or fail), current_value (what was found or not found).
 
@@ -33,6 +35,29 @@ Receive the approved findings list from the coordinator. For each failing check:
 - `file_exists` with source_template: Read the template, adapt project-specific fields (project name, author), Write to the target path
 - `content_present` with .gitignore: append the missing entry using Edit
 - `metadata_value` for pyproject.toml: patch the specific field using Edit; preserve surrounding context
+
+**TOML table insertion validation:** After inserting any new `[table]` section into `pyproject.toml`, validate the file parses correctly before staging:
+
+```bash
+python -c "
+try:
+    import tomllib
+except ImportError:
+    import tomli as tomllib
+with open('pyproject.toml', 'rb') as f:
+    tomllib.load(f)
+"
+```
+
+If this command fails, abort and review the insertion point before staging. Common cause: the new table was placed before an existing array-valued key inside `[project]`. Move it to after all array-valued keys in the parent section, or append it at the very end of the `[project]` block.
+
+**Shell script executable bit:** After creating any `.sh` file, set the executable bit before staging:
+
+```bash
+git add --chmod=+x <path/to/script.sh>
+```
+
+Never commit a `.sh` file without this step: the script will be non-executable for anyone who clones the repo.
 
 Report each action taken: file created, file patched, or entry appended.
 

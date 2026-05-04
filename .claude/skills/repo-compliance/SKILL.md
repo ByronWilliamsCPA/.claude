@@ -91,10 +91,10 @@ Before dispatching domain agents, read the target repo's entry in
    profile: no additional exemptions, no `scopedNotes`, no `Scorecard API skip`.
 6. Merge visibility exemptions with type exemptions (union of both sets): combine
    `exemptWorkflows` from both profiles, combine `exemptChecks` from the visibility profile
-   with the manifest check-ID override list. Pass `exemptChecks` (from the visibility profile)
-   and override check IDs (from `compliance-overrides.md`) as separate coordinator prompt
-   fields; do not collapse them so domain agents can log `EXEMPT (private repo)` vs
-   `OVERRIDE` with distinct audit trails.
+   with the per-repo override entries from `.claude/compliance-overrides.md`. Pass
+   `exemptChecks` (from the visibility profile) and override check IDs (from
+   `compliance-overrides.md`) as separate coordinator prompt fields; do not collapse them
+   so domain agents can log `EXEMPT (private repo)` vs `OVERRIDE` with distinct audit trails.
    #ASSUME both sources use identical check ID formats (e.g., `OSSF-001`); verify if adding
    a new profile type.
 

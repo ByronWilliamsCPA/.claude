@@ -6,6 +6,10 @@
 
 * feat(compliance): add `_meta.visibilityProfiles.private` to `docs/reference/github-repos.json` for private-repo compliance scoping; extends `repo-compliance` skill coordinator to read `isPrivate`, load the visibility profile, merge type and visibility exemptions, and forward `scorecard_api_skip` to the OSSF agent; marks OSSF-001 and OSSF-006 with `visibility_required: public` in `docs/standards-manifest.yaml`; fixes TruffleHog pre-commit hook to use null-delimited staged-file scanning (`git diff -z --diff-filter=d | xargs -0 -r`) to handle filenames with spaces and prevent errors on staged deletions
 
+* feat(agents): add `OSSF-NEW-001` check to `ossf-compliance-auditor` for missing Dependabot ecosystem entries in `.github/dependabot.yml`; add `CI-SEC-002` check for security gate steps with `continue-on-error: true` across seven security actions (anchore, trivy, dependency-review, scorecard, gitleaks, snyk, codeql-action/analyze, semgrep)
+
+* feat(agents): add `TOOL-NEW-002` check to `python-toolchain-auditor` for missing `[tool.interrogate]` section in `pyproject.toml` when `darglint` or `interrogate` is present in dev dependencies; interrogate config template uses `fail-under = 85`
+
 * feat(task-observer): integrate `one-skill-to-rule-them-all` upstream as a thin local adaptation; add `apply-task-observer-patches.sh` to patch and install the skill, `generate-skills-manifest.sh` as a SessionStart hook that enumerates available skills into `skill-observations/available-skills.md`, `task-observer-review.sh` as a Mon/Wed/Fri cron-scheduled unattended review agent, and a "Task observation" section to CLAUDE.md for observer activation
 
 * feat(agents): add `mkdocs-auditor` agent with four lifecycle modes (create, audit, remediate, update) for automated MkDocs `mkdocs.yml` validation against the standards manifest

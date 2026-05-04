@@ -1,7 +1,7 @@
 {
   "_meta": {
     "linkedDoc": "docs/reference/repo-type-taxonomy.md",
-    "lastUpdated": "2026-04-29",
+    "lastUpdated": "2026-05-03",
     "refreshCommands": {
       "repoList": "gh repo list <org> --limit 100 --json name,url,defaultBranchRef,description,isPrivate,isArchived",
       "branchProtection": "gh api repos/<org>/<repo>/branches/<branch>/protection",
