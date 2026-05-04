@@ -128,7 +128,13 @@ gh api "repos/${REPO_SLUG}/contents/.github/dependabot.yml" 2>/dev/null
 ```
 Also check locally: `Glob .github/dependabot.yml` and `Glob renovate.json`. If neither exists: emit SCORECARD:Dependency-Update-Tool FINDING.
 
-If `.github/dependabot.yml` exists, Read it and verify it contains at least one entry with `package-ecosystem: pip` (use `pip` even for uv-managed projects; Dependabot does not support `uv` as an ecosystem identifier), AND at least one entry with `package-ecosystem: github-actions`. If either ecosystem is missing, emit:
+If `.github/dependabot.yml` exists, check the required ecosystems based on `repositoryType`:
+- `github-actions` ecosystem: required for ALL repository types.
+- `pip` ecosystem: required only when `repositoryType` is one of `python-package`, `python-app`, or `python-script`. Skip this requirement for `config`, `docs-only`, `infrastructure`, `template`, and other non-Python types.
+
+When checking for `pip`: use `pip` even for uv-managed projects (Dependabot does not support `uv` as an ecosystem identifier).
+
+If a required ecosystem is missing, emit:
 
 ```text
 FINDING:
