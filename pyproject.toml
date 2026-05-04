@@ -115,7 +115,7 @@ dev = [
     "nox>=2024.10.16",  # Fixed: was 2025 (typo)
     "nox-uv>=0.6.3",    # Fixed: max available version is 0.6.3, not 1.0.0
     # Google Cloud Assured OSS (optional - uncomment if using Assured OSS)
-    "google-auth>=2.0.0",
+    "google-auth>=1.6.1",
     # "google-cloud-assured-oss>=0.1.0",  # Package not yet available in PyPI
     "google-api-core>=2.0.0",
     "python-dotenv>=1.0.0",  # For loading .env files
