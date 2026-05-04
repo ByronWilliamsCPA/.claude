@@ -117,7 +117,7 @@ dev = [
     # Google Cloud Assured OSS (optional - uncomment if using Assured OSS)
     "google-auth>=2.0.0",
     # "google-cloud-assured-oss>=0.1.0",  # Package not yet available in PyPI
-    "google-api-core>=2.0.0",
+    "google-api-core>=1.6.0",
     "python-dotenv>=1.0.0",  # For loading .env files
 ]
 
