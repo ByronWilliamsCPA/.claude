@@ -71,7 +71,7 @@ When reviewing existing pages, flag:
 
 When receiving a gap list from `mkdocs-auditor`:
 
-1. **Tags pre-check:** For each tag in the new page's planned `tags:` frontmatter list, check whether it appears in `docs/_data/tags.yml`. Read that file first; if any tag is missing, append it to `docs/_data/tags.yml` before writing the page. The `validate_front_matter` pre-commit hook rejects pages with undeclared tags with a non-obvious error message, so resolving this after the fact requires a second commit.
+1. **Tags pre-check:** For each tag in the new page's planned `tags:` frontmatter list, check whether it appears in `docs/_data/tags.yml`. Read that file first; if any tag is missing, append it under the `allowed:` key as a new list item in snake_case (e.g., `  - my_new_tag`) before writing the page. The `validate_front_matter` pre-commit hook rejects pages with undeclared tags with a non-obvious error message, so resolving this after the fact requires a second commit.
 2. Read the existing page (if stale) or examine codebase sources to understand the subject
 3. Draft content following the Page Structure Standard above
 4. Apply complete frontmatter

@@ -26,7 +26,7 @@ For PC-012 (`sha_pinned`): Read all `rev:` lines in `.pre-commit-config.yaml`. A
 For `baseline_present` (PC-NEW-001): when the `detect-secrets` hook id is present in any repo block, use Glob to check for `.secrets.baseline` at the project root. If absent or zero bytes, report:
 - id: `PC-NEW-001`, severity: `important`, description: `detect-secrets hook present but .secrets.baseline absent or empty`
 - current_value: `file not found` or `file is empty`
-- remediation note: `run: detect-secrets scan > .secrets.baseline && git add .secrets.baseline`
+- remediation note: if `.secrets.baseline` is absent, run `detect-secrets scan > .secrets.baseline && git add .secrets.baseline`; if present but empty (zero bytes), run `detect-secrets scan --update .secrets.baseline && git add .secrets.baseline`
 
 Return findings with: id, severity, description, status, current_value (list of missing hooks or list of unpinned revs).
 
@@ -53,7 +53,7 @@ The required hook repositories and their hook IDs are:
 **Before adding the `no-em-dash` hook to any repo:** run a preliminary scan for pre-existing em-dashes:
 
 ```bash
-grep -rn -- $'\xe2\x80\x94' docs/ services/ README.md CHANGELOG.md 2>/dev/null
+git grep -rn -- $'\xe2\x80\x94'
 ```
 
 If this returns matches, add an `exclude:` regex to the hook entry covering those paths **before committing**:

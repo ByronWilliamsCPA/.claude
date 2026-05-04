@@ -29,7 +29,7 @@ For `ruff_rules_include`, the required PyStrict-aligned codes are:
 `BLE, EM, SLF, INP, ISC, PGH, RSE, TID, YTT, FA, T10, G, ANN, TCH, FBT, TRY, ERA, FURB, LOG, ASYNC`
 
 - `interrogate_config` checks: when `darglint` or `interrogate` appears in any dev dependency section or in the pre-commit hook IDs (check `.pre-commit-config.yaml` if present), Read `pyproject.toml` and check for a `[tool.interrogate]` section containing a `fail-under` key. If absent, report:
-  - id: `TOOL-NEW-002`, severity: `suggested`, description: `[tool.interrogate] section absent from pyproject.toml despite darglint/interrogate present in dev dependencies`
+  - id: `TOOL-NEW-002`, severity: `suggested`, description: `[tool.interrogate] section absent from pyproject.toml despite darglint/interrogate present in dev dependencies`, status: `configuration_gap`, current_value: `[tool.interrogate] section not found in pyproject.toml`
 
 Return findings with: id, severity, description, status, current_value (list of missing codes for ruff checks, package name for dep checks).
 
@@ -59,11 +59,11 @@ strictSetInference = true
 enabled = ["ruff", "basedpyright", "bandit"]
 ```
 
-**Interrogate config template:** When the `TOOL-NEW-002` finding is approved, append this section to `pyproject.toml`:
+**Interrogate config template:** When the `TOOL-NEW-002` finding is approved, first check whether a `[tool.interrogate]` section already exists in `pyproject.toml`. If it does, update the existing `fail-under` value to `85` in place rather than appending a duplicate section. If absent, append:
 
 ```toml
 [tool.interrogate]
-fail-under = 80
+fail-under = 85
 ignore-init-method = true
 ignore-init-module = true
 ignore-magic = true

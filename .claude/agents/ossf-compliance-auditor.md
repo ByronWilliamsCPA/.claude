@@ -36,11 +36,13 @@ Run these five stages in order. Collect all findings before emitting output.
 
 ### Stage 1: Scorecard REST API
 
+**Skip this stage (and Stage 2) if `scorecard_api_skip` is `true`.** Private repositories cannot publish Scorecard results; the API returns 404 for private repos. Proceed directly to Stage 3 when this flag is set.
+
 ```bash
 curl -s "https://api.securityscorecards.dev/projects/v1/github.com/${REPO_SLUG}"
 ```
 
-Parse the JSON response. For each check where `score < 4`:
+Parse the JSON response. For each check where `score < 4` (skip any check whose name is in `exempt_check_ids`):
 - Create a `SCORECARD:CheckName` FINDING (see format below)
 - Apply the remediation from the Scorecard Check Reference section
 
@@ -57,7 +59,7 @@ status: configuration_gap
 remediation: In .github/workflows/scorecard.yml, set publish_results: true. This requires the repository to be public. Once enabled, results appear at https://securityscorecards.dev/viewer/?uri=github.com/${REPO_SLUG} and the REST API returns fresh scores within 24 hours of the next workflow run.
 ```
 
-### Stage 2: SARIF Fallback (when Stage 1 returns no data)
+### Stage 2: SARIF Fallback (when Stage 1 returns no data, and `scorecard_api_skip` is not `true`)
 
 ```bash
 # Find the most recent scorecard workflow run
@@ -126,7 +128,7 @@ gh api "repos/${REPO_SLUG}/contents/.github/dependabot.yml" 2>/dev/null
 ```
 Also check locally: `Glob .github/dependabot.yml` and `Glob renovate.json`. If neither exists: emit SCORECARD:Dependency-Update-Tool FINDING.
 
-If `.github/dependabot.yml` exists, Read it and verify it contains at least one entry with `package-ecosystem: pip` or `package-ecosystem: uv`, AND at least one entry with `package-ecosystem: github-actions`. If either ecosystem is missing, emit:
+If `.github/dependabot.yml` exists, Read it and verify it contains at least one entry with `package-ecosystem: pip` (use `pip` even for uv-managed projects; Dependabot does not support `uv` as an ecosystem identifier), AND at least one entry with `package-ecosystem: github-actions`. If either ecosystem is missing, emit:
 
 ```text
 FINDING:
@@ -137,7 +139,7 @@ status: configuration_gap
 current_value: ecosystems present: [list found]; missing: [list absent]
 remediation: |
   Add the missing ecosystem entry to .github/dependabot.yml. Required entries:
-    - package-ecosystem: "pip"   # use "uv" if the project uses uv
+    - package-ecosystem: "pip"
       directory: "/"
       schedule:
         interval: "weekly"
@@ -150,7 +152,7 @@ remediation: |
 **Security gate `continue-on-error` bypass (CI-SEC-002):**
 
 Read all YAML files under `.github/workflows/` using Glob, then Read each one. For any workflow step that meets **both** conditions:
-1. The step's `uses:` field references one of: `anchore/scan-action`, `aquasecurity/trivy-action`, `actions/dependency-review-action`, `ossf/scorecard-action`
+1. The step's `uses:` field references one of: `anchore/scan-action`, `aquasecurity/trivy-action`, `actions/dependency-review-action`, `ossf/scorecard-action`, `gitleaks/gitleaks-action`, `snyk/actions/python`, `snyk/actions/node`, `snyk/actions/docker`, `github/codeql-action/analyze`, `returntocorp/semgrep-action`
 2. The same step has `continue-on-error: true`
 
 Emit one FINDING per offending step:
