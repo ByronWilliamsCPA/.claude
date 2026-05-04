@@ -206,11 +206,13 @@ where the contributor list is broader than the primary account.
 
 ### Sprint BP-6: Required PR Reviews (Solo-Dev Exception)
 
+**Status: COMPLETE (2026-05-04). 43/44 PASS. homelab-agent-configs skipped (no main branch).**
+
 **Tier:** Universal (44 repos)
 **Goal:** Explicitly configure PR review requirements to match the documented solo-dev policy.
 **Check:** `gh api repos/ORG/REPO/branches/main/protection | jq '.required_pull_request_reviews.required_approving_review_count'`
 **Target state:** `0` (solo-dev exception; documented and accepted)
-**Remediation:** PATCH `required_approving_review_count=0` via branch protection update.
+**Remediation used:** GET+PUT preserving existing protection settings; set `required_pull_request_reviews.required_approving_review_count=0` explicitly.
 **Note:** As a solo developer you cannot approve your own PRs, so requiring 1+ reviews
 would block all merges. Setting this to 0 means status checks alone gate the merge.
 When a second contributor joins, run a follow-up sprint to restore this to 1 across
@@ -471,7 +473,7 @@ Target: all public repos reach 7.0+ overall score.
 | 3 | BP-3 | Linear history | Universal | DONE 2026-05-04 |
 | 4 | BP-4 | Required signatures | Universal | DONE 2026-05-04 |
 | 5 | BP-5 | Enforce admins + status checks | Universal | DONE 2026-05-04 |
-| 6 | BP-6 | PR reviews = 0 (solo-dev exception) | Universal | pending |
+| 6 | BP-6 | PR reviews = 0 (solo-dev exception) | Universal | DONE 2026-05-04 |
 | 7 | WF-1 | REUSE compliance | Universal | pending |
 | 8 | WF-2 | Dependabot | Universal | pending |
 | 9 | WF-3 | Security analysis | Universal | pending |
