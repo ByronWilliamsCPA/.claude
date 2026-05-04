@@ -177,10 +177,12 @@ before enabling linear history or existing PR merges will fail.
 
 ### Sprint BP-4: Require Signed Commits
 
+**Status: COMPLETE (2026-05-04). 43/44 PASS. homelab-agent-configs skipped (no main branch).**
+
 **Tier:** Universal (44 repos)
 **Check:** `gh api repos/ORG/REPO/branches/main/protection/required_signatures | jq '.enabled'`
 **Target state:** `true`
-**Remediation:** `gh api -X POST repos/ORG/REPO/branches/main/protection/required_signatures`
+**Remediation used:** `gh api -X POST repos/ORG/REPO/branches/BRANCH/protection/required_signatures` (no body required).
 **Note:** Contributors must have GPG or SSH signing configured locally. Flag any repos
 where the contributor list is broader than the primary account.
 
@@ -464,7 +466,7 @@ Target: all public repos reach 7.0+ overall score.
 | 1 | BP-1 | No force pushes | Universal | DONE 2026-05-04 |
 | 2 | BP-2 | No branch deletions | Universal | DONE 2026-05-04 |
 | 3 | BP-3 | Linear history | Universal | DONE 2026-05-04 |
-| 4 | BP-4 | Required signatures | Universal | pending |
+| 4 | BP-4 | Required signatures | Universal | DONE 2026-05-04 |
 | 5 | BP-5 | Enforce admins + status checks | Universal | pending |
 | 6 | BP-6 | PR reviews = 0 (solo-dev exception) | Universal | pending |
 | 7 | WF-1 | REUSE compliance | Universal | pending |
