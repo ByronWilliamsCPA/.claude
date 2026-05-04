@@ -146,57 +146,98 @@ have no branch protection configured; force pushes and deletions are permitted b
 | Org | Repo | BP-1 (fp) | BP-2 (del) | BP-3 (linear) | BP-4 (sigs) | BP-5 (adm+chk) | BP-6 (rev=0) | Pass/6 |
 |---|---|---|---|---|---|---|---|---|
 | BW | `.claude` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | **6/6** |
-| BW | `.github` | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | 4/6 |
-| BW | `audio-processor` | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | 5/6 |
-| BW | `cookiecutter-python-template` | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | 4/6 |
-| BW | `cookiecutter-template-sample` | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | 4/6 |
-| BW | `DeQA-Doc` | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | 4/6 |
-| BW | `fragrance-rater` | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | 4/6 |
-| BW | `gleif` | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | 4/6 |
+| BW | `.github` | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | 5/6 |
+| BW | `audio-processor` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | **6/6** |
+| BW | `cookiecutter-python-template` | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | 5/6 |
+| BW | `cookiecutter-template-sample` | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | 5/6 |
+| BW | `DeQA-Doc` | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | 5/6 |
+| BW | `fragrance-rater` | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | 5/6 |
+| BW | `gleif` | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | 5/6 |
 | BW | `homelab-infra` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | **6/6** |
-| BW | `llc-manager` | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | 5/6 |
+| BW | `llc-manager` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | **6/6** |
 | BW | `maester-tests` | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | 5/6 |
-| BW | `python-libs` | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | 4/6 |
-| BW | `rag-processor` | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | 5/6 |
-| BW | `reference-library` | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | 4/6 |
-| BW | `taxdome` | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | 4/6 |
-| BW | `template-sample` | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | 4/6 |
-| BW | `xero-crypto` | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | 4/6 |
-| W | `.claude` | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | 4/6 |
-| W | `backpacking` | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | 4/6 |
-| W | `CR-10-` | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | 4/6 |
-| W | `dart-frog-paludarium` | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | 4/6 |
-| W | `data_ingestor` | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | 4/6 |
-| W | `dna` | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | 4/6 |
-| W | `exercise-competition` | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | 4/6 |
-| W | `family_office` | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | 4/6 |
-| W | `FISProject` | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | 4/6 |
-| W | `GCS` | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | 4/6 |
+| BW | `python-libs` | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | 5/6 |
+| BW | `rag-processor` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | **6/6** |
+| BW | `reference-library` | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | 5/6 |
+| BW | `taxdome` | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | 5/6 |
+| BW | `template-sample` | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | 5/6 |
+| BW | `xero-crypto` | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | 5/6 |
+| W | `.claude` | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | 5/6 |
+| W | `backpacking` | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | 5/6 |
+| W | `CR-10-` | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | 5/6 |
+| W | `dart-frog-paludarium` | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | 5/6 |
+| W | `data_ingestor` | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | 5/6 |
+| W | `dna` | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | 5/6 |
+| W | `exercise-competition` | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | 5/6 |
+| W | `family_office` | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | 5/6 |
+| W | `FISProject` | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | 5/6 |
+| W | `GCS` | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | 5/6 |
 | W | `homelab-agent-configs` | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | 0/6 |
-| W | `image-generation` | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | 5/6 |
+| W | `image-generation` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | **6/6** |
 | W | `image-preprocessing-detector` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | **6/6** |
-| W | `klipper-octoprint-configs` | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | 4/6 |
-| W | `ledgerbase` | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | 4/6 |
-| W | `library` | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | 4/6 |
-| W | `LifeSphere` | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | 4/6 |
-| W | `magg` | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | 4/6 |
-| W | `monte_carlo` | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | 4/6 |
-| W | `OPNS` | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | 4/6 |
-| W | `OPNSense` | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | 4/6 |
-| W | `pp-security-master` | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | 4/6 |
-| W | `PromptCraft` | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | 4/6 |
-| W | `superslicer-configs` | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | 4/6 |
-| W | `testing` | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | 4/6 |
-| W | `xero-practice-management` | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | 4/6 |
-| W | `zen-mcp-server` | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | 4/6 |
-| | **PASS count** | **43/44** | **43/44** | **43/44** | **43/44** | **4/44** | **7/44** | |
+| W | `klipper-octoprint-configs` | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | 5/6 |
+| W | `ledgerbase` | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | 5/6 |
+| W | `library` | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | 5/6 |
+| W | `LifeSphere` | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | 5/6 |
+| W | `magg` | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | 5/6 |
+| W | `monte_carlo` | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | 5/6 |
+| W | `OPNS` | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | 5/6 |
+| W | `OPNSense` | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | 5/6 |
+| W | `pp-security-master` | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | 5/6 |
+| W | `PromptCraft` | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | 5/6 |
+| W | `superslicer-configs` | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | 5/6 |
+| W | `testing` | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | 5/6 |
+| W | `xero-practice-management` | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | 5/6 |
+| W | `zen-mcp-server` | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | 5/6 |
+| | **PASS count** | **43/44** | **43/44** | **43/44** | **43/44** | **43/44** | **7/44** | |
 
-**BP-5 status check names** (for repos with at least one check):
-- BW/.claude: CI Gate, Security Gate Validation, Dependency & Standards Validation, Check REUSE Compliance
-- BW/.github: Analyze (GitHub Actions reusable)
-- BW/gleif: CI Gate
-- BW/homelab-infra: Security Gate, Dep&Stds, CI Gate, REUSE (4 checks)
-- BW/llc-manager: Validation Summary
+**BP-5 status check names** (registered contexts per repo):
+
+| Repo | Registered check | Strategy |
+|---|---|---|
+| BW/.claude | CI Gate, Security Gate Validation, Dependency & Standards Validation, Check REUSE Compliance | pre-existing |
+| BW/.github | Analyze (actions) | pre-existing |
+| BW/audio-processor | ci | register-ci-job |
+| BW/cookiecutter-python-template | sonarqube-quality-gate | register-ci-job |
+| BW/cookiecutter-template-sample | ci-summary | register-ci-job |
+| BW/DeQA-Doc | quality | register-ci-job |
+| BW/fragrance-rater | ci | register-ci-job |
+| BW/gleif | CI Gate | pre-existing |
+| BW/homelab-infra | Security Gate Validation, Dependency & Standards Validation, CI Gate / CI Gate, Check REUSE Compliance | pre-existing |
+| BW/llc-manager | Validation Summary | pre-existing |
+| BW/maester-tests | Check REUSE Compliance | pre-existing |
+| BW/python-libs | coverage | register-ci-job |
+| BW/rag-processor | ci | register-ci-job |
+| BW/reference-library | repo-health | placeholder-workflow |
+| BW/taxdome | repo-health | placeholder-workflow |
+| BW/template-sample | ci | register-ci-job |
+| BW/xero-crypto | ci-gate | register-ci-job |
+| W/.claude | repo-health | placeholder-workflow |
+| W/backpacking | repo-health | placeholder-workflow |
+| W/CR-10- | repo-health | placeholder-workflow |
+| W/dart-frog-paludarium | repo-health | placeholder-workflow |
+| W/data_ingestor | ci-gate | register-ci-job |
+| W/dna | ci | register-ci-job |
+| W/exercise-competition | Test (Python 3.12), Frontend (Node 22) | pre-existing |
+| W/family_office | repo-health | placeholder-workflow |
+| W/FISProject | repo-health | placeholder-workflow |
+| W/GCS | repo-health | placeholder-workflow |
+| W/image-generation | repo-health | placeholder-workflow |
+| W/image-preprocessing-detector | CI Gate, Security Gate Validation, Check REUSE Compliance, Dependency & Standards Validation | pre-existing |
+| W/klipper-octoprint-configs | repo-health | placeholder-workflow |
+| W/ledgerbase | repo-health | placeholder-workflow |
+| W/library | repo-health | placeholder-workflow |
+| W/LifeSphere | repo-health | placeholder-workflow |
+| W/magg | repo-health | placeholder-workflow |
+| W/monte_carlo | test | register-ci-job |
+| W/OPNS | repo-health | placeholder-workflow |
+| W/OPNSense | repo-health | placeholder-workflow |
+| W/pp-security-master | ci-success | register-ci-job |
+| W/PromptCraft | ci-success | register-ci-job |
+| W/superslicer-configs | repo-health | placeholder-workflow |
+| W/testing | repo-health | placeholder-workflow |
+| W/xero-practice-management | repo-health | placeholder-workflow |
+| W/zen-mcp-server | repo-health | placeholder-workflow |
 - BW/maester-tests: Check REUSE Compliance
 - W/exercise-competition: Test (Python 3.12), Frontend (Node 22)
 - W/image-preprocessing-detector: CI Gate, Security Gate, REUSE, Dep&Stds
@@ -323,7 +364,7 @@ for evaluation in Sprint EV-1 (ByronWilliamsCPA) and Sprint EV-2 (williaby).
 | BP-2 (deletions) | **COMPLETE** 2026-05-04; 43/44 PASS (same repos as BP-1; covered by same PUT call) | 0/44 remaining |
 | BP-3 (linear) | **COMPLETE** 2026-05-04; 43/44 PASS (homelab-agent-configs skipped, no main branch) | 0/44 remaining |
 | BP-4 (signatures) | **COMPLETE** 2026-05-04; 43/44 PASS (homelab-agent-configs skipped, no main branch) | 0/44 remaining |
-| BP-5 (admin+checks) | All except BW/.claude, homelab-infra, maester, W/image-preproc | 40/44 |
+| BP-5 (admin+checks) | **COMPLETE** 2026-05-04 | 0/44 |
 | BP-6 (reviews=0) | All except BW/.claude, audio-proc, homelab-infra, llc-mgr, rag-proc, W/image-gen, image-preproc | 37/44 |
 | WF-1 (reuse.yml) | 33/44 universal failing | 33/44 |
 | WF-2 (dependabot) | 31/44 universal failing | 31/44 |
@@ -351,7 +392,7 @@ Updated after each sprint completes. Dates indicate when the item was remediated
 | Sprint BP-2 | COMPLETE | 2026-05-04 | Covered by BP-1 PUT payload (allow_deletions: false); 43/44 PASS |
 | Sprint BP-3 | COMPLETE | 2026-05-04 | 43/44 PASS; homelab-agent-configs skipped (no main branch) |
 | Sprint BP-4 | COMPLETE | 2026-05-04 | 43/44 PASS; homelab-agent-configs skipped (no main branch) |
-| Sprint BP-5 | pending | - | - |
+| Sprint BP-5 | COMPLETE | 2026-05-04 | 43/44 PASS; homelab-agent-configs skipped (no main branch) |
 | Sprint BP-6 | pending | - | - |
 | Sprint WF-1 | pending | - | - |
 | Sprint WF-2 | pending | - | - |

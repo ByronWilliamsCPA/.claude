@@ -190,14 +190,17 @@ where the contributor list is broader than the primary account.
 
 ### Sprint BP-5: Enforce Admins and Require Status Checks
 
+**Status: COMPLETE (2026-05-04). 43/44 PASS. homelab-agent-configs skipped (no main branch).**
+
 **Tier:** Universal (44 repos)
 **Goal:** No admin bypass; at least one required status check per repo.
 **Check:** `jq '.enforce_admins.enabled'` and `jq '.required_status_checks.contexts'`
 **Target state:** enforce admins = `true`; contexts = at minimum the repo's CI gate check name
-**Note:** The specific check name differs by repo type. Python repos require `CI Gate`.
-Non-Python repos without CI yet require adding a minimal `repo-health` workflow first.
-Document the status check name chosen per repo in the audit table.
-This sprint does NOT configure PR review counts; that is handled separately in BP-6.
+**Remediation used:** Three strategies based on pre-work categorization:
+- `use-existing` (4 repos): Already had contexts registered; GET+PUT with enforce_admins=true.
+- `register-ci-job` (14 repos): Parsed ci.yml job names; PUT with enforce_admins=true + job name as context.
+- `needs-placeholder-workflow` (21 repos): Created `repo-health.yml` via GitHub Contents API commit, then PUT protection.
+**Full check name table:** See audit file `docs/reference/github-workflow-audit.md` BP-5 section.
 
 ---
 
@@ -467,7 +470,7 @@ Target: all public repos reach 7.0+ overall score.
 | 2 | BP-2 | No branch deletions | Universal | DONE 2026-05-04 |
 | 3 | BP-3 | Linear history | Universal | DONE 2026-05-04 |
 | 4 | BP-4 | Required signatures | Universal | DONE 2026-05-04 |
-| 5 | BP-5 | Enforce admins + status checks | Universal | pending |
+| 5 | BP-5 | Enforce admins + status checks | Universal | DONE 2026-05-04 |
 | 6 | BP-6 | PR reviews = 0 (solo-dev exception) | Universal | pending |
 | 7 | WF-1 | REUSE compliance | Universal | pending |
 | 8 | WF-2 | Dependabot | Universal | pending |
