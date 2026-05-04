@@ -119,6 +119,10 @@
 * fix(tools): restore missing `import json` in `refresh_catalog_release_health.py` after urllib-to-requests refactor
 * fix(tools): guard `None` published_at in `refresh_catalog_release_health.py`; track error/no-release counts; align dry-run behaviour; add releaseHealth shape test
 * fix(gitignore): remove duplicate `docs/reference/github-repos.md` entry from root `.gitignore`
+* fix(renovate): replace invalid `pip_requirements`/`pip-compile` managers with `pep621` for
+  `pyproject.toml` + `uv.lock` tracking; correct `matchDepTypes` to `project.dependencies` and
+  `tool.uv.dev-dependencies`; replace non-functional `matchCategories: ["security"]` with
+  `matchJsonata` on `vulnerabilitySeverity` for CRITICAL/HIGH CVE prioritisation
 
 ## v0.13.0 (2026-04-21)
 ### Documentation
