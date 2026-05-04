@@ -146,50 +146,50 @@ have no branch protection configured; force pushes and deletions are permitted b
 | Org | Repo | BP-1 (fp) | BP-2 (del) | BP-3 (linear) | BP-4 (sigs) | BP-5 (adm+chk) | BP-6 (rev=0) | Pass/6 |
 |---|---|---|---|---|---|---|---|---|
 | BW | `.claude` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | **6/6** |
-| BW | `.github` | ✓ | ✓ | ✗ | ✓ | ✗ | ✗ | 3/6 |
+| BW | `.github` | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | 4/6 |
 | BW | `audio-processor` | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | 5/6 |
-| BW | `cookiecutter-python-template` | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | 2/6 |
-| BW | `cookiecutter-template-sample` | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | 2/6 |
-| BW | `DeQA-Doc` | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | 2/6 |
-| BW | `fragrance-rater` | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | 2/6 |
-| BW | `gleif` | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | 2/6 |
+| BW | `cookiecutter-python-template` | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ | 3/6 |
+| BW | `cookiecutter-template-sample` | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ | 3/6 |
+| BW | `DeQA-Doc` | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ | 3/6 |
+| BW | `fragrance-rater` | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ | 3/6 |
+| BW | `gleif` | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ | 3/6 |
 | BW | `homelab-infra` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | **6/6** |
-| BW | `llc-manager` | ✓ | ✓ | ✗ | ✗ | ✗ | ✓ | 3/6 |
+| BW | `llc-manager` | ✓ | ✓ | ✓ | ✗ | ✗ | ✓ | 4/6 |
 | BW | `maester-tests` | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | 5/6 |
-| BW | `python-libs` | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | 2/6 |
+| BW | `python-libs` | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ | 3/6 |
 | BW | `rag-processor` | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | 5/6 |
-| BW | `reference-library` | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | 2/6 |
-| BW | `taxdome` | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | 2/6 |
-| BW | `template-sample` | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | 2/6 |
-| BW | `xero-crypto` | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | 2/6 |
-| W | `.claude` | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | 2/6 |
-| W | `backpacking` | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | 2/6 |
-| W | `CR-10-` | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | 2/6 |
-| W | `dart-frog-paludarium` | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | 2/6 |
-| W | `data_ingestor` | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | 2/6 |
-| W | `dna` | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | 2/6 |
-| W | `exercise-competition` | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | 2/6 |
-| W | `family_office` | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | 2/6 |
-| W | `FISProject` | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | 2/6 |
-| W | `GCS` | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | 2/6 |
+| BW | `reference-library` | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ | 3/6 |
+| BW | `taxdome` | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ | 3/6 |
+| BW | `template-sample` | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ | 3/6 |
+| BW | `xero-crypto` | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ | 3/6 |
+| W | `.claude` | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ | 3/6 |
+| W | `backpacking` | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ | 3/6 |
+| W | `CR-10-` | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ | 3/6 |
+| W | `dart-frog-paludarium` | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ | 3/6 |
+| W | `data_ingestor` | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ | 3/6 |
+| W | `dna` | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ | 3/6 |
+| W | `exercise-competition` | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ | 3/6 |
+| W | `family_office` | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ | 3/6 |
+| W | `FISProject` | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ | 3/6 |
+| W | `GCS` | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ | 3/6 |
 | W | `homelab-agent-configs` | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | 0/6 |
-| W | `image-generation` | ✓ | ✓ | ✗ | ✓ | ✗ | ✓ | 4/6 |
+| W | `image-generation` | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | 5/6 |
 | W | `image-preprocessing-detector` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | **6/6** |
-| W | `klipper-octoprint-configs` | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | 2/6 |
-| W | `ledgerbase` | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | 2/6 |
-| W | `library` | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | 2/6 |
-| W | `LifeSphere` | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | 2/6 |
-| W | `magg` | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | 2/6 |
-| W | `monte_carlo` | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | 2/6 |
-| W | `OPNS` | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | 2/6 |
-| W | `OPNSense` | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | 2/6 |
-| W | `pp-security-master` | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | 2/6 |
-| W | `PromptCraft` | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | 2/6 |
-| W | `superslicer-configs` | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | 2/6 |
-| W | `testing` | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | 2/6 |
-| W | `xero-practice-management` | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | 2/6 |
-| W | `zen-mcp-server` | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | 2/6 |
-| | **PASS count** | **43/44** | **43/44** | **6/44** | **8/44** | **4/44** | **7/44** | |
+| W | `klipper-octoprint-configs` | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ | 3/6 |
+| W | `ledgerbase` | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ | 3/6 |
+| W | `library` | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ | 3/6 |
+| W | `LifeSphere` | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ | 3/6 |
+| W | `magg` | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ | 3/6 |
+| W | `monte_carlo` | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ | 3/6 |
+| W | `OPNS` | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ | 3/6 |
+| W | `OPNSense` | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ | 3/6 |
+| W | `pp-security-master` | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ | 3/6 |
+| W | `PromptCraft` | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ | 3/6 |
+| W | `superslicer-configs` | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ | 3/6 |
+| W | `testing` | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ | 3/6 |
+| W | `xero-practice-management` | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ | 3/6 |
+| W | `zen-mcp-server` | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ | 3/6 |
+| | **PASS count** | **43/44** | **43/44** | **43/44** | **8/44** | **4/44** | **7/44** | |
 
 **BP-5 status check names** (for repos with at least one check):
 - BW/.claude: CI Gate, Security Gate Validation, Dependency & Standards Validation, Check REUSE Compliance
@@ -321,7 +321,7 @@ for evaluation in Sprint EV-1 (ByronWilliamsCPA) and Sprint EV-2 (williaby).
 |---|---|---|
 | BP-1 (force pushes) | **COMPLETE** 2026-05-04; 43/44 PASS (homelab-agent-configs skipped, no main branch) | 0/44 remaining |
 | BP-2 (deletions) | **COMPLETE** 2026-05-04; 43/44 PASS (same repos as BP-1; covered by same PUT call) | 0/44 remaining |
-| BP-3 (linear) | All except BW/.claude, audio-proc, homelab-infra, maester, rag-proc, W/image-preproc | 38/44 |
+| BP-3 (linear) | **COMPLETE** 2026-05-04; 43/44 PASS (homelab-agent-configs skipped, no main branch) | 0/44 remaining |
 | BP-4 (signatures) | All except BW/.claude, .github, audio-proc, homelab-infra, maester, rag-proc, W/image-gen, image-preproc | 36/44 |
 | BP-5 (admin+checks) | All except BW/.claude, homelab-infra, maester, W/image-preproc | 40/44 |
 | BP-6 (reviews=0) | All except BW/.claude, audio-proc, homelab-infra, llc-mgr, rag-proc, W/image-gen, image-preproc | 37/44 |
@@ -349,7 +349,7 @@ Updated after each sprint completes. Dates indicate when the item was remediated
 | Sprint 0 | COMPLETE | 2026-05-04 | This document |
 | Sprint BP-1 | COMPLETE | 2026-05-04 | 43/44 PASS; homelab-agent-configs skipped (no main branch) |
 | Sprint BP-2 | COMPLETE | 2026-05-04 | Covered by BP-1 PUT payload (allow_deletions: false); 43/44 PASS |
-| Sprint BP-3 | pending | - | - |
+| Sprint BP-3 | COMPLETE | 2026-05-04 | 43/44 PASS; homelab-agent-configs skipped (no main branch) |
 | Sprint BP-4 | pending | - | - |
 | Sprint BP-5 | pending | - | - |
 | Sprint BP-6 | pending | - | - |
