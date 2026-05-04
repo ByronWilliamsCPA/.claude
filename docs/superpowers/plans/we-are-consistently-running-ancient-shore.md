@@ -164,10 +164,12 @@ No separate sprint execution required.
 
 ### Sprint BP-3: Require Linear History
 
+**Status: COMPLETE (2026-05-04). 43/44 PASS. homelab-agent-configs skipped (no main branch).**
+
 **Tier:** Universal (44 repos)
 **Check:** `gh api ... | jq '.required_linear_history.enabled'`
 **Target state:** `true`
-**Remediation:** PATCH `required_linear_history=true`
+**Remediation used:** GET current protection + PUT with required_linear_history=true added. Script at /tmp/bp3_remediate.py.
 **Note:** Repos with merge commits in recent history need a squash-merge policy set
 before enabling linear history or existing PR merges will fail.
 
@@ -461,7 +463,7 @@ Target: all public repos reach 7.0+ overall score.
 | 0 | Inventory | Full audit + classification | All | DONE 2026-05-04 |
 | 1 | BP-1 | No force pushes | Universal | DONE 2026-05-04 |
 | 2 | BP-2 | No branch deletions | Universal | DONE 2026-05-04 |
-| 3 | BP-3 | Linear history | Universal | pending |
+| 3 | BP-3 | Linear history | Universal | DONE 2026-05-04 |
 | 4 | BP-4 | Required signatures | Universal | pending |
 | 5 | BP-5 | Enforce admins + status checks | Universal | pending |
 | 6 | BP-6 | PR reviews = 0 (solo-dev exception) | Universal | pending |
