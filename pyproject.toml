@@ -111,7 +111,7 @@ dev = [
     # Development Tools
     "interrogate>=1.7.0",
     "jupyter>=1.0.0",
-    "ipykernel>=6.25.0",
+    "ipykernel>=4.8.2",
     "nox>=2024.10.16",  # Fixed: was 2025 (typo)
     "nox-uv>=0.6.3",    # Fixed: max available version is 0.6.3, not 1.0.0
     # Google Cloud Assured OSS (optional - uncomment if using Assured OSS)
