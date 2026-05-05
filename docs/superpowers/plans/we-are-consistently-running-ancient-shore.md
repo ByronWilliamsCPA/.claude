@@ -370,45 +370,53 @@ deployed alongside it (old file not removed -- evaluate in EV-2 sprint).
 
 ### Sprint WF-10: SonarCloud Analysis
 
-**Status: COMPLETE (mostly blocked) (2026-05-04). 10/32 PASS. 1 deployed this sprint.**
+**Status: COMPLETE (hybrid architecture decided 2026-05-05). BW repos use CI analysis; williaby repos use Automatic Analysis.**
 
-**Tier:** Python repos only
-**Template:** `ByronWilliamsCPA/.claude/.github/workflows/sonarcloud.yml`
-**Prerequisite:** Each repo must be registered in the correct SonarCloud organization
-(GitHub org determines SonarCloud org -- not configurable per-repo). SONAR_TOKEN is
-set as an org-level secret in both GitHub orgs; repo-level overrides must be removed
-unless they point to the correct SonarCloud org.
+**Tier:** Python repos only (BW: CI analysis; williaby: Automatic Analysis -- see architecture below)
+**Template:** `ByronWilliamsCPA/.claude/.github/workflows/sonarcloud.yml` (BW repos only)
+
+**Analysis architecture (permanent, decided 2026-05-05):**
+
+| Org | Method | Coverage | Token |
+|---|---|---|---|
+| `ByronWilliamsCPA` | CI analysis (`sonarcloud.yml`) | Yes | Org-level `SONAR_TOKEN` |
+| `williaby` | Automatic Analysis (GitHub App) | No | None (App-managed) |
+
+Rationale: `williaby` is a personal GitHub account with no account-level secrets. The
+SonarCloud GitHub App's Automatic Analysis provides static analysis (bugs, smells,
+security hotspots) across all `williaby` repos with zero per-repo configuration. Coverage
+data is not available via Automatic Analysis -- this is an accepted tradeoff.
+
 **Org alignment rule (CI-003b in standards-manifest.yaml):** ByronWilliamsCPA GitHub
-repos must use `sonar.organization=byronwilliamscpa`; williaby GitHub repos must use
-`sonar.organization=williaby`. Value must be lowercase. A repo-level SONAR_TOKEN that
-papers over a wrong-org registration is still a FAIL.
-**Root cause of current failures (discovered 2026-05-04):** Scans fail with HTTP 403
-on `/analysis/jres` before any code is analyzed. The scanner sends the org key to
-SonarCloud's JRE provisioning endpoint to verify membership -- if the org key doesn't
-match the token's org, the endpoint rejects it.
-**Note:** SonarCloud MCP servers run on ports 8090 (ByronWilliamsCPA) and 8091 (williaby);
-use them to verify project keys and quality gate status.
-**Remediation used:** SonarCloud project list queried via MCP (ByronWilliamsCPA org: 13
-projects registered). SONAR_TOKEN presence checked via `gh secret list`. Only 1 repo
-met both prerequisites and was missing sonarcloud.yml: williaby/monte_carlo.
-**Deployed to (1 repo):** williaby/monte_carlo (SONAR_TOKEN set 2026-04-05)
-**Blocked (22 repos):** Most repos lack SonarCloud registration and/or correct org alignment.
-**Known org mismatches requiring remediation:**
-- `fragrance-rater` (BW): `sonar.organization=williaby` -- wrong org; fix to `byronwilliamscpa`
-- `rag-processor` (BW): `sonar.organization=williaby` -- wrong org; fix to `byronwilliamscpa`
-- `python-libs` (BW): `sonar.organization=ByronWilliamsCPA` -- wrong case; fix to `byronwilliamscpa`
-- `template-sample` (BW): `sonar.organization=ByronWilliamsCPA` -- wrong case; fix to `byronwilliamscpa`
-- `audio-processor` (BW): `sonar.organization=williaby` with repo-level token for williaby -- masking
-  misregistration; migrate project to byronwilliamscpa SonarCloud org, remove repo-level token
-- `llc-manager` (BW): same as audio-processor
-**Action items before re-running WF-10:**
-1. Fix `sonar.organization` and `sonar-project.properties` in failing BW repos (fragrance-rater,
-   rag-processor, python-libs, template-sample) to use `byronwilliamscpa` (lowercase)
-2. Migrate audio-processor and llc-manager SonarCloud projects from williaby to byronwilliamscpa
-   org; remove repo-level SONAR_TOKEN from both after migration
-3. Register remaining Python repos in the correct SonarCloud org (BW repos in byronwilliamscpa,
-   W repos in williaby)
-4. Verify sonar.projectKey matches the registered project key for each repo (case-sensitive)
+repos must use `sonar.organization=byronwilliamscpa`; williaby repos must use
+`sonar.organization=williaby`. Value must be lowercase.
+
+**Root cause of prior BW failures (resolved 2026-05-04):**
+1. BW org-level SONAR_TOKEN was invalid -- RESOLVED: new token generated and confirmed
+   working via fragrance-rater full scan pass.
+2. sonar.projectKey used underscores instead of hyphens in 3 repos -- RESOLVED: patched
+   via /tmp/wf10_fix_keys.py (fragrance-rater, rag-processor, template-sample).
+3. audio-processor and llc-manager org mismatch -- DEFERRED.
+
+**williaby deployment history:**
+- `sonarcloud.yml` deployed then REMOVED from pp-security-master, PromptCraft, testing
+  (2026-05-05) -- Automatic Analysis conflict; CI analysis approach abandoned for williaby.
+- `zen-mcp-server`: CI analysis kept (PASS confirmed, no Automatic Analysis conflict).
+- `monte_carlo`: CI analysis in place since WF-10 initial sprint.
+
+**BW org mismatches resolved:**
+- `fragrance-rater`: fixed `sonar.organization` and `sonar.projectKey` (2026-05-04)
+- `rag-processor`: fixed `sonar.organization` and `sonar.projectKey` (2026-05-04)
+- `python-libs`: fixed `sonar.organization` wrong case (2026-05-04)
+- `template-sample`: fixed `sonar.organization` and `sonar.projectKey` (2026-05-04)
+
+**Remaining action items:**
+1. (Bug 3) Fix audio-processor and llc-manager: change `sonar.organization` to `byronwilliamscpa`,
+   migrate SonarCloud projects from williaby to byronwilliamscpa org, remove repo-level SONAR_TOKEN
+2. Register remaining BW Python repos in `byronwilliamscpa` SonarCloud org and deploy sonarcloud.yml
+3. Disable Automatic Analysis for `ByronWilliamsCPA_template-sample` in SonarCloud dashboard
+   (manual step -- cannot be done via API)
+4. Verify sonar.projectKey uses hyphens for each BW repo being registered
 
 ---
 
@@ -720,22 +728,44 @@ reference-library (BW); family_office, FISProject, xero-practice-management (W)
 
 ### Sprint WF-2r: Renovate Migration (replaces Dependabot)
 
+**Status: COMPLETE (2026-05-05). 36/44 repos fully migrated. 6 BW repos pending onboarding PRs. 2 excluded (Renovate ignored list).**
+
 **Tier:** Universal (all 44 repos)
 **Goal:** Replace `dependabot.yml` with Renovate as the dependency update manager across all repos.
-**Prerequisite:** Mend Renovate GitHub App installed on both ByronWilliamsCPA and williaby orgs.
+**Implementation:** Self-hosted Renovate Docker container on .209, NOT the Mend Renovate GitHub App.
+Managed from `/home/byron/dev/homelab-infra/services/renovate`.
+- Manual run: `make run` (from that directory, SSH to .209)
+- Single-repo run: `make run-single REPO=owner/repo`
+- Config: `/home/byron/dev/homelab-infra/services/renovate/config/config.json`
 
-**Migration steps:**
-1. Create org-level `renovate.json` in `ByronWilliamsCPA/.github` and `williaby/.github` with shared base config.
-2. Let Renovate open onboarding PRs per repo -- it auto-detects ecosystems (pip, docker, github-actions, etc.).
-3. Merge each onboarding PR after reviewing Renovate's proposed schedule and grouping config.
-4. After Renovate is confirmed active per repo, remove or empty `dependabot.yml` (or keep the `github-actions` entry if you prefer Dependabot for Actions while Renovate handles packages).
+**Key config settings:**
+- `RENOVATE_AUTODISCOVER=true`, `autodiscoverFilter: ["ByronWilliamsCPA/*", "williaby/*"]`
+- `RENOVATE_ONBOARDING=true` -- creates "Configure Renovate" PRs for repos without renovate.json
+- `RENOVATE_IGNORED_REPOS=["williaby/dart-frog-paludarium","williaby/homelab-agent-configs"]`
+- Managers: uv, pep621, poetry, pip_requirements, pip-compile, github-actions, docker-compose, dockerfile, pre-commit, terraform, ansible, ansible-galaxy, npm, regex
+- CVE automerge: Critical/High immediate, Medium 2-day gate, Low 7-day gate
+- Patch automerge: Python patches (7+ days stable), GitHub Actions minor/patch, pre-commit minor/patch
 
-**Key Renovate advantages over Dependabot:**
-- Centralized org-level config
-- Update grouping (e.g., batch all minor/patch updates in one PR)
-- Configurable automerge for low-risk updates (patch-level, non-breaking)
-- Better monorepo support
-- More package managers supported
+**Completed (2026-05-05):**
+- Confirmed Renovate had already created renovate.json in all 27 williaby repos and 11 BW repos
+- Removed dependabot.yml from 11 BW repos (homelab-infra, template-sample, rag-processor,
+  fragrance-rater, python-libs, cookiecutter-template-sample, xero-crypto, maester-tests,
+  llc-manager, audio-processor, .claude) -- all PASS
+- Removed dependabot.yml from 25 williaby repos (all except dart-frog-paludarium and
+  homelab-agent-configs) -- all PASS
+- Confirmed Dependabot automated security fixes already disabled on all repos checked
+- Added CI-020 (renovate.json present) and CI-021 (dependabot.yml absent when Renovate active)
+  to standards manifest to prevent future drift
+
+**Remaining actions:**
+1. SSH to .209, run `make run` to let Renovate open onboarding PRs for 6 BW repos without
+   renovate.json: gleif, DeQA-Doc, taxdome, reference-library, cookiecutter-python-template, .github
+2. After onboarding PRs merge, remove dependabot.yml from those 6 repos
+3. dart-frog-paludarium and homelab-agent-configs: CI-020/CI-021 exceptions (Renovate ignored list)
+
+**Compliance checks added:**
+- CI-020: renovate.json present at repo root (important; override_eligible: true)
+- CI-021: dependabot.yml absent when renovate.json present (important; override_eligible: false)
 
 ---
 
@@ -824,14 +854,14 @@ Target: all public repos reach 7.0+ overall score.
 | 13 | WF-7 | OpenSSF Scorecard | Public | DONE 2026-05-04 |
 | 14 | WF-8 | CI gate | Python | DONE 2026-05-04 (partial: 25/32; 5 blocked on pyproject.toml) |
 | 15 | WF-9 | Python compatibility | Python | DONE 2026-05-04 (partial: 26/32; 5 blocked on pyproject.toml) |
-| 16 | WF-10 | SonarCloud | Python | DONE 2026-05-04 (mostly blocked: 10/32; 1 deployed; 22 need SonarCloud registration + SONAR_TOKEN) |
+| 16 | WF-10 | SonarCloud | Python | DONE 2026-05-05 (hybrid: BW=CI analysis with sonarcloud.yml; williaby=Automatic Analysis via GitHub App; BW remaining action: register repos + disable Auto Analysis on template-sample; Bug 3 deferred) |
 | 17 | WF-11 | Coverage (Qlty) | Python | DONE 2026-05-04 (partial: 25/32; template rearchitected as workflow_run subscriber; 5 blocked on pyproject.toml) |
 | 18 | WF-12 | Semantic release | Published | DEFERRED (partial: 15/16 PASS; exercise-competition needs python-semantic-release setup from scratch; magg set to N/A; zen-mcp-server resolved by EV-2 rename) |
 | 19 | WF-13 | Release signing (SLSA) | Published | DONE 2026-05-04 -- standard revised by EV-1 to slsa-provenance.yml; 7 deployed; 16/16 PASS (100%) |
 | 20 | WF-14 | MkDocs docs | Has-Docs | DONE 2026-05-04 (15/15; 3 deployed to gleif, monte_carlo, PromptCraft) |
 | 21 | EV-1 | Non-standard eval (ByronWilliamsCPA) | All | DONE 2026-05-04 -- 4 new WF sprints added (WF-15 to WF-18); WF-13 standard revised; WF-11 unblocked |
 | 22 | EV-2 | Non-standard eval (williaby) | All | DONE 2026-05-04 -- compatibility.yml removed; semantic-release.yml renamed to release.yml; magg W12/W13 N/A; WF-13 9/16 PASS under revised standard (before WF-13 sprint) |
-| 23 | WF-2r | Renovate migration (replaces Dependabot) | Universal | pending |
+| 23 | WF-2r | Renovate migration (replaces Dependabot) | Universal | DONE 2026-05-05 -- 36/44 repos fully migrated (11 BW + 25 W); 6 BW repos pending onboarding PRs; 2 excluded (Renovate ignored list); CI-020/CI-021 added to standards manifest |
 | 24 | WF-15 | Cruft template validation | Cruft-tracked | DONE 2026-05-04 -- 22/22 PASS (100%); 12 deployed; hashFiles() conditional for orphaned-files check |
 | 25 | WF-16 | FIPS compatibility | Python/crypto | DONE 2026-05-04 -- 20/20 applicable PASS (100%); 11 W repos deployed; 9 BW already had it; 5 BW N/A (no check_fips_compatibility.py); command injection fixed in canonical template |
 | 26 | WF-17 | Mutation testing | Python | DONE 2026-05-04 -- 10/10 applicable PASS (100%); all pre-existing; canonical template written; remaining W Python repos N/A pending 80%+ coverage confirmation |

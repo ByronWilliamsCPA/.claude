@@ -1,6 +1,6 @@
 # docs/standards-manifest.yaml
 version: "1.0"
-last_updated: "2026-05-04"
+last_updated: "2026-05-05"
 
 # verify field is a hint to the domain agent, not executable DSL.
 # Agents interpret it using their own tools (Grep, Read, Glob, Bash).
@@ -320,8 +320,12 @@ checks:
       or sonar-project.properties is absent when sonarcloud.yml is present.
       Known failure pattern: BW repos with sonar.organization=williaby cause 403 on
       /analysis/jres because the org-level SONAR_TOKEN is scoped to byronwilliamscpa.
-      Repos that PASS via a repo-level SONAR_TOKEN pointing at the wrong SonarCloud org
-      are also a FAIL -- the token is masking misregistration and must be corrected.
+      Token smell rule (ByronWilliamsCPA only): BW repos that PASS via a repo-level
+      SONAR_TOKEN pointing at the wrong SonarCloud org are also a FAIL -- the token
+      is masking misregistration. This smell does NOT apply to williaby repos.
+      williaby token rule: williaby is a personal GitHub account with no account-level
+      secrets. Each williaby repo using SonarCloud MUST have a repo-level SONAR_TOKEN
+      set individually. This is correct and expected, not a smell.
     override_eligible: false
 
   - id: CI-004
@@ -441,6 +445,28 @@ checks:
     description: "PyPI publish step in release.yml uses attestations: true (supply chain integrity)"
     verify: "content_present: .github/workflows/release.yml, attestations: true"
     override_eligible: true
+
+  - id: CI-020
+    domain: ci
+    severity: important
+    description: "renovate.json present at repo root (Renovate is the org-standard dependency manager; replaces dependabot.yml across all 44 repos as of 2026-05-05)"
+    verify: "file_exists: renovate.json"
+    override_eligible: true
+    notes: >
+      Exceptions: dart-frog-paludarium and homelab-agent-configs (williaby) are in
+      RENOVATE_IGNORED_REPOS and may retain dependabot.yml as their only update manager.
+      Six BW repos (gleif, DeQA-Doc, taxdome, reference-library, cookiecutter-python-template,
+      .github) are pending Renovate onboarding PRs; CI-020 is N/A for them until merged.
+
+  - id: CI-021
+    domain: ci
+    severity: important
+    description: "dependabot.yml absent when renovate.json is present (running both creates duplicate update PRs and conflicts with Renovate's CVE automerge rules)"
+    verify: |
+      If renovate.json exists at repo root: FAIL if .github/dependabot.yml also exists.
+      If renovate.json does not exist: skip this check (use CI-020 for the renovate.json gap).
+      Exceptions: dart-frog-paludarium and homelab-agent-configs (Renovate ignored; may keep dependabot.yml).
+    override_eligible: false
 
   # ── Claude and Docs ──────────────────────────────────────────────────────────
 
