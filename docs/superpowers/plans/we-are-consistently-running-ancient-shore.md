@@ -374,22 +374,41 @@ deployed alongside it (old file not removed -- evaluate in EV-2 sprint).
 
 **Tier:** Python repos only
 **Template:** `ByronWilliamsCPA/.claude/.github/workflows/sonarcloud.yml`
-**Prerequisite:** Each repo must be registered in the SonarCloud organization and have
-a valid `SONAR_TOKEN` secret. Verify via SonarCloud dashboard before the sprint.
+**Prerequisite:** Each repo must be registered in the correct SonarCloud organization
+(GitHub org determines SonarCloud org -- not configurable per-repo). SONAR_TOKEN is
+set as an org-level secret in both GitHub orgs; repo-level overrides must be removed
+unless they point to the correct SonarCloud org.
+**Org alignment rule (CI-003b in standards-manifest.yaml):** ByronWilliamsCPA GitHub
+repos must use `sonar.organization=byronwilliamscpa`; williaby GitHub repos must use
+`sonar.organization=williaby`. Value must be lowercase. A repo-level SONAR_TOKEN that
+papers over a wrong-org registration is still a FAIL.
+**Root cause of current failures (discovered 2026-05-04):** Scans fail with HTTP 403
+on `/analysis/jres` before any code is analyzed. The scanner sends the org key to
+SonarCloud's JRE provisioning endpoint to verify membership -- if the org key doesn't
+match the token's org, the endpoint rejects it.
 **Note:** SonarCloud MCP servers run on ports 8090 (ByronWilliamsCPA) and 8091 (williaby);
 use them to verify project keys and quality gate status.
 **Remediation used:** SonarCloud project list queried via MCP (ByronWilliamsCPA org: 13
 projects registered). SONAR_TOKEN presence checked via `gh secret list`. Only 1 repo
 met both prerequisites and was missing sonarcloud.yml: williaby/monte_carlo.
 **Deployed to (1 repo):** williaby/monte_carlo (SONAR_TOKEN set 2026-04-05)
-**Blocked (22 repos):** Most repos lack SonarCloud registration and/or SONAR_TOKEN.
+**Blocked (22 repos):** Most repos lack SonarCloud registration and/or correct org alignment.
+**Known org mismatches requiring remediation:**
+- `fragrance-rater` (BW): `sonar.organization=williaby` -- wrong org; fix to `byronwilliamscpa`
+- `rag-processor` (BW): `sonar.organization=williaby` -- wrong org; fix to `byronwilliamscpa`
+- `python-libs` (BW): `sonar.organization=ByronWilliamsCPA` -- wrong case; fix to `byronwilliamscpa`
+- `template-sample` (BW): `sonar.organization=ByronWilliamsCPA` -- wrong case; fix to `byronwilliamscpa`
+- `audio-processor` (BW): `sonar.organization=williaby` with repo-level token for williaby -- masking
+  misregistration; migrate project to byronwilliamscpa SonarCloud org, remove repo-level token
+- `llc-manager` (BW): same as audio-processor
 **Action items before re-running WF-10:**
-1. Add SONAR_TOKEN to BW repos registered in SonarCloud: fragrance-rater, python-libs,
-   rag-processor, template-sample, cookiecutter-template-sample, maester-tests,
-   cookiecutter-python-template
-2. Register remaining Python repos in SonarCloud (ByronWilliamsCPA + williaby orgs)
-3. Add SONAR_TOKEN to W repos: dna, image-preprocessing-detector (have sonarcloud.yml
-   but broken scan), plus all newly registered repos
+1. Fix `sonar.organization` and `sonar-project.properties` in failing BW repos (fragrance-rater,
+   rag-processor, python-libs, template-sample) to use `byronwilliamscpa` (lowercase)
+2. Migrate audio-processor and llc-manager SonarCloud projects from williaby to byronwilliamscpa
+   org; remove repo-level SONAR_TOKEN from both after migration
+3. Register remaining Python repos in the correct SonarCloud org (BW repos in byronwilliamscpa,
+   W repos in williaby)
+4. Verify sonar.projectKey matches the registered project key for each repo (case-sensitive)
 
 ---
 
