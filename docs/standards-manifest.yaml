@@ -1,6 +1,6 @@
 # docs/standards-manifest.yaml
 version: "1.0"
-last_updated: "2026-05-03"
+last_updated: "2026-05-04"
 
 # verify field is a hint to the domain agent, not executable DSL.
 # Agents interpret it using their own tools (Grep, Read, Glob, Bash).
@@ -306,6 +306,23 @@ checks:
     description: "SonarCloud integration workflow present"
     verify: "file_exists: .github/workflows/sonarcloud.yml"
     override_eligible: true
+
+  - id: CI-003b
+    domain: ci
+    severity: critical
+    description: "sonar.organization matches the repo's GitHub org (ByronWilliamsCPA repos must use byronwilliamscpa; williaby repos must use williaby; value must be lowercase)"
+    verify: |
+      Check sonar-project.properties for sonar.organization. Determine the repo's GitHub org.
+      Expected value: byronwilliamscpa for ByronWilliamsCPA repos; williaby for williaby repos.
+      Also check sonarcloud.yml for any hardcoded -Dsonar.organization= args -- these override
+      sonar-project.properties and must match the same expected value.
+      FAIL if: value is wrong org, wrong case (e.g. ByronWilliamsCPA instead of byronwilliamscpa),
+      or sonar-project.properties is absent when sonarcloud.yml is present.
+      Known failure pattern: BW repos with sonar.organization=williaby cause 403 on
+      /analysis/jres because the org-level SONAR_TOKEN is scoped to byronwilliamscpa.
+      Repos that PASS via a repo-level SONAR_TOKEN pointing at the wrong SonarCloud org
+      are also a FAIL -- the token is masking misregistration and must be corrected.
+    override_eligible: false
 
   - id: CI-004
     domain: ci
