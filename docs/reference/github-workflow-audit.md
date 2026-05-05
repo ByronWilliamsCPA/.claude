@@ -34,8 +34,14 @@ Update this file after each remediation sprint completes.
 | Repos with BP-1+BP-2 PASS (after Sprint BP-1) | 43 | 98% |
 | Repos with WF-1 (reuse.yml) | 43 | 98% |
 | Repos with WF-2 (dependabot.yml) | 43 | 98% |
-| Repos with WF-3 (security-analysis.yml) | 15 | 34% |
-| Repos with WF-4 (pr-validation.yml) | 15 | 34% |
+| Repos with WF-3 (security-analysis.yml) | 43 | 98% |
+| Repos with WF-4 (pr-validation.yml) | 43 | 98% |
+| Repos with WF-5 (codeql.yml) - public only | 29 | 100% of public |
+| Repos with WF-6 (sbom.yml) - Python public only | 21 | 100% of Python public |
+| Repos with WF-7 (scorecard.yml) - public only | 28 | 100% of public |
+| Repos with WF-8 (ci.yml) - Python only | 25 | 78% of Python (5 blocked on missing pyproject.toml) |
+| Repos with WF-9 (python-compatibility.yml) - Python only | 26 | 81% of Python (5 blocked on missing pyproject.toml) |
+| Repos with WF-10 (sonarcloud.yml) - Python only | 10 | 31% of Python (blocked on SonarCloud registration + SONAR_TOKEN) |
 
 Gold standard (**ByronWilliamsCPA/.claude**): all 6 BP + all applicable WF pass.
 
@@ -260,58 +266,58 @@ Vertical bar `|` separates tier groups for readability.
 | Org | Repo | W1 | W2 | W3 | W4 | W5 | W6 | W7 | W8 | W9 | W10 | W11 | W12 | W13 | W14 | Pass |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | BW | `.claude` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | N | N | N | N | N | N | ✓ | **8/8** |
-| BW | `.github` | ✓ | ✗ |  ✓  | ✗ | ✗ | ✗ | ✗ | N | N | N | N | N | N | N | 1/7 |
-| BW | `audio-processor` | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✗ | ✓ | 11/14 |
-| BW | `cookiecutter-python-template` | ✓ | ✗ |  ✓  | ✗ | ✗ | ✗ | ✗ | N | N | N | N | N | N | N | 1/7 |
-| BW | `cookiecutter-template-sample` | ✓ | ✓ | ✓ | ✗ | ✗ | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ | ✓ | ✗ | ✓ | 8/14 |
-| BW | `DeQA-Doc` | ✓ | ✗ |  ✓  | ✗ | ✗ | ✗ | ✗ | ✓ | ✗ | ✗ | ✗ | N | N | N | 2/11 |
-| BW | `fragrance-rater` | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✗ | ✓ | 11/14 |
-| BW | `gleif` | ✓ | ✓ | ✓ | ✗ | ✓ | ✗ | ✓ | ✓ | ✗ | ✗ | ✗ | ✓ | ✗ | N | 7/13 |
-| BW | `homelab-infra` | ✓ | ✓ | ✓ | ✓ | N | N | N | ✓ | ✓ | ✗ | ✗ | ✓ | ✗ | ✓ | 8/11 |
-| BW | `llc-manager` | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✗ | ✓ | 11/14 |
-| BW | `maester-tests` | ✓ | ✓ | ✓ | ✓ | N | N | N | ✓ | ✓ | ✗ | ✗ | ✓ | ✗ | ✓ | 8/11 |
-| BW | `python-libs` | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✗ | ✓ | 11/14 |
-| BW | `rag-processor` | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✗ | ✓ | 11/14 |
-| BW | `reference-library` | ✓ | ✗ |  ✓  | ✗ | ✗ | ✗ | ✗ | N | N | N | N | N | N | N | 1/7 |
-| BW | `taxdome` | ✓ | ✗ |  ✓  | ✗ | N | N | N | ✗ | ✗ | ✗ | ✗ | N | N | N | 1/8 |
-| BW | `template-sample` | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ | ✓ | ✗ | ✓ | ✗ | ✓ | ✗ | ✓ | 10/14 |
-| BW | `xero-crypto` | ✓ | ✗ | ✓ | ✓ | N | N | N | ✓ | ✗ | ✗ | ✗ | N | N | N | 4/8 |
-| W | `.claude` | ✓ | ✗ |  ✓  | ✗ | ✗ | ✗ | ✗ | N | N | N | N | N | N | N | 1/7 |
-| W | `backpacking` | ✓ | ✗ |  ✓  | ✗ | ✗ | ✗ | ✗ | N | N | N | N | N | N | N | 1/7 |
-| W | `CR-10-` | ✓ | ✗ |  ✓  | ✗ | ✗ | ✗ | ✗ | N | N | N | N | N | N | N | 1/7 |
-| W | `dart-frog-paludarium` | ✓ | ✗ |  ✓  | ✗ | N | N | N | N | N | N | N | N | N | N | 1/4 |
-| W | `data_ingestor` | ✓ | ✗ | ✓ | ✓ | ✗ | ✗ | ✓ | ✓ | ✗ | ✗ | ✗ | ✓ | ✗ | N | 6/13 |
-| W | `dna` | ✓ | ✓ | ✓ | ✓ | N | N | N | ✓ | ✓ | ✓ | ✗ | ✓ | ✗ | ✓ | 9/11 |
-| W | `exercise-competition` | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | N | 8/13 |
-| W | `family_office` | ✓ | ✗ |  ✓  | ✗ | N | N | N | ✗ | ✗ | ✗ | ✗ | N | N | N | 1/8 |
-| W | `FISProject` | ✓ | ✗ |  ✓  | ✗ | N | N | N | ✗ | ✗ | ✗ | ✗ | N | N | N | 1/8 |
-| W | `GCS` | ✓ | ✗ |  ✓  | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | N | N | N | 1/11 |
+| BW | `.github` | ✓ | ✓ | ✓ | ✓ | ✓ | N | ✓ | N | N | N | N | N | N | N | **5/7** |
+| BW | `audio-processor` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | **14/14** |
+| BW | `cookiecutter-python-template` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | N | N | N | N | N | N | N | **6/7** |
+| BW | `cookiecutter-template-sample` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ | ✓ | ✓ | **13/14** |
+| BW | `DeQA-Doc` | ✓ | ✓ | ✓ | ✓ | ✓ | N | ✓ | ✓ | ✓ | ✗ | ✓ | N | N | N | **7/11** |
+| BW | `fragrance-rater` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | **14/14** |
+| BW | `gleif` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ | ✓ | ✓ | **13/14** |
+| BW | `homelab-infra` | ✓ | ✓ | ✓ | ✓ | N | N | N | ✓ | ✓ | ✗ | ✓ | ✓ | ✓ | ✓ | **10/11** |
+| BW | `llc-manager` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | **14/14** |
+| BW | `maester-tests` | ✓ | ✓ | ✓ | ✓ | N | N | N | ✓ | ✓ | ✗ | ✓ | ✓ | ✓ | ✓ | **10/11** |
+| BW | `python-libs` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | **14/14** |
+| BW | `rag-processor` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | **14/14** |
+| BW | `reference-library` | ✓ | ✓ | ✓ | ✓ | ✓ | N | ✓ | N | N | N | N | N | N | N | **5/7** |
+| BW | `taxdome` | ✓ | ✓ | ✓ | ✓ | N | N | N | ✗ | ✗ | ✗ | ✗ | N | N | N | **3/8** |
+| BW | `template-sample` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | **14/14** |
+| BW | `xero-crypto` | ✓ | ✓ | ✓ | ✓ | N | N | N | ✓ | ✓ | ✗ | ✓ | N | N | N | **6/8** |
+| W | `.claude` | ✓ | ✓ | ✓ | ✓ | ✓ | N | ✓ | N | N | N | N | N | N | N | **5/7** |
+| W | `backpacking` | ✓ | ✓ | ✓ | ✓ | ✓ | N | ✓ | N | N | N | N | N | N | N | **5/7** |
+| W | `CR-10-` | ✓ | ✓ | ✓ | ✓ | ✓ | N | ✓ | N | N | N | N | N | N | N | **5/7** |
+| W | `dart-frog-paludarium` | ✓ | ✓ | ✓ | ✓ | N | N | N | N | N | N | N | N | N | N | **3/4** |
+| W | `data_ingestor` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ | ✓ | N | **12/13** |
+| W | `dna` | ✓ | ✓ | ✓ | ✓ | N | N | N | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | **11/11** |
+| W | `exercise-competition` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✗ | ✓ | N | **11/13** |
+| W | `family_office` | ✓ | ✓ | ✓ | ✓ | N | N | N | ✗ | ✗ | ✗ | ✗ | N | N | N | **3/8** |
+| W | `FISProject` | ✓ | ✓ | ✓ | ✓ | N | N | N | ✗ | ✗ | ✗ | ✗ | N | N | N | **3/8** |
+| W | `GCS` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | N | N | N | **8/11** |
 | W | `homelab-agent-configs` | ✗ | ✗ | ✗ | ✗ | N | N | N | N | N | N | N | N | N | N | 0/4 |
-| W | `image-generation` | ✓ | ✗ |  ✓  | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | N | N | N | 1/11 |
-| W | `image-preprocessing-detector` | ✓ | ✗ | ✓ | ✓ | ✗ | ✓ | ✓ | ✓ | ✗ | ✓ | ✗ | ✓ | ✗ | ✓ | 9/14 |
-| W | `klipper-octoprint-configs` | ✓ | ✗ |  ✓  | ✗ | N | N | N | N | N | N | N | N | N | N | 1/4 |
-| W | `ledgerbase` | ✓ | ✗ |  ✓  | ✗ | ✗ | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | ✓ | ✗ | N | 4/13 |
-| W | `library` | ✓ | ✗ |  ✓  | ✗ | N | N | N | N | N | N | N | N | N | N | 1/4 |
-| W | `LifeSphere` | ✓ | ✗ |  ✓  | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | N | N | N | 1/11 |
-| W | `magg` | ✓ | ✗ |  ✓  | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | N | 1/13 |
-| W | `monte_carlo` | ✓ | ✗ |  ✓  | ✗ | N | N | N | ✓ | ✗ | ✗ | ✗ | N | N | N | 2/8 |
-| W | `OPNS` | ✓ | ✗ |  ✓  | ✗ | N | N | N | N | N | N | N | N | N | N | 1/4 |
-| W | `OPNSense` | ✓ | ✗ |  ✓  | ✗ | N | N | N | N | N | N | N | N | N | N | 1/4 |
-| W | `pp-security-master` | ✓ | ✗ |  ✓  | ✗ | ✓ | ✗ | ✓ | ✓ | ✗ | ✗ | ✗ | N | N | N | 4/11 |
-| W | `PromptCraft` | ✓ | ✗ |  ✓  | ✓ | ✗ | ✗ | ✓ | ✓ | ✗ | ✗ | ✗ | N | N | N | 4/11 |
-| W | `superslicer-configs` | ✓ | ✗ |  ✓  | ✗ | N | N | N | N | N | N | N | N | N | N | 1/4 |
-| W | `testing` | ✓ | ✗ |  ✓  | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | N | N | N | 1/11 |
-| W | `xero-practice-management` | ✓ | ✗ |  ✓  | ✗ | N | N | N | ✗ | ✗ | ✗ | ✗ | N | N | N | 1/8 |
-| W | `zen-mcp-server` | ✓ | ✗ |  ✓  | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | N | 1/13 |
-| | **PASS count** | **43** | **43** | **15** | **15** | **4** | **12** | **16** | **19** | **10** | **9** | **0** | **17** | **0** | **10** | |
-| | **of applicable** | **44** | **44** | **44** | **44** | **27** | **27** | **27** | **32** | **32** | **32** | **32** | **24** | **24** | **16** | |
-| | **% pass** | **98%** | **98%** | **34%** | **34%** | **15%** | **44%** | **59%** | **59%** | **31%** | **28%** | **0%** | **71%** | **0%** | **63%** | |
+| W | `image-generation` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | N | N | N | **8/11** |
+| W | `image-preprocessing-detector` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | **14/14** |
+| W | `klipper-octoprint-configs` | ✓ | ✓ | ✓ | ✓ | N | N | N | N | N | N | N | N | N | N | **3/4** |
+| W | `ledgerbase` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ | ✓ | N | **12/13** |
+| W | `library` | ✓ | ✓ | ✓ | ✓ | N | N | N | N | N | N | N | N | N | N | **3/4** |
+| W | `LifeSphere` | ✓ | ✓ | ✓ | ✓ | ✓ | N | ✓ | ✗ | ✗ | ✗ | ✗ | N | N | N | **5/11** |
+| W | `magg` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | N | N | N | **8/11** |
+| W | `monte_carlo` | ✓ | ✓ | ✓ | ✓ | N | N | N | ✓ | ✓ | ✓ | ✓ | N | N | ✓ | **9/9** |
+| W | `OPNS` | ✓ | ✓ | ✓ | ✓ | N | N | N | N | N | N | N | N | N | N | **3/4** |
+| W | `OPNSense` | ✓ | ✓ | ✓ | ✓ | N | N | N | N | N | N | N | N | N | N | **3/4** |
+| W | `pp-security-master` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | N | N | N | **8/11** |
+| W | `PromptCraft` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | N | N | ✓ | **11/12** |
+| W | `superslicer-configs` | ✓ | ✓ | ✓ | ✓ | N | N | N | N | N | N | N | N | N | N | **3/4** |
+| W | `testing` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | N | N | N | **8/11** |
+| W | `xero-practice-management` | ✓ | ✓ | ✓ | ✓ | N | N | N | ✗ | ✗ | ✗ | ✗ | N | N | N | **3/8** |
+| W | `zen-mcp-server` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ | ✓ | N | **12/13** |
+| | **PASS count** | **43** | **43** | **43** | **43** | **29** | **21** | **28** | **25** | **26** | **10** | **25** | **15** | **16** | **15** | |
+| | **of applicable** | **44** | **44** | **44** | **44** | **29** | **21** | **28** | **32** | **32** | **32** | **32** | **16** | **16** | **15** | |
+| | **% pass** | **98%** | **98%** | **98%** | **98%** | **100%** | **100%** | **100%** | **78%** | **81%** | **31%** | **78%** | **94%** | **100%** | **100%** | |
 
 **Notable workflow gaps:**
-- **WF-5 (codeql.yml)**: Only 4/27 public repos have it. The `ByronWilliamsCPA/.github` reusable library has `python-codeql.yml` but repos call it by a different name; EV sprint needed.
-- **WF-11 (coverage.yml)**: 0% pass rate. Repos use `codecov.yml` or `qlty.yml` instead of `coverage.yml`. The standard `coverage.yml` template uses Qlty; EV sprint will evaluate migration path.
-- **WF-13 (release-sign.yml)**: 0% pass rate. Repos use `slsa-provenance.yml` instead. The standard `release-sign.yml` uses Cosign; EV sprint will determine if `slsa-provenance.yml` is equivalent or needs replacement.
-- **WF-12 (release.yml)**: 71% pass rate on applicable repos. High pass rate but file must use the standard name; some repos use `semantic-release.yml` (zen-mcp-server) or `publish.yml` (magg) instead.
+- **WF-5 (codeql.yml)**: COMPLETE 2026-05-04. 29/29 public repos now have it (two variants: Python for repos with pyproject.toml; Minimal for repos without).
+- **WF-11 (coverage.yml)**: COMPLETE 2026-05-04. 25/32 Python repos now have it (78%). Rearchitected as a `workflow_run` subscriber -- downloads coverage artifacts from CI and uploads to Qlty via org-level reusable workflow. 5 blocked repos lack pyproject.toml: taxdome (BW), family_office, FISProject, LifeSphere, xero-practice-management (all W).
+- **WF-13 (slsa-provenance.yml)**: COMPLETE 2026-05-04. 16/16 Published-tier repos now have it. Standard revised by EV-1 from release-sign.yml (Cosign) to slsa-provenance.yml (SLSA framework).
+- **WF-12 (release.yml)**: 94% pass rate (15/16). Only blocker: exercise-competition needs python-semantic-release setup from scratch.
 
 ---
 
@@ -368,10 +374,14 @@ for evaluation in Sprint EV-1 (ByronWilliamsCPA) and Sprint EV-2 (williaby).
 | BP-6 (reviews=0) | **COMPLETE** 2026-05-04 | 0/44 |
 | WF-1 (reuse.yml) | **COMPLETE** 2026-05-04; 43/44 PASS (homelab-agent-configs skipped, no main branch) | 0/44 remaining |
 | WF-2 (dependabot) | **COMPLETE** 2026-05-04; 43/44 PASS (homelab-agent-configs skipped, no main branch). Note: Renovate is planned to replace Dependabot as the dependency manager. | 0/44 remaining |
-| WF-3 (security-analysis) | 29/44 universal failing | 29/44 |
-| WF-4 (pr-validation) | 29/44 universal failing | 29/44 |
-| WF-5 (codeql) | 23/27 public repos failing | 23/27 |
-| WF-8 (ci.yml) | 13/32 python repos failing | 13/32 |
+| WF-3 (security-analysis) | **COMPLETE** 2026-05-04; 43/44 PASS (homelab-agent-configs skipped, no main branch) | 0/44 remaining |
+| WF-4 (pr-validation) | **COMPLETE** 2026-05-04; 43/44 PASS (homelab-agent-configs skipped, no main branch) | 0/44 remaining |
+| WF-5 (codeql) | **COMPLETE** 2026-05-04; 29/29 public repos PASS | 0/29 remaining |
+| WF-6 (sbom) | **COMPLETE** 2026-05-04; 21/21 Python public repos PASS (7 non-Python public repos marked N/A) | 0/21 remaining |
+| WF-7 (scorecard) | **COMPLETE** 2026-05-04; 28/28 public repos PASS | 0/28 remaining |
+| WF-8 (ci.yml) | **COMPLETE** 2026-05-04; 25/32 Python repos PASS. 6 newly deployed this sprint (GCS, image-generation, ledgerbase, magg, testing, zen-mcp-server). 5 blocked: taxdome (BW), family_office, FISProject, LifeSphere, xero-practice-management (W) need pyproject.toml first. Note: ledgerbase, GCS, testing, zen-mcp-server use setuptools/poetry (no uv.lock); ci.yml deployed but CI will fail at uv sync until uv migration. | 7/32 remaining |
+| WF-9 (python-compatibility.yml) | **COMPLETE** 2026-05-04; 26/32 Python repos PASS. 16 newly deployed this sprint (cookiecutter-template-sample, DeQA-Doc, gleif, template-sample, xero-crypto [BW]; data_ingestor, GCS, image-generation, image-preprocessing-detector, ledgerbase, magg, monte_carlo, pp-security-master, PromptCraft, testing, zen-mcp-server [W]). 5 blocked (same as WF-8): need pyproject.toml first. Note: image-preprocessing-detector had compatibility.yml (wrong name); python-compatibility.yml deployed alongside it. | 6/32 remaining |
+| WF-10 (sonarcloud.yml) | **COMPLETE** 2026-05-04 (mostly blocked); 10/32 Python repos PASS. 1 newly deployed: williaby/monte_carlo (only repo with SONAR_TOKEN set and no sonarcloud.yml). 22 remaining blocked on SonarCloud registration + SONAR_TOKEN. Known broken integrations (sonarcloud.yml present but no SONAR_TOKEN): BW/fragrance-rater, python-libs, rag-processor, template-sample; W/dna, image-preprocessing-detector. BW repos registered in SonarCloud but missing SONAR_TOKEN: cookiecutter-template-sample, maester-tests, cookiecutter-python-template. See Remediation Status for full gap list. | 22/32 remaining |
 
 **Pre-sprint work items (required before BP sprints can cover certain repos):**
 1. `homelab-agent-configs`: No `main` branch. Must create and set as default before any BP sprint applies.
@@ -396,17 +406,17 @@ Updated after each sprint completes. Dates indicate when the item was remediated
 | Sprint BP-6 | COMPLETE | 2026-05-04 | 43/44 PASS; homelab-agent-configs skipped (no main branch) |
 | Sprint WF-1 | COMPLETE | 2026-05-04 | 43/44 PASS; save-relax-write-restore cycle required (BP-4+BP-5 block unsigned Contents API commits); pp-security-master and PromptCraft also required GitHub Ruleset enforcement=disabled |
 | Sprint WF-2 | COMPLETE | 2026-05-04 | 43/44 PASS; same save-relax-write-restore cycle as WF-1; image-preprocessing-detector required full ruleset body PUT to disable. Renovate planned to replace Dependabot in a future migration sprint. |
-| Sprint WF-3 | pending | - | - |
-| Sprint WF-4 | pending | - | - |
-| Sprint WF-5 | pending | - | - |
-| Sprint WF-6 | pending | - | - |
-| Sprint WF-7 | pending | - | - |
-| Sprint WF-8 | pending | - | - |
-| Sprint WF-9 | pending | - | - |
-| Sprint WF-10 | pending | - | - |
-| Sprint WF-11 | pending | - | - |
-| Sprint WF-12 | pending | - | - |
-| Sprint WF-13 | pending | - | - |
-| Sprint WF-14 | pending | - | - |
-| Sprint EV-1 | pending | - | ByronWilliamsCPA non-standard workflow evaluation |
-| Sprint EV-2 | pending | - | williaby non-standard workflow evaluation |
+| Sprint WF-3 | COMPLETE | 2026-05-04 | 43/44 PASS; save-relax-write-restore cycle; pp-security-master (ruleset 15815381) and PromptCraft (ruleset 5939198) required ruleset enforcement=disabled. ByronWilliamsCPA/.github failed on first attempt (transient network) and was retried successfully. |
+| Sprint WF-4 | COMPLETE | 2026-05-04 | 43/44 PASS; same save-relax-write-restore cycle; lightweight universal template (no Python deps); pp-security-master (ruleset 15815381) required ruleset enforcement=disabled. |
+| Sprint WF-5 | COMPLETE | 2026-05-04 | 29/29 public repos PASS; two variants: Python (18 repos with pyproject.toml -- full uv+deps install) and Minimal (7 repos -- no uv, CodeQL with build-mode: none); image-preprocessing-detector required rulesets 9575480+9694992 disabled; PromptCraft required ruleset 5939198 disabled. |
+| Sprint WF-6 | COMPLETE | 2026-05-04 | 21/21 Python public repos PASS; 7 non-Python public repos marked N/A (sbom.yml targets pyproject.toml+uv.lock path triggers; would fail on non-Python repos); PromptCraft (ruleset 5939198) and pp-security-master (ruleset 15815381) required ruleset enforcement=disabled. |
+| Sprint WF-7 | COMPLETE | 2026-05-04 | 28/28 public repos PASS; deployed to all public repos (Scorecard is language-agnostic -- analyzes repo security posture, not code); no ruleset handling required for this sprint. |
+| Sprint WF-8 | COMPLETE (partial) | 2026-05-04 | 25/32 Python repos PASS; 6 newly deployed (GCS, image-generation, ledgerbase, magg, testing, zen-mcp-server in williaby); 5 blocked on missing pyproject.toml (need Python packaging setup). ledgerbase/GCS/testing/zen-mcp-server have ci.yml but will fail uv sync until uv migration. |
+| Sprint WF-9 | COMPLETE (partial) | 2026-05-04 | 26/32 Python repos PASS; 16 newly deployed; 5 blocked on missing pyproject.toml (same as WF-8); image-preprocessing-detector had compatibility.yml (wrong name) -- python-compatibility.yml deployed alongside it; xero-crypto targets master branch. pp-security-master (ruleset 15815381), PromptCraft (ruleset 5939198), image-preprocessing-detector (rulesets 9575480+9694992) required ruleset enforcement=disabled. |
+| Sprint WF-10 | COMPLETE (mostly blocked) | 2026-05-04 | 10/32 Python repos PASS; 1 deployed (williaby/monte_carlo -- only repo with SONAR_TOKEN set). 22 repos blocked on SonarCloud project registration and/or SONAR_TOKEN secret. BW org projects confirmed via SonarCloud MCP: 13 projects registered; only audio-processor, llc-manager, homelab-infra have SONAR_TOKEN set and sonarcloud.yml. BW broken integrations (sonarcloud.yml present, no SONAR_TOKEN): fragrance-rater, python-libs, rag-processor, template-sample. Action needed: add SONAR_TOKEN to all registered repos; register remaining Python repos in SonarCloud. |
+| Sprint WF-11 | COMPLETE (partial) | 2026-05-04 | 25/32 Python repos PASS (78%). Template rearchitected as workflow_run subscriber (no hardcoded paths). Downloads coverage-reports artifact from CI and delegates to org-level python-qlty-coverage.yml. 5 blocked repos lack pyproject.toml. Deployed to: audio-processor, cookiecutter-template-sample, DeQA-Doc, fragrance-rater, gleif, homelab-infra, llc-manager, maester-tests, python-libs, rag-processor, template-sample, xero-crypto (BW); data_ingestor, dna, exercise-competition, GCS, image-generation, image-preprocessing-detector, ledgerbase, magg, monte_carlo, pp-security-master, PromptCraft, testing, zen-mcp-server (W). |
+| Sprint WF-12 | DEFERRED (partial) | 2026-05-04 | 15/16 applicable repos PASS. Remaining blocker: exercise-competition needs python-semantic-release setup from scratch. magg set to N/A (Docker-only). zen-mcp-server resolved by EV-2 rename. |
+| Sprint WF-13 | COMPLETE | 2026-05-04 | 16/16 Published-tier repos PASS (100%). Standard revised by EV-1 from release-sign.yml (Cosign) to slsa-provenance.yml (SLSA framework). 9 repos already had slsa-provenance.yml; 7 deployed this sprint: cookiecutter-template-sample, gleif, template-sample (BW), data_ingestor, image-preprocessing-detector, ledgerbase, zen-mcp-server (W). Canonical template created at .github/workflows/slsa-provenance.yml. |
+| Sprint WF-14 | COMPLETE | 2026-05-04 | 15/15 Has-Docs repos PASS (100%); 3 deployed this sprint (gleif, monte_carlo, PromptCraft); 12 already had docs.yml from prior state; applicable count corrected to 15 (16 in Sprint 0 was wrong by 1) |
+| Sprint EV-1 | COMPLETE | 2026-05-04 | Evaluated all BW extras. 4 new WF sprints (WF-15 through WF-18). WF-13 standard revised: release-sign.yml (Cosign) replaced by slsa-provenance.yml (SLSA framework) as standard. WF-11 unblocked: template needs parameterized source-dir input. No removals. See sprint plan EV-1 section for full findings table. |
+| Sprint EV-2 | COMPLETE | 2026-05-04 | Evaluated all W extras. 2 concrete actions: (1) removed compatibility.yml from image-preprocessing-detector (replaced by python-compatibility.yml); (2) renamed semantic-release.yml to release.yml in zen-mcp-server (unblocks WF-12). magg W12/W13 set to N/A (Docker-only release). 9 repos now PASS WF-13 under revised standard. See sprint plan EV-2 section for full findings table. |
