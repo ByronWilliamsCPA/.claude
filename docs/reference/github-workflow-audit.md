@@ -87,6 +87,7 @@ No protection configured = all BP items FAIL (force pushes and deletions are per
 | WF-15 | `validate-cruft.yml` | Cruft-tracked repos only (have .cruft.json) |
 | WF-16 | `fips-compatibility.yml` | Python repos with scripts/check_fips_compatibility.py |
 | WF-17 | `mutation-testing.yml` | Python repos with 80%+ baseline coverage |
+| WF-18 | `container-security.yml` | Docker repos (have Dockerfile at root) |
 
 Exact filename match required. Functionally equivalent files with different names (e.g.,
 `slsa-provenance.yml` instead of `release-sign.yml`) count as FAIL; see EV sprints for
@@ -266,55 +267,55 @@ Columns: WF1(reuse) WF2(dep) WF3(sec) WF4(pr) | WF5(codeql) WF6(sbom) WF7(score)
 
 Vertical bar `|` separates tier groups for readability.
 
-| Org | Repo | W1 | W2 | W3 | W4 | W5 | W6 | W7 | W8 | W9 | W10 | W11 | W12 | W13 | W14 | W15 | W16 | W17 | Pass |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|------|-------|-------|---|
-| BW | `.claude` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | N | N | N | N | N | N | ✓ | N | N | N | **8/8** |
-| BW | `.github` | ✓ | ✓ | ✓ | ✓ | ✓ | N | ✓ | N | N | N | N | N | N | N | N | N | N | **5/7** |
-| BW | `audio-processor` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | **17/17** |
-| BW | `cookiecutter-python-template` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | N | N | N | N | N | N | N | N | N | N | **6/7** |
-| BW | `cookiecutter-template-sample` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ | N | N | **14/15** |
-| BW | `DeQA-Doc` | ✓ | ✓ | ✓ | ✓ | ✓ | N | ✓ | ✓ | ✓ | ✗ | ✓ | N | N | N | N | N | N | **7/11** |
-| BW | `fragrance-rater` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | **17/17** |
-| BW | `gleif` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ | ✓ | ✓ | N | N | N | **13/14** |
-| BW | `homelab-infra` | ✓ | ✓ | ✓ | ✓ | N | N | N | ✓ | ✓ | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | **13/14** |
-| BW | `llc-manager` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | **17/17** |
-| BW | `maester-tests` | ✓ | ✓ | ✓ | ✓ | N | N | N | ✓ | ✓ | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | **13/14** |
-| BW | `python-libs` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | **17/17** |
-| BW | `rag-processor` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | **17/17** |
-| BW | `reference-library` | ✓ | ✓ | ✓ | ✓ | ✓ | N | ✓ | N | N | N | N | N | N | N | N | N | N | **5/7** |
-| BW | `taxdome` | ✓ | ✓ | ✓ | ✓ | N | N | N | ✗ | ✗ | ✗ | ✗ | N | N | N | N | N | N | **3/8** |
-| BW | `template-sample` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | N | N | **15/15** |
-| BW | `xero-crypto` | ✓ | ✓ | ✓ | ✓ | N | N | N | ✓ | ✓ | ✗ | ✓ | N | N | N | N | N | N | **6/8** |
-| W | `.claude` | ✓ | ✓ | ✓ | ✓ | ✓ | N | ✓ | N | N | N | N | N | N | N | N | N | N | **5/7** |
-| W | `backpacking` | ✓ | ✓ | ✓ | ✓ | ✓ | N | ✓ | N | N | N | N | N | N | N | N | N | N | **5/7** |
-| W | `CR-10-` | ✓ | ✓ | ✓ | ✓ | ✓ | N | ✓ | N | N | N | N | N | N | N | N | N | N | **5/7** |
-| W | `dart-frog-paludarium` | ✓ | ✓ | ✓ | ✓ | N | N | N | N | N | N | N | N | N | N | N | N | N | **3/4** |
-| W | `data_ingestor` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ | ✓ | N | ✓ | ✓ | N | **14/15** |
-| W | `dna` | ✓ | ✓ | ✓ | ✓ | N | N | N | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | **14/14** |
-| W | `exercise-competition` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✗ | ✓ | N | ✓ | ✓ | ✓ | **14/16** |
-| W | `family_office` | ✓ | ✓ | ✓ | ✓ | N | N | N | ✗ | ✗ | ✗ | ✗ | N | N | N | N | N | N | **3/8** |
-| W | `FISProject` | ✓ | ✓ | ✓ | ✓ | N | N | N | ✗ | ✗ | ✗ | ✗ | N | N | N | N | N | N | **3/8** |
-| W | `GCS` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | N | N | N | ✓ | ✓ | N | **10/13** |
-| W | `homelab-agent-configs` | ✗ | ✗ | ✗ | ✗ | N | N | N | N | N | N | N | N | N | N | N | N | N | 0/4 |
-| W | `image-generation` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | N | N | N | ✓ | ✓ | N | **10/13** |
-| W | `image-preprocessing-detector` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | **17/17** |
-| W | `klipper-octoprint-configs` | ✓ | ✓ | ✓ | ✓ | N | N | N | N | N | N | N | N | N | N | N | N | N | **3/4** |
-| W | `ledgerbase` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ | ✓ | N | ✓ | ✓ | N | **14/15** |
-| W | `library` | ✓ | ✓ | ✓ | ✓ | N | N | N | N | N | N | N | N | N | N | N | N | N | **3/4** |
-| W | `LifeSphere` | ✓ | ✓ | ✓ | ✓ | ✓ | N | ✓ | ✗ | ✗ | ✗ | ✗ | N | N | N | N | N | N | **5/11** |
-| W | `magg` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | N | N | N | ✓ | ✓ | N | **10/13** |
-| W | `monte_carlo` | ✓ | ✓ | ✓ | ✓ | N | N | N | ✓ | ✓ | ✓ | ✓ | N | N | ✓ | ✓ | ✓ | N | **11/11** |
-| W | `OPNS` | ✓ | ✓ | ✓ | ✓ | N | N | N | N | N | N | N | N | N | N | N | N | N | **3/4** |
-| W | `OPNSense` | ✓ | ✓ | ✓ | ✓ | N | N | N | N | N | N | N | N | N | N | N | N | N | **3/4** |
-| W | `pp-security-master` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | N | N | N | ✓ | ✓ | N | **10/13** |
-| W | `PromptCraft` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | N | N | ✓ | ✓ | ✓ | N | **13/14** |
-| W | `superslicer-configs` | ✓ | ✓ | ✓ | ✓ | N | N | N | N | N | N | N | N | N | N | N | N | N | **3/4** |
-| W | `testing` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | N | N | N | ✓ | ✓ | N | **10/13** |
-| W | `xero-practice-management` | ✓ | ✓ | ✓ | ✓ | N | N | N | ✗ | ✗ | ✗ | ✗ | N | N | N | N | N | N | **3/8** |
-| W | `zen-mcp-server` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ | ✓ | N | ✓ | ✓ | N | **14/15** |
-| | **PASS count** | **43** | **43** | **43** | **43** | **29** | **21** | **28** | **25** | **26** | **10** | **25** | **15** | **16** | **15** | **22** | **20** | **10** | |
-| | **of applicable** | **44** | **44** | **44** | **44** | **29** | **21** | **28** | **32** | **32** | **32** | **32** | **16** | **16** | **15** | **22** | **20** | **10** | |
-| | **% pass** | **98%** | **98%** | **98%** | **98%** | **100%** | **100%** | **100%** | **78%** | **81%** | **31%** | **78%** | **94%** | **100%** | **100%** | **100%** | **100%** | **100%** | |
+| Org | Repo | W1 | W2 | W3 | W4 | W5 | W6 | W7 | W8 | W9 | W10 | W11 | W12 | W13 | W14 | W15 | W16 | W17 | W18 | Pass |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|------|-------|-------|-------|---|
+| BW | `.claude` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | N | N | N | N | N | N | ✓ | N | N | N | N | **8/8** |
+| BW | `.github` | ✓ | ✓ | ✓ | ✓ | ✓ | N | ✓ | N | N | N | N | N | N | N | N | N | N | N | **5/7** |
+| BW | `audio-processor` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | **18/18** |
+| BW | `cookiecutter-python-template` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | N | N | N | N | N | N | N | N | N | N | N | **6/7** |
+| BW | `cookiecutter-template-sample` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ | N | N | ✓ | **15/16** |
+| BW | `DeQA-Doc` | ✓ | ✓ | ✓ | ✓ | ✓ | N | ✓ | ✓ | ✓ | ✗ | ✓ | N | N | N | N | N | N | ✓ | **8/12** |
+| BW | `fragrance-rater` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | **18/18** |
+| BW | `gleif` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ | ✓ | ✓ | N | N | N | ✓ | **14/15** |
+| BW | `homelab-infra` | ✓ | ✓ | ✓ | ✓ | N | N | N | ✓ | ✓ | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | **14/15** |
+| BW | `llc-manager` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | **18/18** |
+| BW | `maester-tests` | ✓ | ✓ | ✓ | ✓ | N | N | N | ✓ | ✓ | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | **14/15** |
+| BW | `python-libs` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | **18/18** |
+| BW | `rag-processor` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | **18/18** |
+| BW | `reference-library` | ✓ | ✓ | ✓ | ✓ | ✓ | N | ✓ | N | N | N | N | N | N | N | N | N | N | N | **5/7** |
+| BW | `taxdome` | ✓ | ✓ | ✓ | ✓ | N | N | N | ✗ | ✗ | ✗ | ✗ | N | N | N | N | N | N | N | **3/8** |
+| BW | `template-sample` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | N | N | ✓ | **16/16** |
+| BW | `xero-crypto` | ✓ | ✓ | ✓ | ✓ | N | N | N | ✓ | ✓ | ✗ | ✓ | N | N | N | N | N | N | ✓ | **7/9** |
+| W | `.claude` | ✓ | ✓ | ✓ | ✓ | ✓ | N | ✓ | N | N | N | N | N | N | N | N | N | N | N | **5/7** |
+| W | `backpacking` | ✓ | ✓ | ✓ | ✓ | ✓ | N | ✓ | N | N | N | N | N | N | N | N | N | N | N | **5/7** |
+| W | `CR-10-` | ✓ | ✓ | ✓ | ✓ | ✓ | N | ✓ | N | N | N | N | N | N | N | N | N | N | N | **5/7** |
+| W | `dart-frog-paludarium` | ✓ | ✓ | ✓ | ✓ | N | N | N | N | N | N | N | N | N | N | N | N | N | N | **3/4** |
+| W | `data_ingestor` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ | ✓ | N | ✓ | ✓ | N | ✓ | **15/16** |
+| W | `dna` | ✓ | ✓ | ✓ | ✓ | N | N | N | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | **15/15** |
+| W | `exercise-competition` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✗ | ✓ | N | ✓ | ✓ | ✓ | ✓ | **15/17** |
+| W | `family_office` | ✓ | ✓ | ✓ | ✓ | N | N | N | ✗ | ✗ | ✗ | ✗ | N | N | N | N | N | N | N | **3/8** |
+| W | `FISProject` | ✓ | ✓ | ✓ | ✓ | N | N | N | ✗ | ✗ | ✗ | ✗ | N | N | N | N | N | N | N | **3/8** |
+| W | `GCS` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | N | N | N | ✓ | ✓ | N | ✓ | **11/14** |
+| W | `homelab-agent-configs` | ✗ | ✗ | ✗ | ✗ | N | N | N | N | N | N | N | N | N | N | N | N | N | N | 0/4 |
+| W | `image-generation` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | N | N | N | ✓ | ✓ | N | ✓ | **11/14** |
+| W | `image-preprocessing-detector` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | **18/18** |
+| W | `klipper-octoprint-configs` | ✓ | ✓ | ✓ | ✓ | N | N | N | N | N | N | N | N | N | N | N | N | N | N | **3/4** |
+| W | `ledgerbase` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ | ✓ | N | ✓ | ✓ | N | ✓ | **15/16** |
+| W | `library` | ✓ | ✓ | ✓ | ✓ | N | N | N | N | N | N | N | N | N | N | N | N | N | N | **3/4** |
+| W | `LifeSphere` | ✓ | ✓ | ✓ | ✓ | ✓ | N | ✓ | ✗ | ✗ | ✗ | ✗ | N | N | N | N | N | N | N | **5/11** |
+| W | `magg` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | N | N | N | ✓ | ✓ | N | ✓ | **11/14** |
+| W | `monte_carlo` | ✓ | ✓ | ✓ | ✓ | N | N | N | ✓ | ✓ | ✓ | ✓ | N | N | ✓ | ✓ | ✓ | N | ✓ | **12/12** |
+| W | `OPNS` | ✓ | ✓ | ✓ | ✓ | N | N | N | N | N | N | N | N | N | N | N | N | N | N | **3/4** |
+| W | `OPNSense` | ✓ | ✓ | ✓ | ✓ | N | N | N | N | N | N | N | N | N | N | N | N | N | N | **3/4** |
+| W | `pp-security-master` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | N | N | N | ✓ | ✓ | N | ✓ | **11/14** |
+| W | `PromptCraft` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | N | N | ✓ | ✓ | ✓ | N | ✓ | **14/15** |
+| W | `superslicer-configs` | ✓ | ✓ | ✓ | ✓ | N | N | N | N | N | N | N | N | N | N | N | N | N | N | **3/4** |
+| W | `testing` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | N | N | N | ✓ | ✓ | N | ✓ | **11/14** |
+| W | `xero-practice-management` | ✓ | ✓ | ✓ | ✓ | N | N | N | ✗ | ✗ | ✗ | ✗ | N | N | N | N | N | N | N | **3/8** |
+| W | `zen-mcp-server` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ | ✓ | N | ✓ | ✓ | N | ✓ | **15/16** |
+| | **PASS count** | **43** | **43** | **43** | **43** | **29** | **21** | **28** | **25** | **26** | **10** | **25** | **15** | **16** | **15** | **22** | **20** | **10** | **25** | |
+| | **of applicable** | **44** | **44** | **44** | **44** | **29** | **21** | **28** | **32** | **32** | **32** | **32** | **16** | **16** | **15** | **22** | **20** | **10** | **25** | |
+| | **% pass** | **98%** | **98%** | **98%** | **98%** | **100%** | **100%** | **100%** | **78%** | **81%** | **31%** | **78%** | **94%** | **100%** | **100%** | **100%** | **100%** | **100%** | **100%** | |
 
 **Notable workflow gaps:**
 - **WF-5 (codeql.yml)**: COMPLETE 2026-05-04. 29/29 public repos now have it (two variants: Python for repos with pyproject.toml; Minimal for repos without).
@@ -324,6 +325,7 @@ Vertical bar `|` separates tier groups for readability.
 - **WF-15 (validate-cruft.yml)**: COMPLETE 2026-05-04. 22/22 cruft-tracked repos PASS (100%). Template uses hashFiles() conditional for the orphaned-files check so it is safe on repos without scripts/check_orphaned_files.py.
 - **WF-16 (fips-compatibility.yml)**: COMPLETE 2026-05-04. 20/20 applicable repos PASS (100%). 11 deployed to williaby; 9 BW repos already had it. 5 BW Python repos without check_fips_compatibility.py marked N/A. Canonical template fixes command injection in strict_mode input (uses env var instead of direct expression in bash).
 - **WF-17 (mutation-testing.yml)**: COMPLETE 2026-05-04. 10/10 applicable repos PASS (100%). All 10 repos (7 BW + 3 W) already had the file; no new deployments needed. Canonical template written. Remaining W Python repos marked N/A until 80%+ coverage is confirmed.
+- **WF-18 (container-security.yml)**: COMPLETE 2026-05-04. 25/25 applicable repos PASS (100%). All 25 Python repos (12 BW + 13 W) already had container-security.yml and Dockerfiles; no new deployments needed. Canonical template written with generic image-tag `local:scan`.
 
 ---
 
@@ -429,3 +431,4 @@ Updated after each sprint completes. Dates indicate when the item was remediated
 | Sprint WF-15 | COMPLETE | 2026-05-04 | 22/22 cruft-tracked repos PASS (100%); 12 deployed; 10 already had validate-cruft.yml. Template uses hashFiles() conditional on scripts/check_orphaned_files.py so it is safe on repos without that script. EVENT_NAME env var used for security. image-preprocessing-detector (9575480+9694992), pp-security-master (15815381), PromptCraft (5939198) required ruleset enforcement=disabled. |
 | Sprint WF-16 | COMPLETE | 2026-05-04 | 20/20 applicable repos PASS (100%); 11 deployed (all williaby); 9 BW repos already had it. 5 BW Python repos (cookiecutter-template-sample, DeQA-Doc, gleif, template-sample, xero-crypto) marked N/A -- no check_fips_compatibility.py. Canonical template fixes command injection: STRICT_MODE passed via env var, not direct expression interpolation in bash. Also adds uv sync --frozen (resolves S8544), concurrency group, and JSON report artifact upload. image-preprocessing-detector (9575480+9694992), pp-security-master (15815381), PromptCraft (5939198) required ruleset enforcement=disabled. |
 | Sprint WF-17 | COMPLETE | 2026-05-04 | 10/10 applicable repos PASS (100%). All 10 repos (7 BW + 3 W: dna, exercise-competition, image-preprocessing-detector) already had mutation-testing.yml; no new deployments. Canonical template written to .github/workflows/mutation-testing.yml. Remaining W Python repos marked N/A (coverage data needed before WF-17 can be applied). |
+| Sprint WF-18 | COMPLETE | 2026-05-04 | 25/25 applicable repos PASS (100%). All 25 Python repos (12 BW + 13 W) already had container-security.yml AND Dockerfiles; no new deployments needed. Canonical template created at .github/workflows/container-security.yml with generic image-tag 'local:scan'. Delegates to org-level python-container-security.yml reusable workflow; fails on CRITICAL/HIGH; generates SBOM; uploads SARIF. |

@@ -1,0 +1,55 @@
+# Container Security Scanning
+# Scans Docker images for vulnerabilities using Trivy and lints Dockerfile with Hadolint.
+# Delegates to the org-level python-container-security.yml reusable workflow.
+#
+# Applicable to repos that build Docker images (have a Dockerfile at root).
+# Fails on CRITICAL/HIGH vulnerabilities; reports Hadolint findings at warning threshold.
+name: Container Security
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'Dockerfile'
+      - 'docker-compose*.yml'
+      - '.dockerignore'
+      - 'pyproject.toml'
+      - 'uv.lock'
+  pull_request:
+    branches: [main, master, develop]
+    paths:
+      - 'Dockerfile'
+      - 'docker-compose*.yml'
+      - '.dockerignore'
+      - 'pyproject.toml'
+      - 'uv.lock'
+  schedule:
+    - cron: '0 7 * * 3'
+  workflow_dispatch:
+
+concurrency:
+  group: container-security-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  security-events: write
+  packages: read
+
+jobs:
+  container-security:
+    name: Container Security Scan
+    uses: ByronWilliamsCPA/.github/.github/workflows/python-container-security.yml@main
+    with:
+      dockerfile-path: 'Dockerfile'
+      build-context: '.'
+      image-tag: 'local:scan'
+      build-image: true
+      severity-threshold: 'CRITICAL,HIGH'
+      fail-on-vulnerabilities: true
+      run-hadolint: true
+      hadolint-failure-threshold: 'warning'
+      generate-sbom: true
+      upload-sarif: true
+      artifact-retention-days: 90
+    secrets: inherit  # pragma: allowlist secret
