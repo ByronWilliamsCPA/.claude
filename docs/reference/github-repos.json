@@ -1,7 +1,7 @@
 {
   "_meta": {
     "linkedDoc": "docs/reference/repo-type-taxonomy.md",
-    "lastUpdated": "2026-05-03",
+    "lastUpdated": "2026-05-04",
     "refreshCommands": {
       "repoList": "gh repo list <org> --limit 100 --json name,url,defaultBranchRef,description,isPrivate,isArchived",
       "branchProtection": "gh api repos/<org>/<repo>/branches/<branch>/protection",
@@ -277,16 +277,16 @@
       "review": {
         "branchProtection": {
           "enabled": true,
-          "enforceAdmins": true,
-          "requiredSignatures": true,
-          "requiredLinearHistory": true,
           "allowForcePushes": false,
           "allowDeletions": false,
-          "blockCreations": false,
-          "requiredConversationResolution": true,
-          "lockBranch": false,
+          "requiredLinearHistory": true,
+          "enforceAdmins": true,
+          "requiredSignatures": true,
+          "requiredConversationResolution": null,
+          "lockBranch": null,
+          "blockCreations": null,
           "requiredStatusChecks": {
-            "strict": true,
+            "strict": null,
             "contexts": [
               "CI Gate",
               "Security Gate Validation",
@@ -296,9 +296,8 @@
           },
           "requiredPullRequestReviews": {
             "requiredApprovingReviewCount": 0,
-            "dismissStaleReviews": false,
-            "requireCodeOwnerReviews": false,
-            "requireLastPushApproval": false
+            "requireCodeOwnerReviews": null,
+            "requireLastPushApproval": null
           }
         },
         "codeql": {
@@ -404,6 +403,9 @@
         "templateDrift": {
           "sourceTemplate": null,
           "driftScore": null
+        },
+        "dependabot": {
+          "enabled": true
         }
       }
     },
@@ -418,7 +420,26 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": true,
+          "allowForcePushes": false,
+          "allowDeletions": false,
+          "requiredLinearHistory": false,
+          "enforceAdmins": false,
+          "requiredSignatures": true,
+          "requiredConversationResolution": null,
+          "lockBranch": null,
+          "blockCreations": null,
+          "requiredStatusChecks": {
+            "strict": null,
+            "contexts": [
+              "Analyze"
+            ]
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": null,
+            "requireCodeOwnerReviews": null,
+            "requireLastPushApproval": null
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -555,6 +576,9 @@
         "templateDrift": {
           "sourceTemplate": null,
           "driftScore": null
+        },
+        "dependabot": {
+          "enabled": false
         }
       }
     },
@@ -570,20 +594,22 @@
       "review": {
         "branchProtection": {
           "enabled": true,
-          "enforceAdmins": true,
-          "requiredSignatures": true,
-          "requiredLinearHistory": true,
           "allowForcePushes": false,
           "allowDeletions": false,
-          "blockCreations": false,
-          "requiredConversationResolution": false,
-          "lockBranch": false,
-          "requiredStatusChecks": null,
+          "requiredLinearHistory": true,
+          "enforceAdmins": true,
+          "requiredSignatures": true,
+          "requiredConversationResolution": null,
+          "lockBranch": null,
+          "blockCreations": null,
+          "requiredStatusChecks": {
+            "strict": null,
+            "contexts": []
+          },
           "requiredPullRequestReviews": {
             "requiredApprovingReviewCount": 0,
-            "dismissStaleReviews": true,
-            "requireCodeOwnerReviews": true,
-            "requireLastPushApproval": false
+            "requireCodeOwnerReviews": null,
+            "requireLastPushApproval": null
           }
         },
         "codeql": {
@@ -706,6 +732,9 @@
         "templateDrift": {
           "sourceTemplate": null,
           "driftScore": null
+        },
+        "dependabot": {
+          "enabled": true
         }
       }
     },
@@ -720,7 +749,24 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": false,
+          "allowForcePushes": null,
+          "allowDeletions": null,
+          "requiredLinearHistory": null,
+          "enforceAdmins": null,
+          "requiredSignatures": null,
+          "requiredConversationResolution": null,
+          "lockBranch": null,
+          "blockCreations": null,
+          "requiredStatusChecks": {
+            "strict": null,
+            "contexts": []
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": null,
+            "requireCodeOwnerReviews": null,
+            "requireLastPushApproval": null
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -826,6 +872,9 @@
         "templateDrift": {
           "sourceTemplate": null,
           "driftScore": null
+        },
+        "dependabot": {
+          "enabled": false
         }
       }
     },
@@ -840,7 +889,24 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": false,
+          "allowForcePushes": null,
+          "allowDeletions": null,
+          "requiredLinearHistory": null,
+          "enforceAdmins": null,
+          "requiredSignatures": null,
+          "requiredConversationResolution": null,
+          "lockBranch": null,
+          "blockCreations": null,
+          "requiredStatusChecks": {
+            "strict": null,
+            "contexts": []
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": null,
+            "requireCodeOwnerReviews": null,
+            "requireLastPushApproval": null
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -942,6 +1008,9 @@
         "templateDrift": {
           "sourceTemplate": "ByronWilliamsCPA/cookiecutter-python-template",
           "driftScore": null
+        },
+        "dependabot": {
+          "enabled": true
         }
       }
     },
@@ -956,7 +1025,24 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": false,
+          "allowForcePushes": null,
+          "allowDeletions": null,
+          "requiredLinearHistory": null,
+          "enforceAdmins": null,
+          "requiredSignatures": null,
+          "requiredConversationResolution": null,
+          "lockBranch": null,
+          "blockCreations": null,
+          "requiredStatusChecks": {
+            "strict": null,
+            "contexts": []
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": null,
+            "requireCodeOwnerReviews": null,
+            "requireLastPushApproval": null
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -1050,6 +1136,9 @@
         "templateDrift": {
           "sourceTemplate": null,
           "driftScore": null
+        },
+        "dependabot": {
+          "enabled": false
         }
       }
     },
@@ -1064,7 +1153,24 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": false,
+          "allowForcePushes": null,
+          "allowDeletions": null,
+          "requiredLinearHistory": null,
+          "enforceAdmins": null,
+          "requiredSignatures": null,
+          "requiredConversationResolution": null,
+          "lockBranch": null,
+          "blockCreations": null,
+          "requiredStatusChecks": {
+            "strict": null,
+            "contexts": []
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": null,
+            "requireCodeOwnerReviews": null,
+            "requireLastPushApproval": null
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -1184,6 +1290,9 @@
         "templateDrift": {
           "sourceTemplate": null,
           "driftScore": null
+        },
+        "dependabot": {
+          "enabled": true
         }
       }
     },
@@ -1199,21 +1308,25 @@
       "review": {
         "branchProtection": {
           "enabled": true,
-          "enforceAdmins": false,
-          "requiredSignatures": false,
-          "requiredLinearHistory": false,
           "allowForcePushes": false,
           "allowDeletions": false,
-          "blockCreations": false,
-          "requiredConversationResolution": false,
-          "lockBranch": false,
+          "requiredLinearHistory": false,
+          "enforceAdmins": false,
+          "requiredSignatures": false,
+          "requiredConversationResolution": null,
+          "lockBranch": null,
+          "blockCreations": null,
           "requiredStatusChecks": {
-            "strict": true,
+            "strict": null,
             "contexts": [
               "CI Gate"
             ]
           },
-          "requiredPullRequestReviews": null
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": null,
+            "requireCodeOwnerReviews": null,
+            "requireLastPushApproval": null
+          }
         },
         "codeql": {
           "workflowPresent": true
@@ -1314,6 +1427,9 @@
         "templateDrift": {
           "sourceTemplate": null,
           "driftScore": null
+        },
+        "dependabot": {
+          "enabled": true
         }
       }
     },
@@ -1329,20 +1445,27 @@
       "review": {
         "branchProtection": {
           "enabled": true,
-          "enforceAdmins": true,
-          "requiredSignatures": true,
-          "requiredLinearHistory": true,
           "allowForcePushes": false,
           "allowDeletions": false,
-          "blockCreations": false,
-          "requiredConversationResolution": false,
-          "lockBranch": false,
-          "requiredStatusChecks": null,
+          "requiredLinearHistory": true,
+          "enforceAdmins": true,
+          "requiredSignatures": true,
+          "requiredConversationResolution": null,
+          "lockBranch": null,
+          "blockCreations": null,
+          "requiredStatusChecks": {
+            "strict": null,
+            "contexts": [
+              "Security Gate",
+              "Dep&Stds",
+              "CI Gate",
+              "REUSE"
+            ]
+          },
           "requiredPullRequestReviews": {
             "requiredApprovingReviewCount": 0,
-            "dismissStaleReviews": true,
-            "requireCodeOwnerReviews": true,
-            "requireLastPushApproval": false
+            "requireCodeOwnerReviews": null,
+            "requireLastPushApproval": null
           }
         },
         "codeql": {
@@ -1474,6 +1597,9 @@
         "templateDrift": {
           "sourceTemplate": null,
           "driftScore": null
+        },
+        "dependabot": {
+          "enabled": true
         }
       }
     },
@@ -1489,25 +1615,24 @@
       "review": {
         "branchProtection": {
           "enabled": true,
-          "enforceAdmins": false,
-          "requiredSignatures": false,
-          "requiredLinearHistory": false,
           "allowForcePushes": false,
           "allowDeletions": false,
-          "blockCreations": false,
-          "requiredConversationResolution": false,
-          "lockBranch": false,
+          "requiredLinearHistory": false,
+          "enforceAdmins": false,
+          "requiredSignatures": false,
+          "requiredConversationResolution": null,
+          "lockBranch": null,
+          "blockCreations": null,
           "requiredStatusChecks": {
-            "strict": true,
+            "strict": null,
             "contexts": [
-              "CI Gate"
+              "Validation Summary"
             ]
           },
           "requiredPullRequestReviews": {
             "requiredApprovingReviewCount": 0,
-            "dismissStaleReviews": true,
-            "requireCodeOwnerReviews": false,
-            "requireLastPushApproval": false
+            "requireCodeOwnerReviews": null,
+            "requireLastPushApproval": null
           }
         },
         "codeql": {
@@ -1628,6 +1753,9 @@
         "templateDrift": {
           "sourceTemplate": null,
           "driftScore": null
+        },
+        "dependabot": {
+          "enabled": true
         }
       }
     },
@@ -1643,21 +1771,25 @@
       "review": {
         "branchProtection": {
           "enabled": true,
-          "enforceAdmins": true,
-          "requiredSignatures": true,
-          "requiredLinearHistory": true,
           "allowForcePushes": false,
           "allowDeletions": false,
-          "blockCreations": false,
-          "requiredConversationResolution": false,
-          "lockBranch": false,
+          "requiredLinearHistory": true,
+          "enforceAdmins": true,
+          "requiredSignatures": true,
+          "requiredConversationResolution": null,
+          "lockBranch": null,
+          "blockCreations": null,
           "requiredStatusChecks": {
-            "strict": true,
+            "strict": null,
             "contexts": [
               "Check REUSE Compliance"
             ]
           },
-          "requiredPullRequestReviews": null
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": null,
+            "requireCodeOwnerReviews": null,
+            "requireLastPushApproval": null
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -1770,6 +1902,9 @@
         "templateDrift": {
           "sourceTemplate": null,
           "driftScore": null
+        },
+        "dependabot": {
+          "enabled": true
         }
       }
     },
@@ -1784,7 +1919,24 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": false,
+          "allowForcePushes": null,
+          "allowDeletions": null,
+          "requiredLinearHistory": null,
+          "enforceAdmins": null,
+          "requiredSignatures": null,
+          "requiredConversationResolution": null,
+          "lockBranch": null,
+          "blockCreations": null,
+          "requiredStatusChecks": {
+            "strict": null,
+            "contexts": []
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": null,
+            "requireCodeOwnerReviews": null,
+            "requireLastPushApproval": null
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -1902,6 +2054,9 @@
         "templateDrift": {
           "sourceTemplate": null,
           "driftScore": null
+        },
+        "dependabot": {
+          "enabled": true
         }
       }
     },
@@ -1917,20 +2072,22 @@
       "review": {
         "branchProtection": {
           "enabled": true,
-          "enforceAdmins": true,
-          "requiredSignatures": true,
-          "requiredLinearHistory": true,
           "allowForcePushes": false,
           "allowDeletions": false,
-          "blockCreations": false,
-          "requiredConversationResolution": false,
-          "lockBranch": false,
-          "requiredStatusChecks": null,
+          "requiredLinearHistory": true,
+          "enforceAdmins": true,
+          "requiredSignatures": true,
+          "requiredConversationResolution": null,
+          "lockBranch": null,
+          "blockCreations": null,
+          "requiredStatusChecks": {
+            "strict": null,
+            "contexts": []
+          },
           "requiredPullRequestReviews": {
             "requiredApprovingReviewCount": 0,
-            "dismissStaleReviews": true,
-            "requireCodeOwnerReviews": true,
-            "requireLastPushApproval": false
+            "requireCodeOwnerReviews": null,
+            "requireLastPushApproval": null
           }
         },
         "codeql": {
@@ -2053,6 +2210,9 @@
         "templateDrift": {
           "sourceTemplate": null,
           "driftScore": null
+        },
+        "dependabot": {
+          "enabled": true
         }
       }
     },
@@ -2067,7 +2227,24 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": false,
+          "allowForcePushes": null,
+          "allowDeletions": null,
+          "requiredLinearHistory": null,
+          "enforceAdmins": null,
+          "requiredSignatures": null,
+          "requiredConversationResolution": null,
+          "lockBranch": null,
+          "blockCreations": null,
+          "requiredStatusChecks": {
+            "strict": null,
+            "contexts": []
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": null,
+            "requireCodeOwnerReviews": null,
+            "requireLastPushApproval": null
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -2158,6 +2335,9 @@
         "templateDrift": {
           "sourceTemplate": null,
           "driftScore": null
+        },
+        "dependabot": {
+          "enabled": false
         }
       }
     },
@@ -2172,7 +2352,24 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": false,
+          "allowForcePushes": null,
+          "allowDeletions": null,
+          "requiredLinearHistory": null,
+          "enforceAdmins": null,
+          "requiredSignatures": null,
+          "requiredConversationResolution": null,
+          "lockBranch": null,
+          "blockCreations": null,
+          "requiredStatusChecks": {
+            "strict": null,
+            "contexts": []
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": null,
+            "requireCodeOwnerReviews": null,
+            "requireLastPushApproval": null
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -2263,6 +2460,9 @@
         "templateDrift": {
           "sourceTemplate": null,
           "driftScore": null
+        },
+        "dependabot": {
+          "enabled": false
         }
       }
     },
@@ -2277,7 +2477,24 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": false,
+          "allowForcePushes": null,
+          "allowDeletions": null,
+          "requiredLinearHistory": null,
+          "enforceAdmins": null,
+          "requiredSignatures": null,
+          "requiredConversationResolution": null,
+          "lockBranch": null,
+          "blockCreations": null,
+          "requiredStatusChecks": {
+            "strict": null,
+            "contexts": []
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": null,
+            "requireCodeOwnerReviews": null,
+            "requireLastPushApproval": null
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -2386,6 +2603,9 @@
         "templateDrift": {
           "sourceTemplate": "ByronWilliamsCPA/cookiecutter-python-template",
           "driftScore": null
+        },
+        "dependabot": {
+          "enabled": true
         }
       }
     },
@@ -2400,7 +2620,24 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": false,
+          "allowForcePushes": null,
+          "allowDeletions": null,
+          "requiredLinearHistory": null,
+          "enforceAdmins": null,
+          "requiredSignatures": null,
+          "requiredConversationResolution": null,
+          "lockBranch": null,
+          "blockCreations": null,
+          "requiredStatusChecks": {
+            "strict": null,
+            "contexts": []
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": null,
+            "requireCodeOwnerReviews": null,
+            "requireLastPushApproval": null
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -2499,6 +2736,9 @@
         "templateDrift": {
           "sourceTemplate": null,
           "driftScore": null
+        },
+        "dependabot": {
+          "enabled": false
         }
       }
     },
@@ -2513,7 +2753,24 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": false,
+          "allowForcePushes": null,
+          "allowDeletions": null,
+          "requiredLinearHistory": null,
+          "enforceAdmins": null,
+          "requiredSignatures": null,
+          "requiredConversationResolution": null,
+          "lockBranch": null,
+          "blockCreations": null,
+          "requiredStatusChecks": {
+            "strict": null,
+            "contexts": []
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": null,
+            "requireCodeOwnerReviews": null,
+            "requireLastPushApproval": null
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -2604,6 +2861,9 @@
         "templateDrift": {
           "sourceTemplate": null,
           "driftScore": null
+        },
+        "dependabot": {
+          "enabled": false
         }
       }
     },
@@ -2618,7 +2878,24 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": false,
+          "allowForcePushes": null,
+          "allowDeletions": null,
+          "requiredLinearHistory": null,
+          "enforceAdmins": null,
+          "requiredSignatures": null,
+          "requiredConversationResolution": null,
+          "lockBranch": null,
+          "blockCreations": null,
+          "requiredStatusChecks": {
+            "strict": null,
+            "contexts": []
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": null,
+            "requireCodeOwnerReviews": null,
+            "requireLastPushApproval": null
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -2709,6 +2986,9 @@
         "templateDrift": {
           "sourceTemplate": null,
           "driftScore": null
+        },
+        "dependabot": {
+          "enabled": false
         }
       }
     },
@@ -2723,7 +3003,24 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": false,
+          "allowForcePushes": null,
+          "allowDeletions": null,
+          "requiredLinearHistory": null,
+          "enforceAdmins": null,
+          "requiredSignatures": null,
+          "requiredConversationResolution": null,
+          "lockBranch": null,
+          "blockCreations": null,
+          "requiredStatusChecks": {
+            "strict": null,
+            "contexts": []
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": null,
+            "requireCodeOwnerReviews": null,
+            "requireLastPushApproval": null
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -2814,6 +3111,9 @@
         "templateDrift": {
           "sourceTemplate": null,
           "driftScore": null
+        },
+        "dependabot": {
+          "enabled": false
         }
       }
     },
@@ -2828,7 +3128,24 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": false,
+          "allowForcePushes": null,
+          "allowDeletions": null,
+          "requiredLinearHistory": null,
+          "enforceAdmins": null,
+          "requiredSignatures": null,
+          "requiredConversationResolution": null,
+          "lockBranch": null,
+          "blockCreations": null,
+          "requiredStatusChecks": {
+            "strict": null,
+            "contexts": []
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": null,
+            "requireCodeOwnerReviews": null,
+            "requireLastPushApproval": null
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -2919,6 +3236,9 @@
         "templateDrift": {
           "sourceTemplate": null,
           "driftScore": null
+        },
+        "dependabot": {
+          "enabled": false
         }
       }
     },
@@ -2933,7 +3253,24 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": false,
+          "allowForcePushes": null,
+          "allowDeletions": null,
+          "requiredLinearHistory": null,
+          "enforceAdmins": null,
+          "requiredSignatures": null,
+          "requiredConversationResolution": null,
+          "lockBranch": null,
+          "blockCreations": null,
+          "requiredStatusChecks": {
+            "strict": null,
+            "contexts": []
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": null,
+            "requireCodeOwnerReviews": null,
+            "requireLastPushApproval": null
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -3036,6 +3373,9 @@
         "templateDrift": {
           "sourceTemplate": null,
           "driftScore": null
+        },
+        "dependabot": {
+          "enabled": false
         }
       }
     },
@@ -3050,7 +3390,24 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": false,
+          "allowForcePushes": null,
+          "allowDeletions": null,
+          "requiredLinearHistory": null,
+          "enforceAdmins": null,
+          "requiredSignatures": null,
+          "requiredConversationResolution": null,
+          "lockBranch": null,
+          "blockCreations": null,
+          "requiredStatusChecks": {
+            "strict": null,
+            "contexts": []
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": null,
+            "requireCodeOwnerReviews": null,
+            "requireLastPushApproval": null
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -3174,6 +3531,9 @@
         "templateDrift": {
           "sourceTemplate": null,
           "driftScore": null
+        },
+        "dependabot": {
+          "enabled": true
         }
       }
     },
@@ -3189,22 +3549,26 @@
       "review": {
         "branchProtection": {
           "enabled": true,
-          "enforceAdmins": false,
-          "requiredSignatures": false,
-          "requiredLinearHistory": false,
           "allowForcePushes": false,
           "allowDeletions": false,
-          "blockCreations": false,
-          "requiredConversationResolution": false,
-          "lockBranch": false,
+          "requiredLinearHistory": false,
+          "enforceAdmins": false,
+          "requiredSignatures": false,
+          "requiredConversationResolution": null,
+          "lockBranch": null,
+          "blockCreations": null,
           "requiredStatusChecks": {
-            "strict": true,
+            "strict": null,
             "contexts": [
               "Test (Python 3.12)",
               "Frontend (Node 22)"
             ]
           },
-          "requiredPullRequestReviews": null
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": null,
+            "requireCodeOwnerReviews": null,
+            "requireLastPushApproval": null
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -3316,6 +3680,9 @@
         "templateDrift": {
           "sourceTemplate": null,
           "driftScore": null
+        },
+        "dependabot": {
+          "enabled": true
         }
       }
     },
@@ -3330,7 +3697,24 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": false,
+          "allowForcePushes": null,
+          "allowDeletions": null,
+          "requiredLinearHistory": null,
+          "enforceAdmins": null,
+          "requiredSignatures": null,
+          "requiredConversationResolution": null,
+          "lockBranch": null,
+          "blockCreations": null,
+          "requiredStatusChecks": {
+            "strict": null,
+            "contexts": []
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": null,
+            "requireCodeOwnerReviews": null,
+            "requireLastPushApproval": null
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -3421,6 +3805,9 @@
         "templateDrift": {
           "sourceTemplate": null,
           "driftScore": null
+        },
+        "dependabot": {
+          "enabled": false
         }
       }
     },
@@ -3435,7 +3822,24 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": false,
+          "allowForcePushes": null,
+          "allowDeletions": null,
+          "requiredLinearHistory": null,
+          "enforceAdmins": null,
+          "requiredSignatures": null,
+          "requiredConversationResolution": null,
+          "lockBranch": null,
+          "blockCreations": null,
+          "requiredStatusChecks": {
+            "strict": null,
+            "contexts": []
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": null,
+            "requireCodeOwnerReviews": null,
+            "requireLastPushApproval": null
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -3530,6 +3934,9 @@
         "templateDrift": {
           "sourceTemplate": null,
           "driftScore": null
+        },
+        "dependabot": {
+          "enabled": false
         }
       }
     },
@@ -3544,7 +3951,24 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": false,
+          "allowForcePushes": null,
+          "allowDeletions": null,
+          "requiredLinearHistory": null,
+          "enforceAdmins": null,
+          "requiredSignatures": null,
+          "requiredConversationResolution": null,
+          "lockBranch": null,
+          "blockCreations": null,
+          "requiredStatusChecks": {
+            "strict": null,
+            "contexts": []
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": null,
+            "requireCodeOwnerReviews": null,
+            "requireLastPushApproval": null
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -3635,6 +4059,9 @@
         "templateDrift": {
           "sourceTemplate": null,
           "driftScore": null
+        },
+        "dependabot": {
+          "enabled": false
         }
       }
     },
@@ -3649,7 +4076,24 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": false,
+          "allowForcePushes": null,
+          "allowDeletions": null,
+          "requiredLinearHistory": null,
+          "enforceAdmins": null,
+          "requiredSignatures": null,
+          "requiredConversationResolution": null,
+          "lockBranch": null,
+          "blockCreations": null,
+          "requiredStatusChecks": {
+            "strict": null,
+            "contexts": []
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": null,
+            "requireCodeOwnerReviews": null,
+            "requireLastPushApproval": null
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -3740,6 +4184,9 @@
         "templateDrift": {
           "sourceTemplate": null,
           "driftScore": null
+        },
+        "dependabot": {
+          "enabled": false
         }
       }
     },
@@ -3755,20 +4202,22 @@
       "review": {
         "branchProtection": {
           "enabled": true,
-          "enforceAdmins": true,
-          "requiredSignatures": true,
-          "requiredLinearHistory": false,
           "allowForcePushes": false,
           "allowDeletions": false,
-          "blockCreations": false,
-          "requiredConversationResolution": false,
-          "lockBranch": false,
-          "requiredStatusChecks": null,
+          "requiredLinearHistory": false,
+          "enforceAdmins": true,
+          "requiredSignatures": true,
+          "requiredConversationResolution": null,
+          "lockBranch": null,
+          "blockCreations": null,
+          "requiredStatusChecks": {
+            "strict": null,
+            "contexts": []
+          },
           "requiredPullRequestReviews": {
             "requiredApprovingReviewCount": 0,
-            "dismissStaleReviews": false,
-            "requireCodeOwnerReviews": false,
-            "requireLastPushApproval": false
+            "requireCodeOwnerReviews": null,
+            "requireLastPushApproval": null
           }
         },
         "codeql": {
@@ -3860,6 +4309,9 @@
         "templateDrift": {
           "sourceTemplate": null,
           "driftScore": null
+        },
+        "dependabot": {
+          "enabled": false
         }
       }
     },
@@ -3875,28 +4327,27 @@
       "review": {
         "branchProtection": {
           "enabled": true,
-          "enforceAdmins": true,
-          "requiredSignatures": true,
-          "requiredLinearHistory": true,
           "allowForcePushes": false,
           "allowDeletions": false,
-          "blockCreations": false,
-          "requiredConversationResolution": false,
-          "lockBranch": false,
+          "requiredLinearHistory": true,
+          "enforceAdmins": true,
+          "requiredSignatures": true,
+          "requiredConversationResolution": null,
+          "lockBranch": null,
+          "blockCreations": null,
           "requiredStatusChecks": {
-            "strict": true,
+            "strict": null,
             "contexts": [
               "CI Gate",
-              "Security Gate Validation",
-              "Check REUSE Compliance",
-              "Dependency & Standards Validation"
+              "Security Gate",
+              "REUSE",
+              "Dep&Stds"
             ]
           },
           "requiredPullRequestReviews": {
             "requiredApprovingReviewCount": 0,
-            "dismissStaleReviews": true,
-            "requireCodeOwnerReviews": true,
-            "requireLastPushApproval": false
+            "requireCodeOwnerReviews": null,
+            "requireLastPushApproval": null
           }
         },
         "codeql": {
@@ -4016,6 +4467,9 @@
         "templateDrift": {
           "sourceTemplate": null,
           "driftScore": null
+        },
+        "dependabot": {
+          "enabled": false
         }
       }
     },
@@ -4030,7 +4484,24 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": false,
+          "allowForcePushes": null,
+          "allowDeletions": null,
+          "requiredLinearHistory": null,
+          "enforceAdmins": null,
+          "requiredSignatures": null,
+          "requiredConversationResolution": null,
+          "lockBranch": null,
+          "blockCreations": null,
+          "requiredStatusChecks": {
+            "strict": null,
+            "contexts": []
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": null,
+            "requireCodeOwnerReviews": null,
+            "requireLastPushApproval": null
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -4121,6 +4592,9 @@
         "templateDrift": {
           "sourceTemplate": null,
           "driftScore": null
+        },
+        "dependabot": {
+          "enabled": false
         }
       }
     },
@@ -4135,7 +4609,24 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": false,
+          "allowForcePushes": null,
+          "allowDeletions": null,
+          "requiredLinearHistory": null,
+          "enforceAdmins": null,
+          "requiredSignatures": null,
+          "requiredConversationResolution": null,
+          "lockBranch": null,
+          "blockCreations": null,
+          "requiredStatusChecks": {
+            "strict": null,
+            "contexts": []
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": null,
+            "requireCodeOwnerReviews": null,
+            "requireLastPushApproval": null
+          }
         },
         "codeql": {
           "workflowPresent": true
@@ -4268,6 +4759,9 @@
         "templateDrift": {
           "sourceTemplate": null,
           "driftScore": null
+        },
+        "dependabot": {
+          "enabled": false
         }
       }
     },
@@ -4282,7 +4776,24 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": false,
+          "allowForcePushes": null,
+          "allowDeletions": null,
+          "requiredLinearHistory": null,
+          "enforceAdmins": null,
+          "requiredSignatures": null,
+          "requiredConversationResolution": null,
+          "lockBranch": null,
+          "blockCreations": null,
+          "requiredStatusChecks": {
+            "strict": null,
+            "contexts": []
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": null,
+            "requireCodeOwnerReviews": null,
+            "requireLastPushApproval": null
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -4373,6 +4884,9 @@
         "templateDrift": {
           "sourceTemplate": null,
           "driftScore": null
+        },
+        "dependabot": {
+          "enabled": false
         }
       }
     },
@@ -4387,7 +4901,24 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": false,
+          "allowForcePushes": null,
+          "allowDeletions": null,
+          "requiredLinearHistory": null,
+          "enforceAdmins": null,
+          "requiredSignatures": null,
+          "requiredConversationResolution": null,
+          "lockBranch": null,
+          "blockCreations": null,
+          "requiredStatusChecks": {
+            "strict": null,
+            "contexts": []
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": null,
+            "requireCodeOwnerReviews": null,
+            "requireLastPushApproval": null
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -4478,6 +5009,9 @@
         "templateDrift": {
           "sourceTemplate": null,
           "driftScore": null
+        },
+        "dependabot": {
+          "enabled": false
         }
       }
     },
@@ -4492,7 +5026,24 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": false,
+          "allowForcePushes": null,
+          "allowDeletions": null,
+          "requiredLinearHistory": null,
+          "enforceAdmins": null,
+          "requiredSignatures": null,
+          "requiredConversationResolution": null,
+          "lockBranch": null,
+          "blockCreations": null,
+          "requiredStatusChecks": {
+            "strict": null,
+            "contexts": []
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": null,
+            "requireCodeOwnerReviews": null,
+            "requireLastPushApproval": null
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -4593,6 +5144,9 @@
         "templateDrift": {
           "sourceTemplate": null,
           "driftScore": null
+        },
+        "dependabot": {
+          "enabled": false
         }
       }
     },
@@ -4607,7 +5161,24 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": false,
+          "allowForcePushes": null,
+          "allowDeletions": null,
+          "requiredLinearHistory": null,
+          "enforceAdmins": null,
+          "requiredSignatures": null,
+          "requiredConversationResolution": null,
+          "lockBranch": null,
+          "blockCreations": null,
+          "requiredStatusChecks": {
+            "strict": null,
+            "contexts": []
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": null,
+            "requireCodeOwnerReviews": null,
+            "requireLastPushApproval": null
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -4701,6 +5272,9 @@
         "templateDrift": {
           "sourceTemplate": null,
           "driftScore": null
+        },
+        "dependabot": {
+          "enabled": false
         }
       }
     },
@@ -4715,7 +5289,24 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": false,
+          "allowForcePushes": null,
+          "allowDeletions": null,
+          "requiredLinearHistory": null,
+          "enforceAdmins": null,
+          "requiredSignatures": null,
+          "requiredConversationResolution": null,
+          "lockBranch": null,
+          "blockCreations": null,
+          "requiredStatusChecks": {
+            "strict": null,
+            "contexts": []
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": null,
+            "requireCodeOwnerReviews": null,
+            "requireLastPushApproval": null
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -4806,6 +5397,9 @@
         "templateDrift": {
           "sourceTemplate": null,
           "driftScore": null
+        },
+        "dependabot": {
+          "enabled": false
         }
       }
     },
@@ -4820,7 +5414,24 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": false,
+          "allowForcePushes": null,
+          "allowDeletions": null,
+          "requiredLinearHistory": null,
+          "enforceAdmins": null,
+          "requiredSignatures": null,
+          "requiredConversationResolution": null,
+          "lockBranch": null,
+          "blockCreations": null,
+          "requiredStatusChecks": {
+            "strict": null,
+            "contexts": []
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": null,
+            "requireCodeOwnerReviews": null,
+            "requireLastPushApproval": null
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -4911,6 +5522,9 @@
         "templateDrift": {
           "sourceTemplate": null,
           "driftScore": null
+        },
+        "dependabot": {
+          "enabled": false
         }
       }
     },
@@ -4925,7 +5539,24 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": false,
+          "allowForcePushes": null,
+          "allowDeletions": null,
+          "requiredLinearHistory": null,
+          "enforceAdmins": null,
+          "requiredSignatures": null,
+          "requiredConversationResolution": null,
+          "lockBranch": null,
+          "blockCreations": null,
+          "requiredStatusChecks": {
+            "strict": null,
+            "contexts": []
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": null,
+            "requireCodeOwnerReviews": null,
+            "requireLastPushApproval": null
+          }
         },
         "codeql": {
           "workflowPresent": true
@@ -5024,6 +5655,9 @@
         "templateDrift": {
           "sourceTemplate": null,
           "driftScore": null
+        },
+        "dependabot": {
+          "enabled": false
         }
       }
     },
@@ -5038,7 +5672,24 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": false,
+          "allowForcePushes": null,
+          "allowDeletions": null,
+          "requiredLinearHistory": null,
+          "enforceAdmins": null,
+          "requiredSignatures": null,
+          "requiredConversationResolution": null,
+          "lockBranch": null,
+          "blockCreations": null,
+          "requiredStatusChecks": {
+            "strict": null,
+            "contexts": []
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": null,
+            "requireCodeOwnerReviews": null,
+            "requireLastPushApproval": null
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -5153,6 +5804,9 @@
         "templateDrift": {
           "sourceTemplate": null,
           "driftScore": null
+        },
+        "dependabot": {
+          "enabled": false
         }
       }
     },
@@ -5167,7 +5821,24 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": false,
+          "allowForcePushes": null,
+          "allowDeletions": null,
+          "requiredLinearHistory": null,
+          "enforceAdmins": null,
+          "requiredSignatures": null,
+          "requiredConversationResolution": null,
+          "lockBranch": null,
+          "blockCreations": null,
+          "requiredStatusChecks": {
+            "strict": null,
+            "contexts": []
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": null,
+            "requireCodeOwnerReviews": null,
+            "requireLastPushApproval": null
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -5258,6 +5929,9 @@
         "templateDrift": {
           "sourceTemplate": null,
           "driftScore": null
+        },
+        "dependabot": {
+          "enabled": false
         }
       }
     },
@@ -5272,7 +5946,24 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": false,
+          "allowForcePushes": null,
+          "allowDeletions": null,
+          "requiredLinearHistory": null,
+          "enforceAdmins": null,
+          "requiredSignatures": null,
+          "requiredConversationResolution": null,
+          "lockBranch": null,
+          "blockCreations": null,
+          "requiredStatusChecks": {
+            "strict": null,
+            "contexts": []
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": null,
+            "requireCodeOwnerReviews": null,
+            "requireLastPushApproval": null
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -5367,6 +6058,9 @@
         "templateDrift": {
           "sourceTemplate": null,
           "driftScore": null
+        },
+        "dependabot": {
+          "enabled": false
         }
       }
     },
@@ -5381,7 +6075,24 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": false,
+          "allowForcePushes": null,
+          "allowDeletions": null,
+          "requiredLinearHistory": null,
+          "enforceAdmins": null,
+          "requiredSignatures": null,
+          "requiredConversationResolution": null,
+          "lockBranch": null,
+          "blockCreations": null,
+          "requiredStatusChecks": {
+            "strict": null,
+            "contexts": []
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": null,
+            "requireCodeOwnerReviews": null,
+            "requireLastPushApproval": null
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -5472,6 +6183,9 @@
         "templateDrift": {
           "sourceTemplate": null,
           "driftScore": null
+        },
+        "dependabot": {
+          "enabled": false
         }
       }
     },
@@ -5486,7 +6200,24 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": false,
+          "allowForcePushes": null,
+          "allowDeletions": null,
+          "requiredLinearHistory": null,
+          "enforceAdmins": null,
+          "requiredSignatures": null,
+          "requiredConversationResolution": null,
+          "lockBranch": null,
+          "blockCreations": null,
+          "requiredStatusChecks": {
+            "strict": null,
+            "contexts": []
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": null,
+            "requireCodeOwnerReviews": null,
+            "requireLastPushApproval": null
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -5591,6 +6322,9 @@
         "templateDrift": {
           "sourceTemplate": null,
           "driftScore": null
+        },
+        "dependabot": {
+          "enabled": false
         }
       }
     }

@@ -1,74 +1,33 @@
-# Qlty Coverage Reporting Workflow for dot-claude repository
-# Runs pytest with coverage and uploads results to Qlty for code quality tracking.
-#
-# Features:
-#   - Runs test suite with coverage collection
-#   - Uploads coverage data to Qlty (supplements Codecov for code quality metrics)
-#   - Supply chain hardened with pinned SHA refs
+# Coverage Upload Workflow
+# Downloads coverage artifacts from CI and uploads to Qlty for quality tracking.
+# Triggers after the CI workflow succeeds so coverage is always in sync with CI.
 name: Coverage (Qlty)
 
 on:
-  push:
-    branches:
-      - main
-      - master
-  pull_request:
-    types: [opened, synchronize, reopened]
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [main, master]
   workflow_dispatch:
+    inputs:
+      run-id:
+        description: 'CI workflow run ID to download coverage from'
+        required: false
+        type: string
 
 permissions:
   contents: read
-
-concurrency:
-  group: coverage-${{ github.ref }}
-  cancel-in-progress: true
+  actions: read
 
 jobs:
-  coverage:
-    name: Test Coverage
-    runs-on: ubuntu-latest
-    steps:
-      - name: Harden the runner
-        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
-        with:
-          egress-policy: audit
-
-      - name: Checkout repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@38f3f104447c67c051c4a08e39b64a148898af3a # v4.2.0
-        with:
-          enable-cache: true
-
-      - name: Set up Python
-        run: uv python install 3.12
-
-      - name: Install dependencies
-        run: uv sync --all-extras
-
-      - name: Run tests with coverage
-        run: |
-          uv run pytest -v --cov=src/claude_config --cov-report=xml --cov-report=term-missing --cov-fail-under=80
-
-      - name: Verify coverage report exists
-        run: |
-          if [ ! -f coverage.xml ]; then
-            echo "coverage.xml not found; test run may have failed or coverage reporting is misconfigured" >&2
-            exit 1
-          fi
-
-      - name: Upload coverage to Qlty
-        uses: qltysh/qlty-action/coverage@a19242102d17e497f437d7466aa01b528537e899 # v2.2.0
-        if: success() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
-        with:
-          token: ${{ secrets.QLTY_COVERAGE_TOKEN }}
-          files: coverage.xml
-
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2 # v6.0.0
-        if: success() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: coverage.xml
-          fail_ci_if_error: false
+  upload-coverage:
+    name: Upload Coverage to Qlty
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    uses: ByronWilliamsCPA/.github/.github/workflows/python-qlty-coverage.yml@main
+    with:
+      coverage-artifact-name: coverage-reports
+      coverage-file-path: coverage.xml
+      workflow-run-id: ${{ github.event.workflow_run.id != null && github.event.workflow_run.id || '' }}
+      skip-if-no-token: true
+    secrets:
+      QLTY_COVERAGE_TOKEN: ${{ secrets.QLTY_COVERAGE_TOKEN }}

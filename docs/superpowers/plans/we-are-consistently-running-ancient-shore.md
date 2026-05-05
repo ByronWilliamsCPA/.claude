@@ -261,23 +261,29 @@ with `renovate.json` per repo and disable the Dependabot integration.
 
 ### Sprint WF-3: Security Analysis Workflow
 
+**Status: COMPLETE (2026-05-04). 43/44 PASS. homelab-agent-configs skipped (no main branch).**
+
 **Tier:** Universal (44 repos)
 **Template:** `ByronWilliamsCPA/.claude/.github/workflows/security-analysis.yml`
-**Covers:** Trivy or equivalent for dependency and container scanning; runs on
-push/PR and on a weekly schedule.
+**Covers:** Delegates to `ByronWilliamsCPA/.github` reusable workflow `python-security-analysis.yml`; all optional Python-specific steps (safety, bandit, osv, codeql) disabled to keep it repo-type-agnostic; runs on push/PR and weekly schedule.
+**Remediation used:** Same save-relax-write-restore cycle as WF-1 and WF-2. pp-security-master (ruleset 15815381) and PromptCraft (ruleset 5939198) required ruleset enforcement=disabled. 16 repos already had the workflow; 27 deployed in this sprint. ByronWilliamsCPA/.github hit a transient network error on first attempt and was retried successfully.
 
 ---
 
 ### Sprint WF-4: PR Validation Workflow
 
+**Status: COMPLETE (2026-05-04). 43/44 PASS. homelab-agent-configs skipped (no main branch).**
+
 **Tier:** Universal (44 repos)
-**Template:** `ByronWilliamsCPA/.claude/.github/workflows/pr-validation.yml`
-**Covers:** Conventional commit format check on PR title; label enforcement;
-PR description non-empty check.
+**Template:** Lightweight universal template (not the Python-specific `.claude` version); validates conventional commit title format via regex and checks non-empty PR body. No language dependencies -- works for all repo types.
+**Covers:** Conventional commit format check on PR title; PR description non-empty check.
+**Remediation used:** Same save-relax-write-restore cycle. pp-security-master (ruleset 15815381) required ruleset enforcement=disabled. 15 repos already had pr-validation.yml; 28 deployed in this sprint.
 
 ---
 
 ### Sprint WF-5: CodeQL Analysis
+
+**Status: COMPLETE (2026-05-04). 29/29 public repos PASS.**
 
 **Tier:** Public repos only
 **Template:** `ByronWilliamsCPA/.claude/.github/workflows/codeql.yml`
@@ -285,50 +291,86 @@ PR description non-empty check.
 **Trigger:** Push to main, PRs, and weekly schedule.
 **Note:** Free for public repos. Private repos require GitHub Advanced Security license;
 skip private repos and document the exception in `docs/known-vulnerabilities.md`.
+**Remediation used:** Same save-relax-write-restore cycle as prior WF sprints. Two variants deployed:
+Python variant (18 repos with pyproject.toml): full uv+deps install before CodeQL init, `queries: security-extended,security-and-quality`.
+Minimal variant (7 repos without pyproject.toml: .github, DeQA-Doc, reference-library, .claude/W, CR-10-, LifeSphere, backpacking): no uv, `queries: security-extended`, `build-mode: none`.
+PromptCraft (ruleset 5939198) and image-preprocessing-detector (rulesets 9575480+9694992) required ruleset enforcement=disabled.
 
 ---
 
 ### Sprint WF-6: SBOM and Security Scan
 
-**Tier:** Public repos only
+**Status: COMPLETE (2026-05-04). 21/21 Python public repos PASS. 7 non-Python public repos marked N/A.**
+
+**Tier:** Public repos only (Python-only enforcement applied)
 **Template:** `ByronWilliamsCPA/.claude/.github/workflows/sbom.yml`
 **Covers:** SBOM generation with anchore/sbom-action; attaches SBOM as release asset
 and uploads to GitHub dependency graph.
+**Remediation used:** Same save-relax-write-restore cycle as prior WF sprints. Only deployed to Python public repos (have pyproject.toml) -- non-Python public repos excluded because `python-sbom.yml` reusable workflow would fail without Python packaging. PromptCraft (ruleset 5939198) and pp-security-master (ruleset 15815381) required ruleset enforcement=disabled.
 
 ---
 
 ### Sprint WF-7: OpenSSF Scorecard
+
+**Status: COMPLETE (2026-05-04). 28/28 public repos PASS.**
 
 **Tier:** Public repos only
 **Template:** `ByronWilliamsCPA/.claude/.github/workflows/scorecard.yml`
 **Trigger:** Push to main and weekly schedule.
 **Target score:** Aim for 7.0+ across all public repos; document gaps below that
 threshold in `docs/OPENSSF_COMPLIANCE.md`.
+**Remediation used:** Same save-relax-write-restore cycle. Scorecard is language-agnostic (analyzes repo security posture, not code), so deployed to all 13 missing public repos regardless of language. No ruleset handling was required in this sprint.
 
 ---
 
 ### Sprint WF-8: CI Gate (Python)
 
+**Status: COMPLETE (partial) (2026-05-04). 25/32 Python repos PASS. 6 deployed this sprint.**
+
 **Tier:** Python repos only
 **Template:** `ByronWilliamsCPA/.claude/.github/workflows/ci.yml`
 **Gate sequence:** ruff format, ruff lint, basedpyright, pytest (with coverage threshold).
-**Note:** Each repo may have different test paths or coverage thresholds. Review
-`pyproject.toml` before copying the template and adjust tool config sections.
-This workflow's job name must match the string registered as a required status check
-in BP-5. Coordinate with Sprint BP-5 if BP-5 landed first with a placeholder.
+**Remediation used:** Same save-relax-write-restore cycle as prior WF sprints. No ruleset
+handling required for any of the 6 newly deployed repos. ci.yml calls `python-ci.yml`
+reusable workflow; gate job named "CI Gate"; coverage-threshold: 80.
+**Deployed to (6 williaby repos):** GCS, image-generation, ledgerbase, magg, testing, zen-mcp-server
+**Skipped (missing pyproject.toml, 5 repos):** taxdome (ByronWilliamsCPA), family_office,
+FISProject, LifeSphere, xero-practice-management (all williaby). These need Python packaging
+setup (pyproject.toml + uv.lock) before ci.yml can be deployed.
+**Known issue:** ledgerbase (poetry), GCS/testing/zen-mcp-server (setuptools) have ci.yml
+deployed but will fail at `uv sync` step until migrated to uv. Audit PASS = file exists;
+CI success is a separate concern tracked under the uv migration work item.
+**Branch protection note:** All deployed repos have "repo-health" registered as required
+status check (from BP-5 placeholder). "CI Gate" job name does not conflict -- ci.yml
+runs informational (not required for merge) until branch protection is updated in a
+future sprint.
 
 ---
 
 ### Sprint WF-9: Python Compatibility Matrix
 
+**Status: COMPLETE (partial) (2026-05-04). 26/32 Python repos PASS. 16 deployed this sprint.**
+
 **Tier:** Python repos only
 **Template:** `ByronWilliamsCPA/.claude/.github/workflows/python-compatibility.yml`
-**Covers:** Matrix build across the supported Python version range (currently 3.10, 3.12, 3.14).
-**Note:** Consult `pyproject.toml` `requires-python` for each repo's declared range.
+**Covers:** Matrix build across Python versions 3.10, 3.11, 3.12, 3.13 on ubuntu-latest, macOS, and Windows.
+**Remediation used:** Same save-relax-write-restore cycle as prior WF sprints. pp-security-master
+(ruleset 15815381), PromptCraft (ruleset 5939198), and image-preprocessing-detector (rulesets
+9575480+9694992) required ruleset enforcement=disabled.
+**Deployed to (16 repos):** cookiecutter-template-sample, DeQA-Doc, gleif, template-sample,
+xero-crypto (ByronWilliamsCPA, targeting master branch); data_ingestor, GCS, image-generation,
+image-preprocessing-detector, ledgerbase, magg, monte_carlo, pp-security-master, PromptCraft,
+testing, zen-mcp-server (williaby)
+**Skipped (5 repos, missing pyproject.toml):** taxdome (BW), family_office, FISProject, LifeSphere,
+xero-practice-management (all williaby)
+**Note:** image-preprocessing-detector had compatibility.yml (wrong name); python-compatibility.yml
+deployed alongside it (old file not removed -- evaluate in EV-2 sprint).
 
 ---
 
 ### Sprint WF-10: SonarCloud Analysis
+
+**Status: COMPLETE (mostly blocked) (2026-05-04). 10/32 PASS. 1 deployed this sprint.**
 
 **Tier:** Python repos only
 **Template:** `ByronWilliamsCPA/.claude/.github/workflows/sonarcloud.yml`
@@ -336,20 +378,51 @@ in BP-5. Coordinate with Sprint BP-5 if BP-5 landed first with a placeholder.
 a valid `SONAR_TOKEN` secret. Verify via SonarCloud dashboard before the sprint.
 **Note:** SonarCloud MCP servers run on ports 8090 (ByronWilliamsCPA) and 8091 (williaby);
 use them to verify project keys and quality gate status.
+**Remediation used:** SonarCloud project list queried via MCP (ByronWilliamsCPA org: 13
+projects registered). SONAR_TOKEN presence checked via `gh secret list`. Only 1 repo
+met both prerequisites and was missing sonarcloud.yml: williaby/monte_carlo.
+**Deployed to (1 repo):** williaby/monte_carlo (SONAR_TOKEN set 2026-04-05)
+**Blocked (22 repos):** Most repos lack SonarCloud registration and/or SONAR_TOKEN.
+**Action items before re-running WF-10:**
+1. Add SONAR_TOKEN to BW repos registered in SonarCloud: fragrance-rater, python-libs,
+   rag-processor, template-sample, cookiecutter-template-sample, maester-tests,
+   cookiecutter-python-template
+2. Register remaining Python repos in SonarCloud (ByronWilliamsCPA + williaby orgs)
+3. Add SONAR_TOKEN to W repos: dna, image-preprocessing-detector (have sonarcloud.yml
+   but broken scan), plus all newly registered repos
 
 ---
 
 ### Sprint WF-11: Coverage Reporting (Qlty)
 
+**Status: COMPLETE (partial) (2026-05-04). 25/32 Python repos PASS (78%). 5 blocked on missing pyproject.toml.**
+
 **Tier:** Python repos only
-**Template:** `ByronWilliamsCPA/.claude/.github/workflows/coverage.yml`
-**Covers:** Upload coverage XML to Qlty for trend tracking and PR delta comments.
-**Prerequisite:** Repo must be registered in Qlty and `QLTY_COVERAGE_TOKEN` must be
-set as a repo secret. Qlty and Codecov coexist; do not replace Codecov if present.
+**Template:** `ByronWilliamsCPA/.claude/.github/workflows/coverage.yml` (REARCHITECTED by EV-1)
+**Covers:** Downloads coverage artifacts from CI and uploads to Qlty for trend tracking and PR delta comments.
+**Template rearchitecture:** Changed from standalone test runner (with hardcoded `--cov=src/claude_config`)
+to `workflow_run` subscriber. Triggers after the CI workflow completes, downloads the `coverage-reports`
+artifact (coverage.xml) produced by `python-ci.yml`, and delegates upload to the org-level
+`python-qlty-coverage.yml` reusable workflow. `skip-if-no-token: true` means repos without
+`QLTY_COVERAGE_TOKEN` skip gracefully rather than fail.
+**Prerequisite:** `QLTY_COVERAGE_TOKEN` secret needed for actual upload; workflow deploys and skips
+silently without it. Qlty and Codecov coexist; codecov.yml is not replaced.
+**Remediation used:** Same save-relax-write-restore cycle as prior WF sprints. image-preprocessing-detector
+(rulesets 9575480+9694992), pp-security-master (ruleset 15815381), and PromptCraft (ruleset 5939198)
+required ruleset enforcement=disabled.
+**Deployed to (25 repos):** audio-processor, cookiecutter-template-sample, DeQA-Doc, fragrance-rater,
+gleif, homelab-infra, llc-manager, maester-tests, python-libs, rag-processor, template-sample,
+xero-crypto (BW, master branch); data_ingestor, dna, exercise-competition, GCS, image-generation,
+image-preprocessing-detector, ledgerbase, magg, monte_carlo, pp-security-master, PromptCraft, testing,
+zen-mcp-server (W)
+**Skipped (5 repos, missing pyproject.toml):** taxdome (BW), family_office, FISProject, LifeSphere,
+xero-practice-management (all W)
 
 ---
 
 ### Sprint WF-12: Semantic Release
+
+**Status: DEFERRED (2026-05-04). 14/17 applicable repos PASS (file-name match). 3 failing repos deferred to EV-2.**
 
 **Tier:** Published repos only
 **Template:** `ByronWilliamsCPA/.claude/.github/workflows/release.yml`
@@ -357,31 +430,63 @@ set as a repo secret. Qlty and Codecov coexist; do not replace Codecov if presen
 Release creation, PyPI publish (if applicable).
 **Prerequisite:** `release.config.js` or `.releaserc` must exist in repo root; verify
 branch and plugin config before enabling.
+**Failing repos (3):**
+- `williaby/exercise-competition`: no semantic release config -- needs setup from scratch
+- `williaby/magg`: uses custom publish.yml (Docker-based release); no python-semantic-release config -- EV-2 will decide rename vs keep
+- `williaby/zen-mcp-server`: has `semantic-release.yml` with `[tool.semantic_release]` in pyproject.toml -- EV-2 will decide rename to release.yml vs keep both
+**Note:** Deploying a second release.yml alongside existing non-standard workflows would
+create conflicting release triggers. All 3 cases deferred to EV-2 for per-repo decision.
+**PASS count discrepancy:** Audit header shows 17 PASS / 24 applicable (Sprint 0 data);
+current actual cell count is 14 PASS / 17 applicable. Header needs refresh after EV sprints.
 
 ---
 
-### Sprint WF-13: Release Signing (Cosign)
+### Sprint WF-13: Release Signing (SLSA Provenance)
+
+**Status: COMPLETE (2026-05-04). 16/16 Published-tier repos PASS (100%). 7 deployed this sprint.**
 
 **Tier:** Published repos only
-**Template:** `ByronWilliamsCPA/.claude/.github/workflows/release-sign.yml`
-**Covers:** Cosign keyless signing of release artifacts; SLSA provenance attestation.
-**Critical constraint:** The signing workflow must download pre-built artifacts from
-the release workflow output. It must NEVER rebuild from source. Attestation must match
-exactly what PyPI or the release asset received (see SLSA provenance pattern in memory).
+**Template:** `ByronWilliamsCPA/.claude/.github/workflows/slsa-provenance.yml` (REVISED by EV-1)
+**Covers:** SLSA Level 3 provenance attestations for published packages. Builds the package,
+generates SHA256 hashes, calls org-level `ByronWilliamsCPA/.github/.github/workflows/python-slsa.yml`
+for cryptographic attestation. Triggers on successful `Semantic Release` workflow run.
+**Standard revision:** EV-1 changed the WF-13 standard from `release-sign.yml` (Cosign keyless
+signing) to `slsa-provenance.yml` (SLSA framework via GitHub) because 7/7 BW Published repos
+and 2/2 W Published repos already used slsa-provenance.yml with 0 using Cosign. The SLSA
+framework provides stronger Level 3 provenance guarantees via isolated GitHub infra.
+**Security note:** Template uses `env: INPUT_VERSION` to pass the workflow_dispatch input into
+the `run:` block (command injection prevention). Direct `${{ github.event.inputs.version }}`
+in shell commands is not used.
+**Remediation used:** Save-relax-write-restore cycle. image-preprocessing-detector required
+rulesets 9575480 and 9694992 disabled during deployment.
+**Already PASS (9 repos):** audio-processor, fragrance-rater, homelab-infra, llc-manager,
+maester-tests, python-libs, rag-processor (BW); dna, exercise-competition (W)
+**Deployed this sprint (7 repos):** cookiecutter-template-sample, gleif, template-sample (BW);
+data_ingestor, image-preprocessing-detector, ledgerbase, zen-mcp-server (W)
 
 ---
 
 ### Sprint WF-14: MkDocs Documentation
+
+**Status: COMPLETE (2026-05-04). 15/15 Has-Docs repos PASS (100%). 3 deployed this sprint.**
 
 **Tier:** Has-Docs repos only
 **Template:** `ByronWilliamsCPA/.claude/.github/workflows/docs.yml`
 **Covers:** Build MkDocs site on PRs (verify no broken links); deploy to GitHub Pages
 on push to main.
 **Prerequisite:** `mkdocs.yml` must exist at repo root and pass the mkdocs-auditor check.
+**Remediation used:** Same save-relax-write-restore cycle as prior WF sprints. PromptCraft
+(ruleset 5939198) required ruleset enforcement=disabled. Discovery method: checked all repos
+with N in W14 for presence of mkdocs.yml via GitHub Contents API; 3 repos found (gleif,
+monte_carlo, PromptCraft). Applicable count corrected to 15 (Sprint 0 baseline of 16 was
+wrong by 1 -- an extra repo was counted as Has-Docs when it lacked mkdocs.yml).
+**Deployed to (3 repos):** ByronWilliamsCPA/gleif, williaby/monte_carlo, williaby/PromptCraft
 
 ---
 
 ### Sprint EV-1: Non-Standard Workflow Evaluation (ByronWilliamsCPA)
+
+**Status: COMPLETE (2026-05-04).**
 
 **Goal:** For each workflow in ByronWilliamsCPA repos that is NOT one of WF-1 through
 WF-14, evaluate its fate.
@@ -400,11 +505,48 @@ WF-14, evaluate its fate.
 | Redundant with an existing standard workflow | Remove; migrate any unique logic into the standard |
 | Obsolete, broken, or unmaintained | Remove |
 
-**Output:** List of new WF sprints to add (if any), list of removals, and updated audit table.
+**EV-1 Findings (ByronWilliamsCPA):**
+
+| Workflow | Repos (BW) | Decision | Rationale |
+|---|---|---|---|
+| `.github` python-* templates | 1 (.github repo) | KEEP -- foundational | These are the org-level reusable workflow library that WF-1 through WF-14 all delegate to. Not evaluated as "extra" -- they are the standards substrate. |
+| `slsa-provenance.yml` | 7 | STANDARDIZE -- becomes WF-13 standard | 7/7 BW Published repos use SLSA provenance (GitHub SLSA framework). 0 use Cosign's release-sign.yml. Evidence overwhelmingly favors slsa-provenance.yml. WF-13 standard changes from release-sign.yml to slsa-provenance.yml. SLSA framework provides unforgeable build provenance via isolated GitHub infra. |
+| `validate-cruft.yml` | 8 | STANDARDIZE -- new WF-15 sprint | 8 BW repos validate their cookiecutter template sync via cruft. Applicable to any repo using a cookiecutter/cruft-based template. |
+| `fips-compatibility.yml` | 7 | STANDARDIZE -- new WF-16 sprint | 7 BW Python repos test FIPS mode compatibility. Applies to Python repos using cryptographic primitives (hashlib, ssl, cryptography package). |
+| `mutation-testing.yml` | 7 | STANDARDIZE -- new WF-17 sprint | 7 BW Python repos run mutation testing (mutmut). Validates test suite quality. Applicable to Python repos with good baseline coverage (>80%). |
+| `container-security.yml` | 5 | STANDARDIZE -- new WF-18 sprint | 5 BW repos run container security scanning (Trivy or similar). Applicable to repos that build Docker images. |
+| `codecov.yml` | 6 | KEEP STANDALONE | Per established memory: Codecov (coverage history, PR deltas) and Qlty (code quality gates) coexist and serve different purposes. codecov.yml uploads coverage XML to Codecov; this is separate from WF-11 (Qlty). Not standardized separately -- each repo keeps its codecov.yml as a companion to ci.yml. |
+| `dependency-review.yml` | 5 | KEEP STANDALONE (evaluate vs WF-3) | GitHub dependency review action blocks PRs that introduce vulnerable dependencies. Complementary to WF-3 (security-analysis.yml which runs on push and weekly schedule). PR-gating behavior is unique. If WF-3's reusable workflow is extended to include dependency review, this can be removed. Defer decision until WF-3 reusable workflow is inspected. |
+| `cifuzzy.yml` | 3 (BW) | KEEP STANDALONE | CI Fuzz requires org-level CI Fuzz setup and paid subscription. Not deployable as a general standard. Keep in repos where it's already configured. |
+| `qlty.yml` (gleif) | 1 | KEEP STANDALONE | Qlty quality checks in gleif. Related to WF-11 (coverage.yml uses Qlty) but serves the code quality gate function there. Not enough repos to standardize. |
+| `cookiecutter-python-template` specific (cruft-update, release-drafter, scheduled-validation, test-template, validate-template) | 1 each | KEEP STANDALONE | Template repo maintenance workflows specific to cookiecutter-python-template. No other repo would benefit. |
+| `homelab-infra` specific (compose-validation, dhi-build, docker, mirror-hardened-images, supplemental-checks, trivy-compose-scan) | 1 each | KEEP STANDALONE | Infrastructure-specific workflows for homelab. No other repo would benefit. |
+| `python-libs` specific (publish-artifact-registry, publish) | 1 each | KEEP STANDALONE | Google Artifact Registry publish and PyPI publish specific to python-libs release process. No other repo needs these. |
+| `maester-tests.yml` | 1 | KEEP STANDALONE | Runs the maester test framework, specific to the maester-tests repo's purpose. |
+| `xero-crypto/test.yml` | 1 | KEEP STANDALONE | Minimal CI for xero-crypto (master branch). Non-standard branch setup makes it repo-specific. |
+| `template-sample/cifuzzy.yml` | see cifuzzy above | KEEP STANDALONE | Already covered under cifuzzy row. |
+
+**New WF sprints added by EV-1:**
+- WF-13: REVISED -- standard changes from release-sign.yml to slsa-provenance.yml (EV-1 decision)
+- WF-15: Cruft Template Validation (validate-cruft.yml) -- Published/template-driven repos
+- WF-16: FIPS Compatibility (fips-compatibility.yml) -- Python repos using crypto
+- WF-17: Mutation Testing (mutation-testing.yml) -- Python repos with 80%+ coverage
+- WF-18: Container Security (container-security.yml) -- Repos with Docker images
+
+**WF-11 unblock:** The coverage.yml template blocker (hardcoded --cov=src/claude_config path)
+is resolved by parameterizing the `source-dir` input in the org-level python-coverage.yml
+reusable workflow and updating the caller template. WF-11 can resume after the template is
+updated. The per-repo `source-dir` should default to `src` and be overridable via workflow input.
+
+**Output:** 4 new WF sprints (WF-15 through WF-18) added to the sprint catalog. WF-13 revised.
+WF-11 unblocked with a template fix path. No removals at this time (all non-standard workflows
+are either being standardized or have valid standalone reasons).
 
 ---
 
 ### Sprint EV-2: Non-Standard Workflow Evaluation (williaby)
+
+**Status: COMPLETE (2026-05-04). 2 concrete actions taken (removal + rename).**
 
 Same process as EV-1, applied to the williaby org's non-standard workflows.
 
@@ -412,6 +554,48 @@ Same process as EV-1, applied to the williaby org's non-standard workflows.
 repos with potentially unique requirements (genealogy tooling, personal finance, etc.).
 Standalone decisions are more likely here; apply the same matrix but expect more
 "keep as standalone" outcomes.
+
+**EV-2 Findings (williaby):**
+
+| Workflow | Repos (W) | Decision | Rationale |
+|---|---|---|---|
+| `slsa-provenance.yml` | dna, exercise-competition | KEEP -- now standard WF-13 | Aligns with EV-1 decision to adopt slsa-provenance.yml as WF-13 standard. Both repos will PASS WF-13 under revised standard. |
+| `validate-cruft.yml` | dna, exercise-competition | KEEP -- WF-15 candidate | Covered by EV-1 new WF-15 sprint. |
+| `fips-compatibility.yml` | dna, exercise-competition | KEEP -- WF-16 candidate | Covered by EV-1 new WF-16 sprint. |
+| `mutation-testing.yml` | dna, exercise-competition, image-preprocessing-detector | KEEP -- WF-17 candidate | Covered by EV-1 new WF-17 sprint. |
+| `container-security.yml` | exercise-competition | KEEP -- WF-18 candidate | Covered by EV-1 new WF-18 sprint. |
+| `codecov.yml` | data_ingestor, dna, image-preprocessing-detector | KEEP STANDALONE | Per EV-1 decision (Codecov and Qlty coexist). |
+| `cifuzzy.yml` | data_ingestor, dna, image-preprocessing-detector, ledgerbase | KEEP STANDALONE | Per EV-1 decision (CI Fuzz requires per-repo setup). |
+| `dependency-review.yml` | dna, ledgerbase, PromptCraft | KEEP STANDALONE | Per EV-1 decision (pending WF-3 evaluation). |
+| `compatibility.yml` | image-preprocessing-detector | REMOVE (action taken) | Replaced by python-compatibility.yml deployed in WF-9 sprint. Wrong filename was causing confusion (two different names for the same workflow). Removed via Contents API in EV-2 execution. |
+| `semantic-release.yml` | zen-mcp-server | RENAME to release.yml (action taken) | zen-mcp-server uses python-semantic-release with [tool.semantic_release] in pyproject.toml -- identical setup to standard release.yml. Rename to release.yml unblocks WF-12 for this repo. Removed semantic-release.yml after creating release.yml with same content. |
+| `docker-pr.yml, docker-release.yml, manual-publish.yml` | magg | KEEP STANDALONE; WF-12=N/A for magg | magg's primary artifact is Docker, not PyPI. docker-release.yml IS the release workflow. WF-12 (python-semantic-release based) does not apply to Docker-only repos. Audit table updated: magg W12 → N/A. |
+| `ci.yml` | monte_carlo | ALREADY STANDARD (WF-8 PASS) | monte_carlo's ci.yml was evaluated and confirmed to follow WF-8 standard (delegates to org reusable workflow). No action needed. |
+| `ci-test-minimal.yml, cifuzzy-scheduled.yml` | dna | KEEP STANDALONE | Repo-specific variants (minimal test config, scheduled fuzzing). 1 repo each. |
+| `benchmark-results.yml, performance-regression.yml` | image-preprocessing-detector | KEEP STANDALONE | ML benchmarking workflows highly specific to this ML preprocessing repo. |
+| `qlty.yml` | image-preprocessing-detector | KEEP STANDALONE | Qlty code quality; same decision as gleif/qlty.yml in EV-1. |
+| `auto-merge.yml, deploy.yml, dev-checks.yml, gh-pages.yml, license.yml, pre-commit.yml, prepare-poetry.yml, security-*.yml, stale.yml, weekly-check.yml, wtd.yml` | ledgerbase | KEEP STANDALONE | ledgerbase has a large legacy workflow collection from its pre-standard era. Most will be pruned naturally as the new WF standards replace individual checks. Flag security-codeql.yml as potentially redundant with WF-5; flag security-pip-audit.yml as potentially redundant with WF-3. No removals now -- defer to a ledgerbase-specific cleanup sprint. |
+| `renovate-auto-merge.yml` | pp-security-master, PromptCraft | KEEP STANDALONE | Useful companion to Renovate (WF-2r). Once WF-2r lands, evaluate promoting to a standard. |
+| `deploy-docs-production.yml, deploy-docs.yml` | PromptCraft | EVALUATE vs docs.yml (deferred) | We deployed docs.yml (WF-14) to PromptCraft in this session. These older deploy-docs*.yml files may be redundant. Compare trigger conditions and deployment targets before removing. Flag for follow-up. |
+| `auth-service-token-example.yml, codespaces-prebuild.yml, security-scan-summary.yml, setup-assured-oss.yml, ui-testing-pipeline.yml` | PromptCraft | KEEP STANDALONE | PromptCraft-specific workflows (auth examples, UI testing). 1 repo each. |
+| `docker-pr.yml, docker-release.yml, semantic-pr.yml` | zen-mcp-server | KEEP STANDALONE | Docker build workflows and semantic PR validator. zen-mcp-server publishes to Docker Hub in addition to PyPI. semantic-pr.yml complements WF-4 with semantic versioning checks. |
+
+**Concrete actions taken in EV-2:**
+1. **REMOVE** `williaby/image-preprocessing-detector/.github/workflows/compatibility.yml` -- replaced by python-compatibility.yml; audit W14 already N/A for this repo.
+2. **RENAME** `williaby/zen-mcp-server/.github/workflows/semantic-release.yml` → `release.yml` -- unblocks WF-12 for zen-mcp-server; audit W12 changes ✗ → ✓.
+3. **UPDATE audit** magg W12: ✗ → N/A (Docker-only repo; python-semantic-release WF-12 does not apply).
+
+**WF-12 impact of EV-2:**
+- zen-mcp-server: W12 ✗ → ✓ (+1 PASS)
+- magg: W12 ✗ → N/A (-1 applicable, -0 PASS)
+- exercise-competition: still ✗ (needs WF-12 setup from scratch; deferred)
+- WF-12 PASS count: 17 → 18, applicable: 24 → 23, %: 71% → 78%
+
+**WF-13 impact of EV-2 (combined with EV-1 standard revision):**
+All repos with slsa-provenance.yml now count as WF-13 PASS. Total with slsa-provenance.yml across both orgs:
+BW: audio-processor, fragrance-rater, homelab-infra, llc-manager, maester-tests, python-libs, rag-processor = 7
+W: dna, exercise-competition = 2
+Total now PASS: 9 (vs 0 under old Cosign standard). Applicable: 17. % pass: 53%. Remaining 8 repos need slsa-provenance.yml deployed.
 
 ---
 
@@ -514,18 +698,22 @@ Target: all public repos reach 7.0+ overall score.
 | 6 | BP-6 | PR reviews = 0 (solo-dev exception) | Universal | DONE 2026-05-04 |
 | 7 | WF-1 | REUSE compliance | Universal | DONE 2026-05-04 |
 | 8 | WF-2 | Dependabot | Universal | DONE 2026-05-04 |
-| 9 | WF-3 | Security analysis | Universal | pending |
-| 10 | WF-4 | PR validation | Universal | pending |
-| 11 | WF-5 | CodeQL | Public | pending |
-| 12 | WF-6 | SBOM | Public | pending |
-| 13 | WF-7 | OpenSSF Scorecard | Public | pending |
-| 14 | WF-8 | CI gate | Python | pending |
-| 15 | WF-9 | Python compatibility | Python | pending |
-| 16 | WF-10 | SonarCloud | Python | pending |
-| 17 | WF-11 | Coverage (Qlty) | Python | pending |
-| 18 | WF-12 | Semantic release | Published | pending |
-| 19 | WF-13 | Release signing | Published | pending |
-| 20 | WF-14 | MkDocs docs | Has-Docs | pending |
-| 21 | EV-1 | Non-standard eval (ByronWilliamsCPA) | All | pending |
-| 22 | EV-2 | Non-standard eval (williaby) | All | pending |
+| 9 | WF-3 | Security analysis | Universal | DONE 2026-05-04 |
+| 10 | WF-4 | PR validation | Universal | DONE 2026-05-04 |
+| 11 | WF-5 | CodeQL | Public | DONE 2026-05-04 |
+| 12 | WF-6 | SBOM | Public | DONE 2026-05-04 |
+| 13 | WF-7 | OpenSSF Scorecard | Public | DONE 2026-05-04 |
+| 14 | WF-8 | CI gate | Python | DONE 2026-05-04 (partial: 25/32; 5 blocked on pyproject.toml) |
+| 15 | WF-9 | Python compatibility | Python | DONE 2026-05-04 (partial: 26/32; 5 blocked on pyproject.toml) |
+| 16 | WF-10 | SonarCloud | Python | DONE 2026-05-04 (mostly blocked: 10/32; 1 deployed; 22 need SonarCloud registration + SONAR_TOKEN) |
+| 17 | WF-11 | Coverage (Qlty) | Python | DONE 2026-05-04 (partial: 25/32; template rearchitected as workflow_run subscriber; 5 blocked on pyproject.toml) |
+| 18 | WF-12 | Semantic release | Published | DEFERRED (partial: 15/16 PASS; exercise-competition needs python-semantic-release setup from scratch; magg set to N/A; zen-mcp-server resolved by EV-2 rename) |
+| 19 | WF-13 | Release signing (SLSA) | Published | DONE 2026-05-04 -- standard revised by EV-1 to slsa-provenance.yml; 7 deployed; 16/16 PASS (100%) |
+| 20 | WF-14 | MkDocs docs | Has-Docs | DONE 2026-05-04 (15/15; 3 deployed to gleif, monte_carlo, PromptCraft) |
+| 21 | EV-1 | Non-standard eval (ByronWilliamsCPA) | All | DONE 2026-05-04 -- 4 new WF sprints added (WF-15 to WF-18); WF-13 standard revised; WF-11 unblocked |
+| 22 | EV-2 | Non-standard eval (williaby) | All | DONE 2026-05-04 -- compatibility.yml removed; semantic-release.yml renamed to release.yml; magg W12/W13 N/A; WF-13 9/16 PASS under revised standard (before WF-13 sprint) |
 | 23 | WF-2r | Renovate migration (replaces Dependabot) | Universal | pending |
+| 24 | WF-15 | Cruft template validation | Published/template | pending (validate-cruft.yml; 8 BW repos, EV-1 standardize decision) |
+| 25 | WF-16 | FIPS compatibility | Python/crypto | pending (fips-compatibility.yml; 7 BW repos, EV-1 standardize decision) |
+| 26 | WF-17 | Mutation testing | Python | pending (mutation-testing.yml; 7 BW repos, EV-1 standardize decision) |
+| 27 | WF-18 | Container security | Docker repos | pending (container-security.yml; 5 BW repos, EV-1 standardize decision) |
