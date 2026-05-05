@@ -599,6 +599,28 @@ Total now PASS: 9 (vs 0 under old Cosign standard). Applicable: 17. % pass: 53%.
 
 ---
 
+### Sprint WF-15: Cruft Template Validation
+
+**Status: COMPLETE (2026-05-04). 22/22 cruft-tracked repos PASS (100%). 12 deployed this sprint.**
+
+**Tier:** Cruft-tracked repos only (repos with `.cruft.json` at root)
+**Template:** `ByronWilliamsCPA/.claude/.github/workflows/validate-cruft.yml`
+**Covers:** Verifies repo is in sync with its cookiecutter template via `cruft check`. Fails
+PRs that drift from the template; warns only on scheduled/manual runs. Conditionally checks
+for orphaned files if `scripts/check_orphaned_files.py` exists (using `hashFiles()`).
+**Security note:** `github.event_name` passed via `env: EVENT_NAME` before use in shell to
+prevent command injection.
+**Remediation used:** Same save-relax-write-restore cycle as prior WF sprints. image-preprocessing-detector
+(rulesets 9575480+9694992), pp-security-master (ruleset 15815381), and PromptCraft (ruleset 5939198)
+required ruleset enforcement=disabled.
+**Already PASS (10 repos):** audio-processor, fragrance-rater, homelab-infra, llc-manager,
+maester-tests, python-libs, rag-processor, template-sample (BW); dna, exercise-competition (W)
+**Deployed this sprint (12 repos):** cookiecutter-template-sample (BW); data_ingestor, GCS,
+image-generation, image-preprocessing-detector, ledgerbase, magg, monte_carlo, pp-security-master,
+PromptCraft, testing, zen-mcp-server (W)
+
+---
+
 ### Sprint WF-2r: Renovate Migration (replaces Dependabot)
 
 **Tier:** Universal (all 44 repos)
@@ -713,7 +735,7 @@ Target: all public repos reach 7.0+ overall score.
 | 21 | EV-1 | Non-standard eval (ByronWilliamsCPA) | All | DONE 2026-05-04 -- 4 new WF sprints added (WF-15 to WF-18); WF-13 standard revised; WF-11 unblocked |
 | 22 | EV-2 | Non-standard eval (williaby) | All | DONE 2026-05-04 -- compatibility.yml removed; semantic-release.yml renamed to release.yml; magg W12/W13 N/A; WF-13 9/16 PASS under revised standard (before WF-13 sprint) |
 | 23 | WF-2r | Renovate migration (replaces Dependabot) | Universal | pending |
-| 24 | WF-15 | Cruft template validation | Published/template | pending (validate-cruft.yml; 8 BW repos, EV-1 standardize decision) |
+| 24 | WF-15 | Cruft template validation | Cruft-tracked | DONE 2026-05-04 -- 22/22 PASS (100%); 12 deployed; hashFiles() conditional for orphaned-files check |
 | 25 | WF-16 | FIPS compatibility | Python/crypto | pending (fips-compatibility.yml; 7 BW repos, EV-1 standardize decision) |
 | 26 | WF-17 | Mutation testing | Python | pending (mutation-testing.yml; 7 BW repos, EV-1 standardize decision) |
 | 27 | WF-18 | Container security | Docker repos | pending (container-security.yml; 5 BW repos, EV-1 standardize decision) |
