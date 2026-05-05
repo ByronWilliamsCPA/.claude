@@ -621,6 +621,34 @@ PromptCraft, testing, zen-mcp-server (W)
 
 ---
 
+### Sprint WF-16: FIPS Compatibility
+
+**Status: COMPLETE (2026-05-04). 20/20 applicable repos PASS (100%). 11 deployed this sprint.**
+
+**Tier:** Python repos with `scripts/check_fips_compatibility.py` at root
+**Template:** `ByronWilliamsCPA/.claude/.github/workflows/fips-compatibility.yml`
+**Covers:** Verifies Python cryptographic operations work in FIPS 140-2/140-3 restricted
+environments. Runs the repo's `check_fips_compatibility.py` script with `--fix-hints` and
+`--include-tests`. Generates a JSON report and uploads as artifact. Posts pass/fail/warn
+summary as a PR comment.
+**Security note:** `workflow_dispatch` input `strict_mode` passed via `env: STRICT_MODE`
+before use in shell to prevent command injection. Original BW repo version had direct
+expression interpolation (`${{ github.event.inputs.strict_mode }}`) inside a bash `if [[ ]]`
+block -- a genuine injection risk for user-supplied dispatch inputs. Canonical template fixes this.
+**N/A determination:** 5 BW Python repos lack `check_fips_compatibility.py`:
+cookiecutter-template-sample, DeQA-Doc, gleif, template-sample, xero-crypto. These are N/A
+for WF-16 and not blockers -- they don't use the cryptographic primitives the script tests.
+**Remediation used:** Same save-relax-write-restore cycle as prior WF sprints. image-preprocessing-detector
+(rulesets 9575480+9694992), pp-security-master (ruleset 15815381), and PromptCraft (ruleset 5939198)
+required ruleset enforcement=disabled. All W repos successfully deployed in a single script run.
+**Already PASS (9 repos):** audio-processor, fragrance-rater, homelab-infra, llc-manager,
+maester-tests, python-libs, rag-processor (BW); dna, exercise-competition (W)
+**Deployed this sprint (11 repos, all williaby):** data_ingestor, GCS, image-generation,
+image-preprocessing-detector, ledgerbase, magg, monte_carlo, pp-security-master, PromptCraft,
+testing, zen-mcp-server
+
+---
+
 ### Sprint WF-2r: Renovate Migration (replaces Dependabot)
 
 **Tier:** Universal (all 44 repos)
@@ -736,6 +764,6 @@ Target: all public repos reach 7.0+ overall score.
 | 22 | EV-2 | Non-standard eval (williaby) | All | DONE 2026-05-04 -- compatibility.yml removed; semantic-release.yml renamed to release.yml; magg W12/W13 N/A; WF-13 9/16 PASS under revised standard (before WF-13 sprint) |
 | 23 | WF-2r | Renovate migration (replaces Dependabot) | Universal | pending |
 | 24 | WF-15 | Cruft template validation | Cruft-tracked | DONE 2026-05-04 -- 22/22 PASS (100%); 12 deployed; hashFiles() conditional for orphaned-files check |
-| 25 | WF-16 | FIPS compatibility | Python/crypto | pending (fips-compatibility.yml; 7 BW repos, EV-1 standardize decision) |
+| 25 | WF-16 | FIPS compatibility | Python/crypto | DONE 2026-05-04 -- 20/20 applicable PASS (100%); 11 W repos deployed; 9 BW already had it; 5 BW N/A (no check_fips_compatibility.py); command injection fixed in canonical template |
 | 26 | WF-17 | Mutation testing | Python | pending (mutation-testing.yml; 7 BW repos, EV-1 standardize decision) |
 | 27 | WF-18 | Container security | Docker repos | pending (container-security.yml; 5 BW repos, EV-1 standardize decision) |
