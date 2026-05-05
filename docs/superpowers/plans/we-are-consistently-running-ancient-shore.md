@@ -415,6 +415,27 @@ Standalone decisions are more likely here; apply the same matrix but expect more
 
 ---
 
+### Sprint WF-2r: Renovate Migration (replaces Dependabot)
+
+**Tier:** Universal (all 44 repos)
+**Goal:** Replace `dependabot.yml` with Renovate as the dependency update manager across all repos.
+**Prerequisite:** Mend Renovate GitHub App installed on both ByronWilliamsCPA and williaby orgs.
+
+**Migration steps:**
+1. Create org-level `renovate.json` in `ByronWilliamsCPA/.github` and `williaby/.github` with shared base config.
+2. Let Renovate open onboarding PRs per repo -- it auto-detects ecosystems (pip, docker, github-actions, etc.).
+3. Merge each onboarding PR after reviewing Renovate's proposed schedule and grouping config.
+4. After Renovate is confirmed active per repo, remove or empty `dependabot.yml` (or keep the `github-actions` entry if you prefer Dependabot for Actions while Renovate handles packages).
+
+**Key Renovate advantages over Dependabot:**
+- Centralized org-level config
+- Update grouping (e.g., batch all minor/patch updates in one PR)
+- Configurable automerge for low-risk updates (patch-level, non-breaking)
+- Better monorepo support
+- More package managers supported
+
+---
+
 ## Per-Sprint Execution Format
 
 Each sprint (BP and WF) follows this repeatable pattern:
@@ -507,3 +528,4 @@ Target: all public repos reach 7.0+ overall score.
 | 20 | WF-14 | MkDocs docs | Has-Docs | pending |
 | 21 | EV-1 | Non-standard eval (ByronWilliamsCPA) | All | pending |
 | 22 | EV-2 | Non-standard eval (williaby) | All | pending |
+| 23 | WF-2r | Renovate migration (replaces Dependabot) | Universal | pending |
