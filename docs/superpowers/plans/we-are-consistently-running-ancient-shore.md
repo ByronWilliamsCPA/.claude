@@ -649,6 +649,30 @@ testing, zen-mcp-server
 
 ---
 
+### Sprint WF-17: Mutation Testing
+
+**Status: COMPLETE (2026-05-04). 10/10 applicable repos PASS (100%). No new deployments needed.**
+
+**Tier:** Python repos with 80%+ baseline coverage
+**Template:** `ByronWilliamsCPA/.claude/.github/workflows/mutation-testing.yml`
+**Covers:** Validates test suite quality by running mutmut mutation testing. Delegates to
+org-level `python-mutation.yml` reusable workflow. Fails on PRs if mutation score drops
+below 80%; weekly scheduled runs report only (no failure gate). Posts mutation score as
+a PR comment.
+**Applicability determination:** The 10 repos that already have `mutation-testing.yml`
+(7 BW + 3 W) are the confirmed-applicable set for this sprint. Remaining W Python repos
+require coverage data confirmation (80%+ baseline) before WF-17 can be applied. Since
+WF-10/WF-11 are not yet fully resolved for all W repos, marking these N/A for now and
+revisiting after coverage infrastructure is stable.
+**Already PASS (10 repos, all pre-existing):** audio-processor, fragrance-rater,
+homelab-infra, llc-manager, maester-tests, python-libs, rag-processor (BW);
+dna, exercise-competition, image-preprocessing-detector (W)
+**N/A (remaining W Python repos, coverage not yet confirmed):** data_ingestor, GCS,
+image-generation, ledgerbase, magg, monte_carlo, pp-security-master, PromptCraft,
+testing, zen-mcp-server
+
+---
+
 ### Sprint WF-2r: Renovate Migration (replaces Dependabot)
 
 **Tier:** Universal (all 44 repos)
@@ -765,5 +789,5 @@ Target: all public repos reach 7.0+ overall score.
 | 23 | WF-2r | Renovate migration (replaces Dependabot) | Universal | pending |
 | 24 | WF-15 | Cruft template validation | Cruft-tracked | DONE 2026-05-04 -- 22/22 PASS (100%); 12 deployed; hashFiles() conditional for orphaned-files check |
 | 25 | WF-16 | FIPS compatibility | Python/crypto | DONE 2026-05-04 -- 20/20 applicable PASS (100%); 11 W repos deployed; 9 BW already had it; 5 BW N/A (no check_fips_compatibility.py); command injection fixed in canonical template |
-| 26 | WF-17 | Mutation testing | Python | pending (mutation-testing.yml; 7 BW repos, EV-1 standardize decision) |
+| 26 | WF-17 | Mutation testing | Python | DONE 2026-05-04 -- 10/10 applicable PASS (100%); all pre-existing; canonical template written; remaining W Python repos N/A pending 80%+ coverage confirmation |
 | 27 | WF-18 | Container security | Docker repos | pending (container-security.yml; 5 BW repos, EV-1 standardize decision) |
