@@ -33,7 +33,8 @@ Update this file after each remediation sprint completes.
 | Repos with all 6 BP PASS | 3 | 7% |
 | Repos with BP-1+BP-2 PASS (after Sprint BP-1) | 43 | 98% |
 | Repos with WF-1 (reuse.yml) | 43 | 98% |
-| Repos with WF-2 (dependabot.yml) | 43 | 98% |
+| Repos with WF-2r (renovate.json, replaces dependabot.yml) | 36 | 86% of applicable (6 BW repos pending onboarding PRs; 2 excluded per Renovate ignored list) |
+| Repos with dependabot.yml REMOVED (WF-2r clean state) | 36 | 86% of applicable |
 | Repos with WF-3 (security-analysis.yml) | 43 | 98% |
 | Repos with WF-4 (pr-validation.yml) | 43 | 98% |
 | Repos with WF-5 (codeql.yml) - public only | 29 | 100% of public |
