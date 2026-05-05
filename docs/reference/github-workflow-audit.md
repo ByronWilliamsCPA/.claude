@@ -32,7 +32,7 @@ Update this file after each remediation sprint completes.
 | Total repos | 44 | n/a |
 | Repos with all 6 BP PASS | 3 | 7% |
 | Repos with BP-1+BP-2 PASS (after Sprint BP-1) | 43 | 98% |
-| Repos with WF-1 (reuse.yml) | 11 | 25% |
+| Repos with WF-1 (reuse.yml) | 43 | 98% |
 | Repos with WF-2 (dependabot.yml) | 13 | 30% |
 | Repos with WF-3 (security-analysis.yml) | 15 | 34% |
 | Repos with WF-4 (pr-validation.yml) | 15 | 34% |
@@ -260,52 +260,52 @@ Vertical bar `|` separates tier groups for readability.
 | Org | Repo | W1 | W2 | W3 | W4 | W5 | W6 | W7 | W8 | W9 | W10 | W11 | W12 | W13 | W14 | Pass |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | BW | `.claude` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | N | N | N | N | N | N | ✓ | **8/8** |
-| BW | `.github` | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | N | N | N | N | N | N | N | 0/7 |
+| BW | `.github` | ✓ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | N | N | N | N | N | N | N | 1/7 |
 | BW | `audio-processor` | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✗ | ✓ | 11/14 |
-| BW | `cookiecutter-python-template` | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | N | N | N | N | N | N | N | 0/7 |
-| BW | `cookiecutter-template-sample` | ✗ | ✓ | ✓ | ✗ | ✗ | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ | ✓ | ✗ | ✓ | 7/14 |
-| BW | `DeQA-Doc` | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✓ | ✗ | ✗ | ✗ | N | N | N | 1/11 |
+| BW | `cookiecutter-python-template` | ✓ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | N | N | N | N | N | N | N | 1/7 |
+| BW | `cookiecutter-template-sample` | ✓ | ✓ | ✓ | ✗ | ✗ | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ | ✓ | ✗ | ✓ | 8/14 |
+| BW | `DeQA-Doc` | ✓ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✓ | ✗ | ✗ | ✗ | N | N | N | 2/11 |
 | BW | `fragrance-rater` | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✗ | ✓ | 11/14 |
-| BW | `gleif` | ✗ | ✓ | ✓ | ✗ | ✓ | ✗ | ✓ | ✓ | ✗ | ✗ | ✗ | ✓ | ✗ | N | 6/13 |
+| BW | `gleif` | ✓ | ✓ | ✓ | ✗ | ✓ | ✗ | ✓ | ✓ | ✗ | ✗ | ✗ | ✓ | ✗ | N | 7/13 |
 | BW | `homelab-infra` | ✓ | ✓ | ✓ | ✓ | N | N | N | ✓ | ✓ | ✗ | ✗ | ✓ | ✗ | ✓ | 8/11 |
 | BW | `llc-manager` | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✗ | ✓ | 11/14 |
 | BW | `maester-tests` | ✓ | ✓ | ✓ | ✓ | N | N | N | ✓ | ✓ | ✗ | ✗ | ✓ | ✗ | ✓ | 8/11 |
 | BW | `python-libs` | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✗ | ✓ | 11/14 |
 | BW | `rag-processor` | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✗ | ✓ | 11/14 |
-| BW | `reference-library` | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | N | N | N | N | N | N | N | 0/7 |
-| BW | `taxdome` | ✗ | ✗ | ✗ | ✗ | N | N | N | ✗ | ✗ | ✗ | ✗ | N | N | N | 0/8 |
+| BW | `reference-library` | ✓ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | N | N | N | N | N | N | N | 1/7 |
+| BW | `taxdome` | ✓ | ✗ | ✗ | ✗ | N | N | N | ✗ | ✗ | ✗ | ✗ | N | N | N | 1/8 |
 | BW | `template-sample` | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ | ✓ | ✗ | ✓ | ✗ | ✓ | ✗ | ✓ | 10/14 |
-| BW | `xero-crypto` | ✗ | ✗ | ✓ | ✓ | N | N | N | ✓ | ✗ | ✗ | ✗ | N | N | N | 3/8 |
-| W | `.claude` | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | N | N | N | N | N | N | N | 0/7 |
-| W | `backpacking` | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | N | N | N | N | N | N | N | 0/7 |
-| W | `CR-10-` | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | N | N | N | N | N | N | N | 0/7 |
-| W | `dart-frog-paludarium` | ✗ | ✗ | ✗ | ✗ | N | N | N | N | N | N | N | N | N | N | 0/4 |
-| W | `data_ingestor` | ✗ | ✗ | ✓ | ✓ | ✗ | ✗ | ✓ | ✓ | ✗ | ✗ | ✗ | ✓ | ✗ | N | 5/13 |
+| BW | `xero-crypto` | ✓ | ✗ | ✓ | ✓ | N | N | N | ✓ | ✗ | ✗ | ✗ | N | N | N | 4/8 |
+| W | `.claude` | ✓ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | N | N | N | N | N | N | N | 1/7 |
+| W | `backpacking` | ✓ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | N | N | N | N | N | N | N | 1/7 |
+| W | `CR-10-` | ✓ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | N | N | N | N | N | N | N | 1/7 |
+| W | `dart-frog-paludarium` | ✓ | ✗ | ✗ | ✗ | N | N | N | N | N | N | N | N | N | N | 1/4 |
+| W | `data_ingestor` | ✓ | ✗ | ✓ | ✓ | ✗ | ✗ | ✓ | ✓ | ✗ | ✗ | ✗ | ✓ | ✗ | N | 6/13 |
 | W | `dna` | ✓ | ✓ | ✓ | ✓ | N | N | N | ✓ | ✓ | ✓ | ✗ | ✓ | ✗ | ✓ | 9/11 |
-| W | `exercise-competition` | ✗ | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | N | 7/13 |
-| W | `family_office` | ✗ | ✗ | ✗ | ✗ | N | N | N | ✗ | ✗ | ✗ | ✗ | N | N | N | 0/8 |
-| W | `FISProject` | ✗ | ✗ | ✗ | ✗ | N | N | N | ✗ | ✗ | ✗ | ✗ | N | N | N | 0/8 |
-| W | `GCS` | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | N | N | N | 0/11 |
+| W | `exercise-competition` | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | N | 8/13 |
+| W | `family_office` | ✓ | ✗ | ✗ | ✗ | N | N | N | ✗ | ✗ | ✗ | ✗ | N | N | N | 1/8 |
+| W | `FISProject` | ✓ | ✗ | ✗ | ✗ | N | N | N | ✗ | ✗ | ✗ | ✗ | N | N | N | 1/8 |
+| W | `GCS` | ✓ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | N | N | N | 1/11 |
 | W | `homelab-agent-configs` | ✗ | ✗ | ✗ | ✗ | N | N | N | N | N | N | N | N | N | N | 0/4 |
-| W | `image-generation` | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | N | N | N | 0/11 |
+| W | `image-generation` | ✓ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | N | N | N | 1/11 |
 | W | `image-preprocessing-detector` | ✓ | ✗ | ✓ | ✓ | ✗ | ✓ | ✓ | ✓ | ✗ | ✓ | ✗ | ✓ | ✗ | ✓ | 9/14 |
-| W | `klipper-octoprint-configs` | ✗ | ✗ | ✗ | ✗ | N | N | N | N | N | N | N | N | N | N | 0/4 |
-| W | `ledgerbase` | ✗ | ✗ | ✗ | ✗ | ✗ | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | ✓ | ✗ | N | 3/13 |
-| W | `library` | ✗ | ✗ | ✗ | ✗ | N | N | N | N | N | N | N | N | N | N | 0/4 |
-| W | `LifeSphere` | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | N | N | N | 0/11 |
-| W | `magg` | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | N | 0/13 |
-| W | `monte_carlo` | ✗ | ✗ | ✗ | ✗ | N | N | N | ✓ | ✗ | ✗ | ✗ | N | N | N | 1/8 |
-| W | `OPNS` | ✗ | ✗ | ✗ | ✗ | N | N | N | N | N | N | N | N | N | N | 0/4 |
-| W | `OPNSense` | ✗ | ✗ | ✗ | ✗ | N | N | N | N | N | N | N | N | N | N | 0/4 |
-| W | `pp-security-master` | ✗ | ✗ | ✗ | ✗ | ✓ | ✗ | ✓ | ✓ | ✗ | ✗ | ✗ | N | N | N | 3/11 |
-| W | `PromptCraft` | ✗ | ✗ | ✗ | ✓ | ✗ | ✗ | ✓ | ✓ | ✗ | ✗ | ✗ | N | N | N | 3/11 |
-| W | `superslicer-configs` | ✗ | ✗ | ✗ | ✗ | N | N | N | N | N | N | N | N | N | N | 0/4 |
-| W | `testing` | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | N | N | N | 0/11 |
-| W | `xero-practice-management` | ✗ | ✗ | ✗ | ✗ | N | N | N | ✗ | ✗ | ✗ | ✗ | N | N | N | 0/8 |
-| W | `zen-mcp-server` | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | N | 0/13 |
-| | **PASS count** | **11** | **13** | **15** | **15** | **4** | **12** | **16** | **19** | **10** | **9** | **0** | **17** | **0** | **10** | |
+| W | `klipper-octoprint-configs` | ✓ | ✗ | ✗ | ✗ | N | N | N | N | N | N | N | N | N | N | 1/4 |
+| W | `ledgerbase` | ✓ | ✗ | ✗ | ✗ | ✗ | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | ✓ | ✗ | N | 4/13 |
+| W | `library` | ✓ | ✗ | ✗ | ✗ | N | N | N | N | N | N | N | N | N | N | 1/4 |
+| W | `LifeSphere` | ✓ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | N | N | N | 1/11 |
+| W | `magg` | ✓ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | N | 1/13 |
+| W | `monte_carlo` | ✓ | ✗ | ✗ | ✗ | N | N | N | ✓ | ✗ | ✗ | ✗ | N | N | N | 2/8 |
+| W | `OPNS` | ✓ | ✗ | ✗ | ✗ | N | N | N | N | N | N | N | N | N | N | 1/4 |
+| W | `OPNSense` | ✓ | ✗ | ✗ | ✗ | N | N | N | N | N | N | N | N | N | N | 1/4 |
+| W | `pp-security-master` | ✓ | ✗ | ✗ | ✗ | ✓ | ✗ | ✓ | ✓ | ✗ | ✗ | ✗ | N | N | N | 4/11 |
+| W | `PromptCraft` | ✓ | ✗ | ✗ | ✓ | ✗ | ✗ | ✓ | ✓ | ✗ | ✗ | ✗ | N | N | N | 4/11 |
+| W | `superslicer-configs` | ✓ | ✗ | ✗ | ✗ | N | N | N | N | N | N | N | N | N | N | 1/4 |
+| W | `testing` | ✓ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | N | N | N | 1/11 |
+| W | `xero-practice-management` | ✓ | ✗ | ✗ | ✗ | N | N | N | ✗ | ✗ | ✗ | ✗ | N | N | N | 1/8 |
+| W | `zen-mcp-server` | ✓ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | N | 1/13 |
+| | **PASS count** | **43** | **13** | **15** | **15** | **4** | **12** | **16** | **19** | **10** | **9** | **0** | **17** | **0** | **10** | |
 | | **of applicable** | **44** | **44** | **44** | **44** | **27** | **27** | **27** | **32** | **32** | **32** | **32** | **24** | **24** | **16** | |
-| | **% pass** | **25%** | **30%** | **34%** | **34%** | **15%** | **44%** | **59%** | **59%** | **31%** | **28%** | **0%** | **71%** | **0%** | **63%** | |
+| | **% pass** | **98%** | **30%** | **34%** | **34%** | **15%** | **44%** | **59%** | **59%** | **31%** | **28%** | **0%** | **71%** | **0%** | **63%** | |
 
 **Notable workflow gaps:**
 - **WF-5 (codeql.yml)**: Only 4/27 public repos have it. The `ByronWilliamsCPA/.github` reusable library has `python-codeql.yml` but repos call it by a different name; EV sprint needed.
@@ -366,7 +366,7 @@ for evaluation in Sprint EV-1 (ByronWilliamsCPA) and Sprint EV-2 (williaby).
 | BP-4 (signatures) | **COMPLETE** 2026-05-04; 43/44 PASS (homelab-agent-configs skipped, no main branch) | 0/44 remaining |
 | BP-5 (admin+checks) | **COMPLETE** 2026-05-04 | 0/44 |
 | BP-6 (reviews=0) | **COMPLETE** 2026-05-04 | 0/44 |
-| WF-1 (reuse.yml) | 33/44 universal failing | 33/44 |
+| WF-1 (reuse.yml) | **COMPLETE** 2026-05-04; 43/44 PASS (homelab-agent-configs skipped, no main branch) | 0/44 remaining |
 | WF-2 (dependabot) | 31/44 universal failing | 31/44 |
 | WF-3 (security-analysis) | 29/44 universal failing | 29/44 |
 | WF-4 (pr-validation) | 29/44 universal failing | 29/44 |
@@ -394,7 +394,7 @@ Updated after each sprint completes. Dates indicate when the item was remediated
 | Sprint BP-4 | COMPLETE | 2026-05-04 | 43/44 PASS; homelab-agent-configs skipped (no main branch) |
 | Sprint BP-5 | COMPLETE | 2026-05-04 | 43/44 PASS; homelab-agent-configs skipped (no main branch) |
 | Sprint BP-6 | COMPLETE | 2026-05-04 | 43/44 PASS; homelab-agent-configs skipped (no main branch) |
-| Sprint WF-1 | pending | - | - |
+| Sprint WF-1 | COMPLETE | 2026-05-04 | 43/44 PASS; save-relax-write-restore cycle required (BP-4+BP-5 block unsigned Contents API commits); pp-security-master and PromptCraft also required GitHub Ruleset enforcement=disabled |
 | Sprint WF-2 | pending | - | - |
 | Sprint WF-3 | pending | - | - |
 | Sprint WF-4 | pending | - | - |
