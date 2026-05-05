@@ -242,12 +242,20 @@ multi-license MIT+CC-BY-4.0+CC0-1.0+ODbL-1.0 (cookiecutter-template-sample, pres
 
 ### Sprint WF-2: Dependabot Configuration
 
+**Status: COMPLETE (2026-05-04). 43/44 PASS. homelab-agent-configs skipped (no main branch).**
+
 **Tier:** Universal (44 repos)
 **File:** `.github/dependabot.yml`
 **Minimum config:** At minimum, `github-actions` ecosystem enabled with weekly schedule.
 Python repos also add `pip` ecosystem. Docker repos add `docker`.
 **Template:** Copy from `ByronWilliamsCPA/.claude/.github/dependabot.yml` and
 adjust `package-ecosystem` entries for each repo's stack.
+**Remediation used:** Same save-relax-write-restore cycle as WF-1. Reviewer/assignee
+fields per org (ByronWilliamsCPA or williaby). image-preprocessing-detector required
+full ruleset body PUT to disable (not just enforcement key).
+**Future migration:** Renovate is the planned long-term replacement for Dependabot.
+When Renovate is established org-wide, a follow-up sprint will replace `dependabot.yml`
+with `renovate.json` per repo and disable the Dependabot integration.
 
 ---
 
@@ -484,7 +492,7 @@ Target: all public repos reach 7.0+ overall score.
 | 5 | BP-5 | Enforce admins + status checks | Universal | DONE 2026-05-04 |
 | 6 | BP-6 | PR reviews = 0 (solo-dev exception) | Universal | DONE 2026-05-04 |
 | 7 | WF-1 | REUSE compliance | Universal | DONE 2026-05-04 |
-| 8 | WF-2 | Dependabot | Universal | pending |
+| 8 | WF-2 | Dependabot | Universal | DONE 2026-05-04 |
 | 9 | WF-3 | Security analysis | Universal | pending |
 | 10 | WF-4 | PR validation | Universal | pending |
 | 11 | WF-5 | CodeQL | Public | pending |
