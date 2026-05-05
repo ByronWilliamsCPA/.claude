@@ -306,6 +306,9 @@ docs/architecture/diagrams/?/
 # Compliance reports (generated artifacts, not committed)
 docs/compliance-reports/
 
+# Troubleshooting notes (operational decisions, incident notes, living docs)
+docs/troubleshooting/
+
 # Local MCP server configuration (contains auth tokens and local paths)
 .mcp.json
 
