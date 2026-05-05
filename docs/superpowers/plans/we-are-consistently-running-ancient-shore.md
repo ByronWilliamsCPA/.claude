@@ -673,6 +673,32 @@ testing, zen-mcp-server
 
 ---
 
+### Sprint WF-18: Container Security
+
+**Status: COMPLETE (2026-05-04). 25/25 applicable repos PASS (100%). No new deployments needed.**
+
+**Tier:** Docker repos (repos with a Dockerfile at root)
+**Template:** `ByronWilliamsCPA/.claude/.github/workflows/container-security.yml`
+**Covers:** Scans Docker images for vulnerabilities using Trivy (fails on CRITICAL/HIGH);
+lints Dockerfile with Hadolint (warning threshold). Generates an SBOM and uploads SARIF
+to GitHub Security tab. Delegates to org-level `python-container-security.yml` reusable
+workflow. Runs on push/PR to Dockerfile-related paths and on a weekly schedule.
+**Applicability determination:** All 25 Python repos (12 BW + 13 W) already had both a
+Dockerfile and a container-security.yml. The EV-1 decision to standardize (based on 5 BW
+repos) underestimated adoption -- the full Python tier had already deployed it organically.
+**Template note:** Canonical template uses generic `image-tag: 'local:scan'` (replaces the
+original BW repo-specific tags). This is safe because the scan image is never pushed;
+the tag is just a local build handle.
+**Already PASS (25 repos, all pre-existing):** audio-processor, cookiecutter-template-sample,
+fragrance-rater, gleif, homelab-infra, llc-manager, maester-tests, python-libs,
+rag-processor, template-sample, xero-crypto (BW, 11); audio-processor (already counted);
+data_ingestor, dna, exercise-competition, GCS, image-generation, image-preprocessing-detector,
+ledgerbase, magg, monte_carlo, pp-security-master, PromptCraft, testing, zen-mcp-server (W, 13)
+**N/A (non-Docker repos):** .claude, .github, backpacking, CR-10-, DeQA-Doc, LifeSphere,
+reference-library (BW); family_office, FISProject, xero-practice-management (W)
+
+---
+
 ### Sprint WF-2r: Renovate Migration (replaces Dependabot)
 
 **Tier:** Universal (all 44 repos)
@@ -790,4 +816,4 @@ Target: all public repos reach 7.0+ overall score.
 | 24 | WF-15 | Cruft template validation | Cruft-tracked | DONE 2026-05-04 -- 22/22 PASS (100%); 12 deployed; hashFiles() conditional for orphaned-files check |
 | 25 | WF-16 | FIPS compatibility | Python/crypto | DONE 2026-05-04 -- 20/20 applicable PASS (100%); 11 W repos deployed; 9 BW already had it; 5 BW N/A (no check_fips_compatibility.py); command injection fixed in canonical template |
 | 26 | WF-17 | Mutation testing | Python | DONE 2026-05-04 -- 10/10 applicable PASS (100%); all pre-existing; canonical template written; remaining W Python repos N/A pending 80%+ coverage confirmation |
-| 27 | WF-18 | Container security | Docker repos | pending (container-security.yml; 5 BW repos, EV-1 standardize decision) |
+| 27 | WF-18 | Container security | Docker repos | DONE 2026-05-04 -- 25/25 PASS (100%); all pre-existing; canonical template written with generic image-tag 'local:scan' |
