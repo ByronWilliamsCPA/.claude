@@ -51,6 +51,10 @@
 
 ### Fix
 
+* fix(ci): replace `dangoslen/changelog-enforcer` action in `pr-validation.yml` with a job-level
+  `if` condition plus a `git merge-base` diff check; eliminates two failure modes -- Renovate PRs
+  failing because the `dependencies` label is not yet visible to the GitHub API on the `opened`
+  event, and normal PRs showing as "out of step" when `main` advances after the PR was created
 * fix(hooks): correct Claude Code hook JSON field names in `tdd-enforcement-hook.sh` (`.tool` and
   `.args` -> `.tool_name` and `.tool_input`); hook was 100% inoperative as written
 * fix(hooks): remove `-e` from `set -euo pipefail` in `tdd-enforcement-hook.sh`; PreToolUse hooks
