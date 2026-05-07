@@ -1,7 +1,7 @@
 {
   "_meta": {
     "linkedDoc": "docs/reference/repo-type-taxonomy.md",
-    "lastUpdated": "2026-05-03",
+    "lastUpdated": "2026-05-07",
     "refreshCommands": {
       "repoList": "gh repo list <org> --limit 100 --json name,url,defaultBranchRef,description,isPrivate,isArchived",
       "branchProtection": "gh api repos/<org>/<repo>/branches/<branch>/protection",
@@ -17,7 +17,7 @@
         "allowForcePushes": false,
         "allowDeletions": false,
         "blockCreations": false,
-        "requiredConversationResolution": true,
+        "requiredConversationResolution": false,
         "lockBranch": false,
         "requiredStatusChecks": {
           "strict": true,
@@ -262,6 +262,10 @@
           "OSSF-002 (SECURITY.md private reporting channel) still applies: GitHub Security Advisories can be created manually on private repos. Document the reporting process even if PVR is unavailable."
         ]
       }
+    },
+    "_notes": {
+      "requiredConversationResolution": "Intentionally false \u2014 conversation resolution is not enforced as a branch protection gate. Code review discussions are handled by workflow, not enforced by GitHub.",
+      "homelab-agent-configs-exempt": "williaby/homelab-agent-configs is permanently exempt from branch protection requirements due to structural nuances in that repo (non-standard default branch: agent/hermes). Do not flag its unprotected state as a finding in compliance audits."
     }
   },
   "repos": [
@@ -283,7 +287,7 @@
           "allowForcePushes": false,
           "allowDeletions": false,
           "blockCreations": false,
-          "requiredConversationResolution": true,
+          "requiredConversationResolution": false,
           "lockBranch": false,
           "requiredStatusChecks": {
             "strict": true,
@@ -321,8 +325,8 @@
           "workflowPresent": true
         },
         "renovate": {
-          "configured": false,
-          "shaAutoPinning": false
+          "configured": true,
+          "shaAutoPinning": true
         },
         "secretScanning": {
           "enabled": false,
@@ -418,7 +422,30 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": true,
+          "enforceAdmins": true,
+          "requiredSignatures": true,
+          "requiredLinearHistory": true,
+          "allowForcePushes": false,
+          "allowDeletions": false,
+          "blockCreations": false,
+          "requiredConversationResolution": false,
+          "lockBranch": false,
+          "requiredStatusChecks": {
+            "strict": true,
+            "contexts": [
+              "Analyze (actions)",
+              "Security Gate Validation",
+              "Dependency & Standards Validation",
+              "Check REUSE Compliance"
+            ]
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": 0,
+            "dismissStaleReviews": false,
+            "requireCodeOwnerReviews": false,
+            "requireLastPushApproval": false
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -578,11 +605,19 @@
           "blockCreations": false,
           "requiredConversationResolution": false,
           "lockBranch": false,
-          "requiredStatusChecks": null,
+          "requiredStatusChecks": {
+            "strict": true,
+            "contexts": [
+              "CI Gate",
+              "Security Gate Validation",
+              "Dependency & Standards Validation",
+              "Check REUSE Compliance"
+            ]
+          },
           "requiredPullRequestReviews": {
             "requiredApprovingReviewCount": 0,
-            "dismissStaleReviews": true,
-            "requireCodeOwnerReviews": true,
+            "dismissStaleReviews": false,
+            "requireCodeOwnerReviews": false,
             "requireLastPushApproval": false
           }
         },
@@ -606,8 +641,8 @@
           "workflowPresent": true
         },
         "renovate": {
-          "configured": false,
-          "shaAutoPinning": false
+          "configured": true,
+          "shaAutoPinning": true
         },
         "secretScanning": {
           "enabled": false,
@@ -720,7 +755,30 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": true,
+          "enforceAdmins": true,
+          "requiredSignatures": true,
+          "requiredLinearHistory": true,
+          "allowForcePushes": false,
+          "allowDeletions": false,
+          "blockCreations": false,
+          "requiredConversationResolution": false,
+          "lockBranch": false,
+          "requiredStatusChecks": {
+            "strict": true,
+            "contexts": [
+              "CI Gate",
+              "Security Gate Validation",
+              "Dependency & Standards Validation",
+              "Check REUSE Compliance"
+            ]
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": 0,
+            "dismissStaleReviews": false,
+            "requireCodeOwnerReviews": false,
+            "requireLastPushApproval": false
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -840,7 +898,30 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": true,
+          "enforceAdmins": true,
+          "requiredSignatures": true,
+          "requiredLinearHistory": true,
+          "allowForcePushes": false,
+          "allowDeletions": false,
+          "blockCreations": false,
+          "requiredConversationResolution": false,
+          "lockBranch": false,
+          "requiredStatusChecks": {
+            "strict": true,
+            "contexts": [
+              "CI Gate",
+              "Security Gate Validation",
+              "Dependency & Standards Validation",
+              "Check REUSE Compliance"
+            ]
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": 0,
+            "dismissStaleReviews": false,
+            "requireCodeOwnerReviews": false,
+            "requireLastPushApproval": false
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -862,8 +943,8 @@
           "workflowPresent": false
         },
         "renovate": {
-          "configured": false,
-          "shaAutoPinning": false
+          "configured": true,
+          "shaAutoPinning": true
         },
         "secretScanning": {
           "enabled": false,
@@ -956,7 +1037,30 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": true,
+          "enforceAdmins": true,
+          "requiredSignatures": true,
+          "requiredLinearHistory": true,
+          "allowForcePushes": false,
+          "allowDeletions": false,
+          "blockCreations": false,
+          "requiredConversationResolution": false,
+          "lockBranch": false,
+          "requiredStatusChecks": {
+            "strict": true,
+            "contexts": [
+              "CI Gate",
+              "Security Gate Validation",
+              "Dependency & Standards Validation",
+              "Check REUSE Compliance"
+            ]
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": 0,
+            "dismissStaleReviews": false,
+            "requireCodeOwnerReviews": false,
+            "requireLastPushApproval": false
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -1056,6 +1160,129 @@
     {
       "org": "ByronWilliamsCPA",
       "repositoryType": "python-app",
+      "name": "family-office-portal",
+      "url": "https://github.com/ByronWilliamsCPA/family-office-portal",
+      "defaultBranch": "main",
+      "description": "Secure family estate portal: consolidated view of entities, finances, documents, and portfolio across llc-manager, xero-crypto, pp-security-master, and family-office backends",
+      "isPrivate": false,
+      "isArchived": false,
+      "review": {
+        "branchProtection": {
+          "enabled": false,
+          "enforceAdmins": false,
+          "requiredSignatures": false,
+          "requiredLinearHistory": false,
+          "allowForcePushes": false,
+          "allowDeletions": false,
+          "blockCreations": false,
+          "requiredConversationResolution": false,
+          "lockBranch": false,
+          "requiredStatusChecks": {
+            "strict": false,
+            "contexts": []
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": 0,
+            "dismissStaleReviews": false,
+            "requireCodeOwnerReviews": false,
+            "requireLastPushApproval": false
+          }
+        },
+        "codeql": {
+          "workflowPresent": false
+        },
+        "scorecard": {
+          "workflowPresent": false,
+          "score": null,
+          "lastChecked": null
+        },
+        "sonarcloud": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "codecov": {
+          "configPresent": false,
+          "workflowPresent": false
+        },
+        "reuse": {
+          "workflowPresent": false
+        },
+        "renovate": {
+          "configured": false,
+          "shaAutoPinning": false
+        },
+        "secretScanning": {
+          "enabled": false,
+          "pushProtection": false
+        },
+        "ossfBadge": {
+          "badgeId": null,
+          "percentagePassing": null
+        },
+        "workflows": {
+          "files": [],
+          "presentFromExpected": [],
+          "missingFromExpected": [
+            "ci.yml",
+            "codeql.yml",
+            "coverage.yml",
+            "docs.yml",
+            "pr-validation.yml",
+            "python-compatibility.yml",
+            "release-sign.yml",
+            "release.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml",
+            "sonarcloud.yml"
+          ],
+          "extras": []
+        },
+        "foundations": {
+          "securityMd": false,
+          "contributingMd": false,
+          "changelogMd": false,
+          "codeOfConduct": false,
+          "governanceMd": false,
+          "agentsMd": false,
+          "geminiMd": false,
+          "claudeMd": false,
+          "knownVulnerabilities": false,
+          "codeowners": false
+        },
+        "preCommit": {
+          "configPresent": false,
+          "hooks": {
+            "ruff": false,
+            "basedpyright": false,
+            "bandit": false,
+            "detectSecrets": false,
+            "darglint": false,
+            "interrogate": false,
+            "commitizen": false,
+            "yamllint": false,
+            "markdownlint": false,
+            "noEmDash": false
+          }
+        },
+        "toolchain": {
+          "pyprojectToml": false,
+          "qltyConfig": false
+        },
+        "releaseHealth": {
+          "hasRelease": null,
+          "daysSinceRelease": null
+        },
+        "templateDrift": {
+          "sourceTemplate": null,
+          "driftScore": null
+        }
+      }
+    },
+    {
+      "org": "ByronWilliamsCPA",
+      "repositoryType": "python-app",
       "name": "fragrance-rater",
       "url": "https://github.com/ByronWilliamsCPA/fragrance-rater",
       "defaultBranch": "main",
@@ -1064,7 +1291,30 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": true,
+          "enforceAdmins": true,
+          "requiredSignatures": true,
+          "requiredLinearHistory": true,
+          "allowForcePushes": false,
+          "allowDeletions": false,
+          "blockCreations": false,
+          "requiredConversationResolution": false,
+          "lockBranch": false,
+          "requiredStatusChecks": {
+            "strict": true,
+            "contexts": [
+              "CI Gate",
+              "Security Gate Validation",
+              "Dependency & Standards Validation",
+              "Check REUSE Compliance"
+            ]
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": 0,
+            "dismissStaleReviews": false,
+            "requireCodeOwnerReviews": false,
+            "requireLastPushApproval": false
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -1086,8 +1336,8 @@
           "workflowPresent": true
         },
         "renovate": {
-          "configured": false,
-          "shaAutoPinning": false
+          "configured": true,
+          "shaAutoPinning": true
         },
         "secretScanning": {
           "enabled": false,
@@ -1199,9 +1449,9 @@
       "review": {
         "branchProtection": {
           "enabled": true,
-          "enforceAdmins": false,
-          "requiredSignatures": false,
-          "requiredLinearHistory": false,
+          "enforceAdmins": true,
+          "requiredSignatures": true,
+          "requiredLinearHistory": true,
           "allowForcePushes": false,
           "allowDeletions": false,
           "blockCreations": false,
@@ -1210,10 +1460,18 @@
           "requiredStatusChecks": {
             "strict": true,
             "contexts": [
-              "CI Gate"
+              "CI Gate",
+              "Security Gate Validation",
+              "Dependency & Standards Validation",
+              "Check REUSE Compliance"
             ]
           },
-          "requiredPullRequestReviews": null
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": 0,
+            "dismissStaleReviews": false,
+            "requireCodeOwnerReviews": false,
+            "requireLastPushApproval": false
+          }
         },
         "codeql": {
           "workflowPresent": true
@@ -1235,8 +1493,8 @@
           "workflowPresent": false
         },
         "renovate": {
-          "configured": false,
-          "shaAutoPinning": false
+          "configured": true,
+          "shaAutoPinning": true
         },
         "secretScanning": {
           "enabled": false,
@@ -1337,11 +1595,19 @@
           "blockCreations": false,
           "requiredConversationResolution": false,
           "lockBranch": false,
-          "requiredStatusChecks": null,
+          "requiredStatusChecks": {
+            "strict": true,
+            "contexts": [
+              "Security Gate Validation",
+              "CI Gate",
+              "Dependency & Standards Validation",
+              "Check REUSE Compliance"
+            ]
+          },
           "requiredPullRequestReviews": {
             "requiredApprovingReviewCount": 0,
-            "dismissStaleReviews": true,
-            "requireCodeOwnerReviews": true,
+            "dismissStaleReviews": false,
+            "requireCodeOwnerReviews": false,
             "requireLastPushApproval": false
           }
         },
@@ -1365,8 +1631,8 @@
           "workflowPresent": true
         },
         "renovate": {
-          "configured": false,
-          "shaAutoPinning": false
+          "configured": true,
+          "shaAutoPinning": true
         },
         "secretScanning": {
           "enabled": false,
@@ -1489,9 +1755,9 @@
       "review": {
         "branchProtection": {
           "enabled": true,
-          "enforceAdmins": false,
-          "requiredSignatures": false,
-          "requiredLinearHistory": false,
+          "enforceAdmins": true,
+          "requiredSignatures": true,
+          "requiredLinearHistory": true,
           "allowForcePushes": false,
           "allowDeletions": false,
           "blockCreations": false,
@@ -1500,12 +1766,15 @@
           "requiredStatusChecks": {
             "strict": true,
             "contexts": [
-              "CI Gate"
+              "CI Gate",
+              "Security Gate Validation",
+              "Dependency & Standards Validation",
+              "Check REUSE Compliance"
             ]
           },
           "requiredPullRequestReviews": {
             "requiredApprovingReviewCount": 0,
-            "dismissStaleReviews": true,
+            "dismissStaleReviews": false,
             "requireCodeOwnerReviews": false,
             "requireLastPushApproval": false
           }
@@ -1530,8 +1799,8 @@
           "workflowPresent": true
         },
         "renovate": {
-          "configured": false,
-          "shaAutoPinning": false
+          "configured": true,
+          "shaAutoPinning": true
         },
         "secretScanning": {
           "enabled": false,
@@ -1654,10 +1923,18 @@
           "requiredStatusChecks": {
             "strict": true,
             "contexts": [
-              "Check REUSE Compliance"
+              "Check REUSE Compliance",
+              "CI Gate",
+              "Security Gate Validation",
+              "Dependency & Standards Validation"
             ]
           },
-          "requiredPullRequestReviews": null
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": 0,
+            "dismissStaleReviews": false,
+            "requireCodeOwnerReviews": false,
+            "requireLastPushApproval": false
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -1679,8 +1956,8 @@
           "workflowPresent": true
         },
         "renovate": {
-          "configured": false,
-          "shaAutoPinning": false
+          "configured": true,
+          "shaAutoPinning": true
         },
         "secretScanning": {
           "enabled": false,
@@ -1784,7 +2061,30 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": true,
+          "enforceAdmins": true,
+          "requiredSignatures": true,
+          "requiredLinearHistory": true,
+          "allowForcePushes": false,
+          "allowDeletions": false,
+          "blockCreations": false,
+          "requiredConversationResolution": false,
+          "lockBranch": false,
+          "requiredStatusChecks": {
+            "strict": true,
+            "contexts": [
+              "CI Gate",
+              "Security Gate Validation",
+              "Dependency & Standards Validation",
+              "Check REUSE Compliance"
+            ]
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": 0,
+            "dismissStaleReviews": false,
+            "requireCodeOwnerReviews": false,
+            "requireLastPushApproval": false
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -1806,8 +2106,8 @@
           "workflowPresent": true
         },
         "renovate": {
-          "configured": false,
-          "shaAutoPinning": false
+          "configured": true,
+          "shaAutoPinning": true
         },
         "secretScanning": {
           "enabled": false,
@@ -1925,11 +2225,19 @@
           "blockCreations": false,
           "requiredConversationResolution": false,
           "lockBranch": false,
-          "requiredStatusChecks": null,
+          "requiredStatusChecks": {
+            "strict": true,
+            "contexts": [
+              "CI Gate",
+              "Security Gate Validation",
+              "Dependency & Standards Validation",
+              "Check REUSE Compliance"
+            ]
+          },
           "requiredPullRequestReviews": {
             "requiredApprovingReviewCount": 0,
-            "dismissStaleReviews": true,
-            "requireCodeOwnerReviews": true,
+            "dismissStaleReviews": false,
+            "requireCodeOwnerReviews": false,
             "requireLastPushApproval": false
           }
         },
@@ -1953,8 +2261,8 @@
           "workflowPresent": true
         },
         "renovate": {
-          "configured": false,
-          "shaAutoPinning": false
+          "configured": true,
+          "shaAutoPinning": true
         },
         "secretScanning": {
           "enabled": false,
@@ -2067,7 +2375,29 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": true,
+          "enforceAdmins": true,
+          "requiredSignatures": true,
+          "requiredLinearHistory": true,
+          "allowForcePushes": false,
+          "allowDeletions": false,
+          "blockCreations": false,
+          "requiredConversationResolution": false,
+          "lockBranch": false,
+          "requiredStatusChecks": {
+            "strict": true,
+            "contexts": [
+              "Security Gate Validation",
+              "Dependency & Standards Validation",
+              "Check REUSE Compliance"
+            ]
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": 0,
+            "dismissStaleReviews": false,
+            "requireCodeOwnerReviews": false,
+            "requireLastPushApproval": false
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -2172,7 +2502,29 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": true,
+          "enforceAdmins": true,
+          "requiredSignatures": true,
+          "requiredLinearHistory": true,
+          "allowForcePushes": false,
+          "allowDeletions": false,
+          "blockCreations": false,
+          "requiredConversationResolution": false,
+          "lockBranch": false,
+          "requiredStatusChecks": {
+            "strict": true,
+            "contexts": [
+              "Security Gate Validation",
+              "Dependency & Standards Validation",
+              "Check REUSE Compliance"
+            ]
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": 0,
+            "dismissStaleReviews": false,
+            "requireCodeOwnerReviews": false,
+            "requireLastPushApproval": false
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -2277,7 +2629,30 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": true,
+          "enforceAdmins": true,
+          "requiredSignatures": true,
+          "requiredLinearHistory": true,
+          "allowForcePushes": false,
+          "allowDeletions": false,
+          "blockCreations": false,
+          "requiredConversationResolution": false,
+          "lockBranch": false,
+          "requiredStatusChecks": {
+            "strict": true,
+            "contexts": [
+              "CI Gate",
+              "Security Gate Validation",
+              "Dependency & Standards Validation",
+              "Check REUSE Compliance"
+            ]
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": 0,
+            "dismissStaleReviews": false,
+            "requireCodeOwnerReviews": false,
+            "requireLastPushApproval": false
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -2299,8 +2674,8 @@
           "workflowPresent": true
         },
         "renovate": {
-          "configured": false,
-          "shaAutoPinning": false
+          "configured": true,
+          "shaAutoPinning": true
         },
         "secretScanning": {
           "enabled": false,
@@ -2392,6 +2767,163 @@
     {
       "org": "ByronWilliamsCPA",
       "repositoryType": "python-package",
+      "name": "Unify",
+      "url": "https://github.com/ByronWilliamsCPA/Unify",
+      "defaultBranch": "main",
+      "description": "",
+      "isPrivate": false,
+      "isArchived": false,
+      "review": {
+        "branchProtection": {
+          "enabled": true,
+          "enforceAdmins": true,
+          "requiredSignatures": true,
+          "requiredLinearHistory": true,
+          "allowForcePushes": false,
+          "allowDeletions": false,
+          "blockCreations": false,
+          "requiredConversationResolution": false,
+          "lockBranch": false,
+          "requiredStatusChecks": {
+            "strict": true,
+            "contexts": [
+              "CI Gate",
+              "Dependency & Standards Validation",
+              "Security Gate Validation",
+              "Check REUSE Compliance"
+            ]
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": 0,
+            "dismissStaleReviews": false,
+            "requireCodeOwnerReviews": false,
+            "requireLastPushApproval": false
+          }
+        },
+        "codeql": {
+          "workflowPresent": false
+        },
+        "scorecard": {
+          "workflowPresent": true,
+          "score": null,
+          "lastChecked": null
+        },
+        "sonarcloud": {
+          "configPresent": true,
+          "workflowPresent": true
+        },
+        "codecov": {
+          "configPresent": true,
+          "workflowPresent": true
+        },
+        "reuse": {
+          "workflowPresent": true
+        },
+        "renovate": {
+          "configured": true,
+          "shaAutoPinning": true
+        },
+        "secretScanning": {
+          "enabled": false,
+          "pushProtection": false
+        },
+        "ossfBadge": {
+          "badgeId": null,
+          "percentagePassing": null
+        },
+        "workflows": {
+          "files": [
+            "ci.yml",
+            "codecov.yml",
+            "container-security.yml",
+            "dependency-review.yml",
+            "docs.yml",
+            "fips-compatibility.yml",
+            "mutation-testing.yml",
+            "pr-validation.yml",
+            "publish-pypi.yml",
+            "python-compatibility.yml",
+            "release.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml",
+            "slsa-provenance.yml",
+            "sonarcloud.yml",
+            "validate-cruft.yml"
+          ],
+          "presentFromExpected": [
+            "ci.yml",
+            "docs.yml",
+            "pr-validation.yml",
+            "python-compatibility.yml",
+            "release.yml",
+            "reuse.yml",
+            "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml",
+            "sonarcloud.yml"
+          ],
+          "missingFromExpected": [
+            "codeql.yml",
+            "coverage.yml",
+            "release-sign.yml"
+          ],
+          "extras": [
+            "codecov.yml",
+            "container-security.yml",
+            "dependency-review.yml",
+            "fips-compatibility.yml",
+            "mutation-testing.yml",
+            "publish-pypi.yml",
+            "slsa-provenance.yml",
+            "validate-cruft.yml"
+          ]
+        },
+        "foundations": {
+          "securityMd": true,
+          "contributingMd": true,
+          "changelogMd": true,
+          "codeOfConduct": true,
+          "governanceMd": true,
+          "agentsMd": true,
+          "geminiMd": true,
+          "claudeMd": true,
+          "knownVulnerabilities": true,
+          "codeowners": true
+        },
+        "preCommit": {
+          "configPresent": true,
+          "hooks": {
+            "ruff": true,
+            "basedpyright": false,
+            "bandit": true,
+            "detectSecrets": false,
+            "darglint": true,
+            "interrogate": true,
+            "commitizen": false,
+            "yamllint": false,
+            "markdownlint": false,
+            "noEmDash": false
+          }
+        },
+        "toolchain": {
+          "pyprojectToml": true,
+          "qltyConfig": true
+        },
+        "releaseHealth": {
+          "hasRelease": null,
+          "daysSinceRelease": null
+        },
+        "templateDrift": {
+          "sourceTemplate": "cookiecutter-python-template",
+          "driftScore": null
+        }
+      }
+    },
+    {
+      "org": "ByronWilliamsCPA",
+      "repositoryType": "python-package",
       "name": "xero-crypto",
       "url": "https://github.com/ByronWilliamsCPA/xero-crypto",
       "defaultBranch": "master",
@@ -2400,7 +2932,30 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": true,
+          "enforceAdmins": true,
+          "requiredSignatures": true,
+          "requiredLinearHistory": true,
+          "allowForcePushes": false,
+          "allowDeletions": false,
+          "blockCreations": false,
+          "requiredConversationResolution": false,
+          "lockBranch": false,
+          "requiredStatusChecks": {
+            "strict": true,
+            "contexts": [
+              "CI Gate",
+              "Security Gate Validation",
+              "Dependency & Standards Validation",
+              "Check REUSE Compliance"
+            ]
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": 0,
+            "dismissStaleReviews": false,
+            "requireCodeOwnerReviews": false,
+            "requireLastPushApproval": false
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -2513,7 +3068,29 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": true,
+          "enforceAdmins": true,
+          "requiredSignatures": true,
+          "requiredLinearHistory": true,
+          "allowForcePushes": false,
+          "allowDeletions": false,
+          "blockCreations": false,
+          "requiredConversationResolution": false,
+          "lockBranch": false,
+          "requiredStatusChecks": {
+            "strict": true,
+            "contexts": [
+              "Security Gate Validation",
+              "Dependency & Standards Validation",
+              "Check REUSE Compliance"
+            ]
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": 0,
+            "dismissStaleReviews": false,
+            "requireCodeOwnerReviews": false,
+            "requireLastPushApproval": false
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -2618,7 +3195,29 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": true,
+          "enforceAdmins": true,
+          "requiredSignatures": true,
+          "requiredLinearHistory": true,
+          "allowForcePushes": false,
+          "allowDeletions": false,
+          "blockCreations": false,
+          "requiredConversationResolution": false,
+          "lockBranch": false,
+          "requiredStatusChecks": {
+            "strict": true,
+            "contexts": [
+              "Security Gate Validation",
+              "Dependency & Standards Validation",
+              "Check REUSE Compliance"
+            ]
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": 0,
+            "dismissStaleReviews": false,
+            "requireCodeOwnerReviews": false,
+            "requireLastPushApproval": false
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -2723,7 +3322,29 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": true,
+          "enforceAdmins": true,
+          "requiredSignatures": true,
+          "requiredLinearHistory": true,
+          "allowForcePushes": false,
+          "allowDeletions": false,
+          "blockCreations": false,
+          "requiredConversationResolution": false,
+          "lockBranch": false,
+          "requiredStatusChecks": {
+            "strict": true,
+            "contexts": [
+              "Security Gate Validation",
+              "Dependency & Standards Validation",
+              "Check REUSE Compliance"
+            ]
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": 0,
+            "dismissStaleReviews": false,
+            "requireCodeOwnerReviews": false,
+            "requireLastPushApproval": false
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -2828,7 +3449,29 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": true,
+          "enforceAdmins": true,
+          "requiredSignatures": true,
+          "requiredLinearHistory": true,
+          "allowForcePushes": false,
+          "allowDeletions": false,
+          "blockCreations": false,
+          "requiredConversationResolution": false,
+          "lockBranch": false,
+          "requiredStatusChecks": {
+            "strict": true,
+            "contexts": [
+              "Security Gate Validation",
+              "Dependency & Standards Validation",
+              "Check REUSE Compliance"
+            ]
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": 0,
+            "dismissStaleReviews": false,
+            "requireCodeOwnerReviews": false,
+            "requireLastPushApproval": false
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -2933,7 +3576,30 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": true,
+          "enforceAdmins": true,
+          "requiredSignatures": true,
+          "requiredLinearHistory": true,
+          "allowForcePushes": false,
+          "allowDeletions": false,
+          "blockCreations": false,
+          "requiredConversationResolution": false,
+          "lockBranch": false,
+          "requiredStatusChecks": {
+            "strict": true,
+            "contexts": [
+              "CI Gate",
+              "Security Gate Validation",
+              "Dependency & Standards Validation",
+              "Check REUSE Compliance"
+            ]
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": 0,
+            "dismissStaleReviews": false,
+            "requireCodeOwnerReviews": false,
+            "requireLastPushApproval": false
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -3050,7 +3716,30 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": true,
+          "enforceAdmins": true,
+          "requiredSignatures": true,
+          "requiredLinearHistory": true,
+          "allowForcePushes": false,
+          "allowDeletions": false,
+          "blockCreations": false,
+          "requiredConversationResolution": false,
+          "lockBranch": false,
+          "requiredStatusChecks": {
+            "strict": true,
+            "contexts": [
+              "CI Gate",
+              "Security Gate Validation",
+              "Dependency & Standards Validation",
+              "Check REUSE Compliance"
+            ]
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": 0,
+            "dismissStaleReviews": false,
+            "requireCodeOwnerReviews": false,
+            "requireLastPushApproval": false
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -3072,8 +3761,8 @@
           "workflowPresent": true
         },
         "renovate": {
-          "configured": false,
-          "shaAutoPinning": false
+          "configured": true,
+          "shaAutoPinning": true
         },
         "secretScanning": {
           "enabled": false,
@@ -3189,9 +3878,9 @@
       "review": {
         "branchProtection": {
           "enabled": true,
-          "enforceAdmins": false,
-          "requiredSignatures": false,
-          "requiredLinearHistory": false,
+          "enforceAdmins": true,
+          "requiredSignatures": true,
+          "requiredLinearHistory": true,
           "allowForcePushes": false,
           "allowDeletions": false,
           "blockCreations": false,
@@ -3200,11 +3889,18 @@
           "requiredStatusChecks": {
             "strict": true,
             "contexts": [
-              "Test (Python 3.12)",
-              "Frontend (Node 22)"
+              "CI Gate",
+              "Security Gate Validation",
+              "Dependency & Standards Validation",
+              "Check REUSE Compliance"
             ]
           },
-          "requiredPullRequestReviews": null
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": 0,
+            "dismissStaleReviews": false,
+            "requireCodeOwnerReviews": false,
+            "requireLastPushApproval": false
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -3226,8 +3922,8 @@
           "workflowPresent": false
         },
         "renovate": {
-          "configured": false,
-          "shaAutoPinning": false
+          "configured": true,
+          "shaAutoPinning": true
         },
         "secretScanning": {
           "enabled": false,
@@ -3330,7 +4026,29 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": true,
+          "enforceAdmins": true,
+          "requiredSignatures": true,
+          "requiredLinearHistory": true,
+          "allowForcePushes": false,
+          "allowDeletions": false,
+          "blockCreations": false,
+          "requiredConversationResolution": false,
+          "lockBranch": false,
+          "requiredStatusChecks": {
+            "strict": true,
+            "contexts": [
+              "Security Gate Validation",
+              "Dependency & Standards Validation",
+              "Check REUSE Compliance"
+            ]
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": 0,
+            "dismissStaleReviews": false,
+            "requireCodeOwnerReviews": false,
+            "requireLastPushApproval": false
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -3435,7 +4153,29 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": true,
+          "enforceAdmins": true,
+          "requiredSignatures": true,
+          "requiredLinearHistory": true,
+          "allowForcePushes": false,
+          "allowDeletions": false,
+          "blockCreations": false,
+          "requiredConversationResolution": false,
+          "lockBranch": false,
+          "requiredStatusChecks": {
+            "strict": true,
+            "contexts": [
+              "Security Gate Validation",
+              "Dependency & Standards Validation",
+              "Check REUSE Compliance"
+            ]
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": 0,
+            "dismissStaleReviews": false,
+            "requireCodeOwnerReviews": false,
+            "requireLastPushApproval": false
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -3544,7 +4284,30 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": true,
+          "enforceAdmins": true,
+          "requiredSignatures": true,
+          "requiredLinearHistory": true,
+          "allowForcePushes": false,
+          "allowDeletions": false,
+          "blockCreations": false,
+          "requiredConversationResolution": false,
+          "lockBranch": false,
+          "requiredStatusChecks": {
+            "strict": true,
+            "contexts": [
+              "CI Gate",
+              "Security Gate Validation",
+              "Dependency & Standards Validation",
+              "Check REUSE Compliance"
+            ]
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": 0,
+            "dismissStaleReviews": false,
+            "requireCodeOwnerReviews": false,
+            "requireLastPushApproval": false
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -3649,7 +4412,24 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": false,
+          "allowForcePushes": null,
+          "allowDeletions": null,
+          "requiredLinearHistory": null,
+          "enforceAdmins": null,
+          "requiredSignatures": null,
+          "requiredConversationResolution": null,
+          "lockBranch": null,
+          "blockCreations": null,
+          "requiredStatusChecks": {
+            "strict": null,
+            "contexts": []
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": null,
+            "requireCodeOwnerReviews": null,
+            "requireLastPushApproval": null
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -3741,7 +4521,9 @@
           "sourceTemplate": null,
           "driftScore": null
         }
-      }
+      },
+      "branchProtectionExempt": true,
+      "branchProtectionExemptReason": "Structural nuances in this repo require no branch protection. Exempt by design \u2014 do not flag in audits."
     },
     {
       "org": "williaby",
@@ -3757,13 +4539,21 @@
           "enabled": true,
           "enforceAdmins": true,
           "requiredSignatures": true,
-          "requiredLinearHistory": false,
+          "requiredLinearHistory": true,
           "allowForcePushes": false,
           "allowDeletions": false,
           "blockCreations": false,
           "requiredConversationResolution": false,
           "lockBranch": false,
-          "requiredStatusChecks": null,
+          "requiredStatusChecks": {
+            "strict": true,
+            "contexts": [
+              "CI Gate",
+              "Security Gate Validation",
+              "Dependency & Standards Validation",
+              "Check REUSE Compliance"
+            ]
+          },
           "requiredPullRequestReviews": {
             "requiredApprovingReviewCount": 0,
             "dismissStaleReviews": false,
@@ -4030,7 +4820,29 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": true,
+          "enforceAdmins": true,
+          "requiredSignatures": true,
+          "requiredLinearHistory": true,
+          "allowForcePushes": false,
+          "allowDeletions": false,
+          "blockCreations": false,
+          "requiredConversationResolution": false,
+          "lockBranch": false,
+          "requiredStatusChecks": {
+            "strict": true,
+            "contexts": [
+              "Security Gate Validation",
+              "Dependency & Standards Validation",
+              "Check REUSE Compliance"
+            ]
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": 0,
+            "dismissStaleReviews": false,
+            "requireCodeOwnerReviews": false,
+            "requireLastPushApproval": false
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -4135,7 +4947,30 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": true,
+          "enforceAdmins": true,
+          "requiredSignatures": true,
+          "requiredLinearHistory": true,
+          "allowForcePushes": false,
+          "allowDeletions": false,
+          "blockCreations": false,
+          "requiredConversationResolution": false,
+          "lockBranch": false,
+          "requiredStatusChecks": {
+            "strict": true,
+            "contexts": [
+              "CI Gate",
+              "Security Gate Validation",
+              "Dependency & Standards Validation",
+              "Check REUSE Compliance"
+            ]
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": 0,
+            "dismissStaleReviews": false,
+            "requireCodeOwnerReviews": false,
+            "requireLastPushApproval": false
+          }
         },
         "codeql": {
           "workflowPresent": true
@@ -4282,7 +5117,29 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": true,
+          "enforceAdmins": true,
+          "requiredSignatures": true,
+          "requiredLinearHistory": true,
+          "allowForcePushes": false,
+          "allowDeletions": false,
+          "blockCreations": false,
+          "requiredConversationResolution": false,
+          "lockBranch": false,
+          "requiredStatusChecks": {
+            "strict": true,
+            "contexts": [
+              "Security Gate Validation",
+              "Dependency & Standards Validation",
+              "Check REUSE Compliance"
+            ]
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": 0,
+            "dismissStaleReviews": false,
+            "requireCodeOwnerReviews": false,
+            "requireLastPushApproval": false
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -4387,7 +5244,29 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": true,
+          "enforceAdmins": true,
+          "requiredSignatures": true,
+          "requiredLinearHistory": true,
+          "allowForcePushes": false,
+          "allowDeletions": false,
+          "blockCreations": false,
+          "requiredConversationResolution": false,
+          "lockBranch": false,
+          "requiredStatusChecks": {
+            "strict": true,
+            "contexts": [
+              "Security Gate Validation",
+              "Dependency & Standards Validation",
+              "Check REUSE Compliance"
+            ]
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": 0,
+            "dismissStaleReviews": false,
+            "requireCodeOwnerReviews": false,
+            "requireLastPushApproval": false
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -4492,7 +5371,30 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": true,
+          "enforceAdmins": true,
+          "requiredSignatures": true,
+          "requiredLinearHistory": true,
+          "allowForcePushes": false,
+          "allowDeletions": false,
+          "blockCreations": false,
+          "requiredConversationResolution": false,
+          "lockBranch": false,
+          "requiredStatusChecks": {
+            "strict": true,
+            "contexts": [
+              "CI Gate",
+              "Security Gate Validation",
+              "Dependency & Standards Validation",
+              "Check REUSE Compliance"
+            ]
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": 0,
+            "dismissStaleReviews": false,
+            "requireCodeOwnerReviews": false,
+            "requireLastPushApproval": false
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -4607,7 +5509,30 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": true,
+          "enforceAdmins": true,
+          "requiredSignatures": true,
+          "requiredLinearHistory": true,
+          "allowForcePushes": false,
+          "allowDeletions": false,
+          "blockCreations": false,
+          "requiredConversationResolution": false,
+          "lockBranch": false,
+          "requiredStatusChecks": {
+            "strict": true,
+            "contexts": [
+              "CI Gate",
+              "Security Gate Validation",
+              "Dependency & Standards Validation",
+              "Check REUSE Compliance"
+            ]
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": 0,
+            "dismissStaleReviews": false,
+            "requireCodeOwnerReviews": false,
+            "requireLastPushApproval": false
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -4715,7 +5640,29 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": true,
+          "enforceAdmins": true,
+          "requiredSignatures": true,
+          "requiredLinearHistory": true,
+          "allowForcePushes": false,
+          "allowDeletions": false,
+          "blockCreations": false,
+          "requiredConversationResolution": false,
+          "lockBranch": false,
+          "requiredStatusChecks": {
+            "strict": true,
+            "contexts": [
+              "Security Gate Validation",
+              "Dependency & Standards Validation",
+              "Check REUSE Compliance"
+            ]
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": 0,
+            "dismissStaleReviews": false,
+            "requireCodeOwnerReviews": false,
+            "requireLastPushApproval": false
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -4820,7 +5767,29 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": true,
+          "enforceAdmins": true,
+          "requiredSignatures": true,
+          "requiredLinearHistory": true,
+          "allowForcePushes": false,
+          "allowDeletions": false,
+          "blockCreations": false,
+          "requiredConversationResolution": false,
+          "lockBranch": false,
+          "requiredStatusChecks": {
+            "strict": true,
+            "contexts": [
+              "Security Gate Validation",
+              "Dependency & Standards Validation",
+              "Check REUSE Compliance"
+            ]
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": 0,
+            "dismissStaleReviews": false,
+            "requireCodeOwnerReviews": false,
+            "requireLastPushApproval": false
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -4925,7 +5894,30 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": true,
+          "enforceAdmins": true,
+          "requiredSignatures": true,
+          "requiredLinearHistory": true,
+          "allowForcePushes": false,
+          "allowDeletions": false,
+          "blockCreations": false,
+          "requiredConversationResolution": false,
+          "lockBranch": false,
+          "requiredStatusChecks": {
+            "strict": true,
+            "contexts": [
+              "CI Gate",
+              "Security Gate Validation",
+              "Dependency & Standards Validation",
+              "Check REUSE Compliance"
+            ]
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": 0,
+            "dismissStaleReviews": false,
+            "requireCodeOwnerReviews": false,
+            "requireLastPushApproval": false
+          }
         },
         "codeql": {
           "workflowPresent": true
@@ -5038,7 +6030,30 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": true,
+          "enforceAdmins": true,
+          "requiredSignatures": true,
+          "requiredLinearHistory": true,
+          "allowForcePushes": false,
+          "allowDeletions": false,
+          "blockCreations": false,
+          "requiredConversationResolution": false,
+          "lockBranch": false,
+          "requiredStatusChecks": {
+            "strict": true,
+            "contexts": [
+              "CI Gate",
+              "Security Gate Validation",
+              "Dependency & Standards Validation",
+              "Check REUSE Compliance"
+            ]
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": 0,
+            "dismissStaleReviews": false,
+            "requireCodeOwnerReviews": false,
+            "requireLastPushApproval": false
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -5167,7 +6182,29 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": true,
+          "enforceAdmins": true,
+          "requiredSignatures": true,
+          "requiredLinearHistory": true,
+          "allowForcePushes": false,
+          "allowDeletions": false,
+          "blockCreations": false,
+          "requiredConversationResolution": false,
+          "lockBranch": false,
+          "requiredStatusChecks": {
+            "strict": true,
+            "contexts": [
+              "Security Gate Validation",
+              "Dependency & Standards Validation",
+              "Check REUSE Compliance"
+            ]
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": 0,
+            "dismissStaleReviews": false,
+            "requireCodeOwnerReviews": false,
+            "requireLastPushApproval": false
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -5266,13 +6303,36 @@
       "repositoryType": "python-script",
       "name": "testing",
       "url": "https://github.com/williaby/testing",
-      "defaultBranch": "claude/initial-project-setup-01Ki3S5kK8CmVAnFLY7vpJCh",
+      "defaultBranch": "main",
       "description": "",
       "isPrivate": false,
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": true,
+          "enforceAdmins": true,
+          "requiredSignatures": true,
+          "requiredLinearHistory": true,
+          "allowForcePushes": false,
+          "allowDeletions": false,
+          "blockCreations": false,
+          "requiredConversationResolution": false,
+          "lockBranch": false,
+          "requiredStatusChecks": {
+            "strict": true,
+            "contexts": [
+              "CI Gate",
+              "Security Gate Validation",
+              "Dependency & Standards Validation",
+              "Check REUSE Compliance"
+            ]
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": 0,
+            "dismissStaleReviews": false,
+            "requireCodeOwnerReviews": false,
+            "requireLastPushApproval": false
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -5381,7 +6441,29 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": true,
+          "enforceAdmins": true,
+          "requiredSignatures": true,
+          "requiredLinearHistory": true,
+          "allowForcePushes": false,
+          "allowDeletions": false,
+          "blockCreations": false,
+          "requiredConversationResolution": false,
+          "lockBranch": false,
+          "requiredStatusChecks": {
+            "strict": true,
+            "contexts": [
+              "Security Gate Validation",
+              "Dependency & Standards Validation",
+              "Check REUSE Compliance"
+            ]
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": 0,
+            "dismissStaleReviews": false,
+            "requireCodeOwnerReviews": false,
+            "requireLastPushApproval": false
+          }
         },
         "codeql": {
           "workflowPresent": false
@@ -5486,7 +6568,30 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": false
+          "enabled": true,
+          "enforceAdmins": true,
+          "requiredSignatures": true,
+          "requiredLinearHistory": true,
+          "allowForcePushes": false,
+          "allowDeletions": false,
+          "blockCreations": false,
+          "requiredConversationResolution": false,
+          "lockBranch": false,
+          "requiredStatusChecks": {
+            "strict": true,
+            "contexts": [
+              "CI Gate",
+              "Security Gate Validation",
+              "Dependency & Standards Validation",
+              "Check REUSE Compliance"
+            ]
+          },
+          "requiredPullRequestReviews": {
+            "requiredApprovingReviewCount": 0,
+            "dismissStaleReviews": false,
+            "requireCodeOwnerReviews": false,
+            "requireLastPushApproval": false
+          }
         },
         "codeql": {
           "workflowPresent": false
