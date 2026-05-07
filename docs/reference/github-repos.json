@@ -76,6 +76,7 @@
           "codeql.yml",
           "coverage.yml",
           "docs.yml",
+          "mutation-testing.yml",
           "pr-validation.yml",
           "python-compatibility.yml",
           "release-sign.yml",
@@ -145,6 +146,7 @@
         "scorecardFloor": 7.0,
         "scorecardTarget": 8.5,
         "exemptWorkflows": [
+          "mutation-testing.yml",
           "release-sign.yml",
           "release.yml",
           "sbom.yml",
@@ -157,6 +159,7 @@
         "scorecardFloor": 6.0,
         "scorecardTarget": 7.5,
         "exemptWorkflows": [
+          "mutation-testing.yml",
           "release-sign.yml",
           "release.yml",
           "reuse.yml",
@@ -175,6 +178,7 @@
         "scorecardTarget": 7.0,
         "exemptWorkflows": [
           "coverage.yml",
+          "mutation-testing.yml",
           "python-compatibility.yml",
           "release-sign.yml",
           "release.yml",
@@ -196,6 +200,7 @@
         "scorecardTarget": 7.0,
         "exemptWorkflows": [
           "coverage.yml",
+          "mutation-testing.yml",
           "python-compatibility.yml",
           "release-sign.yml",
           "release.yml",
@@ -218,6 +223,7 @@
         "exemptWorkflows": [
           "codeql.yml",
           "coverage.yml",
+          "mutation-testing.yml",
           "python-compatibility.yml",
           "release-sign.yml",
           "release.yml",
@@ -239,6 +245,7 @@
         "scorecardTarget": 7.5,
         "exemptWorkflows": [
           "coverage.yml",
+          "mutation-testing.yml",
           "sbom.yml",
           "slsa-provenance.yml"
         ],
@@ -271,7 +278,7 @@
       }
     },
     "_notes": {
-      "requiredConversationResolution": "Intentionally false \u2014 conversation resolution is not enforced as a branch protection gate. Code review discussions are handled by workflow, not enforced by GitHub.",
+      "requiredConversationResolution": "Intentionally false — conversation resolution is not enforced as a branch protection gate. Code review discussions are handled by workflow, not enforced by GitHub.",
       "homelab-agent-configs-exempt": "williaby/homelab-agent-configs is permanently exempt from branch protection requirements due to structural nuances in that repo (non-standard default branch: agent/hermes). Do not flag its unprotected state as a finding in compliance audits."
     }
   },
@@ -416,7 +423,8 @@
           "sourceTemplate": null,
           "driftScore": null
         }
-      }
+      },
+      "usesDocker": false
     },
     {
       "org": "ByronWilliamsCPA",
@@ -590,7 +598,8 @@
           "sourceTemplate": null,
           "driftScore": null
         }
-      }
+      },
+      "usesDocker": false
     },
     {
       "org": "ByronWilliamsCPA",
@@ -749,7 +758,8 @@
           "sourceTemplate": null,
           "driftScore": null
         }
-      }
+      },
+      "usesDocker": true
     },
     {
       "org": "ByronWilliamsCPA",
@@ -892,7 +902,8 @@
           "sourceTemplate": null,
           "driftScore": null
         }
-      }
+      },
+      "usesDocker": false
     },
     {
       "org": "ByronWilliamsCPA",
@@ -1031,7 +1042,8 @@
           "sourceTemplate": "ByronWilliamsCPA/cookiecutter-python-template",
           "driftScore": null
         }
-      }
+      },
+      "usesDocker": false
     },
     {
       "org": "ByronWilliamsCPA",
@@ -1162,7 +1174,8 @@
           "sourceTemplate": null,
           "driftScore": null
         }
-      }
+      },
+      "usesDocker": false
     },
     {
       "org": "ByronWilliamsCPA",
@@ -1285,7 +1298,8 @@
           "sourceTemplate": null,
           "driftScore": null
         }
-      }
+      },
+      "usesDocker": false
     },
     {
       "org": "ByronWilliamsCPA",
@@ -1442,7 +1456,8 @@
           "sourceTemplate": null,
           "driftScore": null
         }
-      }
+      },
+      "usesDocker": true
     },
     {
       "org": "ByronWilliamsCPA",
@@ -1580,7 +1595,8 @@
           "sourceTemplate": null,
           "driftScore": null
         }
-      }
+      },
+      "usesDocker": false
     },
     {
       "org": "ByronWilliamsCPA",
@@ -1748,7 +1764,8 @@
           "sourceTemplate": null,
           "driftScore": null
         }
-      }
+      },
+      "usesDocker": true
     },
     {
       "org": "ByronWilliamsCPA",
@@ -1905,7 +1922,8 @@
           "sourceTemplate": null,
           "driftScore": null
         }
-      }
+      },
+      "usesDocker": true
     },
     {
       "org": "ByronWilliamsCPA",
@@ -2055,7 +2073,8 @@
           "sourceTemplate": null,
           "driftScore": null
         }
-      }
+      },
+      "usesDocker": false
     },
     {
       "org": "ByronWilliamsCPA",
@@ -2210,7 +2229,8 @@
           "sourceTemplate": null,
           "driftScore": null
         }
-      }
+      },
+      "usesDocker": false
     },
     {
       "org": "ByronWilliamsCPA",
@@ -2369,7 +2389,8 @@
           "sourceTemplate": null,
           "driftScore": null
         }
-      }
+      },
+      "usesDocker": true
     },
     {
       "org": "ByronWilliamsCPA",
@@ -2496,7 +2517,8 @@
           "sourceTemplate": null,
           "driftScore": null
         }
-      }
+      },
+      "usesDocker": false
     },
     {
       "org": "ByronWilliamsCPA",
@@ -2623,7 +2645,8 @@
           "sourceTemplate": null,
           "driftScore": null
         }
-      }
+      },
+      "usesDocker": false
     },
     {
       "org": "ByronWilliamsCPA",
@@ -2769,7 +2792,8 @@
           "sourceTemplate": "ByronWilliamsCPA/cookiecutter-python-template",
           "driftScore": null
         }
-      }
+      },
+      "usesDocker": true
     },
     {
       "org": "ByronWilliamsCPA",
@@ -2926,7 +2950,8 @@
           "sourceTemplate": "cookiecutter-python-template",
           "driftScore": null
         }
-      }
+      },
+      "usesDocker": true
     },
     {
       "org": "ByronWilliamsCPA",
@@ -3062,7 +3087,8 @@
           "sourceTemplate": null,
           "driftScore": null
         }
-      }
+      },
+      "usesDocker": false
     },
     {
       "org": "williaby",
@@ -3189,7 +3215,8 @@
           "sourceTemplate": null,
           "driftScore": null
         }
-      }
+      },
+      "usesDocker": false
     },
     {
       "org": "williaby",
@@ -3316,7 +3343,8 @@
           "sourceTemplate": null,
           "driftScore": null
         }
-      }
+      },
+      "usesDocker": false
     },
     {
       "org": "williaby",
@@ -3443,7 +3471,8 @@
           "sourceTemplate": null,
           "driftScore": null
         }
-      }
+      },
+      "usesDocker": false
     },
     {
       "org": "williaby",
@@ -3570,7 +3599,8 @@
           "sourceTemplate": null,
           "driftScore": null
         }
-      }
+      },
+      "usesDocker": false
     },
     {
       "org": "williaby",
@@ -3710,7 +3740,8 @@
           "sourceTemplate": null,
           "driftScore": null
         }
-      }
+      },
+      "usesDocker": true
     },
     {
       "org": "williaby",
@@ -3871,7 +3902,8 @@
           "sourceTemplate": null,
           "driftScore": null
         }
-      }
+      },
+      "usesDocker": false
     },
     {
       "org": "williaby",
@@ -4020,7 +4052,8 @@
           "sourceTemplate": null,
           "driftScore": null
         }
-      }
+      },
+      "usesDocker": true
     },
     {
       "org": "williaby",
@@ -4147,7 +4180,8 @@
           "sourceTemplate": null,
           "driftScore": null
         }
-      }
+      },
+      "usesDocker": false
     },
     {
       "org": "williaby",
@@ -4278,7 +4312,8 @@
           "sourceTemplate": null,
           "driftScore": null
         }
-      }
+      },
+      "usesDocker": false
     },
     {
       "org": "williaby",
@@ -4406,7 +4441,8 @@
           "sourceTemplate": null,
           "driftScore": null
         }
-      }
+      },
+      "usesDocker": false
     },
     {
       "org": "williaby",
@@ -4530,7 +4566,8 @@
         }
       },
       "branchProtectionExempt": true,
-      "branchProtectionExemptReason": "Structural nuances in this repo require no branch protection. Exempt by design \u2014 do not flag in audits."
+      "branchProtectionExemptReason": "Structural nuances in this repo require no branch protection. Exempt by design — do not flag in audits.",
+      "usesDocker": false
     },
     {
       "org": "williaby",
@@ -4658,7 +4695,8 @@
           "sourceTemplate": null,
           "driftScore": null
         }
-      }
+      },
+      "usesDocker": false
     },
     {
       "org": "williaby",
@@ -4814,7 +4852,8 @@
           "sourceTemplate": null,
           "driftScore": null
         }
-      }
+      },
+      "usesDocker": true
     },
     {
       "org": "williaby",
@@ -4941,7 +4980,8 @@
           "sourceTemplate": null,
           "driftScore": null
         }
-      }
+      },
+      "usesDocker": false
     },
     {
       "org": "williaby",
@@ -5111,7 +5151,8 @@
           "sourceTemplate": null,
           "driftScore": null
         }
-      }
+      },
+      "usesDocker": true
     },
     {
       "org": "williaby",
@@ -5238,7 +5279,8 @@
           "sourceTemplate": null,
           "driftScore": null
         }
-      }
+      },
+      "usesDocker": false
     },
     {
       "org": "williaby",
@@ -5365,7 +5407,8 @@
           "sourceTemplate": null,
           "driftScore": null
         }
-      }
+      },
+      "usesDocker": false
     },
     {
       "org": "williaby",
@@ -5503,7 +5546,8 @@
           "sourceTemplate": null,
           "driftScore": null
         }
-      }
+      },
+      "usesDocker": false
     },
     {
       "org": "williaby",
@@ -5634,7 +5678,8 @@
           "sourceTemplate": null,
           "driftScore": null
         }
-      }
+      },
+      "usesDocker": false
     },
     {
       "org": "williaby",
@@ -5761,7 +5806,8 @@
           "sourceTemplate": null,
           "driftScore": null
         }
-      }
+      },
+      "usesDocker": false
     },
     {
       "org": "williaby",
@@ -5888,7 +5934,8 @@
           "sourceTemplate": null,
           "driftScore": null
         }
-      }
+      },
+      "usesDocker": false
     },
     {
       "org": "williaby",
@@ -6024,7 +6071,8 @@
           "sourceTemplate": null,
           "driftScore": null
         }
-      }
+      },
+      "usesDocker": false
     },
     {
       "org": "williaby",
@@ -6176,7 +6224,8 @@
           "sourceTemplate": null,
           "driftScore": null
         }
-      }
+      },
+      "usesDocker": true
     },
     {
       "org": "williaby",
@@ -6303,7 +6352,8 @@
           "sourceTemplate": null,
           "driftScore": null
         }
-      }
+      },
+      "usesDocker": false
     },
     {
       "org": "williaby",
@@ -6435,7 +6485,8 @@
           "sourceTemplate": null,
           "driftScore": null
         }
-      }
+      },
+      "usesDocker": true
     },
     {
       "org": "williaby",
@@ -6562,7 +6613,8 @@
           "sourceTemplate": null,
           "driftScore": null
         }
-      }
+      },
+      "usesDocker": false
     },
     {
       "org": "williaby",
@@ -6704,7 +6756,8 @@
           "sourceTemplate": null,
           "driftScore": null
         }
-      }
+      },
+      "usesDocker": true
     }
   ]
 }
