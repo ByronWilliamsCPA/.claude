@@ -1,0 +1,15 @@
+pull_request_rules:
+  - name: Auto-merge when all checks pass and commits are verified
+    conditions:
+      - base=main
+      - check-success=CI Gate
+      - check-success=Security Gate Validation
+      - check-success=Dependency & Standards Validation
+      - check-success=Check REUSE Compliance
+      - "#check-failure == 0"
+      - "#check-pending == 0"
+      - commits[*].commit_verification.verified = True
+      - -conflict
+    actions:
+      merge:
+        method: merge
