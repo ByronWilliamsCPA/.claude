@@ -1,6 +1,6 @@
 # docs/standards-manifest.yaml
 version: "1.0"
-last_updated: "2026-05-05"
+last_updated: "2026-05-07"
 
 # verify field is a hint to the domain agent, not executable DSL.
 # Agents interpret it using their own tools (Grep, Read, Glob, Bash).
@@ -395,7 +395,7 @@ checks:
     domain: ci
     severity: important
     description: "No unregistered GitHub Actions workflows -- any .yml in .github/workflows/ not in the registered set is flagged for evaluation"
-    verify: "workflow_inventory: .github/workflows/, expected_set=[ci.yml,codeql.yml,coverage.yml,docs.yml,pr-validation.yml,python-compatibility.yml,release-sign.yml,release.yml,reuse.yml,sbom.yml,scorecard.yml,security-analysis.yml,sonarcloud.yml], report_extras=true"
+    verify: "workflow_inventory: .github/workflows/, expected_set=[ci.yml,codeql.yml,coverage.yml,dependency-review.yml,docs.yml,pr-validation.yml,python-compatibility.yml,release-sign.yml,release.yml,reuse.yml,sbom.yml,scorecard.yml,security-analysis.yml,slsa-provenance.yml,sonarcloud.yml], report_extras=true"
     override_eligible: true
 
   - id: CI-014
