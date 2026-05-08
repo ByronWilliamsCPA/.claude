@@ -40,3 +40,10 @@ def test_workflow_without_name_omits_prefix() -> None:
     workflow_yaml = (FIXTURES / "no_workflow_name.yml").read_text()
     produced = crc.extract_produced_check_names(workflow_yaml, registry={})
     assert produced == {"Check REUSE Compliance"}
+
+
+@pytest.mark.unit
+def test_no_workflow_name_no_job_name_uses_bare_job_key() -> None:
+    workflow_yaml = (FIXTURES / "no_name_no_prefix.yml").read_text()
+    produced = crc.extract_produced_check_names(workflow_yaml, registry={})
+    assert produced == {"build"}
