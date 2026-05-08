@@ -98,17 +98,56 @@ gh api "repos/${REPO_SLUG}/branches/main/protection" 2>/dev/null
 ```
 Check for: `required_pull_request_reviews.required_approving_review_count >= 1`, `required_pull_request_reviews.dismiss_stale_reviews: true`, `required_status_checks.strict: true`. If any are missing or the endpoint returns 404, emit SCORECARD:Branch-Protection FINDING.
 
-**Required blocking check contexts (CI-017):**
-```bash
-GH_STDERR_FILE=$(mktemp)
-trap 'rm -f "$GH_STDERR_FILE"' EXIT
-CONTEXTS_RAW=$(gh api "repos/${REPO_SLUG}/branches/main/protection" --jq '.required_status_checks.contexts // []' 2>"$GH_STDERR_FILE")
-CONTEXTS_STATUS=$?
-GH_STDERR=$(cat "$GH_STDERR_FILE")
-```
-If `CONTEXTS_STATUS` is non-zero (API failure, auth error, network error, or 404), emit a note: "CI-017 check could not run: `gh api` exited ${CONTEXTS_STATUS}; stderr: ${GH_STDERR}" and skip the context comparison. Do not emit a false CI-017 FINDING from a failed API call.
+### CI-022/023/024: Required Checks Cross-Validation
 
-If `CONTEXTS_STATUS` is 0, parse `CONTEXTS_RAW` as a JSON array. The four required blocking contexts are: `CI Gate`, `Security Gate Validation`, `Dependency & Standards Validation`, `Check REUSE Compliance`. If any of the four are absent from the returned array, emit a CI-017 FINDING listing which contexts are missing and referencing `scripts/setup_github_protection.py` as the remediation script.
+These three checks are validated by a single Python script. Invoke it once per audit:
+
+```bash
+python scripts/check-required-checks.py \
+  --repo-path "${REPO_PATH}" \
+  --manifest "${HOME}/.claude/docs/standards-manifest.yaml" \
+  --registry "${HOME}/.claude/docs/reusable-workflow-jobs.yaml" \
+  --repo-slug "${REPO_SLUG}" \
+  --branch "${DEFAULT_BRANCH:-main}" \
+  --check-bp
+```
+
+The script emits a JSON array of findings to stdout. Parse it and emit each as a standard FINDING block. Exit code 0 means no findings; non-zero means at least one finding was emitted (1 = drift findings, 2 = input load error).
+
+#### Remediation Prompts
+
+When findings exist and the user is in interactive remediation mode:
+
+**For CI-022 findings (workflow has no producing job):**
+
+Use AskUserQuestion to offer:
+- "Add a stub job to the local workflow file" (when produced_by is a local path)
+- "Update the registry" (when produced_by is a reusable workflow path and the registry just needs the new name)
+- "Remove from manifest" (when the required check is no longer required; requires typed reason)
+
+**For CI-023 findings (branch protection drift):**
+
+Use AskUserQuestion to offer:
+- "Update branch protection contexts to match manifest" (visible-to-others action; require typed `yes` to proceed; show the full PATCH payload first)
+- "Update manifest to match branch protection" (when live state is correct and manifest is stale)
+
+The PATCH command for branch protection updates is:
+
+```bash
+gh api repos/${REPO_SLUG}/branches/${DEFAULT_BRANCH:-main}/protection/required_status_checks \
+  --method PATCH \
+  --field 'contexts[]=<name1>' \
+  --field 'contexts[]=<name2>' \
+  --field 'strict=true'
+```
+
+**For CI-024 findings (registry staleness):**
+
+Offer:
+- "Re-verify the reusable workflow now" (fetch from source repo, re-parse, bump last_verified to today)
+- "Mark as still accurate" (if user has manually verified; bump last_verified)
+
+When multiple CI-023 findings exist with the same fix shape (all branch-protection drift), offer a "fix all in one PATCH" batch option.
 
 **Private vulnerability reporting:**
 ```bash
@@ -232,20 +271,7 @@ remediation: |
   ...
 ```
 
-For CI-017 (missing blocking check contexts), use:
-
-```
-FINDING:
-id: CI-017
-severity: critical
-description: Branch protection is missing required blocking check contexts: [list missing ones]
-status: configuration_gap
-current_value: contexts registered: [paste the array from the API]
-remediation: |
-  Run scripts/setup_github_protection.py to register all four blocking checks.
-  Required contexts: CI Gate, Security Gate Validation, Dependency & Standards Validation, Check REUSE Compliance.
-  If the workflow gate jobs do not yet exist, add them first (see CI-014, CI-015, CI-016).
-```
+For CI-022/023/024 (required checks cross-validation), parse the JSON array emitted by `scripts/check-required-checks.py` and emit each element as a FINDING block using the standard format above. The script sets the `id`, `severity`, `description`, `status`, `current_value`, and `remediation` fields for each finding; pass them through verbatim.
 
 ---
 
