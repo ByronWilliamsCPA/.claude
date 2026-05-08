@@ -11,11 +11,25 @@ from __future__ import annotations
 
 import itertools
 import re
+from dataclasses import asdict, dataclass
+from datetime import date, timedelta
 from typing import Any
 
 from ruamel.yaml import YAML
 
 _MATRIX_VAR = re.compile(r"\$\{\{\s*matrix\.(\w+)\s*\}\}")
+
+_UNREGISTERED_PREFIX = "__UNREGISTERED__:"
+
+
+@dataclass(frozen=True)
+class Finding:
+    check_id: str
+    severity: str
+    message: str
+
+    def to_dict(self) -> dict[str, str]:
+        return asdict(self)
 
 
 def _expand_matrix_combinations(
@@ -77,7 +91,7 @@ def _produced_for_job(
         entry = registry.get(workflow_path)
         if entry and isinstance(entry.get("produces"), list):
             return {str(name) for name in entry["produces"]}
-        return {f"__UNREGISTERED__:{workflow_path}"}
+        return {f"{_UNREGISTERED_PREFIX}{workflow_path}"}
     job_label_template = job.get("name") or job_key
     simple_axes = _job_simple_axes(job)
     if not simple_axes:
@@ -139,6 +153,121 @@ def extract_produced_check_names(
             continue
         produced |= _produced_for_job(workflow_name, job_key, job, registry)
     return produced
+
+
+def diff_required_vs_produced(
+    required: set[str],
+    produced: set[str],
+    required_checks_meta: dict[str, dict[str, Any]],
+) -> list[Finding]:
+    """CI-022: every required check has a producing workflow job."""
+    unregistered = {p for p in produced if p.startswith(_UNREGISTERED_PREFIX)}
+    findings: list[Finding] = [
+        Finding(
+            check_id="CI-022",
+            severity="critical",
+            message=(
+                f"Reusable workflow '{path.removeprefix(_UNREGISTERED_PREFIX)}' "
+                f"is referenced but missing from "
+                f"docs/reusable-workflow-jobs.yaml; add it or remove the reference."
+            ),
+        )
+        for path in unregistered
+    ]
+    cleaned_produced = produced - unregistered
+    findings.extend(
+        Finding(
+            check_id="CI-022",
+            severity="critical",
+            message=(
+                f"Required check '{name}' has no producing workflow job. "
+                f"Manifest expects it to come from "
+                f"{required_checks_meta.get(name, {}).get('produced_by', '<unspecified>')}."
+            ),
+        )
+        for name in sorted(required - cleaned_produced)
+    )
+    return findings
+
+
+def diff_required_vs_branch_protection(
+    required: set[str],
+    contexts: list[str],
+) -> list[Finding]:
+    """CI-023: branch protection contexts equal required_checks set exactly."""
+    actual = set(contexts)
+    findings: list[Finding] = [
+        Finding(
+            check_id="CI-023",
+            severity="critical",
+            message=(
+                f"Required check '{name}' missing from branch protection contexts."
+            ),
+        )
+        for name in sorted(required - actual)
+    ]
+    findings.extend(
+        Finding(
+            check_id="CI-023",
+            severity="critical",
+            message=(
+                f"Branch protection requires '{name}' but manifest does "
+                f"not list it as a required check."
+            ),
+        )
+        for name in sorted(actual - required)
+    )
+    return findings
+
+
+def check_registry_freshness(
+    registry: dict[str, dict[str, Any]],
+    today: date,
+    max_age_days: int = 90,
+) -> list[Finding]:
+    """CI-024: every registry entry has last_verified within max_age_days."""
+    findings: list[Finding] = []
+    cutoff = today - timedelta(days=max_age_days)
+    for path, entry in sorted(registry.items()):
+        last_verified_raw = entry.get("last_verified")
+        if isinstance(last_verified_raw, date):
+            last_verified = last_verified_raw
+        elif isinstance(last_verified_raw, str):
+            try:
+                last_verified = date.fromisoformat(last_verified_raw)
+            except ValueError:
+                findings.append(
+                    Finding(
+                        check_id="CI-024",
+                        severity="important",
+                        message=(
+                            f"Registry entry {path} has unparseable "
+                            f"last_verified value: {last_verified_raw!r}"
+                        ),
+                    )
+                )
+                continue
+        else:
+            findings.append(
+                Finding(
+                    check_id="CI-024",
+                    severity="important",
+                    message=f"Registry entry {path} missing last_verified field.",
+                )
+            )
+            continue
+        if last_verified < cutoff:
+            findings.append(
+                Finding(
+                    check_id="CI-024",
+                    severity="important",
+                    message=(
+                        f"Registry entry {path} last_verified {last_verified} "
+                        f"is older than {max_age_days} days; re-verify."
+                    ),
+                )
+            )
+    return findings
 
 
 if __name__ == "__main__":

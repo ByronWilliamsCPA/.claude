@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import importlib.abc
 import importlib.util
+import sys
 from pathlib import Path
 
 import pytest
@@ -16,6 +17,8 @@ spec = importlib.util.spec_from_file_location("check_required_checks", _SCRIPT_P
 assert spec is not None, f"Script not found: {_SCRIPT_PATH}"
 crc = importlib.util.module_from_spec(spec)
 assert isinstance(spec.loader, importlib.abc.Loader)
+# Register in sys.modules so the @dataclass decorator can resolve __module__.
+sys.modules["check_required_checks"] = crc
 spec.loader.exec_module(crc)
 
 FIXTURES = PROJECT_ROOT / "data" / "test_fixtures" / "required_checks"
@@ -105,3 +108,70 @@ def test_unregistered_reusable_workflow_returns_sentinel() -> None:
         "__UNREGISTERED__:SomeOrg/private-actions/.github/workflows/build.yml"
         in produced
     )
+
+
+@pytest.mark.unit
+def test_diff_required_vs_produced_flags_missing_producer() -> None:
+    findings = crc.diff_required_vs_produced(
+        required={"CI Gate", "REUSE"},
+        produced={"CI Gate"},
+        required_checks_meta={
+            "REUSE": {"produced_by": ".github/workflows/reuse.yml"},
+        },
+    )
+    assert len(findings) == 1
+    assert findings[0].check_id == "CI-022"
+    assert "REUSE" in findings[0].message
+    assert ".github/workflows/reuse.yml" in findings[0].message
+
+
+@pytest.mark.unit
+def test_diff_required_vs_produced_flags_unregistered_reusable() -> None:
+    findings = crc.diff_required_vs_produced(
+        required={"CI Gate"},
+        produced={"CI Gate", "__UNREGISTERED__:SomeOrg/x/.github/workflows/y.yml"},
+        required_checks_meta={},
+    )
+    assert any(
+        "missing from docs/reusable-workflow-jobs.yaml" in f.message for f in findings
+    )
+
+
+@pytest.mark.unit
+def test_diff_required_vs_branch_protection_missing_and_extra() -> None:
+    findings = crc.diff_required_vs_branch_protection(
+        required={"CI Gate", "REUSE"},
+        contexts=["CI Gate", "Stale Check"],
+    )
+    messages = [f.message for f in findings]
+    assert any("REUSE" in m and "missing" in m for m in messages)
+    assert any("Stale Check" in m and "does not list" in m for m in messages)
+
+
+@pytest.mark.unit
+def test_diff_required_vs_branch_protection_exact_match_no_findings() -> None:
+    findings = crc.diff_required_vs_branch_protection(
+        required={"CI Gate"},
+        contexts=["CI Gate"],
+    )
+    assert findings == []
+
+
+@pytest.mark.unit
+def test_registry_freshness_flags_stale_entries() -> None:
+    from datetime import date
+
+    registry = {
+        "fresh": {"last_verified": "2026-05-01"},
+        "stale": {"last_verified": "2025-01-01"},
+        "missing": {},
+    }
+    findings = crc.check_registry_freshness(
+        registry=registry,
+        today=date(2026, 5, 8),
+        max_age_days=90,
+    )
+    paths = [f.message for f in findings]
+    assert any("stale" in m for m in paths)
+    assert any("missing" in m and "last_verified" in m for m in paths)
+    assert not any("fresh" in m for m in paths)
