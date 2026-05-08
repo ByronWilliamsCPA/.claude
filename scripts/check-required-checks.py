@@ -39,8 +39,11 @@ def extract_produced_check_names(
     workflow_name = doc.get("name")
     jobs = doc.get("jobs", {}) or {}
     produced: set[str] = set()
-    for job_key in jobs:
-        check_name = f"{workflow_name} / {job_key}" if workflow_name else job_key
+    for job_key, job in jobs.items():
+        if not isinstance(job, dict):
+            continue
+        job_label = job.get("name") or job_key
+        check_name = f"{workflow_name} / {job_label}" if workflow_name else job_label
         produced.add(check_name)
     return produced
 

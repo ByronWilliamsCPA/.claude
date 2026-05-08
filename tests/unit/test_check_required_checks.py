@@ -26,3 +26,17 @@ def test_single_job_no_name_produces_workflow_prefixed_check() -> None:
     workflow_yaml = (FIXTURES / "single_job_no_name.yml").read_text()
     produced = crc.extract_produced_check_names(workflow_yaml, registry={})
     assert produced == {"Pipeline / build"}
+
+
+@pytest.mark.unit
+def test_job_with_name_uses_name_field() -> None:
+    workflow_yaml = (FIXTURES / "single_job_with_name.yml").read_text()
+    produced = crc.extract_produced_check_names(workflow_yaml, registry={})
+    assert produced == {"Pipeline / CI Gate"}
+
+
+@pytest.mark.unit
+def test_workflow_without_name_omits_prefix() -> None:
+    workflow_yaml = (FIXTURES / "no_workflow_name.yml").read_text()
+    produced = crc.extract_produced_check_names(workflow_yaml, registry={})
+    assert produced == {"Check REUSE Compliance"}
