@@ -68,8 +68,16 @@ def _produced_for_job(
     workflow_name: str | None,
     job_key: str,
     job: dict[str, Any],
+    registry: dict[str, Any],
 ) -> set[str]:
-    """Compute the set of check names a single job produces."""
+    """Return the set of check names this single job produces."""
+    uses = job.get("uses")
+    if isinstance(uses, str) and ".github/workflows/" in uses:
+        workflow_path = uses.split("@", 1)[0]
+        entry = registry.get(workflow_path)
+        if entry and isinstance(entry.get("produces"), list):
+            return {str(name) for name in entry["produces"]}
+        return {f"__UNREGISTERED__:{workflow_path}"}
     job_label_template = job.get("name") or job_key
     simple_axes = _job_simple_axes(job)
     if not simple_axes:
@@ -98,8 +106,8 @@ def extract_produced_check_names(
     Args:
         workflow_yaml: Raw YAML contents of a single workflow file.
         registry: Reusable-workflow registry (path -> {produces: [names]}).
-            Reserved for reusable-workflow expansion (implemented in a later
-            task). Pass an empty dict for locally-defined workflows.
+            Used to resolve jobs with a `uses:` field pointing to a reusable
+            workflow. Pass an empty dict for locally-defined workflows.
 
     Returns:
         Set of check names. For matrix jobs the set is expanded across
@@ -122,7 +130,6 @@ def extract_produced_check_names(
           raw `name:` template without interpolation. Such workflows
           should be modeled in the registry instead of parsed from source.
     """
-    _ = registry  # consumed in later tasks (reusable-workflow expansion)
     doc = _yaml.load(workflow_yaml) or {}
     workflow_name = doc.get("name")
     jobs = doc.get("jobs", {}) or {}
@@ -130,7 +137,7 @@ def extract_produced_check_names(
     for job_key, job in jobs.items():
         if not isinstance(job, dict):
             continue
-        produced |= _produced_for_job(workflow_name, job_key, job)
+        produced |= _produced_for_job(workflow_name, job_key, job, registry)
     return produced
 
 

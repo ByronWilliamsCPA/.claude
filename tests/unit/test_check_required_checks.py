@@ -80,3 +80,28 @@ def test_include_only_matrix_emits_raw_template_without_interpolation() -> None:
     # cannot interpolate ${{ matrix.x }} references. The raw template
     # is emitted; downstream CI-022 will flag this as needing registry coverage.
     assert produced == {"Test ${{ matrix.python }}"}
+
+
+@pytest.mark.unit
+def test_registered_reusable_workflow_resolved_via_registry() -> None:
+    workflow_yaml = (FIXTURES / "reusable_registered.yml").read_text()
+    registry = {
+        "ByronWilliamsCPA/.github/.github/workflows/python-ci.yml": {
+            "produces": ["CI Gate"],
+            "source_repo": "ByronWilliamsCPA/.github",
+            "last_verified": "2026-05-08",
+        },
+    }
+    produced = crc.extract_produced_check_names(workflow_yaml, registry=registry)
+    assert produced == {"CI Gate"}
+
+
+@pytest.mark.unit
+def test_unregistered_reusable_workflow_returns_sentinel() -> None:
+    workflow_yaml = (FIXTURES / "reusable_unregistered.yml").read_text()
+    produced = crc.extract_produced_check_names(workflow_yaml, registry={})
+    assert any(name.startswith("__UNREGISTERED__:") for name in produced)
+    assert (
+        "__UNREGISTERED__:SomeOrg/private-actions/.github/workflows/build.yml"
+        in produced
+    )
