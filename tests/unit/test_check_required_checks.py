@@ -186,3 +186,22 @@ def test_registry_freshness_flags_unparseable_last_verified() -> None:
     assert findings[0].check_id == "CI-024"
     assert "unparseable" in findings[0].message
     assert "not-a-date" in findings[0].message
+
+
+@pytest.mark.unit
+def test_fetch_branch_protection_contexts_handles_null_response(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Repos with protection but no required_status_checks return null from --jq."""
+    import subprocess
+
+    class _FakeResult:
+        returncode = 0
+        stdout = "null\n"
+
+    def _fake_run(*args, **kwargs):
+        return _FakeResult()
+
+    monkeypatch.setattr(subprocess, "run", _fake_run)
+    contexts = crc.fetch_branch_protection_contexts("fake/repo")
+    assert contexts == []

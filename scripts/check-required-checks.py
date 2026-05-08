@@ -14,6 +14,7 @@ import itertools
 import json
 import re
 import subprocess  # nosec B404 -- intentional gh CLI invocation
+import sys
 from dataclasses import asdict, dataclass
 from datetime import date, timedelta
 from pathlib import Path
@@ -297,17 +298,18 @@ def scan_workflow_dir(
     produced: set[str] = set()
     if not workflow_dir.is_dir():
         return produced
-    for path in sorted(workflow_dir.glob("*.yml")):
+    paths = sorted(list(workflow_dir.glob("*.yml")) + list(workflow_dir.glob("*.yaml")))
+    for path in paths:
         produced |= extract_produced_check_names(path.read_text(), registry)
     return produced
 
 
-def fetch_branch_protection_contexts(repo_slug: str) -> list[str]:
+def fetch_branch_protection_contexts(repo_slug: str, branch: str = "main") -> list[str]:
     result = subprocess.run(  # nosec B603 B607 # noqa: S603
         [  # noqa: S607
             "gh",
             "api",
-            f"repos/{repo_slug}/branches/main/protection",
+            f"repos/{repo_slug}/branches/{branch}/protection",
             "--jq",
             ".required_status_checks.contexts",
         ],
@@ -317,7 +319,8 @@ def fetch_branch_protection_contexts(repo_slug: str) -> list[str]:
     )
     if result.returncode != 0:
         return []
-    return json.loads(result.stdout) if result.stdout.strip() else []
+    parsed = json.loads(result.stdout) if result.stdout.strip() else []
+    return parsed or []
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -326,6 +329,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--manifest", type=Path, required=True)
     parser.add_argument("--registry", type=Path, required=True)
     parser.add_argument("--repo-slug", default="")
+    parser.add_argument(
+        "--branch",
+        default="main",
+        help="Branch to check protection on (default: main)",
+    )
     parser.add_argument(
         "--check-bp",
         action="store_true",
@@ -338,16 +346,33 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
 
-    required, meta = load_required_checks(args.manifest)
-    registry = load_registry(args.registry)
+    try:
+        required, meta = load_required_checks(args.manifest)
+        registry = load_registry(args.registry)
+    except (FileNotFoundError, KeyError) as exc:
+        print(f"Error loading manifest or registry: {exc}", file=sys.stderr)
+        return 2
+    except Exception as exc:
+        print(f"Error parsing manifest or registry: {exc}", file=sys.stderr)
+        return 2
+
     produced = scan_workflow_dir(args.repo_path / ".github" / "workflows", registry)
 
     findings: list[Finding] = []
     findings += diff_required_vs_produced(required, produced, meta)
 
-    if args.check_bp and args.repo_slug:
-        contexts = fetch_branch_protection_contexts(args.repo_slug)
-        findings += diff_required_vs_branch_protection(required, contexts)
+    if args.check_bp:
+        if not args.repo_slug:
+            print(
+                "Warning: --check-bp specified without --repo-slug; "
+                "branch protection check skipped",
+                file=sys.stderr,
+            )
+        else:
+            contexts = fetch_branch_protection_contexts(
+                args.repo_slug, branch=args.branch
+            )
+            findings += diff_required_vs_branch_protection(required, contexts)
 
     today_value = (
         date.fromisoformat(args.today) if args.today else date.today()  # noqa: DTZ011
