@@ -15,17 +15,22 @@ FIXTURES = PROJECT_ROOT / "data" / "test_fixtures" / "required_checks"
 
 
 @pytest.mark.unit
-def test_single_job_no_name_produces_workflow_prefixed_check() -> None:
+def test_single_job_no_name_produces_bare_job_key() -> None:
+    # GitHub does not prepend the workflow's top-level name: to inline job
+    # check names. With workflow `name: Pipeline` and unnamed job `build`,
+    # the produced check name is just `build`.
     workflow_yaml = (FIXTURES / "single_job_no_name.yml").read_text()
     produced = crc.extract_produced_check_names(workflow_yaml, registry={})
-    assert produced == {"Pipeline / build"}
+    assert produced == {"build"}
 
 
 @pytest.mark.unit
 def test_job_with_name_uses_name_field() -> None:
+    # GitHub uses the job's name: verbatim for inline jobs. The workflow's
+    # top-level `name: Pipeline` is NOT prefixed onto the check name.
     workflow_yaml = (FIXTURES / "single_job_with_name.yml").read_text()
     produced = crc.extract_produced_check_names(workflow_yaml, registry={})
-    assert produced == {"Pipeline / CI Gate"}
+    assert produced == {"CI Gate"}
 
 
 @pytest.mark.unit
@@ -44,12 +49,14 @@ def test_no_workflow_name_no_job_name_uses_bare_job_key() -> None:
 
 @pytest.mark.unit
 def test_matrix_one_param_expands() -> None:
+    # The workflow's top-level `name: Tests` is NOT prefixed onto inline
+    # matrix-job check names. Only the interpolated job name is reported.
     workflow_yaml = (FIXTURES / "matrix_one_param.yml").read_text()
     produced = crc.extract_produced_check_names(workflow_yaml, registry={})
     assert produced == {
-        "Tests / Test Python 3.10",
-        "Tests / Test Python 3.11",
-        "Tests / Test Python 3.12",
+        "Test Python 3.10",
+        "Test Python 3.11",
+        "Test Python 3.12",
     }
 
 

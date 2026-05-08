@@ -46,5 +46,9 @@ def test_scan_org_repo_extracts_check_names(tmp_path: Path) -> None:
     data = yaml.load(output.read_text())
     key = "ByronWilliamsCPA/.github/.github/workflows/example.yml"
     assert key in data
-    assert data[key]["produces"] == ["Example / CI Gate"]
+    # The seed script delegates to extract_produced_check_names, which now
+    # emits inline job names verbatim (no workflow-level prefix). With
+    # `name: Example` at the top and inline job `name: CI Gate`, the
+    # produced check name is just `CI Gate`.
+    assert data[key]["produces"] == ["CI Gate"]
     assert data[key]["last_verified"] == "2026-05-08"
