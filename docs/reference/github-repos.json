@@ -687,8 +687,7 @@
             "scorecard.yml",
             "security-analysis.yml",
             "slsa-provenance.yml",
-            "sonarcloud.yml",
-            "validate-cruft.yml"
+            "sonarcloud.yml"
           ],
           "presentFromExpected": [
             "ci.yml",
@@ -715,8 +714,7 @@
             "fips-compatibility.yml",
             "mutation-testing.yml",
             "publish-pypi.yml",
-            "slsa-provenance.yml",
-            "validate-cruft.yml"
+            "slsa-provenance.yml"
           ]
         },
         "foundations": {
@@ -1386,8 +1384,7 @@
             "scorecard.yml",
             "security-analysis.yml",
             "slsa-provenance.yml",
-            "sonarcloud.yml",
-            "validate-cruft.yml"
+            "sonarcloud.yml"
           ],
           "presentFromExpected": [
             "ci.yml",
@@ -1413,8 +1410,7 @@
             "fips-compatibility.yml",
             "mutation-testing.yml",
             "publish-pypi.yml",
-            "slsa-provenance.yml",
-            "validate-cruft.yml"
+            "slsa-provenance.yml"
           ]
         },
         "foundations": {
@@ -1688,8 +1684,7 @@
             "security-analysis.yml",
             "slsa-provenance.yml",
             "supplemental-checks.yml",
-            "trivy-compose-scan.yml",
-            "validate-cruft.yml"
+            "trivy-compose-scan.yml"
           ],
           "presentFromExpected": [
             "ci.yml",
@@ -1721,8 +1716,7 @@
             "publish-pypi.yml",
             "slsa-provenance.yml",
             "supplemental-checks.yml",
-            "trivy-compose-scan.yml",
-            "validate-cruft.yml"
+            "trivy-compose-scan.yml"
           ]
         },
         "foundations": {
@@ -1852,8 +1846,7 @@
             "scorecard.yml",
             "security-analysis.yml",
             "slsa-provenance.yml",
-            "sonarcloud.yml",
-            "validate-cruft.yml"
+            "sonarcloud.yml"
           ],
           "presentFromExpected": [
             "ci.yml",
@@ -1879,8 +1872,7 @@
             "fips-compatibility.yml",
             "mutation-testing.yml",
             "publish-pypi.yml",
-            "slsa-provenance.yml",
-            "validate-cruft.yml"
+            "slsa-provenance.yml"
           ]
         },
         "foundations": {
@@ -2006,8 +1998,7 @@
             "sbom.yml",
             "scorecard.yml",
             "security-analysis.yml",
-            "slsa-provenance.yml",
-            "validate-cruft.yml"
+            "slsa-provenance.yml"
           ],
           "presentFromExpected": [
             "ci.yml",
@@ -2030,8 +2021,7 @@
             "fips-compatibility.yml",
             "maester-tests.yml",
             "mutation-testing.yml",
-            "slsa-provenance.yml",
-            "validate-cruft.yml"
+            "slsa-provenance.yml"
           ]
         },
         "foundations": {
@@ -2160,8 +2150,7 @@
             "scorecard.yml",
             "security-analysis.yml",
             "slsa-provenance.yml",
-            "sonarcloud.yml",
-            "validate-cruft.yml"
+            "sonarcloud.yml"
           ],
           "presentFromExpected": [
             "ci.yml",
@@ -2186,8 +2175,7 @@
             "mutation-testing.yml",
             "publish-artifact-registry.yml",
             "publish.yml",
-            "slsa-provenance.yml",
-            "validate-cruft.yml"
+            "slsa-provenance.yml"
           ]
         },
         "foundations": {
@@ -2318,8 +2306,7 @@
             "scorecard.yml",
             "security-analysis.yml",
             "slsa-provenance.yml",
-            "sonarcloud.yml",
-            "validate-cruft.yml"
+            "sonarcloud.yml"
           ],
           "presentFromExpected": [
             "ci.yml",
@@ -2346,8 +2333,7 @@
             "fips-compatibility.yml",
             "mutation-testing.yml",
             "publish-pypi.yml",
-            "slsa-provenance.yml",
-            "validate-cruft.yml"
+            "slsa-provenance.yml"
           ]
         },
         "foundations": {
@@ -2727,8 +2713,7 @@
             "sbom.yml",
             "scorecard.yml",
             "security-analysis.yml",
-            "sonarcloud.yml",
-            "validate-cruft.yml"
+            "sonarcloud.yml"
           ],
           "presentFromExpected": [
             "ci.yml",
@@ -2749,8 +2734,7 @@
           ],
           "extras": [
             "cifuzzy.yml",
-            "publish-pypi.yml",
-            "validate-cruft.yml"
+            "publish-pypi.yml"
           ]
         },
         "foundations": {
@@ -2880,8 +2864,7 @@
             "scorecard.yml",
             "security-analysis.yml",
             "slsa-provenance.yml",
-            "sonarcloud.yml",
-            "validate-cruft.yml"
+            "sonarcloud.yml"
           ],
           "presentFromExpected": [
             "ci.yml",
@@ -2907,8 +2890,7 @@
             "fips-compatibility.yml",
             "mutation-testing.yml",
             "publish-pypi.yml",
-            "slsa-provenance.yml",
-            "validate-cruft.yml"
+            "slsa-provenance.yml"
           ]
         },
         "foundations": {
@@ -3830,8 +3812,7 @@
             "scorecard.yml",
             "security-analysis.yml",
             "slsa-provenance.yml",
-            "sonarcloud.yml",
-            "validate-cruft.yml"
+            "sonarcloud.yml"
           ],
           "presentFromExpected": [
             "ci.yml",
@@ -3859,8 +3840,7 @@
             "fips-compatibility.yml",
             "mutation-testing.yml",
             "publish-pypi.yml",
-            "slsa-provenance.yml",
-            "validate-cruft.yml"
+            "slsa-provenance.yml"
           ]
         },
         "foundations": {
@@ -3984,8 +3964,7 @@
             "sbom.yml",
             "scorecard.yml",
             "security-analysis.yml",
-            "slsa-provenance.yml",
-            "validate-cruft.yml"
+            "slsa-provenance.yml"
           ],
           "presentFromExpected": [
             "ci.yml",
@@ -4009,8 +3988,7 @@
             "fips-compatibility.yml",
             "mutation-testing.yml",
             "publish-pypi.yml",
-            "slsa-provenance.yml",
-            "validate-cruft.yml"
+            "slsa-provenance.yml"
           ]
         },
         "foundations": {
