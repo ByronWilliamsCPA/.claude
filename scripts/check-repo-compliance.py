@@ -48,18 +48,37 @@ BRANCH_OVERRIDES = {
 
 
 def load_catalog() -> dict:
-    """Load github-repos.json. Returns empty dict if file absent."""
+    """Load github-repos.json. Returns empty dict if file absent or malformed.
+
+    Returns:
+        Mapping of "org/repo" slug to repo entry dict. Empty dict on any
+        load or parse error so the script can continue with non-API checks.
+    """
     if not CATALOG_PATH.exists():
         return {}
-    with CATALOG_PATH.open() as f:
-        data = json.load(f)
-    return {f"{r['org']}/{r['name']}": r for r in data.get("repos", [])}
+    try:
+        with CATALOG_PATH.open() as f:
+            data = json.load(f)
+    except (json.JSONDecodeError, OSError) as e:
+        print(f"warning: catalog at {CATALOG_PATH} unreadable: {e}", file=sys.stderr)
+        return {}
+    catalog = {}
+    for r in data.get("repos", []):
+        org_name = r.get("org")
+        repo_name = r.get("name")
+        if org_name and repo_name:
+            catalog[f"{org_name}/{repo_name}"] = r
+    return catalog
 
 
 def applies_to_api_repos(org: str, repo: str, catalog: dict) -> bool:
-    """Return True if the repo serves an API (api.servesApi == true)."""
+    """Return True if the repo serves an API (api.servesApi == true).
+
+    Handles the case where the `api` key is present but null (returns False).
+    """
     entry = catalog.get(f"{org}/{repo}", {})
-    return bool(entry.get("api", {}).get("servesApi", False))
+    api = entry.get("api") or {}
+    return bool(api.get("servesApi", False))
 
 
 @dataclass
@@ -135,7 +154,7 @@ def check_repo(org: str, repo: str, catalog: dict) -> RepoResult:
     # API-001..005: only run for repos with api.servesApi=true
     if applies_to_api_repos(org, repo, catalog):
         catalog_entry = catalog.get(slug, {})
-        api_info = catalog_entry.get("api", {})
+        api_info = catalog_entry.get("api") or {}
 
         # API-001: openapi.yaml present
         result.api_001_openapi_spec = (
@@ -172,8 +191,15 @@ def check_repo(org: str, repo: str, catalog: dict) -> RepoResult:
                 result.api_004_last_audited = "FAIL"
 
         # API-005: testStatus == "passing"
+        # FAIL covers both "not yet audited" (None) and "failing"; matches API-004
+        # behavior. New servesApi=true repos surface as FAIL until the openapi-
+        # compliance-agent has run on them, which is intentional: the audit drives
+        # completion of pending pipeline work.
         test_status = api_info.get("testStatus")
-        result.api_005_test_status = "PASS" if test_status == "passing" else "FAIL"
+        if test_status is None:
+            result.api_005_test_status = "FAIL"
+        else:
+            result.api_005_test_status = "PASS" if test_status == "passing" else "FAIL"
 
     return result
 

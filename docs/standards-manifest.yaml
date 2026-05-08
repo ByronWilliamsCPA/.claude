@@ -408,7 +408,7 @@ checks:
     description: >-
       No unregistered GitHub Actions workflows -- any .yml in .github/workflows/ not in
       the registered set is flagged for evaluation
-    verify: "workflow_inventory: .github/workflows/, expected_set=[ci.yml,codeql.yml,container-security.yml,coverage.yml,dependency-review.yml,docs.yml,mutation-testing.yml,pr-validation.yml,python-compatibility.yml,release-sign.yml,release.yml,reuse.yml,sbom.yml,scorecard.yml,security-analysis.yml,slsa-provenance.yml,sonarcloud.yml], report_extras=true"  # yamllint disable-line rule:line-length
+    verify: "workflow_inventory: .github/workflows/, expected_set=[ci.yml,codeql.yml,container-security.yml,coverage.yml,dependency-review.yml,docs.yml,mutation-testing.yml,postman-api-tests.yml,pr-validation.yml,python-compatibility.yml,release-sign.yml,release.yml,reuse.yml,sbom.yml,scorecard.yml,security-analysis.yml,slsa-provenance.yml,sonarcloud.yml], report_extras=true"  # yamllint disable-line rule:line-length
     override_eligible: true
 
   - id: CI-014
