@@ -696,3 +696,47 @@ checks:
     description: "CI workflow includes a mkdocs build step"
     verify: "ci_contains: mkdocs build"
     override_eligible: true
+
+  # =========================================================================
+  # API Domain (applies_to: api_repos -- skipped for servesApi=false repos)
+  # =========================================================================
+
+  - id: API-001
+    domain: api
+    severity: critical
+    description: "OpenAPI spec present at docs/api/openapi.yaml"
+    verify: "file_exists: docs/api/openapi.yaml"
+    applies_to: api_repos
+    override_eligible: false
+
+  - id: API-002
+    domain: api
+    severity: critical
+    description: "Postman collection present at docs/api/postman-collection.json"
+    verify: "file_exists: docs/api/postman-collection.json"
+    applies_to: api_repos
+    override_eligible: false
+
+  - id: API-003
+    domain: api
+    severity: important
+    description: "Postman API tests CI workflow present"
+    verify: "file_exists: .github/workflows/postman-api-tests.yml"
+    applies_to: api_repos
+    override_eligible: false
+
+  - id: API-004
+    domain: api
+    severity: important
+    description: "OpenAPI spec audited within 90 days"
+    verify: "catalog_field: api.lastAudited, within_days: 90"
+    applies_to: api_repos
+    override_eligible: true
+
+  - id: API-005
+    domain: api
+    severity: suggested
+    description: "All Postman API tests passing"
+    verify: "catalog_field: api.testStatus, equals: passing"
+    applies_to: api_repos
+    override_eligible: true
