@@ -1,0 +1,12 @@
+on: [push]
+jobs:
+  test:
+    name: Test ${{ matrix.python }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            python: "3.12"
+    steps:
+      - run: echo

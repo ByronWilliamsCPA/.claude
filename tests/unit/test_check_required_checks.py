@@ -70,3 +70,13 @@ def test_matrix_two_params_cartesian_expansion() -> None:
         "Test macos-latest 3.11",
         "Test macos-latest 3.12",
     }
+
+
+@pytest.mark.unit
+def test_include_only_matrix_emits_raw_template_without_interpolation() -> None:
+    workflow_yaml = (FIXTURES / "matrix_include_only.yml").read_text()
+    produced = crc.extract_produced_check_names(workflow_yaml, registry={})
+    # include-only matrices have no top-level axes, so the validator
+    # cannot interpolate ${{ matrix.x }} references. The raw template
+    # is emitted; downstream CI-022 will flag this as needing registry coverage.
+    assert produced == {"Test ${{ matrix.python }}"}
