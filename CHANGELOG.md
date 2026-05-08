@@ -4,6 +4,13 @@
 
 ### Feature
 
+* feat(agents): add `openapi-compliance-agent`, `openapi-code-enricher`, and `postman-test-designer` agents implementing a four-stage OpenAPI compliance pipeline for FastAPI repos: route enrichment, OpenAPI spec export, Postman collection generation with newman validation, and CI workflow injection; orchestrator runs per-repo pipelines in parallel for `/openapi-audit all`
+* feat(compliance): add API-001 through API-005 manifest checks (OpenAPI spec present, Postman collection present, postman-api-tests.yml CI workflow present, lastAudited within 90 days, all Postman tests passing) gated by `applies_to: api_repos` predicate
+* feat(scripts): add `applies_to_api_repos` evaluator and API-001..005 check logic to `scripts/check-repo-compliance.py`; loads `docs/reference/github-repos.json` and skips API checks for repos where `api.servesApi` is false
+* feat(compliance): register `container-security.yml`, `mutation-testing.yml`, and `postman-api-tests.yml` in CI-013 `expected_set` so the compliance audit recognizes these workflows
+* feat(catalog): add `usesDocker` boolean to all repo entries (14 true: 7 ByronWilliamsCPA, 7 williaby) for container-security workflow scoping; remove stale `validate-cruft.yml` entries from 22 per-repo workflow lists now that the workflow is fully deployed (WF-15, 2026-05-04)
+* feat(skill): document API domain dispatch and `applies_to: api_repos` conditional in `repo-compliance` SKILL.md
+
 * feat(compliance): add `_meta.visibilityProfiles.private` to `docs/reference/github-repos.json` for private-repo compliance scoping; extends `repo-compliance` skill coordinator to read `isPrivate`, load the visibility profile, merge type and visibility exemptions, and forward `scorecard_api_skip` to the OSSF agent; marks OSSF-001 and OSSF-006 with `visibility_required: public` in `docs/standards-manifest.yaml`; fixes TruffleHog pre-commit hook to use null-delimited staged-file scanning (`git diff -z --diff-filter=d | xargs -0 -r`) to handle filenames with spaces and prevent errors on staged deletions
 
 * feat(agents): add `OSSF-NEW-001` check to `ossf-compliance-auditor` for missing Dependabot ecosystem entries in `.github/dependabot.yml`; add `CI-SEC-002` check for security gate steps with `continue-on-error: true` across seven security actions (anchore, trivy, dependency-review, scorecard, gitleaks, snyk, codeql-action/analyze, semgrep)

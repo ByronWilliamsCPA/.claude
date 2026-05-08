@@ -20,6 +20,9 @@ allowed:
   - linting
   - ruff
   - poetry
+  - fastapi
+  - openapi
+  - postman
   - dependencies
   - packaging
   - mutation_testing
