@@ -1,0 +1,13 @@
+# Registry of reusable GitHub Actions workflows and the check names they produce.
+# Maintained by scripts/seed-reusable-workflow-registry.py and updated when
+# org-level workflow changes ship. CI-024 enforces 90-day freshness.
+
+ByronWilliamsCPA/.github/.github/workflows/python-ci.yml:
+  produces: ["CI Gate"]
+  source_repo: ByronWilliamsCPA/.github
+  last_verified: 2026-05-08
+
+ByronWilliamsCPA/.github/.github/workflows/security-analysis.yml:
+  produces: ["Security Gate Validation"]
+  source_repo: ByronWilliamsCPA/.github
+  last_verified: 2026-05-08
