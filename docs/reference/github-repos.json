@@ -278,7 +278,7 @@
       }
     },
     "_notes": {
-      "requiredConversationResolution": "Intentionally false — conversation resolution is not enforced as a branch protection gate. Code review discussions are handled by workflow, not enforced by GitHub.",
+      "requiredConversationResolution": "Intentionally false; conversation resolution is not enforced as a branch protection gate. Code review discussions are handled by workflow, not enforced by GitHub.",
       "homelab-agent-configs-exempt": "williaby/homelab-agent-configs is permanently exempt from branch protection requirements due to structural nuances in that repo (non-standard default branch: agent/hermes). Do not flag its unprotected state as a finding in compliance audits."
     }
   },

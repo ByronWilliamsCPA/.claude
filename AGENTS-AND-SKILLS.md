@@ -105,6 +105,23 @@ with Pact or Schemathesis, and generates interactive API documentation with code
 Handles schema design, migrations (Alembic, Flyway), query optimization, execution plan analysis,
 and data integrity validation. Produces safe migrations with rollback plans.
 
+**[openapi-compliance-agent](/.claude/agents/openapi-compliance-agent.md)**
+Orchestrates the full OpenAPI compliance pipeline for API-serving repos. Dispatches
+openapi-code-enricher, api-development-agent, postman-test-designer, and
+github-workflow-agent sequentially per repo; runs repos in parallel for /openapi-audit
+all. Updates the repo catalog on success.
+
+**[openapi-code-enricher](/.claude/agents/openapi-code-enricher.md)**
+Patches FastAPI route files for full OpenAPI coverage. Adds app-level metadata to
+FastAPI() constructors, enriches route decorators (summary, tags, responses,
+status_code, response_model), and creates Pydantic models for untyped request bodies.
+Does not touch business logic or authentication code.
+
+**[postman-test-designer](/.claude/agents/postman-test-designer.md)**
+Injects pre-request scripts and test assertions into Postman collections, runs newman
+on docker-host to validate the API, writes .github/workflows/postman-api-tests.yml,
+and returns a pass/fail status to the orchestrator.
+
 ### AI & ML Engineering
 
 **[ai-engineer](/.claude/agents/ai-engineer.md)**
