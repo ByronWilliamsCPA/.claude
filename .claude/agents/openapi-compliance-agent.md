@@ -25,13 +25,15 @@ OpenAPI compliance orchestrator for internal API repos.
 
 ### Step 1: Load targets from catalog
 
-Read `/home/byron/dev/.claude/docs/reference/github-repos.json`. Extract all repo
-entries where `api.servesApi == true`. If a single slug was supplied, filter to
-that one repo; error if the slug is not found or `api.servesApi` is not `true`.
+Read `${CLAUDE_HOME:-$HOME/.claude}/docs/reference/github-repos.json`. Extract
+all repo entries where `api.servesApi == true`. If a single slug was supplied,
+filter to that one repo; error if the slug is not found or `api.servesApi` is
+not `true`.
 
 For each target repo, you need:
 - `name`: repo slug (e.g., `audio_processor`)
 - `org`: GitHub org (e.g., `ByronWilliamsCPA`)
+- `defaultBranch`: target branch for the PR base (read from the catalog entry)
 - `api.frameworks`: list of frameworks
 - `api.entryPoints`: list of entry point file paths
 
@@ -43,12 +45,14 @@ For a single repo, run sequentially.
 #### 2a. Prepare worktree
 
 ```bash
-REPO_SLUG=<name>
+REPO_SLUG=<name from catalog entry>
+ORG=<org from catalog entry>
+DEFAULT_BRANCH=<defaultBranch from catalog entry, falling back to "main">
 BRANCH="feat/openapi-compliance-${REPO_SLUG}"
-WORKTREE="/home/byron/dev/${REPO_SLUG}-worktrees/openapi"
+REPO_PATH="${CLAUDE_REPOS_ROOT:-$HOME/dev}/${REPO_SLUG}"
+WORKTREE="${REPO_PATH}/.worktrees/openapi-compliance"
 
 # Clone if not already present locally
-REPO_PATH="/home/byron/dev/${REPO_SLUG}"
 if [ ! -d "$REPO_PATH" ]; then
     gh repo clone "${ORG}/${REPO_SLUG}" "$REPO_PATH"
 fi
@@ -61,7 +65,7 @@ git worktree add "$WORKTREE" -b "$BRANCH" HEAD 2>/dev/null || \
 #### 2b. Dispatch openapi-code-enricher
 
 Dispatch with:
-```
+```text
 Target repo: <WORKTREE absolute path>
 Entry points: <api.entryPoints list>
 Frameworks: <api.frameworks list>
@@ -73,7 +77,7 @@ and stop the pipeline for this repo.
 #### 2c. Dispatch api-development-agent
 
 Dispatch with:
-```
+```text
 Mode: openapi-export
 Target repo: <WORKTREE absolute path>
 Frameworks: <api.frameworks list>
@@ -87,7 +91,7 @@ completion. If either file is absent after the run, log the failure and stop.
 #### 2d. Dispatch postman-test-designer
 
 Dispatch with:
-```
+```text
 Target repo: <WORKTREE absolute path>
 Postman collection: docs/api/postman-collection.json
 Repo slug: <name>
@@ -106,12 +110,12 @@ If `status == "fail"`, log failures, leave worktree intact for inspection, updat
 #### 2e. Dispatch github-workflow-agent
 
 Dispatch with:
-```
+```text
 Action: open-pr
 Worktree: <WORKTREE absolute path>
 Repo: <ORG>/<REPO_SLUG>
 Branch: <BRANCH>
-Base: main
+Base: <DEFAULT_BRANCH from catalog>
 Title: "docs(api): add OpenAPI spec, Postman collection, and API tests"
 Body: |
   ## Summary
@@ -125,29 +129,42 @@ Body: |
   <embed newman_report_path contents or link>
 ```
 
-#### 2f. Update catalog
+#### 2f. Record the per-repo result for catalog merge
 
-After a successful PR is opened, update the repo's entry in
-`/home/byron/dev/.claude/docs/reference/github-repos.json`:
+Do NOT write to the catalog from inside this per-repo pipeline. Concurrent
+writes from parallel repos race on the JSON file and lose updates.
+
+Instead, return a structured result to the orchestrator:
 
 ```json
-"api": {
-  "servesApi": true,
-  "frameworks": [...],
-  "entryPoints": [...],
-  "externalClients": [...],
-  "openApiSpec": true,
-  "postmanCollection": true,
-  "lastAudited": "<today's date YYYY-MM-DD>",
-  "testStatus": "passing"
+{
+  "slug": "<ORG>/<REPO_SLUG>",
+  "result": {
+    "openApiSpec": true,
+    "postmanCollection": true,
+    "lastAudited": "<today's date YYYY-MM-DD>",
+    "testStatus": "passing"
+  }
 }
 ```
 
-### Step 3: Summary
+The orchestrator's Step 3 collects all per-repo results, then performs a
+single merge-write to
+`${CLAUDE_HOME:-$HOME/.claude}/docs/reference/github-repos.json` after all
+pipelines complete.
 
-After all repos are processed, print a summary table:
+### Step 3: Merge catalog updates and print summary
 
-```
+Collect every per-repo result returned in step 2f. In a single pass, load the
+catalog, merge each `result` block into the matching repo's `api` entry,
+preserving fields the pipeline did not write (`servesApi`, `frameworks`,
+`entryPoints`, `externalClients`), and write the catalog back. This single-
+writer pattern avoids the lost-update race that arises when each parallel
+repo pipeline writes its own update.
+
+Then print a summary table:
+
+```text
 Repo                  | Status  | PR
 ----------------------|---------|----
 audio_processor       | PASS    | #42

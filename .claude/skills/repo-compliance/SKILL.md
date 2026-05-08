@@ -76,14 +76,18 @@ potentially stale.
 | ossf | `ossf-compliance-auditor` | OSSF-* + live Scorecard/Badge API results |
 | general | `general-compliance-auditor` | unclassified |
 | mkdocs | `mkdocs-auditor` | MKDOCS-* (skipped when mkdocs.yml absent) |
-| api | `openapi-compliance-auditor` (via check-repo-compliance.py) | API-001..005 (applies_to: api_repos; skip when api.servesApi is false) |
+| api | `openapi-compliance-agent` (via check-repo-compliance.py) | API-001..005 (applies_to: api_repos; skip when api.servesApi is false) |
 
 ### API Domain: applies_to Conditional
 
-Before dispatching API-domain checks, read `api.servesApi` from the target repo's
-catalog entry (`docs/reference/github-repos.json`). If absent or `false`, skip all
-API-* checks without raising FINDINGs; log `SKIP (api.servesApi: false)` in the audit
-summary. API-* checks run only for repos where `api.servesApi: true`.
+Before dispatching API-domain checks, read `api.servesApi` from the target
+repo's catalog entry. The canonical catalog path is
+`${CLAUDE_HOME:-$HOME/.claude}/docs/reference/github-repos.json`; inside this
+repo it is also reachable at the relative path `docs/reference/github-repos.json`.
+Both refer to the same file (the `~/.claude` location is a symlink installed
+by `setup.sh`). If `api.servesApi` is absent or `false`, skip all API-*
+checks without raising FINDINGs; log `SKIP (api.servesApi: false)` in the
+audit summary. API-* checks run only for repos where `api.servesApi: true`.
 
 API-001 through API-003 are evaluated by `scripts/check-repo-compliance.py` via
 the GitHub Contents API. API-004 and API-005 read from the catalog directly

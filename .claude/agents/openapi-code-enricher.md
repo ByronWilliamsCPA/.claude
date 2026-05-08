@@ -16,7 +16,7 @@ FastAPI OpenAPI enrichment specialist. Operates entirely within the provided wor
 
 ## Inputs (from orchestrator prompt)
 
-```
+```text
 Target repo: <absolute path to worktree>
 Entry points: <list of FastAPI app entry point file paths relative to worktree>
 Frameworks: <list, e.g. ["fastapi"]>
@@ -31,7 +31,12 @@ Starting from each entry point, find:
 2. Files containing `APIRouter(` -- sub-routers
 3. Files containing `@<var>.(get|post|put|delete|patch|options|head)(` -- route decorators
 
-Use `grep -rn` on the worktree `src/` and `services/` directories.
+Search the standard FastAPI source-layout directories: `src/`, `services/`,
+`app/`, `backend/`, `api/`, and any directory listed in the orchestrator's
+`Entry points` input (use `dirname` on each entry point to derive its parent
+directory). Skip any directory that does not exist. Use `grep -rn` per
+directory rather than a single recursive grep from the worktree root, so
+`tests/`, `docs/`, and dependency directories are not scanned.
 
 ### Step 2: App-level metadata
 
@@ -115,9 +120,23 @@ openapi_tags=[
 
 ### Step 6: Commit
 
+Stage only the files this agent actually edited or created. `git add -A`
+would also stage any pre-existing untracked content, build artifacts, or
+files modified by an earlier pipeline step.
+
 ```bash
 cd <worktree path>
-git add -A
+
+# Stage every Python file the agent modified during the enrichment pass.
+# Track these in a $EDITED_FILES list as you go (one per Edit/Write call).
+git add -- "${EDITED_FILES[@]}"
+
+# Stage any new models.py files created in Step 4.
+# Track these in a $CREATED_MODEL_FILES list as you go.
+if [ ${#CREATED_MODEL_FILES[@]} -gt 0 ]; then
+    git add -- "${CREATED_MODEL_FILES[@]}"
+fi
+
 git commit -m "docs(openapi): enrich FastAPI routes for OpenAPI coverage"
 ```
 
