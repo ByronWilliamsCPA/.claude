@@ -75,7 +75,7 @@ def _produced_for_job(
     if not simple_axes:
         # No matrix, or include-only/exclude-only matrix: emit the raw label
         # without interpolation. include-only matrices are a documented
-        # limitation -- the validator will likely flag them as CI-022 findings,
+        # limitation; the validator will likely flag them as CI-022 findings,
         # signaling the workflow needs to be modeled in the registry.
         return {_prefix_with_workflow(workflow_name, job_label_template)}
     return {
@@ -117,8 +117,8 @@ def extract_produced_check_names(
           (job `name:` with NO matrix variables but a matrix strategy)
           are not currently supported. Use explicit `${{ matrix.x }}`
           references in the job name to make this validator handle them.
-        - Matrices with ONLY `include` (and/or `exclude`) entries -- no
-          top-level axes -- cannot be expanded; the validator emits the
+        - Matrices with ONLY `include` (and/or `exclude`) entries, with no
+          top-level axes, cannot be expanded; the validator emits the
           raw `name:` template without interpolation. Such workflows
           should be modeled in the registry instead of parsed from source.
     """
