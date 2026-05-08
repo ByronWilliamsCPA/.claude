@@ -1,7 +1,7 @@
 ---
 schema_type: planning
 title: "OpenAPI Compliance Pipeline Implementation Plan"
-status: draft
+status: published
 owner: core-maintainer
 purpose: "Implementation plan for the OpenAPI compliance pipeline: catalog api blocks, three new agents, five API-domain manifest checks, applies_to evaluator, and compliance skill update."
 component: Development-Tools
@@ -290,7 +290,7 @@ python3 /tmp/populate_api_blocks.py
 ```
 
 Expected (no errors, warnings only for truly unclassified repos):
-```
+```text
 Done. servesApi=true: N, external-only: N, no-api: N
 ```
 
@@ -311,7 +311,7 @@ for r in d['repos']:
 ```
 
 Expected:
-```
+```text
 audio_processor: {
   "servesApi": true,
   "frameworks": ["fastapi"],
@@ -489,7 +489,7 @@ git worktree add "$WORKTREE" -b "$BRANCH" HEAD 2>/dev/null || \
 #### 2b. Dispatch openapi-code-enricher
 
 Dispatch with:
-```
+```text
 Target repo: <WORKTREE absolute path>
 Entry points: <api.entryPoints list>
 Frameworks: <api.frameworks list>
@@ -501,7 +501,7 @@ and stop the pipeline for this repo.
 #### 2c. Dispatch api-development-agent
 
 Dispatch with:
-```
+```text
 Mode: openapi-export
 Target repo: <WORKTREE absolute path>
 Frameworks: <api.frameworks list>
@@ -515,7 +515,7 @@ completion. If either file is absent after the run, log the failure and stop.
 #### 2d. Dispatch postman-test-designer
 
 Dispatch with:
-```
+```text
 Target repo: <WORKTREE absolute path>
 Postman collection: docs/api/postman-collection.json
 Repo slug: <name>
@@ -534,7 +534,7 @@ If `status == "fail"`, log failures, leave worktree intact for inspection, updat
 #### 2e. Dispatch github-workflow-agent
 
 Dispatch with:
-```
+```text
 Action: open-pr
 Worktree: <WORKTREE absolute path>
 Repo: <ORG>/<REPO_SLUG>
