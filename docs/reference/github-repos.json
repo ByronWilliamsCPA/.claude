@@ -84,6 +84,7 @@
           "sbom.yml",
           "scorecard.yml",
           "security-analysis.yml",
+          "slsa-provenance.yml",
           "sonarcloud.yml"
         ],
         "missingFromExpected": [],
@@ -144,9 +145,10 @@
         "scorecardFloor": 7.0,
         "scorecardTarget": 8.5,
         "exemptWorkflows": [
-          "release.yml",
           "release-sign.yml",
-          "sbom.yml"
+          "release.yml",
+          "sbom.yml",
+          "slsa-provenance.yml"
         ],
         "exemptHooks": []
       },
@@ -155,10 +157,11 @@
         "scorecardFloor": 6.0,
         "scorecardTarget": 7.5,
         "exemptWorkflows": [
-          "release.yml",
           "release-sign.yml",
+          "release.yml",
+          "reuse.yml",
           "sbom.yml",
-          "reuse.yml"
+          "slsa-provenance.yml"
         ],
         "exemptHooks": [
           "basedpyright",
@@ -171,12 +174,13 @@
         "scorecardFloor": 5.0,
         "scorecardTarget": 7.0,
         "exemptWorkflows": [
-          "release.yml",
-          "release-sign.yml",
-          "sbom.yml",
           "coverage.yml",
           "python-compatibility.yml",
-          "reuse.yml"
+          "release-sign.yml",
+          "release.yml",
+          "reuse.yml",
+          "sbom.yml",
+          "slsa-provenance.yml"
         ],
         "exemptHooks": [
           "ruff",
@@ -191,12 +195,13 @@
         "scorecardFloor": 5.0,
         "scorecardTarget": 7.0,
         "exemptWorkflows": [
-          "release.yml",
-          "release-sign.yml",
-          "sbom.yml",
           "coverage.yml",
           "python-compatibility.yml",
-          "reuse.yml"
+          "release-sign.yml",
+          "release.yml",
+          "reuse.yml",
+          "sbom.yml",
+          "slsa-provenance.yml"
         ],
         "exemptHooks": [
           "ruff",
@@ -211,13 +216,14 @@
         "scorecardFloor": 4.0,
         "scorecardTarget": 6.0,
         "exemptWorkflows": [
-          "release.yml",
-          "release-sign.yml",
-          "sbom.yml",
+          "codeql.yml",
           "coverage.yml",
           "python-compatibility.yml",
+          "release-sign.yml",
+          "release.yml",
           "reuse.yml",
-          "codeql.yml"
+          "sbom.yml",
+          "slsa-provenance.yml"
         ],
         "exemptHooks": [
           "ruff",
@@ -233,7 +239,8 @@
         "scorecardTarget": 7.5,
         "exemptWorkflows": [
           "coverage.yml",
-          "sbom.yml"
+          "sbom.yml",
+          "slsa-provenance.yml"
         ],
         "exemptHooks": [
           "basedpyright",
