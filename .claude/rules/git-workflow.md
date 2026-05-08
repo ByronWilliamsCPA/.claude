@@ -24,6 +24,20 @@ git checkout -b {type}/{descriptive-slug}
 | `test/` | `test:` | No release | Tests |
 | `chore/` | `chore:` | No release | Maintenance |
 | `hotfix/` | `fix:` | Patch (0.0.X) | Critical fixes |
+| `spike/` | `chore:` | No release | Exploratory/throwaway; reduced gate set (see below) |
+
+#### Spike branches
+
+`spike/` branches are for time-boxed exploration. They trade review depth for speed.
+
+**Retained gates**: linting (`/quality`), type checking, secrets detection, pre-commit hooks.
+
+**Waived gates**: PR review pipeline (no `/pr-review`, no CodeRabbit, no Copilot), coverage
+thresholds, OpenSSF baseline file requirements (LICENSE, SECURITY.md, CONTRIBUTING.md,
+CHANGELOG.md), docstring coverage.
+
+**Lifespan**: two weeks maximum. After that, either graduate to a `feat/` branch or delete.
+Do not merge spike branches to main; cherry-pick or rewrite the findings into a proper branch.
 
 > **Breaking changes**: Append `!` after the type for any breaking change (`feat!:`, `fix!:`,
 > `refactor!:`). This triggers a Major version bump regardless of branch prefix. Document breaking
@@ -113,10 +127,18 @@ Two layers of automated gates enforce quality throughout the workflow:
   confidence. Use `/pr-review` instead for new reviews; retain `/code-review` for
   quick spot-checks on simple PRs where full pipeline overhead is unnecessary.
 
-Use CodeRabbit for structural review (automatic), `/pr-review` as the primary review
-command for all PRs (triggers Copilot + SonarQube + 8 agents in one pass),
-`/pr-fix` to resolve all identified issues, and `/code-review` only for lightweight
-spot-checks.
+Use the review tier that matches the audience and risk of the change:
+
+| Scenario | Review command | Time | When |
+| --- | --- | --- | --- |
+| Solo personal project | `/code-review` | ~5 min | Default for single-contributor repos |
+| Production / OSS / client | `/pr-review <url>` | ~15 min | Multi-contributor, external users, or revenue-bearing code |
+| Spike branch | None required | 0 min | Exploratory work only; no merge to main |
+
+`/code-review` (5 parallel agents) is sufficient for personal projects. Reserve `/pr-review`
+(8 agents + Copilot + SonarQube) for changes with external impact. CodeRabbit fires
+automatically on PRs targeting `main`, `master`, or `develop`; its inline comments are
+advisory for solo work and do not block merge.
 
 **Creating new gates with hookify:**
 Use `/hookify <instruction>` to add a rule instantly, or `/hookify` with no args to analyze the current conversation for repeated corrections. Rules live in `.claude/hookify.*.local.md` and take effect on the next tool call; no restart required.
