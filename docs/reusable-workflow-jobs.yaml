@@ -1,6 +1,24 @@
 # Registry of reusable GitHub Actions workflows and the check names they produce.
 # Maintained by scripts/seed-reusable-workflow-registry.py and updated when
 # org-level workflow changes ship. CI-024 enforces 90-day freshness.
+#
+# External third-party reusable workflows are listed below with their known
+# check names. These are not org-managed and are updated manually on a
+# best-effort basis.
+
+# ── External third-party workflows ──────────────────────────────────────────
+
+slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml:
+  produces:
+    - generator_generic_slsa3
+  source_repo: slsa-framework/slsa-github-generator
+  last_verified: '2026-05-08'
+  notes: >-
+    External SLSA Level 3 provenance generator. Not a branch-protection
+    required check; present in release workflows only. Check name varies by
+    caller context; registry entry suppresses CI-022 unregistered warning.
+
+# ── ByronWilliamsCPA org workflows ──────────────────────────────────────────
 
 ByronWilliamsCPA/.github/.github/workflows/codeql.yml:
   produces:
@@ -132,7 +150,11 @@ ByronWilliamsCPA/.github/.github/workflows/python-security-analysis.yml:
   last_verified: '2026-05-08'
 ByronWilliamsCPA/.github/.github/workflows/python-slsa.yml:
   produces:
-    - __UNREGISTERED__:slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml
+    # The SLSA generator produces "Generate SLSA Provenance" internally.
+    # When called from a repo via python-slsa.yml the check name that
+    # GitHub reports is caller-job-name + " / Generate SLSA Provenance".
+    # This workflow is not a branch-protection required check.
+    - Generate SLSA Provenance
   source_repo: ByronWilliamsCPA/.github
   last_verified: '2026-05-08'
 ByronWilliamsCPA/.github/.github/workflows/python-sonarcloud.yml:
@@ -143,9 +165,12 @@ ByronWilliamsCPA/.github/.github/workflows/python-sonarcloud.yml:
   last_verified: '2026-05-08'
 ByronWilliamsCPA/.github/.github/workflows/python-standard-stack.yml:
   produces:
-    - __UNREGISTERED__:./.github/workflows/python-ci.yml
-    - __UNREGISTERED__:./.github/workflows/python-sbom.yml
-    - __UNREGISTERED__:./.github/workflows/python-security-analysis.yml
+    # Delegates to org-local reusable workflows via relative ./.github/workflows/ paths.
+    # The check names produced depend on the calling job names in each consumer.
+    # This is a meta-workflow; consumers are modeled individually.
+    - CI
+    - Security Analysis
+    - SBOM
   source_repo: ByronWilliamsCPA/.github
   last_verified: '2026-05-08'
 ByronWilliamsCPA/.github/.github/workflows/python-supplemental-checks.yml:
@@ -166,17 +191,37 @@ ByronWilliamsCPA/.github/.github/workflows/reuse.yml:
   last_verified: '2026-05-08'
 ByronWilliamsCPA/.github/.github/workflows/scorecard.yml:
   produces:
-    - __UNREGISTERED__:ByronWilliamsCPA/.github/.github/workflows/python-scorecard.yml
+    # Delegates to python-scorecard.yml (resolved via registry).
+    # The calling job is named "Scorecard Analysis" so checks appear as
+    # "Scorecard Analysis / OpenSSF Scorecard Analysis".
+    - OpenSSF Scorecard (Reusable) / OpenSSF Scorecard Analysis
   source_repo: ByronWilliamsCPA/.github
   last_verified: '2026-05-08'
 ByronWilliamsCPA/.github/.github/workflows/security-analysis.yml:
   produces:
     - Security Analysis / Security Gate Validation
-    - __UNREGISTERED__:ByronWilliamsCPA/.github/.github/workflows/python-security-analysis.yml
+    # Delegates to python-security-analysis.yml (resolved via registry).
+    - Python Security Analysis (Reusable) / CodeQL Analysis
+    - Python Security Analysis (Reusable) / Dependency Review
+    - Python Security Analysis (Reusable) / Detect Security Changes
+    - Python Security Analysis (Reusable) / OSV Vulnerability Scanner
+    - Python Security Analysis (Reusable) / Python Security Scan
+    - Python Security Analysis (Reusable) / Security Gate Validation
   source_repo: ByronWilliamsCPA/.github
   last_verified: '2026-05-08'
 ByronWilliamsCPA/.github/.github/workflows/shell-tests.yml:
   produces:
     - Shell Tests / Bats Tests
   source_repo: ByronWilliamsCPA/.github
+  last_verified: '2026-05-08'
+
+# ── williaby org workflows ───────────────────────────────────────────────────
+# Mirror of ByronWilliamsCPA/.github org workflows for the williaby personal org.
+# Job names are identical; only the source_repo differs.
+
+williaby/.github/.github/workflows/python-qlty-coverage.yml:
+  produces:
+    - Qlty Coverage Upload (Reusable) / Check Qlty Configuration
+    - Qlty Coverage Upload (Reusable) / Upload Coverage to Qlty
+  source_repo: williaby/.github
   last_verified: '2026-05-08'

@@ -59,11 +59,6 @@ def _interpolate_matrix(template: str, combo: dict[str, Any]) -> str:
     return _MATRIX_VAR.sub(_sub, template)
 
 
-def _prefix_with_workflow(workflow_name: str | None, label: str) -> str:
-    """Prefix `label` with the workflow name when present."""
-    return f"{workflow_name} / {label}" if workflow_name else label
-
-
 def _job_simple_axes(job: dict[str, Any]) -> dict[str, list[Any]]:
     """Return the matrix's simple axes (excluding include/exclude).
 
@@ -84,12 +79,22 @@ def _job_simple_axes(job: dict[str, Any]) -> dict[str, list[Any]]:
 
 
 def _produced_for_job(
-    workflow_name: str | None,
     job_key: str,
     job: dict[str, Any],
     registry: dict[str, Any],
 ) -> set[str]:
-    """Return the set of check names this single job produces."""
+    """Return the set of check names this single job produces.
+
+    GitHub check-name rules:
+    - Inline jobs (no `uses:` field): the check name is exactly the job's
+      `name:` field (or job key if `name:` is absent). The workflow-level
+      `name:` is NOT prepended by GitHub for inline jobs.
+    - Reusable-workflow caller jobs (`uses:` field): the check names come from
+      the reusable workflow's jobs, prefixed by the calling job's name.
+      These are resolved via the registry (which stores the fully-qualified
+      check names including the caller-job prefix). For unregistered reusable
+      workflows the validator emits an UNREGISTERED sentinel.
+    """
     uses = job.get("uses")
     if isinstance(uses, str) and ".github/workflows/" in uses:
         workflow_path = uses.split("@", 1)[0]
@@ -97,6 +102,8 @@ def _produced_for_job(
         if entry and isinstance(entry.get("produces"), list):
             return {str(name) for name in entry["produces"]}
         return {f"{_UNREGISTERED_PREFIX}{workflow_path}"}
+    # Inline job: GitHub uses the job's `name:` (or key) verbatim -- no
+    # workflow-level prefix.
     job_label_template = job.get("name") or job_key
     simple_axes = _job_simple_axes(job)
     if not simple_axes:
@@ -104,11 +111,9 @@ def _produced_for_job(
         # without interpolation. include-only matrices are a documented
         # limitation; the validator will likely flag them as CI-022 findings,
         # signaling the workflow needs to be modeled in the registry.
-        return {_prefix_with_workflow(workflow_name, job_label_template)}
+        return {job_label_template}
     return {
-        _prefix_with_workflow(
-            workflow_name, _interpolate_matrix(job_label_template, combo)
-        )
+        _interpolate_matrix(job_label_template, combo)
         for combo in _expand_matrix_combinations(simple_axes)
     }
 
@@ -132,8 +137,12 @@ def extract_produced_check_names(
         Set of check names. For matrix jobs the set is expanded across
         every matrix combination; the job's `name:` field is treated as
         a template and any `${{ matrix.<key> }}` references are
-        interpolated with the matrix values. Workflows with a top-level
-        `name:` produce check names prefixed as `<workflow-name> / <job-name>`.
+        interpolated with the matrix values.
+
+        Inline jobs use the job `name:` verbatim -- GitHub does NOT
+        prepend the workflow-level `name:` for inline jobs. Only
+        reusable-workflow caller jobs get a caller-job-name prefix, which
+        is already baked into the registry entries.
 
         Limitations:
         - Only direct `${{ matrix.<key> }}` references are interpolated;
@@ -150,13 +159,12 @@ def extract_produced_check_names(
           should be modeled in the registry instead of parsed from source.
     """
     doc = _yaml.load(workflow_yaml) or {}
-    workflow_name = doc.get("name")
     jobs = doc.get("jobs", {}) or {}
     produced: set[str] = set()
     for job_key, job in jobs.items():
         if not isinstance(job, dict):
             continue
-        produced |= _produced_for_job(workflow_name, job_key, job, registry)
+        produced |= _produced_for_job(job_key, job, registry)
     return produced
 
 
@@ -291,6 +299,18 @@ def load_registry(registry_path: Path) -> dict[str, dict[str, Any]]:
     return _yaml.load(registry_path.read_text()) or {}
 
 
+def _safe_extract(path: Path, registry: dict[str, Any]) -> set[str]:
+    """Extract check names from a workflow file, returning empty set on parse error."""
+    try:
+        return extract_produced_check_names(path.read_text(), registry)
+    except Exception:
+        # Malformed YAML is skipped; the file cannot be analysed but it will
+        # not crash the validator. A workflow with invalid YAML cannot run in
+        # CI anyway, so its check names are moot.
+        print(f"Warning: could not parse {path} as YAML; skipping.", file=sys.stderr)
+        return set()
+
+
 def scan_workflow_dir(
     workflow_dir: Path,
     registry: dict[str, dict[str, Any]],
@@ -300,7 +320,7 @@ def scan_workflow_dir(
         return produced
     paths = sorted(list(workflow_dir.glob("*.yml")) + list(workflow_dir.glob("*.yaml")))
     for path in paths:
-        produced |= extract_produced_check_names(path.read_text(), registry)
+        produced |= _safe_extract(path, registry)
     return produced
 
 
