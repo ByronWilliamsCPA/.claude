@@ -9,10 +9,14 @@ protection contexts via gh api. Emits JSON findings to stdout.
 
 from __future__ import annotations
 
+import argparse
 import itertools
+import json
 import re
+import subprocess  # nosec B404 -- intentional gh CLI invocation
 from dataclasses import asdict, dataclass
 from datetime import date, timedelta
+from pathlib import Path
 from typing import Any
 
 from ruamel.yaml import YAML
@@ -270,5 +274,89 @@ def check_registry_freshness(
     return findings
 
 
+def load_required_checks(
+    manifest_path: Path,
+) -> tuple[set[str], dict[str, dict[str, Any]]]:
+    doc = _yaml.load(manifest_path.read_text()) or {}
+    entries = doc.get("required_checks", []) or []
+    names = {e["name"] for e in entries}
+    meta = {e["name"]: e for e in entries}
+    return names, meta
+
+
+def load_registry(registry_path: Path) -> dict[str, dict[str, Any]]:
+    if not registry_path.exists():
+        return {}
+    return _yaml.load(registry_path.read_text()) or {}
+
+
+def scan_workflow_dir(
+    workflow_dir: Path,
+    registry: dict[str, dict[str, Any]],
+) -> set[str]:
+    produced: set[str] = set()
+    if not workflow_dir.is_dir():
+        return produced
+    for path in sorted(workflow_dir.glob("*.yml")):
+        produced |= extract_produced_check_names(path.read_text(), registry)
+    return produced
+
+
+def fetch_branch_protection_contexts(repo_slug: str) -> list[str]:
+    result = subprocess.run(  # nosec B603 B607 # noqa: S603
+        [  # noqa: S607
+            "gh",
+            "api",
+            f"repos/{repo_slug}/branches/main/protection",
+            "--jq",
+            ".required_status_checks.contexts",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        return []
+    return json.loads(result.stdout) if result.stdout.strip() else []
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--repo-path", type=Path, required=True)
+    parser.add_argument("--manifest", type=Path, required=True)
+    parser.add_argument("--registry", type=Path, required=True)
+    parser.add_argument("--repo-slug", default="")
+    parser.add_argument(
+        "--check-bp",
+        action="store_true",
+        help="Fetch and validate branch protection contexts",
+    )
+    parser.add_argument(
+        "--today",
+        default="",
+        help="Override today's date (YYYY-MM-DD) for testing",
+    )
+    args = parser.parse_args(argv)
+
+    required, meta = load_required_checks(args.manifest)
+    registry = load_registry(args.registry)
+    produced = scan_workflow_dir(args.repo_path / ".github" / "workflows", registry)
+
+    findings: list[Finding] = []
+    findings += diff_required_vs_produced(required, produced, meta)
+
+    if args.check_bp and args.repo_slug:
+        contexts = fetch_branch_protection_contexts(args.repo_slug)
+        findings += diff_required_vs_branch_protection(required, contexts)
+
+    today_value = (
+        date.fromisoformat(args.today) if args.today else date.today()  # noqa: DTZ011
+    )
+    findings += check_registry_freshness(registry, today_value)
+
+    print(json.dumps([f.to_dict() for f in findings], indent=2))
+    return 1 if findings else 0
+
+
 if __name__ == "__main__":
-    raise SystemExit("CLI entry point implemented in a later task.")
+    raise SystemExit(main())
