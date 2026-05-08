@@ -142,8 +142,9 @@ findings for CI-022, CI-023, and CI-024.
 For each `.yml` file in `<repo>/.github/workflows/`:
 
 1. Parse the YAML.
-2. Note the workflow's top-level `name:` if present (used as a check-name
-   prefix in some GitHub configurations).
+2. The workflow's top-level `name:` is recorded for diagnostic purposes
+   only; it is NOT used as a check-name prefix for inline jobs (see note
+   below).
 3. For each job:
    - If the job has a `uses:` field referencing a reusable workflow, look
      it up in `reusable-workflow-jobs.yaml`. Add every name in `produces`
@@ -160,6 +161,16 @@ For each `.yml` file in `<repo>/.github/workflows/`:
        (functions, fromJSON, conditionals) are not. Workflows using
        complex matrix templates should be modeled in the registry
        instead of parsed from source.
+
+> **Empirical correction (Task 10 dry-run, 2026-05-08):** GitHub does NOT
+> prefix inline job check names with the workflow's top-level `name:`
+> field. Only reusable-workflow CALLER jobs receive a prefix
+> (`<calling-job-name> / <called-job-name>`). The validator's
+> `_produced_for_job` was corrected accordingly; the earlier text in this
+> spec that suggested workflow-level prefixing for inline jobs was wrong.
+> Verified by querying live `gh api repos/{slug}/branches/main/protection`
+> across multiple repos: branch protection contexts use unprefixed names
+> like `"CI Gate"` and `"Security Gate Validation"`.
 
 #### Step 3: build the `actual` set from branch protection
 
@@ -190,8 +201,9 @@ The `actual` set is the array returned.
   producing the check, since GitHub reports skipped checks as completed
   and that satisfies branch protection.
 - Workflow with no top-level `name:`: produced check name is the job
-  name alone. With a top-level `name:`, GitHub may prefix the check as
-  `<workflow-name> / <job-name>`. The parser inspects both fields.
+  name alone. The same is true when a top-level `name:` is present: GitHub
+  does NOT prefix inline job check names with the workflow's `name:` (see
+  the empirical correction note in Step 2).
 - Multiple workflows defining a job with the same name: produced set is
   deduplicated, no conflict flagged.
 - Empty workflow file or invalid YAML: produces an empty contribution to
