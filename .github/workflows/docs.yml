@@ -4,7 +4,7 @@
 # Features:
 #   - MkDocs Material theme build
 #   - GitHub Pages deployment on push to main
-#   - PR preview builds
+#   - PR preview builds (read-only, no write token)
 name: Documentation
 
 on:
@@ -21,14 +21,16 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write  # For GitHub Pages deployment
-  pages: write
-  id-token: write
+  contents: read
 
 jobs:
-  docs:
+  build:
     name: Build & Deploy Docs
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Required for gh-deploy on push; scoped to job not workflow
+      pages: write
+      id-token: write
     steps:
       - name: Harden the runner
         uses: step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450 # v2.19.1
@@ -36,12 +38,12 @@ jobs:
           egress-policy: audit
 
       - name: Checkout repository
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4.3.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           fetch-depth: 0
 
       - name: Install uv
-        uses: astral-sh/setup-uv@38f3f104447c67c051c4a08e39b64a148898af3a  # v4.2.0
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b  # v8.1.0
         with:
           enable-cache: true
 
