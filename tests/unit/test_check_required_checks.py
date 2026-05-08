@@ -2,21 +2,20 @@
 
 from __future__ import annotations
 
+import importlib.abc
 import importlib.util
-import sys
 from pathlib import Path
 
 import pytest
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 SCRIPTS_DIR = PROJECT_ROOT / "scripts"
-sys.path.insert(0, str(SCRIPTS_DIR))
+_SCRIPT_PATH = SCRIPTS_DIR / "check-required-checks.py"
 
-spec = importlib.util.spec_from_file_location(
-    "check_required_checks",
-    SCRIPTS_DIR / "check-required-checks.py",
-)
+spec = importlib.util.spec_from_file_location("check_required_checks", _SCRIPT_PATH)
+assert spec is not None, f"Script not found: {_SCRIPT_PATH}"
 crc = importlib.util.module_from_spec(spec)
+assert isinstance(spec.loader, importlib.abc.Loader)
 spec.loader.exec_module(crc)
 
 FIXTURES = PROJECT_ROOT / "data" / "test_fixtures" / "required_checks"
