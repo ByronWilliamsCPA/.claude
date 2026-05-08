@@ -84,6 +84,7 @@
           "sbom.yml",
           "scorecard.yml",
           "security-analysis.yml",
+          "slsa-provenance.yml",
           "sonarcloud.yml"
         ],
         "missingFromExpected": [],
