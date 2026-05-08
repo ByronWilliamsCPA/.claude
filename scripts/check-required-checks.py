@@ -28,7 +28,7 @@ class Finding:
     severity: str
     message: str
 
-    def to_dict(self) -> dict[str, str]:
+    def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
 
@@ -172,7 +172,7 @@ def diff_required_vs_produced(
                 f"docs/reusable-workflow-jobs.yaml; add it or remove the reference."
             ),
         )
-        for path in unregistered
+        for path in sorted(unregistered)
     ]
     cleaned_produced = produced - unregistered
     findings.extend(

@@ -129,7 +129,10 @@ def test_diff_required_vs_produced_flags_missing_producer() -> None:
 def test_diff_required_vs_produced_flags_unregistered_reusable() -> None:
     findings = crc.diff_required_vs_produced(
         required={"CI Gate"},
-        produced={"CI Gate", "__UNREGISTERED__:SomeOrg/x/.github/workflows/y.yml"},
+        produced={
+            "CI Gate",
+            f"{crc._UNREGISTERED_PREFIX}SomeOrg/x/.github/workflows/y.yml",
+        },
         required_checks_meta={},
     )
     assert any(
@@ -175,3 +178,21 @@ def test_registry_freshness_flags_stale_entries() -> None:
     assert any("stale" in m for m in paths)
     assert any("missing" in m and "last_verified" in m for m in paths)
     assert not any("fresh" in m for m in paths)
+
+
+@pytest.mark.unit
+def test_registry_freshness_flags_unparseable_last_verified() -> None:
+    from datetime import date
+
+    findings = crc.check_registry_freshness(
+        registry={
+            "ByronWilliamsCPA/.github/.github/workflows/foo.yml": {
+                "last_verified": "not-a-date",
+            },
+        },
+        today=date(2026, 5, 8),
+    )
+    assert len(findings) == 1
+    assert findings[0].check_id == "CI-024"
+    assert "unparseable" in findings[0].message
+    assert "not-a-date" in findings[0].message
