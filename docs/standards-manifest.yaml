@@ -1,6 +1,6 @@
 # docs/standards-manifest.yaml
 version: "1.0"
-last_updated: "2026-05-05"
+last_updated: "2026-05-07"
 
 # verify field is a hint to the domain agent, not executable DSL.
 # Agents interpret it using their own tools (Grep, Read, Glob, Bash).
@@ -92,23 +92,30 @@ checks:
   - id: FOUND-012
     domain: foundations
     severity: important
-    description: "CODE_OF_CONDUCT.md present at project root or satisfied by org-level ByronWilliamsCPA/.github/CODE_OF_CONDUCT.md (OpenSSF Silver: code_of_conduct)"
+    description: >-
+      CODE_OF_CONDUCT.md present at project root or satisfied by org-level
+      ByronWilliamsCPA/.github/CODE_OF_CONDUCT.md (OpenSSF Silver: code_of_conduct)
     verify: "file_exists: CODE_OF_CONDUCT.md OR org_community_health: CODE_OF_CONDUCT.md"
-    source_template: "/home/byron/dev/.github/CODE_OF_CONDUCT.md"  # machine-specific; adjust to your local .github checkout path
+    source_template: "/home/byron/dev/.github/CODE_OF_CONDUCT.md"  # local dev .github path; adjust for your machine
     override_eligible: true
 
   - id: FOUND-013
     domain: foundations
     severity: important
-    description: "GOVERNANCE.md present at project root or satisfied by org-level ByronWilliamsCPA/.github/GOVERNANCE.md (OpenSSF Silver: governance + roles_responsibilities)"
+    description: >-
+      GOVERNANCE.md present at project root or satisfied by org-level
+      ByronWilliamsCPA/.github/GOVERNANCE.md (OpenSSF Silver: governance +
+      roles_responsibilities)
     verify: "file_exists: GOVERNANCE.md OR org_community_health: GOVERNANCE.md"
-    source_template: "/home/byron/dev/.github/GOVERNANCE.md"  # machine-specific; adjust to your local .github checkout path
+    source_template: "/home/byron/dev/.github/GOVERNANCE.md"  # local dev .github path; adjust for your machine
     override_eligible: true
 
   - id: FOUND-014
     domain: foundations
     severity: suggested
-    description: "docs/architecture/ directory present with at least one .md file (OpenSSF Silver: documentation_architecture)"
+    description: >-
+      docs/architecture/ directory present with at least one .md file
+      (OpenSSF Silver: documentation_architecture)
     verify: "dir_contains: docs/architecture/, *.md"
     override_eligible: true
 
@@ -310,7 +317,9 @@ checks:
   - id: CI-003b
     domain: ci
     severity: critical
-    description: "sonar.organization matches the repo's GitHub org (ByronWilliamsCPA repos must use byronwilliamscpa; williaby repos must use williaby; value must be lowercase)"
+    description: >-
+      sonar.organization matches the repo's GitHub org (ByronWilliamsCPA repos must use
+      byronwilliamscpa; williaby repos must use williaby; value must be lowercase)
     verify: |
       Check sonar-project.properties for sonar.organization. Determine the repo's GitHub org.
       Expected value: byronwilliamscpa for ByronWilliamsCPA repos; williaby for williaby repos.
@@ -331,7 +340,9 @@ checks:
   - id: CI-004
     domain: ci
     severity: important
-    description: "Qlty coverage workflow present (supplements Codecov; Qlty handles code quality metrics, Codecov tracks test coverage history and PR deltas)"
+    description: >-
+      Qlty coverage workflow present (supplements Codecov; Qlty handles code quality
+      metrics, Codecov tracks test coverage history and PR deltas)
     verify: "file_exists: .github/workflows/coverage.yml"
     override_eligible: true
 
@@ -394,8 +405,10 @@ checks:
   - id: CI-013
     domain: ci
     severity: important
-    description: "No unregistered GitHub Actions workflows -- any .yml in .github/workflows/ not in the registered set is flagged for evaluation"
-    verify: "workflow_inventory: .github/workflows/, expected_set=[ci.yml,codeql.yml,coverage.yml,docs.yml,pr-validation.yml,python-compatibility.yml,release-sign.yml,release.yml,reuse.yml,sbom.yml,scorecard.yml,security-analysis.yml,sonarcloud.yml], report_extras=true"
+    description: >-
+      No unregistered GitHub Actions workflows -- any .yml in .github/workflows/ not in
+      the registered set is flagged for evaluation
+    verify: "workflow_inventory: .github/workflows/, expected_set=[ci.yml,codeql.yml,coverage.yml,dependency-review.yml,docs.yml,pr-validation.yml,python-compatibility.yml,release-sign.yml,release.yml,reuse.yml,sbom.yml,scorecard.yml,security-analysis.yml,slsa-provenance.yml,sonarcloud.yml], report_extras=true"  # yamllint disable-line rule:line-length
     override_eligible: true
 
   - id: CI-014
@@ -428,14 +441,18 @@ checks:
   - id: CI-017
     domain: ci
     severity: critical
-    description: "Branch protection registers all four blocking check contexts: CI Gate, Security Gate Validation, Dependency & Standards Validation, Check REUSE Compliance"
-    verify: "branch_protection_contexts: CI Gate, Security Gate Validation, Dependency & Standards Validation, Check REUSE Compliance"
+    description: >-
+      Branch protection registers all four blocking check contexts: CI Gate, Security Gate
+      Validation, Dependency & Standards Validation, Check REUSE Compliance
+    verify: "branch_protection_contexts: CI Gate, Security Gate Validation, Dependency & Standards Validation, Check REUSE Compliance"  # yamllint disable-line rule:line-length
     override_eligible: false
 
   - id: CI-018
     domain: ci
     severity: important
-    description: "SLSA provenance job present in release.yml calling slsa-framework/slsa-github-generator (OpenSSF Silver: signed_releases)"
+    description: >-
+      SLSA provenance job present in release.yml calling slsa-framework/slsa-github-generator
+      (OpenSSF Silver: signed_releases)
     verify: "content_present: .github/workflows/release.yml, slsa-framework/slsa-github-generator"
     override_eligible: true
 
@@ -449,7 +466,9 @@ checks:
   - id: CI-020
     domain: ci
     severity: important
-    description: "renovate.json present at repo root (Renovate is the org-standard dependency manager; replaces dependabot.yml across all 44 repos as of 2026-05-05)"
+    description: >-
+      renovate.json present at repo root (Renovate is the org-standard dependency manager;
+      replaces dependabot.yml across all 44 repos as of 2026-05-05)
     verify: "file_exists: renovate.json"
     override_eligible: true
     notes: >
@@ -461,7 +480,9 @@ checks:
   - id: CI-021
     domain: ci
     severity: important
-    description: "dependabot.yml absent when renovate.json is present (running both creates duplicate update PRs and conflicts with Renovate's CVE automerge rules)"
+    description: >-
+      dependabot.yml absent when renovate.json is present (running both creates duplicate
+      update PRs and conflicts with Renovate's CVE automerge rules)
     verify: |
       If renovate.json exists at repo root: FAIL if .github/dependabot.yml also exists.
       If renovate.json does not exist: skip this check (use CI-020 for the renovate.json gap).
@@ -522,7 +543,9 @@ checks:
   - id: CLAUDE-008
     domain: claude_docs
     severity: suggested
-    description: "No AI blacklist pattern words in formal docs (leverage, seamless, robust, comprehensive, holistic, crucial, pivotal, vital)"
+    description: >-
+      No AI blacklist pattern words in formal docs (leverage, seamless, robust,
+      comprehensive, holistic, crucial, pivotal, vital)
     verify: "ai_patterns_absent: docs/**/*.md"
     override_eligible: true
 
@@ -534,7 +557,9 @@ checks:
   - id: OSSF-001
     domain: ossf
     severity: important
-    description: "OpenSSF Best Practices Badge application filed (Passing level) -- verified via bestpractices.coreinfrastructure.org API"
+    description: >-
+      OpenSSF Best Practices Badge application filed (Passing level) -- verified via
+      bestpractices.coreinfrastructure.org API
     verify: "ossf_badge_api: level=passing"
     override_eligible: true
     visibility_required: public  # badge API is designed for public OSS; private repos are rarely registered
@@ -542,7 +567,9 @@ checks:
   - id: OSSF-002
     domain: ossf
     severity: critical
-    description: "SECURITY.md documents a private vulnerability reporting channel (GitHub Security Advisories or equivalent)"
+    description: >-
+      SECURITY.md documents a private vulnerability reporting channel (GitHub Security
+      Advisories or equivalent)
     verify: "content_present: SECURITY.md, private"
     override_eligible: false
 
@@ -563,7 +590,9 @@ checks:
   - id: OSSF-005
     domain: ossf
     severity: suggested
-    description: "Library projects have published API reference docs; non-library projects have N/A marker in README or CONTRIBUTING"
+    description: >-
+      Library projects have published API reference docs; non-library projects have N/A
+      marker in README or CONTRIBUTING
     verify: "ossf_api_docs: docs/api/ OR README contains 'N/A' near 'API reference'"
     override_eligible: true
 
@@ -644,7 +673,7 @@ checks:
     domain: mkdocs
     severity: suggested
     description: "No unused needs-proof markdown extensions configured in mkdocs.yml"
-    verify: "scan_docs_for_extension_usage: footnotes, md_in_html, pymdownx.tabbed, pymdownx.arithmatex, content.tabs.link"
+    verify: "scan_docs_for_extension_usage: footnotes, md_in_html, pymdownx.tabbed, pymdownx.arithmatex, content.tabs.link"  # yamllint disable-line rule:line-length
     override_eligible: true
 
   - id: MKDOCS-010
