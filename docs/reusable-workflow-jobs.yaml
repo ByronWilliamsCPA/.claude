@@ -2,6 +2,12 @@
 # Maintained by scripts/seed-reusable-workflow-registry.py and updated when
 # org-level workflow changes ship. CI-024 enforces 90-day freshness.
 #
+# Schema: each `produces` entry is the UNPREFIXED check name as defined inside
+# the reusable workflow itself (the workflow's job-level `name:` field, or the
+# job key if `name:` is absent). The validator applies the caller-job-name
+# prefix at compare time, so a single registry entry is portable across repos
+# that call the reusable workflow with different job names.
+#
 # External third-party reusable workflows are listed below with their known
 # check names. These are not org-managed and are updated manually on a
 # best-effort basis.
@@ -22,130 +28,130 @@ slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.y
 
 ByronWilliamsCPA/.github/.github/workflows/codeql.yml:
   produces:
-    - CodeQL Analysis / CodeQL Analyze
+    - CodeQL Analyze
   source_repo: ByronWilliamsCPA/.github
   last_verified: '2026-05-08'
 ByronWilliamsCPA/.github/.github/workflows/pr-validation.yml:
   produces:
-    - PR Validation / PR Body Non-Empty
-    - PR Validation / PR Title Format
-    - PR Validation / PR Validation Gate
+    - PR Body Non-Empty
+    - PR Title Format
+    - PR Validation Gate
   source_repo: ByronWilliamsCPA/.github
   last_verified: '2026-05-08'
 ByronWilliamsCPA/.github/.github/workflows/python-ci.yml:
   produces:
-    - Python CI (Reusable) / CI Gate
-    - Python CI (Reusable) / Code Quality Checks
-    - Python CI (Reusable) / LLM Governance & Assumption Verification
-    - Python CI (Reusable) / Matrix Test (Python ${{ matrix.python-version }})
+    - CI Gate
+    - Code Quality Checks
+    - LLM Governance & Assumption Verification
+    - Matrix Test (Python ${{ matrix.python-version }})
   source_repo: ByronWilliamsCPA/.github
   last_verified: '2026-05-08'
 ByronWilliamsCPA/.github/.github/workflows/python-codecov.yml:
   produces:
-    - Codecov Upload (Reusable) / Upload Coverage to Codecov
+    - Upload Coverage to Codecov
   source_repo: ByronWilliamsCPA/.github
   last_verified: '2026-05-08'
 ByronWilliamsCPA/.github/.github/workflows/python-compatibility.yml:
   produces:
-    - Python Compatibility (Reusable) / Build Test Matrix
-    - Python Compatibility (Reusable) / Compatibility Summary
-    - Python Compatibility (Reusable) / Test (Python ${{ matrix.python }}, ${{ matrix.os }})
+    - Build Test Matrix
+    - Compatibility Summary
+    - Test (Python ${{ matrix.python }}, ${{ matrix.os }})
   source_repo: ByronWilliamsCPA/.github
   last_verified: '2026-05-08'
 ByronWilliamsCPA/.github/.github/workflows/python-container-security.yml:
   produces:
-    - Container Security (Reusable) / Container Vulnerability Scan (Trivy)
-    - Container Security (Reusable) / Dockerfile Lint (Hadolint)
-    - Container Security (Reusable) / Security Summary
+    - Container Vulnerability Scan (Trivy)
+    - Dockerfile Lint (Hadolint)
+    - Security Summary
   source_repo: ByronWilliamsCPA/.github
   last_verified: '2026-05-08'
 ByronWilliamsCPA/.github/.github/workflows/python-docker.yml:
   produces:
-    - Docker Build (Reusable) / Build Docker Image
+    - Build Docker Image
   source_repo: ByronWilliamsCPA/.github
   last_verified: '2026-05-08'
 ByronWilliamsCPA/.github/.github/workflows/python-docs.yml:
   produces:
-    - Python Documentation (Reusable) / Build Documentation
-    - Python Documentation (Reusable) / Deploy to GitHub Pages
+    - Build Documentation
+    - Deploy to GitHub Pages
   source_repo: ByronWilliamsCPA/.github
   last_verified: '2026-05-08'
 ByronWilliamsCPA/.github/.github/workflows/python-fips-compatibility.yml:
   produces:
-    - FIPS Compatibility (Reusable) / FIPS Compliance Check
-    - FIPS Compatibility (Reusable) / FIPS Runtime Test
+    - FIPS Compliance Check
+    - FIPS Runtime Test
   source_repo: ByronWilliamsCPA/.github
   last_verified: '2026-05-08'
 ByronWilliamsCPA/.github/.github/workflows/python-fuzzing.yml:
   produces:
-    - Python Fuzzing (Reusable) / Build & Run Fuzzers
+    - Build & Run Fuzzers
   source_repo: ByronWilliamsCPA/.github
   last_verified: '2026-05-08'
 ByronWilliamsCPA/.github/.github/workflows/python-mutation.yml:
   produces:
-    - Mutation Testing (Reusable) / Mutation Testing
+    - Mutation Testing
   source_repo: ByronWilliamsCPA/.github
   last_verified: '2026-05-08'
 ByronWilliamsCPA/.github/.github/workflows/python-performance-regression.yml:
   produces:
-    - Performance Regression Testing (Reusable) / Performance Regression Check
+    - Performance Regression Check
   source_repo: ByronWilliamsCPA/.github
   last_verified: '2026-05-08'
 ByronWilliamsCPA/.github/.github/workflows/python-pr-validation.yml:
   produces:
-    - PR Validation (Reusable) / This workflow is removed
+    - This workflow is removed
   source_repo: ByronWilliamsCPA/.github
   last_verified: '2026-05-08'
 ByronWilliamsCPA/.github/.github/workflows/python-precommit.yml:
   produces:
-    - Pre-Commit (Reusable) / Pre-Commit Hooks
+    - Pre-Commit Hooks
   source_repo: ByronWilliamsCPA/.github
   last_verified: '2026-05-08'
 ByronWilliamsCPA/.github/.github/workflows/python-publish-pypi.yml:
   produces:
-    - Publish to PyPI (Reusable) / Build Distribution Packages
-    - Publish to PyPI (Reusable) / Publish to PyPI
-    - Publish to PyPI (Reusable) / Publish to TestPyPI
+    - Build Distribution Packages
+    - Publish to PyPI
+    - Publish to TestPyPI
   source_repo: ByronWilliamsCPA/.github
   last_verified: '2026-05-08'
 ByronWilliamsCPA/.github/.github/workflows/python-qlty-coverage.yml:
   produces:
-    - Qlty Coverage Upload (Reusable) / Check Qlty Configuration
-    - Qlty Coverage Upload (Reusable) / Upload Coverage to Qlty
+    - Check Qlty Configuration
+    - Upload Coverage to Qlty
   source_repo: ByronWilliamsCPA/.github
   last_verified: '2026-05-08'
 ByronWilliamsCPA/.github/.github/workflows/python-release.yml:
   produces:
-    - Python Release (Reusable) / Build & Release
-    - Python Release (Reusable) / Pre-Release Tests
-    - Python Release (Reusable) / Publish to PyPI
+    - Build & Release
+    - Pre-Release Tests
+    - Publish to PyPI
   source_repo: ByronWilliamsCPA/.github
   last_verified: '2026-05-08'
 ByronWilliamsCPA/.github/.github/workflows/python-reuse.yml:
   produces:
-    - REUSE Compliance (Reusable) / REUSE Compliance Check
+    - REUSE Compliance Check
   source_repo: ByronWilliamsCPA/.github
   last_verified: '2026-05-08'
 ByronWilliamsCPA/.github/.github/workflows/python-sbom.yml:
   produces:
-    - Python SBOM (Reusable) / Generate SBOMs
-    - Python SBOM (Reusable) / License Compliance Check
-    - Python SBOM (Reusable) / Scan Runtime Dependencies
+    - Generate SBOMs
+    - License Compliance Check
+    - Scan Runtime Dependencies
   source_repo: ByronWilliamsCPA/.github
   last_verified: '2026-05-08'
 ByronWilliamsCPA/.github/.github/workflows/python-scorecard.yml:
   produces:
-    - OpenSSF Scorecard (Reusable) / OpenSSF Scorecard Analysis
+    - OpenSSF Scorecard Analysis
   source_repo: ByronWilliamsCPA/.github
   last_verified: '2026-05-08'
 ByronWilliamsCPA/.github/.github/workflows/python-security-analysis.yml:
   produces:
-    - Python Security Analysis (Reusable) / CodeQL Analysis
-    - Python Security Analysis (Reusable) / Dependency Review
-    - Python Security Analysis (Reusable) / Detect Security Changes
-    - Python Security Analysis (Reusable) / OSV Vulnerability Scanner
-    - Python Security Analysis (Reusable) / Python Security Scan
-    - Python Security Analysis (Reusable) / Security Gate Validation
+    - CodeQL Analysis
+    - Dependency Review
+    - Detect Security Changes
+    - OSV Vulnerability Scanner
+    - Python Security Scan
+    - Security Gate Validation
   source_repo: ByronWilliamsCPA/.github
   last_verified: '2026-05-08'
 ByronWilliamsCPA/.github/.github/workflows/python-slsa.yml:
@@ -159,8 +165,8 @@ ByronWilliamsCPA/.github/.github/workflows/python-slsa.yml:
   last_verified: '2026-05-08'
 ByronWilliamsCPA/.github/.github/workflows/python-sonarcloud.yml:
   produces:
-    - SonarCloud Analysis (Reusable) / Check SonarCloud Configuration
-    - SonarCloud Analysis (Reusable) / SonarCloud Code Analysis
+    - Check SonarCloud Configuration
+    - SonarCloud Code Analysis
   source_repo: ByronWilliamsCPA/.github
   last_verified: '2026-05-08'
 ByronWilliamsCPA/.github/.github/workflows/python-standard-stack.yml:
@@ -169,49 +175,56 @@ ByronWilliamsCPA/.github/.github/workflows/python-standard-stack.yml:
     # The check names produced depend on the calling job names in each consumer.
     # This is a meta-workflow; consumers are modeled individually.
     - CI
-    - Security Analysis
     - SBOM
+    - Security Analysis
   source_repo: ByronWilliamsCPA/.github
   last_verified: '2026-05-08'
 ByronWilliamsCPA/.github/.github/workflows/python-supplemental-checks.yml:
   produces:
-    - Supplemental Checks (Reusable) / Auto-Merge Dependencies
-    - Supplemental Checks (Reusable) / Changelog Check
-    - Supplemental Checks (Reusable) / Conventional Commits PR Title
-    - Supplemental Checks (Reusable) / Documentation Links
-    - Supplemental Checks (Reusable) / Supplemental Summary
-    - Supplemental Checks (Reusable) / Template Sync (Cruft)
+    - Auto-Merge Dependencies
+    - Changelog Check
+    - Conventional Commits PR Title
+    - Documentation Links
+    - Supplemental Summary
+    - Template Sync (Cruft)
   source_repo: ByronWilliamsCPA/.github
   last_verified: '2026-05-08'
 ByronWilliamsCPA/.github/.github/workflows/reuse.yml:
   produces:
-    - REUSE Compliance / Check REUSE Compliance
-    - REUSE Compliance / Validate License Files
+    - Check REUSE Compliance
+    - Validate License Files
   source_repo: ByronWilliamsCPA/.github
   last_verified: '2026-05-08'
 ByronWilliamsCPA/.github/.github/workflows/scorecard.yml:
   produces:
-    # Delegates to python-scorecard.yml (resolved via registry).
-    # The calling job is named "Scorecard Analysis" so checks appear as
-    # "Scorecard Analysis / OpenSSF Scorecard Analysis".
-    - OpenSSF Scorecard (Reusable) / OpenSSF Scorecard Analysis
+    # Delegates to python-scorecard.yml. The internal check name from that
+    # downstream workflow is "OpenSSF Scorecard Analysis"; the calling job
+    # in this wrapper is named "OpenSSF Scorecard (Reusable)" so the actual
+    # GitHub-reported check is "<caller> / OpenSSF Scorecard (Reusable) / OpenSSF Scorecard Analysis".
+    # The validator applies only the immediate caller-job prefix; deeper
+    # delegation chains require the consumer workflow to model the leaf
+    # check name explicitly. Listed here as the leaf for completeness.
+    - OpenSSF Scorecard Analysis
   source_repo: ByronWilliamsCPA/.github
   last_verified: '2026-05-08'
 ByronWilliamsCPA/.github/.github/workflows/security-analysis.yml:
   produces:
-    - Security Analysis / Security Gate Validation
-    # Delegates to python-security-analysis.yml (resolved via registry).
-    - Python Security Analysis (Reusable) / CodeQL Analysis
-    - Python Security Analysis (Reusable) / Dependency Review
-    - Python Security Analysis (Reusable) / Detect Security Changes
-    - Python Security Analysis (Reusable) / OSV Vulnerability Scanner
-    - Python Security Analysis (Reusable) / Python Security Scan
-    - Python Security Analysis (Reusable) / Security Gate Validation
+    # Local inline gate job in this wrapper.
+    - Security Gate Validation
+    # Plus the leaf checks from the python-security-analysis.yml reusable
+    # this wrapper invokes. The actual GitHub-reported name nests one
+    # additional level (caller-job / wrapper-job / leaf); modeling the
+    # leaves here lets the consumer's manifest reference them by leaf name.
+    - CodeQL Analysis
+    - Dependency Review
+    - Detect Security Changes
+    - OSV Vulnerability Scanner
+    - Python Security Scan
   source_repo: ByronWilliamsCPA/.github
   last_verified: '2026-05-08'
 ByronWilliamsCPA/.github/.github/workflows/shell-tests.yml:
   produces:
-    - Shell Tests / Bats Tests
+    - Bats Tests
   source_repo: ByronWilliamsCPA/.github
   last_verified: '2026-05-08'
 
@@ -221,7 +234,7 @@ ByronWilliamsCPA/.github/.github/workflows/shell-tests.yml:
 
 williaby/.github/.github/workflows/python-qlty-coverage.yml:
   produces:
-    - Qlty Coverage Upload (Reusable) / Check Qlty Configuration
-    - Qlty Coverage Upload (Reusable) / Upload Coverage to Qlty
+    - Check Qlty Configuration
+    - Upload Coverage to Qlty
   source_repo: williaby/.github
   last_verified: '2026-05-08'

@@ -271,7 +271,27 @@ remediation: |
   ...
 ```
 
-For CI-022/023/024 (required checks cross-validation), parse the JSON array emitted by `scripts/check-required-checks.py` and emit each element as a FINDING block using the standard format above. The script sets the `id`, `severity`, `description`, `status`, `current_value`, and `remediation` fields for each finding; pass them through verbatim.
+For CI-022/023/024 (required checks cross-validation), parse the JSON array emitted by `scripts/check-required-checks.py`. Each element is a `Finding` dataclass with three fields: `check_id`, `severity`, and `message`. Map them into the standard FINDING block by treating `check_id` as `id:`, `severity` as `severity:`, and `message` as the `description:` (and use it again for `remediation:` when no separate guidance is available). Set `status:` to `failing` for any element returned by the script (its presence in the JSON array implies the check failed).
+
+Sample mapping (script JSON → FINDING block):
+
+```text
+{"check_id": "CI-022", "severity": "critical", "message": "Required check 'CI Gate' has no producing workflow job. Manifest expects it to come from .github/workflows/ci.yml."}
+```
+
+becomes:
+
+```text
+FINDING:
+id: CI-022
+severity: critical
+description: Required check 'CI Gate' has no producing workflow job. Manifest expects it to come from .github/workflows/ci.yml.
+status: failing
+remediation: |
+  Required check 'CI Gate' has no producing workflow job. Manifest expects it to come from .github/workflows/ci.yml.
+```
+
+For CI-023 branch-protection-fetch failures (`Could not fetch branch protection contexts: ...`), additionally suggest re-running with valid `gh` authentication (`gh auth status`, `gh auth login`) before treating the result as drift; the validator already exits with code 2 in this case to signal that CI-023 was not validated.
 
 ---
 

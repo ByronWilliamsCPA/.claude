@@ -7,10 +7,10 @@ last_updated: "2026-05-07"
 
 required_checks:
   - name: "CI Gate"
-    produced_by: "ByronWilliamsCPA/.github/.github/workflows/python-ci.yml"
+    produced_by: ".github/workflows/ci.yml"
     matrix_expansion: false
   - name: "Security Gate Validation"
-    produced_by: "ByronWilliamsCPA/.github/.github/workflows/security-analysis.yml"
+    produced_by: ".github/workflows/security-analysis.yml"
     matrix_expansion: false
   - name: "Dependency & Standards Validation"
     produced_by: ".github/workflows/pr-validation.yml"

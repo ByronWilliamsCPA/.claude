@@ -5,7 +5,20 @@ Backs the CI-022/023/024 standards manifest checks. Reads the manifest's
 required_checks field, the local repo's .github/workflows/*.yml files, the
 reusable-workflow-jobs registry, and (when --check-bp is passed) the branch
 protection contexts via gh api. Emits JSON findings to stdout.
+
+Exit codes:
+    0  validator ran cleanly, no findings
+    1  validator ran cleanly, findings emitted to stdout
+    2  configuration error (missing/malformed manifest, missing flag combo,
+       branch protection fetch failed). Findings JSON is still emitted.
 """
+
+# #CRITICAL: external resource dependency
+# This module shells out to the gh CLI (fetch_branch_protection_contexts) and
+# parses YAML from disk. Both surfaces are subject to upstream behavior changes
+# (gh schema, ruamel.yaml strictness). #VERIFY: when upgrading either tool,
+# rerun the integration test suite and the real-data dry-run against the
+# 7-repo catalog (see compliance-retrospectives/2026-05-08-required-checks-rollout.md).
 
 from __future__ import annotations
 
@@ -13,7 +26,7 @@ import argparse
 import itertools
 import json
 import re
-import subprocess  # nosec B404 -- intentional gh CLI invocation
+import subprocess  # nosec B404 -- intentional gh CLI invocation; tracked: PR #74 Critical-tier review.
 import sys
 from dataclasses import asdict, dataclass
 from datetime import date, timedelta
@@ -21,10 +34,29 @@ from pathlib import Path
 from typing import Any
 
 from ruamel.yaml import YAML
+from ruamel.yaml.error import YAMLError
 
-_MATRIX_VAR = re.compile(r"\$\{\{\s*matrix\.(\w+)\s*\}\}")
+# #ASSUME: GitHub matrix axis names use [A-Za-z0-9_.-] only.
+# Real workflows commonly use hyphenated names (python-version, node-version);
+# also dotted names appear (build.os). Underscores are also valid.
+# #VERIFY: if a workflow author uses other punctuation in axis names, the
+# regex below will not interpolate them and CI-022 will emit raw template
+# strings.
+_MATRIX_VAR = re.compile(r"\$\{\{\s*matrix\.([\w.-]+)\s*\}\}")
 
 _UNREGISTERED_PREFIX = "__UNREGISTERED__:"
+
+_GH_TIMEOUT_SECONDS = 30
+
+
+class BranchProtectionFetchError(Exception):
+    """Raised when branch protection contexts cannot be fetched reliably.
+
+    Distinct from `[]` (which means the branch has zero required contexts).
+    Callers should surface this as a Critical finding; treating an opaque
+    failure as an empty contexts list silently floods CI-023 with false
+    positives.
+    """
 
 
 @dataclass(frozen=True)
@@ -35,6 +67,17 @@ class Finding:
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
+
+
+def _yaml_safe() -> YAML:
+    """Return a fresh ruamel YAML safe loader.
+
+    A new instance per call avoids state accumulation in the loader's
+    resolver/constructor caches that can interact poorly with concurrent
+    test execution (pytest-xdist) and prevents subtle parse-result
+    determinism issues.
+    """
+    return YAML(typ="safe")
 
 
 def _expand_matrix_combinations(
@@ -89,18 +132,21 @@ def _produced_for_job(
     - Inline jobs (no `uses:` field): the check name is exactly the job's
       `name:` field (or job key if `name:` is absent). The workflow-level
       `name:` is NOT prepended by GitHub for inline jobs.
-    - Reusable-workflow caller jobs (`uses:` field): the check names come from
-      the reusable workflow's jobs, prefixed by the calling job's name.
-      These are resolved via the registry (which stores the fully-qualified
-      check names including the caller-job prefix). For unregistered reusable
-      workflows the validator emits an UNREGISTERED sentinel.
+    - Reusable-workflow caller jobs (`uses:` field): the check name is
+      `{caller_job_name} / {reusable_internal_check_name}`. The registry
+      stores the reusable workflow's UNPREFIXED check names (so the same
+      registry entry is reusable across repos with different caller-job
+      names); the validator applies the caller-job-name prefix here at
+      compare time. For unregistered reusable workflows the validator emits
+      an UNREGISTERED sentinel.
     """
     uses = job.get("uses")
     if isinstance(uses, str) and ".github/workflows/" in uses:
         workflow_path = uses.split("@", 1)[0]
         entry = registry.get(workflow_path)
         if entry and isinstance(entry.get("produces"), list):
-            return {str(name) for name in entry["produces"]}
+            caller_prefix = job.get("name") or job_key
+            return {f"{caller_prefix} / {name}" for name in entry["produces"]}
         return {f"{_UNREGISTERED_PREFIX}{workflow_path}"}
     # Inline job: GitHub uses the job's `name:` (or key) verbatim -- no
     # workflow-level prefix.
@@ -116,9 +162,6 @@ def _produced_for_job(
         _interpolate_matrix(job_label_template, combo)
         for combo in _expand_matrix_combinations(simple_axes)
     }
-
-
-_yaml = YAML(typ="safe")
 
 
 def extract_produced_check_names(
@@ -140,9 +183,10 @@ def extract_produced_check_names(
         interpolated with the matrix values.
 
         Inline jobs use the job `name:` verbatim -- GitHub does NOT
-        prepend the workflow-level `name:` for inline jobs. Only
-        reusable-workflow caller jobs get a caller-job-name prefix, which
-        is already baked into the registry entries.
+        prepend the workflow-level `name:` for inline jobs. Reusable-
+        workflow caller jobs apply a `{caller_job_name} / ` prefix to
+        each registry-stored unprefixed check name; the registry is
+        therefore portable across repos with different caller-job names.
 
         Limitations:
         - Only direct `${{ matrix.<key> }}` references are interpolated;
@@ -158,8 +202,12 @@ def extract_produced_check_names(
           raw `name:` template without interpolation. Such workflows
           should be modeled in the registry instead of parsed from source.
     """
-    doc = _yaml.load(workflow_yaml) or {}
+    doc = _yaml_safe().load(workflow_yaml)
+    if not isinstance(doc, dict):
+        return set()
     jobs = doc.get("jobs", {}) or {}
+    if not isinstance(jobs, dict):
+        return set()
     produced: set[str] = set()
     for job_key, job in jobs.items():
         if not isinstance(job, dict):
@@ -286,28 +334,86 @@ def check_registry_freshness(
 def load_required_checks(
     manifest_path: Path,
 ) -> tuple[set[str], dict[str, dict[str, Any]]]:
-    doc = _yaml.load(manifest_path.read_text()) or {}
+    """Parse manifest required_checks entries.
+
+    Args:
+        manifest_path: Path to docs/standards-manifest.yaml.
+
+    Returns:
+        Tuple of (set of required check names, mapping from check name to
+        the full entry dict).
+
+    Raises:
+        FileNotFoundError: manifest_path does not exist.
+        ValueError: manifest is malformed or an entry lacks a `name` field.
+        ruamel.yaml.YAMLError: manifest is not parseable as YAML.
+    """
+    if not manifest_path.exists():
+        raise FileNotFoundError(f"Manifest not found: {manifest_path}")
+    doc = _yaml_safe().load(manifest_path.read_text())
+    if doc is None:
+        return set(), {}
+    if not isinstance(doc, dict):
+        raise ValueError(
+            f"Manifest {manifest_path} top-level must be a mapping, got {type(doc).__name__}"
+        )
     entries = doc.get("required_checks", []) or []
-    names = {e["name"] for e in entries}
-    meta = {e["name"]: e for e in entries}
+    if not isinstance(entries, list):
+        raise ValueError(
+            f"Manifest required_checks must be a list, got {type(entries).__name__}"
+        )
+    names: set[str] = set()
+    meta: dict[str, dict[str, Any]] = {}
+    for idx, entry in enumerate(entries):
+        if not isinstance(entry, dict):
+            raise ValueError(
+                f"required_checks[{idx}] must be a mapping, got {type(entry).__name__}"
+            )
+        name = entry.get("name")
+        if not isinstance(name, str) or not name.strip():
+            raise ValueError(
+                f"required_checks[{idx}] missing or empty 'name' field: {entry!r}"
+            )
+        names.add(name)
+        meta[name] = entry
     return names, meta
 
 
 def load_registry(registry_path: Path) -> dict[str, dict[str, Any]]:
+    """Load the reusable-workflow registry YAML.
+
+    Returns an empty dict for missing or empty files. Raises ValueError if
+    the file exists but is structurally not a mapping.
+    """
     if not registry_path.exists():
         return {}
-    return _yaml.load(registry_path.read_text()) or {}
+    doc = _yaml_safe().load(registry_path.read_text())
+    if doc is None:
+        return {}
+    if not isinstance(doc, dict):
+        raise ValueError(
+            f"Registry {registry_path} top-level must be a mapping, got {type(doc).__name__}"
+        )
+    return doc
 
 
 def _safe_extract(path: Path, registry: dict[str, Any]) -> set[str]:
-    """Extract check names from a workflow file, returning empty set on parse error."""
+    """Extract check names from a workflow file.
+
+    Returns an empty set on YAML or filesystem read errors after logging to
+    stderr. Re-raises programmer-error types (TypeError, AttributeError) so
+    bugs in the parser surface during testing.
+
+    A workflow file that cannot be parsed cannot run in CI either, so its
+    check names are moot for CI-022 purposes.
+    """
     try:
         return extract_produced_check_names(path.read_text(), registry)
-    except Exception:
-        # Malformed YAML is skipped; the file cannot be analysed but it will
-        # not crash the validator. A workflow with invalid YAML cannot run in
-        # CI anyway, so its check names are moot.
-        print(f"Warning: could not parse {path} as YAML; skipping.", file=sys.stderr)
+    except (YAMLError, OSError, UnicodeDecodeError) as exc:
+        print(
+            f"Warning: could not parse {path}: {exc.__class__.__name__}: {exc}",
+            file=sys.stderr,
+        )
         return set()
 
 
@@ -315,35 +421,100 @@ def scan_workflow_dir(
     workflow_dir: Path,
     registry: dict[str, dict[str, Any]],
 ) -> set[str]:
+    """Scan a directory for *.yml/*.yaml workflow files and aggregate check names.
+
+    Deduplicates files on case-insensitive filesystems by collecting paths
+    into a set keyed on the resolved path before iteration.
+    """
     produced: set[str] = set()
     if not workflow_dir.is_dir():
         return produced
-    paths = sorted(list(workflow_dir.glob("*.yml")) + list(workflow_dir.glob("*.yaml")))
-    for path in paths:
+    paths = {
+        p.resolve()
+        for p in workflow_dir.iterdir()
+        if p.is_file() and p.suffix.lower() in (".yml", ".yaml")
+    }
+    for path in sorted(paths):
         produced |= _safe_extract(path, registry)
     return produced
 
 
-def fetch_branch_protection_contexts(repo_slug: str, branch: str = "main") -> list[str]:
-    result = subprocess.run(  # nosec B603 B607 # noqa: S603
-        [  # noqa: S607
-            "gh",
-            "api",
-            f"repos/{repo_slug}/branches/{branch}/protection",
-            "--jq",
-            ".required_status_checks.contexts",
-        ],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
+def fetch_branch_protection_contexts(
+    repo_slug: str,
+    branch: str = "main",
+    timeout: int = _GH_TIMEOUT_SECONDS,
+) -> list[str]:
+    """Fetch branch protection required contexts via the gh CLI.
+
+    Args:
+        repo_slug: GitHub `owner/repo` slug.
+        branch: Branch name (default: main).
+        timeout: Per-call timeout in seconds.
+
+    Returns:
+        List of required status check context names. Empty list means the
+        branch protection rule exists but has zero required contexts (or
+        the rule defines `required_status_checks: null`, which gh's --jq
+        emits as the JSON literal `null`).
+
+    Raises:
+        BranchProtectionFetchError: gh CLI exited non-zero, timed out,
+            returned malformed JSON, or returned a non-list/non-null value.
+            Distinct from "branch has zero contexts" so the caller can emit
+            a dedicated finding instead of silently treating fetch failure
+            as drift.
+    """
+    try:
+        result = subprocess.run(  # nosec B603 B607  # noqa: S603 -- list args, shell=False; tracked: PR #74.
+            [  # noqa: S607 -- gh resolved via PATH; tracked: PR #74.
+                "gh",
+                "api",
+                f"repos/{repo_slug}/branches/{branch}/protection",
+                "--jq",
+                ".required_status_checks.contexts",
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=timeout,
+        )
+    except subprocess.TimeoutExpired as exc:
+        raise BranchProtectionFetchError(
+            f"gh API timed out after {timeout}s for {repo_slug}@{branch}"
+        ) from exc
+    except FileNotFoundError as exc:
+        raise BranchProtectionFetchError(
+            "gh CLI not found on PATH; install gh or run without --check-bp"
+        ) from exc
+
     if result.returncode != 0:
+        raise BranchProtectionFetchError(
+            f"gh API failed for {repo_slug}@{branch} "
+            f"(exit {result.returncode}): {result.stderr.strip() or result.stdout.strip()}"
+        )
+
+    stdout = result.stdout.strip()
+    if not stdout:
         return []
-    parsed = json.loads(result.stdout) if result.stdout.strip() else []
-    return parsed or []
+    try:
+        parsed = json.loads(stdout)
+    except json.JSONDecodeError as exc:
+        raise BranchProtectionFetchError(
+            f"gh API returned non-JSON output for {repo_slug}@{branch}: "
+            f"{stdout[:200]!r}"
+        ) from exc
+
+    if parsed is None:
+        return []
+    if not isinstance(parsed, list):
+        raise BranchProtectionFetchError(
+            f"gh API returned unexpected type ({type(parsed).__name__}) "
+            f"for {repo_slug}@{branch}; expected list or null"
+        )
+    return [str(item) for item in parsed]
 
 
-def main(argv: list[str] | None = None) -> int:
+def _parse_args(argv: list[str] | None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-path", type=Path, required=True)
     parser.add_argument("--manifest", type=Path, required=True)
@@ -357,7 +528,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--check-bp",
         action="store_true",
-        help="Fetch and validate branch protection contexts",
+        help="Fetch and validate branch protection contexts (requires --repo-slug)",
     )
     parser.add_argument(
         "--today",
@@ -365,41 +536,55 @@ def main(argv: list[str] | None = None) -> int:
         help="Override today's date (YYYY-MM-DD) for testing",
     )
     args = parser.parse_args(argv)
+    if args.check_bp and not args.repo_slug:
+        parser.error("--check-bp requires --repo-slug")
+    return args
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = _parse_args(argv)
 
     try:
         required, meta = load_required_checks(args.manifest)
         registry = load_registry(args.registry)
-    except (FileNotFoundError, KeyError) as exc:
+    except (FileNotFoundError, ValueError, YAMLError) as exc:
         print(f"Error loading manifest or registry: {exc}", file=sys.stderr)
         return 2
-    except Exception as exc:
-        print(f"Error parsing manifest or registry: {exc}", file=sys.stderr)
-        return 2
-
-    produced = scan_workflow_dir(args.repo_path / ".github" / "workflows", registry)
 
     findings: list[Finding] = []
+
+    produced = scan_workflow_dir(args.repo_path / ".github" / "workflows", registry)
     findings += diff_required_vs_produced(required, produced, meta)
 
+    bp_failure_exit = 0
     if args.check_bp:
-        if not args.repo_slug:
-            print(
-                "Warning: --check-bp specified without --repo-slug; "
-                "branch protection check skipped",
-                file=sys.stderr,
-            )
-        else:
+        try:
             contexts = fetch_branch_protection_contexts(
                 args.repo_slug, branch=args.branch
             )
+        except BranchProtectionFetchError as exc:
+            findings.append(
+                Finding(
+                    check_id="CI-023",
+                    severity="critical",
+                    message=(
+                        f"Could not fetch branch protection contexts: {exc}. "
+                        f"CI-023 was not validated; treat with caution."
+                    ),
+                )
+            )
+            bp_failure_exit = 2
+        else:
             findings += diff_required_vs_branch_protection(required, contexts)
 
     today_value = (
-        date.fromisoformat(args.today) if args.today else date.today()  # noqa: DTZ011
+        date.fromisoformat(args.today) if args.today else date.today()  # noqa: DTZ011 -- local TZ acceptable for 90-day cutoff; tracked: PR #74.
     )
     findings += check_registry_freshness(registry, today_value)
 
     print(json.dumps([f.to_dict() for f in findings], indent=2))
+    if bp_failure_exit:
+        return bp_failure_exit
     return 1 if findings else 0
 
 

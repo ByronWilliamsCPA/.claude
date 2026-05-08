@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import json
+import subprocess
+from datetime import date
 from pathlib import Path
 
 import pytest
@@ -14,11 +17,11 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 FIXTURES = PROJECT_ROOT / "data" / "test_fixtures" / "required_checks"
 
 
+# ── Inline-job behavior ─────────────────────────────────────────────────────
+
+
 @pytest.mark.unit
 def test_single_job_no_name_produces_bare_job_key() -> None:
-    # GitHub does not prepend the workflow's top-level name: to inline job
-    # check names. With workflow `name: Pipeline` and unnamed job `build`,
-    # the produced check name is just `build`.
     workflow_yaml = (FIXTURES / "single_job_no_name.yml").read_text()
     produced = crc.extract_produced_check_names(workflow_yaml, registry={})
     assert produced == {"build"}
@@ -26,8 +29,6 @@ def test_single_job_no_name_produces_bare_job_key() -> None:
 
 @pytest.mark.unit
 def test_job_with_name_uses_name_field() -> None:
-    # GitHub uses the job's name: verbatim for inline jobs. The workflow's
-    # top-level `name: Pipeline` is NOT prefixed onto the check name.
     workflow_yaml = (FIXTURES / "single_job_with_name.yml").read_text()
     produced = crc.extract_produced_check_names(workflow_yaml, registry={})
     assert produced == {"CI Gate"}
@@ -47,10 +48,11 @@ def test_no_workflow_name_no_job_name_uses_bare_job_key() -> None:
     assert produced == {"build"}
 
 
+# ── Matrix expansion ────────────────────────────────────────────────────────
+
+
 @pytest.mark.unit
 def test_matrix_one_param_expands() -> None:
-    # The workflow's top-level `name: Tests` is NOT prefixed onto inline
-    # matrix-job check names. Only the interpolated job name is reported.
     workflow_yaml = (FIXTURES / "matrix_one_param.yml").read_text()
     produced = crc.extract_produced_check_names(workflow_yaml, registry={})
     assert produced == {
@@ -73,17 +75,34 @@ def test_matrix_two_params_cartesian_expansion() -> None:
 
 
 @pytest.mark.unit
-def test_include_only_matrix_emits_raw_template_without_interpolation() -> None:
-    workflow_yaml = (FIXTURES / "matrix_include_only.yml").read_text()
+def test_matrix_hyphenated_axis_expands() -> None:
+    # Real-world workflows commonly use hyphenated axis names like
+    # `python-version`, `node-version`. The interpolation regex must
+    # accept hyphens (and dots) inside `${{ matrix.<axis> }}`.
+    workflow_yaml = (FIXTURES / "matrix_hyphen_axis.yml").read_text()
     produced = crc.extract_produced_check_names(workflow_yaml, registry={})
-    # include-only matrices have no top-level axes, so the validator
-    # cannot interpolate ${{ matrix.x }} references. The raw template
-    # is emitted; downstream CI-022 will flag this as needing registry coverage.
-    assert produced == {"Test ${{ matrix.python }}"}
+    assert produced == {
+        "Test (Python 3.11)",
+        "Test (Python 3.12)",
+    }
 
 
 @pytest.mark.unit
-def test_registered_reusable_workflow_resolved_via_registry() -> None:
+def test_include_only_matrix_emits_raw_template_without_interpolation() -> None:
+    workflow_yaml = (FIXTURES / "matrix_include_only.yml").read_text()
+    produced = crc.extract_produced_check_names(workflow_yaml, registry={})
+    assert produced == {"Test ${{ matrix.python }}"}
+
+
+# ── Reusable-workflow caller-prefix behavior ────────────────────────────────
+
+
+@pytest.mark.unit
+def test_registered_reusable_applies_caller_job_key_as_prefix() -> None:
+    # The fixture has `jobs.ci.uses: ...python-ci.yml`; no `name:` field,
+    # so the caller-prefix is the bare job key `ci`. The registry stores
+    # the unprefixed leaf check name `CI Gate`; the validator applies the
+    # caller-job-name prefix at compare time.
     workflow_yaml = (FIXTURES / "reusable_registered.yml").read_text()
     registry = {
         "ByronWilliamsCPA/.github/.github/workflows/python-ci.yml": {
@@ -93,7 +112,26 @@ def test_registered_reusable_workflow_resolved_via_registry() -> None:
         },
     }
     produced = crc.extract_produced_check_names(workflow_yaml, registry=registry)
-    assert produced == {"CI Gate"}
+    assert produced == {"ci / CI Gate"}
+
+
+@pytest.mark.unit
+def test_registered_reusable_uses_caller_name_field_when_present() -> None:
+    # Same registry, but the fixture's calling job has `name: CI (Python 3.12)`.
+    # That display name becomes the caller-prefix.
+    workflow_yaml = (FIXTURES / "reusable_with_name.yml").read_text()
+    registry = {
+        "ByronWilliamsCPA/.github/.github/workflows/python-ci.yml": {
+            "produces": ["CI Gate", "Code Quality Checks"],
+            "source_repo": "ByronWilliamsCPA/.github",
+            "last_verified": "2026-05-08",
+        },
+    }
+    produced = crc.extract_produced_check_names(workflow_yaml, registry=registry)
+    assert produced == {
+        "CI (Python 3.12) / CI Gate",
+        "CI (Python 3.12) / Code Quality Checks",
+    }
 
 
 @pytest.mark.unit
@@ -105,6 +143,31 @@ def test_unregistered_reusable_workflow_returns_sentinel() -> None:
         "__UNREGISTERED__:SomeOrg/private-actions/.github/workflows/build.yml"
         in produced
     )
+
+
+# ── extract_produced_check_names: malformed inputs ──────────────────────────
+
+
+@pytest.mark.unit
+def test_non_dict_yaml_returns_empty_set() -> None:
+    # A workflow YAML that's not a top-level mapping (e.g., a list) is
+    # malformed but should not crash; the function returns an empty set
+    # so the file is silently skipped (and CI-022 will flag any required
+    # check that depended on it).
+    assert (
+        crc.extract_produced_check_names("- not\n- a\n- mapping\n", registry={})
+        == set()
+    )
+    assert crc.extract_produced_check_names("just a scalar\n", registry={}) == set()
+
+
+@pytest.mark.unit
+def test_jobs_field_non_dict_returns_empty_set() -> None:
+    workflow_yaml = "name: Foo\non: push\njobs:\n  - one\n  - two\n"
+    assert crc.extract_produced_check_names(workflow_yaml, registry={}) == set()
+
+
+# ── diff_required_vs_produced ───────────────────────────────────────────────
 
 
 @pytest.mark.unit
@@ -137,6 +200,9 @@ def test_diff_required_vs_produced_flags_unregistered_reusable() -> None:
     )
 
 
+# ── diff_required_vs_branch_protection ──────────────────────────────────────
+
+
 @pytest.mark.unit
 def test_diff_required_vs_branch_protection_missing_and_extra() -> None:
     findings = crc.diff_required_vs_branch_protection(
@@ -157,10 +223,11 @@ def test_diff_required_vs_branch_protection_exact_match_no_findings() -> None:
     assert findings == []
 
 
+# ── check_registry_freshness ────────────────────────────────────────────────
+
+
 @pytest.mark.unit
 def test_registry_freshness_flags_stale_entries() -> None:
-    from datetime import date
-
     registry = {
         "fresh": {"last_verified": "2026-05-01"},
         "stale": {"last_verified": "2025-01-01"},
@@ -179,8 +246,6 @@ def test_registry_freshness_flags_stale_entries() -> None:
 
 @pytest.mark.unit
 def test_registry_freshness_flags_unparseable_last_verified() -> None:
-    from datetime import date
-
     findings = crc.check_registry_freshness(
         registry={
             "ByronWilliamsCPA/.github/.github/workflows/foo.yml": {
@@ -196,19 +261,176 @@ def test_registry_freshness_flags_unparseable_last_verified() -> None:
 
 
 @pytest.mark.unit
-def test_fetch_branch_protection_contexts_handles_null_response(
+def test_registry_freshness_accepts_native_date_object() -> None:
+    # ruamel YAML may return native `date` objects rather than ISO strings;
+    # the freshness check must accept both.
+    registry = {
+        "ByronWilliamsCPA/.github/.github/workflows/foo.yml": {
+            "last_verified": date(2026, 5, 1),
+        },
+    }
+    findings = crc.check_registry_freshness(registry=registry, today=date(2026, 5, 8))
+    assert findings == []
+
+
+# ── fetch_branch_protection_contexts ────────────────────────────────────────
+
+
+def _fake_subprocess(
     monkeypatch: pytest.MonkeyPatch,
+    *,
+    returncode: int,
+    stdout: str = "",
+    stderr: str = "",
 ) -> None:
-    """Repos with protection but no required_status_checks return null from --jq."""
-    import subprocess
+    """Replace subprocess.run with a stub yielding a deterministic CompletedProcess."""
 
     class _FakeResult:
-        returncode = 0
-        stdout = "null\n"
+        def __init__(self) -> None:
+            self.returncode = returncode
+            self.stdout = stdout
+            self.stderr = stderr
 
     def _fake_run(*args, **kwargs):
         return _FakeResult()
 
     monkeypatch.setattr(subprocess, "run", _fake_run)
+
+
+@pytest.mark.unit
+def test_fetch_branch_protection_contexts_handles_null_response(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Repos with protection but no required_status_checks return null from --jq."""
+    _fake_subprocess(monkeypatch, returncode=0, stdout="null\n")
     contexts = crc.fetch_branch_protection_contexts("fake/repo")
     assert contexts == []
+
+
+@pytest.mark.unit
+def test_fetch_branch_protection_contexts_returns_list(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _fake_subprocess(
+        monkeypatch,
+        returncode=0,
+        stdout=json.dumps(["CI Gate", "REUSE"]) + "\n",
+    )
+    contexts = crc.fetch_branch_protection_contexts("fake/repo")
+    assert contexts == ["CI Gate", "REUSE"]
+
+
+@pytest.mark.unit
+def test_fetch_branch_protection_contexts_raises_on_non_zero_exit(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """gh non-zero exit must raise, not silently return []. Treating an auth
+    failure as 'no contexts' would falsely mark every required check as
+    missing from branch protection.
+    """
+    _fake_subprocess(monkeypatch, returncode=1, stderr="HTTP 401: Bad credentials")
+    with pytest.raises(crc.BranchProtectionFetchError, match="exit 1"):
+        crc.fetch_branch_protection_contexts("fake/repo")
+
+
+@pytest.mark.unit
+def test_fetch_branch_protection_contexts_raises_on_malformed_json(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _fake_subprocess(monkeypatch, returncode=0, stdout="<html>auth redirect</html>")
+    with pytest.raises(crc.BranchProtectionFetchError, match="non-JSON"):
+        crc.fetch_branch_protection_contexts("fake/repo")
+
+
+@pytest.mark.unit
+def test_fetch_branch_protection_contexts_raises_on_unexpected_type(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _fake_subprocess(monkeypatch, returncode=0, stdout=json.dumps({"oops": "dict"}))
+    with pytest.raises(crc.BranchProtectionFetchError, match="unexpected type"):
+        crc.fetch_branch_protection_contexts("fake/repo")
+
+
+@pytest.mark.unit
+def test_fetch_branch_protection_contexts_raises_on_timeout(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def _raise_timeout(*args, **kwargs):
+        raise subprocess.TimeoutExpired(cmd="gh", timeout=30)
+
+    monkeypatch.setattr(subprocess, "run", _raise_timeout)
+    with pytest.raises(crc.BranchProtectionFetchError, match="timed out"):
+        crc.fetch_branch_protection_contexts("fake/repo", timeout=30)
+
+
+# ── load_required_checks ────────────────────────────────────────────────────
+
+
+@pytest.mark.unit
+def test_load_required_checks_raises_on_missing_name_field(tmp_path: Path) -> None:
+    manifest = tmp_path / "m.yaml"
+    manifest.write_text("required_checks:\n  - produced_by: foo.yml\n")
+    with pytest.raises(ValueError, match="missing or empty 'name' field"):
+        crc.load_required_checks(manifest)
+
+
+@pytest.mark.unit
+def test_load_required_checks_raises_on_non_mapping_top_level(tmp_path: Path) -> None:
+    manifest = tmp_path / "m.yaml"
+    manifest.write_text("- a list at top level\n")
+    with pytest.raises(ValueError, match="must be a mapping"):
+        crc.load_required_checks(manifest)
+
+
+@pytest.mark.unit
+def test_load_required_checks_handles_empty_manifest(tmp_path: Path) -> None:
+    manifest = tmp_path / "m.yaml"
+    manifest.write_text("")
+    names, meta = crc.load_required_checks(manifest)
+    assert names == set()
+    assert meta == {}
+
+
+@pytest.mark.unit
+def test_load_required_checks_handles_missing_required_checks_key(
+    tmp_path: Path,
+) -> None:
+    manifest = tmp_path / "m.yaml"
+    manifest.write_text("version: '1.0'\n")
+    names, meta = crc.load_required_checks(manifest)
+    assert names == set()
+    assert meta == {}
+
+
+@pytest.mark.unit
+def test_load_required_checks_raises_on_missing_file(tmp_path: Path) -> None:
+    with pytest.raises(FileNotFoundError, match="Manifest not found"):
+        crc.load_required_checks(tmp_path / "does-not-exist.yaml")
+
+
+# ── main() argument validation ──────────────────────────────────────────────
+
+
+@pytest.mark.unit
+def test_main_rejects_check_bp_without_repo_slug(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    manifest = tmp_path / "m.yaml"
+    manifest.write_text("required_checks: []\n")
+    registry = tmp_path / "r.yaml"
+    registry.write_text("{}\n")
+    with pytest.raises(SystemExit) as excinfo:
+        crc.main(
+            [
+                "--repo-path",
+                str(tmp_path),
+                "--manifest",
+                str(manifest),
+                "--registry",
+                str(registry),
+                "--check-bp",
+            ]
+        )
+    assert excinfo.value.code == 2
+    captured = capsys.readouterr()
+    assert "--check-bp requires --repo-slug" in captured.err
