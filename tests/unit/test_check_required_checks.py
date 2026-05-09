@@ -200,25 +200,29 @@ def test_diff_required_vs_produced_flags_unregistered_reusable() -> None:
     )
 
 
-# ── diff_required_vs_branch_protection ──────────────────────────────────────
+# ── diff_required_vs_effective ──────────────────────────────────────────────
 
 
 @pytest.mark.unit
-def test_diff_required_vs_branch_protection_missing_and_extra() -> None:
-    findings = crc.diff_required_vs_branch_protection(
+def test_diff_required_vs_effective_missing_and_extra() -> None:
+    effective = {"CI Gate", "Stale Check"}
+    findings = crc.diff_required_vs_effective(
         required={"CI Gate", "REUSE"},
-        contexts=["CI Gate", "Stale Check"],
+        effective=effective,
+        provenance={"classic": list(effective)},
     )
     messages = [f.message for f in findings]
-    assert any("REUSE" in m and "missing" in m for m in messages)
-    assert any("Stale Check" in m and "does not list" in m for m in messages)
+    assert any("REUSE" in m and "missing" in m.lower() for m in messages)
+    assert any("Stale Check" in m for m in messages)
 
 
 @pytest.mark.unit
-def test_diff_required_vs_branch_protection_exact_match_no_findings() -> None:
-    findings = crc.diff_required_vs_branch_protection(
+def test_diff_required_vs_effective_exact_match_no_findings() -> None:
+    effective = {"CI Gate"}
+    findings = crc.diff_required_vs_effective(
         required={"CI Gate"},
-        contexts=["CI Gate"],
+        effective=effective,
+        provenance={"classic": list(effective)},
     )
     assert findings == []
 
@@ -547,3 +551,15 @@ def test_fetch_effective_union_partial_failure_returns_partial(monkeypatch):
     assert contexts == {"X"}
     assert "classic:error" in prov
     assert "404 not found" in prov["classic:error"][0]
+
+
+@pytest.mark.unit
+def test_diff_required_vs_effective_includes_provenance() -> None:
+    findings = crc.diff_required_vs_effective(
+        required={"A", "B"},
+        effective={"A"},
+        provenance={"classic": ["A"], "Organization:williaby/42": []},
+    )
+    msgs = [f.message for f in findings]
+    assert any("B" in m and "missing" in m.lower() for m in msgs)
+    assert any("classic" in m or "Organization:williaby/42" in m for m in msgs)

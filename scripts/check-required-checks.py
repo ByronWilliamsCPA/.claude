@@ -255,32 +255,73 @@ def diff_required_vs_produced(
     return findings
 
 
-def diff_required_vs_branch_protection(
+def diff_required_vs_effective(
     required: set[str],
-    contexts: list[str],
+    effective: set[str],
+    provenance: dict[str, list[str]],
 ) -> list[Finding]:
-    """CI-023: branch protection contexts equal required_checks set exactly."""
-    actual = set(contexts)
+    """Diff manifest required-checks set vs effective protection contexts.
+
+    Emits one Critical Finding per missing or extra context, with provenance
+    appended to the message so operators know which source needs patching.
+    Also emits a Critical Finding for any source that failed to load (per
+    "<source>:error" key in provenance).
+
+    Args:
+        required: Manifest required-checks set.
+        effective: Effective contexts present in protection (union of sources).
+        provenance: Map of source-id to contexts contributed; "<source>:error"
+            keys carry an error message instead of a contexts list.
+
+    Returns:
+        List of Finding objects (one per missing context, one per extra context,
+        one per failed source).
+    """
+    sources = (
+        ", ".join(
+            f"{k}={v}"
+            for k, v in sorted(provenance.items())
+            if not k.endswith(":error")
+        )
+        or "(no protection sources found)"
+    )
+
+    missing = required - effective
+    extra = effective - required
+
     findings: list[Finding] = [
         Finding(
             check_id="CI-023",
             severity="critical",
             message=(
-                f"Required check '{name}' missing from branch protection contexts."
+                f"Required check '{name}' is missing from effective protection. "
+                f"Sources: {sources}"
             ),
         )
-        for name in sorted(required - actual)
+        for name in sorted(missing)
     ]
     findings.extend(
         Finding(
             check_id="CI-023",
             severity="critical",
             message=(
-                f"Branch protection requires '{name}' but manifest does "
-                f"not list it as a required check."
+                f"Extra context '{name}' is enforced but not in required_checks. "
+                f"Sources: {sources}"
             ),
         )
-        for name in sorted(actual - required)
+        for name in sorted(extra)
+    )
+    findings.extend(
+        Finding(
+            check_id="CI-023",
+            severity="critical",
+            message=(
+                f"Could not read protection source '{err_key.split(':')[0]}': "
+                f"{provenance[err_key][0]}"
+            ),
+        )
+        for err_key in ("classic:error", "rulesets:error")
+        if err_key in provenance
     )
     return findings
 
@@ -714,10 +755,11 @@ def main(argv: list[str] | None = None) -> int:
     bp_failure_exit = 0
     if args.check_bp:
         try:
-            contexts = fetch_classic_protection_contexts(
-                args.repo_slug, branch=args.branch
+            # TODO(task-5): replace "classic" literal with args.source
+            effective, provenance = fetch_effective_required_contexts(
+                args.repo_slug, args.branch, "classic"
             )
-        except BranchProtectionFetchError as exc:
+        except (BranchProtectionFetchError, RulesetFetchError) as exc:
             findings.append(
                 Finding(
                     check_id="CI-023",
@@ -730,7 +772,7 @@ def main(argv: list[str] | None = None) -> int:
             )
             bp_failure_exit = 2
         else:
-            findings += diff_required_vs_branch_protection(required, contexts)
+            findings += diff_required_vs_effective(required, effective, provenance)
 
     today_value = (
         date.fromisoformat(args.today) if args.today else date.today()  # noqa: DTZ011 -- local TZ acceptable for 90-day cutoff; tracked: PR #74.

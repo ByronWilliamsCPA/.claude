@@ -75,5 +75,5 @@ def test_branch_protection_drift_emits_ci023(
     ci023 = [f for f in findings if f["check_id"] == "CI-023"]
     assert len(ci023) == 1
     assert "Check REUSE Compliance" in ci023[0]["message"]
-    assert "missing from branch protection" in ci023[0]["message"]
+    assert "missing from effective protection" in ci023[0]["message"]
     assert exit_code == 1
