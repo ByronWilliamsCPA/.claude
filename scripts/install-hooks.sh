@@ -19,4 +19,3 @@ fi
 cp "$SOURCE" "$DEST"
 chmod +x "$DEST"
 echo "Pre-push hook installed at $DEST"
-echo "Bypass with: git push --no-verify"

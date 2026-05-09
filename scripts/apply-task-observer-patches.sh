@@ -18,9 +18,12 @@ REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 UPSTREAM="${REPO_ROOT}/.submodules/one-skill-to-rule-them-all/SKILL.md"
 OUTPUT="${HOME}/.claude/skills/task-observer/SKILL.md"
-# Intentionally hardcoded: this string is embedded in the installed SKILL.md output,
-# so it must be the actual runtime deployment path, not derived from REPO_ROOT.
-REPO_PATH="/home/byron/dev/.claude"
+# Security (audit M-03): derive REPO_PATH from this script's location so the
+# value matches the actual install on whatever account runs it, instead of
+# hardcoding /home/byron/. The string is still embedded in the installed
+# SKILL.md output verbatim (so the consumer sees a concrete path) but is now
+# portable across user accounts.
+REPO_PATH="${REPO_ROOT}"
 MANIFEST_PATH="${REPO_PATH}/skill-observations/available-skills.md"
 STRIP_SECTION="### Without Persistent Storage"
 

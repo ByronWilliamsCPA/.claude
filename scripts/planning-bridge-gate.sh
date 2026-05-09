@@ -38,7 +38,10 @@ if [[ -z "$CONTEXT" ]]; then
 fi
 
 # Extract skill name from tool input
-SKILL=$(echo "$CONTEXT" | jq -r '.tool_input.skill // empty' 2>/dev/null)
+# Security (audit L-03): suffix `|| true` so an unexpected non-zero exit from
+# jq under set -euo pipefail does not surface a non-2 PreToolUse exit code,
+# which would create ambiguous semantics for Claude Code's hook handler.
+SKILL=$(echo "$CONTEXT" | jq -r '.tool_input.skill // empty' 2>/dev/null || true)
 
 # Only act on writing-plans invocations
 if [[ "$SKILL" != "writing-plans" ]]; then

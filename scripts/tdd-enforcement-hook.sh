@@ -49,7 +49,10 @@ case "$TOOL_NAME" in
 
         if [[ -n "$FILE_PATH" ]]; then
             case "$FILE_PATH" in
-                *test*.py|*/tests/*|*/test_*|*spec*.js|*test*.js|*.test.ts|*.spec.ts)
+                test_*.py|*/test_*.py|*_test.py|*/tests/*|*.test.js|*.spec.js|*.test.ts|*.spec.ts|conftest.py|*/conftest.py)
+                    # Security (audit M-01): use word-boundary patterns instead of *test*.py
+                    # so files like protest.py, contest.py, latest_protest.py do not bypass
+                    # TDD enforcement on a substring match.
                     log_tdd "ALLOW" "TEST_FILE" "$FILE_PATH"
                     exit 0
                     ;;

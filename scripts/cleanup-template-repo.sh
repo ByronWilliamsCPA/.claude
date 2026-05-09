@@ -253,7 +253,7 @@ show_summary() {
     echo "Completed cleanup phases. Next steps:"
     echo ""
     echo "1. Verify .claude/ directory matches cookiecutter template:"
-    echo "   $ diff -r .claude/ /home/byron/dev/cookiecutter-python-template/{{cookiecutter.project_slug}}/.claude/"
+    echo "   \$ diff -r .claude/ \$HOME/dev/cookiecutter-python-template/{{cookiecutter.project_slug}}/.claude/"
     echo ""
     echo "2. Run linters to verify nothing broke:"
     echo "   $ ruff check ."
