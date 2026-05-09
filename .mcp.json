@@ -4,10 +4,11 @@
       "command": "npx",
       "args": [
         "-y",
-        "@upstash/context7-mcp"
+        "@upstash/context7-mcp@2.2.4"
       ]
     },
     "sonarqube": {
+      "_comment_M04": "TODO security-audit M-04: bearer token over cleartext loopback HTTP. Move SonarQube to HTTPS or a Unix socket; bind to 127.0.0.1 only. Tracked in docs/security-analysis-2026-05-01.md.",
       "type": "http",
       "url": "http://localhost:8090/mcp",
       "headers": {
@@ -15,11 +16,11 @@
       }
     },
     "pal": {
-      "command": "/home/byron/dev/zen-mcp-server/.pal_venv/bin/python",
+      "command": "${HOME}/dev/zen-mcp-server/.pal_venv/bin/python",
       "args": [
-        "/home/byron/dev/zen-mcp-server/server.py"
+        "${HOME}/dev/zen-mcp-server/server.py"
       ],
-      "cwd": "/home/byron/dev/zen-mcp-server"
+      "cwd": "${HOME}/dev/zen-mcp-server"
     }
   }
 }

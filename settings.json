@@ -22,6 +22,7 @@
       "Bash(kill:*)",
       "Bash(pkill:*)",
       "Bash(killall:*)",
+      "Bash(docker run:*)",
       "Bash(docker rm:*)",
       "Bash(docker rmi:*)",
       "Bash(docker system prune:*)",
@@ -31,7 +32,15 @@
       "Bash(pip uninstall:*)",
       "Bash(firebase deploy:*)",
       "Bash(gcloud:*)",
-      "Bash(git push --force:*)"
+      "Bash(git push --force:*)",
+      "Bash(curl:*)",
+      "Bash(wget:*)",
+      "Bash(nc:*)",
+      "Bash(netcat:*)",
+      "Bash(ssh:*)",
+      "Bash(scp:*)",
+      "Bash(rsync:*)",
+      "Bash(git clone:*)"
     ]
   },
   "hooks": {
@@ -42,6 +51,16 @@
           {
             "type": "command",
             "command": "$HOME/.claude/scripts/tdd-enforcement-hook.sh"
+          }
+        ]
+      },
+      {
+        "_comment_M05": "security-audit M-05: register the force-push guard so the bypass-resistant logic in bash-pre-hook.sh is actually invoked. Previously the script was unregistered dead code.",
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/scripts/bash-pre-hook.sh"
           }
         ]
       }
@@ -109,14 +128,14 @@
   },
   "mcpServers": {
     "zen": {
-      "command": "/home/byron/dev/zen-mcp-server/.pal_venv/bin/python",
-      "args": ["/home/byron/dev/zen-mcp-server/server.py"],
-      "cwd": "/home/byron/dev/zen-mcp-server",
+      "command": "${HOME}/dev/zen-mcp-server/.pal_venv/bin/python",
+      "args": ["${HOME}/dev/zen-mcp-server/server.py"],
+      "cwd": "${HOME}/dev/zen-mcp-server",
       "env": {}
     },
     "context7": {
       "command": "npx",
-      "args": ["-y", "@upstash/context7-mcp"],
+      "args": ["-y", "@upstash/context7-mcp@2.2.4"],
       "env": {}
     },
     "github": {
@@ -134,7 +153,7 @@
       }
     }
   },
-  "enableAllProjectMcpServers": true,
+  "enableAllProjectMcpServers": false,
   "enabledMcpjsonServers": ["zen", "context7", "github", "playwright", "postgres", "sentry", "mermaid", "docker", "uml-mcp-server"],
   "feedbackSurveyState": {
     "lastShownTime": 1754083719175
