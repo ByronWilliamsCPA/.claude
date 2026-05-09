@@ -279,8 +279,14 @@ repos:
         language: pygrep
         entry: "—"
         files: \.(md|txt|rst|yaml|yml|toml|py|sh)$
+        # security-audit L-05: the `.claude/` exclusion is overly broad. Narrowing
+        # it requires first cleaning ~2400 existing em-dashes across legacy
+        # standards, agent prompts, and skill workflows. That em-dash cleanup is
+        # tracked as a follow-up PR so this audit-remediation PR stays scoped.
+        # The writing-workspace/ subtree (eval test fixtures) genuinely needs
+        # em-dashes preserved as adversarial inputs to the writing pipeline.
         exclude: ^(\.claude/|\.pre-commit-config\.yaml|CHANGELOG\.md|CLAUDE\.md)
-        description: "Prevents em-dash characters in source files (excludes .claude/ legacy content)"
+        description: "Prevents em-dash characters in source files (.claude/ tree excluded pending L-05 cleanup PR)"
         stages: [pre-commit]
 
   # ============================================================================
