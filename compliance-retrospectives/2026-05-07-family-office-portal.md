@@ -23,17 +23,18 @@
 **Root cause note:** CI-001 through CI-016 all stem from a single gap -- the
 .github/workflows/ directory is entirely absent. Auditors should treat the
 entire CI domain as one remediation unit for Phase 0 repos rather than
-reporting 14+ individual CI findings. See scope expansion candidates below.
+reporting 16 individual CI findings. See scope expansion candidates below.
 
 ---
 
 ## Patterns Observed
 
 This is the first retrospective in this session log. No cross-repo pattern
-threshold (3+ repos) can be reached in a single-repo session. All six
-unclassified general candidates are recorded below for future cross-session
-tracking. A pattern is promoted to manifest candidate when it appears in 3 or
-more distinct repos across retrospectives.
+threshold (3+ repos) can be reached in a single-repo session. Six
+unclassified general candidates were initially surfaced; five remain in the
+table below after FOUND-009 reconciliation (see note after the table). A
+pattern is promoted to manifest candidate when it appears in 3 or more
+distinct repos across retrospectives.
 
 | Unclassified candidate | Repos (this session) | Running total |
 |------------------------|---------------------|---------------|
@@ -103,7 +104,7 @@ Appears in 1 of 1 repos. Promote when count reaches 3.
 ### ci-auditor: Phase 0 short-circuit mode
 
 When .github/workflows/ is entirely absent, the CI auditor currently files
-CI-001 through CI-016 as 14+ individual findings, all with the same root cause.
+CI-001 through CI-016 as 16 individual findings, all with the same root cause.
 Consider adding a guard at the top of the CI audit: if the workflows directory
 is absent, emit one consolidated finding ("CI-000: .github/workflows/ directory
 absent -- all CI checks skipped") and skip the remaining CI-domain checks.
