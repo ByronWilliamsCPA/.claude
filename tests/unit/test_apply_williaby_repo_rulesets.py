@@ -156,11 +156,21 @@ def test_sweep_fails_when_catalog_missing(tmp_path: Path):
 
 @requires_sweep_runtime
 def test_sweep_fails_when_template_missing(tmp_path: Path):
+    """Template-body precondition fires when REPO_ROOT/docs has no templates."""
+    # The script resolves REPO_ROOT from BASH_SOURCE[0], so dropping a copy of
+    # the sweep into a fake scripts/ directory under tmp_path makes REPO_ROOT
+    # resolve to tmp_path, which has no docs/reference/repo-rulesets/ tree.
+    fake_scripts = tmp_path / "scripts"
+    fake_scripts.mkdir()
+    fake_sweep = fake_scripts / "apply_williaby_repo_rulesets.sh"
+    fake_sweep.write_text(SWEEP_SCRIPT.read_text())
+    fake_sweep.chmod(0o755)
+
     catalog = tmp_path / "cat.json"
     catalog.write_text(json.dumps({"repos": []}))
-    # Run from tmp_path so the relative TEMPLATE_DIR resolves to a missing path.
+
     result = subprocess.run(
-        [BASH, str(SWEEP_SCRIPT)],
+        [BASH, str(fake_sweep)],
         env={
             "PATH": __import__("os").environ["PATH"],
             "CATALOG": str(catalog),
@@ -168,7 +178,6 @@ def test_sweep_fails_when_template_missing(tmp_path: Path):
         capture_output=True,
         text=True,
         check=False,
-        cwd=tmp_path,
     )
     assert result.returncode == 2
     assert "template body missing" in result.stderr

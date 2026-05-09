@@ -11,19 +11,35 @@
 #   LOG          Path to the run log. Default: backups/williaby-rulesets-YYYY-MM-DD.log
 #
 # Exit codes:
-#   0   all repos applied (or dry-run completed)
-#   1   one repo failed; remaining repos skipped (set -e)
-#   2   missing dependency or precondition
+#   0   all repos applied (or dry-run completed) successfully
+#   1   one or more repos failed; remaining repos still attempted
+#   2   missing dependency, invalid input, or precondition failure
 #
 # Idempotency: setup_repo_rulesets.py PUTs an existing ruleset by name, so
 # re-running after a transient failure converges without manual cleanup.
 
 set -euo pipefail
 
+# Resolve repo root from this script's location so the sweep works regardless
+# of the caller's current working directory (or from a symlinked install).
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+REPO_ROOT=$(cd -- "$SCRIPT_DIR/.." && pwd)
+cd "$REPO_ROOT"
+
 CATALOG="${CATALOG:-docs/reference/github-repos.json}"
 ENFORCEMENT="${ENFORCEMENT:-evaluate}"
 DRY_RUN="${DRY_RUN:-false}"
 LOG="${LOG:-backups/williaby-rulesets-$(date +%Y-%m-%d).log}"
+
+# Validate ENFORCEMENT before any work so a typo fails fast with a clear message
+# instead of producing a confusing downstream argparse error.
+case "$ENFORCEMENT" in
+  active|evaluate|disabled) ;;
+  *)
+    echo "ERROR: invalid ENFORCEMENT='$ENFORCEMENT' (expected: active, evaluate, or disabled)" >&2
+    exit 2
+    ;;
+esac
 
 # Preconditions
 for cmd in jq uv; do
@@ -63,12 +79,21 @@ is_python_type() {
 
 ok_count=0
 fail_count=0
+failed_repos=()
 
 while IFS= read -r repo; do
-  type=$(jq -r --arg r "$repo" \
+  repo_type=$(jq -r --arg r "$repo" \
     '.repos[] | select(.org=="williaby" and .name==$r) | .repositoryType' "$CATALOG")
 
-  if is_python_type "$type"; then
+  # jq emits the literal string "null" when the field is missing. Warn so a
+  # silent universal-tier fallback does not hide a catalog data gap.
+  if [[ -z "$repo_type" || "$repo_type" == "null" ]]; then
+    echo "WARN williaby/$repo: repositoryType missing in catalog; routing to universal tier" \
+      | tee -a "$LOG" >&2
+    repo_type=""
+  fi
+
+  if is_python_type "$repo_type"; then
     body="$PYTHON_BODY"
     tier="python"
   else
@@ -84,15 +109,31 @@ while IFS= read -r repo; do
 
   # PYTHONPATH=. is required because setup_repo_rulesets.py imports
   # scripts.setup_org_rulesets at module scope and scripts/ is not a package.
-  if PYTHONPATH=. uv run python scripts/setup_repo_rulesets.py "${args[@]}" >>"$LOG" 2>&1; then
+  # Use `set +e` around the subprocess so a single failure does not abort
+  # the sweep; record the failure and continue to the next repo.
+  set +e
+  PYTHONPATH=. uv run python scripts/setup_repo_rulesets.py "${args[@]}" >>"$LOG" 2>&1
+  rc=$?
+  set -e
+
+  if [[ "$rc" -eq 0 ]]; then
     echo "OK williaby/$repo" | tee -a "$LOG"
     ok_count=$((ok_count + 1))
   else
-    rc=$?
     fail_count=$((fail_count + 1))
+    failed_repos+=("williaby/$repo (exit $rc)")
     echo "FAIL williaby/$repo (exit $rc)" | tee -a "$LOG" >&2
-    exit 1
   fi
 done < <(jq -r '.repos[] | select(.org == "williaby" and (.branchProtectionExempt != true)) | .name' "$CATALOG")
 
 echo "DONE: applied=$ok_count failed=$fail_count log=$LOG" | tee -a "$LOG"
+
+if [[ "$fail_count" -gt 0 ]]; then
+  {
+    echo "Failed repos:"
+    for entry in "${failed_repos[@]}"; do
+      echo "  $entry"
+    done
+  } | tee -a "$LOG" >&2
+  exit 1
+fi
