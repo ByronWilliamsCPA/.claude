@@ -533,6 +533,13 @@ def fetch_classic_protection_contexts(
         ) from exc
 
     if result.returncode != 0:
+        stderr_lower = result.stderr.lower()
+        # 404 indicates the branch has no classic protection (e.g., the
+        # repo has migrated to rulesets-only). That is "no classic
+        # contexts," not a fetch failure; return [] so audit modes that
+        # combine classic+rulesets do not mis-report it as Critical drift.
+        if "404" in stderr_lower or "not protected" in stderr_lower:
+            return []
         raise BranchProtectionFetchError(
             f"gh API failed for {repo_slug}@{branch} "
             f"(exit {result.returncode}): {result.stderr.strip() or result.stdout.strip()}"
