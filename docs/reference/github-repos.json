@@ -279,7 +279,8 @@
     },
     "_notes": {
       "requiredConversationResolution": "Intentionally false; conversation resolution is not enforced as a branch protection gate. Code review discussions are handled by workflow, not enforced by GitHub.",
-      "homelab-agent-configs-exempt": "williaby/homelab-agent-configs is permanently exempt from branch protection requirements due to structural nuances in that repo (non-standard default branch: agent/hermes). Do not flag its unprotected state as a finding in compliance audits."
+      "homelab-agent-configs-exempt": "williaby/homelab-agent-configs is permanently exempt from branch protection requirements due to structural nuances in that repo (non-standard default branch: agent/hermes). Do not flag its unprotected state as a finding in compliance audits.",
+      "migrationPhase": "tracks ruleset migration state per repo. Values: pending (classic only), dual (classic + ruleset, both active), complete (rulesets only, classic stripped). N/A for branchProtectionExempt repos."
     }
   },
   "repos": [
@@ -424,7 +425,8 @@
           "driftScore": null
         }
       },
-      "usesDocker": false
+      "usesDocker": false,
+      "migrationPhase": "pending"
     },
     {
       "org": "ByronWilliamsCPA",
@@ -599,7 +601,8 @@
           "driftScore": null
         }
       },
-      "usesDocker": false
+      "usesDocker": false,
+      "migrationPhase": "pending"
     },
     {
       "org": "ByronWilliamsCPA",
@@ -757,7 +760,8 @@
           "driftScore": null
         }
       },
-      "usesDocker": true
+      "usesDocker": true,
+      "migrationPhase": "pending"
     },
     {
       "org": "ByronWilliamsCPA",
@@ -901,7 +905,8 @@
           "driftScore": null
         }
       },
-      "usesDocker": false
+      "usesDocker": false,
+      "migrationPhase": "pending"
     },
     {
       "org": "ByronWilliamsCPA",
@@ -1041,7 +1046,8 @@
           "driftScore": null
         }
       },
-      "usesDocker": false
+      "usesDocker": false,
+      "migrationPhase": "pending"
     },
     {
       "org": "ByronWilliamsCPA",
@@ -1173,7 +1179,8 @@
           "driftScore": null
         }
       },
-      "usesDocker": false
+      "usesDocker": false,
+      "migrationPhase": "pending"
     },
     {
       "org": "ByronWilliamsCPA",
@@ -1297,7 +1304,8 @@
           "driftScore": null
         }
       },
-      "usesDocker": false
+      "usesDocker": false,
+      "migrationPhase": "pending"
     },
     {
       "org": "ByronWilliamsCPA",
@@ -1453,7 +1461,8 @@
           "driftScore": null
         }
       },
-      "usesDocker": true
+      "usesDocker": true,
+      "migrationPhase": "pending"
     },
     {
       "org": "ByronWilliamsCPA",
@@ -1592,7 +1601,8 @@
           "driftScore": null
         }
       },
-      "usesDocker": false
+      "usesDocker": false,
+      "migrationPhase": "pending"
     },
     {
       "org": "ByronWilliamsCPA",
@@ -1759,7 +1769,8 @@
           "driftScore": null
         }
       },
-      "usesDocker": true
+      "usesDocker": true,
+      "migrationPhase": "pending"
     },
     {
       "org": "ByronWilliamsCPA",
@@ -1915,7 +1926,8 @@
           "driftScore": null
         }
       },
-      "usesDocker": true
+      "usesDocker": true,
+      "migrationPhase": "pending"
     },
     {
       "org": "ByronWilliamsCPA",
@@ -2064,7 +2076,8 @@
           "driftScore": null
         }
       },
-      "usesDocker": false
+      "usesDocker": false,
+      "migrationPhase": "pending"
     },
     {
       "org": "ByronWilliamsCPA",
@@ -2218,7 +2231,8 @@
           "driftScore": null
         }
       },
-      "usesDocker": false
+      "usesDocker": false,
+      "migrationPhase": "pending"
     },
     {
       "org": "ByronWilliamsCPA",
@@ -2376,7 +2390,8 @@
           "driftScore": null
         }
       },
-      "usesDocker": true
+      "usesDocker": true,
+      "migrationPhase": "pending"
     },
     {
       "org": "ByronWilliamsCPA",
@@ -2504,7 +2519,8 @@
           "driftScore": null
         }
       },
-      "usesDocker": false
+      "usesDocker": false,
+      "migrationPhase": "pending"
     },
     {
       "org": "ByronWilliamsCPA",
@@ -2632,7 +2648,8 @@
           "driftScore": null
         }
       },
-      "usesDocker": false
+      "usesDocker": false,
+      "migrationPhase": "pending"
     },
     {
       "org": "ByronWilliamsCPA",
@@ -2777,7 +2794,8 @@
           "driftScore": null
         }
       },
-      "usesDocker": true
+      "usesDocker": true,
+      "migrationPhase": "pending"
     },
     {
       "org": "ByronWilliamsCPA",
@@ -2933,7 +2951,8 @@
           "driftScore": null
         }
       },
-      "usesDocker": true
+      "usesDocker": true,
+      "migrationPhase": "pending"
     },
     {
       "org": "ByronWilliamsCPA",
@@ -3070,7 +3089,8 @@
           "driftScore": null
         }
       },
-      "usesDocker": false
+      "usesDocker": false,
+      "migrationPhase": "pending"
     },
     {
       "org": "williaby",
@@ -3198,7 +3218,8 @@
           "driftScore": null
         }
       },
-      "usesDocker": false
+      "usesDocker": false,
+      "migrationPhase": "pending"
     },
     {
       "org": "williaby",
@@ -3326,7 +3347,8 @@
           "driftScore": null
         }
       },
-      "usesDocker": false
+      "usesDocker": false,
+      "migrationPhase": "pending"
     },
     {
       "org": "williaby",
@@ -3454,7 +3476,8 @@
           "driftScore": null
         }
       },
-      "usesDocker": false
+      "usesDocker": false,
+      "migrationPhase": "pending"
     },
     {
       "org": "williaby",
@@ -3582,7 +3605,8 @@
           "driftScore": null
         }
       },
-      "usesDocker": false
+      "usesDocker": false,
+      "migrationPhase": "pending"
     },
     {
       "org": "williaby",
@@ -3723,7 +3747,8 @@
           "driftScore": null
         }
       },
-      "usesDocker": true
+      "usesDocker": true,
+      "migrationPhase": "pending"
     },
     {
       "org": "williaby",
@@ -3883,7 +3908,8 @@
           "driftScore": null
         }
       },
-      "usesDocker": false
+      "usesDocker": false,
+      "migrationPhase": "pending"
     },
     {
       "org": "williaby",
@@ -4031,7 +4057,8 @@
           "driftScore": null
         }
       },
-      "usesDocker": true
+      "usesDocker": true,
+      "migrationPhase": "pending"
     },
     {
       "org": "williaby",
@@ -4159,7 +4186,8 @@
           "driftScore": null
         }
       },
-      "usesDocker": false
+      "usesDocker": false,
+      "migrationPhase": "pending"
     },
     {
       "org": "williaby",
@@ -4291,7 +4319,8 @@
           "driftScore": null
         }
       },
-      "usesDocker": false
+      "usesDocker": false,
+      "migrationPhase": "pending"
     },
     {
       "org": "williaby",
@@ -4420,7 +4449,8 @@
           "driftScore": null
         }
       },
-      "usesDocker": false
+      "usesDocker": false,
+      "migrationPhase": "pending"
     },
     {
       "org": "williaby",
@@ -4674,7 +4704,8 @@
           "driftScore": null
         }
       },
-      "usesDocker": false
+      "usesDocker": false,
+      "migrationPhase": "pending"
     },
     {
       "org": "williaby",
@@ -4831,7 +4862,8 @@
           "driftScore": null
         }
       },
-      "usesDocker": true
+      "usesDocker": true,
+      "migrationPhase": "pending"
     },
     {
       "org": "williaby",
@@ -4959,7 +4991,8 @@
           "driftScore": null
         }
       },
-      "usesDocker": false
+      "usesDocker": false,
+      "migrationPhase": "pending"
     },
     {
       "org": "williaby",
@@ -5130,7 +5163,8 @@
           "driftScore": null
         }
       },
-      "usesDocker": true
+      "usesDocker": true,
+      "migrationPhase": "pending"
     },
     {
       "org": "williaby",
@@ -5258,7 +5292,8 @@
           "driftScore": null
         }
       },
-      "usesDocker": false
+      "usesDocker": false,
+      "migrationPhase": "pending"
     },
     {
       "org": "williaby",
@@ -5386,7 +5421,8 @@
           "driftScore": null
         }
       },
-      "usesDocker": false
+      "usesDocker": false,
+      "migrationPhase": "pending"
     },
     {
       "org": "williaby",
@@ -5525,7 +5561,8 @@
           "driftScore": null
         }
       },
-      "usesDocker": false
+      "usesDocker": false,
+      "migrationPhase": "pending"
     },
     {
       "org": "williaby",
@@ -5657,7 +5694,8 @@
           "driftScore": null
         }
       },
-      "usesDocker": false
+      "usesDocker": false,
+      "migrationPhase": "pending"
     },
     {
       "org": "williaby",
@@ -5785,7 +5823,8 @@
           "driftScore": null
         }
       },
-      "usesDocker": false
+      "usesDocker": false,
+      "migrationPhase": "pending"
     },
     {
       "org": "williaby",
@@ -5913,7 +5952,8 @@
           "driftScore": null
         }
       },
-      "usesDocker": false
+      "usesDocker": false,
+      "migrationPhase": "pending"
     },
     {
       "org": "williaby",
@@ -6050,7 +6090,8 @@
           "driftScore": null
         }
       },
-      "usesDocker": false
+      "usesDocker": false,
+      "migrationPhase": "pending"
     },
     {
       "org": "williaby",
@@ -6203,7 +6244,8 @@
           "driftScore": null
         }
       },
-      "usesDocker": true
+      "usesDocker": true,
+      "migrationPhase": "pending"
     },
     {
       "org": "williaby",
@@ -6331,7 +6373,8 @@
           "driftScore": null
         }
       },
-      "usesDocker": false
+      "usesDocker": false,
+      "migrationPhase": "pending"
     },
     {
       "org": "williaby",
@@ -6464,7 +6507,8 @@
           "driftScore": null
         }
       },
-      "usesDocker": true
+      "usesDocker": true,
+      "migrationPhase": "pending"
     },
     {
       "org": "williaby",
@@ -6592,7 +6636,8 @@
           "driftScore": null
         }
       },
-      "usesDocker": false
+      "usesDocker": false,
+      "migrationPhase": "pending"
     },
     {
       "org": "williaby",
@@ -6735,7 +6780,8 @@
           "driftScore": null
         }
       },
-      "usesDocker": true
+      "usesDocker": true,
+      "migrationPhase": "pending"
     }
   ]
 }
