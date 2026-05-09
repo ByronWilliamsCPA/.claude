@@ -165,10 +165,11 @@ uv run python scripts/setup_repo_rulesets.py --repo ${REPO_SLUG} \
 For williaby repos (which use shared template bodies rather than hand-authored per-repo overrides), substitute the template path:
 
 ```bash
-uv run python scripts/setup_repo_rulesets.py --repo williaby/${REPO} \
+uv run python scripts/setup_repo_rulesets.py --repo ${REPO_SLUG} \
   --body docs/reference/repo-rulesets/_williaby-template-${TIER}.json \
   --enforcement active
-# TIER is "python" if repositoryType in {python-package, python-app, python-script}, else "universal"
+# REPO_SLUG is the full owner/name (e.g. "williaby/foo");
+# TIER is "python" if repositoryType in {python-package, python-app, python-script}, else "universal".
 ```
 
 **Drift remaining in classic protection** (provenance shows `classic`; transition window only):
@@ -449,9 +450,10 @@ uv run python scripts/setup_org_rulesets.py --org ByronWilliamsCPA \
 williaby (User account, per-repo rulesets only):
 
 ```bash
-uv run python scripts/setup_repo_rulesets.py --repo williaby/<repo> \
-  --body docs/reference/repo-rulesets/_williaby-template-<tier>.json --enforcement active
-# tier is "python" if repositoryType in {python-package, python-app, python-script}, else "universal"
+uv run python scripts/setup_repo_rulesets.py --repo ${REPO_SLUG} \
+  --body docs/reference/repo-rulesets/_williaby-template-${TIER}.json --enforcement active
+# REPO_SLUG is the full owner/name (e.g. "williaby/foo");
+# TIER is "python" if repositoryType in {python-package, python-app, python-script}, else "universal".
 # For a fleet refresh: ENFORCEMENT=active bash scripts/apply_williaby_repo_rulesets.sh
 ```
 
