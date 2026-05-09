@@ -17,6 +17,11 @@ CATALOG_DEFAULT = Path("docs/reference/github-repos.json")
 EXIT_OK = 0
 EXIT_GH_FAILURE = 4
 EXIT_SOLO_DEV_VIOLATION = 3
+# #CRITICAL: external-resource timing dependency. gh CLI calls hit api.github.com
+# and will block indefinitely without a timeout. 30s matches check-required-checks.py.
+# #VERIFY: smoke-test against a real org and confirm `--dry-run` and apply both
+# fail cleanly (TimeoutExpired raised, mapped to EXIT_GH_FAILURE) on a paused link.
+_GH_TIMEOUT_SECONDS = 30
 
 
 class SoloDevViolationError(RuntimeError):
@@ -82,6 +87,7 @@ def find_existing_ruleset(org: str, name: str) -> int | None:
     out = subprocess.check_output(  # noqa: S603
         ["gh", "api", f"orgs/{org}/rulesets", "--jq", ".[] | {id, name}"],  # noqa: S607
         text=True,
+        timeout=_GH_TIMEOUT_SECONDS,
     )
     for line in out.strip().split("\n"):
         if not line:
@@ -113,7 +119,7 @@ def apply(
         subprocess.CalledProcessError: If the gh CLI invocation fails
             (auth error, 4xx response, network failure).
     """
-    body = json.loads(body_path.read_text())
+    body = json.loads(body_path.read_text(encoding="utf-8"))
     validate_solo_dev_safe(body)
     body = render_body(body, org, catalog)
     if enforcement:
@@ -138,10 +144,15 @@ def apply(
         ]
     else:
         cmd = ["gh", "api", "-X", "POST", f"orgs/{org}/rulesets", "--input", "-"]
-    subprocess.run(cmd, input=payload, text=True, check=True)  # noqa: S603
-    print(
-        f"Applied ruleset '{name}' to org '{org}' (enforcement={body['enforcement']})"
+    subprocess.run(  # noqa: S603
+        cmd,
+        input=payload,
+        text=True,
+        check=True,
+        timeout=_GH_TIMEOUT_SECONDS,
     )
+    enforcement_value = body.get("enforcement", "<unset>")
+    print(f"Applied ruleset '{name}' to org '{org}' (enforcement={enforcement_value})")
 
 
 def main(argv: list[str]) -> int:
@@ -169,6 +180,15 @@ def main(argv: list[str]) -> int:
         return EXIT_SOLO_DEV_VIOLATION
     except subprocess.CalledProcessError as e:
         print(f"gh command failed: {e}", file=sys.stderr)
+        return EXIT_GH_FAILURE
+    except subprocess.TimeoutExpired as e:
+        print(
+            f"gh command timed out after {_GH_TIMEOUT_SECONDS}s: {e}",
+            file=sys.stderr,
+        )
+        return EXIT_GH_FAILURE
+    except FileNotFoundError as e:
+        print(f"gh CLI not on PATH: {e}", file=sys.stderr)
         return EXIT_GH_FAILURE
     return EXIT_OK
 

@@ -11,6 +11,7 @@ import sys
 from pathlib import Path
 
 from scripts.setup_org_rulesets import (
+    _GH_TIMEOUT_SECONDS,
     EXIT_GH_FAILURE,
     EXIT_OK,
     EXIT_SOLO_DEV_VIOLATION,
@@ -32,6 +33,7 @@ def find_existing_repo_ruleset(repo_slug: str, name: str) -> int | None:
     out = subprocess.check_output(  # noqa: S603
         ["gh", "api", f"repos/{repo_slug}/rulesets", "--jq", ".[] | {id, name}"],  # noqa: S607
         text=True,
+        timeout=_GH_TIMEOUT_SECONDS,
     )
     for line in out.strip().split("\n"):
         if not line:
@@ -60,7 +62,7 @@ def apply(
         SoloDevViolationError: If the body would lock out solo-dev workflow.
         subprocess.CalledProcessError: If the gh CLI invocation fails.
     """
-    body = json.loads(body_path.read_text())
+    body = json.loads(body_path.read_text(encoding="utf-8"))
     validate_solo_dev_safe(body)
     if enforcement:
         body["enforcement"] = enforcement
@@ -84,9 +86,17 @@ def apply(
         ]
     else:
         cmd = ["gh", "api", "-X", "POST", f"repos/{repo_slug}/rulesets", "--input", "-"]
-    subprocess.run(cmd, input=payload, text=True, check=True)  # noqa: S603
+    subprocess.run(  # noqa: S603
+        cmd,
+        input=payload,
+        text=True,
+        check=True,
+        timeout=_GH_TIMEOUT_SECONDS,
+    )
+    enforcement_value = body.get("enforcement", "<unset>")
     print(
-        f"Applied ruleset '{name}' to repo '{repo_slug}' (enforcement={body.get('enforcement', 'active')})"
+        f"Applied ruleset '{name}' to repo '{repo_slug}' "
+        f"(enforcement={enforcement_value})"
     )
 
 
@@ -113,6 +123,15 @@ def main(argv: list[str]) -> int:
         return EXIT_SOLO_DEV_VIOLATION
     except subprocess.CalledProcessError as e:
         print(f"gh command failed: {e}", file=sys.stderr)
+        return EXIT_GH_FAILURE
+    except subprocess.TimeoutExpired as e:
+        print(
+            f"gh command timed out after {_GH_TIMEOUT_SECONDS}s: {e}",
+            file=sys.stderr,
+        )
+        return EXIT_GH_FAILURE
+    except FileNotFoundError as e:
+        print(f"gh CLI not on PATH: {e}", file=sys.stderr)
         return EXIT_GH_FAILURE
     return EXIT_OK
 

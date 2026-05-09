@@ -23,7 +23,7 @@ def python_repos_for_org(org: str, catalog_path: Path) -> list[str]:
         Sorted list of repo names whose repositoryType is one of
         PYTHON_TYPES and whose branchProtectionExempt is not true.
     """
-    data = json.loads(catalog_path.read_text())
+    data = json.loads(catalog_path.read_text(encoding="utf-8"))
     return sorted(
         repo["name"]
         for repo in data["repos"]
