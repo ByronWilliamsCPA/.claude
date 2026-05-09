@@ -132,21 +132,46 @@ Use AskUserQuestion to offer:
 - "Update the registry" (when produced_by is a reusable workflow path and the registry just needs the new name)
 - "Remove from manifest" (when the required check is no longer required; requires typed reason)
 
-**For CI-023 findings (branch protection drift):**
+**For CI-023 findings (effective protection drift):**
+
+The remediation depends on which source the finding's provenance string points at (the finding message includes a "Sources:" line):
 
 Use AskUserQuestion to offer:
-- "Update branch protection contexts to match manifest" (visible-to-others action; require typed `yes` to proceed; show the full PATCH payload first)
-- "Update manifest to match branch protection" (when live state is correct and manifest is stale)
+- "Update org ruleset to match manifest" (when provenance shows `Organization:<org>/<id>`; visible-to-others action; require typed `yes` to proceed; show the resolved JSON body first)
+- "Update repo-level ruleset to match manifest" (when provenance shows `Repository:<slug>/<id>`)
+- "Update classic protection to match manifest" (when provenance shows `classic`; transition window only)
+- "Update manifest to match effective protection" (when live state is correct and the manifest is stale)
 
-The PATCH command for branch protection updates is:
+The applied command depends on the source:
+
+**Drift in an ORG-LEVEL ruleset** (provenance shows `Organization:<org>/<id>`):
+
+```bash
+uv run python scripts/setup_org_rulesets.py --org ${ORG} \
+  --body docs/reference/org-rulesets/${ORG}-${TIER}.json \
+  --enforcement active
+```
+
+The body file (`docs/reference/org-rulesets/<org>-<tier>.json` where `<tier>` is `universal` or `python`) must already reflect the manifest. If it does not, edit the body first and re-apply.
+
+**Drift in a REPO-LEVEL ruleset** (provenance shows `Repository:<owner>/<repo>/<id>`):
+
+```bash
+uv run python scripts/setup_repo_rulesets.py --repo ${REPO_SLUG} \
+  --body docs/reference/repo-rulesets/${OWNER}__${REPO}.json \
+  --enforcement active
+```
+
+**Drift remaining in classic protection** (provenance shows `classic`; transition window only):
 
 ```bash
 gh api repos/${REPO_SLUG}/branches/${DEFAULT_BRANCH:-main}/protection/required_status_checks \
   --method PATCH \
-  --field 'contexts[]=<name1>' \
-  --field 'contexts[]=<name2>' \
+  --field 'contexts[]=<name>' \
   --field 'strict=true'
 ```
+
+The classic-protection PATCH should only be used while `migrationPhase` is `pending` or `dual`. Once a repo's `migrationPhase` is `complete`, classic protection is absent and this command will return 404.
 
 **For CI-024 findings (registry staleness):**
 
