@@ -1,0 +1,8 @@
+name: Example
+on: workflow_call
+jobs:
+  build:
+    name: CI Gate
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo

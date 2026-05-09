@@ -1,0 +1,5 @@
+on: [push]
+jobs:
+  python-ci:
+    name: Python CI
+    uses: ByronWilliamsCPA/.github/.github/workflows/python-ci.yml@abc
