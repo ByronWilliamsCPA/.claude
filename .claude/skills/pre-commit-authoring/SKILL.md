@@ -6,8 +6,9 @@ description: >
   diagnosing hook misbehavior (false positives, slow commits, hooks that
   block on unrelated files). Captures the staged-scope invariant, fast/slow
   tier placement, fail-vs-warn semantics, and a common-gotchas list.
-  Triggers on: add a hook, write a pre-commit hook, audit pre-commit, fix
-  pre-commit hook, why is this hook slow, hook false positive, /pre-commit-author.
+  Auto-activates on: add a hook, write a pre-commit hook, audit pre-commit,
+  fix pre-commit hook, why is this hook slow, hook false positive,
+  /pre-commit-authoring.
 user-invocable: true
 ---
 
@@ -17,7 +18,7 @@ Reference for designing, adding, and auditing entries in
 `.pre-commit-config.yaml`. Internal skill: assumes the user's existing
 toolchain (ruff, basedpyright, yamllint, markdownlint, TruffleHog,
 detect-secrets, interrogate, darglint, qlty, pip-audit). The principles
-generalise; the specific hook examples reference this fleet's standards.
+generalize; the specific hook examples reference this fleet's standards.
 
 ## Authoring decision tree
 
@@ -25,9 +26,10 @@ Before adding any hook, answer in order:
 
 1. **Does the check belong at commit time at all?** Pre-commit hooks fire on
    every commit and add latency to every developer's flow. If the check is
-   slow (more than ~5 seconds on a typical change), runs against state the
-   developer cannot see (full git history, remote artifacts, network
-   resources), or only matters at PR/release time, put it in CI instead.
+   slow (more than ~10 seconds on a typical change, matching the
+   file-scoped-linter tier budget below), runs against state the developer
+   cannot see (full git history, remote artifacts, network resources), or
+   only matters at PR/release time, put it in CI instead.
 2. **Pre-commit or pre-push?** Use `pre-commit` for fast checks against the
    diff. Use `pre-push` for slower checks that must run before the change
    leaves the developer's machine but can amortise across many commits
@@ -53,8 +55,8 @@ unrelated commit, blocking work indefinitely.
 | Tool | Wrong (full history) | Right (staged) |
 |---|---|---|
 | TruffleHog | `trufflehog git file://. --since-commit HEAD` | `git diff --cached -z --diff-filter=d --name-only \| xargs -0 -r trufflehog filesystem` |
-| gitleaks | `gitleaks detect --log-opts="--all"` | `gitleaks protect --staged` |
-| detect-secrets | `detect-secrets scan --baseline .secrets.baseline` (regenerates from full repo) | `detect-secrets-hook --baseline .secrets.baseline <staged-paths>` |
+| gitleaks | `gitleaks detect --log-opts="--all"` | `gitleaks git --staged` (gitleaks v8.19+; older versions use `gitleaks protect --staged`) |
+| detect-secrets | `detect-secrets scan --baseline .secrets.baseline` (regenerates from full repo) | `git diff --cached -z --diff-filter=d --name-only \| xargs -0 -r detect-secrets-hook --baseline .secrets.baseline` |
 
 The `-z` / `-0` pair handles filenames with spaces; `--diff-filter=d`
 excludes deleted files. `xargs -r` prevents the tool from running on an
@@ -83,14 +85,17 @@ Group hooks into tiers so commits stay fast:
   if any.
 
 Set `stages: [pre-commit]` or `stages: [pre-push]` explicitly on every
-hook; rely on `default_install_hook_types: [pre-commit, pre-push]` to
-register both stages.
+hook to control when it runs. Use
+`default_install_hook_types: [pre-commit, pre-push]` separately so
+`pre-commit install` registers both git-hook scripts in `.git/hooks`;
+the `stages:` value on each hook still selects the actual stage.
 
 ## Fail-vs-warn semantics
 
 - **Fail (exit non-zero, blocks commit):** correctness checks (lint,
-  type, secrets, syntax). Fix the issue or run with `--no-verify` if the
-  user has explicitly authorised it.
+  type, secrets, syntax). Fix the underlying issue before committing;
+  `--no-verify` is only permitted when the user has explicitly requested
+  it for a specific commit.
 - **Warn (exit zero, prints output):** informational checks (TODO
   inventory, complexity reports, coverage trends). Most check tools
   default to fail; use `verbose: true` in the hook config to surface
