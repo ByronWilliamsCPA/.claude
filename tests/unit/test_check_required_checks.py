@@ -434,3 +434,51 @@ def test_main_rejects_check_bp_without_repo_slug(
     assert excinfo.value.code == 2
     captured = capsys.readouterr()
     assert "--check-bp requires --repo-slug" in captured.err
+
+
+# -- fetch_ruleset_contexts --------------------------------------------------
+
+
+def test_fetch_ruleset_contexts_returns_empty_when_no_rulesets(monkeypatch):
+    monkeypatch.setattr(crc, "_run_gh", lambda args, timeout: ("[]", "", 0))
+    contexts, provenance = crc.fetch_ruleset_contexts("test/repo", "main")
+    assert contexts == set()
+    assert provenance == {}
+
+
+def test_fetch_ruleset_contexts_returns_set_and_provenance(monkeypatch):
+    payload = json.dumps(
+        [
+            {
+                "type": "required_status_checks",
+                "ruleset_source_type": "Organization",
+                "ruleset_source": "ByronWilliamsCPA",
+                "ruleset_id": 99,
+                "parameters": {
+                    "required_status_checks": [
+                        {"context": "CI Gate"},
+                        {"context": "Security Gate Validation"},
+                    ]
+                },
+            },
+            {"type": "required_signatures"},
+        ]
+    )
+    monkeypatch.setattr(crc, "_run_gh", lambda args, timeout: (payload, "", 0))
+    contexts, prov = crc.fetch_ruleset_contexts("BW/repo", "main")
+    assert contexts == {"CI Gate", "Security Gate Validation"}
+    assert prov == {
+        "Organization:ByronWilliamsCPA/99": ["CI Gate", "Security Gate Validation"]
+    }
+
+
+def test_fetch_ruleset_contexts_raises_on_gh_failure(monkeypatch):
+    monkeypatch.setattr(crc, "_run_gh", lambda args, timeout: ("", "auth error", 1))
+    with pytest.raises(crc.RulesetFetchError, match="auth error"):
+        crc.fetch_ruleset_contexts("test/repo", "main")
+
+
+def test_fetch_ruleset_contexts_raises_on_malformed_json(monkeypatch):
+    monkeypatch.setattr(crc, "_run_gh", lambda args, timeout: ("not json", "", 0))
+    with pytest.raises(crc.RulesetFetchError, match="Malformed"):
+        crc.fetch_ruleset_contexts("test/repo", "main")

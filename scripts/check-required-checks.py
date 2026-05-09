@@ -514,6 +514,99 @@ def fetch_branch_protection_contexts(
     return [str(item) for item in parsed]
 
 
+def _run_gh(args: list[str], timeout: int) -> tuple[str, str, int]:
+    """Invoke the gh CLI with the given args and return (stdout, stderr, returncode).
+
+    Args:
+        args: Command-line arguments passed to the gh CLI (excluding the
+            leading "gh" token itself).
+        timeout: Maximum seconds to wait for the process to complete.
+
+    Returns:
+        A 3-tuple of (stdout, stderr, returncode). stdout and stderr are
+        decoded text strings. returncode is the process exit code.
+
+    Raises:
+        BranchProtectionFetchError: The gh binary was not found on PATH or
+            the process timed out. Callers should catch this or let it
+            propagate as a configuration error.
+    """
+    try:
+        result = subprocess.run(  # nosec B603 B607  # noqa: S603 -- list args, shell=False; tracked: PR #74.
+            ["gh", *args],  # noqa: S607 -- gh resolved via PATH; tracked: PR #74.
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=timeout,
+        )
+    except subprocess.TimeoutExpired as exc:
+        raise BranchProtectionFetchError(f"gh CLI timed out after {timeout}s") from exc
+    except FileNotFoundError as exc:
+        raise BranchProtectionFetchError(
+            "gh CLI not found on PATH; install gh or run without ruleset checks"
+        ) from exc
+    return result.stdout, result.stderr, result.returncode
+
+
+class RulesetFetchError(RuntimeError):
+    """Raised when ruleset evaluation cannot be fetched from gh."""
+
+
+def fetch_ruleset_contexts(
+    repo_slug: str,
+    branch: str = "main",
+    timeout: int = _GH_TIMEOUT_SECONDS,
+) -> tuple[set[str], dict[str, list[str]]]:
+    """Return (contexts, provenance) from all rulesets targeting this branch.
+
+    provenance maps "<source_type>:<source>/<id>" to the contexts that
+    ruleset contributes. source_type is "Repository" or "Organization".
+
+    Args:
+        repo_slug: GitHub "owner/repo" slug.
+        branch: Branch name to evaluate rulesets against (default: main).
+        timeout: Maximum seconds to wait for the gh CLI call.
+
+    Returns:
+        A 2-tuple of (contexts, provenance) where contexts is the union of
+        all required-status-check context names across every ruleset and
+        provenance maps each ruleset key to the list of contexts it
+        contributes.
+
+    Raises:
+        RulesetFetchError: gh CLI exited non-zero or returned malformed JSON.
+    """
+    args = ["api", f"repos/{repo_slug}/rules/branches/{branch}"]
+    out, err, rc = _run_gh(args, timeout)
+    if rc != 0:
+        raise RulesetFetchError(
+            f"Could not fetch ruleset evaluation: {err.strip() or out.strip()}"
+        )
+    try:
+        rules = json.loads(out) if out.strip() else []
+    except json.JSONDecodeError as exc:
+        raise RulesetFetchError(f"Malformed ruleset JSON: {exc}") from exc
+
+    contexts: set[str] = set()
+    provenance: dict[str, list[str]] = {}
+    for rule in rules:
+        if rule.get("type") != "required_status_checks":
+            continue
+        params = rule.get("parameters", {}) or {}
+        rule_contexts = [
+            entry.get("context", "")
+            for entry in params.get("required_status_checks", [])
+            if entry.get("context")
+        ]
+        source_type = rule.get("ruleset_source_type", "Unknown")
+        source = rule.get("ruleset_source", "?")
+        ruleset_id = rule.get("ruleset_id", "?")
+        key = f"{source_type}:{source}/{ruleset_id}"
+        provenance.setdefault(key, []).extend(rule_contexts)
+        contexts.update(rule_contexts)
+    return contexts, provenance
+
+
 def _parse_args(argv: list[str] | None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-path", type=Path, required=True)
