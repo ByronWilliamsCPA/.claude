@@ -88,6 +88,20 @@ def test_admins_not_enforced_when_org_admin_bypass(monkeypatch):
 
 
 @pytest.mark.unit
-def test_branch_protection_exempt_in_constant():
-    """Exempt repo set includes the permanently-exempt homelab repo."""
-    assert "williaby/homelab-agent-configs" in crc.BRANCH_PROTECTION_EXEMPT
+def test_branch_protection_exempt_via_catalog():
+    """Catalog flag drives exemption; catalog is the source of truth."""
+    catalog = {
+        "williaby/homelab-agent-configs": {"branchProtectionExempt": True},
+        "williaby/other-repo": {"branchProtectionExempt": False},
+        "williaby/no-flag": {},
+    }
+    assert crc.is_branch_protection_exempt("williaby/homelab-agent-configs", catalog)
+    assert not crc.is_branch_protection_exempt("williaby/other-repo", catalog)
+    assert not crc.is_branch_protection_exempt("williaby/no-flag", catalog)
+
+
+@pytest.mark.unit
+def test_branch_protection_exempt_fallback_when_catalog_missing():
+    """When catalog is empty, fallback set still recognizes homelab repo."""
+    assert crc.is_branch_protection_exempt("williaby/homelab-agent-configs", {})
+    assert not crc.is_branch_protection_exempt("williaby/other-repo", {})

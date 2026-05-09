@@ -36,8 +36,31 @@ CATALOG_PATH = Path(__file__).parent.parent / "docs/reference/github-repos.json"
 # Repos where Renovate is intentionally ignored; dependabot.yml coexistence is expected
 RENOVATE_IGNORED = {"williaby/dart-frog-paludarium", "williaby/homelab-agent-configs"}
 
-# Repos permanently exempt from branch protection checks (catalog flag branchProtectionExempt)
-BRANCH_PROTECTION_EXEMPT = {"williaby/homelab-agent-configs"}
+# Fallback for branch-protection exemption when the catalog is unavailable.
+# The authoritative source is the catalog flag `branchProtectionExempt`; this
+# set is only consulted when load_catalog() returns {} (file missing or
+# malformed). Keep in sync with docs/reference/github-repos.json.
+_FALLBACK_BRANCH_PROTECTION_EXEMPT = frozenset({"williaby/homelab-agent-configs"})
+
+
+def is_branch_protection_exempt(slug: str, catalog: dict) -> bool:
+    """Return True if this repo is exempt from branch protection checks.
+
+    Reads the catalog `branchProtectionExempt` field as the source of truth.
+    Falls back to a small hardcoded set if the catalog is unavailable so
+    offline runs remain safe.
+
+    Args:
+        slug: Repo slug in `org/repo` form.
+        catalog: Catalog mapping from `load_catalog()`.
+
+    Returns:
+        True if the repo should skip BP-4/BP-5 checks, else False.
+    """
+    if slug in catalog:
+        return bool(catalog[slug].get("branchProtectionExempt", False))
+    return slug in _FALLBACK_BRANCH_PROTECTION_EXEMPT
+
 
 # Repos where main branch is not the default
 BRANCH_OVERRIDES = {
@@ -110,7 +133,44 @@ def gh(path: str) -> tuple[dict | list | None, str | None]:
     )
     if r.returncode != 0:
         return None, r.stderr.strip()
-    return json.loads(r.stdout) if r.stdout.strip() else {}, None
+    if not r.stdout.strip():
+        return {}, None
+    try:
+        return json.loads(r.stdout), None
+    except json.JSONDecodeError as e:
+        return None, f"malformed JSON from gh: {e}"
+
+
+def gh_paginated_array(path: str) -> tuple[list | None, str | None]:
+    """Fetch a list-valued endpoint with full pagination.
+
+    Uses `gh api --paginate --jq '.[]'` which emits one JSON object per
+    line so we never have to parse concatenated arrays. Use this for
+    listings (e.g. orgs/X/repos) where the result can exceed one page.
+
+    Args:
+        path: API path, constructed from hardcoded f-strings.
+
+    Returns:
+        (items, None) on success, (None, error_message) on gh failure.
+    """
+    r = subprocess.run(  # noqa: S603
+        [_GH, "api", "--paginate", "--jq", ".[]", path],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if r.returncode != 0:
+        return None, r.stderr.strip()
+    items: list = []
+    for line in r.stdout.splitlines():
+        if not line.strip():
+            continue
+        try:
+            items.append(json.loads(line))
+        except json.JSONDecodeError as e:
+            return None, f"malformed JSON line from gh: {e}"
+    return items, None
 
 
 def _signatures_enforced(org: str, repo: str, branch: str) -> bool:
@@ -186,6 +246,7 @@ def _admins_enforced(org: str, repo: str, branch: str) -> bool:
                     ruleset_refs.add((rs_type, rs_src, rs_id))
         except (json.JSONDecodeError, TypeError):
             pass
+    fetch_failures = 0
     for rs_type, rs_src, rs_id in ruleset_refs:
         path = (
             f"orgs/{rs_src}/rulesets/{rs_id}"
@@ -194,6 +255,16 @@ def _admins_enforced(org: str, repo: str, branch: str) -> bool:
         )
         body, err = gh(path)
         if err is not None:
+            # Transient outage path: a successful rules-evaluation pointed to
+            # this ruleset but its body cannot be fetched. Log so operators
+            # can correlate; preserve safe-fail (do not auto-FAIL the audit
+            # on every transient hiccup) per documented policy.
+            fetch_failures += 1
+            print(
+                f"warning: BP-5 ruleset body fetch failed for "
+                f"{org}/{repo}@{branch} (rs_type={rs_type}, rs_id={rs_id}): {err}",
+                file=sys.stderr,
+            )
             continue
         try:
             ruleset = json.loads(body) if isinstance(body, str) else body
@@ -205,7 +276,16 @@ def _admins_enforced(org: str, repo: str, branch: str) -> bool:
                 and actor.get("actor_id") == 5
             ):
                 return False
-    if ruleset_refs:
+    if ruleset_refs and fetch_failures == len(ruleset_refs):
+        # All ruleset bodies failed to fetch. We cannot confidently say
+        # admins are enforced; fall through to the classic-protection check
+        # rather than fail-open by returning True.
+        print(
+            f"warning: BP-5 all ruleset body fetches failed for "
+            f"{org}/{repo}@{branch}; falling back to classic enforce_admins.",
+            file=sys.stderr,
+        )
+    elif ruleset_refs:
         return True
     prot_data, err = gh(f"repos/{org}/{repo}/branches/{branch}/protection")
     if err is not None:
@@ -218,7 +298,7 @@ def _admins_enforced(org: str, repo: str, branch: str) -> bool:
 
 
 def file_exists(org: str, repo: str, path: str, branch: str) -> bool:
-    data, err = gh(f"repos/{org}/{repo}/contents/{path}?ref={branch}")
+    data, _err = gh(f"repos/{org}/{repo}/contents/{path}?ref={branch}")
     return data is not None and "sha" in data
 
 
@@ -242,7 +322,7 @@ def check_repo(org: str, repo: str, catalog: dict) -> RepoResult:
         result.ci_021 = "N/A"  # no Renovate, so CI-020 gap is the issue
 
     # BP-4 / BP-5: ruleset-aware; exempt repos short-circuit to N/A
-    if slug in BRANCH_PROTECTION_EXEMPT:
+    if is_branch_protection_exempt(slug, catalog):
         result.bp_4 = "N/A"
         result.bp_5 = "N/A"
         result.notes.append("Branch protection exempt by catalog flag")
@@ -320,13 +400,24 @@ def main() -> int:
         repos_to_check = [(org, repo)]
     else:
         repos_to_check = []
+        org_listing_failures: list[str] = []
         for org in [args.org] if args.org else ORGS:
-            data, err = gh(f"orgs/{org}/repos?per_page=100&type=all")
-            if err or not data:
+            data, err = gh_paginated_array(f"orgs/{org}/repos?per_page=100&type=all")
+            if err or data is None:
                 print(f"ERROR fetching repos for {org}: {err}", file=sys.stderr)
+                org_listing_failures.append(org)
                 continue
             for r in data:
-                repos_to_check.append((org, r["name"]))
+                name = r.get("name") if isinstance(r, dict) else None
+                if name:
+                    repos_to_check.append((org, name))
+        if org_listing_failures:
+            print(
+                f"WARNING: skipped {len(org_listing_failures)} org(s) due to API "
+                f"errors: {', '.join(org_listing_failures)}; results below are "
+                "incomplete.",
+                file=sys.stderr,
+            )
 
     results: list[RepoResult] = []
     total = len(repos_to_check)
