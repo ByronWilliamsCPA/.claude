@@ -14,7 +14,7 @@ tags:
 
 ## Why this addendum exists
 
-`williaby` is a GitHub **User account**, not an Organization. There is no `/orgs/williaby/rulesets` endpoint. User accounts can only host **per-repo rulesets** at `/repos/williaby/<repo>/rulesets`. The parent plan assumed two organizations; that assumption holds for `ByronWilliamsCPA` (27 repos) but breaks for `williaby` (19 repos in catalog).
+`williaby` is a GitHub **User account**, not an Organization. There is no `/orgs/williaby/rulesets` endpoint. User accounts can only host **per-repo rulesets** at `/repos/williaby/<repo>/rulesets`. The parent plan assumed two organizations; that assumption holds for `ByronWilliamsCPA` (19 repos) but breaks for `williaby` (27 repos in catalog, 26 non-exempt after `homelab-agent-configs`).
 
 `setup_repo_rulesets.py` (shipped in PR #78) already handles per-repo POSTs and reuses the same `validate_solo_dev_safe` guard. The fix is operational, not architectural.
 
@@ -24,16 +24,16 @@ tags:
 | --- | --- | --- |
 | williaby ruleset application | Two `/orgs/williaby/rulesets` POSTs (universal + python-tier) | One `/repos/williaby/<repo>/rulesets` POST per non-exempt repo, picking the right template |
 | Number of williaby ruleset configurations to maintain | 2 JSON files | 2 template JSON files (same number, different shape) |
-| Number of API mutations per phase | 2 per orgmovement | ~25 per phase (dry-runable in seconds) |
+| Number of API mutations per phase | 2 per org migration | 26 per phase (dry-runable in seconds) |
 | ByronWilliamsCPA path | unchanged | unchanged |
 | `setup_org_rulesets.py` against williaby | broken (404) | not used; williaby handled by `setup_repo_rulesets.py` instead |
 | Solo-dev guard | yes (in `setup_org_rulesets.py`) | yes (same guard, reused via import in `setup_repo_rulesets.py`) |
 
 ## File deliverables (new)
 
-1. `docs/reference/repo-rulesets/_williaby-template-universal.json` , per-repo universal ruleset body for non-Python williaby repos
-2. `docs/reference/repo-rulesets/_williaby-template-python.json` , per-repo body for Python williaby repos (universal rules plus `CI Gate`)
-3. `scripts/apply_williaby_repo_rulesets.sh` , loop script reading the catalog and applying the right template per repo
+1. `docs/reference/repo-rulesets/_williaby-template-universal.json`: per-repo universal ruleset body for non-Python williaby repos
+2. `docs/reference/repo-rulesets/_williaby-template-python.json`: per-repo body for Python williaby repos (universal rules plus `CI Gate`)
+3. `scripts/apply_williaby_repo_rulesets.sh`: loop script reading the catalog and applying the right template per repo
 
 The leading underscore in template filenames marks them as templates, not per-repo overrides. The existing per-repo file convention `<org>__<repo>.json` is reserved for hand-authored overrides.
 
@@ -48,7 +48,7 @@ The leading underscore in template filenames marks them as templates, not per-re
 The repo-level body shape is the same as the org-level body, except:
 - `conditions.repository_name` is omitted (irrelevant at repo scope)
 - `conditions.ref_name.include` stays as `["~DEFAULT_BRANCH"]` (still resolved per-repo)
-- `name` becomes per-repo at apply-time; the template uses a placeholder
+- `name` is fixed and shared across every williaby repo. `setup_repo_rulesets.py` applies the body verbatim (no substitution); collision is impossible because rulesets are per-repo-scoped, so each repo independently owns a ruleset named `williaby-default-branch-baseline`
 
 `_williaby-template-universal.json`:
 
@@ -102,7 +102,9 @@ The repo-level body shape is the same as the org-level body, except:
 }
 ```
 
-`_williaby-template-python.json`: identical to the universal template above, except the `required_status_checks.required_status_checks` array also includes `{"context": "CI Gate"}`. (Single ruleset per Python repo combining universal + python-tier rules, since per-repo rulesets compose differently than org-level.)
+`_williaby-template-python.json`: identical to the universal template above, except the `required_status_checks.required_status_checks` array also includes `{"context": "CI Gate"}`.
+
+Why one combined ruleset per Python repo, instead of two (universal + python-tier) like at the org level: at org scope, the two rulesets target different repo subsets via include lists, so keeping them separate is meaningful. At repo scope, both would target the same default branch on the same repo; splitting them adds a second API mutation per repo and a second ruleset entry in the GitHub UI without changing the effective rule set. Combining is the natural simplification.
 
 ### Task A2: Author the loop script
 
@@ -120,12 +122,20 @@ LOG="${LOG:-backups/williaby-rulesets-$(date +%Y-%m-%d).log}"
 mkdir -p "$(dirname "$LOG")"
 : > "$LOG"
 
-PYTHON_TYPES='"python-package","python-app","python-script"'
+PYTHON_TYPES=("python-package" "python-app" "python-script")
+
+is_python_type() {
+  local candidate="$1"
+  for t in "${PYTHON_TYPES[@]}"; do
+    [[ "$candidate" == "$t" ]] && return 0
+  done
+  return 1
+}
 
 while IFS= read -r repo; do
   type=$(jq -r --arg r "$repo" \
     '.repos[] | select(.org=="williaby" and .name==$r) | .repositoryType' "$CATALOG")
-  if [[ "$type" == "python-package" || "$type" == "python-app" || "$type" == "python-script" ]]; then
+  if is_python_type "$type"; then
     body="docs/reference/repo-rulesets/_williaby-template-python.json"
     tier="python"
   else
@@ -208,10 +218,10 @@ remediation: |
 
 Add a sibling block for the williaby case:
 
-```text
+````text
 **For CI-025b findings (williaby per-repo ruleset missing):**
 
-\`\`\`text
+```text
 FINDING:
 id: CI-025b
 severity: critical
@@ -219,14 +229,14 @@ description: williaby/<repo> has no active repo-level ruleset on default branch
 status: configuration_gap
 current_value: gh api repos/williaby/<repo>/rulesets returned [] or all entries have enforcement != active
 remediation: |
-  uv run python scripts/setup_repo_rulesets.py \\
-    --repo williaby/<repo> \\
-    --body docs/reference/repo-rulesets/_williaby-template-<tier>.json \\
+  uv run python scripts/setup_repo_rulesets.py \
+    --repo williaby/<repo> \
+    --body docs/reference/repo-rulesets/_williaby-template-<tier>.json \
     --enforcement active
   # tier is "python" if repositoryType in {python-package, python-app, python-script}
   # else "universal"
-\`\`\`
 ```
+````
 
 The CI-026 FINDING similarly needs an alternate remediation path for williaby repos (re-apply the relevant template).
 
