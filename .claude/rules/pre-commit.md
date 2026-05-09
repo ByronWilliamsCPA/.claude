@@ -72,6 +72,16 @@ These checks ensure that local pre-commit hooks and Qlty Cloud use the same lint
 
 **Remediation:** Add the markdownlint hook if missing. In the config file, set `"MD040": true` or remove any `"MD040": false` entry.
 
+### PC-HOOK-STAGED-SCOPE
+
+**Invariant:** Every secret-scanning, lint, or content-check hook in `.pre-commit-config.yaml` must scope its analysis to staged files only. Full git-history modes (e.g., TruffleHog `git file://. --since-commit HEAD`, gitleaks `--log-opts="--all"`, detect-secrets with no path filter on a fresh `--baseline` regenerate) must NOT appear at the pre-commit stage.
+
+**Why:** A pre-commit hook runs against the developer's local working copy. The local git object store typically contains commits from fetched remote branches (`origin/feature-x`, `origin/dependabot/...`, abandoned `claude/...` work) that are not reachable from `HEAD` and have never been merged. Full-history secret scanners then surface placeholder credentials, test fixtures, and known-fake examples from those branches as findings on every developer's commit, blocking work that is unrelated to the credentials. The 2026-05-02 incident: TruffleHog flagged `postgresql://<user>:<password>@<host>:5432` from an unmerged `claude/security-analysis-overseer-MODEz` branch on every commit until the hook was rescoped. Full-history scanning is a CI concern, not a pre-commit concern: CI runs against a clean clone with controlled remote refs.
+
+**Audit check:** In `.pre-commit-config.yaml`, for each hook whose entry/command references the git history (e.g., `git file://`, `--since-commit`, `--all`, `--log-opts`), verify the hook is gated to a CI stage (`stages: [pre-push]` or omitted from local hooks via `default_install_hook_types`). For TruffleHog specifically, the staged-files form is `git diff --cached -z --diff-filter=d --name-only | xargs -0 -r trufflehog filesystem` (the `-z` and `-0` handle filenames with spaces; `--diff-filter=d` excludes deletions).
+
+**Remediation:** Replace `--since-commit HEAD` (and equivalents) with a staged-file invocation. If full-history scanning is desired, move the check to a CI workflow (`.github/workflows/secret-scan.yml`) where the runner clones with no extraneous remote refs. For new hooks: scope to staged paths from day one; treat git-history mode as a CI feature, not a pre-commit feature.
+
 ## Sources
 
 - pre-commit documentation: <https://pre-commit.com/>

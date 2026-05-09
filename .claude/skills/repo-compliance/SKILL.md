@@ -78,6 +78,27 @@ potentially stale.
 | mkdocs | `mkdocs-auditor` | MKDOCS-* (skipped when mkdocs.yml absent) |
 | api | `openapi-compliance-agent` (via check-repo-compliance.py) | API-001..005 (applies_to: api_repos; skip when api.servesApi is false) |
 
+### Bash file-existence checks: handle 404 responses correctly
+
+When a domain agent uses `gh api repos/<org>/<repo>/contents/<path> --jq '.<field>'`
+to test for file presence, the 404 case is a trap: the GitHub API returns
+`{"message":"Not Found","status":"404"}` and `--jq '.name'` on that response
+returns the literal string `null`, not an empty string. Bash tests like
+`[ -n "$result" ]` then evaluate `null` as truthy and report the file as
+PRESENT when it is actually absent. Symptom: a foundation file check reports
+all required files present even on a freshly initialized repo with only
+`README.md`.
+
+Robust patterns:
+
+- Use `--jq '.<field> // "NOT_FOUND"'` and test against the sentinel:
+  `if [ "$status" != "NOT_FOUND" ] && [ "$status" != "null" ]; then ...`
+- Or check the HTTP status directly with `--silent`:
+  `gh api "..." --silent 2>/dev/null && echo PRESENT || echo ABSENT`
+
+Apply to any new bash check in this skill or in domain agent prompts that
+calls `gh api ... --jq` and tests for non-empty output.
+
 ### API Domain: applies_to Conditional
 
 Before dispatching API-domain checks, read `api.servesApi` from the target

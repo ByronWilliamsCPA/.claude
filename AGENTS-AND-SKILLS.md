@@ -322,6 +322,13 @@ Response-Aware Development: systematic assumption tagging and multi-model verifi
 for verification. Sub-workflows: verify, list, test. Activates on: "assumption", "RAD", "verify
 assumptions".
 
+**[/pre-commit-authoring](/.claude/skills/pre-commit-authoring/SKILL.md)**
+Reference for designing, adding, and auditing pre-commit hooks. Covers the staged-scope invariant
+(PC-HOOK-STAGED-SCOPE), fast/slow tier placement, fail-vs-warn semantics, and a common-gotchas
+list including the TruffleHog `--since-commit HEAD` trap. Includes an audit pattern for existing
+`.pre-commit-config.yaml` files. Activates on: "add a hook", "write a pre-commit hook", "audit
+pre-commit", "fix pre-commit hook", "hook false positive".
+
 ### Testing
 
 **[/testing](/.claude/skills/testing/SKILL.md)**
