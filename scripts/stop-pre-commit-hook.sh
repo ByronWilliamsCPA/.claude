@@ -25,8 +25,18 @@ echo "[stop-pre-commit-hook] elapsed: ${ELAPSED}ms" >&2
 [[ $ELAPSED -gt 30000 ]] && echo "[stop-pre-commit-hook] WARNING: >30s, consider removing" >&2
 # Security (audit M-06): Stop hooks must not propagate non-zero exits because
 # Claude Code blocks session cleanup on a non-zero Stop. Surface the pre-commit
-# result as advisory text and always exit 0.
+# result as advisory text AND persist it to a log so the user can review what
+# actually failed (a single stderr line at session end is easy to miss).
 if [[ $PRE_COMMIT_RC -ne 0 ]]; then
-    echo "[stop-pre-commit-hook] pre-commit returned ${PRE_COMMIT_RC} (advisory; not blocking session)" >&2
+    case $PRE_COMMIT_RC in
+        1) MSG="pre-commit found issues (rc=1). Run 'pre-commit run --all-files' to see details." ;;
+        127) MSG="pre-commit not installed (rc=127). Install with: pipx install pre-commit" ;;
+        *) MSG="pre-commit exited with unexpected code ${PRE_COMMIT_RC}; investigate." ;;
+    esac
+    echo "[stop-pre-commit-hook] ${MSG}" >&2
+    FINDINGS_LOG="${HOME}/.claude/logs/stop-pre-commit-findings.log"
+    mkdir -p "$(dirname "$FINDINGS_LOG")" 2>/dev/null \
+        && printf '%s\t%s\n' "$(date -Is)" "$MSG" >> "$FINDINGS_LOG" 2>/dev/null \
+        || true
 fi
 exit 0

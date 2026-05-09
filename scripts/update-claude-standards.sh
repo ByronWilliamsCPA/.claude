@@ -53,11 +53,30 @@ echo ""
 
 git subtree pull --prefix "$SUBTREE_PREFIX" "$CLAUDE_REPO" "$BRANCH" --squash
 
-# Verify the merged commit is signed (security-audit L-02)
-if ! git verify-commit HEAD 2>/dev/null; then
-    echo -e "${YELLOW}WARNING: HEAD commit is not signed by a trusted key.${NC}" >&2
-    echo "Inspect the merge before pushing: git show HEAD" >&2
-    echo "If this is expected (e.g., subtree merge commit), continue with caution." >&2
+# Verify upstream provenance (security-audit L-02). git subtree pull --squash
+# creates a local merge commit signed by the local key, so a HEAD signature
+# only proves the local user merged, not that the upstream content was
+# trusted. Verify the SOURCE commit on the remote branch directly. Capture
+# stderr so we can distinguish "gpg missing" from "signature missing" from
+# "key not in keyring", and require an explicit override to continue when
+# verification fails.
+if ! command -v gpg >/dev/null 2>&1; then
+    echo -e "${RED}ERROR: gpg not installed; cannot verify upstream signature.${NC}" >&2
+    echo "Install gpg or rerun with SKIP_SIGNATURE_VERIFY=1 to acknowledge." >&2
+    [[ "${SKIP_SIGNATURE_VERIFY:-}" = "1" ]] || exit 1
+fi
+
+UPSTREAM_SHA=$(git ls-remote "$CLAUDE_REPO" "refs/heads/$BRANCH" 2>/dev/null | awk '{print $1}')
+if [[ -z "$UPSTREAM_SHA" ]]; then
+    echo -e "${YELLOW}WARNING: could not resolve upstream HEAD for verification.${NC}" >&2
+elif ! VERIFY_OUT=$(git verify-commit "$UPSTREAM_SHA" 2>&1); then
+    echo -e "${RED}ERROR: upstream commit ${UPSTREAM_SHA:0:12} failed signature verification.${NC}" >&2
+    echo "git verify-commit output:" >&2
+    echo "$VERIFY_OUT" >&2
+    echo "" >&2
+    echo "If the upstream commit is intentionally unsigned, rerun with" >&2
+    echo "SKIP_SIGNATURE_VERIFY=1 to acknowledge and continue." >&2
+    [[ "${SKIP_SIGNATURE_VERIFY:-}" = "1" ]] || exit 1
 fi
 
 echo ""
