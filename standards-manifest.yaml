@@ -19,6 +19,13 @@ required_checks:
     produced_by: ".github/workflows/reuse.yml"
     matrix_expansion: false
 
+solo_dev_constraints:
+  forbid_required_approving_reviews: true
+  notes: >-
+    All managed repos are solo-dev; required_approving_review_count must remain 0
+    in every classic protection state and every ruleset rule.
+    setup_org_rulesets.py enforces this with a hard guard.
+
 checks:
 
   # ── Foundations ─────────────────────────────────────────────────────────────
@@ -438,10 +445,11 @@ checks:
     domain: ci
     severity: critical
     description: >-
-      Branch protection contexts exactly match required_checks names
-      (set equality, not subset).
-    verify: "branch_protection_matches_required_checks: docs/standards-manifest.yaml"
+      Effective required-status-checks (classic protection union repo rulesets union
+      org rulesets targeting this repo) exactly equal required_checks names.
+    verify: "protection_matches_required_checks: docs/standards-manifest.yaml, source=union"
     override_eligible: false
+    not_applicable_when: "repo.branchProtectionExempt == true"
 
   - id: CI-024
     domain: ci
@@ -451,6 +459,41 @@ checks:
       docs/reusable-workflow-jobs.yaml has last_verified within 90 days.
     verify: "registry_freshness: docs/reusable-workflow-jobs.yaml, max_age_days=90"
     override_eligible: false
+
+  - id: CI-025
+    domain: ci
+    severity: critical
+    description: >-
+      Each managed org has at least one ruleset with enforcement=active
+      targeting the default branch of every non-exempt repo.
+    verify: "org_ruleset_present: orgs=[ByronWilliamsCPA,williaby], enforcement=active"
+    override_eligible: false
+    not_applicable_when: "repo.branchProtectionExempt == true"
+
+  - id: CI-026
+    domain: ci
+    severity: important
+    description: >-
+      Org ruleset includes a copilot_code_review rule, which auto-requests
+      Copilot review on every PR opened against the default branch. Replaces
+      the per-PR runtime trigger in /pr-review.
+    verify: "ruleset_contains_rule: orgs=[ByronWilliamsCPA,williaby], rule_type=copilot_code_review"
+    override_eligible: true
+    not_applicable_when: "repo.branchProtectionExempt == true"
+    notes: >-
+      Copilot status check 'Copilot' may additionally be added to
+      required_status_checks once stability is confirmed (Phase 3.5),
+      which would make Copilot review blocking rather than advisory.
+
+  - id: CI-027
+    domain: ci
+    severity: important
+    description: >-
+      Classic branch protection is ABSENT once migration has completed
+      for this repo (prevents drift back to two sources of truth).
+    verify: "classic_protection_absent: branch=default"
+    override_eligible: true
+    not_applicable_when: "repo.branchProtectionExempt == true OR repo.migrationPhase != complete"
 
   - id: CI-018
     domain: ci
