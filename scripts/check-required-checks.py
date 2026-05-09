@@ -727,6 +727,12 @@ def _parse_args(argv: list[str] | None) -> argparse.Namespace:
         help="Fetch and validate branch protection contexts (requires --repo-slug)",
     )
     parser.add_argument(
+        "--source",
+        choices=("classic", "rulesets", "union"),
+        default="union",
+        help="Which protection source to validate against (default: union).",
+    )
+    parser.add_argument(
         "--today",
         default="",
         help="Override today's date (YYYY-MM-DD) for testing",
@@ -755,9 +761,8 @@ def main(argv: list[str] | None = None) -> int:
     bp_failure_exit = 0
     if args.check_bp:
         try:
-            # TODO(task-5): replace "classic" literal with args.source
             effective, provenance = fetch_effective_required_contexts(
-                args.repo_slug, args.branch, "classic"
+                args.repo_slug, args.branch, args.source
             )
         except (BranchProtectionFetchError, RulesetFetchError) as exc:
             findings.append(

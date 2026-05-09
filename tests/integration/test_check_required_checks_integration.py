@@ -37,6 +37,8 @@ def test_compliant_repo_emits_no_findings(capsys: pytest.CaptureFixture[str]) ->
                 "--repo-slug",
                 "fake/repo",
                 "--check-bp",
+                "--source",
+                "classic",
                 "--today",
                 "2026-05-08",
             ]
@@ -67,6 +69,8 @@ def test_branch_protection_drift_emits_ci023(
                 "--repo-slug",
                 "fake/repo",
                 "--check-bp",
+                "--source",
+                "classic",
                 "--today",
                 "2026-05-08",
             ]

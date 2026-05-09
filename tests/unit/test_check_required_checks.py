@@ -563,3 +563,64 @@ def test_diff_required_vs_effective_includes_provenance() -> None:
     msgs = [f.message for f in findings]
     assert any("B" in m and "missing" in m.lower() for m in msgs)
     assert any("classic" in m or "Organization:williaby/42" in m for m in msgs)
+
+
+# ── _parse_args --source flag ────────────────────────────────────────────────
+
+
+@pytest.mark.unit
+def test_source_flag_defaults_to_union(tmp_path: Path) -> None:
+    """--source defaults to 'union' when omitted."""
+    args = crc._parse_args(
+        [
+            "--repo-path",
+            str(tmp_path),
+            "--manifest",
+            str(tmp_path / "manifest.yaml"),
+            "--registry",
+            str(tmp_path / "registry.yaml"),
+            "--repo-slug",
+            "x/y",
+            "--check-bp",
+        ]
+    )
+    assert args.source == "union"
+
+
+@pytest.mark.unit
+def test_source_flag_accepts_classic(tmp_path: Path) -> None:
+    """--source classic is a valid explicit choice."""
+    args = crc._parse_args(
+        [
+            "--repo-path",
+            str(tmp_path),
+            "--manifest",
+            str(tmp_path / "manifest.yaml"),
+            "--registry",
+            str(tmp_path / "registry.yaml"),
+            "--repo-slug",
+            "x/y",
+            "--check-bp",
+            "--source",
+            "classic",
+        ]
+    )
+    assert args.source == "classic"
+
+
+@pytest.mark.unit
+def test_source_flag_rejects_invalid(tmp_path: Path) -> None:
+    """--source rejects values outside the allowed choices."""
+    with pytest.raises(SystemExit):
+        crc._parse_args(
+            [
+                "--repo-path",
+                str(tmp_path),
+                "--manifest",
+                str(tmp_path / "manifest.yaml"),
+                "--registry",
+                str(tmp_path / "registry.yaml"),
+                "--source",
+                "garbage",
+            ]
+        )
