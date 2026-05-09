@@ -198,6 +198,9 @@ def _signatures_enforced(org: str, repo: str, branch: str) -> bool:
             if any(r.get("type") == "required_signatures" for r in rules):
                 return True
         except (json.JSONDecodeError, TypeError):
+            # Unexpected ruleset shape; fall through to the classic check
+            # below rather than raising, since the classic source can still
+            # confirm signatures.
             pass
     sig_data, err = gh(
         f"repos/{org}/{repo}/branches/{branch}/protection/required_signatures"
@@ -245,6 +248,8 @@ def _admins_enforced(org: str, repo: str, branch: str) -> bool:
                 if rs_type and rs_id:
                     ruleset_refs.add((rs_type, rs_src, rs_id))
         except (json.JSONDecodeError, TypeError):
+            # Unexpected ruleset-evaluation shape; treat as no rulesets
+            # active and let the classic enforce_admins check below decide.
             pass
     fetch_failures = 0
     for rs_type, rs_src, rs_id in ruleset_refs:
