@@ -181,6 +181,53 @@ Offer:
 
 When multiple CI-023 findings exist with the same fix shape (all branch-protection drift), offer a "fix all in one PATCH" batch option.
 
+**For CI-025 findings (org ruleset missing or not active):**
+
+```text
+FINDING:
+id: CI-025
+severity: critical
+description: Org '<ORG>' has no active ruleset targeting default branch
+status: configuration_gap
+current_value: gh api orgs/<ORG>/rulesets returned [] or all entries have enforcement != active
+remediation: |
+  uv run python scripts/setup_org_rulesets.py --org <ORG> \
+    --body docs/reference/org-rulesets/<ORG>-universal.json --enforcement active
+  uv run python scripts/setup_org_rulesets.py --org <ORG> \
+    --body docs/reference/org-rulesets/<ORG>-python.json --enforcement active
+```
+
+**For CI-026 findings (Copilot rule missing from ruleset):**
+
+```text
+FINDING:
+id: CI-026
+severity: important
+description: Org ruleset is missing the copilot_code_review rule
+status: configuration_gap
+current_value: ruleset id=<id> has no rule of type copilot_code_review
+remediation: |
+  The Copilot rule is defined in docs/reference/org-rulesets/<ORG>-universal.json.
+  Re-apply via:
+  uv run python scripts/setup_org_rulesets.py --org <ORG> \
+    --body docs/reference/org-rulesets/<ORG>-universal.json --enforcement active
+```
+
+**For CI-027 findings (classic protection still present post-migration):**
+
+```text
+FINDING:
+id: CI-027
+severity: important
+description: Classic branch protection still present on <repo>:<branch> after migrationPhase=complete
+status: configuration_gap
+current_value: gh api repos/<repo>/branches/<branch>/protection returned 200
+remediation: |
+  Verify the org rulesets enforce equivalent constraints, then:
+  gh api repos/<repo>/branches/<branch>/protection --method DELETE
+  Re-run: uv run python scripts/check-required-checks.py --source rulesets --repo-slug <repo> --check-bp
+```
+
 **Private vulnerability reporting:**
 ```bash
 gh api "repos/${REPO_SLUG}" --jq '.security_and_analysis.private_vulnerability_reporting.status'
@@ -339,11 +386,27 @@ For each check below: what the tool measures, what score >= 4 requires, and the 
 
 ### Branch-Protection (High)
 
-**Measures:** GitHub branch protection settings on the default branch.
+**Measures:** GitHub branch protection settings on the default branch. Scorecard
+now reads BOTH classic protection and rulesets; rulesets are the preferred
+mechanism since they read with the default GITHUB_TOKEN (no admin PAT
+required).
+
 **Score >= 4 (Tier 1):** At least one protection: required reviewers OR required status checks.
 **Score >= 6 (Tier 2):** All of: require PR before merging, 1 required reviewer, dismiss stale reviews on new commits, require branches to be up to date.
 **Score >= 8 (Tier 3):** Tier 2 plus require linear history and no force push.
-**Remediation for 4+:** Enable via `gh api repos/:owner/:repo/branches/main/protection --method PUT` with:
+
+**Remediation (preferred):** Apply the org-level ruleset:
+
+```bash
+uv run python scripts/setup_org_rulesets.py --org <ORG> \
+  --body docs/reference/org-rulesets/<ORG>-universal.json --enforcement active
+```
+
+**Remediation (legacy classic protection, transition only):** Use the classic
+API for repos still in migrationPhase=pending. Original JSON body retained
+below as reference; prefer the ruleset path above.
+
+Enable via `gh api repos/:owner/:repo/branches/main/protection --method PUT` with:
 ```json
 {
   "required_pull_request_reviews": {
