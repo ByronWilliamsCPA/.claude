@@ -4,7 +4,7 @@
       "command": "npx",
       "args": [
         "-y",
-        "@upstash/context7-mcp"
+        "@upstash/context7-mcp@2.2.4"
       ]
     },
     "sonarqube": {
@@ -15,11 +15,11 @@
       }
     },
     "pal": {
-      "command": "/home/byron/dev/zen-mcp-server/.pal_venv/bin/python",
+      "command": "${HOME}/dev/zen-mcp-server/.pal_venv/bin/python",
       "args": [
-        "/home/byron/dev/zen-mcp-server/server.py"
+        "${HOME}/dev/zen-mcp-server/server.py"
       ],
-      "cwd": "/home/byron/dev/zen-mcp-server"
+      "cwd": "${HOME}/dev/zen-mcp-server"
     }
   }
 }

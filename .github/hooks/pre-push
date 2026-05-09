@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
-# Bypass with: git push --no-verify
+# Pre-push hook: runs local CI gate before pushing.
+# Bypass requires explicit user approval per CLAUDE.md prohibition on
+# --no-verify. If CI is blocking work, fix the underlying cause; do not
+# document or normalize the bypass here.
 set -e
 
 if ! command -v nox &>/dev/null; then
   echo "ERROR: nox is not on PATH. Install with: uv tool install nox" >&2
-  echo "Or bypass this hook: git push --no-verify" >&2
   exit 1
 fi
 
