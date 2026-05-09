@@ -21,15 +21,30 @@ set -uo pipefail
 NOTIFY_THRESHOLD_SECONDS=30
 LOG_FILE="${HOME}/.claude/logs/bash-notify.log"
 mkdir -p "$(dirname "$LOG_FILE")"
+# Security (audit M-07): bash logs may capture commands with inline tokens or
+# connection strings; restrict permissions on first creation.
+[[ -f "$LOG_FILE" ]] || { : > "$LOG_FILE"; chmod 600 "$LOG_FILE" 2>/dev/null || true; }
+
+# Redact common credential-pattern strings from log lines.
+redact() {
+    printf '%s' "$1" | sed -E \
+        -e 's/(Authorization:[[:space:]]*Bearer[[:space:]]+)[^[:space:]]+/\1[REDACTED]/gi' \
+        -e 's/(password[[:space:]]*[:=][[:space:]]*)[^[:space:]&]+/\1[REDACTED]/gi' \
+        -e 's/((api[_-]?key|token|secret)[[:space:]]*[:=][[:space:]]*)[^[:space:]&]+/\1[REDACTED]/gi' \
+        -e 's|://([^:/@[:space:]]+):[^@[:space:]]+@|://\1:[REDACTED]@|g'
+}
 
 log() {
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" >> "$LOG_FILE"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $(redact "$*")" >> "$LOG_FILE"
 }
 
 # ---------------------------------------------------------------------------
 # Read and validate the timing start file
+# Security (audit H-01): START_FILE moved out of world-writable /tmp into the
+# user-owned $HOME/.claude/tmp_cleanup/ directory, eliminating the symlink-
+# attack window the previous fixed /tmp path created.
 # ---------------------------------------------------------------------------
-START_FILE="/tmp/claude-bash-start"
+START_FILE="${HOME}/.claude/tmp_cleanup/bash-start"
 
 if [[ ! -f "$START_FILE" ]]; then
     exit 0
@@ -76,9 +91,12 @@ fi
 # Truncate command to 80 chars
 if [[ -n "$CMD" ]]; then
     CMD="${CMD:0:80}"
-    # Strip characters that could break PowerShell string embedding
+    # Security (audit H-02): strip newlines and CR in addition to quote/backtick/$
+    # characters. A literal newline inside the embedded value would terminate the
+    # single-quoted PowerShell argument and let the remainder execute as a
+    # separate statement.
     # shellcheck disable=SC2016  # single quotes intentional: prevent shell expansion in tr arg
-    CMD=$(printf '%s' "$CMD" | tr -d '"`$\`')
+    CMD=$(printf '%s' "$CMD" | tr -d '"`$\`\n\r')
     MSG="Task complete (${DURATION}s): ${CMD}"
 else
     MSG="Task complete (${DURATION}s)"

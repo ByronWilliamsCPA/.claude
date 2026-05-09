@@ -19,17 +19,46 @@ set -uo pipefail
 # exit non-zero unexpectedly (exit 2 is reserved for the block signal). Any
 # unhandled error must fall through to the allow path.
 
+# Security (audit H-01): timing state lives under the user's home directory,
+# not world-writable /tmp. This eliminates the TOCTOU symlink-attack window
+# that existed when the previous fixed path /tmp/claude-bash-start.tmp could
+# be pre-created by any local user.
+TMP_DIR="${HOME}/.claude/tmp_cleanup"
+START_FILE="${TMP_DIR}/bash-start"
+mkdir -p "${TMP_DIR}"
+chmod 700 "${TMP_DIR}" 2>/dev/null || true
+
 LOG_FILE="${HOME}/.claude/logs/bash-pre-hook.log"
 mkdir -p "$(dirname "$LOG_FILE")"
+# Security (audit M-07): bash logs may capture commands that contain inline
+# tokens or connection strings; restrict permissions on first creation.
+[[ -f "$LOG_FILE" ]] || { : > "$LOG_FILE"; chmod 600 "$LOG_FILE" 2>/dev/null || true; }
+
+# Redact common credential-pattern strings from log lines.
+redact() {
+    printf '%s' "$1" | sed -E \
+        -e 's/(Authorization:[[:space:]]*Bearer[[:space:]]+)[^[:space:]]+/\1[REDACTED]/gi' \
+        -e 's/(password[[:space:]]*[:=][[:space:]]*)[^[:space:]&]+/\1[REDACTED]/gi' \
+        -e 's/((api[_-]?key|token|secret)[[:space:]]*[:=][[:space:]]*)[^[:space:]&]+/\1[REDACTED]/gi' \
+        -e 's|://([^:/@[:space:]]+):[^@[:space:]]+@|://\1:[REDACTED]@|g'
+}
 
 log() {
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" >> "$LOG_FILE"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $(redact "$*")" >> "$LOG_FILE"
+}
+
+# Atomically write the timing start timestamp to START_FILE.
+# Uses mktemp inside the same directory so the rename stays on one filesystem.
+write_start_marker() {
+    local tmp
+    tmp=$(mktemp "${START_FILE}.XXXXXX") || return 0
+    printf '%s' "$(date +%s)" > "$tmp" && mv "$tmp" "$START_FILE"
 }
 
 # Require jq for JSON parsing
 if ! command -v jq &>/dev/null; then
     log "ERROR: jq not found; cannot parse hook context -- passing through"
-    printf '%s' "$(date +%s)" > /tmp/claude-bash-start.tmp && mv /tmp/claude-bash-start.tmp /tmp/claude-bash-start
+    write_start_marker
     exit 0
 fi
 
@@ -37,7 +66,7 @@ fi
 CONTEXT=$(cat)
 
 if [[ -z "$CONTEXT" ]]; then
-    printf '%s' "$(date +%s)" > /tmp/claude-bash-start.tmp && mv /tmp/claude-bash-start.tmp /tmp/claude-bash-start
+    write_start_marker
     exit 0
 fi
 
@@ -45,7 +74,7 @@ fi
 CMD=$(jq -r '.tool_input.command // empty' 2>/dev/null <<< "$CONTEXT")
 
 if [[ -z "$CMD" ]]; then
-    printf '%s' "$(date +%s)" > /tmp/claude-bash-start.tmp && mv /tmp/claude-bash-start.tmp /tmp/claude-bash-start
+    write_start_marker
     exit 0
 fi
 
@@ -76,7 +105,7 @@ fi
 
 # Only check force-push for git push commands
 if ! echo "$CMD" | grep -qE 'git\s+push'; then
-    printf '%s' "$(date +%s)" > /tmp/claude-bash-start.tmp && mv /tmp/claude-bash-start.tmp /tmp/claude-bash-start
+    write_start_marker
     exit 0
 fi
 
@@ -90,7 +119,7 @@ PUSH_SEGMENT=$(echo "$CMD" | grep -oE 'git\s+push.*' | tail -1)
 
 if [[ -z "$PUSH_SEGMENT" ]]; then
     # grep -oE found nothing; fall through to allow
-    printf '%s' "$(date +%s)" > /tmp/claude-bash-start.tmp && mv /tmp/claude-bash-start.tmp /tmp/claude-bash-start
+    write_start_marker
     exit 0
 fi
 
