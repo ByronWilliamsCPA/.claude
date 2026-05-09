@@ -41,12 +41,13 @@ more distinct repos across retrospectives.
 | LICENSE lacks SPDX identifier line | 1 (family-office-portal) | 1 |
 | .editorconfig absent from project root | 1 (family-office-portal) | 1 |
 | docs/ structure misaligned (ADRs in docs/planning/adr/ not docs/architecture/) | 1 (family-office-portal) | 1 |
-| docs/known-vulnerabilities.md absent (SECURITY.md references path) | 1 (family-office-portal) | 1 |
 | No source code or tests/ directory (Phase 0 -- expected) | 1 (family-office-portal) | 1 |
 
-Note: docs/known-vulnerabilities.md is already covered by FOUND-009 in the
-manifest. The general auditor surfaced it as an unclassified candidate because
-the domain agent filed it correctly as FOUND-009. No duplication action needed.
+Note: `docs/known-vulnerabilities.md absent` was initially surfaced by the
+general auditor as an unclassified candidate, then reconciled as already
+covered by FOUND-009 in the manifest (the domain agent filed it correctly).
+The row is therefore withdrawn from the unclassified-candidates table above
+and does not contribute to the running total. No duplication action needed.
 
 ---
 
