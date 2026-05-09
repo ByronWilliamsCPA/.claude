@@ -36,6 +36,9 @@ CATALOG_PATH = Path(__file__).parent.parent / "docs/reference/github-repos.json"
 # Repos where Renovate is intentionally ignored; dependabot.yml coexistence is expected
 RENOVATE_IGNORED = {"williaby/dart-frog-paludarium", "williaby/homelab-agent-configs"}
 
+# Repos permanently exempt from branch protection checks (catalog flag branchProtectionExempt)
+BRANCH_PROTECTION_EXEMPT = {"williaby/homelab-agent-configs"}
+
 # Repos where main branch is not the default
 BRANCH_OVERRIDES = {
     "ByronWilliamsCPA/xero-crypto": "master",
@@ -110,6 +113,110 @@ def gh(path: str) -> tuple[dict | list | None, str | None]:
     return json.loads(r.stdout) if r.stdout.strip() else {}, None
 
 
+def _signatures_enforced(org: str, repo: str, branch: str) -> bool:
+    """Return True if commit signatures are required via ruleset or classic protection.
+
+    Checks the ruleset evaluation endpoint first. If any active ruleset
+    includes a required_signatures rule targeting this branch, returns True.
+    Falls back to the classic branch-protection endpoint when no ruleset result
+    is found.
+
+    Args:
+        org: GitHub organization name.
+        repo: Repository name.
+        branch: Branch name to check.
+
+    Returns:
+        True if signatures are required by any active source; False otherwise.
+    """
+    rules_data, err = gh(f"repos/{org}/{repo}/rules/branches/{branch}")
+    if err is None and rules_data:
+        try:
+            rules = (
+                json.loads(rules_data) if isinstance(rules_data, str) else rules_data
+            )
+            if any(r.get("type") == "required_signatures" for r in rules):
+                return True
+        except (json.JSONDecodeError, TypeError):
+            pass
+    sig_data, err = gh(
+        f"repos/{org}/{repo}/branches/{branch}/protection/required_signatures"
+    )
+    if err is not None:
+        return False
+    try:
+        if isinstance(sig_data, str):
+            return bool(json.loads(sig_data).get("enabled"))
+        return bool(sig_data.get("enabled"))
+    except (json.JSONDecodeError, AttributeError):
+        return False
+
+
+def _admins_enforced(org: str, repo: str, branch: str) -> bool:
+    """Return True if admin bypass is not present in any governing ruleset.
+
+    Reads the rules evaluation endpoint to find all rulesets active on this
+    branch, then fetches each ruleset to check for a RepositoryRole id=5
+    (OrganizationAdmin) bypass actor. Returns False if any such bypass is
+    found, because the user intentionally keeps bypass_mode=always for
+    emergency unblock. Falls back to the classic enforce_admins field when no
+    rulesets are active.
+
+    Args:
+        org: GitHub organization name.
+        repo: Repository name.
+        branch: Branch name to check.
+
+    Returns:
+        True if admins are enforced (no bypass present or classic enabled);
+        False if any org-admin bypass actor is configured.
+    """
+    rules_data, err = gh(f"repos/{org}/{repo}/rules/branches/{branch}")
+    ruleset_refs: set[tuple[str, str, int]] = set()
+    if err is None and rules_data:
+        try:
+            rules = (
+                json.loads(rules_data) if isinstance(rules_data, str) else rules_data
+            )
+            for r in rules:
+                rs_type = r.get("ruleset_source_type")
+                rs_id = r.get("ruleset_id")
+                rs_src = r.get("ruleset_source", "")
+                if rs_type and rs_id:
+                    ruleset_refs.add((rs_type, rs_src, rs_id))
+        except (json.JSONDecodeError, TypeError):
+            pass
+    for rs_type, rs_src, rs_id in ruleset_refs:
+        path = (
+            f"orgs/{rs_src}/rulesets/{rs_id}"
+            if rs_type == "Organization"
+            else f"repos/{org}/{repo}/rulesets/{rs_id}"
+        )
+        body, err = gh(path)
+        if err is not None:
+            continue
+        try:
+            ruleset = json.loads(body) if isinstance(body, str) else body
+        except json.JSONDecodeError:
+            continue
+        for actor in ruleset.get("bypass_actors", []) or []:
+            if (
+                actor.get("actor_type") == "RepositoryRole"
+                and actor.get("actor_id") == 5
+            ):
+                return False
+    if ruleset_refs:
+        return True
+    prot_data, err = gh(f"repos/{org}/{repo}/branches/{branch}/protection")
+    if err is not None:
+        return False
+    try:
+        prot = json.loads(prot_data) if isinstance(prot_data, str) else prot_data
+        return bool(prot.get("enforce_admins", {}).get("enabled"))
+    except (json.JSONDecodeError, AttributeError):
+        return False
+
+
 def file_exists(org: str, repo: str, path: str, branch: str) -> bool:
     data, err = gh(f"repos/{org}/{repo}/contents/{path}?ref={branch}")
     return data is not None and "sha" in data
@@ -134,22 +241,18 @@ def check_repo(org: str, repo: str, catalog: dict) -> RepoResult:
     else:
         result.ci_021 = "N/A"  # no Renovate, so CI-020 gap is the issue
 
-    # BP-4: required signatures
-    sig_data, err = gh(
-        f"repos/{org}/{repo}/branches/{branch}/protection/required_signatures"
-    )
-    if err:
-        result.bp_4 = "NONE"
+    # BP-4 / BP-5: ruleset-aware; exempt repos short-circuit to N/A
+    if slug in BRANCH_PROTECTION_EXEMPT:
+        result.bp_4 = "N/A"
+        result.bp_5 = "N/A"
+        result.notes.append("Branch protection exempt by catalog flag")
     else:
-        result.bp_4 = "PASS" if sig_data and sig_data.get("enabled") else "FAIL"
-
-    # BP-5: enforce admins
-    prot_data, err = gh(f"repos/{org}/{repo}/branches/{branch}/protection")
-    if err or not prot_data:
-        result.bp_5 = "NONE"
-    else:
-        admins = prot_data.get("enforce_admins", {}).get("enabled", False)
-        result.bp_5 = "PASS" if admins else "FAIL"
+        result.bp_4 = "PASS" if _signatures_enforced(org, repo, branch) else "FAIL"
+        if _admins_enforced(org, repo, branch):
+            result.bp_5 = "PASS"
+        else:
+            result.bp_5 = "FAIL"
+            result.notes.append("BP-5 expected FAIL: solo-dev admin bypass intentional")
 
     # API-001..005: only run for repos with api.servesApi=true
     if applies_to_api_repos(org, repo, catalog):
