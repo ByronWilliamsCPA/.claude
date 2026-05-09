@@ -13,6 +13,7 @@ from __future__ import annotations
 import json
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -23,6 +24,16 @@ UNIVERSAL = TEMPLATE_DIR / "_williaby-template-universal.json"
 PYTHON = TEMPLATE_DIR / "_williaby-template-python.json"
 SWEEP_SCRIPT = REPO_ROOT / "scripts" / "apply_williaby_repo_rulesets.sh"
 BASH = shutil.which("bash") or "/bin/bash"
+
+# Tests that invoke the bash sweep script need both `bash` and `jq` on PATH.
+# GitHub Actions Windows runners have neither by default, so the sweep tests
+# are skipped on Windows and on any host missing either tool.
+requires_sweep_runtime = pytest.mark.skipif(
+    sys.platform == "win32"
+    or shutil.which("bash") is None
+    or shutil.which("jq") is None,
+    reason="sweep script requires bash and jq on PATH",
+)
 
 
 def _load_body(path: Path) -> dict:
@@ -126,6 +137,7 @@ def test_repo_templates_share_ruleset_name():
 # Sweep script preconditions ---------------------------------------------
 
 
+@requires_sweep_runtime
 def test_sweep_fails_when_catalog_missing(tmp_path: Path):
     result = subprocess.run(
         [BASH, str(SWEEP_SCRIPT)],
@@ -142,6 +154,7 @@ def test_sweep_fails_when_catalog_missing(tmp_path: Path):
     assert "catalog not found" in result.stderr
 
 
+@requires_sweep_runtime
 def test_sweep_fails_when_template_missing(tmp_path: Path):
     catalog = tmp_path / "cat.json"
     catalog.write_text(json.dumps({"repos": []}))
@@ -164,6 +177,7 @@ def test_sweep_fails_when_template_missing(tmp_path: Path):
 # Sweep script tier selection (uses uv shim) ------------------------------
 
 
+@requires_sweep_runtime
 def test_sweep_routes_python_repo_to_python_template(
     tmp_path: Path, fake_setup_script: Path
 ):
@@ -202,6 +216,7 @@ def test_sweep_routes_python_repo_to_python_template(
     assert "--dry-run" in invocations
 
 
+@requires_sweep_runtime
 def test_sweep_routes_non_python_repo_to_universal_template(
     tmp_path: Path, fake_setup_script: Path
 ):
@@ -239,6 +254,7 @@ def test_sweep_routes_non_python_repo_to_universal_template(
     assert "_williaby-template-python.json" not in invocations
 
 
+@requires_sweep_runtime
 def test_sweep_skips_branch_protection_exempt_repos(
     tmp_path: Path, fake_setup_script: Path
 ):
@@ -282,6 +298,7 @@ def test_sweep_skips_branch_protection_exempt_repos(
     assert "williaby/real-repo" in invocations
 
 
+@requires_sweep_runtime
 def test_sweep_skips_other_orgs(tmp_path: Path, fake_setup_script: Path):
     catalog = tmp_path / "cat.json"
     catalog.write_text(
