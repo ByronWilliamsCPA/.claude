@@ -55,7 +55,47 @@ owner: OWNER, repo: REPO, pullNumber: PR_NUMBER
 
 Store `HEAD_BRANCH`, `BASE_BRANCH`, `PR_TITLE`, `PR_BODY`.
 
-Abort if: PR is closed, or metadata fetch fails.
+Also fetch `mergeable` and `mergeStateStatus`:
+
+```bash
+gh pr view "$PR_NUMBER" --repo "$OWNER/$REPO" \
+  --json mergeable,mergeStateStatus
+```
+
+**Abort if: PR is closed, or metadata fetch fails.**
+
+**PR conflict precondition (mandatory):** If `mergeable` is `CONFLICTING` or
+`mergeStateStatus` is `DIRTY` or `BEHIND`, do NOT proceed to Step 1. A
+conflicted PR is not actionable for an automated fix workflow because
+GitHub Actions does not reliably trigger workflow runs on conflicting PRs
+(the `pull_request: synchronize` event fires, but required-check workflows
+silently no-op, leaving the merge gate stuck even after fix commits land).
+
+When a conflict is detected, surface it and ask the user how to resolve
+before any fix work begins:
+
+```text
+PR #{N} has unresolved conflicts with the base branch ({BASE_BRANCH}).
+GitHub Actions will not reliably re-trigger required checks on a
+conflicting PR. Resolve before applying fixes:
+
+1. Merge {BASE_BRANCH} into {HEAD_BRANCH} (creates a merge commit)
+2. Rebase {HEAD_BRANCH} onto {BASE_BRANCH} (linear history, force-push)
+3. Cancel /pr-fix; resolve conflicts manually first
+
+Which option?
+```
+
+If the user picks 1 or 2, perform the resolution in the worktree (Step 3)
+before continuing to Step 1 issue gathering. After resolution, push so the
+PR shows `mergeable: MERGEABLE` before any fix commits.
+
+The merge or rebase commit that records the conflict resolution is subject
+to the same `--no-verify` prohibition documented in Step 6. Run pre-commit
+on the merge commit and fix anything it flags; do not skip hooks even when
+the resolution kept HEAD's tree unchanged for the conflicting files.
+
+If the user picks 3, exit cleanly without modifying the PR.
 
 ---
 
@@ -533,6 +573,16 @@ fails, fix the issue in the worktree and re-run the affected check.
 
 Group fixes into logical commits using conventional commit format.
 One concern per commit. Sign each: `git -C {WORKTREE_PATH} commit -S -m "..."`.
+
+**Procedural git rule (mandatory):** Never invoke `git commit` with
+`--no-verify` on any commit, including merge commits. The rule applies even
+when the agent reasons that pre-commit "would have passed anyway" or that
+the merge resolution kept HEAD's tree unchanged. If pre-commit fails, fix
+the underlying issue or ask the user before proceeding; do not bypass.
+Merge commits with auto-merged content from the base branch DO trigger
+hooks on the incoming changes, so skipping is rarely a no-op even when it
+appears to be one. The only time `--no-verify` is permitted is when the
+user has explicitly requested it for the current commit.
 
 | Group | Type | Example message |
 | --- | --- | --- |
