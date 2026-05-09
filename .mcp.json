@@ -8,7 +8,6 @@
       ]
     },
     "sonarqube": {
-      "_comment_M04": "TODO security-audit M-04: bearer token over cleartext loopback HTTP. Move SonarQube to HTTPS or a Unix socket; bind to 127.0.0.1 only. Tracked in docs/security-analysis-2026-05-01.md.",
       "type": "http",
       "url": "http://localhost:8090/mcp",
       "headers": {

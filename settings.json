@@ -55,7 +55,6 @@
         ]
       },
       {
-        "_comment_M05": "security-audit M-05: register the force-push guard so the bypass-resistant logic in bash-pre-hook.sh is actually invoked. Previously the script was unregistered dead code.",
         "matcher": "Bash",
         "hooks": [
           {
