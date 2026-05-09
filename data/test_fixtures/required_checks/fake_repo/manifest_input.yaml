@@ -1,0 +1,5 @@
+required_checks:
+  - name: "Python CI / CI Gate"
+    produced_by: ".github/workflows/ci.yml (Python CI job calling python-ci.yml)"
+  - name: "Check REUSE Compliance"
+    produced_by: ".github/workflows/reuse.yml"
