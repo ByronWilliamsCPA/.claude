@@ -3,8 +3,8 @@ schema_type: planning
 title: "Compliance Agent Improvements: 2026-05-02 Lessons-Learned"
 status: draft
 owner: core-maintainer
-source: "https://github.com/ByronWilliamsCPA/.claude/pull/51"
-purpose: "Apply Tier 1 (execution-bug fixes) and Tier 2 (scope expansions) from the 2026-05-02 compliance retrospective to agent definitions, and gitignore lessons-learned documents in homelab-infra."
+source: "/home/byron/dev/homelab-infra/docs/compliance-reports/lessons-learned/2026-05-02.md"
+purpose: "Apply Tier 1 (execution-bug fixes) and Tier 2 (scope expansions) from the 2026-05-02 compliance retrospective to agent definitions. The companion gitignore change in homelab-infra (Task 1) is already complete (homelab-infra commit d8652a6)."
 component: Development-Tools
 tags:
   - compliance
@@ -15,7 +15,7 @@ tags:
 
 **Goal:** Apply all Tier 1 (execution-bug fixes) and Tier 2 (scope expansions) items from the 2026-05-02 compliance retrospective, and gitignore lessons-learned documents in homelab-infra.
 
-**Architecture:** Six independent file edits across two repositories (`homelab-infra` and `.claude`). Each task touches exactly one file and produces one commit. No new files are created; all changes are additions or replacements within existing agent definitions. Tasks 2-6 all modify agent `.md` files in `/home/byron/.claude/agents/`.
+**Architecture:** Six independent file edits originally planned across two repositories (`homelab-infra` and `.claude`). Task 1 (a `.gitignore` edit in homelab-infra) is already complete in commit `d8652a6` of that repo and is retained below as a record only. The remaining tasks (2-6) each touch exactly one agent `.md` file in `/home/byron/.claude/agents/`; no new files are created.
 
 **Tech Stack:** Markdown agent definitions (plain text edits), `.gitignore` pattern addition.
 
@@ -36,45 +36,18 @@ tags:
 
 ---
 
-## Task 1: Gitignore compliance lessons-learned in homelab-infra
+## Task 1: Gitignore compliance lessons-learned in homelab-infra (COMPLETED)
 
-**Files:**
-- Modify: `/home/byron/dev/homelab-infra/.gitignore` (last line currently: `.worktrees/`)
+**Status:** Already complete. Captured in homelab-infra commit `d8652a6`
+("chore: gitignore compliance lessons-learned retrospectives"). Verified
+2026-05-08: `/home/byron/dev/homelab-infra/.gitignore` lines 332 and 335
+contain `docs/compliance-reports/lessons-learned/`. Re-running this task
+will produce an empty diff and "nothing to commit." Retained here for
+historical context; do not re-execute.
 
 **Why:** Lessons-learned documents are session-local retrospective notes committed inside the compliance PR branch. They should not appear as untracked files between sessions in the main working tree.
 
-- [ ] **Step 1: Append the ignore pattern**
-
-  Open `/home/byron/dev/homelab-infra/.gitignore`. At the very end of the file (after `.worktrees/`), append:
-
-  ```
-
-  # Compliance session retrospectives (committed inside compliance PRs, not tracked in main)
-  docs/compliance-reports/lessons-learned/
-  ```
-
-- [ ] **Step 2: Verify the pattern is present**
-
-  ```bash
-  grep -n "lessons-learned" /home/byron/dev/homelab-infra/.gitignore
-  ```
-  Expected: one line containing `docs/compliance-reports/lessons-learned/`
-
-- [ ] **Step 3: Verify git honors the pattern**
-
-  ```bash
-  cd /home/byron/dev/homelab-infra && \
-  git check-ignore -v docs/compliance-reports/lessons-learned/2026-05-02.md
-  ```
-  Expected: `.gitignore:<line_number>:docs/compliance-reports/lessons-learned/  docs/compliance-reports/lessons-learned/2026-05-02.md`
-
-- [ ] **Step 4: Commit**
-
-  ```bash
-  cd /home/byron/dev/homelab-infra
-  git add .gitignore
-  git commit -m "chore: gitignore compliance lessons-learned retrospectives"
-  ```
+- [x] **Step 1-4: Pattern appended, verified, committed** (homelab-infra commit `d8652a6`)
 
 ---
 
