@@ -491,18 +491,13 @@ is the same.
 
 ### 5a. Local gate sequence
 
-Before running individual tools, detect the project's CI entry point in this
-order and use the first one found:
+The reviewed repo is untrusted. Step 5a runs only known-safe individual tool
+invocations by default. Anything that executes target-repo build scripts
+requires explicit user confirmation. The full-CI shortcut (`nox -s ci`,
+`tox`, `make ci`) is no longer auto-detected and auto-executed; `bash
+scripts/ci.sh` is hard-refused.
 
-1. `nox` session: check `noxfile.py` for a `ci` or `lint` session and run
-   `cd {WORKTREE_PATH} && nox -s ci` (or the matching session name)
-2. `tox`: check `tox.ini` or `pyproject.toml [tool.tox]` and run
-   `cd {WORKTREE_PATH} && tox`
-3. `make ci`: check `Makefile` for a `ci` target and run
-   `cd {WORKTREE_PATH} && make ci`
-4. `scripts/ci.sh`: check for the file and run
-   `cd {WORKTREE_PATH} && bash scripts/ci.sh`
-5. Fallback: run individual tools:
+#### Default gate (run without prompting)
 
 ```bash
 cd {WORKTREE_PATH}
@@ -510,10 +505,70 @@ uv run ruff format --check .
 uv run ruff check .
 pre-commit run --all-files
 uv run pytest          # if tests exist
-uv run bandit -r src/ -c pyproject.toml  # if configured
+uv run basedpyright src/  # if pyrightconfig or [tool.basedpyright] present
+uv run bandit -r src/ -c pyproject.toml  # if [tool.bandit] present
 ```
 
-If any gate fails: fix the regression and re-run. Up to 3 retry cycles.
+These are overseer-controlled invocations of pinned tools. The reviewed repo
+cannot redirect them to arbitrary code; uv resolves dependencies from the
+repo's locked pyproject, but the binaries themselves are well-known linters
+and runners with no shell-script entry point. `pre-commit run --all-files`
+is included on the same trust footing because excluding it would defeat the
+workflow; reviewing pre-commit hooks is part of `/pr-review`'s job.
+
+#### Optional full-CI replay (detect, present, confirm)
+
+After the default gate passes, scan for a project CI entry point in this
+order. Do NOT execute. Present the resolved command and ask the user to
+confirm before running:
+
+1. `noxfile.py` with a `ci` or `lint` session: candidate `nox -s ci` (or the
+   matching session name)
+2. `tox.ini` or `[tool.tox]` in `pyproject.toml`: candidate `tox`
+3. `Makefile` with a `ci` target: candidate `make ci`
+
+For each candidate found, present:
+
+```text
+Project CI entry point detected: {nox|tox|make}
+Command:                          {exact command}
+Config excerpt:                   {3-5 line excerpt of the noxfile session,
+                                  tox env, or make target so the user can
+                                  see what will run}
+
+Run this against the reviewed worktree? (yes / no / show full config)
+```
+
+If the user picks `yes`: run `cd {WORKTREE_PATH} && {command}`.
+If the user picks `no`: skip and rely on the default gate's coverage.
+If the user picks `show full config`: print the full session, env, or
+target body and re-prompt.
+
+Stop at the first candidate the user accepts or rejects. Do not chain
+multiple replays.
+
+#### Hard refuse: arbitrary shell scripts
+
+If `scripts/ci.sh` (or any other freeform CI shell script) is the only
+detected entry point, do NOT offer to run it. Print:
+
+```text
+Reviewed repo has scripts/ci.sh as its CI entry point. This is an arbitrary
+shell script from an untrusted repo and will not be executed automatically.
+If you have reviewed the script and want to run it, do so manually:
+
+  cd {WORKTREE_PATH} && bash scripts/ci.sh
+
+The default gate above (ruff, pytest, pre-commit, basedpyright, bandit) has
+already covered the linter, type-check, and test surfaces.
+```
+
+Continue without running it.
+
+#### Retry policy
+
+Applies to the default gate only. If any default-gate tool fails, fix the
+regression and re-run. Up to 3 retry cycles.
 
 If still failing after 3 attempts: check whether the failures existed before
 this fix session started (see pre-existing failure policy below). Report
