@@ -273,7 +273,7 @@ def test_registry_freshness_accepts_native_date_object() -> None:
     assert findings == []
 
 
-# ── fetch_branch_protection_contexts ────────────────────────────────────────
+# ── fetch_classic_protection_contexts ────────────────────────────────────────
 
 
 def _fake_subprocess(
@@ -298,17 +298,17 @@ def _fake_subprocess(
 
 
 @pytest.mark.unit
-def test_fetch_branch_protection_contexts_handles_null_response(
+def test_fetch_classic_protection_contexts_handles_null_response(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Repos with protection but no required_status_checks return null from --jq."""
     _fake_subprocess(monkeypatch, returncode=0, stdout="null\n")
-    contexts = crc.fetch_branch_protection_contexts("fake/repo")
+    contexts = crc.fetch_classic_protection_contexts("fake/repo")
     assert contexts == []
 
 
 @pytest.mark.unit
-def test_fetch_branch_protection_contexts_returns_list(
+def test_fetch_classic_protection_contexts_returns_list(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     _fake_subprocess(
@@ -316,12 +316,12 @@ def test_fetch_branch_protection_contexts_returns_list(
         returncode=0,
         stdout=json.dumps(["CI Gate", "REUSE"]) + "\n",
     )
-    contexts = crc.fetch_branch_protection_contexts("fake/repo")
+    contexts = crc.fetch_classic_protection_contexts("fake/repo")
     assert contexts == ["CI Gate", "REUSE"]
 
 
 @pytest.mark.unit
-def test_fetch_branch_protection_contexts_raises_on_non_zero_exit(
+def test_fetch_classic_protection_contexts_raises_on_non_zero_exit(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """gh non-zero exit must raise, not silently return []. Treating an auth
@@ -330,29 +330,29 @@ def test_fetch_branch_protection_contexts_raises_on_non_zero_exit(
     """
     _fake_subprocess(monkeypatch, returncode=1, stderr="HTTP 401: Bad credentials")
     with pytest.raises(crc.BranchProtectionFetchError, match="exit 1"):
-        crc.fetch_branch_protection_contexts("fake/repo")
+        crc.fetch_classic_protection_contexts("fake/repo")
 
 
 @pytest.mark.unit
-def test_fetch_branch_protection_contexts_raises_on_malformed_json(
+def test_fetch_classic_protection_contexts_raises_on_malformed_json(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     _fake_subprocess(monkeypatch, returncode=0, stdout="<html>auth redirect</html>")
     with pytest.raises(crc.BranchProtectionFetchError, match="non-JSON"):
-        crc.fetch_branch_protection_contexts("fake/repo")
+        crc.fetch_classic_protection_contexts("fake/repo")
 
 
 @pytest.mark.unit
-def test_fetch_branch_protection_contexts_raises_on_unexpected_type(
+def test_fetch_classic_protection_contexts_raises_on_unexpected_type(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     _fake_subprocess(monkeypatch, returncode=0, stdout=json.dumps({"oops": "dict"}))
     with pytest.raises(crc.BranchProtectionFetchError, match="unexpected type"):
-        crc.fetch_branch_protection_contexts("fake/repo")
+        crc.fetch_classic_protection_contexts("fake/repo")
 
 
 @pytest.mark.unit
-def test_fetch_branch_protection_contexts_raises_on_timeout(
+def test_fetch_classic_protection_contexts_raises_on_timeout(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     def _raise_timeout(*args, **kwargs):
@@ -360,7 +360,7 @@ def test_fetch_branch_protection_contexts_raises_on_timeout(
 
     monkeypatch.setattr(subprocess, "run", _raise_timeout)
     with pytest.raises(crc.BranchProtectionFetchError, match="timed out"):
-        crc.fetch_branch_protection_contexts("fake/repo", timeout=30)
+        crc.fetch_classic_protection_contexts("fake/repo", timeout=30)
 
 
 # ── load_required_checks ────────────────────────────────────────────────────

@@ -23,7 +23,7 @@ REGISTRY = FIXTURES / "registry_input.yaml"
 def test_compliant_repo_emits_no_findings(capsys: pytest.CaptureFixture[str]) -> None:
     with patch.object(
         crc,
-        "fetch_branch_protection_contexts",
+        "fetch_classic_protection_contexts",
         return_value=["Python CI / CI Gate", "Check REUSE Compliance"],
     ):
         exit_code = crc.main(
@@ -53,7 +53,7 @@ def test_branch_protection_drift_emits_ci023(
 ) -> None:
     with patch.object(
         crc,
-        "fetch_branch_protection_contexts",
+        "fetch_classic_protection_contexts",
         return_value=["Python CI / CI Gate"],  # missing "Check REUSE Compliance"
     ):
         exit_code = crc.main(

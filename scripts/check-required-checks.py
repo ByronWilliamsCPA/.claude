@@ -14,7 +14,7 @@ Exit codes:
 """
 
 # #CRITICAL: external resource dependency
-# This module shells out to the gh CLI (fetch_branch_protection_contexts) and
+# This module shells out to the gh CLI (fetch_classic_protection_contexts) and
 # parses YAML from disk. Both surfaces are subject to upstream behavior changes
 # (gh schema, ruamel.yaml strictness). #VERIFY: when upgrading either tool,
 # rerun the integration test suite and the real-data dry-run against the
@@ -443,7 +443,7 @@ def scan_workflow_dir(
     return produced
 
 
-def fetch_branch_protection_contexts(
+def fetch_classic_protection_contexts(
     repo_slug: str,
     branch: str = "main",
     timeout: int = _GH_TIMEOUT_SECONDS,
@@ -660,7 +660,7 @@ def main(argv: list[str] | None = None) -> int:
     bp_failure_exit = 0
     if args.check_bp:
         try:
-            contexts = fetch_branch_protection_contexts(
+            contexts = fetch_classic_protection_contexts(
                 args.repo_slug, branch=args.branch
             )
         except BranchProtectionFetchError as exc:
