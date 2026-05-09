@@ -297,6 +297,7 @@ known-first-party = ["claude_config"]
     "S108",   # hardcoded_tmp_directory - test temp paths are intentional
     "S311",   # random - non-crypto random in tests is fine
     "S113",   # request_without_timeout - test HTTP calls may be mocked
+    "S603",   # subprocess_without_shell_equals_true - tests invoke project scripts with fixed args
 ]
 
 # Scripts (utility code - not packages)
