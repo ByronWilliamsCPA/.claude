@@ -197,11 +197,15 @@ def _signatures_enforced(org: str, repo: str, branch: str) -> bool:
             )
             if any(r.get("type") == "required_signatures" for r in rules):
                 return True
-        except (json.JSONDecodeError, TypeError):
+        except (json.JSONDecodeError, TypeError) as exc:
             # Unexpected ruleset shape; fall through to the classic check
             # below rather than raising, since the classic source can still
-            # confirm signatures.
-            pass
+            # confirm signatures. Log so operators can spot schema drift.
+            print(
+                f"warning: BP-4 ruleset shape unexpected for "
+                f"{org}/{repo}@{branch}: {exc}",
+                file=sys.stderr,
+            )
     sig_data, err = gh(
         f"repos/{org}/{repo}/branches/{branch}/protection/required_signatures"
     )
@@ -247,10 +251,15 @@ def _admins_enforced(org: str, repo: str, branch: str) -> bool:
                 rs_src = r.get("ruleset_source", "")
                 if rs_type and rs_id:
                     ruleset_refs.add((rs_type, rs_src, rs_id))
-        except (json.JSONDecodeError, TypeError):
+        except (json.JSONDecodeError, TypeError) as exc:
             # Unexpected ruleset-evaluation shape; treat as no rulesets
             # active and let the classic enforce_admins check below decide.
-            pass
+            # Log so operators can spot schema drift.
+            print(
+                f"warning: BP-5 ruleset-evaluation shape unexpected for "
+                f"{org}/{repo}@{branch}: {exc}",
+                file=sys.stderr,
+            )
     fetch_failures = 0
     for rs_type, rs_src, rs_id in ruleset_refs:
         path = (

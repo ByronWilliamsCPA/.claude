@@ -19,7 +19,8 @@ def test_signatures_enforced_via_ruleset(monkeypatch):
     def fake_gh(path):
         if "/rules/" in path:
             return (rules, None)
-        pytest.fail(f"Unexpected gh() call to {path}")
+        msg = f"Unexpected gh() call to {path}"
+        raise AssertionError(msg)
 
     monkeypatch.setattr(crc, "gh", fake_gh)
     assert crc._signatures_enforced("BW", ".claude", "main") is True

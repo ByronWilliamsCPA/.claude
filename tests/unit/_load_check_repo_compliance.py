@@ -8,26 +8,27 @@ that boilerplate including the sys.modules registration required for
 
 from __future__ import annotations
 
+import functools
 import importlib.abc
 import importlib.util
 import sys
 from pathlib import Path
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from types import ModuleType
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[2]
 _SCRIPT_PATH = _PROJECT_ROOT / "scripts" / "check-repo-compliance.py"
 
-_MODULE_CACHE = None
 
-
-def load_module():
+@functools.cache
+def load_module() -> ModuleType:
     """Load the check-repo-compliance script as a Python module.
 
     Returns:
-        The loaded module object, cached after first load.
+        The loaded module object, cached after first load via functools.cache.
     """
-    global _MODULE_CACHE  # noqa: PLW0603 -- module-level cache singleton
-    if _MODULE_CACHE is not None:
-        return _MODULE_CACHE
     spec = importlib.util.spec_from_file_location(
         "check_repo_compliance",
         _SCRIPT_PATH,
@@ -37,5 +38,4 @@ def load_module():
     sys.modules["check_repo_compliance"] = module
     assert isinstance(spec.loader, importlib.abc.Loader)
     spec.loader.exec_module(module)
-    _MODULE_CACHE = module
     return module
