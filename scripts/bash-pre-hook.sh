@@ -4,8 +4,10 @@
 # =============================================================================
 # Intercepts Bash tool calls to:
 #   1. Block force-pushes to main or master (exit 2 with BLOCKED message)
-#   2. Write a timing start timestamp to /tmp/claude-bash-start for the
-#      post-hook notification script to compute command duration.
+#   2. Write a timing start timestamp to ${HOME}/.claude/tmp_cleanup/bash-start
+#      for the post-hook notification script to compute command duration.
+#      The marker lives under the user's home (audit H-01) to avoid the
+#      symlink-race window of a fixed /tmp path.
 #
 # The timestamp is written ONLY when the command is allowed through.
 #
@@ -25,22 +27,41 @@ set -uo pipefail
 # be pre-created by any local user.
 TMP_DIR="${HOME}/.claude/tmp_cleanup"
 START_FILE="${TMP_DIR}/bash-start"
-mkdir -p "${TMP_DIR}"
-chmod 700 "${TMP_DIR}" 2>/dev/null || true
+if ! mkdir -p "${TMP_DIR}" 2>/dev/null; then
+    # Cannot create user-scoped temp dir; fall back to a no-op marker rather
+    # than reverting to /tmp (audit H-01 prohibits the world-writable path).
+    TMP_DIR=""
+    START_FILE=""
+fi
+[[ -n "$TMP_DIR" ]] && chmod 700 "${TMP_DIR}" 2>/dev/null
 
 LOG_FILE="${HOME}/.claude/logs/bash-pre-hook.log"
-mkdir -p "$(dirname "$LOG_FILE")"
-# Security (audit M-07): bash logs may capture commands that contain inline
-# tokens or connection strings; restrict permissions on first creation.
-[[ -f "$LOG_FILE" ]] || { : > "$LOG_FILE"; chmod 600 "$LOG_FILE" 2>/dev/null || true; }
+mkdir -p "$(dirname "$LOG_FILE")" 2>/dev/null || LOG_FILE=/dev/null
+# Security (audit M-07): bash logs may capture commands with inline tokens or
+# connection strings; restrict permissions on first creation. Surface the
+# fallback to stderr so the operator notices when the permission backstop
+# silently failed (e.g., DrvFs mount in WSL2).
+if [[ "$LOG_FILE" != "/dev/null" && ! -f "$LOG_FILE" ]]; then
+    : > "$LOG_FILE"
+    if ! chmod 600 "$LOG_FILE" 2>/dev/null; then
+        echo "[bash-pre-hook] WARN: chmod 600 ${LOG_FILE} failed; redaction is the only secret defense" >&2
+    fi
+fi
 
-# Redact common credential-pattern strings from log lines.
+# Redact common credential-pattern strings from log lines. Pinned LC_ALL=C so
+# multibyte sequences cannot crash sed; on any sed failure return a sentinel
+# rather than the raw input or an empty string (audit pr-fix follow-up).
 redact() {
-    printf '%s' "$1" | sed -E \
-        -e 's/(Authorization:[[:space:]]*Bearer[[:space:]]+)[^[:space:]]+/\1[REDACTED]/gi' \
-        -e 's/(password[[:space:]]*[:=][[:space:]]*)[^[:space:]&]+/\1[REDACTED]/gi' \
-        -e 's/((api[_-]?key|token|secret)[[:space:]]*[:=][[:space:]]*)[^[:space:]&]+/\1[REDACTED]/gi' \
-        -e 's|://([^:/@[:space:]]+):[^@[:space:]]+@|://\1:[REDACTED]@|g'
+    local out
+    if ! out=$(printf '%s' "$1" | LC_ALL=C sed -E \
+        -e 's/(Authorization:[[:space:]]*Bearer[[:space:]]+)[^[:space:]"]+/\1[REDACTED]/gi' \
+        -e 's/(password[[:space:]]*[:=][[:space:]]*)[^[:space:]&"]+/\1[REDACTED]/gi' \
+        -e 's/((api[_-]?key|token|secret)[[:space:]]*[:=][[:space:]]*)[^[:space:]&"]+/\1[REDACTED]/gi' \
+        -e 's|://([^:/@[:space:]]+):[^[:space:]]*@|://\1:[REDACTED]@|g' 2>/dev/null); then
+        printf '[REDACT_FAILED]'
+        return 0
+    fi
+    printf '%s' "$out"
 }
 
 log() {
@@ -49,10 +70,25 @@ log() {
 
 # Atomically write the timing start timestamp to START_FILE.
 # Uses mktemp inside the same directory so the rename stays on one filesystem.
+# On mktemp/rename failure the temp file is cleaned up so tmp_cleanup/ does
+# not accumulate orphans, and the failure is logged so a user investigating
+# missing notifications has a breadcrumb.
 write_start_marker() {
+    [[ -z "$START_FILE" ]] && return 0
     local tmp
-    tmp=$(mktemp "${START_FILE}.XXXXXX") || return 0
-    printf '%s' "$(date +%s)" > "$tmp" && mv "$tmp" "$START_FILE"
+    if ! tmp=$(mktemp "${START_FILE}.XXXXXX" 2>/dev/null); then
+        log "WARN: mktemp failed under ${TMP_DIR}; bash-notify timing disabled this run"
+        return 0
+    fi
+    if ! printf '%s' "$(date +%s)" > "$tmp" 2>/dev/null; then
+        log "WARN: write to ${tmp} failed; cleaning up"
+        rm -f "$tmp"
+        return 0
+    fi
+    if ! mv "$tmp" "$START_FILE" 2>/dev/null; then
+        log "WARN: mv ${tmp} -> ${START_FILE} failed; cleaning up orphan"
+        rm -f "$tmp"
+    fi
 }
 
 # Require jq for JSON parsing
@@ -183,8 +219,9 @@ if echo "$PUSH_SEGMENT" | grep -qE '(--force|--force-with-lease(=[^\s]+)?|-f)(\s
 fi
 
 # ---------------------------------------------------------------------------
-# Command is allowed -- write timing start timestamp (atomic write)
+# Command is allowed -- write timing start timestamp via write_start_marker
+# (audit H-01: atomic write to ${HOME}/.claude/tmp_cleanup/, not /tmp)
 # ---------------------------------------------------------------------------
-printf '%s' "$(date +%s)" > /tmp/claude-bash-start.tmp && mv /tmp/claude-bash-start.tmp /tmp/claude-bash-start
+write_start_marker
 log "Allowed: ${CMD}"
 exit 0

@@ -11,7 +11,7 @@
 # Expected stdin: JSON payload from Claude Code PostToolUse hook:
 #   {"tool_name":"Bash","tool_input":{"command":"..."},"tool_response":{...}}
 #
-# Timing file: /tmp/claude-bash-start (written by bash-pre-hook.sh)
+# Timing file: ${HOME}/.claude/tmp_cleanup/bash-start (written by bash-pre-hook.sh)
 # =============================================================================
 
 set -uo pipefail
@@ -25,13 +25,20 @@ mkdir -p "$(dirname "$LOG_FILE")"
 # connection strings; restrict permissions on first creation.
 [[ -f "$LOG_FILE" ]] || { : > "$LOG_FILE"; chmod 600 "$LOG_FILE" 2>/dev/null || true; }
 
-# Redact common credential-pattern strings from log lines.
+# Redact common credential-pattern strings from log lines. LC_ALL=C pinned so
+# multibyte sequences cannot crash sed; on any sed failure return a sentinel
+# rather than the raw input or an empty string.
 redact() {
-    printf '%s' "$1" | sed -E \
-        -e 's/(Authorization:[[:space:]]*Bearer[[:space:]]+)[^[:space:]]+/\1[REDACTED]/gi' \
-        -e 's/(password[[:space:]]*[:=][[:space:]]*)[^[:space:]&]+/\1[REDACTED]/gi' \
-        -e 's/((api[_-]?key|token|secret)[[:space:]]*[:=][[:space:]]*)[^[:space:]&]+/\1[REDACTED]/gi' \
-        -e 's|://([^:/@[:space:]]+):[^@[:space:]]+@|://\1:[REDACTED]@|g'
+    local out
+    if ! out=$(printf '%s' "$1" | LC_ALL=C sed -E \
+        -e 's/(Authorization:[[:space:]]*Bearer[[:space:]]+)[^[:space:]"]+/\1[REDACTED]/gi' \
+        -e 's/(password[[:space:]]*[:=][[:space:]]*)[^[:space:]&"]+/\1[REDACTED]/gi' \
+        -e 's/((api[_-]?key|token|secret)[[:space:]]*[:=][[:space:]]*)[^[:space:]&"]+/\1[REDACTED]/gi' \
+        -e 's|://([^:/@[:space:]]+):[^[:space:]]*@|://\1:[REDACTED]@|g' 2>/dev/null); then
+        printf '[REDACT_FAILED]'
+        return 0
+    fi
+    printf '%s' "$out"
 }
 
 log() {
