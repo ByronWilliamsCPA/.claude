@@ -23,7 +23,7 @@ REGISTRY = FIXTURES / "registry_input.yaml"
 def test_compliant_repo_emits_no_findings(capsys: pytest.CaptureFixture[str]) -> None:
     with patch.object(
         crc,
-        "fetch_branch_protection_contexts",
+        "fetch_classic_protection_contexts",
         return_value=["Python CI / CI Gate", "Check REUSE Compliance"],
     ):
         exit_code = crc.main(
@@ -37,6 +37,8 @@ def test_compliant_repo_emits_no_findings(capsys: pytest.CaptureFixture[str]) ->
                 "--repo-slug",
                 "fake/repo",
                 "--check-bp",
+                "--source",
+                "classic",
                 "--today",
                 "2026-05-08",
             ]
@@ -53,7 +55,7 @@ def test_branch_protection_drift_emits_ci023(
 ) -> None:
     with patch.object(
         crc,
-        "fetch_branch_protection_contexts",
+        "fetch_classic_protection_contexts",
         return_value=["Python CI / CI Gate"],  # missing "Check REUSE Compliance"
     ):
         exit_code = crc.main(
@@ -67,6 +69,8 @@ def test_branch_protection_drift_emits_ci023(
                 "--repo-slug",
                 "fake/repo",
                 "--check-bp",
+                "--source",
+                "classic",
                 "--today",
                 "2026-05-08",
             ]
@@ -75,5 +79,5 @@ def test_branch_protection_drift_emits_ci023(
     ci023 = [f for f in findings if f["check_id"] == "CI-023"]
     assert len(ci023) == 1
     assert "Check REUSE Compliance" in ci023[0]["message"]
-    assert "missing from branch protection" in ci023[0]["message"]
+    assert "missing from effective protection" in ci023[0]["message"]
     assert exit_code == 1

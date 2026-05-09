@@ -109,8 +109,15 @@ python scripts/check-required-checks.py \
   --registry "${HOME}/.claude/docs/reusable-workflow-jobs.yaml" \
   --repo-slug "${REPO_SLUG}" \
   --branch "${DEFAULT_BRANCH:-main}" \
-  --check-bp
+  --check-bp \
+  --source "${PROTECTION_SOURCE:-union}"
 ```
+
+The `--source` flag is selected from `repo.migrationPhase` in
+`docs/reference/github-repos.json`: `pending` -> `classic`, `dual` -> `union`
+(default), `complete` -> `rulesets`. Pass via the `PROTECTION_SOURCE` env var
+when invoking from a higher-level harness; the default `union` is the safest
+fallback for repos whose phase is unset.
 
 The script emits a JSON array of findings to stdout. Parse it and emit each as a standard FINDING block. Exit code 0 means no findings; non-zero means at least one finding was emitted (1 = drift findings, 2 = input load error).
 
@@ -125,21 +132,46 @@ Use AskUserQuestion to offer:
 - "Update the registry" (when produced_by is a reusable workflow path and the registry just needs the new name)
 - "Remove from manifest" (when the required check is no longer required; requires typed reason)
 
-**For CI-023 findings (branch protection drift):**
+**For CI-023 findings (effective protection drift):**
+
+The remediation depends on which source the finding's provenance string points at (the finding message includes a "Sources:" line):
 
 Use AskUserQuestion to offer:
-- "Update branch protection contexts to match manifest" (visible-to-others action; require typed `yes` to proceed; show the full PATCH payload first)
-- "Update manifest to match branch protection" (when live state is correct and manifest is stale)
+- "Update org ruleset to match manifest" (when provenance shows `Organization:<org>/<id>`; visible-to-others action; require typed `yes` to proceed; show the resolved JSON body first)
+- "Update repo-level ruleset to match manifest" (when provenance shows `Repository:<slug>/<id>`)
+- "Update classic protection to match manifest" (when provenance shows `classic`; transition window only)
+- "Update manifest to match effective protection" (when live state is correct and the manifest is stale)
 
-The PATCH command for branch protection updates is:
+The applied command depends on the source:
+
+**Drift in an ORG-LEVEL ruleset** (provenance shows `Organization:<org>/<id>`):
+
+```bash
+uv run python scripts/setup_org_rulesets.py --org ${ORG} \
+  --body docs/reference/org-rulesets/${ORG}-${TIER}.json \
+  --enforcement active
+```
+
+The body file (`docs/reference/org-rulesets/<org>-<tier>.json` where `<tier>` is `universal` or `python`) must already reflect the manifest. If it does not, edit the body first and re-apply.
+
+**Drift in a REPO-LEVEL ruleset** (provenance shows `Repository:<owner>/<repo>/<id>`):
+
+```bash
+uv run python scripts/setup_repo_rulesets.py --repo ${REPO_SLUG} \
+  --body docs/reference/repo-rulesets/${OWNER}__${REPO}.json \
+  --enforcement active
+```
+
+**Drift remaining in classic protection** (provenance shows `classic`; transition window only):
 
 ```bash
 gh api repos/${REPO_SLUG}/branches/${DEFAULT_BRANCH:-main}/protection/required_status_checks \
   --method PATCH \
-  --field 'contexts[]=<name1>' \
-  --field 'contexts[]=<name2>' \
+  --field 'contexts[]=<name>' \
   --field 'strict=true'
 ```
+
+The classic-protection PATCH should only be used while `migrationPhase` is `pending` or `dual`. Once a repo's `migrationPhase` is `complete`, classic protection is absent and this command will return 404.
 
 **For CI-024 findings (registry staleness):**
 
@@ -148,6 +180,53 @@ Offer:
 - "Mark as still accurate" (if user has manually verified; bump last_verified)
 
 When multiple CI-023 findings exist with the same fix shape (all branch-protection drift), offer a "fix all in one PATCH" batch option.
+
+**For CI-025 findings (org ruleset missing or not active):**
+
+```text
+FINDING:
+id: CI-025
+severity: critical
+description: Org '<ORG>' has no active ruleset targeting default branch
+status: configuration_gap
+current_value: gh api orgs/<ORG>/rulesets returned [] or all entries have enforcement != active
+remediation: |
+  uv run python scripts/setup_org_rulesets.py --org <ORG> \
+    --body docs/reference/org-rulesets/<ORG>-universal.json --enforcement active
+  uv run python scripts/setup_org_rulesets.py --org <ORG> \
+    --body docs/reference/org-rulesets/<ORG>-python.json --enforcement active
+```
+
+**For CI-026 findings (Copilot rule missing from ruleset):**
+
+```text
+FINDING:
+id: CI-026
+severity: important
+description: Org ruleset is missing the copilot_code_review rule
+status: configuration_gap
+current_value: ruleset id=<id> has no rule of type copilot_code_review
+remediation: |
+  The Copilot rule is defined in docs/reference/org-rulesets/<ORG>-universal.json.
+  Re-apply via:
+  uv run python scripts/setup_org_rulesets.py --org <ORG> \
+    --body docs/reference/org-rulesets/<ORG>-universal.json --enforcement active
+```
+
+**For CI-027 findings (classic protection still present post-migration):**
+
+```text
+FINDING:
+id: CI-027
+severity: important
+description: Classic branch protection still present on <repo>:<branch> after migrationPhase=complete
+status: configuration_gap
+current_value: gh api repos/<repo>/branches/<branch>/protection returned 200
+remediation: |
+  Verify the org rulesets enforce equivalent constraints, then:
+  gh api repos/<repo>/branches/<branch>/protection --method DELETE
+  Re-run: uv run python scripts/check-required-checks.py --source rulesets --repo-slug <repo> --check-bp
+```
 
 **Private vulnerability reporting:**
 ```bash
@@ -307,11 +386,27 @@ For each check below: what the tool measures, what score >= 4 requires, and the 
 
 ### Branch-Protection (High)
 
-**Measures:** GitHub branch protection settings on the default branch.
+**Measures:** GitHub branch protection settings on the default branch. Scorecard
+now reads BOTH classic protection and rulesets; rulesets are the preferred
+mechanism since they read with the default GITHUB_TOKEN (no admin PAT
+required).
+
 **Score >= 4 (Tier 1):** At least one protection: required reviewers OR required status checks.
 **Score >= 6 (Tier 2):** All of: require PR before merging, 1 required reviewer, dismiss stale reviews on new commits, require branches to be up to date.
 **Score >= 8 (Tier 3):** Tier 2 plus require linear history and no force push.
-**Remediation for 4+:** Enable via `gh api repos/:owner/:repo/branches/main/protection --method PUT` with:
+
+**Remediation (preferred):** Apply the org-level ruleset:
+
+```bash
+uv run python scripts/setup_org_rulesets.py --org <ORG> \
+  --body docs/reference/org-rulesets/<ORG>-universal.json --enforcement active
+```
+
+**Remediation (legacy classic protection, transition only):** Use the classic
+API for repos still in migrationPhase=pending. Original JSON body retained
+below as reference; prefer the ruleset path above.
+
+Enable via `gh api repos/:owner/:repo/branches/main/protection --method PUT` with:
 ```json
 {
   "required_pull_request_reviews": {

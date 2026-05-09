@@ -200,25 +200,29 @@ def test_diff_required_vs_produced_flags_unregistered_reusable() -> None:
     )
 
 
-# ── diff_required_vs_branch_protection ──────────────────────────────────────
+# ── diff_required_vs_effective ──────────────────────────────────────────────
 
 
 @pytest.mark.unit
-def test_diff_required_vs_branch_protection_missing_and_extra() -> None:
-    findings = crc.diff_required_vs_branch_protection(
+def test_diff_required_vs_effective_missing_and_extra() -> None:
+    effective = {"CI Gate", "Stale Check"}
+    findings = crc.diff_required_vs_effective(
         required={"CI Gate", "REUSE"},
-        contexts=["CI Gate", "Stale Check"],
+        effective=effective,
+        provenance={"classic": list(effective)},
     )
     messages = [f.message for f in findings]
-    assert any("REUSE" in m and "missing" in m for m in messages)
-    assert any("Stale Check" in m and "does not list" in m for m in messages)
+    assert any("REUSE" in m and "missing" in m.lower() for m in messages)
+    assert any("Stale Check" in m for m in messages)
 
 
 @pytest.mark.unit
-def test_diff_required_vs_branch_protection_exact_match_no_findings() -> None:
-    findings = crc.diff_required_vs_branch_protection(
+def test_diff_required_vs_effective_exact_match_no_findings() -> None:
+    effective = {"CI Gate"}
+    findings = crc.diff_required_vs_effective(
         required={"CI Gate"},
-        contexts=["CI Gate"],
+        effective=effective,
+        provenance={"classic": list(effective)},
     )
     assert findings == []
 
@@ -273,7 +277,7 @@ def test_registry_freshness_accepts_native_date_object() -> None:
     assert findings == []
 
 
-# ── fetch_branch_protection_contexts ────────────────────────────────────────
+# ── fetch_classic_protection_contexts ────────────────────────────────────────
 
 
 def _fake_subprocess(
@@ -298,17 +302,17 @@ def _fake_subprocess(
 
 
 @pytest.mark.unit
-def test_fetch_branch_protection_contexts_handles_null_response(
+def test_fetch_classic_protection_contexts_handles_null_response(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Repos with protection but no required_status_checks return null from --jq."""
     _fake_subprocess(monkeypatch, returncode=0, stdout="null\n")
-    contexts = crc.fetch_branch_protection_contexts("fake/repo")
+    contexts = crc.fetch_classic_protection_contexts("fake/repo")
     assert contexts == []
 
 
 @pytest.mark.unit
-def test_fetch_branch_protection_contexts_returns_list(
+def test_fetch_classic_protection_contexts_returns_list(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     _fake_subprocess(
@@ -316,12 +320,12 @@ def test_fetch_branch_protection_contexts_returns_list(
         returncode=0,
         stdout=json.dumps(["CI Gate", "REUSE"]) + "\n",
     )
-    contexts = crc.fetch_branch_protection_contexts("fake/repo")
+    contexts = crc.fetch_classic_protection_contexts("fake/repo")
     assert contexts == ["CI Gate", "REUSE"]
 
 
 @pytest.mark.unit
-def test_fetch_branch_protection_contexts_raises_on_non_zero_exit(
+def test_fetch_classic_protection_contexts_raises_on_non_zero_exit(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """gh non-zero exit must raise, not silently return []. Treating an auth
@@ -330,29 +334,29 @@ def test_fetch_branch_protection_contexts_raises_on_non_zero_exit(
     """
     _fake_subprocess(monkeypatch, returncode=1, stderr="HTTP 401: Bad credentials")
     with pytest.raises(crc.BranchProtectionFetchError, match="exit 1"):
-        crc.fetch_branch_protection_contexts("fake/repo")
+        crc.fetch_classic_protection_contexts("fake/repo")
 
 
 @pytest.mark.unit
-def test_fetch_branch_protection_contexts_raises_on_malformed_json(
+def test_fetch_classic_protection_contexts_raises_on_malformed_json(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     _fake_subprocess(monkeypatch, returncode=0, stdout="<html>auth redirect</html>")
     with pytest.raises(crc.BranchProtectionFetchError, match="non-JSON"):
-        crc.fetch_branch_protection_contexts("fake/repo")
+        crc.fetch_classic_protection_contexts("fake/repo")
 
 
 @pytest.mark.unit
-def test_fetch_branch_protection_contexts_raises_on_unexpected_type(
+def test_fetch_classic_protection_contexts_raises_on_unexpected_type(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     _fake_subprocess(monkeypatch, returncode=0, stdout=json.dumps({"oops": "dict"}))
     with pytest.raises(crc.BranchProtectionFetchError, match="unexpected type"):
-        crc.fetch_branch_protection_contexts("fake/repo")
+        crc.fetch_classic_protection_contexts("fake/repo")
 
 
 @pytest.mark.unit
-def test_fetch_branch_protection_contexts_raises_on_timeout(
+def test_fetch_classic_protection_contexts_raises_on_timeout(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     def _raise_timeout(*args, **kwargs):
@@ -360,7 +364,7 @@ def test_fetch_branch_protection_contexts_raises_on_timeout(
 
     monkeypatch.setattr(subprocess, "run", _raise_timeout)
     with pytest.raises(crc.BranchProtectionFetchError, match="timed out"):
-        crc.fetch_branch_protection_contexts("fake/repo", timeout=30)
+        crc.fetch_classic_protection_contexts("fake/repo", timeout=30)
 
 
 # ── load_required_checks ────────────────────────────────────────────────────
@@ -434,3 +438,189 @@ def test_main_rejects_check_bp_without_repo_slug(
     assert excinfo.value.code == 2
     captured = capsys.readouterr()
     assert "--check-bp requires --repo-slug" in captured.err
+
+
+# -- fetch_ruleset_contexts --------------------------------------------------
+
+
+def test_fetch_ruleset_contexts_returns_empty_when_no_rulesets(monkeypatch):
+    monkeypatch.setattr(crc, "_run_gh", lambda args, timeout: ("[]", "", 0))
+    contexts, provenance = crc.fetch_ruleset_contexts("test/repo", "main")
+    assert contexts == set()
+    assert provenance == {}
+
+
+def test_fetch_ruleset_contexts_returns_set_and_provenance(monkeypatch):
+    payload = json.dumps(
+        [
+            {
+                "type": "required_status_checks",
+                "ruleset_source_type": "Organization",
+                "ruleset_source": "ByronWilliamsCPA",
+                "ruleset_id": 99,
+                "parameters": {
+                    "required_status_checks": [
+                        {"context": "CI Gate"},
+                        {"context": "Security Gate Validation"},
+                    ]
+                },
+            },
+            {"type": "required_signatures"},
+        ]
+    )
+    monkeypatch.setattr(crc, "_run_gh", lambda args, timeout: (payload, "", 0))
+    contexts, prov = crc.fetch_ruleset_contexts("BW/repo", "main")
+    assert contexts == {"CI Gate", "Security Gate Validation"}
+    assert prov == {
+        "Organization:ByronWilliamsCPA/99": ["CI Gate", "Security Gate Validation"]
+    }
+
+
+def test_fetch_ruleset_contexts_raises_on_gh_failure(monkeypatch):
+    monkeypatch.setattr(crc, "_run_gh", lambda args, timeout: ("", "auth error", 1))
+    with pytest.raises(crc.RulesetFetchError, match="auth error"):
+        crc.fetch_ruleset_contexts("test/repo", "main")
+
+
+def test_fetch_ruleset_contexts_raises_on_malformed_json(monkeypatch):
+    monkeypatch.setattr(crc, "_run_gh", lambda args, timeout: ("not json", "", 0))
+    with pytest.raises(crc.RulesetFetchError, match="Malformed"):
+        crc.fetch_ruleset_contexts("test/repo", "main")
+
+
+def test_fetch_ruleset_contexts_raises_on_gh_timeout(monkeypatch):
+    """GhCliError(timeout) from _run_gh must surface as RulesetFetchError."""
+
+    def fake_run_gh(args, timeout):
+        raise crc.GhCliError("gh CLI timed out after 30s")
+
+    monkeypatch.setattr(crc, "_run_gh", fake_run_gh)
+    with pytest.raises(crc.RulesetFetchError, match="timed out"):
+        crc.fetch_ruleset_contexts("test/repo", "main")
+
+
+def test_fetch_ruleset_contexts_raises_on_gh_not_found(monkeypatch):
+    """GhCliError(not-found) from _run_gh must surface as RulesetFetchError."""
+
+    def fake_run_gh(args, timeout):
+        raise crc.GhCliError("gh CLI not found on PATH")
+
+    monkeypatch.setattr(crc, "_run_gh", fake_run_gh)
+    with pytest.raises(crc.RulesetFetchError, match="not found"):
+        crc.fetch_ruleset_contexts("test/repo", "main")
+
+
+# -- fetch_effective_required_contexts ----------------------------------------
+
+
+def test_fetch_effective_classic_mode_uses_only_classic(monkeypatch):
+    monkeypatch.setattr(
+        crc, "fetch_classic_protection_contexts", lambda *a, **k: ["A", "B"]
+    )
+    monkeypatch.setattr(
+        crc, "fetch_ruleset_contexts", lambda *a, **k: pytest.fail("should not call")
+    )
+    contexts, prov = crc.fetch_effective_required_contexts("r/r", "main", "classic")
+    assert contexts == {"A", "B"}
+    assert prov == {"classic": ["A", "B"]}
+
+
+def test_fetch_effective_union_combines(monkeypatch):
+    monkeypatch.setattr(crc, "fetch_classic_protection_contexts", lambda *a, **k: ["A"])
+    monkeypatch.setattr(
+        crc,
+        "fetch_ruleset_contexts",
+        lambda *a, **k: ({"B", "C"}, {"Organization:O/1": ["B", "C"]}),
+    )
+    contexts, prov = crc.fetch_effective_required_contexts("r/r", "main", "union")
+    assert contexts == {"A", "B", "C"}
+    assert prov == {"classic": ["A"], "Organization:O/1": ["B", "C"]}
+
+
+def test_fetch_effective_union_partial_failure_returns_partial(monkeypatch):
+    def boom(*a, **k):
+        raise crc.BranchProtectionFetchError("404 not found")
+
+    monkeypatch.setattr(crc, "fetch_classic_protection_contexts", boom)
+    monkeypatch.setattr(
+        crc,
+        "fetch_ruleset_contexts",
+        lambda *a, **k: ({"X"}, {"Organization:O/1": ["X"]}),
+    )
+    contexts, prov = crc.fetch_effective_required_contexts("r/r", "main", "union")
+    assert contexts == {"X"}
+    assert "classic:error" in prov
+    assert "404 not found" in prov["classic:error"][0]
+
+
+@pytest.mark.unit
+def test_diff_required_vs_effective_includes_provenance() -> None:
+    findings = crc.diff_required_vs_effective(
+        required={"A", "B"},
+        effective={"A"},
+        provenance={"classic": ["A"], "Organization:williaby/42": []},
+    )
+    msgs = [f.message for f in findings]
+    assert any("B" in m and "missing" in m.lower() for m in msgs)
+    assert any("classic" in m or "Organization:williaby/42" in m for m in msgs)
+
+
+# ── _parse_args --source flag ────────────────────────────────────────────────
+
+
+@pytest.mark.unit
+def test_source_flag_defaults_to_union(tmp_path: Path) -> None:
+    """--source defaults to 'union' when omitted."""
+    args = crc._parse_args(
+        [
+            "--repo-path",
+            str(tmp_path),
+            "--manifest",
+            str(tmp_path / "manifest.yaml"),
+            "--registry",
+            str(tmp_path / "registry.yaml"),
+            "--repo-slug",
+            "x/y",
+            "--check-bp",
+        ]
+    )
+    assert args.source == "union"
+
+
+@pytest.mark.unit
+def test_source_flag_accepts_classic(tmp_path: Path) -> None:
+    """--source classic is a valid explicit choice."""
+    args = crc._parse_args(
+        [
+            "--repo-path",
+            str(tmp_path),
+            "--manifest",
+            str(tmp_path / "manifest.yaml"),
+            "--registry",
+            str(tmp_path / "registry.yaml"),
+            "--repo-slug",
+            "x/y",
+            "--check-bp",
+            "--source",
+            "classic",
+        ]
+    )
+    assert args.source == "classic"
+
+
+@pytest.mark.unit
+def test_source_flag_rejects_invalid(tmp_path: Path) -> None:
+    """--source rejects values outside the allowed choices."""
+    with pytest.raises(SystemExit):
+        crc._parse_args(
+            [
+                "--repo-path",
+                str(tmp_path),
+                "--manifest",
+                str(tmp_path / "manifest.yaml"),
+                "--registry",
+                str(tmp_path / "registry.yaml"),
+                "--source",
+                "garbage",
+            ]
+        )

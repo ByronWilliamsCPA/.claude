@@ -14,7 +14,7 @@ Exit codes:
 """
 
 # #CRITICAL: external resource dependency
-# This module shells out to the gh CLI (fetch_branch_protection_contexts) and
+# This module shells out to the gh CLI (fetch_classic_protection_contexts) and
 # parses YAML from disk. Both surfaces are subject to upstream behavior changes
 # (gh schema, ruamel.yaml strictness). #VERIFY: when upgrading either tool,
 # rerun the integration test suite and the real-data dry-run against the
@@ -49,7 +49,11 @@ _UNREGISTERED_PREFIX = "__UNREGISTERED__:"
 _GH_TIMEOUT_SECONDS = 30
 
 
-class BranchProtectionFetchError(Exception):
+class GhCliError(RuntimeError):
+    """Base error for any failure invoking the gh CLI."""
+
+
+class BranchProtectionFetchError(GhCliError):
     """Raised when branch protection contexts cannot be fetched reliably.
 
     Distinct from `[]` (which means the branch has zero required contexts).
@@ -251,32 +255,73 @@ def diff_required_vs_produced(
     return findings
 
 
-def diff_required_vs_branch_protection(
+def diff_required_vs_effective(
     required: set[str],
-    contexts: list[str],
+    effective: set[str],
+    provenance: dict[str, list[str]],
 ) -> list[Finding]:
-    """CI-023: branch protection contexts equal required_checks set exactly."""
-    actual = set(contexts)
+    """Diff manifest required-checks set vs effective protection contexts.
+
+    Emits one Critical Finding per missing or extra context, with provenance
+    appended to the message so operators know which source needs patching.
+    Also emits a Critical Finding for any source that failed to load (per
+    "<source>:error" key in provenance).
+
+    Args:
+        required: Manifest required-checks set.
+        effective: Effective contexts present in protection (union of sources).
+        provenance: Map of source-id to contexts contributed; "<source>:error"
+            keys carry an error message instead of a contexts list.
+
+    Returns:
+        List of Finding objects (one per missing context, one per extra context,
+        one per failed source).
+    """
+    sources = (
+        ", ".join(
+            f"{k}={v}"
+            for k, v in sorted(provenance.items())
+            if not k.endswith(":error")
+        )
+        or "(no protection sources found)"
+    )
+
+    missing = required - effective
+    extra = effective - required
+
     findings: list[Finding] = [
         Finding(
             check_id="CI-023",
             severity="critical",
             message=(
-                f"Required check '{name}' missing from branch protection contexts."
+                f"Required check '{name}' is missing from effective protection. "
+                f"Sources: {sources}"
             ),
         )
-        for name in sorted(required - actual)
+        for name in sorted(missing)
     ]
     findings.extend(
         Finding(
             check_id="CI-023",
             severity="critical",
             message=(
-                f"Branch protection requires '{name}' but manifest does "
-                f"not list it as a required check."
+                f"Extra context '{name}' is enforced but not in required_checks. "
+                f"Sources: {sources}"
             ),
         )
-        for name in sorted(actual - required)
+        for name in sorted(extra)
+    )
+    findings.extend(
+        Finding(
+            check_id="CI-023",
+            severity="critical",
+            message=(
+                f"Could not read protection source '{err_key.split(':')[0]}': "
+                f"{provenance[err_key][0]}"
+            ),
+        )
+        for err_key in ("classic:error", "rulesets:error")
+        if err_key in provenance
     )
     return findings
 
@@ -439,7 +484,7 @@ def scan_workflow_dir(
     return produced
 
 
-def fetch_branch_protection_contexts(
+def fetch_classic_protection_contexts(
     repo_slug: str,
     branch: str = "main",
     timeout: int = _GH_TIMEOUT_SECONDS,
@@ -488,6 +533,13 @@ def fetch_branch_protection_contexts(
         ) from exc
 
     if result.returncode != 0:
+        stderr_lower = result.stderr.lower()
+        # 404 indicates the branch has no classic protection (e.g., the
+        # repo has migrated to rulesets-only). That is "no classic
+        # contexts," not a fetch failure; return [] so audit modes that
+        # combine classic+rulesets do not mis-report it as Critical drift.
+        if "404" in stderr_lower or "not protected" in stderr_lower:
+            return []
         raise BranchProtectionFetchError(
             f"gh API failed for {repo_slug}@{branch} "
             f"(exit {result.returncode}): {result.stderr.strip() or result.stdout.strip()}"
@@ -514,6 +566,157 @@ def fetch_branch_protection_contexts(
     return [str(item) for item in parsed]
 
 
+def _run_gh(args: list[str], timeout: int) -> tuple[str, str, int]:
+    """Invoke the gh CLI with the given args and return (stdout, stderr, returncode).
+
+    Args:
+        args: Command-line arguments passed to the gh CLI (excluding the
+            leading "gh" token itself).
+        timeout: Maximum seconds to wait for the process to complete.
+
+    Returns:
+        A 3-tuple of (stdout, stderr, returncode). stdout and stderr are
+        decoded text strings. returncode is the process exit code.
+
+    Raises:
+        GhCliError: The gh binary was not found on PATH or the process timed
+            out. Callers should catch this or let it propagate as a
+            configuration error.
+    """
+    try:
+        result = subprocess.run(  # nosec B603 B607  # noqa: S603 -- list args, shell=False; tracked: PR #74.
+            ["gh", *args],  # noqa: S607 -- gh resolved via PATH; tracked: PR #74.
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=timeout,
+        )
+    except subprocess.TimeoutExpired as exc:
+        raise GhCliError(f"gh CLI timed out after {timeout}s") from exc
+    except FileNotFoundError as exc:
+        raise GhCliError(
+            "gh CLI not found on PATH; install gh or run without ruleset checks"
+        ) from exc
+    return result.stdout, result.stderr, result.returncode
+
+
+class RulesetFetchError(GhCliError):
+    """Raised when ruleset evaluation cannot be fetched from gh."""
+
+
+def fetch_ruleset_contexts(
+    repo_slug: str,
+    branch: str = "main",
+    timeout: int = _GH_TIMEOUT_SECONDS,
+) -> tuple[set[str], dict[str, list[str]]]:
+    """Return (contexts, provenance) from all rulesets targeting this branch.
+
+    provenance maps "<source_type>:<source>/<id>" to the contexts that
+    ruleset contributes. source_type is "Repository" or "Organization".
+
+    Args:
+        repo_slug: GitHub "owner/repo" slug.
+        branch: Branch name to evaluate rulesets against (default: main).
+        timeout: Maximum seconds to wait for the gh CLI call.
+
+    Returns:
+        A 2-tuple of (contexts, provenance) where contexts is the union of
+        all required-status-check context names across every ruleset and
+        provenance maps each ruleset key to the list of contexts it
+        contributes.
+
+    Raises:
+        RulesetFetchError: gh CLI exited non-zero, timed out, was not found
+            on PATH, or returned malformed JSON.
+    """
+    args = ["api", f"repos/{repo_slug}/rules/branches/{branch}"]
+    try:
+        out, err, rc = _run_gh(args, timeout)
+    except GhCliError as exc:
+        raise RulesetFetchError(str(exc)) from exc
+    if rc != 0:
+        raise RulesetFetchError(
+            f"Could not fetch ruleset evaluation: {err.strip() or out.strip()}"
+        )
+    try:
+        rules = json.loads(out) if out.strip() else []
+    except json.JSONDecodeError as exc:
+        raise RulesetFetchError(f"Malformed ruleset JSON: {exc}") from exc
+
+    contexts: set[str] = set()
+    provenance: dict[str, list[str]] = {}
+    for rule in rules:
+        if rule.get("type") != "required_status_checks":
+            continue
+        params = rule.get("parameters", {}) or {}
+        rule_contexts = [
+            entry.get("context", "")
+            for entry in params.get("required_status_checks", [])
+            if entry.get("context")
+        ]
+        source_type = rule.get("ruleset_source_type", "Unknown")
+        source = rule.get("ruleset_source", "?")
+        ruleset_id = rule.get("ruleset_id", "?")
+        key = f"{source_type}:{source}/{ruleset_id}"
+        provenance.setdefault(key, []).extend(rule_contexts)
+        contexts.update(rule_contexts)
+    return contexts, provenance
+
+
+def fetch_effective_required_contexts(
+    repo_slug: str,
+    branch: str,
+    source_mode: str,
+) -> tuple[set[str], dict[str, list[str]]]:
+    """Return effective required-checks set and provenance per source_mode.
+
+    Args:
+        repo_slug: GitHub owner/repo slug.
+        branch: Branch name.
+        source_mode: One of "classic", "rulesets", "union".
+
+    Returns:
+        Tuple of (effective_contexts, provenance). Provenance always
+        includes a "<source>:error" key for any source that raised, so
+        callers can emit a Critical finding for the failed source while
+        still validating what they got.
+
+    Raises:
+        ValueError: If source_mode is not one of the allowed values.
+        BranchProtectionFetchError: If source_mode is "classic" and the
+            classic fetcher fails.
+        RulesetFetchError: If source_mode is "rulesets" and the ruleset
+            fetcher fails.
+    """
+    if source_mode not in {"classic", "rulesets", "union"}:
+        raise ValueError(f"Invalid source_mode: {source_mode!r}")
+
+    contexts: set[str] = set()
+    provenance: dict[str, list[str]] = {}
+
+    if source_mode in {"classic", "union"}:
+        try:
+            classic = list(fetch_classic_protection_contexts(repo_slug, branch))
+            contexts.update(classic)
+            provenance["classic"] = classic
+        except BranchProtectionFetchError as exc:
+            if source_mode == "classic":
+                raise
+            provenance["classic:error"] = [str(exc)]
+
+    if source_mode in {"rulesets", "union"}:
+        try:
+            rs_contexts, rs_prov = fetch_ruleset_contexts(repo_slug, branch)
+            contexts.update(rs_contexts)
+            provenance.update(rs_prov)
+        except RulesetFetchError as exc:
+            if source_mode == "rulesets":
+                raise
+            provenance["rulesets:error"] = [str(exc)]
+
+    return contexts, provenance
+
+
 def _parse_args(argv: list[str] | None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-path", type=Path, required=True)
@@ -529,6 +732,12 @@ def _parse_args(argv: list[str] | None) -> argparse.Namespace:
         "--check-bp",
         action="store_true",
         help="Fetch and validate branch protection contexts (requires --repo-slug)",
+    )
+    parser.add_argument(
+        "--source",
+        choices=("classic", "rulesets", "union"),
+        default="union",
+        help="Which protection source to validate against (default: union).",
     )
     parser.add_argument(
         "--today",
@@ -559,10 +768,10 @@ def main(argv: list[str] | None = None) -> int:
     bp_failure_exit = 0
     if args.check_bp:
         try:
-            contexts = fetch_branch_protection_contexts(
-                args.repo_slug, branch=args.branch
+            effective, provenance = fetch_effective_required_contexts(
+                args.repo_slug, args.branch, args.source
             )
-        except BranchProtectionFetchError as exc:
+        except (BranchProtectionFetchError, RulesetFetchError) as exc:
             findings.append(
                 Finding(
                     check_id="CI-023",
@@ -575,7 +784,7 @@ def main(argv: list[str] | None = None) -> int:
             )
             bp_failure_exit = 2
         else:
-            findings += diff_required_vs_branch_protection(required, contexts)
+            findings += diff_required_vs_effective(required, effective, provenance)
 
     today_value = (
         date.fromisoformat(args.today) if args.today else date.today()  # noqa: DTZ011 -- local TZ acceptable for 90-day cutoff; tracked: PR #74.
