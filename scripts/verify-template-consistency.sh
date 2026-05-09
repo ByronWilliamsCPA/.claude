@@ -13,7 +13,7 @@ NC='\033[0m'
 # Paths
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-COOKIECUTTER_TEMPLATE="/home/byron/dev/cookiecutter-python-template/{{cookiecutter.project_slug}}/.claude"
+COOKIECUTTER_TEMPLATE="${HOME}/dev/cookiecutter-python-template/{{cookiecutter.project_slug}}/.claude"
 
 echo -e "${GREEN}=== Template Consistency Verification ===${NC}"
 echo ""
