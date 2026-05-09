@@ -142,3 +142,42 @@ def test_apply_rejects_violating_body(monkeypatch, tmp_path):
     catalog.write_text(json.dumps({"repos": []}))
     with pytest.raises(SoloDevViolation):
         apply("BW", body_path, None, catalog, dry_run=True)
+
+
+def test_main_catches_gh_failure(monkeypatch, tmp_path, capsys):
+    """gh CalledProcessError surfaces as a clean error message and exit code 4."""
+    import subprocess
+
+    import scripts.setup_org_rulesets as ssor
+
+    body_path = tmp_path / "body.json"
+    body_path.write_text(
+        json.dumps(
+            {
+                "name": "test",
+                "rules": [],
+                "conditions": {"repository_name": {"include": ["~ALL"]}},
+            }
+        )
+    )
+    catalog = tmp_path / "c.json"
+    catalog.write_text(json.dumps({"repos": []}))
+
+    def boom(*a, **k):
+        raise subprocess.CalledProcessError(1, ["gh", "api"], stderr="403 Forbidden")
+
+    monkeypatch.setattr(ssor, "find_existing_ruleset", lambda *a, **k: None)
+    monkeypatch.setattr("subprocess.run", boom)
+
+    rc = ssor.main(
+        [
+            "--org",
+            "BW",
+            "--body",
+            str(body_path),
+            "--catalog",
+            str(catalog),
+        ]
+    )
+    assert rc == ssor.EXIT_GH_FAILURE
+    assert "gh command failed" in capsys.readouterr().err

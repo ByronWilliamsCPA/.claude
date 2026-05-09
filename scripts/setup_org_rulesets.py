@@ -11,7 +11,12 @@ import subprocess
 import sys
 from pathlib import Path
 
+from scripts.generate_python_tier_repos import python_repos_for_org
+
 CATALOG_DEFAULT = Path("docs/reference/github-repos.json")
+EXIT_OK = 0
+EXIT_GH_FAILURE = 4
+EXIT_SOLO_DEV_VIOLATION = 3
 
 
 class SoloDevViolationError(RuntimeError):
@@ -60,8 +65,6 @@ def render_body(body: dict, org: str, catalog: Path) -> dict:
     out = json.loads(json.dumps(body))  # deep copy
     repo_cond = out.get("conditions", {}).get("repository_name", {})
     if repo_cond.get("include") == ["__GENERATED__"]:
-        from scripts.generate_python_tier_repos import python_repos_for_org
-
         repo_cond["include"] = python_repos_for_org(org, catalog)
     return out
 
@@ -107,6 +110,8 @@ def apply(
 
     Raises:
         SoloDevViolation: If the body would lock out solo-dev workflow.
+        subprocess.CalledProcessError: If the gh CLI invocation fails
+            (auth error, 4xx response, network failure).
     """
     body = json.loads(body_path.read_text())
     validate_solo_dev_safe(body)
@@ -146,7 +151,9 @@ def main(argv: list[str]) -> int:
         argv: Command-line argument vector (excluding program name).
 
     Returns:
-        Exit code: 0 on success, 3 on solo-dev violation, other on argparse error.
+        Exit code: EXIT_OK on success, EXIT_GH_FAILURE on gh CLI failure,
+        EXIT_SOLO_DEV_VIOLATION on solo-dev violation. Argparse errors exit
+        directly with code 2.
     """
     parser = argparse.ArgumentParser()
     parser.add_argument("--org", required=True)
@@ -159,8 +166,11 @@ def main(argv: list[str]) -> int:
         apply(args.org, args.body, args.enforcement, args.catalog, args.dry_run)
     except SoloDevViolationError as e:
         print(f"REFUSED: {e}", file=sys.stderr)
-        return 3
-    return 0
+        return EXIT_SOLO_DEV_VIOLATION
+    except subprocess.CalledProcessError as e:
+        print(f"gh command failed: {e}", file=sys.stderr)
+        return EXIT_GH_FAILURE
+    return EXIT_OK
 
 
 if __name__ == "__main__":
