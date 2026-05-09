@@ -109,8 +109,15 @@ python scripts/check-required-checks.py \
   --registry "${HOME}/.claude/docs/reusable-workflow-jobs.yaml" \
   --repo-slug "${REPO_SLUG}" \
   --branch "${DEFAULT_BRANCH:-main}" \
-  --check-bp
+  --check-bp \
+  --source "${PROTECTION_SOURCE:-union}"
 ```
+
+The `--source` flag is selected from `repo.migrationPhase` in
+`docs/reference/github-repos.json`: `pending` -> `classic`, `dual` -> `union`
+(default), `complete` -> `rulesets`. Pass via the `PROTECTION_SOURCE` env var
+when invoking from a higher-level harness; the default `union` is the safest
+fallback for repos whose phase is unset.
 
 The script emits a JSON array of findings to stdout. Parse it and emit each as a standard FINDING block. Exit code 0 means no findings; non-zero means at least one finding was emitted (1 = drift findings, 2 = input load error).
 
