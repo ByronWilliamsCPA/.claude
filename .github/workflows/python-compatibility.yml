@@ -42,7 +42,15 @@ jobs:
       include-macos: true
       include-windows: true
       source-directory: 'src'
-      test-command: 'pytest tests/ -v --tb=short -x --ignore=tests/integration --ignore=tests/load -m "not slow and not integration"'
+      # Marker filter intentionally omitted: the org reusable workflow runs
+      # `uv run $TEST_COMMAND` with the variable unquoted (shellcheck SC2086
+      # disabled). Embedded quotes around `-m "not slow and not integration"`
+      # are stripped by YAML parsing then word-split by the shell, so pytest
+      # sees `-m '"not'` (matching no markers) plus stray path args, collects
+      # zero tests, and exits with code 5. Path-based `--ignore=tests/integration`
+      # already covers the intent. Restore the marker filter only after the
+      # org reusable workflow uses `bash -c "$TEST_COMMAND"` with proper quoting.
+      test-command: 'pytest tests/ -v --tb=short -x --ignore=tests/integration --ignore=tests/load'
       coverage-report: false
       fail-fast: false
       timeout-minutes: 30

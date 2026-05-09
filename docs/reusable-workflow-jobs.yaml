@@ -1,0 +1,240 @@
+# Registry of reusable GitHub Actions workflows and the check names they produce.
+# Maintained by scripts/seed-reusable-workflow-registry.py and updated when
+# org-level workflow changes ship. CI-024 enforces 90-day freshness.
+#
+# Schema: each `produces` entry is the UNPREFIXED check name as defined inside
+# the reusable workflow itself (the workflow's job-level `name:` field, or the
+# job key if `name:` is absent). The validator applies the caller-job-name
+# prefix at compare time, so a single registry entry is portable across repos
+# that call the reusable workflow with different job names.
+#
+# External third-party reusable workflows are listed below with their known
+# check names. These are not org-managed and are updated manually on a
+# best-effort basis.
+
+# ── External third-party workflows ──────────────────────────────────────────
+
+slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml:
+  produces:
+    - generator_generic_slsa3
+  source_repo: slsa-framework/slsa-github-generator
+  last_verified: '2026-05-08'
+  notes: >-
+    External SLSA Level 3 provenance generator. Not a branch-protection
+    required check; present in release workflows only. Check name varies by
+    caller context; registry entry suppresses CI-022 unregistered warning.
+
+# ── ByronWilliamsCPA org workflows ──────────────────────────────────────────
+
+ByronWilliamsCPA/.github/.github/workflows/codeql.yml:
+  produces:
+    - CodeQL Analyze
+  source_repo: ByronWilliamsCPA/.github
+  last_verified: '2026-05-08'
+ByronWilliamsCPA/.github/.github/workflows/pr-validation.yml:
+  produces:
+    - PR Body Non-Empty
+    - PR Title Format
+    - PR Validation Gate
+  source_repo: ByronWilliamsCPA/.github
+  last_verified: '2026-05-08'
+ByronWilliamsCPA/.github/.github/workflows/python-ci.yml:
+  produces:
+    - CI Gate
+    - Code Quality Checks
+    - LLM Governance & Assumption Verification
+    - Matrix Test (Python ${{ matrix.python-version }})
+  source_repo: ByronWilliamsCPA/.github
+  last_verified: '2026-05-08'
+ByronWilliamsCPA/.github/.github/workflows/python-codecov.yml:
+  produces:
+    - Upload Coverage to Codecov
+  source_repo: ByronWilliamsCPA/.github
+  last_verified: '2026-05-08'
+ByronWilliamsCPA/.github/.github/workflows/python-compatibility.yml:
+  produces:
+    - Build Test Matrix
+    - Compatibility Summary
+    - Test (Python ${{ matrix.python }}, ${{ matrix.os }})
+  source_repo: ByronWilliamsCPA/.github
+  last_verified: '2026-05-08'
+ByronWilliamsCPA/.github/.github/workflows/python-container-security.yml:
+  produces:
+    - Container Vulnerability Scan (Trivy)
+    - Dockerfile Lint (Hadolint)
+    - Security Summary
+  source_repo: ByronWilliamsCPA/.github
+  last_verified: '2026-05-08'
+ByronWilliamsCPA/.github/.github/workflows/python-docker.yml:
+  produces:
+    - Build Docker Image
+  source_repo: ByronWilliamsCPA/.github
+  last_verified: '2026-05-08'
+ByronWilliamsCPA/.github/.github/workflows/python-docs.yml:
+  produces:
+    - Build Documentation
+    - Deploy to GitHub Pages
+  source_repo: ByronWilliamsCPA/.github
+  last_verified: '2026-05-08'
+ByronWilliamsCPA/.github/.github/workflows/python-fips-compatibility.yml:
+  produces:
+    - FIPS Compliance Check
+    - FIPS Runtime Test
+  source_repo: ByronWilliamsCPA/.github
+  last_verified: '2026-05-08'
+ByronWilliamsCPA/.github/.github/workflows/python-fuzzing.yml:
+  produces:
+    - Build & Run Fuzzers
+  source_repo: ByronWilliamsCPA/.github
+  last_verified: '2026-05-08'
+ByronWilliamsCPA/.github/.github/workflows/python-mutation.yml:
+  produces:
+    - Mutation Testing
+  source_repo: ByronWilliamsCPA/.github
+  last_verified: '2026-05-08'
+ByronWilliamsCPA/.github/.github/workflows/python-performance-regression.yml:
+  produces:
+    - Performance Regression Check
+  source_repo: ByronWilliamsCPA/.github
+  last_verified: '2026-05-08'
+ByronWilliamsCPA/.github/.github/workflows/python-pr-validation.yml:
+  produces:
+    - This workflow is removed
+  source_repo: ByronWilliamsCPA/.github
+  last_verified: '2026-05-08'
+ByronWilliamsCPA/.github/.github/workflows/python-precommit.yml:
+  produces:
+    - Pre-Commit Hooks
+  source_repo: ByronWilliamsCPA/.github
+  last_verified: '2026-05-08'
+ByronWilliamsCPA/.github/.github/workflows/python-publish-pypi.yml:
+  produces:
+    - Build Distribution Packages
+    - Publish to PyPI
+    - Publish to TestPyPI
+  source_repo: ByronWilliamsCPA/.github
+  last_verified: '2026-05-08'
+ByronWilliamsCPA/.github/.github/workflows/python-qlty-coverage.yml:
+  produces:
+    - Check Qlty Configuration
+    - Upload Coverage to Qlty
+  source_repo: ByronWilliamsCPA/.github
+  last_verified: '2026-05-08'
+ByronWilliamsCPA/.github/.github/workflows/python-release.yml:
+  produces:
+    - Build & Release
+    - Pre-Release Tests
+    - Publish to PyPI
+  source_repo: ByronWilliamsCPA/.github
+  last_verified: '2026-05-08'
+ByronWilliamsCPA/.github/.github/workflows/python-reuse.yml:
+  produces:
+    - REUSE Compliance Check
+  source_repo: ByronWilliamsCPA/.github
+  last_verified: '2026-05-08'
+ByronWilliamsCPA/.github/.github/workflows/python-sbom.yml:
+  produces:
+    - Generate SBOMs
+    - License Compliance Check
+    - Scan Runtime Dependencies
+  source_repo: ByronWilliamsCPA/.github
+  last_verified: '2026-05-08'
+ByronWilliamsCPA/.github/.github/workflows/python-scorecard.yml:
+  produces:
+    - OpenSSF Scorecard Analysis
+  source_repo: ByronWilliamsCPA/.github
+  last_verified: '2026-05-08'
+ByronWilliamsCPA/.github/.github/workflows/python-security-analysis.yml:
+  produces:
+    - CodeQL Analysis
+    - Dependency Review
+    - Detect Security Changes
+    - OSV Vulnerability Scanner
+    - Python Security Scan
+    - Security Gate Validation
+  source_repo: ByronWilliamsCPA/.github
+  last_verified: '2026-05-08'
+ByronWilliamsCPA/.github/.github/workflows/python-slsa.yml:
+  produces:
+    # The SLSA generator produces "Generate SLSA Provenance" internally.
+    # When called from a repo via python-slsa.yml the check name that
+    # GitHub reports is caller-job-name + " / Generate SLSA Provenance".
+    # This workflow is not a branch-protection required check.
+    - Generate SLSA Provenance
+  source_repo: ByronWilliamsCPA/.github
+  last_verified: '2026-05-08'
+ByronWilliamsCPA/.github/.github/workflows/python-sonarcloud.yml:
+  produces:
+    - Check SonarCloud Configuration
+    - SonarCloud Code Analysis
+  source_repo: ByronWilliamsCPA/.github
+  last_verified: '2026-05-08'
+ByronWilliamsCPA/.github/.github/workflows/python-standard-stack.yml:
+  produces:
+    # Delegates to org-local reusable workflows via relative ./.github/workflows/ paths.
+    # The check names produced depend on the calling job names in each consumer.
+    # This is a meta-workflow; consumers are modeled individually.
+    - CI
+    - SBOM
+    - Security Analysis
+  source_repo: ByronWilliamsCPA/.github
+  last_verified: '2026-05-08'
+ByronWilliamsCPA/.github/.github/workflows/python-supplemental-checks.yml:
+  produces:
+    - Auto-Merge Dependencies
+    - Changelog Check
+    - Conventional Commits PR Title
+    - Documentation Links
+    - Supplemental Summary
+    - Template Sync (Cruft)
+  source_repo: ByronWilliamsCPA/.github
+  last_verified: '2026-05-08'
+ByronWilliamsCPA/.github/.github/workflows/reuse.yml:
+  produces:
+    - Check REUSE Compliance
+    - Validate License Files
+  source_repo: ByronWilliamsCPA/.github
+  last_verified: '2026-05-08'
+ByronWilliamsCPA/.github/.github/workflows/scorecard.yml:
+  produces:
+    # Delegates to python-scorecard.yml. The internal check name from that
+    # downstream workflow is "OpenSSF Scorecard Analysis"; the calling job
+    # in this wrapper is named "OpenSSF Scorecard (Reusable)" so the actual
+    # GitHub-reported check is "<caller> / OpenSSF Scorecard (Reusable) / OpenSSF Scorecard Analysis".
+    # The validator applies only the immediate caller-job prefix; deeper
+    # delegation chains require the consumer workflow to model the leaf
+    # check name explicitly. Listed here as the leaf for completeness.
+    - OpenSSF Scorecard Analysis
+  source_repo: ByronWilliamsCPA/.github
+  last_verified: '2026-05-08'
+ByronWilliamsCPA/.github/.github/workflows/security-analysis.yml:
+  produces:
+    # Local inline gate job in this wrapper.
+    - Security Gate Validation
+    # Plus the leaf checks from the python-security-analysis.yml reusable
+    # this wrapper invokes. The actual GitHub-reported name nests one
+    # additional level (caller-job / wrapper-job / leaf); modeling the
+    # leaves here lets the consumer's manifest reference them by leaf name.
+    - CodeQL Analysis
+    - Dependency Review
+    - Detect Security Changes
+    - OSV Vulnerability Scanner
+    - Python Security Scan
+  source_repo: ByronWilliamsCPA/.github
+  last_verified: '2026-05-08'
+ByronWilliamsCPA/.github/.github/workflows/shell-tests.yml:
+  produces:
+    - Bats Tests
+  source_repo: ByronWilliamsCPA/.github
+  last_verified: '2026-05-08'
+
+# ── williaby org workflows ───────────────────────────────────────────────────
+# Mirror of ByronWilliamsCPA/.github org workflows for the williaby personal org.
+# Job names are identical; only the source_repo differs.
+
+williaby/.github/.github/workflows/python-qlty-coverage.yml:
+  produces:
+    - Check Qlty Configuration
+    - Upload Coverage to Qlty
+  source_repo: williaby/.github
+  last_verified: '2026-05-08'

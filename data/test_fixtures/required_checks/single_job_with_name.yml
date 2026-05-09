@@ -1,0 +1,8 @@
+name: Pipeline
+on: [push]
+jobs:
+  build:
+    name: CI Gate
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo hello

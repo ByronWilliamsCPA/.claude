@@ -1,0 +1,4 @@
+ByronWilliamsCPA/.github/.github/workflows/python-ci.yml:
+  produces: ["CI Gate"]
+  source_repo: ByronWilliamsCPA/.github
+  last_verified: 2026-05-01

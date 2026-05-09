@@ -1,0 +1,7 @@
+on: [push]
+jobs:
+  reuse-check:
+    name: Check REUSE Compliance
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo
