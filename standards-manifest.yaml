@@ -5,6 +5,20 @@ last_updated: "2026-05-07"
 # verify field is a hint to the domain agent, not executable DSL.
 # Agents interpret it using their own tools (Grep, Read, Glob, Bash).
 
+required_checks:
+  - name: "CI Gate"
+    produced_by: ".github/workflows/ci.yml"
+    matrix_expansion: false
+  - name: "Security Gate Validation"
+    produced_by: ".github/workflows/security-analysis.yml"
+    matrix_expansion: false
+  - name: "Dependency & Standards Validation"
+    produced_by: ".github/workflows/pr-validation.yml"
+    matrix_expansion: false
+  - name: "Check REUSE Compliance"
+    produced_by: ".github/workflows/reuse.yml"
+    matrix_expansion: false
+
 checks:
 
   # ── Foundations ─────────────────────────────────────────────────────────────
@@ -411,40 +425,31 @@ checks:
     verify: "workflow_inventory: .github/workflows/, expected_set=[ci.yml,codeql.yml,container-security.yml,coverage.yml,dependency-review.yml,docs.yml,mutation-testing.yml,postman-api-tests.yml,pr-validation.yml,python-compatibility.yml,release-sign.yml,release.yml,reuse.yml,sbom.yml,scorecard.yml,security-analysis.yml,slsa-provenance.yml,sonarcloud.yml], report_extras=true"  # yamllint disable-line rule:line-length
     override_eligible: true
 
-  - id: CI-014
-    domain: ci
-    severity: critical
-    description: "ci.yml contains a job named CI Gate"
-    verify: "content_present: .github/workflows/ci.yml, CI Gate"
-    override_eligible: false
-
-  - id: CI-015
-    domain: ci
-    severity: critical
-    description: "security-analysis.yml contains a job named Security Gate Validation"
-    verify: "content_present: .github/workflows/security-analysis.yml, Security Gate Validation"
-    override_eligible: false
-
-  - id: CI-016
-    domain: ci
-    severity: critical
-    description: "pr-validation.yml contains a job named Dependency & Standards Validation"
-    verify: "content_present: .github/workflows/pr-validation.yml, Dependency & Standards Validation"
-    override_eligible: false
-
-  # branch_protection_contexts: <context1>, <context2>, ...
-  # Instructs the ossf-compliance-auditor to call:
-  #   gh api repos/{slug}/branches/main/protection --jq '.required_status_checks.contexts'
-  # and verify each listed context appears in the returned array.
-  # Keep in sync with: scripts/setup_github_protection.py contexts list,
-  # .claude/agents/ossf-compliance-auditor.md CI-017 FINDING template.
-  - id: CI-017
+  - id: CI-022
     domain: ci
     severity: critical
     description: >-
-      Branch protection registers all four blocking check contexts: CI Gate, Security Gate
-      Validation, Dependency & Standards Validation, Check REUSE Compliance
-    verify: "branch_protection_contexts: CI Gate, Security Gate Validation, Dependency & Standards Validation, Check REUSE Compliance"  # yamllint disable-line rule:line-length
+      Every entry in required_checks has a workflow job that produces it,
+      either locally or via a registered reusable workflow.
+    verify: "required_checks_have_producer: docs/standards-manifest.yaml, docs/reusable-workflow-jobs.yaml"  # yamllint disable-line rule:line-length
+    override_eligible: false
+
+  - id: CI-023
+    domain: ci
+    severity: critical
+    description: >-
+      Branch protection contexts exactly match required_checks names
+      (set equality, not subset).
+    verify: "branch_protection_matches_required_checks: docs/standards-manifest.yaml"
+    override_eligible: false
+
+  - id: CI-024
+    domain: ci
+    severity: important
+    description: >-
+      Every reusable workflow registered in
+      docs/reusable-workflow-jobs.yaml has last_verified within 90 days.
+    verify: "registry_freshness: docs/reusable-workflow-jobs.yaml, max_age_days=90"
     override_eligible: false
 
   - id: CI-018
