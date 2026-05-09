@@ -49,7 +49,11 @@ _UNREGISTERED_PREFIX = "__UNREGISTERED__:"
 _GH_TIMEOUT_SECONDS = 30
 
 
-class BranchProtectionFetchError(Exception):
+class GhCliError(RuntimeError):
+    """Base error for any failure invoking the gh CLI."""
+
+
+class BranchProtectionFetchError(GhCliError):
     """Raised when branch protection contexts cannot be fetched reliably.
 
     Distinct from `[]` (which means the branch has zero required contexts).
@@ -527,9 +531,9 @@ def _run_gh(args: list[str], timeout: int) -> tuple[str, str, int]:
         decoded text strings. returncode is the process exit code.
 
     Raises:
-        BranchProtectionFetchError: The gh binary was not found on PATH or
-            the process timed out. Callers should catch this or let it
-            propagate as a configuration error.
+        GhCliError: The gh binary was not found on PATH or the process timed
+            out. Callers should catch this or let it propagate as a
+            configuration error.
     """
     try:
         result = subprocess.run(  # nosec B603 B607  # noqa: S603 -- list args, shell=False; tracked: PR #74.
@@ -540,15 +544,15 @@ def _run_gh(args: list[str], timeout: int) -> tuple[str, str, int]:
             timeout=timeout,
         )
     except subprocess.TimeoutExpired as exc:
-        raise BranchProtectionFetchError(f"gh CLI timed out after {timeout}s") from exc
+        raise GhCliError(f"gh CLI timed out after {timeout}s") from exc
     except FileNotFoundError as exc:
-        raise BranchProtectionFetchError(
+        raise GhCliError(
             "gh CLI not found on PATH; install gh or run without ruleset checks"
         ) from exc
     return result.stdout, result.stderr, result.returncode
 
 
-class RulesetFetchError(RuntimeError):
+class RulesetFetchError(GhCliError):
     """Raised when ruleset evaluation cannot be fetched from gh."""
 
 
@@ -574,10 +578,14 @@ def fetch_ruleset_contexts(
         contributes.
 
     Raises:
-        RulesetFetchError: gh CLI exited non-zero or returned malformed JSON.
+        RulesetFetchError: gh CLI exited non-zero, timed out, was not found
+            on PATH, or returned malformed JSON.
     """
     args = ["api", f"repos/{repo_slug}/rules/branches/{branch}"]
-    out, err, rc = _run_gh(args, timeout)
+    try:
+        out, err, rc = _run_gh(args, timeout)
+    except GhCliError as exc:
+        raise RulesetFetchError(str(exc)) from exc
     if rc != 0:
         raise RulesetFetchError(
             f"Could not fetch ruleset evaluation: {err.strip() or out.strip()}"

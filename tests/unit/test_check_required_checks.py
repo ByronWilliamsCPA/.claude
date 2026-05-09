@@ -482,3 +482,25 @@ def test_fetch_ruleset_contexts_raises_on_malformed_json(monkeypatch):
     monkeypatch.setattr(crc, "_run_gh", lambda args, timeout: ("not json", "", 0))
     with pytest.raises(crc.RulesetFetchError, match="Malformed"):
         crc.fetch_ruleset_contexts("test/repo", "main")
+
+
+def test_fetch_ruleset_contexts_raises_on_gh_timeout(monkeypatch):
+    """GhCliError(timeout) from _run_gh must surface as RulesetFetchError."""
+
+    def fake_run_gh(args, timeout):
+        raise crc.GhCliError("gh CLI timed out after 30s")
+
+    monkeypatch.setattr(crc, "_run_gh", fake_run_gh)
+    with pytest.raises(crc.RulesetFetchError, match="timed out"):
+        crc.fetch_ruleset_contexts("test/repo", "main")
+
+
+def test_fetch_ruleset_contexts_raises_on_gh_not_found(monkeypatch):
+    """GhCliError(not-found) from _run_gh must surface as RulesetFetchError."""
+
+    def fake_run_gh(args, timeout):
+        raise crc.GhCliError("gh CLI not found on PATH")
+
+    monkeypatch.setattr(crc, "_run_gh", fake_run_gh)
+    with pytest.raises(crc.RulesetFetchError, match="not found"):
+        crc.fetch_ruleset_contexts("test/repo", "main")
