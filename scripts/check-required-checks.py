@@ -615,6 +615,60 @@ def fetch_ruleset_contexts(
     return contexts, provenance
 
 
+def fetch_effective_required_contexts(
+    repo_slug: str,
+    branch: str,
+    source_mode: str,
+) -> tuple[set[str], dict[str, list[str]]]:
+    """Return effective required-checks set and provenance per source_mode.
+
+    Args:
+        repo_slug: GitHub owner/repo slug.
+        branch: Branch name.
+        source_mode: One of "classic", "rulesets", "union".
+
+    Returns:
+        Tuple of (effective_contexts, provenance). Provenance always
+        includes a "<source>:error" key for any source that raised, so
+        callers can emit a Critical finding for the failed source while
+        still validating what they got.
+
+    Raises:
+        ValueError: If source_mode is not one of the allowed values.
+        BranchProtectionFetchError: If source_mode is "classic" and the
+            classic fetcher fails.
+        RulesetFetchError: If source_mode is "rulesets" and the ruleset
+            fetcher fails.
+    """
+    if source_mode not in {"classic", "rulesets", "union"}:
+        raise ValueError(f"Invalid source_mode: {source_mode!r}")
+
+    contexts: set[str] = set()
+    provenance: dict[str, list[str]] = {}
+
+    if source_mode in {"classic", "union"}:
+        try:
+            classic = list(fetch_classic_protection_contexts(repo_slug, branch))
+            contexts.update(classic)
+            provenance["classic"] = classic
+        except BranchProtectionFetchError as exc:
+            if source_mode == "classic":
+                raise
+            provenance["classic:error"] = [str(exc)]
+
+    if source_mode in {"rulesets", "union"}:
+        try:
+            rs_contexts, rs_prov = fetch_ruleset_contexts(repo_slug, branch)
+            contexts.update(rs_contexts)
+            provenance.update(rs_prov)
+        except RulesetFetchError as exc:
+            if source_mode == "rulesets":
+                raise
+            provenance["rulesets:error"] = [str(exc)]
+
+    return contexts, provenance
+
+
 def _parse_args(argv: list[str] | None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-path", type=Path, required=True)

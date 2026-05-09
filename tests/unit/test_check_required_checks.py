@@ -504,3 +504,46 @@ def test_fetch_ruleset_contexts_raises_on_gh_not_found(monkeypatch):
     monkeypatch.setattr(crc, "_run_gh", fake_run_gh)
     with pytest.raises(crc.RulesetFetchError, match="not found"):
         crc.fetch_ruleset_contexts("test/repo", "main")
+
+
+# -- fetch_effective_required_contexts ----------------------------------------
+
+
+def test_fetch_effective_classic_mode_uses_only_classic(monkeypatch):
+    monkeypatch.setattr(
+        crc, "fetch_classic_protection_contexts", lambda *a, **k: ["A", "B"]
+    )
+    monkeypatch.setattr(
+        crc, "fetch_ruleset_contexts", lambda *a, **k: pytest.fail("should not call")
+    )
+    contexts, prov = crc.fetch_effective_required_contexts("r/r", "main", "classic")
+    assert contexts == {"A", "B"}
+    assert prov == {"classic": ["A", "B"]}
+
+
+def test_fetch_effective_union_combines(monkeypatch):
+    monkeypatch.setattr(crc, "fetch_classic_protection_contexts", lambda *a, **k: ["A"])
+    monkeypatch.setattr(
+        crc,
+        "fetch_ruleset_contexts",
+        lambda *a, **k: ({"B", "C"}, {"Organization:O/1": ["B", "C"]}),
+    )
+    contexts, prov = crc.fetch_effective_required_contexts("r/r", "main", "union")
+    assert contexts == {"A", "B", "C"}
+    assert prov == {"classic": ["A"], "Organization:O/1": ["B", "C"]}
+
+
+def test_fetch_effective_union_partial_failure_returns_partial(monkeypatch):
+    def boom(*a, **k):
+        raise crc.BranchProtectionFetchError("404 not found")
+
+    monkeypatch.setattr(crc, "fetch_classic_protection_contexts", boom)
+    monkeypatch.setattr(
+        crc,
+        "fetch_ruleset_contexts",
+        lambda *a, **k: ({"X"}, {"Organization:O/1": ["X"]}),
+    )
+    contexts, prov = crc.fetch_effective_required_contexts("r/r", "main", "union")
+    assert contexts == {"X"}
+    assert "classic:error" in prov
+    assert "404 not found" in prov["classic:error"][0]
