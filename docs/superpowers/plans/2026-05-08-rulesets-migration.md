@@ -1606,11 +1606,12 @@ Expected: exit code 0, no findings (classic still satisfies; ruleset adds nothin
 > - Task 17 Step 1: both BW rulesets flipped to active (universal id 16183607, python-tier id 16183609; both `enforcement: active`)
 > - Task 17 Steps 2-4: canary PR #85 opened on `ByronWilliamsCPA/.claude`, CI passed `MERGEABLE + CLEAN`, self-merged with squash
 > - Task 18 Step 1: classic protection deleted from `ByronWilliamsCPA/.claude`; direct `repos/.../rules/branches/main` query confirms all 7 org-ruleset rule types active
+> - Task 18 Step 3: catalog `migrationPhase` updated for BW only (`ByronWilliamsCPA/.claude` only); `williaby/.claude` intentionally excluded pending its own canary. Running Step 3 verbatim again would incorrectly flip `williaby/.claude` to `complete`.
 > - Catalog: `ByronWilliamsCPA/.claude` moved from `migrationPhase: dual` to `complete`
 >
 > **Known gap (non-blocking):**
 >
-> - OpenSSF Scorecard Branch-Protection score returns `-1` with "Resource not accessible by integration" for this repo. This is a pre-existing Scorecard service limitation: the check queries the classic-protection API endpoint and does not yet recognize org-level rulesets. Enforcement is confirmed correct via the direct ruleset rules API. Score will update on the Scorecard service's next scheduled run.
+> - OpenSSF Scorecard Branch-Protection score returns `-1` with "Resource not accessible by integration" for this repo. This is a pre-existing Scorecard service limitation: the check queries the classic-protection API endpoint and does not yet recognize org-level rulesets. Enforcement is confirmed correct via the direct ruleset rules API. Score may update on the Scorecard service's next scheduled run.
 
 ### Task 17: Flip rulesets to active and verify mergeability
 
