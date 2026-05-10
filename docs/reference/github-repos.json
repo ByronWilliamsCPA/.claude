@@ -254,6 +254,22 @@
           "interrogate",
           "darglint"
         ]
+      },
+      "python-template": {
+        "description": "Cookiecutter Python project templates; contain placeholder variables that prevent strict type-checking and docstring enforcement.",
+        "scorecardFloor": 5.0,
+        "scorecardTarget": 7.5,
+        "exemptWorkflows": [
+          "coverage.yml",
+          "mutation-testing.yml",
+          "sbom.yml",
+          "slsa-provenance.yml"
+        ],
+        "exemptHooks": [
+          "basedpyright",
+          "interrogate",
+          "darglint"
+        ]
       }
     },
     "visibilityProfiles": {
