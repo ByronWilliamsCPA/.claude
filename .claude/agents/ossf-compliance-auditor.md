@@ -147,7 +147,7 @@ The applied command depends on the source:
 **Drift in an ORG-LEVEL ruleset** (provenance shows `Organization:<org>/<id>`):
 
 ```bash
-uv run python scripts/setup_org_rulesets.py --org ${ORG} \
+PYTHONPATH=. uv run python scripts/setup_org_rulesets.py --org ${ORG} \
   --body docs/reference/org-rulesets/${ORG}-${TIER}.json \
   --enforcement active
 ```
@@ -157,7 +157,7 @@ The body file (`docs/reference/org-rulesets/<org>-<tier>.json` where `<tier>` is
 **Drift in a REPO-LEVEL ruleset** (provenance shows `Repository:<owner>/<repo>/<id>`):
 
 ```bash
-uv run python scripts/setup_repo_rulesets.py --repo ${REPO_SLUG} \
+PYTHONPATH=. uv run python scripts/setup_repo_rulesets.py --repo ${REPO_SLUG} \
   --body docs/reference/repo-rulesets/${OWNER}__${REPO}.json \
   --enforcement active
 ```
@@ -165,7 +165,7 @@ uv run python scripts/setup_repo_rulesets.py --repo ${REPO_SLUG} \
 For williaby repos (which use shared template bodies rather than hand-authored per-repo overrides), substitute the template path:
 
 ```bash
-uv run python scripts/setup_repo_rulesets.py --repo ${REPO_SLUG} \
+PYTHONPATH=. uv run python scripts/setup_repo_rulesets.py --repo ${REPO_SLUG} \
   --body docs/reference/repo-rulesets/_williaby-template-${TIER}.json \
   --enforcement active
 # REPO_SLUG is the full owner/name (e.g. "williaby/foo");
@@ -201,9 +201,9 @@ description: Org 'ByronWilliamsCPA' has no active ruleset targeting default bran
 status: configuration_gap
 current_value: gh api orgs/ByronWilliamsCPA/rulesets returned [] or all entries have enforcement != active
 remediation: |
-  uv run python scripts/setup_org_rulesets.py --org ByronWilliamsCPA \
+  PYTHONPATH=. uv run python scripts/setup_org_rulesets.py --org ByronWilliamsCPA \
     --body docs/reference/org-rulesets/ByronWilliamsCPA-universal.json --enforcement active
-  uv run python scripts/setup_org_rulesets.py --org ByronWilliamsCPA \
+  PYTHONPATH=. uv run python scripts/setup_org_rulesets.py --org ByronWilliamsCPA \
     --body docs/reference/org-rulesets/ByronWilliamsCPA-python.json --enforcement active
 ```
 
@@ -219,7 +219,7 @@ description: williaby/<repo> has no active repo-level ruleset on default branch
 status: configuration_gap
 current_value: gh api repos/williaby/<repo>/rulesets returned [] or all entries have enforcement != active
 remediation: |
-  uv run python scripts/setup_repo_rulesets.py \
+  PYTHONPATH=. uv run python scripts/setup_repo_rulesets.py \
     --repo williaby/<repo> \
     --body docs/reference/repo-rulesets/_williaby-template-<tier>.json \
     --enforcement active
@@ -245,12 +245,12 @@ status: configuration_gap
 current_value: ruleset id=<id> has no rule of type copilot_code_review
 remediation: |
   # Target = org:ByronWilliamsCPA
-  uv run python scripts/setup_org_rulesets.py --org ByronWilliamsCPA \
+  PYTHONPATH=. uv run python scripts/setup_org_rulesets.py --org ByronWilliamsCPA \
     --body docs/reference/org-rulesets/ByronWilliamsCPA-universal.json --enforcement active
 
   # Target = repo:williaby/<repo>
   # Pick the matching template (python tier vs universal) and re-apply:
-  uv run python scripts/setup_repo_rulesets.py \
+  PYTHONPATH=. uv run python scripts/setup_repo_rulesets.py \
     --repo williaby/<repo> \
     --body docs/reference/repo-rulesets/_williaby-template-<tier>.json \
     --enforcement active
@@ -443,14 +443,14 @@ required).
 ByronWilliamsCPA (organization, supports org-level rulesets):
 
 ```bash
-uv run python scripts/setup_org_rulesets.py --org ByronWilliamsCPA \
+PYTHONPATH=. uv run python scripts/setup_org_rulesets.py --org ByronWilliamsCPA \
   --body docs/reference/org-rulesets/ByronWilliamsCPA-universal.json --enforcement active
 ```
 
 williaby (User account, per-repo rulesets only):
 
 ```bash
-uv run python scripts/setup_repo_rulesets.py --repo ${REPO_SLUG} \
+PYTHONPATH=. uv run python scripts/setup_repo_rulesets.py --repo ${REPO_SLUG} \
   --body docs/reference/repo-rulesets/_williaby-template-${TIER}.json --enforcement active
 # REPO_SLUG is the full owner/name (e.g. "williaby/foo");
 # TIER is "python" if repositoryType in {python-package, python-app, python-script}, else "universal".

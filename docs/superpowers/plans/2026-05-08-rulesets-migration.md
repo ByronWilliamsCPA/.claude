@@ -1052,6 +1052,8 @@ git commit -m "feat(rulesets): add setup_org_rulesets.py with solo-dev guard"
 
 ### Task 9b: Add `setup_repo_rulesets.py` for per-repo overrides (optional, parallel to Task 9)
 
+> **Precondition:** Repo-level rulesets do NOT support `evaluate` enforcement mode on GitHub Free or Team plans -- only on GitHub Enterprise. Always use `--enforcement active` (with an initial canary-repo test) for per-repo rulesets. See `docs/superpowers/plans/2026-05-09-williaby-active-only-deferred.md` for the verified active-only workflow.
+>
 > Goal: cover the user's "store org and repo level standards as JSON" requirement. Repo-level rulesets are not needed for the migration itself, but the script is a thin variant of Task 9 and gives future flexibility (e.g., a single repo wants an extra status check without changing the org default).
 
 **Files:**
