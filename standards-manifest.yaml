@@ -460,24 +460,38 @@ checks:
     verify: "registry_freshness: docs/reusable-workflow-jobs.yaml, max_age_days=90"
     override_eligible: false
 
-  - id: CI-025
+  - id: CI-025a
     domain: ci
     severity: critical
     description: >-
-      Each managed org has at least one ruleset with enforcement=active
-      targeting the default branch of every non-exempt repo.
-    verify: "org_ruleset_present: orgs=[ByronWilliamsCPA,williaby], enforcement=active"
+      ByronWilliamsCPA org has at least one ruleset with enforcement=active
+      targeting the default branch of every non-exempt repo. williaby is a
+      User account and is covered by CI-025b instead.
+    verify: "org_ruleset_present: orgs=[ByronWilliamsCPA], enforcement=active"
     override_eligible: false
-    not_applicable_when: "repo.branchProtectionExempt == true"
+    not_applicable_when: "repo.org != 'ByronWilliamsCPA' OR repo.branchProtectionExempt == true"
+
+  - id: CI-025b
+    domain: ci
+    severity: critical
+    description: >-
+      Every non-exempt williaby repo has at least one repo-level ruleset with
+      enforcement=active targeting its default branch. williaby is a User
+      account and cannot host org rulesets, so per-repo rulesets carry the
+      baseline instead.
+    verify: "repo_ruleset_present: owner=williaby, enforcement=active"
+    override_eligible: false
+    not_applicable_when: "repo.org != 'williaby' OR repo.branchProtectionExempt == true"
 
   - id: CI-026
     domain: ci
     severity: important
     description: >-
-      Org ruleset includes a copilot_code_review rule, which auto-requests
+      Active ruleset includes a copilot_code_review rule, which auto-requests
       Copilot review on every PR opened against the default branch. Replaces
-      the per-PR runtime trigger in /pr-review.
-    verify: "ruleset_contains_rule: orgs=[ByronWilliamsCPA,williaby], rule_type=copilot_code_review"
+      the per-PR runtime trigger in /pr-review. For ByronWilliamsCPA, the rule
+      lives in the org ruleset; for williaby, in each repo-level ruleset.
+    verify: "ruleset_contains_rule: targets=[org:ByronWilliamsCPA, repo:williaby/*], rule_type=copilot_code_review"
     override_eligible: true
     not_applicable_when: "repo.branchProtectionExempt == true"
     notes: >-
