@@ -1719,6 +1719,30 @@ git commit -m "chore(catalog): mark canary repos as migrationPhase=complete"
 ## Track 7: Sweep (43 Remaining Repos)
 
 > Goal: strip classic protection from every non-exempt, non-canary repo. The ruleset is already `active` (Phase 1), so each repo flips from "ruleset OR classic" to "ruleset only" with no protection gap.
+>
+> ### Status as of 2026-05-10 (BW sweep complete; williaby deferred)
+>
+> Track 7 complete for ByronWilliamsCPA (18 repos). Williaby repos remain in `pending` pending the williaby sub-migration.
+>
+> **Completed this track:**
+>
+> - Task 19 Step 1: `scripts/sweep_strip_classic_protection.sh` authored with `migrationPhase==dual` scope filter (safer than the original non-exempt filter, which would have hit unready williaby repos)
+> - Task 19 Step 3: sweep executed; all 18 BW repos stripped, backup verified for each, ruleset coverage confirmed via `repos/.../rules/branches` API (count > 0)
+> - Task 19 Step 4: catalog `migrationPhase` updated `dual` -> `complete` for 18 repos (all 19 BW repos now `complete`; 26 williaby still `pending`)
+> - Task 19 Step 5: org-wide audit -- initial run found 8 CI-023 findings; 4 were true regressions (`.claude`, `cookiecutter-python-template`, `cookiecutter-template-sample`, `template-sample` had CI Gate in classic protection but not in rulesets)
+> - Fix: added `python-template` to `PYTHON_TYPES` in `generate_python_tier_repos.py`; updated catalog types for 4 repos (`.claude` -> `python-app`, 3 template repos -> `python-template`); re-applied python-tier ruleset to include 15 repos (was 11)
+> - Post-fix audit: 4 remaining CI-023 findings (`.github`, `DeQA-Doc`, `homelab-infra`, `reference-library`) confirmed pre-existing (those repos also lacked CI Gate in classic protection)
+>
+> **Pre-existing CI-023 findings (Track 9 manifest-scoping item):**
+>
+> `.github` (config), `DeQA-Doc` (unknown), `homelab-infra` (infra), `reference-library` (docs) do not run `ci.yml`. Their classic protection also lacked CI Gate. The manifest CI-023 check does not exclude non-CI repo types. Track 9 should add a `not_applicable_when: "repo.repositoryType in [...]"` guard or update these repos to have CI workflows.
+>
+> **Deviations from plan as written:**
+>
+> - Plan expected "SWEEP COMPLETE: 43 repos stripped" but scope is BW-only (18 repos); williaby deferred
+> - `BACKUP_DIR` corrected from `2026-05-08` to `2026-05-09` (actual backup date)
+> - Check-required-checks validation replaced with direct `rules/branches` ruleset-count check (simpler, more appropriate for mechanical migration verification)
+> - Parent plan missing `--repo-path`, `--manifest`, `--registry` args on sweep check call (documented as Track 9 bug)
 
 ### Task 19: Author and execute the sweep loop
 

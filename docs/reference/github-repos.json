@@ -286,7 +286,7 @@
   "repos": [
     {
       "org": "ByronWilliamsCPA",
-      "repositoryType": "config",
+      "repositoryType": "python-app",
       "name": ".claude",
       "url": "https://github.com/ByronWilliamsCPA/.claude",
       "defaultBranch": "main",
@@ -602,7 +602,7 @@
         }
       },
       "usesDocker": false,
-      "migrationPhase": "dual"
+      "migrationPhase": "complete"
     },
     {
       "org": "ByronWilliamsCPA",
@@ -761,7 +761,7 @@
         }
       },
       "usesDocker": true,
-      "migrationPhase": "dual"
+      "migrationPhase": "complete"
     },
     {
       "org": "ByronWilliamsCPA",
@@ -906,7 +906,7 @@
         }
       },
       "usesDocker": false,
-      "migrationPhase": "dual"
+      "migrationPhase": "complete"
     },
     {
       "org": "ByronWilliamsCPA",
@@ -1047,7 +1047,7 @@
         }
       },
       "usesDocker": false,
-      "migrationPhase": "dual"
+      "migrationPhase": "complete"
     },
     {
       "org": "ByronWilliamsCPA",
@@ -1180,7 +1180,7 @@
         }
       },
       "usesDocker": false,
-      "migrationPhase": "dual"
+      "migrationPhase": "complete"
     },
     {
       "org": "ByronWilliamsCPA",
@@ -1305,7 +1305,7 @@
         }
       },
       "usesDocker": false,
-      "migrationPhase": "dual"
+      "migrationPhase": "complete"
     },
     {
       "org": "ByronWilliamsCPA",
@@ -1462,7 +1462,7 @@
         }
       },
       "usesDocker": true,
-      "migrationPhase": "dual"
+      "migrationPhase": "complete"
     },
     {
       "org": "ByronWilliamsCPA",
@@ -1602,7 +1602,7 @@
         }
       },
       "usesDocker": false,
-      "migrationPhase": "dual"
+      "migrationPhase": "complete"
     },
     {
       "org": "ByronWilliamsCPA",
@@ -1770,7 +1770,7 @@
         }
       },
       "usesDocker": true,
-      "migrationPhase": "dual"
+      "migrationPhase": "complete"
     },
     {
       "org": "ByronWilliamsCPA",
@@ -1927,7 +1927,7 @@
         }
       },
       "usesDocker": true,
-      "migrationPhase": "dual"
+      "migrationPhase": "complete"
     },
     {
       "org": "ByronWilliamsCPA",
@@ -2077,7 +2077,7 @@
         }
       },
       "usesDocker": false,
-      "migrationPhase": "dual"
+      "migrationPhase": "complete"
     },
     {
       "org": "ByronWilliamsCPA",
@@ -2232,7 +2232,7 @@
         }
       },
       "usesDocker": false,
-      "migrationPhase": "dual"
+      "migrationPhase": "complete"
     },
     {
       "org": "ByronWilliamsCPA",
@@ -2391,7 +2391,7 @@
         }
       },
       "usesDocker": true,
-      "migrationPhase": "dual"
+      "migrationPhase": "complete"
     },
     {
       "org": "ByronWilliamsCPA",
@@ -2520,7 +2520,7 @@
         }
       },
       "usesDocker": false,
-      "migrationPhase": "dual"
+      "migrationPhase": "complete"
     },
     {
       "org": "ByronWilliamsCPA",
@@ -2649,7 +2649,7 @@
         }
       },
       "usesDocker": false,
-      "migrationPhase": "dual"
+      "migrationPhase": "complete"
     },
     {
       "org": "ByronWilliamsCPA",
@@ -2795,7 +2795,7 @@
         }
       },
       "usesDocker": true,
-      "migrationPhase": "dual"
+      "migrationPhase": "complete"
     },
     {
       "org": "ByronWilliamsCPA",
@@ -2952,7 +2952,7 @@
         }
       },
       "usesDocker": true,
-      "migrationPhase": "dual"
+      "migrationPhase": "complete"
     },
     {
       "org": "ByronWilliamsCPA",
@@ -3090,7 +3090,7 @@
         }
       },
       "usesDocker": false,
-      "migrationPhase": "dual"
+      "migrationPhase": "complete"
     },
     {
       "org": "williaby",
