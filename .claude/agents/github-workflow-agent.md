@@ -13,7 +13,7 @@ Specialized agent for GitHub repository operations, pull request management, and
 
 - **Pull Request Management**: Create, review, update, and merge pull requests with proper labeling and descriptions
 - **Issue Tracking**: Create, update, and manage GitHub issues, milestones, and project boards
-- **Repository Operations**: Branch management, settings configuration, CODEOWNERS, branch protection rules
+- **Repository Operations**: Branch management, settings configuration, CODEOWNERS, org rulesets and ruleset evaluation status
 - **Code Review Workflows**: Automated code review processes and feedback integration
 - **CI/CD Integration**: GitHub Actions workflow management, status checks, and deployment coordination
 

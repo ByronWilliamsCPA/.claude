@@ -120,7 +120,7 @@ python fuzz/fuzz_input_validation.py -max_total_time=60
 
 ### 4. Branch Protection 🛡️
 
-Enforced branch protection rules prevent unauthorized changes.
+Enforced via org-level rulesets (one per org, applied to all non-exempt repos).
 
 **Protection rules**:
 
@@ -134,22 +134,7 @@ Enforced branch protection rules prevent unauthorized changes.
 - ✅ Branch deletions blocked
 - ✅ Conversation resolution required
 
-**Setup**:
-
-```bash
-# Set GitHub token
-export GITHUB_TOKEN=<YOUR_GITHUB_TOKEN>
-
-# Run setup script
-python scripts/setup_github_protection.py
-```
-
-**Manual setup**:
-
-1. Go to: `https://github.com/ByronWilliamsCPA/claude_config/settings/branches`
-2. Click "Add branch protection rule"
-3. Apply protection pattern: `main`
-4. Enable all recommended protections
+Org rulesets are managed centrally via `scripts/setup_org_rulesets.py`. Per-repo branch protection UI is no longer used; see `docs/reference/org-rulesets/` for the JSON bodies.
 
 ### 5. Scoped Workflow Permissions 🔑
 
@@ -356,7 +341,7 @@ The template meets 44/46 passing-level criteria:
 - [ ] Review Renovate dependency updates
 - [ ] Check fuzzing results in Security tab
 - [ ] Review SBOM for new vulnerabilities
-- [ ] Update branch protection rules if needed
+- [ ] Update org rulesets if needed (single edit applies to all 45 non-exempt repos)
 - [ ] Check OpenSSF Scorecard for changes
 
 ### Quarterly Security Review

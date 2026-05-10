@@ -436,38 +436,28 @@ After registration, add this badge to your README's "Quality & Security" section
 
 ## Security Configuration
 
-### Branch Protection Rules
+### Branch Protection (Org Rulesets)
 
-You can configure branch protection either via script (recommended) or manually through the GitHub UI.
+Branch protection is configured once per org as a ruleset rather than per-repo.
+Two rulesets per org:
 
-#### Option 1: Automated Setup (Recommended)
+- **Universal** (`<org>-default-branch-baseline`): applies to all non-exempt
+  repos; requires three universal status checks (Security Gate, Dependency
+  & Standards, REUSE), signatures, linear history, no force push, no
+  deletion. `required_approving_review_count: 0` (solo-dev safe).
+- **Python tier** (`<org>-python-tier-ci-gate`): applies only to
+  `repositoryType: python-*` repos; adds `CI Gate` status check.
 
-Use the included script to configure comprehensive branch protection:
+Apply or update via:
 
 ```bash
-# Set up branch protection with default settings
-uv run python scripts/setup_github_protection.py
-
-# Or specify custom settings
-uv run python scripts/setup_github_protection.py --enforce-admins --require-code-owner-reviews
+uv run python scripts/setup_org_rulesets.py --org ByronWilliamsCPA \
+  --body docs/reference/org-rulesets/ByronWilliamsCPA-universal.json \
+  --enforcement active
 ```
 
-The script configures:
-- Required pull request reviews before merging
-- Required status checks to pass
-- Enforce rules for administrators
-- Require signed commits
-- Dismiss stale reviews on new commits
-
-#### Option 2: Manual UI Setup
-
-1. Go to Repository Settings > Branches > Add rule
-2. Apply to: `main`
-3. Enable:
-   - [x] Require a pull request before merging
-   - [x] Require status checks to pass
-   - [x] Require branches to be up to date
-   - [x] Include administrators
+The script enforces a solo-dev guard: any body with
+`required_approving_review_count > 0` is rejected.
 
 ### Required Status Checks
 
