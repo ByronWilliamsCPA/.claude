@@ -451,7 +451,7 @@ Two rulesets per org:
 Apply or update via:
 
 ```bash
-uv run python scripts/setup_org_rulesets.py --org ByronWilliamsCPA \
+PYTHONPATH=. uv run python scripts/setup_org_rulesets.py --org ByronWilliamsCPA \
   --body docs/reference/org-rulesets/ByronWilliamsCPA-universal.json \
   --enforcement active
 ```
