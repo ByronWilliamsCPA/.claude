@@ -3749,7 +3749,7 @@
         }
       },
       "usesDocker": true,
-      "migrationPhase": "pending"
+      "migrationPhase": "complete"
     },
     {
       "org": "williaby",
@@ -4575,7 +4575,7 @@
         }
       },
       "branchProtectionExempt": true,
-      "branchProtectionExemptReason": "Structural nuances in this repo require no branch protection. Exempt by design \u2014 do not flag in audits.",
+      "branchProtectionExemptReason": "Structural nuances in this repo require no branch protection. Exempt by design; do not flag in audits.",
       "usesDocker": false
     },
     {
@@ -4864,7 +4864,7 @@
         }
       },
       "usesDocker": true,
-      "migrationPhase": "pending"
+      "migrationPhase": "complete"
     },
     {
       "org": "williaby",
