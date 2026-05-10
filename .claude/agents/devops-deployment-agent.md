@@ -118,6 +118,8 @@ Replace the tag ref with the 40-char SHA and add the version as a comment: `@<sh
 
 **CI-008 (copilot-instructions.md):** Create `.github/copilot-instructions.md` with:
 
+Note: Copilot is auto-requested by the `copilot_code_review` rule in the org ruleset; this file tunes its review behavior, it does not trigger reviews.
+
 ```markdown
 # GitHub Copilot Code Review Instructions
 
