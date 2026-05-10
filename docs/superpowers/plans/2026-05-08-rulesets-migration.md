@@ -1472,6 +1472,31 @@ git commit -m "docs(auditor): add CI-025/026/027 finding templates; update Branc
 ## Track 5: Pre-flight (Org-level GitHub State, Evaluate Mode)
 
 > Goal: rulesets exist in both orgs in `evaluate` mode, classic protection is backed up, validators report clean against current state. NO enforcement change yet.
+>
+> ### Status as of 2026-05-09 (BW-only ship)
+>
+> Track 5 shipped for ByronWilliamsCPA only. Williaby per-repo rulesets are
+> deferred to a follow-up sub-migration documented at
+> [2026-05-09-williaby-active-only-deferred.md](2026-05-09-williaby-active-only-deferred.md).
+>
+> **Completed this track:**
+>
+> - Task 15 backups captured for all 45 non-exempt repos at `backups/branch-protection-2026-05-09/`. Zero `_error` files (every repo had prior protection)
+> - Task 16 Steps 1-2 (BW universal id 16183607, BW python-tier id 16183609) posted in evaluate mode. The `__GENERATED__` token resolved to the expected 11 BW python-tier repos
+> - Task 16 Step 5 verified: `gh api /orgs/ByronWilliamsCPA/rulesets` shows 2 entries, both `enforcement: evaluate`
+> - Task 16 Step 6 verified: union-mode validator on `ByronWilliamsCPA/.claude` returns empty findings (exit 0)
+> - Catalog: 19 BW repos moved from `migrationPhase: pending` to `dual`
+>
+> **Deferred (does not run as written):**
+>
+> - Task 16 Steps 3-4 (williaby universal/python via `setup_org_rulesets.py --org williaby`) are superseded by the addendum's per-repo sweep AND that sweep cannot run in evaluate mode (HTTP 422: per-repo evaluate requires GitHub Enterprise). All 26 williaby attempts failed at validation; zero new williaby rulesets exist from this run
+>
+> **Plan-side bugs to fix during Track 9 doc sweep:**
+>
+> 1. Direct `setup_org_rulesets.py` invocations in this plan and in `.claude/agents/ossf-compliance-auditor.md` need `PYTHONPATH=.` prepended; the script imports `from scripts.generate_python_tier_repos import ...` and the project root is not on sys.path under default `uv run python` invocation
+> 2. The plan and addendum should both note the per-repo-evaluate Enterprise requirement as a precondition. Replace any "post in evaluate" instruction targeting per-repo rulesets with the active-only canary path documented in the deferred plan
+
+
 
 ### Task 15: Backup all 45 classic protection states
 
