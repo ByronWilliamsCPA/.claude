@@ -4059,7 +4059,7 @@
         }
       },
       "usesDocker": true,
-      "migrationPhase": "pending"
+      "migrationPhase": "complete"
     },
     {
       "org": "williaby",
@@ -5825,7 +5825,8 @@
         }
       },
       "usesDocker": false,
-      "migrationPhase": "pending"
+      "migrationPhase": null,
+      "branchProtectionExempt": true
     },
     {
       "org": "williaby",
@@ -5954,7 +5955,8 @@
         }
       },
       "usesDocker": false,
-      "migrationPhase": "pending"
+      "migrationPhase": null,
+      "branchProtectionExempt": true
     },
     {
       "org": "williaby",
