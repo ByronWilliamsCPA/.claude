@@ -449,7 +449,9 @@ checks:
       org rulesets targeting this repo) exactly equal required_checks names.
     verify: "protection_matches_required_checks: docs/standards-manifest.yaml, source=union"
     override_eligible: false
-    not_applicable_when: "repo.branchProtectionExempt == true"
+    not_applicable_when: >-
+      repo.branchProtectionExempt == true OR repo.repositoryType == 'config' OR
+      repo.repositoryType == 'docs-only' OR repo.repositoryType == 'infrastructure'
 
   - id: CI-024
     domain: ci
