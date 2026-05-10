@@ -2569,6 +2569,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#status-as-of-2026-05-10-bw-canary-complete" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Status as of 2026-05-10 (BW canary complete)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#task-17-flip-rulesets-to-active-and-verify-mergeability" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -4241,6 +4252,22 @@ Note the count of repos that had no prior protection (e.g., <code>family-office-
 <h2 id="track-6-canary-validation">Track 6: Canary Validation<a class="headerlink" href="#track-6-canary-validation" title="Permanent link">&para;</a></h2>
 <blockquote>
 <p>Goal: prove that ruleset-only protection is mergeable for the solo dev on one repo per org before sweeping the rest.</p>
+<h3 id="status-as-of-2026-05-10-bw-canary-complete">Status as of 2026-05-10 (BW canary complete)<a class="headerlink" href="#status-as-of-2026-05-10-bw-canary-complete" title="Permanent link">&para;</a></h3>
+<p>Track 6 complete for ByronWilliamsCPA. Williaby canary is deferred to the
+williaby sub-migration at
+<a href="../2026-05-09-williaby-active-only-deferred/">2026-05-09-williaby-active-only-deferred.md</a>.</p>
+<p><strong>Completed this track:</strong></p>
+<ul>
+<li>Task 17 Step 1: both BW rulesets flipped to active (universal id 16183607, python-tier id 16183609; both <code>enforcement: active</code>)</li>
+<li>Task 17 Steps 2-4: canary PR #85 opened on <code>ByronWilliamsCPA/.claude</code>, CI passed <code>MERGEABLE + CLEAN</code>, self-merged with squash</li>
+<li>Task 18 Step 1: classic protection deleted from <code>ByronWilliamsCPA/.claude</code>; direct <code>repos/.../rules/branches/main</code> query confirms all 7 org-ruleset rule types active</li>
+<li>Task 18 Step 3: catalog <code>migrationPhase</code> updated for BW only (<code>ByronWilliamsCPA/.claude</code> only); <code>williaby/.claude</code> intentionally excluded pending its own canary. Running Step 3 verbatim again would incorrectly flip <code>williaby/.claude</code> to <code>complete</code>.</li>
+<li>Catalog: <code>ByronWilliamsCPA/.claude</code> moved from <code>migrationPhase: dual</code> to <code>complete</code></li>
+</ul>
+<p><strong>Known gap (non-blocking):</strong></p>
+<ul>
+<li>OpenSSF Scorecard Branch-Protection score returns <code>-1</code> with "Resource not accessible by integration" for this repo. This is a pre-existing Scorecard service limitation: the check queries the classic-protection API endpoint and does not yet recognize org-level rulesets. Enforcement is confirmed correct via the direct ruleset rules API. Score may update on the Scorecard service's next scheduled run.</li>
+</ul>
 </blockquote>
 <h3 id="task-17-flip-rulesets-to-active-and-verify-mergeability">Task 17: Flip rulesets to active and verify mergeability<a class="headerlink" href="#task-17-flip-rulesets-to-active-and-verify-mergeability" title="Permanent link">&para;</a></h3>
 <ul class="task-list">
@@ -4919,7 +4946,7 @@ Note the count of repos that had no prior protection (e.g., <code>family-office-
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="May 10, 2026 04:38:19 UTC">May 10, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="May 10, 2026 16:58:02 UTC">May 10, 2026</span>
   </span>
 
     
