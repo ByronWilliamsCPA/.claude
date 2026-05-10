@@ -162,6 +162,16 @@ uv run python scripts/setup_repo_rulesets.py --repo ${REPO_SLUG} \
   --enforcement active
 ```
 
+For williaby repos (which use shared template bodies rather than hand-authored per-repo overrides), substitute the template path:
+
+```bash
+uv run python scripts/setup_repo_rulesets.py --repo ${REPO_SLUG} \
+  --body docs/reference/repo-rulesets/_williaby-template-${TIER}.json \
+  --enforcement active
+# REPO_SLUG is the full owner/name (e.g. "williaby/foo");
+# TIER is "python" if repositoryType in {python-package, python-app, python-script}, else "universal".
+```
+
 **Drift remaining in classic protection** (provenance shows `classic`; transition window only):
 
 ```bash
@@ -181,36 +191,69 @@ Offer:
 
 When multiple CI-023 findings exist with the same fix shape (all branch-protection drift), offer a "fix all in one PATCH" batch option.
 
-**For CI-025 findings (org ruleset missing or not active):**
+**For CI-025a findings (ByronWilliamsCPA org ruleset missing or not active):**
 
 ```text
 FINDING:
-id: CI-025
+id: CI-025a
 severity: critical
-description: Org '<ORG>' has no active ruleset targeting default branch
+description: Org 'ByronWilliamsCPA' has no active ruleset targeting default branch
 status: configuration_gap
-current_value: gh api orgs/<ORG>/rulesets returned [] or all entries have enforcement != active
+current_value: gh api orgs/ByronWilliamsCPA/rulesets returned [] or all entries have enforcement != active
 remediation: |
-  uv run python scripts/setup_org_rulesets.py --org <ORG> \
-    --body docs/reference/org-rulesets/<ORG>-universal.json --enforcement active
-  uv run python scripts/setup_org_rulesets.py --org <ORG> \
-    --body docs/reference/org-rulesets/<ORG>-python.json --enforcement active
+  uv run python scripts/setup_org_rulesets.py --org ByronWilliamsCPA \
+    --body docs/reference/org-rulesets/ByronWilliamsCPA-universal.json --enforcement active
+  uv run python scripts/setup_org_rulesets.py --org ByronWilliamsCPA \
+    --body docs/reference/org-rulesets/ByronWilliamsCPA-python.json --enforcement active
+```
+
+**For CI-025b findings (williaby per-repo ruleset missing or not active):**
+
+williaby is a User account, not an Organization, so it cannot host org-level rulesets. Each non-exempt williaby repo carries its own active ruleset built from one of two templates. Pick `python` if the repo's `repositoryType` is `python-package`, `python-app`, or `python-script`; otherwise pick `universal`.
+
+```text
+FINDING:
+id: CI-025b
+severity: critical
+description: williaby/<repo> has no active repo-level ruleset on default branch
+status: configuration_gap
+current_value: gh api repos/williaby/<repo>/rulesets returned [] or all entries have enforcement != active
+remediation: |
+  uv run python scripts/setup_repo_rulesets.py \
+    --repo williaby/<repo> \
+    --body docs/reference/repo-rulesets/_williaby-template-<tier>.json \
+    --enforcement active
+  # tier is "python" if repositoryType in {python-package, python-app, python-script}, else "universal"
+```
+
+For a fleet-wide refresh (all williaby non-exempt repos at once), prefer the loop script:
+
+```text
+ENFORCEMENT=active bash scripts/apply_williaby_repo_rulesets.sh
 ```
 
 **For CI-026 findings (Copilot rule missing from ruleset):**
+
+The CI-026 verify directive covers both targets: ByronWilliamsCPA org rulesets and per-repo williaby rulesets. Pick the remediation block that matches the finding's `target`.
 
 ```text
 FINDING:
 id: CI-026
 severity: important
-description: Org ruleset is missing the copilot_code_review rule
+description: Active ruleset is missing the copilot_code_review rule
 status: configuration_gap
 current_value: ruleset id=<id> has no rule of type copilot_code_review
 remediation: |
-  The Copilot rule is defined in docs/reference/org-rulesets/<ORG>-universal.json.
-  Re-apply via:
-  uv run python scripts/setup_org_rulesets.py --org <ORG> \
-    --body docs/reference/org-rulesets/<ORG>-universal.json --enforcement active
+  # Target = org:ByronWilliamsCPA
+  uv run python scripts/setup_org_rulesets.py --org ByronWilliamsCPA \
+    --body docs/reference/org-rulesets/ByronWilliamsCPA-universal.json --enforcement active
+
+  # Target = repo:williaby/<repo>
+  # Pick the matching template (python tier vs universal) and re-apply:
+  uv run python scripts/setup_repo_rulesets.py \
+    --repo williaby/<repo> \
+    --body docs/reference/repo-rulesets/_williaby-template-<tier>.json \
+    --enforcement active
 ```
 
 **For CI-027 findings (classic protection still present post-migration):**
@@ -395,11 +438,23 @@ required).
 **Score >= 6 (Tier 2):** All of: require PR before merging, 1 required reviewer, dismiss stale reviews on new commits, require branches to be up to date.
 **Score >= 8 (Tier 3):** Tier 2 plus require linear history and no force push.
 
-**Remediation (preferred):** Apply the org-level ruleset:
+**Remediation (preferred):** Apply the appropriate ruleset for the repo's owner type.
+
+ByronWilliamsCPA (organization, supports org-level rulesets):
 
 ```bash
-uv run python scripts/setup_org_rulesets.py --org <ORG> \
-  --body docs/reference/org-rulesets/<ORG>-universal.json --enforcement active
+uv run python scripts/setup_org_rulesets.py --org ByronWilliamsCPA \
+  --body docs/reference/org-rulesets/ByronWilliamsCPA-universal.json --enforcement active
+```
+
+williaby (User account, per-repo rulesets only):
+
+```bash
+uv run python scripts/setup_repo_rulesets.py --repo ${REPO_SLUG} \
+  --body docs/reference/repo-rulesets/_williaby-template-${TIER}.json --enforcement active
+# REPO_SLUG is the full owner/name (e.g. "williaby/foo");
+# TIER is "python" if repositoryType in {python-package, python-app, python-script}, else "universal".
+# For a fleet refresh: ENFORCEMENT=active bash scripts/apply_williaby_repo_rulesets.sh
 ```
 
 **Remediation (legacy classic protection, transition only):** Use the classic

@@ -319,3 +319,6 @@ skill-updates/
 # GitHub repo catalog (contains private repo names; refresh manually with gh repo list)
 docs/reference/github-repos.md
 docs/reference/github-repos.json
+
+# Branch-protection backup snapshots (created by Track 5 backup loop)
+backups/

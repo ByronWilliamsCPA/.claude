@@ -401,7 +401,7 @@ class TestCLIOutput:
         docs = tmp_path / "docs"
         docs.mkdir()
 
-        result = subprocess.run(  # noqa: S603  # trusted: sys.executable + repo-local script + tmp_path args
+        result = subprocess.run(  # trusted: sys.executable + repo-local script + tmp_path args
             [sys.executable, str(_SCRIPT_PATH), "--scope", str(docs)],
             capture_output=True,
             text=True,
