@@ -63,6 +63,7 @@
 ### Fix
 
 * fix(ci): set `publish-results: false` in `scorecard.yml` reusable caller; when the workflow runs as a reusable callee the OIDC token `repository` claim resolves to the `.github` org repo (where the workflow lives) rather than the calling repo, so scorecard-action published results to the wrong repository and the job errored; `publish-results: false` skips the OIDC publish step while leaving SARIF upload to the Security tab intact
+* fix(catalog): correct `repositoryType` from `python-template` to `template` for `cookiecutter-python-template`, `cookiecutter-template-sample`, and `template-sample`; `python-template` was never a valid taxonomy value and caused `test_all_repository_types_are_valid` to fail
 * fix(ci): replace `dangoslen/changelog-enforcer` action in `pr-validation.yml` with a job-level
   `if` condition plus a `git merge-base` diff check; eliminates two failure modes -- Renovate PRs
   failing because the `dependencies` label is not yet visible to the GitHub API on the `opened`
