@@ -9,7 +9,9 @@ import json
 import sys
 from pathlib import Path
 
-PYTHON_TYPES = frozenset({"python-package", "python-app", "python-script"})
+PYTHON_TYPES = frozenset(
+    {"python-package", "python-app", "python-script", "python-template"}
+)
 
 
 def python_repos_for_org(org: str, catalog_path: Path) -> list[str]:
