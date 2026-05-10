@@ -765,7 +765,7 @@
     },
     {
       "org": "ByronWilliamsCPA",
-      "repositoryType": "template",
+      "repositoryType": "python-template",
       "name": "cookiecutter-python-template",
       "url": "https://github.com/ByronWilliamsCPA/cookiecutter-python-template",
       "defaultBranch": "main",
@@ -910,7 +910,7 @@
     },
     {
       "org": "ByronWilliamsCPA",
-      "repositoryType": "template",
+      "repositoryType": "python-template",
       "name": "cookiecutter-template-sample",
       "url": "https://github.com/ByronWilliamsCPA/cookiecutter-template-sample",
       "defaultBranch": "main",
@@ -2653,7 +2653,7 @@
     },
     {
       "org": "ByronWilliamsCPA",
-      "repositoryType": "template",
+      "repositoryType": "python-template",
       "name": "template-sample",
       "url": "https://github.com/ByronWilliamsCPA/template-sample",
       "defaultBranch": "main",
@@ -4574,7 +4574,7 @@
         }
       },
       "branchProtectionExempt": true,
-      "branchProtectionExemptReason": "Structural nuances in this repo require no branch protection. Exempt by design — do not flag in audits.",
+      "branchProtectionExemptReason": "Structural nuances in this repo require no branch protection. Exempt by design \u2014 do not flag in audits.",
       "usesDocker": false
     },
     {

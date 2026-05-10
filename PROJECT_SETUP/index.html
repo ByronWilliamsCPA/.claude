@@ -2564,10 +2564,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#branch-protection-rules" class="md-nav__link">
+  <a href="#branch-protection-org-rulesets" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Branch Protection Rules
+        Branch Protection (Org Rulesets)
       
     </span>
   </a>
@@ -3187,32 +3187,24 @@
 </span></code></pre></div>
 <hr />
 <h2 id="security-configuration">Security Configuration<a class="headerlink" href="#security-configuration" title="Permanent link">&para;</a></h2>
-<h3 id="branch-protection-rules">Branch Protection Rules<a class="headerlink" href="#branch-protection-rules" title="Permanent link">&para;</a></h3>
-<p>You can configure branch protection either via script (recommended) or manually through the GitHub UI.</p>
-<h4 id="option-1-automated-setup-recommended">Option 1: Automated Setup (Recommended)<a class="headerlink" href="#option-1-automated-setup-recommended" title="Permanent link">&para;</a></h4>
-<p>Use the included script to configure comprehensive branch protection:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="c1"># Set up branch protection with default settings</span>
-</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>scripts/setup_github_protection.py
-</span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a>
-</span><span id="__span-19-4"><a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="c1"># Or specify custom settings</span>
-</span><span id="__span-19-5"><a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>scripts/setup_github_protection.py<span class="w"> </span>--enforce-admins<span class="w"> </span>--require-code-owner-reviews
+<h3 id="branch-protection-org-rulesets">Branch Protection (Org Rulesets)<a class="headerlink" href="#branch-protection-org-rulesets" title="Permanent link">&para;</a></h3>
+<p>Branch protection is configured once per org as a ruleset rather than per-repo.
+Two rulesets per org:</p>
+<ul>
+<li><strong>Universal</strong> (<code>&lt;org&gt;-default-branch-baseline</code>): applies to all non-exempt
+  repos; requires three universal status checks (Security Gate, Dependency
+  &amp; Standards, REUSE), signatures, linear history, no force push, no
+  deletion. <code>required_approving_review_count: 0</code> (solo-dev safe).</li>
+<li><strong>Python tier</strong> (<code>&lt;org&gt;-python-tier-ci-gate</code>): applies only to
+  <code>repositoryType: python-*</code> repos; adds <code>CI Gate</code> status check.</li>
+</ul>
+<p>Apply or update via:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="nv">PYTHONPATH</span><span class="o">=</span>.<span class="w"> </span>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>scripts/setup_org_rulesets.py<span class="w"> </span>--org<span class="w"> </span>ByronWilliamsCPA<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="w">  </span>--body<span class="w"> </span>docs/reference/org-rulesets/ByronWilliamsCPA-universal.json<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="w">  </span>--enforcement<span class="w"> </span>active
 </span></code></pre></div>
-<p>The script configures:
-- Required pull request reviews before merging
-- Required status checks to pass
-- Enforce rules for administrators
-- Require signed commits
-- Dismiss stale reviews on new commits</p>
-<h4 id="option-2-manual-ui-setup">Option 2: Manual UI Setup<a class="headerlink" href="#option-2-manual-ui-setup" title="Permanent link">&para;</a></h4>
-<ol class="task-list">
-<li>Go to Repository Settings &gt; Branches &gt; Add rule</li>
-<li>Apply to: <code>main</code></li>
-<li>Enable:</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Require a pull request before merging</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Require status checks to pass</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Require branches to be up to date</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Include administrators</li>
-</ol>
+<p>The script enforces a solo-dev guard: any body with
+<code>required_approving_review_count &gt; 0</code> is rejected.</p>
 <h3 id="required-status-checks">Required Status Checks<a class="headerlink" href="#required-status-checks" title="Permanent link">&para;</a></h3>
 <p>Add these as required checks:
 - <code>CI / Test</code> (from CI workflow)
@@ -3296,7 +3288,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 28, 2026 04:03:09 UTC">April 28, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="May 10, 2026 18:21:58 UTC">May 10, 2026</span>
   </span>
 
     
