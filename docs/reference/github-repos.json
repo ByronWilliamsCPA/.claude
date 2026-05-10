@@ -254,22 +254,6 @@
           "interrogate",
           "darglint"
         ]
-      },
-      "python-template": {
-        "description": "Cookiecutter Python project templates; contain placeholder variables that prevent strict type-checking and docstring enforcement.",
-        "scorecardFloor": 5.0,
-        "scorecardTarget": 7.5,
-        "exemptWorkflows": [
-          "coverage.yml",
-          "mutation-testing.yml",
-          "sbom.yml",
-          "slsa-provenance.yml"
-        ],
-        "exemptHooks": [
-          "basedpyright",
-          "interrogate",
-          "darglint"
-        ]
       }
     },
     "visibilityProfiles": {
@@ -781,7 +765,7 @@
     },
     {
       "org": "ByronWilliamsCPA",
-      "repositoryType": "python-template",
+      "repositoryType": "template",
       "name": "cookiecutter-python-template",
       "url": "https://github.com/ByronWilliamsCPA/cookiecutter-python-template",
       "defaultBranch": "main",
@@ -926,7 +910,7 @@
     },
     {
       "org": "ByronWilliamsCPA",
-      "repositoryType": "python-template",
+      "repositoryType": "template",
       "name": "cookiecutter-template-sample",
       "url": "https://github.com/ByronWilliamsCPA/cookiecutter-template-sample",
       "defaultBranch": "main",
@@ -2669,7 +2653,7 @@
     },
     {
       "org": "ByronWilliamsCPA",
-      "repositoryType": "python-template",
+      "repositoryType": "template",
       "name": "template-sample",
       "url": "https://github.com/ByronWilliamsCPA/template-sample",
       "defaultBranch": "main",
