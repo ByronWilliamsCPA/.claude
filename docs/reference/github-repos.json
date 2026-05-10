@@ -426,7 +426,7 @@
         }
       },
       "usesDocker": false,
-      "migrationPhase": "dual"
+      "migrationPhase": "complete"
     },
     {
       "org": "ByronWilliamsCPA",
