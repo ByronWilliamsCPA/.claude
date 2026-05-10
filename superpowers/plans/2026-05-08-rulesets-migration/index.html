@@ -2619,6 +2619,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#status-as-of-2026-05-10-bw-sweep-complete-williaby-deferred" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Status as of 2026-05-10 (BW sweep complete; williaby deferred)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#task-19-author-and-execute-the-sweep-loop" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -4351,6 +4362,26 @@ williaby sub-migration at
 <h2 id="track-7-sweep-43-remaining-repos">Track 7: Sweep (43 Remaining Repos)<a class="headerlink" href="#track-7-sweep-43-remaining-repos" title="Permanent link">&para;</a></h2>
 <blockquote>
 <p>Goal: strip classic protection from every non-exempt, non-canary repo. The ruleset is already <code>active</code> (Phase 1), so each repo flips from "ruleset OR classic" to "ruleset only" with no protection gap.</p>
+<h3 id="status-as-of-2026-05-10-bw-sweep-complete-williaby-deferred">Status as of 2026-05-10 (BW sweep complete; williaby deferred)<a class="headerlink" href="#status-as-of-2026-05-10-bw-sweep-complete-williaby-deferred" title="Permanent link">&para;</a></h3>
+<p>Track 7 complete for ByronWilliamsCPA (18 repos). Williaby repos remain in <code>pending</code> pending the williaby sub-migration.</p>
+<p><strong>Completed this track:</strong></p>
+<ul>
+<li>Task 19 Step 1: <code>scripts/sweep_strip_classic_protection.sh</code> authored with <code>migrationPhase==dual</code> scope filter (safer than the original non-exempt filter, which would have hit unready williaby repos)</li>
+<li>Task 19 Step 3: sweep executed; all 18 BW repos stripped, backup verified for each, ruleset coverage confirmed via <code>repos/.../rules/branches</code> API (count &gt; 0)</li>
+<li>Task 19 Step 4: catalog <code>migrationPhase</code> updated <code>dual</code> -&gt; <code>complete</code> for 18 repos (all 19 BW repos now <code>complete</code>; 26 williaby still <code>pending</code>)</li>
+<li>Task 19 Step 5: org-wide audit -- initial run found 8 CI-023 findings; 4 were true regressions (<code>.claude</code>, <code>cookiecutter-python-template</code>, <code>cookiecutter-template-sample</code>, <code>template-sample</code> had CI Gate in classic protection but not in rulesets)</li>
+<li>Fix: added <code>python-template</code> to <code>PYTHON_TYPES</code> in <code>generate_python_tier_repos.py</code>; updated catalog types for 4 repos (<code>.claude</code> -&gt; <code>python-app</code>, 3 template repos -&gt; <code>python-template</code>); re-applied python-tier ruleset to include 15 repos (was 11)</li>
+<li>Post-fix audit: 4 remaining CI-023 findings (<code>.github</code>, <code>DeQA-Doc</code>, <code>homelab-infra</code>, <code>reference-library</code>) confirmed pre-existing (those repos also lacked CI Gate in classic protection)</li>
+</ul>
+<p><strong>Pre-existing CI-023 findings (Track 9 manifest-scoping item):</strong></p>
+<p><code>.github</code> (config), <code>DeQA-Doc</code> (unknown), <code>homelab-infra</code> (infra), <code>reference-library</code> (docs) do not run <code>ci.yml</code>. Their classic protection also lacked CI Gate. The manifest CI-023 check does not exclude non-CI repo types. Track 9 should add a <code>not_applicable_when: "repo.repositoryType in [...]"</code> guard or update these repos to have CI workflows.</p>
+<p><strong>Deviations from plan as written:</strong></p>
+<ul>
+<li>Plan expected "SWEEP COMPLETE: 43 repos stripped" but scope is BW-only (18 repos); williaby deferred</li>
+<li><code>BACKUP_DIR</code> corrected from <code>2026-05-08</code> to <code>2026-05-09</code> (actual backup date)</li>
+<li>Check-required-checks validation replaced with direct <code>rules/branches</code> ruleset-count check (simpler, more appropriate for mechanical migration verification)</li>
+<li>Parent plan missing <code>--repo-path</code>, <code>--manifest</code>, <code>--registry</code> args on sweep check call (documented as Track 9 bug)</li>
+</ul>
 </blockquote>
 <h3 id="task-19-author-and-execute-the-sweep-loop">Task 19: Author and execute the sweep loop<a class="headerlink" href="#task-19-author-and-execute-the-sweep-loop" title="Permanent link">&para;</a></h3>
 <p><strong>Files:</strong>
@@ -4946,7 +4977,7 @@ williaby sub-migration at
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="May 10, 2026 16:58:02 UTC">May 10, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="May 10, 2026 18:16:36 UTC">May 10, 2026</span>
   </span>
 
     
