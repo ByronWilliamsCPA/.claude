@@ -2519,6 +2519,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#status-as-of-2026-05-09-bw-only-ship" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Status as of 2026-05-09 (BW-only ship)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#task-15-backup-all-45-classic-protection-states" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -4127,6 +4138,27 @@ Expected: 45 (the non-exempt count).</p>
 <h2 id="track-5-pre-flight-org-level-github-state-evaluate-mode">Track 5: Pre-flight (Org-level GitHub State, Evaluate Mode)<a class="headerlink" href="#track-5-pre-flight-org-level-github-state-evaluate-mode" title="Permanent link">&para;</a></h2>
 <blockquote>
 <p>Goal: rulesets exist in both orgs in <code>evaluate</code> mode, classic protection is backed up, validators report clean against current state. NO enforcement change yet.</p>
+<h3 id="status-as-of-2026-05-09-bw-only-ship">Status as of 2026-05-09 (BW-only ship)<a class="headerlink" href="#status-as-of-2026-05-09-bw-only-ship" title="Permanent link">&para;</a></h3>
+<p>Track 5 shipped for ByronWilliamsCPA only. Williaby per-repo rulesets are
+deferred to a follow-up sub-migration documented at
+<a href="../2026-05-09-williaby-active-only-deferred/">2026-05-09-williaby-active-only-deferred.md</a>.</p>
+<p><strong>Completed this track:</strong></p>
+<ul>
+<li>Task 15 backups captured for all 45 non-exempt repos at <code>backups/branch-protection-2026-05-09/</code>. Zero <code>_error</code> files (every repo had prior protection)</li>
+<li>Task 16 Steps 1-2 (BW universal id 16183607, BW python-tier id 16183609) posted in evaluate mode. The <code>__GENERATED__</code> token resolved to the expected 11 BW python-tier repos</li>
+<li>Task 16 Step 5 verified: <code>gh api /orgs/ByronWilliamsCPA/rulesets</code> shows 2 entries, both <code>enforcement: evaluate</code></li>
+<li>Task 16 Step 6 verified: union-mode validator on <code>ByronWilliamsCPA/.claude</code> returns empty findings (exit 0)</li>
+<li>Catalog: 19 BW repos moved from <code>migrationPhase: pending</code> to <code>dual</code></li>
+</ul>
+<p><strong>Deferred (does not run as written):</strong></p>
+<ul>
+<li>Task 16 Steps 3-4 (williaby universal/python via <code>setup_org_rulesets.py --org williaby</code>) are superseded by the addendum's per-repo sweep AND that sweep cannot run in evaluate mode (HTTP 422: per-repo evaluate requires GitHub Enterprise). All 26 williaby attempts failed at validation; zero new williaby rulesets exist from this run</li>
+</ul>
+<p><strong>Plan-side bugs to fix during Track 9 doc sweep:</strong></p>
+<ol>
+<li>Direct <code>setup_org_rulesets.py</code> invocations in this plan and in <code>.claude/agents/ossf-compliance-auditor.md</code> need <code>PYTHONPATH=.</code> prepended; the script imports <code>from scripts.generate_python_tier_repos import ...</code> and the project root is not on sys.path under default <code>uv run python</code> invocation</li>
+<li>The plan and addendum should both note the per-repo-evaluate Enterprise requirement as a precondition. Replace any "post in evaluate" instruction targeting per-repo rulesets with the active-only canary path documented in the deferred plan</li>
+</ol>
 </blockquote>
 <h3 id="task-15-backup-all-45-classic-protection-states">Task 15: Backup all 45 classic protection states<a class="headerlink" href="#task-15-backup-all-45-classic-protection-states" title="Permanent link">&para;</a></h3>
 <p><strong>Files:</strong>
@@ -4887,7 +4919,7 @@ Note the count of repos that had no prior protection (e.g., <code>family-office-
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="May 9, 2026 18:17:25 UTC">May 9, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="May 10, 2026 04:38:19 UTC">May 10, 2026</span>
   </span>
 
     
