@@ -57,22 +57,33 @@ so the sweep script's PUT-by-name idempotency will not touch them. They will
 coexist with the migration rulesets as additional layers. **Leaving them in
 place per session decision 2026-05-09.** Track 9 cleanup may revisit.
 
+**`williaby/.claude` archived (2026-05-10):** This repo was a stale mirror of
+`ByronWilliamsCPA/.claude` with no `.claude/` directory (no agents, skills, or
+rules). The local dev environment uses `ByronWilliamsCPA/.claude` as its origin
+via symlink, making `williaby/.claude` redundant. Archived on GitHub;
+catalog entry updated to `branchProtectionExempt: true`, `isArchived: true`.
+Migration scope is now **25 repos** (was 26).
+
 ## Scope
 
 This plan defines what runs when the user authorizes williaby live-state work.
 It does not run automatically; it must be triggered explicitly.
 
-### Phase W1: Canary (williaby/.claude only)
+### Phase W1: Canary (williaby/exercise-competition only)
 
 **Goal:** Prove that an active-mode ruleset on a single williaby repo allows
 solo-dev self-merge before sweeping the rest.
+
+Note: `williaby/.claude` was the original canary choice but was archived
+2026-05-10 (stale mirror of `ByronWilliamsCPA/.claude`). `exercise-competition`
+is a low-risk python-app with CI and no pre-existing migration rulesets.
 
 - [ ] **Step 1: Apply canary ruleset**
 
 ```bash
 cd /home/byron/dev/.claude
 PYTHONPATH=. uv run --active python scripts/setup_repo_rulesets.py \
-  --repo williaby/.claude \
+  --repo williaby/exercise-competition \
   --body docs/reference/repo-rulesets/_williaby-template-universal.json \
   --enforcement active
 ```
@@ -82,7 +93,7 @@ Expected: ruleset created (POST returns 201), no 422 error.
 - [ ] **Step 2: Verify**
 
 ```bash
-gh api /repos/williaby/.claude/rulesets --jq '.[] | {id, name, enforcement}'
+gh api /repos/williaby/exercise-competition/rulesets --jq '.[] | {id, name, enforcement}'
 ```
 
 Expected: 1 ruleset named `williaby-default-branch-baseline` in `enforcement: active`.
@@ -91,7 +102,7 @@ Expected: 1 ruleset named `williaby-default-branch-baseline` in `enforcement: ac
 
 - [ ] **Step 1: Open test PR**
 
-In a clone of williaby/.claude:
+In a clone of williaby/exercise-competition:
 
 ```bash
 git checkout -b canary/ruleset-test
@@ -112,9 +123,9 @@ gh pr view <PR_NUMBER> --json mergeable,mergeStateStatus
 
 Expected: `mergeable: MERGEABLE`, `mergeStateStatus: CLEAN`.
 
-If `BLOCKED`: rollback canary ruleset (`gh api -X DELETE /repos/williaby/.claude/rulesets/{id}`)
-and investigate. Classic protection on williaby/.claude is preserved in
-`backups/branch-protection-2026-05-09/williaby__.claude.json` for restore.
+If `BLOCKED`: rollback canary ruleset (`gh api -X DELETE /repos/williaby/exercise-competition/rulesets/{id}`)
+and investigate. Classic protection on exercise-competition is preserved in
+`backups/branch-protection-2026-05-09/williaby__exercise-competition.json` for restore.
 
 - [ ] **Step 3: Self-merge**
 
@@ -124,7 +135,7 @@ gh pr merge <PR_NUMBER> --squash --delete-branch
 
 Expected: success.
 
-### Phase W3: Sweep remaining 25 repos in active mode
+### Phase W3: Sweep remaining 24 repos in active mode
 
 - [ ] **Step 1: Run the sweep**
 
@@ -135,23 +146,23 @@ cd /home/byron/dev/.claude
 ENFORCEMENT=active bash scripts/apply_williaby_repo_rulesets.sh
 ```
 
-The sweep PUTs the canary's ruleset by name (idempotent on williaby/.claude)
-and POSTs the other 25. Expected log line: `DONE: applied=26 failed=0`.
+The sweep PUTs the canary's ruleset by name (idempotent on williaby/exercise-competition)
+and POSTs the other 24. Archived repos and exempt repos are skipped automatically.
+Expected log line: `DONE: applied=25 failed=0`.
 
 ### Phase W4: Strip classic protection on williaby canary
 
 - [ ] **Step 1: Delete classic protection**
 
 ```bash
-gh api -X DELETE /repos/williaby/.claude/branches/main/protection
+gh api -X DELETE /repos/williaby/exercise-competition/branches/main/protection
 ```
 
 - [ ] **Step 2: Update catalog**
 
-Update `migrationPhase` for `williaby/.claude` from `dual` (or `pending` if
-still unset) to `complete`.
+Update `migrationPhase` for `williaby/exercise-competition` from `pending` to `complete`.
 
-### Phase W5: Strip classic protection on remaining 25
+### Phase W5: Strip classic protection on remaining 24
 
 - [ ] **Step 1: Run sweep-strip**
 
@@ -168,7 +179,7 @@ PYTHONPATH=. uv run --active python scripts/check-required-checks.py \
   --repo-path . \
   --manifest docs/standards-manifest.yaml \
   --registry docs/reusable-workflow-jobs.yaml \
-  --repo-slug williaby/.claude --branch main --check-bp --source rulesets
+  --repo-slug williaby/exercise-competition --branch main --check-bp --source rulesets
 ```
 
 Expected: exit 0, empty findings array.
@@ -180,7 +191,7 @@ is moderately higher risk because:
 
 1. No observation period: a misconfigured ruleset blocks merges immediately
 2. The canary mitigates by exercising one repo first, but a canary failure
-   on williaby/.claude still affects an in-use repo
+   on williaby/exercise-competition still affects an in-use repo
 3. CI Gate context is in the python template; if any williaby python repo
    has a broken CI workflow, its merges block until CI is fixed
 4. Solo-dev guard prevents the worst class of failure (bypass-blocking

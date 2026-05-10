@@ -3100,7 +3100,7 @@
       "defaultBranch": "main",
       "description": "Global Claude Code configuration and standards for all development projects",
       "isPrivate": false,
-      "isArchived": false,
+      "isArchived": true,
       "review": {
         "branchProtection": {
           "enabled": true,
@@ -3219,7 +3219,8 @@
         }
       },
       "usesDocker": false,
-      "migrationPhase": "pending"
+      "migrationPhase": null,
+      "branchProtectionExempt": true
     },
     {
       "org": "williaby",
