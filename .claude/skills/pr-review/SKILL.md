@@ -35,8 +35,9 @@ review completion menu), or standalone on any PR.
   bypass AI confidence scoring and are always included regardless of perceived
   severity. The two queues are fetched separately (Step 4c and 4f) because
   SonarCloud never returns them from the same API call.
-- **Copilot fires first.** The review request is sent to GitHub Copilot
-  immediately so its async review runs in parallel with ours.
+- **Copilot fires first.** The `copilot_code_review` rule in the org
+  ruleset auto-requests Copilot when the PR opens, so its async review
+  is already running by the time `/pr-review` starts.
 - **No local checkout for review.** All review context is fetched via GitHub
   MCP tools. The user's working tree is never touched during review.
 - **Isolated worktree for fixes.** `/pr-fix` creates a worktree at

@@ -58,52 +58,31 @@ format: `https://github.com/owner/repo/pull/123`"
 
 ---
 
-## Step 1: Trigger GitHub Copilot Review (IMMEDIATE, do not wait)
+### Step 1: Confirm GitHub Copilot Review is queued
 
-Request a GitHub Copilot review before fetching any data. This fires the async
-Copilot review so it runs in parallel with the rest of this workflow.
+Copilot is enrolled as an automatic reviewer via the `copilot_code_review`
+rule in the org ruleset (`<ORG>-default-branch-baseline` in both
+ByronWilliamsCPA and williaby). It is requested when the PR opens.
+No API call from this workflow is needed.
 
-**Two-stage trigger with fallback.** The reviewer API only works when Copilot
-is configured as an auto-assigned reviewer in repo settings. When it is not,
-fall back to the comment-trigger mechanism.
-
-### Stage 1a: Reviewer API (preferred)
+Verify it landed (one-line, non-blocking):
 
 ```bash
-COPILOT_RESULT=$(gh api repos/"$OWNER"/"$REPO"/pulls/"$PR_NUMBER"/requested_reviewers \
-  --method POST \
-  --field "reviewers[]=copilot-pull-request-reviewer" 2>&1)
-COPILOT_STATUS=$?
+gh api repos/"$OWNER"/"$REPO"/pulls/"$PR_NUMBER" \
+  --jq '.requested_reviewers[].login' | grep -q copilot-pull-request-reviewer \
+  && echo "Copilot: ruleset-requested OK" \
+  || echo "Copilot: NOT requested -- verify copilot_code_review rule in org ruleset"
 ```
 
-- If `COPILOT_STATUS` is 0: record "Copilot: requested via reviewer API."
-  Skip Stage 1b.
-- If `COPILOT_STATUS` is non-zero and output contains "422": fall through to
-  Stage 1b (the repo does not have Copilot auto-assignment configured).
-- If non-zero for any other reason: record "Copilot: request failed;
-  add manually via GitHub UI." Log the error text for diagnostics. Continue.
-
-### Stage 1b: Comment trigger (fallback for 422)
-
-Post a PR comment to trigger Copilot via the mention mechanism:
+If verification fails, the `copilot_code_review` rule is missing or
+disabled. Re-apply via:
 
 ```bash
-COPILOT_COMMENT=$(gh pr comment "$PR_NUMBER" --repo "$OWNER/$REPO" \
-  --body "@github-copilot review" 2>&1)
-COPILOT_COMMENT_STATUS=$?
+uv run python scripts/setup_org_rulesets.py --org {ORG} \
+  --body docs/reference/org-rulesets/{ORG}-universal.json --enforcement active
 ```
 
-- If `COPILOT_COMMENT_STATUS` is 0: record "Copilot: triggered via
-  @github-copilot review comment (reviewer API returned 422 — enable
-  auto-assignment in repo settings to use the direct API)."
-- If non-zero: record "Copilot: both trigger methods failed; add manually
-  via GitHub UI." Continue.
-
-**One-time fix:** To stop needing the fallback, enable Copilot auto-assignment
-at `https://github.com/{OWNER}/{REPO}/settings/copilot_review_policies`.
-Once enabled, Stage 1a will succeed on every PR without the comment.
-
-Do not block the rest of the workflow on this step.
+Do not block the rest of this workflow on the result.
 
 ---
 

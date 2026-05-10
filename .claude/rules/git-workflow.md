@@ -105,11 +105,13 @@ Two layers of automated gates enforce quality throughout the workflow:
   Profile: assertive. Provides high-level summary, file-by-file walkthrough, inline
   comments, and suggested labels. Runs ruff, gitleaks, markdownlint, and yamllint as
   inline tools. No action required to trigger it.
-- `GitHub Copilot`: triggered automatically by `/pr-review` (see below). Configured via
-  `.github/copilot-instructions.md` to focus on business logic, error handling, edge
-  cases, concurrency, and security logic flaws that automated linters cannot catch.
-  Leaves advisory comments only; does not block merge. If running a review manually
-  without `/pr-review`, request from the Reviewers menu on GitHub.
+- `GitHub Copilot`: ruleset-required reviewer; fires automatically when
+  any PR targeting the default branch opens (the `copilot_code_review`
+  rule lives in `<org>-default-branch-baseline` for both orgs).
+  Configured via `.github/copilot-instructions.md` to focus on business
+  logic, error handling, edge cases, concurrency, and security logic
+  flaws that automated linters cannot catch. Leaves advisory comments
+  only; not yet a merge blocker (see Phase 3.5 for blocking variant).
 - `/pr-review <url>`: **primary review command.** Accepts a GitHub PR URL and
   orchestrates the full pipeline: triggers Copilot review immediately, fetches
   SonarQube PR-specific findings, runs up to 8 parallel Sonnet agents (CLAUDE.md
