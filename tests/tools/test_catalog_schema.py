@@ -21,7 +21,7 @@ VALID_TYPES = {
     "config",
     "infrastructure",
     "docs-only",
-    "template",
+    "python-template",
 }
 
 
