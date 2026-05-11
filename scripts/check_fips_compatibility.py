@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+import json
 import re
 import sys
 from dataclasses import dataclass
@@ -442,8 +443,6 @@ Examples:
     infos = [i for i in all_issues if i.severity == "info"]
 
     if args.json:
-        import json
-
         output = {
             "summary": {
                 "errors": len(errors),

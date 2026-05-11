@@ -15,25 +15,21 @@ tags:
 
 <!-- Add a new entry below for each CVE using the template format. -->
 
-## No current vulnerabilities
-
-No open CVEs as of 2026-04-21. Run `uv run pip-audit` to check for new findings.
-
-When a vulnerability is found that cannot be resolved immediately, add an entry:
+## PYSEC-2022-42969: py v1.11.0
 
 | Field | Value |
 | --- | --- |
-| **Severity** | Critical / High / Medium |
-| **CVSS Score** | X.X |
-| **Affected package** | package-name >= X.Y, < X.Z |
-| **Patched version** | X.Z (not yet released / available but breaks X) |
-| **Date documented** | YYYY-MM-DD |
-| **Reassessment due** | YYYY-MM-DD (60 days max) |
+| **Severity** | High |
+| **CVSS Score** | 7.5 |
+| **Affected package** | py >= 1.11.0 (all versions) |
+| **Patched version** | None published; `py` is in maintenance-only mode |
+| **Date documented** | 2026-05-11 |
+| **Reassessment due** | 2026-07-10 |
 
-**Exploitation scenario**: Describe what an attacker needs to exploit this in your context.
+**Exploitation scenario**: ReDoS (Regular Expression Denial of Service) in `py.path.svnwc` when processing attacker-controlled SVN working-copy path strings. Requires calling `py.path.svnwc` directly with untrusted input. This project uses `py` only as a transitive test dependency pulled in by pytest tooling; no code path calls `py.path.svnwc` or accepts SVN paths from external input.
 
-**Why deferred**: Specific reason: upstream unpatched, breaking API change required, etc.
+**Why deferred**: The `py` package has no maintained release channel for security patches. The upstream project is effectively in maintenance-only mode with no published fix. The dependency cannot be dropped without removing pytest compatibility shims that would require broader test infrastructure changes.
 
-**Compensating control**: What reduces the risk while the CVE remains open.
+**Compensating control**: `py` is a dev/test-only dependency not present in the production release. The vulnerable code path (`py.path.svnwc`) is never called in this project. No user-controlled input reaches the ReDoS pattern.
 
-**Planned resolution**: Target version, migration path, or timeline.
+**Planned resolution**: Remove `py` when pytest fully deprecates its compatibility shim (expected with pytest 9.x). Reassess against the upstream issue tracker on 2026-07-10; if still unresolved and pytest 9 is stable, migrate and drop `py`.
