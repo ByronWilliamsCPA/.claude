@@ -239,7 +239,7 @@
           "interrogate"
         ]
       },
-      "template": {
+      "python-template": {
         "description": "Cookiecutter or other project templates; may contain placeholder code.",
         "scorecardFloor": 5.0,
         "scorecardTarget": 7.5,
