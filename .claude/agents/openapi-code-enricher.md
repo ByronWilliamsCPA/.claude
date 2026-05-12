@@ -118,7 +118,27 @@ openapi_tags=[
 ]
 ```
 
-### Step 6: Commit
+### Step 6: Post-enrichment validation
+
+If `spectral` is available, lint the spec before committing. This catches naming
+drift and missing security definitions before the PR is opened.
+
+```bash
+if which spectral >/dev/null 2>&1; then
+    spectral lint docs/api/openapi.yaml --ruleset .spectral.yaml 2>/dev/null || \
+    spectral lint docs/api/openapi.yaml
+fi
+```
+
+Common Spectral findings worth fixing before committing:
+- `operationId` values that don't follow `<verb>-<resource>` naming
+- Routes missing security scheme references
+- Response objects missing `description` fields
+- Schemas using bare `null` type without `nullable: true` (OpenAPI 3.0 compat)
+
+If Spectral is not installed, skip and note in the PR body that spec linting was not run.
+
+### Step 7: Commit
 
 Stage only the files this agent actually edited or created. `git add -A`
 would also stage any pre-existing untracked content, build artifacts, or
@@ -139,6 +159,51 @@ fi
 
 git commit -m "docs(openapi): enrich FastAPI routes for OpenAPI coverage"
 ```
+
+## FastAPI code conventions
+
+Apply these rules whenever creating or editing Python files (route functions,
+Pydantic models, dependency declarations).
+
+### Parameters and dependencies
+
+Use `Annotated` for every Path, Query, Header, and `Depends` declaration:
+
+```python
+# correct
+def get_user(
+    user_id: Annotated[int, Path(...)],
+    db: Annotated[Session, Depends(get_db)],
+):
+    ...
+
+# incorrect -- bare positional defaults
+def get_user(user_id: int = Path(...), db: Session = Depends(get_db)):
+    ...
+```
+
+Apply router-level `prefix`, `tags`, and `dependencies` on the `APIRouter`
+constructor, not in `include_router()` calls.
+
+### async def vs def
+
+- Use `async def` only when the function body contains `await` calls to async I/O
+  (async DB drivers, httpx, asyncio utilities).
+- Use regular `def` for synchronous database calls and CPU-bound work. FastAPI
+  runs sync functions in a threadpool automatically -- this prevents event loop
+  blocking without requiring unnecessary async wrappers.
+- Never place synchronous blocking calls inside `async def` functions.
+
+### Pydantic models (V2 syntax only)
+
+| Deprecated (V1) | Required (V2) |
+|---|---|
+| `@validator` | `@field_validator` |
+| `@root_validator` | `@model_validator` |
+| `class Config` | `model_config = ConfigDict(...)` |
+| `Optional[X]` | `X \| None` |
+| `ORJSONResponse` | standard Pydantic serialization |
+| `RootModel` | regular type annotation |
 
 ## What this agent does NOT touch
 
