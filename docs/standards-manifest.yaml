@@ -6,7 +6,7 @@ last_updated: "2026-05-07"
 # Agents interpret it using their own tools (Grep, Read, Glob, Bash).
 
 required_checks:
-  - name: "CI / CI Gate"
+  - name: "CI Gate"
     produced_by: ".github/workflows/ci.yml"
     matrix_expansion: false
   - name: "Security Analysis / Security Gate Validation"
