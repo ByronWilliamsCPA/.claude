@@ -5,18 +5,42 @@ last_updated: "2026-05-07"
 # verify field is a hint to the domain agent, not executable DSL.
 # Agents interpret it using their own tools (Grep, Read, Glob, Bash).
 
+# GitHub Actions check run naming rules (critical for CI-022 and CI-023 accuracy):
+#
+# Direct job in a workflow (type: regular job, NOT uses:):
+#   Check run name = job's `name:` field value ONLY.
+#   Example: workflow "CI", job `name: CI Gate` -> check name "CI Gate"
+#   The workflow name is NOT prepended, even though the PR UI displays it as "CI / CI Gate".
+#
+# Job that calls a reusable workflow (type: uses: org/repo/.github/workflows/X.yml):
+#   Check run name = "{calling job's name} / {internal job's name}".
+#   Example: workflow "security-analysis.yml" calls reusable with job `name: Security Analysis`,
+#   and the reusable workflow has an internal job `name: Security Gate Validation`
+#   -> check name "Security Analysis / Security Gate Validation".
+#
+# Verification approach for CI-023:
+#   1. Query the GitHub Checks API for recent commits on main:
+#      gh api repos/<org>/<repo>/commits/<sha>/check-runs --jq '.check_runs[].name'
+#   2. Match each required_checks entry against the ACTUAL API output, not the PR UI display.
+#   3. The PR UI shows "WorkflowName / JobName" for ALL checks as a display prefix,
+#      but only reusable-workflow callee jobs produce that as their actual context string.
 required_checks:
   - name: "CI Gate"
     produced_by: ".github/workflows/ci.yml"
+    job_type: direct
     matrix_expansion: false
   - name: "Security Analysis / Security Gate Validation"
     produced_by: ".github/workflows/security-analysis.yml"
+    job_type: reusable_callee
+    calling_job_name: "Security Analysis"
     matrix_expansion: false
   - name: "Dependency & Standards Validation"
     produced_by: ".github/workflows/pr-validation.yml"
+    job_type: direct
     matrix_expansion: false
   - name: "Check REUSE Compliance"
     produced_by: ".github/workflows/reuse.yml"
+    job_type: direct
     matrix_expansion: false
 
 solo_dev_constraints:
@@ -452,6 +476,13 @@ checks:
     not_applicable_when: >-
       repo.branchProtectionExempt == true OR repo.repositoryType == 'config' OR
       repo.repositoryType == 'docs-only' OR repo.repositoryType == 'infrastructure'
+    notes: >-
+      Check run names must match the GitHub Checks API output, NOT the PR UI display.
+      Direct jobs: name = job `name:` field only (e.g., "CI Gate", not "CI / CI Gate").
+      Reusable-workflow callee jobs: name = "{calling_job_name} / {internal_job_name}".
+      Verification: gh api repos/<org>/<repo>/commits/<sha>/check-runs --jq '.check_runs[].name'
+      Compare against this file's required_checks[].name entries. The PR UI prepends
+      the workflow name as a visual prefix for ALL checks -- this is cosmetic only for direct jobs.
 
   - id: CI-024
     domain: ci
