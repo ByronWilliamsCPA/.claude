@@ -6,8 +6,8 @@ the fuzz_*.py naming pattern.
 
 The module under test is a standalone CLI script, not an importable package,
 so it is loaded via importlib the same way the unit tests do.  The fuzz
-functions treat any unhandled exception (other than the expected ValueError,
-TypeError, and AttributeError) as a test failure.
+functions treat any unhandled exception (other than the expected ValueError
+and TypeError) as a test failure.
 """
 
 from __future__ import annotations
@@ -33,18 +33,22 @@ _SCRIPT_PATH = _TOOLS_DIR / "validate_front_matter.py"
 
 
 def _load_vfm() -> types.ModuleType:
+    # sys.path is modified once at collection time; tools/ is stable for the
+    # lifetime of the test process and does not need cleanup.
     tools_dir = str(_TOOLS_DIR)
     if tools_dir not in sys.path:
         sys.path.insert(0, tools_dir)
     spec = importlib.util.spec_from_file_location("validate_front_matter", _SCRIPT_PATH)
-    assert spec is not None, f"Script not found: {_SCRIPT_PATH}"
+    if spec is None:
+        raise FileNotFoundError(f"Script not found: {_SCRIPT_PATH}")
+    if not isinstance(spec.loader, importlib.abc.Loader):
+        raise TypeError(f"Unexpected loader type: {type(spec.loader)}")
     module = importlib.util.module_from_spec(spec)
-    assert isinstance(spec.loader, importlib.abc.Loader)
     spec.loader.exec_module(module)
     return module
 
 
-_vfm: Any = _load_vfm()
+_vfm: types.ModuleType = _load_vfm()
 
 
 # ---------------------------------------------------------------------------
@@ -61,7 +65,7 @@ def test_fuzz_strip_code_blocks_text(s: str) -> None:
         # Output must always be a string and no longer than the input.
         assert isinstance(result, str)
         assert len(result) <= len(s)
-    except (ValueError, TypeError, AttributeError):
+    except (ValueError, TypeError):
         pass  # expected for degenerate input
 
 
@@ -74,7 +78,7 @@ def test_fuzz_strip_code_blocks_bytes(b: bytes) -> None:
         result = _vfm._strip_code_blocks(s)
         assert isinstance(result, str)
         assert len(result) <= len(s)
-    except (ValueError, TypeError, AttributeError):
+    except (ValueError, TypeError):
         pass
 
 
@@ -101,5 +105,5 @@ def test_fuzz_fix_tags_dict(data: dict[str, Any]) -> None:
     try:
         result = _vfm._fix_tags(data)
         assert isinstance(result, bool)
-    except (ValueError, TypeError, AttributeError):
+    except (ValueError, TypeError):
         pass

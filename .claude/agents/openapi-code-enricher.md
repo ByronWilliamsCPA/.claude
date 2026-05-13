@@ -203,7 +203,7 @@ constructor, not in `include_router()` calls.
 | `class Config` | `model_config = ConfigDict(...)` |
 | `Optional[X]` | `X \| None` |
 | `ORJSONResponse` | standard Pydantic serialization |
-| `RootModel` | regular type annotation |
+| `__root__` field in `BaseModel` | `RootModel[T]` |
 
 ## What this agent does NOT touch
 

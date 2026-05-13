@@ -66,7 +66,7 @@ pm.test("Response time under 2000ms", function () {
     pm.expect(pm.response.responseTime).to.be.below(2000);
 });
 
-// Layer 2: anti-spoof — confirm we reached the real backend, not a proxy deny page.
+// Layer 2 (anti-spoof): confirm we reached the real backend, not a proxy deny page.
 // Auth proxies (e.g. Authentik, oauth2-proxy) return 200 OK with text/html on deny;
 // this layer distinguishes a proxy block from an application error.
 if (<STATUS> !== 204) {
@@ -80,7 +80,7 @@ if (<STATUS> !== 204) {
     });
 }
 
-// Layer 3: contract — verify the response matches the OpenAPI response_model schema.
+// Layer 3 (contract): verify the response matches the OpenAPI response_model schema.
 if (<STATUS> !== 204) {
     pm.test("Response body has expected structure", function () {
         const body = pm.response.json();
@@ -141,7 +141,7 @@ Example for `HealthResponse`:
 
 For each request that accepts a request body, add two sibling negative requests.
 
-**Sibling 1 — missing required field** (suffix `(invalid payload)`):
+**Sibling 1: missing required field** (suffix `(invalid payload)`):
 - Method: same as original
 - URL: same
 - Body: `{}` (empty object, will fail Pydantic validation)
@@ -156,7 +156,7 @@ For each request that accepts a request body, add two sibling negative requests.
   });
   ```
 
-**Sibling 2 — text below minimum length** (suffix `(text too short)`): add only for endpoints
+**Sibling 2: text below minimum length** (suffix `(text too short)`): add only for endpoints
 where the request schema contains a `text` field with `minLength: 50`:
 - Body: `{"text": "too short"}`
 - Same test assertions as Sibling 1 (expects 422)

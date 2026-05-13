@@ -59,7 +59,7 @@ Execute API workflows: requirements analysis → API design → specification cr
 
 **Standard documentation directory layout** for any service API:
 
-```
+```text
 docs/
   README.md                  # base URL, version, support contact
   getting-started.md         # auth setup, first request walkthrough
