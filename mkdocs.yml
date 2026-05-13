@@ -4,13 +4,13 @@
 site_name: Claude Code Configuration
 site_description: Global Claude Code development standards, commands, and configuration for all projects
 site_author: Byron Williams
-site_url: https://.claude.readthedocs.io
+site_url: https://claude-config.readthedocs.io  # TODO: verify ReadTheDocs subdomain
 repo_url: https://github.com/ByronWilliamsCPA/.claude
-repo_name: ByronWilliamsCPA/claude_config
+repo_name: ByronWilliamsCPA/.claude
 edit_uri: edit/main/docs/
 
 # Copyright
-copyright: Copyright &copy; 2025 Byron Williams
+copyright: Copyright &copy; 2025-2026 Byron Williams
 
 # Theme Configuration
 theme:
@@ -214,7 +214,4 @@ exclude_docs: |
   architecture/adr/_template.md
   architecture/diagrams/*.puml
 
-# Validation
-# strict mode disabled to allow links to repo root files
-# These files are valid but outside docs/ directory
-strict: false
+# strict mode enforced via --strict in CI (docs.yml); not set here

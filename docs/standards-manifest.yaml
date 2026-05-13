@@ -6,10 +6,10 @@ last_updated: "2026-05-07"
 # Agents interpret it using their own tools (Grep, Read, Glob, Bash).
 
 required_checks:
-  - name: "CI Gate"
+  - name: "CI / CI Gate"
     produced_by: ".github/workflows/ci.yml"
     matrix_expansion: false
-  - name: "Security Gate Validation"
+  - name: "Security Analysis / Security Gate Validation"
     produced_by: ".github/workflows/security-analysis.yml"
     matrix_expansion: false
   - name: "Dependency & Standards Validation"
@@ -429,7 +429,7 @@ checks:
     description: >-
       No unregistered GitHub Actions workflows -- any .yml in .github/workflows/ not in
       the registered set is flagged for evaluation
-    verify: "workflow_inventory: .github/workflows/, expected_set=[ci.yml,codeql.yml,container-security.yml,coverage.yml,dependency-review.yml,docs.yml,mutation-testing.yml,postman-api-tests.yml,pr-validation.yml,python-compatibility.yml,release-sign.yml,release.yml,reuse.yml,sbom.yml,scorecard.yml,security-analysis.yml,slsa-provenance.yml,sonarcloud.yml], report_extras=true"  # yamllint disable-line rule:line-length
+    verify: "workflow_inventory: .github/workflows/, expected_set=[ci.yml,codeql.yml,coverage.yml,dependency-review.yml,docs.yml,fips-compatibility.yml,mutation-testing.yml,postman-api-tests.yml,pr-validation.yml,python-compatibility.yml,release-sign.yml,release.yml,reuse.yml,sbom.yml,scorecard.yml,security-analysis.yml,slsa-provenance.yml,sonarcloud.yml], report_extras=true"  # yamllint disable-line rule:line-length
     override_eligible: true
 
   - id: CI-022

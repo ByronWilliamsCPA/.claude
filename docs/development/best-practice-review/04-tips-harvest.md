@@ -293,7 +293,7 @@ was included.
   to give it visibility plus permissions on siblings.
 - **Why it matters:** We often touch `.claude/` globals while in a project
   repo. `additionalDirectories` in project `settings.json` would make this
-  seamless.
+  work without manual steps.
 - **Where it would land:** Template update for project-level
   `settings.json` examples.
 - **Effort:** S
@@ -541,7 +541,7 @@ was included.
   not debugging sessions. Accepted into Recommendation 8.
 - Gemini reinforced `--fork-session` (Recommendation 2),
   `${CLAUDE_PLUGIN_DATA}` (Recommendation 6), and on-demand hooks
-  (Recommendation 4) as highest leverage for solo work. Accepted.
+  (Recommendation 4) as highest value for solo work. Accepted.
 - Gemini recommended avoiding new procedural agents and focusing on
   context branching plus stateful data sharing between existing agents.
   This shaped the final ordering: recommendations lean on extending

@@ -29,4 +29,7 @@ jobs:
       actions: read
     uses: ByronWilliamsCPA/.github/.github/workflows/python-scorecard.yml@f05c26a424a708a73fc445a0ebb5b3ce476c1793  # main
     with:
+      # publish-results: false -- OIDC repository claim resolves to org .github repo
+      # when called as a reusable callee; setting true would publish to wrong repo.
+      # Fix requires updating the org reusable workflow.
       publish-results: false
