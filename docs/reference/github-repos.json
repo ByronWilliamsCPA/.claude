@@ -186,8 +186,7 @@
           "release.yml",
           "reuse.yml",
           "sbom.yml",
-          "slsa-provenance.yml",
-          "sonarcloud.yml"
+          "slsa-provenance.yml"
         ],
         "exemptHooks": [
           "ruff",
@@ -197,8 +196,7 @@
           "interrogate"
         ],
         "exemptChecks": [
-          "CI-011",
-          "CI-012"
+          "CI-011"
         ]
       },
       "infrastructure": {
