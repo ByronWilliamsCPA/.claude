@@ -601,6 +601,13 @@ ignore_names = [
     "__*__",  # Magic methods
 ]
 
+# pip-audit Configuration
+# ignore-vuln entries must have a corresponding entry in docs/known-vulnerabilities.md
+[tool.pip-audit]
+ignore-vuln = [
+    "PYSEC-2022-42969",  # py 1.11.0 ReDoS in py.path.svnwc; no published fix; dev-only
+]
+
 # UV Configuration
 [tool.uv]
 # Note: UV now recommends using [dependency-groups] instead of dev-dependencies
