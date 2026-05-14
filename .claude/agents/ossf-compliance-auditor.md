@@ -98,6 +98,12 @@ gh api "repos/${REPO_SLUG}/branches/main/protection" 2>/dev/null
 ```
 Check for: `required_pull_request_reviews.required_approving_review_count >= 1`, `required_pull_request_reviews.dismiss_stale_reviews: true`, `required_status_checks.strict: true`. If any are missing or the endpoint returns 404, emit SCORECARD:Branch-Protection FINDING.
 
+**Secret scanning and push protection (OSSF-008, OSSF-009):**
+```bash
+gh api "repos/${REPO_SLUG}" --jq '.security_and_analysis'
+```
+If `secret_scanning.status != "enabled"`: emit OSSF-008 FINDING. If OSSF-008 passes but `secret_scanning_push_protection.status != "enabled"`: emit OSSF-009 FINDING. If `exempt_check_ids` contains `OSSF-008` or `OSSF-009`, log `EXEMPT` and skip the corresponding check. If the API returns a 403 or the `security_and_analysis` field is absent (org lacks GHAS), log a note that GHAS is not available at the org level and record in `docs/known-vulnerabilities.md` rather than raising a FINDING.
+
 ### CI-022/023/024: Required Checks Cross-Validation
 
 These three checks are validated by a single Python script. Invoke it once per audit:
@@ -581,7 +587,9 @@ Add at least one `fuzz_*.py` file or `@given`-decorated test per module to clear
 
 **Measures:** Whether SECURITY.md exists and contains contact/reporting information.
 **Score >= 6:** SECURITY.md present with a mechanism to report vulnerabilities.
-**Note:** Already passing. Closing OSSF-002 and OSSF-003 (private channel + SLA) will improve this score further.
+**Note:** Already passing for repos with SECURITY.md. Closing OSSF-002 and OSSF-003 (private channel + SLA) will improve this score further.
+
+**Link format check:** Verify that advisory URLs in SECURITY.md are formatted as Markdown links (`[text](url)`) rather than bare URLs. Bare URLs satisfy the presence check but score lower in Scorecard's Security-Policy evaluation because the tool inspects link formatting as part of quality scoring. If bare URLs are found, emit a SCORECARD:Security-Policy FINDING recommending that they be wrapped as `[descriptive text](url)` links.
 
 ### Signed-Releases (High)
 

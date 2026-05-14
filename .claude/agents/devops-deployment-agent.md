@@ -69,12 +69,12 @@ Receive from the coordinator: target repo path, list of CI-* checks to evaluate,
 
 - `content_present` checks on workflow files: use Grep across `.github/workflows/*.yml`
 - `file_exists` checks: use Glob
-- `sha_pinned` checks: Read each workflow file; find all `uses:` lines; a valid pin is `owner/repo@<40-hex-chars>`. Flag any ref using a version tag (e.g., `@v4`, `@main`, `@master`)
+- `sha_pinned` checks: Read each workflow file; find all `uses:` lines; a valid pin is `owner/repo@<40-hex-chars>`. Flag any ref using a version tag (e.g., `@v4`, `@main`, `@master`). **Apply to ALL workflow files in `.github/workflows/`, including any files that appear in CI-013 exemptWorkflows lists.** CI-013 exemptions affect expected-set evaluation only; they do not exempt any file from SHA-pin enforcement. There are no exceptions to SHA pinning.
 - `content_absent` checks: use Grep to confirm the string does not appear
 - `file_exists` checks with comma-separated filenames (CI-009): check if any of the listed filenames exists; pass if at least one is found. Note the resolved filename for use in subsequent content checks (CI-010, CI-011)
 - `content_present` checks using "OR" filename syntax (CI-010, CI-011): resolve the Codecov config filename first (`.codecov.yml` if present, else `codecov.yaml`); then check the resolved file for the specified content
 - `workflow_inventory` checks (CI-013): List all .yml files in `.github/workflows/`; compare against the expected set; report any files not in the expected set as unregistered workflows for evaluation
-- `sonarqube_quality_gate` checks (CI-012): Use Bash to call the SonarQube API or MCP tool to retrieve the project quality gate status; report the status and count of open Blocker and Critical issues
+- `sonarqube_quality_gate` checks (CI-012): Use Bash to call the SonarQube API to retrieve the project quality gate status; report the status and count of open Blocker and Critical issues. **Visibility gate:** if `sonar-project.properties` is present but the unauthenticated API call returns `{"errors":[{"msg":"...not found"}]}` or similar, check whether the repo is private-visibility (isPrivate=true in the catalog) before raising a FINDING. Private-visibility SonarCloud projects return "not found" to unauthenticated requests by design — this is not a configuration gap. Record `PASS (visibility-gated): sonar-project.properties present, project visibility private — unauthenticated probe skipped` and do not raise CI-012 as a FINDING.
 
 For CI-006 (harden-runner): read each job in each workflow file; confirm `step-security/harden-runner` appears as the first step. Report each job that is missing it.
 
