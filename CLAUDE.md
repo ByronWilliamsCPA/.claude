@@ -112,7 +112,7 @@ semicolon, colon, or restructured sentence. The `no-em-dash` pre-commit hook
 >
 > Writing quality thresholds: see `.claude/standards/writing-quality.md`
 
-## Model selection
+## Model Selection
 
 Use the right model for the task to balance quality and cost:
 

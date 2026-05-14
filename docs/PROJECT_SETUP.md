@@ -89,7 +89,7 @@ This template includes an integrated AI-assisted project planning workflow that 
 
 ### Overview
 
-The planning workflow generates 4 core documents, then synthesizes them into a comprehensive project plan:
+The planning workflow generates 4 core documents, then synthesizes them into a complete project plan:
 
 ```text
 Project Description
