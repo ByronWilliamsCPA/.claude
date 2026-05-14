@@ -285,7 +285,7 @@ checks:
     domain: pre_commit
     severity: important
     description: >-
-      Secret scanning hook present in .pre-commit-config.yaml -- detect-secrets (with
+      Secret scanning hook present in .pre-commit-config.yaml: detect-secrets (with
       --baseline) or trufflehog; hook must fail closed (no silent-skip if tool is absent)
     verify: "hook_present: .pre-commit-config.yaml, detect-secrets OR trufflehog"
     override_eligible: false
@@ -297,7 +297,7 @@ checks:
       Running without a baseline triggers on every pre-existing false positive and is not
       usable in practice.
       trufflehog requirement: the entry must NOT include a silent-skip fallback such as
-      'command -v trufflehog || echo skipping'. Secret scanning must fail closed -- if the
+      'command -v trufflehog || echo skipping'. Secret scanning must fail closed: if the
       tool is absent the hook must fail, not silently pass. Required exclusions:
       CHANGELOG.md (40-char commit SHAs match the GitHub OAuth2 token pattern) and any
       .submodules/ directories containing third-party placeholder credentials. Trufflehog
@@ -362,7 +362,7 @@ checks:
       Dual-layer posture: detect-secrets catches secrets via a committed baseline (regression
       prevention); trufflehog performs entropy analysis and live credential verification
       (catches secrets detect-secrets would miss via pattern alone). The two tools complement
-      rather than duplicate each other -- detect-secrets is deterministic, trufflehog is
+      rather than duplicate each other; detect-secrets is deterministic, trufflehog is
       probabilistic. Required trufflehog exclusions: CHANGELOG.md (40-char commit SHAs match
       the GitHub OAuth2 token pattern, causing false positives) and any .submodules/
       directories containing third-party placeholder credentials. Reference implementation:
@@ -701,6 +701,163 @@ checks:
       If renovate.json does not exist: skip this check (use CI-020 for the renovate.json gap).
       Exceptions: dart-frog-paludarium and homelab-agent-configs (Renovate ignored; may keep dependabot.yml).
     override_eligible: false
+
+  - id: CI-033
+    domain: ci
+    severity: important
+    description: >-
+      Every workflow file must declare a top-level permissions block that explicitly
+      restricts permissions. Relying on the default (write-all) grants every job write
+      access to all scopes, violating least-privilege and enabling token-theft escalation.
+    verify: |
+      For each .github/workflows/*.yml:
+        FAIL if no top-level "permissions:" key is present.
+        FAIL if the top-level permissions block is absent and job-level permissions are
+        not present on every job (job-level grants do not satisfy the workflow-level
+        restriction requirement unless the workflow declares "permissions: {}").
+    override_eligible: false
+
+  - id: CI-034
+    domain: ci
+    severity: important
+    description: >-
+      Every locally-defined job in a workflow file must set timeout-minutes. Jobs without
+      a timeout run indefinitely on failure, consuming runner minutes and blocking the
+      concurrency slot until GitHub's 6-hour hard limit kills them.
+    verify: |
+      For each .github/workflows/*.yml:
+        For each job NOT defined as a reusable workflow call (i.e., "uses:" key absent):
+          FAIL if timeout-minutes is not set on that job.
+      Jobs that call reusable workflows via "uses:" are exempt; the timeout should be
+      set inside the callee workflow.
+    override_eligible: false
+
+  - id: CI-035
+    domain: ci
+    severity: suggested
+    description: >-
+      Workflows triggered by pull_request or pull_request_target must define a
+      concurrency group with cancel-in-progress: true. Without this, redundant runs
+      accumulate when a developer pushes multiple commits in quick succession, wasting
+      runner minutes and causing noisy PR status updates.
+    verify: |
+      For each .github/workflows/*.yml that has pull_request or pull_request_target
+      in its "on:" block:
+        FAIL if no top-level "concurrency:" key is present.
+        FAIL if concurrency.cancel-in-progress is not true.
+    override_eligible: true
+
+  - id: CI-036
+    domain: ci
+    severity: important
+    description: >-
+      A dependency-review.yml workflow must be present for public repos, triggered on
+      pull_request, using actions/dependency-review-action with fail-on-severity: high.
+      This catches vulnerable new dependencies added in a PR diff before they merge,
+      complementing pip-audit (which audits the full lock file, not just the diff).
+    verify: |
+      file_exists: .github/workflows/dependency-review.yml
+      content_present: .github/workflows/dependency-review.yml, dependency-review-action
+      content_present: .github/workflows/dependency-review.yml, fail-on-severity: high
+    override_eligible: true
+    notes: >
+      Not applicable to private repos (GitHub's vulnerability database endpoint for
+      dependency review is only available on public repos or repos with GitHub Advanced
+      Security). Mark N/A with a comment when the repo is private.
+
+  - id: CI-037
+    domain: ci
+    severity: important
+    description: >-
+      A PR title validation workflow must be present, enforcing conventional commit
+      format on PR titles. Squash merges use the PR title as the resulting commit
+      message on main, so an unvalidated PR title becomes a malformed commit in the
+      permanent history and breaks semantic-release version inference.
+    verify: |
+      file_exists: .github/workflows/pr-title.yml
+      content_present: .github/workflows/pr-title.yml, action-semantic-pull-request
+    override_eligible: true
+    notes: >
+      Override eligible when the repo uses a different conventional commit enforcement
+      mechanism (e.g., commitlint in CI, branch naming rules that already enforce type
+      prefixes). Document the alternative in the override entry.
+
+  - id: CI-038
+    domain: ci
+    severity: important
+    description: >-
+      An SBOM generation workflow must be present, producing a CycloneDX or SPDX artifact
+      on push to the default branch. The SBOM provides the machine-readable dependency
+      inventory required by OpenSSF Silver (signed_releases group) and enables downstream
+      vulnerability correlation when a new CVE is published against a transitive dependency.
+    verify: |
+      file_exists: .github/workflows/sbom.yml
+      content_present: .github/workflows/sbom.yml, push
+    override_eligible: true
+
+  - id: CI-039
+    domain: ci
+    severity: important
+    description: >-
+      Python repos must run CI against a matrix that covers Python 3.10 through the
+      current stable release (3.13 as of 2026). A python-compatibility.yml workflow
+      (or equivalent matrix in ci.yml) must be present. Testing only against the
+      deployment version misses syntax and stdlib incompatibilities introduced when
+      the project is used as a library on an older interpreter.
+    verify: |
+      At least one of the following must be true:
+        content_present: .github/workflows/python-compatibility.yml, "3.10"
+        content_present: .github/workflows/ci.yml, matrix
+      FAIL for Python repos if neither condition is met.
+    not_applicable_when: "not a Python project"
+    override_eligible: true
+
+  - id: CI-040
+    domain: ci
+    severity: suggested
+    description: >-
+      The primary CI workflow should respond to the merge_group event so that merge
+      queue builds run the same gate set as PR builds. Without this trigger, the merge
+      queue uses a synthetic check that may bypass required status checks, allowing
+      a queue entry to merge even if the combined HEAD fails CI.
+    verify: |
+      content_present: .github/workflows/ci.yml, merge_group
+    override_eligible: true
+    notes: >
+      Override eligible with a dated deferral comment when the merge queue feature has
+      not been enabled on the repo. The merge queue must be enabled in the repo settings
+      before adding the trigger has any effect.
+
+  - id: CI-041
+    domain: ci
+    severity: suggested
+    description: >-
+      The PyPI publish job in release.yml must reference a named GitHub Environment
+      (environment: pypi) configured with at least one protection rule (required
+      reviewers, deployment branch restriction, or wait timer). Publishing without
+      a protected environment means any workflow can trigger a release with no
+      additional approval gate.
+    verify: |
+      content_present: .github/workflows/release.yml, environment:
+    override_eligible: true
+    not_applicable_when: "repo does not publish to PyPI"
+
+  - id: CI-042
+    domain: ci
+    severity: suggested
+    description: >-
+      Test results should be published as inline PR annotations using a JUnit XML
+      uploader (e.g., EnricoMi/publish-unit-test-result-action or the equivalent
+      step in the org reusable python-ci workflow). Inline annotations surface
+      failing test names directly in the PR diff without requiring a developer to
+      download and parse the CI log.
+    verify: |
+      At least one of the following must be true:
+        content_present: .github/workflows/ci.yml, publish-unit-test-result-action
+        content_present: .github/workflows/ci.yml, python-ci.yml
+      The second condition is satisfied when the repo delegates to the org reusable
+      python-ci workflow, which includes the annotation step internally.
+    override_eligible: true
 
   # ── Claude and Docs ──────────────────────────────────────────────────────────
 

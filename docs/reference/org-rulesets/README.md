@@ -19,6 +19,13 @@ uv run python scripts/setup_org_rulesets.py \
   --enforcement active
 ```
 
+> **williaby deployment note:** `--org williaby` returns HTTP 404 because williaby is a personal
+> account, not a GitHub organization. The `/orgs/{account}/rulesets` API endpoint only exists
+> for organization accounts. For williaby repos, use the per-repo deployment path via
+> `scripts/apply_williaby_repo_rulesets.sh` with templates from `docs/reference/repo-rulesets/`.
+> Tag-protection deployment templates for williaby are not yet present in `repo-rulesets/`; that
+> path is deferred until the per-repo ruleset infrastructure is extended.
+
 ## Ruleset Architecture
 
 Each org has a two-tier ruleset stack that applies to every non-exempt default branch:
@@ -36,7 +43,7 @@ Per-repo rulesets in `../repo-rulesets/` layer on top of these org-level rules.
 
 ### ByronWilliamsCPA
 
-**`ByronWilliamsCPA-universal.json`** -- `ByronWilliamsCPA-default-branch-baseline`
+**`ByronWilliamsCPA-universal.json`**: `ByronWilliamsCPA-default-branch-baseline`
 
 Applied to all repositories. Enforces:
 - Force push and branch deletion prohibition
@@ -45,7 +52,7 @@ Applied to all repositories. Enforces:
 - Pull request policy: 0 required reviewers, CODEOWNERS review required, stale review
   dismissal on push, squash/rebase merge methods only
 - Copilot code review on PR open/ready events
-- Required status checks: Security Gate Validation, Dependency & Standards Validation,
+- Required status checks: Security Analysis / Security Gate Validation, Dependency & Standards Validation,
   Check REUSE Compliance (all pinned to integration_id 15368)
 - File path restriction: trust-boundary path set protected from modification by non-bypass
   actors: `.github/workflows/`, `.github/CODEOWNERS`, `.pre-commit-config.yaml`,
@@ -53,14 +60,14 @@ Applied to all repositories. Enforces:
 - File size cap: 100 MB per file (prevents large-binary commits by bypass actors that
   bypass pre-commit hooks)
 
-**`ByronWilliamsCPA-python.json`** -- `ByronWilliamsCPA-python-tier-ci-gate`
+**`ByronWilliamsCPA-python.json`**: `ByronWilliamsCPA-python-tier-ci-gate`
 
 Applied to Python repositories only (via generated repository pattern). Adds:
 - Required status check: CI Gate (pinned to integration_id 15368)
 - `do_not_enforce_on_create: true` so the first push to a new repo default branch is
   not blocked before CI Gate workflow exists
 
-**`ByronWilliamsCPA-tag-protection.json`** -- `ByronWilliamsCPA-semver-tag-protection`
+**`ByronWilliamsCPA-tag-protection.json`**: `ByronWilliamsCPA-semver-tag-protection`
 
 Applied to all repositories, targeting `refs/tags/v*` refs. Enforces:
 - Tag creation restricted to bypass actors
@@ -72,16 +79,16 @@ Applied to all repositories, targeting `refs/tags/v*` refs. Enforces:
 
 ### williaby
 
-**`williaby-universal.json`** -- `williaby-default-branch-baseline`
+**`williaby-universal.json`**: `williaby-default-branch-baseline`
 
 Identical to ByronWilliamsCPA-universal except excludes `homelab-agent-configs`.
 Applied as a user-level ruleset (williaby is a personal account, not an org).
 
-**`williaby-python.json`** -- `williaby-python-tier-ci-gate`
+**`williaby-python.json`**: `williaby-python-tier-ci-gate`
 
 Identical to ByronWilliamsCPA-python: CI Gate required check, `do_not_enforce_on_create: true`.
 
-**`williaby-tag-protection.json`** -- `williaby-semver-tag-protection`
+**`williaby-tag-protection.json`**: `williaby-semver-tag-protection`
 
 Identical to ByronWilliamsCPA-tag-protection except excludes `homelab-agent-configs`.
 
@@ -136,10 +143,10 @@ the check for any PR or subsequent push.
 CI-022/CI-023 remediation sweep across all repos. Flip to `active` after the sweep confirms
 required check names are consistent. See CI-025a/CI-025b in standards-manifest.yaml.
 
-**`bypass_mode: "always"` on Maintainer role**: a solo developer context. The intention
-is to migrate bypass to a dedicated GitHub App (Integration actor type) once one is
-configured, and change the mode to `pull_request` to disallow direct push bypasses.
-See CI-028 notes in standards-manifest.yaml for the migration path.
+**`bypass_mode: "always"` on Admin role** (actor_id: 5, actor_type: RepositoryRole): a solo
+developer context. The intention is to migrate bypass to a dedicated GitHub App (Integration
+actor type) once one is configured, and change the mode to `pull_request` to disallow direct
+push bypasses. See CI-028 notes in standards-manifest.yaml for the migration path.
 
 ## Enforcement Migration Checklist
 
