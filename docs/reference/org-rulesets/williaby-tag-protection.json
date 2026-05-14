@@ -13,6 +13,16 @@
     {"type": "creation"},
     {"type": "deletion"},
     {"type": "non_fast_forward"},
-    {"type": "required_signatures"}
+    {"type": "update"},
+    {"type": "required_signatures"},
+    {
+      "type": "tag_name_pattern",
+      "parameters": {
+        "name": "SemVer",
+        "negate": false,
+        "operator": "regex",
+        "pattern": "^v\\d+\\.\\d+\\.\\d+(-[\\w.]+)?$"
+      }
+    }
   ]
 }

@@ -25,9 +25,9 @@ Each org has a two-tier ruleset stack that applies to every non-exempt default b
 
 | Tier | File | Applies to | Adds |
 | ---- | ---- | ---------- | ---- |
-| Universal baseline | `*-universal.json` | All repos | Lifecycle rules, PR policy, status checks |
+| Universal baseline | `*-universal.json` | All repos | Lifecycle rules, PR policy, status checks, trust-boundary file protection, file size cap |
 | Python CI gate | `*-python.json` | Python repos only | CI Gate required check |
-| Tag protection | `*-tag-protection.json` | All repos with releases | SemVer tag creation/deletion controls |
+| Tag protection | `*-tag-protection.json` | All repos with releases | SemVer name enforcement, tag immutability (creation/deletion/update/non_fast_forward) |
 
 A repo's effective protection is the union of every ruleset targeting its default branch.
 Per-repo rulesets in `../repo-rulesets/` layer on top of these org-level rules.
@@ -47,12 +47,18 @@ Applied to all repositories. Enforces:
 - Copilot code review on PR open/ready events
 - Required status checks: Security Gate Validation, Dependency & Standards Validation,
   Check REUSE Compliance (all pinned to integration_id 15368)
-- File path restriction: `.github/workflows/` protected from modification by non-bypass actors
+- File path restriction: trust-boundary path set protected from modification by non-bypass
+  actors: `.github/workflows/`, `.github/CODEOWNERS`, `.pre-commit-config.yaml`,
+  `pyproject.toml`, `renovate.json`, `sonar-project.properties`, `.gitleaks.toml`
+- File size cap: 100 MB per file (prevents large-binary commits by bypass actors that
+  bypass pre-commit hooks)
 
 **`ByronWilliamsCPA-python.json`** -- `ByronWilliamsCPA-python-tier-ci-gate`
 
 Applied to Python repositories only (via generated repository pattern). Adds:
 - Required status check: CI Gate (pinned to integration_id 15368)
+- `do_not_enforce_on_create: true` so the first push to a new repo default branch is
+  not blocked before CI Gate workflow exists
 
 **`ByronWilliamsCPA-tag-protection.json`** -- `ByronWilliamsCPA-semver-tag-protection`
 
@@ -60,7 +66,9 @@ Applied to all repositories, targeting `refs/tags/v*` refs. Enforces:
 - Tag creation restricted to bypass actors
 - Tag deletion restricted to bypass actors
 - No tag movement (non_fast_forward)
+- No annotated-tag reassignment via the API (update)
 - Required signatures on tagged commits
+- Tag name must match SemVer regex `^v\d+\.\d+\.\d+(-[\w.]+)?$` (tag_name_pattern)
 
 ### williaby
 
@@ -71,7 +79,7 @@ Applied as a user-level ruleset (williaby is a personal account, not an org).
 
 **`williaby-python.json`** -- `williaby-python-tier-ci-gate`
 
-Identical to ByronWilliamsCPA-python. Adds CI Gate required check.
+Identical to ByronWilliamsCPA-python: CI Gate required check, `do_not_enforce_on_create: true`.
 
 **`williaby-tag-protection.json`** -- `williaby-semver-tag-protection`
 
@@ -88,9 +96,41 @@ with `gh api /apps/github-actions --jq .id`.
 with the base branch before checks count. This prevents a class of race conditions
 (two passing PRs that touch overlapping code) at the cost of requiring rebase before merge.
 
-**`file_path_restriction` on `.github/workflows/`**: prevents workflow definition edits
-by contributors without bypass access. This closes the most direct supply chain attack
-surface (editing the CI definition to bypass the CI gate).
+**`file_path_restriction` expanded to seven trust-boundary paths**: the restriction
+covers `.github/workflows/`, `.github/CODEOWNERS`, `.pre-commit-config.yaml`,
+`pyproject.toml`, `renovate.json`, `sonar-project.properties`, and `.gitleaks.toml`.
+These seven files collectively define the local gate stack: CI workflow definitions,
+who owns review gates, pre-commit hooks, Python tool and linting config, dependency
+update policy, SonarCloud project config, and secret detection rules. Any one of them
+can be modified to disable or circumvent compliance checks. Restricting the full set
+closes the gap where a contributor could weaken the hook or scanner config while
+leaving `workflows/` intact and passing audit.
+
+**`max_file_size: 100` (MB) in universal rulesets**: GitHub's pre-receive layer rejects
+any file exceeding 100 MB, regardless of bypass actor status. Pre-commit hooks that
+catch large binaries do not run when a bypass actor pushes directly; this server-side
+cap is the backstop. The limit matches GitHub's internal large-file warning threshold
+and is consistent with CI-032 in standards-manifest.yaml.
+
+**`update` rule in tag-protection rulesets**: `non_fast_forward` prevents tag movement
+(re-pointing an existing tag to a different commit via force-push), but it does not
+prevent the GitHub API from reassigning an annotated tag object to a different commit.
+Adding `update` closes this gap. Both rules are required for complete tag immutability.
+
+**`tag_name_pattern` with SemVer regex**: enforces `^v\d+\.\d+\.\d+(-[\w.]+)?$` at
+the server layer before the tag is created. Without this, a release workflow can push
+a tag like `release-20240101` or `v2` that satisfies creation-restricted access but
+does not align with semantic-release conventions. The pattern gate runs before any
+signature check, so a malformed tag name is rejected immediately without consuming
+a signing operation.
+
+**`do_not_enforce_on_create: true` in python-tier rulesets**: the CI Gate required
+check cannot exist before the CI Gate workflow file is committed. When a new Python
+repo is created, the first push to the default branch would fail the ruleset before
+any workflow is in place. Setting `do_not_enforce_on_create: true` allows the initial
+branch creation to proceed, after which CI Gate enforcement activates on subsequent
+pushes. This flag only skips the check on the branch-create event; it does not waive
+the check for any PR or subsequent push.
 
 **`enforce: "evaluate"` across all rulesets**: rulesets are in audit mode pending the
 CI-022/CI-023 remediation sweep across all repos. Flip to `active` after the sweep confirms
@@ -108,8 +148,15 @@ Before flipping any ruleset from `evaluate` to `active`:
 1. Resolve all CI-022 true positives (workflow job naming drift) in every repo targeted
    by the ruleset. Run: `uv run python scripts/check-required-checks.py --all-repos`
 2. Verify CI-028: all required_status_checks entries have integration_id: 15368
-3. Verify CI-029: file_path_restriction is present in universal rulesets
-4. Confirm CI-023 passes (effective required checks match required_checks in manifest)
-5. Flip `"enforcement": "evaluate"` to `"enforcement": "active"` and re-apply
+3. Verify CI-029: file_path_restriction is present in universal rulesets and covers all
+   seven trust-boundary paths
+4. Verify CI-030: tag-protection rulesets are present per org with creation, deletion,
+   non_fast_forward, update, required_signatures, and tag_name_pattern rules
+5. Verify CI-031: harden-runner egress-policy is `block` (not `audit`) in ci.yml,
+   pr-validation.yml, and reuse.yml for each targeted repo, or a dated deferral comment
+   is present
+6. Verify CI-032: universal rulesets include max_file_size with a value not exceeding 100 MB
+7. Confirm CI-023 passes (effective required checks match required_checks in manifest)
+8. Flip `"enforcement": "evaluate"` to `"enforcement": "active"` and re-apply
 
 Apply in order: universal baseline first, then python tier, then tag protection.

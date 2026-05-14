@@ -1,6 +1,6 @@
 # docs/standards-manifest.yaml
 version: "1.0"
-last_updated: "2026-05-07"
+last_updated: "2026-05-14"
 
 # verify field is a hint to the domain agent, not executable DSL.
 # Agents interpret it using their own tools (Grep, Read, Glob, Bash).
@@ -586,6 +586,79 @@ checks:
     verify: "classic_protection_absent: branch=default"
     override_eligible: true
     not_applicable_when: "repo.branchProtectionExempt == true OR repo.migrationPhase != complete"
+
+  - id: CI-028
+    domain: ci
+    severity: critical
+    description: >-
+      All required_status_checks entries in org/user ruleset JSON files must carry
+      integration_id: 15368 (GitHub Actions app). Without this pin any actor with
+      write access can post a passing check using the same name and satisfy the gate.
+    verify: |
+      For each file in docs/reference/org-rulesets/*.json:
+        For each required_status_checks entry: FAIL if integration_id is absent or != 15368.
+    override_eligible: false
+
+  - id: CI-029
+    domain: ci
+    severity: critical
+    description: >-
+      Universal rulesets must include a file_path_restriction rule covering the full
+      trust-boundary path set: .github/workflows/, .github/CODEOWNERS,
+      .pre-commit-config.yaml, pyproject.toml, renovate.json,
+      sonar-project.properties, .gitleaks.toml. Workflow-only restriction leaves
+      the files that define every local gate writable by non-bypass actors.
+    verify: |
+      For each *-universal.json in docs/reference/org-rulesets/:
+        FAIL if no rule of type file_path_restriction exists.
+        FAIL if restricted_file_paths does not include all seven required paths.
+    override_eligible: false
+
+  - id: CI-030
+    domain: ci
+    severity: important
+    description: >-
+      Tag-protection rulesets present for each org/account targeting refs/tags/v*
+      with rules: creation, deletion, non_fast_forward, update, required_signatures,
+      and tag_name_pattern (SemVer regex). Replaces the deprecated Tag Protection
+      Rules API (sunset August 2024).
+    verify: |
+      FAIL if docs/reference/org-rulesets/ contains no *-tag-protection.json for each org.
+      For each tag-protection file: FAIL if missing any of creation, deletion,
+      non_fast_forward, update, required_signatures, or tag_name_pattern rule types.
+    override_eligible: true
+    not_applicable_when: "repo.hasNoReleases == true"
+
+  - id: CI-031
+    domain: ci
+    severity: important
+    description: >-
+      harden-runner egress-policy must be block (not audit) in ci.yml,
+      pr-validation.yml, and reuse.yml once onboarding is complete. audit mode
+      is observational only and provides no actual supply-chain network protection.
+    verify: |
+      In each of .github/workflows/ci.yml, pr-validation.yml, reuse.yml:
+        PASS if egress-policy: block is present.
+        PASS if file contains a deferral comment with a target date.
+        FAIL if egress-policy: audit with no deferral comment.
+    override_eligible: true
+    notes: >
+      Current posture is audit mode pending onboarding stabilization. Flip to block
+      after confirming all required outbound domains are captured in the audit log.
+
+  - id: CI-032
+    domain: ci
+    severity: important
+    description: >-
+      Universal rulesets must include a max_file_size rule with max_file_size no
+      greater than 100 (MB). Prevents accidental large-binary commits (SQLite
+      databases, training data, screenshots) that bypass pre-commit hooks when
+      pushed by bypass actors.
+    verify: |
+      For each *-universal.json in docs/reference/org-rulesets/:
+        FAIL if no rule of type max_file_size exists.
+        FAIL if max_file_size parameter exceeds 100.
+    override_eligible: true
 
   - id: CI-018
     domain: ci
