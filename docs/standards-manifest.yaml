@@ -723,12 +723,15 @@ checks:
   - id: OSSF-008
     domain: ossf
     severity: important
-    description: "GitHub Secret Scanning alerting enabled for the repo (requires GitHub Advanced Security at org level)"
+    description: "GitHub Secret Scanning alerting enabled for the repo"
     verify: "github_api: repo.security_and_analysis.secret_scanning.status == enabled"
     override_eligible: true
     notes: >-
-      Org-level GHAS setting; cannot be enabled per-repo without Advanced Security on the org plan.
-      If the org lacks GHAS, accept as a structural gap and record in docs/known-vulnerabilities.md.
+      Public repos: secret scanning is free and configurable at the repo level under Settings >
+      Code security. No org GHAS license required. A disabled status on a public repo is an
+      actionable gap, not a structural limitation.
+      Private repos: requires GitHub Advanced Security at the org level. If the org lacks GHAS,
+      accept as a structural gap and document in docs/known-vulnerabilities.md.
 
   - id: OSSF-009
     domain: ossf
@@ -738,7 +741,9 @@ checks:
     override_eligible: true
     notes: >-
       Push protection blocks pushes containing a detected secret before it enters git history.
-      Depends on OSSF-008 (secret scanning alerting). Same GHAS org-level requirement applies.
+      Depends on OSSF-008 (secret scanning alerting).
+      Public repos: free, no GHAS license required. Disabled status is an actionable gap.
+      Private repos: requires org-level GHAS. If unavailable, document in docs/known-vulnerabilities.md.
 
   # MkDocs Configuration Checks
 
