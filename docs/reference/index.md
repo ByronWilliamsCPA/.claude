@@ -18,6 +18,13 @@ Reference material for every agent, skill, hook, and MCP tool defined in the rep
 - [Hooks Reference](hooks.md): all five hook types and their scripts.
 - [MCP Strategy](mcp.md): tiered loading reference.
 
+## Compliance and Standards
+
+- [Repo Compliance System](repo-compliance.md): standards manifest, domain agents, audit workflow, override system, and full check catalog overview.
+- [GitHub Workflow Audit](github-workflow-audit.md): Sprint 0 baseline for branch protection and workflow status across all 44 repos.
+- [Org Rulesets](org-rulesets/README.md): ruleset architecture, design decisions, and enforcement migration checklist.
+- [Repository Type Taxonomy](repo-type-taxonomy.md): seven repo types and their audit exemption profiles.
+
 ## See Also
 
 - `AGENTS-AND-SKILLS.md` at the repo root: the canonical catalog.

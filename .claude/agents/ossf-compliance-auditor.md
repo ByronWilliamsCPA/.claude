@@ -371,6 +371,30 @@ grep -i -E "(api reference|interface reference|N/A|not applicable)" README.md CO
 ```
 If neither docs directory nor N/A marker exists: emit OSSF-005 FINDING with guidance to decide project type first.
 
+**OSSF-010: SECURITY.md security surface section**
+```bash
+grep -i -E "(security surface|attack surface|primary security)" SECURITY.md 2>/dev/null | head -5
+```
+If no match: emit OSSF-010 FINDING. This check verifies the SECURITY.md contains a repo-specific section naming the attack surface or primary security concerns of the project, not just generic tool links or reporting instructions. If the check ID is in `exempt_check_ids`, log `EXEMPT` and skip.
+
+```text
+FINDING:
+id: OSSF-010
+severity: suggested
+description: SECURITY.md does not include a repo-specific security surface section
+status: configuration_gap
+current_value: no match for "security surface", "attack surface", or "primary security" in SECURITY.md
+remediation: |
+  Add a "Security Surface" or "Scope" section to SECURITY.md that names the
+  repo-specific attack vectors and mitigations. For example:
+    ## Security Surface
+    This repository contains [describe: CI/CD tooling, agent definitions, scripts, etc.].
+    Primary security concerns: [supply-chain attacks via workflow manipulation, credential
+    exposure in hook scripts, agent prompt injection, etc.]. Mitigations: [signed commits,
+    required-status-check rulesets, secret scanning, trufflehog pre-commit hook].
+  The gleif SECURITY.md "Scope" section is the reference implementation.
+```
+
 ## FINDING Block Format
 
 ```text
