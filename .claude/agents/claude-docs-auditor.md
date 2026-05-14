@@ -17,7 +17,7 @@ Compliance auditor and remediator for Claude configuration and project documenta
 
 ## Audit Workflow
 
-For `section_present` checks on CLAUDE.md: Read the file and search for the section heading using Grep. A section is present if a `## <name>` heading exists anywhere in the file.
+For `section_present` checks on CLAUDE.md: Read the file and search for the section heading using Grep with a **case-sensitive, exact-string match** against the canonical heading text (e.g., `## Model Selection` with capital S). A heading that differs only in capitalisation (e.g., `## Model selection`) is a FINDING for CLAUDE-002; presence alone is not sufficient.
 
 For `file_exists` checks (CLAUDE.md, .claude/settings.json): use Glob.
 
@@ -25,7 +25,7 @@ For AGENTS.md/GEMINI.md location: Glob for both `AGENTS.md` and `docs/**/AGENTS.
 
 For CLAUDE-006 (Essential Commands reference removed tools): Grep CLAUDE.md for `black`, `mypy`, and `safety check`. Any match is a failure.
 
-For CLAUDE-007 (em-dash scan) and CLAUDE-008 (AI patterns): invoke `writing-style-editor` as a subagent with the following prompt: "Scan all .md files in docs/, .github/, and the project root for em-dash characters and AI blacklist pattern words (leverage, seamless, robust, comprehensive, holistic, crucial, pivotal, vital). Return a list of file paths and line numbers for each match. Audit only -- do not edit any files."
+For CLAUDE-007 (em-dash scan) and CLAUDE-008 (AI patterns): invoke `writing-style-editor` as a subagent with the following prompt: "Scan all .md files in docs/, .github/, and the project root for em-dash characters and AI blacklist pattern words (leverage, seamless, robust, comprehensive, holistic, crucial, pivotal, vital). Include gitignored files in the scan — use `git ls-files --others --cached --exclude-standard` combined with a direct file-system glob to capture files like docs/reference/github-repos.md that are gitignored but still present on disk. Return a list of file paths and line numbers for each match. Audit only -- do not edit any files."
 
 Merge the writing-style-editor results into your findings list under CLAUDE-007 and CLAUDE-008.
 

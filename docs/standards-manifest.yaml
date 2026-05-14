@@ -395,7 +395,11 @@ checks:
     domain: ci
     severity: critical
     description: "All GitHub Action uses: references are 40-character SHA pins"
-    verify: "sha_pinned: .github/workflows/*.yml, all_uses_fields"
+    verify: >-
+      sha_pinned: .github/workflows/*.yml, all_uses_fields.
+      SCOPE: apply to ALL workflow files including any listed in CI-013 exemptWorkflows.
+      CI-013 exemptions cover the expected-set check only; they do not exempt a file from
+      SHA-pin enforcement. No exceptions to SHA pinning.
     override_eligible: false
 
   - id: CI-006
@@ -444,7 +448,13 @@ checks:
     domain: ci
     severity: important
     description: "SonarQube quality gate passes -- no open Blocker or Critical issues (queried via SonarQube API)"
-    verify: "sonarqube_quality_gate: status=OK, severities=BLOCKER,CRITICAL"
+    verify: >-
+      sonarqube_quality_gate: status=OK, severities=BLOCKER,CRITICAL.
+      VISIBILITY GATE: if sonar-project.properties is present but the project is private-visibility
+      on SonarCloud, skip the unauthenticated API probe (it returns 'Project not found' for private
+      projects by design) and record PASS (visibility-gated) instead of a FINDING.
+      Private-visibility is indicated by isPrivate=true in the repo catalog OR by the project not
+      returning data from the public API when sonar-project.properties is present.
     override_eligible: true
 
   - id: CI-013
@@ -705,6 +715,26 @@ checks:
     description: "GitHub org requires 2FA for all members -- verified via GitHub API (OpenSSF Gold: require_2FA)"
     verify: "github_org_2fa: ByronWilliamsCPA, two_factor_requirement_enabled=true"
     override_eligible: false
+
+  - id: OSSF-008
+    domain: ossf
+    severity: important
+    description: "GitHub Secret Scanning alerting enabled for the repo (requires GitHub Advanced Security at org level)"
+    verify: "github_api: repo.security_and_analysis.secret_scanning.status == enabled"
+    override_eligible: true
+    notes: >-
+      Org-level GHAS setting; cannot be enabled per-repo without Advanced Security on the org plan.
+      If the org lacks GHAS, accept as a structural gap and record in docs/known-vulnerabilities.md.
+
+  - id: OSSF-009
+    domain: ossf
+    severity: important
+    description: "GitHub Secret Scanning push protection enabled for the repo (requires OSSF-008 to pass first)"
+    verify: "github_api: repo.security_and_analysis.secret_scanning_push_protection.status == enabled"
+    override_eligible: true
+    notes: >-
+      Push protection blocks pushes containing a detected secret before it enters git history.
+      Depends on OSSF-008 (secret scanning alerting). Same GHAS org-level requirement applies.
 
   # MkDocs Configuration Checks
 
