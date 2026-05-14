@@ -221,6 +221,7 @@
         "scorecardFloor": 4.0,
         "scorecardTarget": 6.0,
         "exemptWorkflows": [
+          "ci.yml",
           "codeql.yml",
           "coverage.yml",
           "mutation-testing.yml",
@@ -229,7 +230,8 @@
           "release.yml",
           "reuse.yml",
           "sbom.yml",
-          "slsa-provenance.yml"
+          "slsa-provenance.yml",
+          "sonarcloud.yml"
         ],
         "exemptHooks": [
           "ruff",
@@ -237,6 +239,10 @@
           "bandit",
           "darglint",
           "interrogate"
+        ],
+        "exemptChecks": [
+          "CI-011",
+          "CI-012"
         ]
       },
       "python-template": {

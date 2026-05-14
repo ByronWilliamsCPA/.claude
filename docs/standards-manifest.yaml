@@ -29,6 +29,7 @@ required_checks:
     produced_by: ".github/workflows/ci.yml"
     job_type: direct
     matrix_expansion: false
+    applies_to_types: ["python-package", "python-app", "python-script"]
   - name: "Security Analysis / Security Gate Validation"
     produced_by: ".github/workflows/security-analysis.yml"
     job_type: reusable_callee

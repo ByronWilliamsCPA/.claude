@@ -378,11 +378,16 @@ def check_registry_freshness(
 
 def load_required_checks(
     manifest_path: Path,
+    repo_type: str = "",
 ) -> tuple[set[str], dict[str, dict[str, Any]]]:
-    """Parse manifest required_checks entries.
+    """Parse manifest required_checks entries, optionally filtered by repo type.
 
     Args:
         manifest_path: Path to docs/standards-manifest.yaml.
+        repo_type: Repository type string (e.g. "python-package", "docs-only").
+            When non-empty, entries whose ``applies_to_types`` list does not
+            include this type are silently excluded.  Entries without an
+            ``applies_to_types`` field apply to all repo types.
 
     Returns:
         Tuple of (set of required check names, mapping from check name to
@@ -419,6 +424,9 @@ def load_required_checks(
             raise ValueError(
                 f"required_checks[{idx}] missing or empty 'name' field: {entry!r}"
             )
+        applies_to = entry.get("applies_to_types")
+        if repo_type and applies_to is not None and repo_type not in applies_to:
+            continue
         names.add(name)
         meta[name] = entry
     return names, meta
@@ -740,6 +748,15 @@ def _parse_args(argv: list[str] | None) -> argparse.Namespace:
         help="Which protection source to validate against (default: union).",
     )
     parser.add_argument(
+        "--repo-type",
+        default="",
+        help=(
+            "Repository type (e.g. python-package, docs-only). "
+            "When set, required_checks entries whose applies_to_types list does "
+            "not include this type are excluded from evaluation."
+        ),
+    )
+    parser.add_argument(
         "--today",
         default="",
         help="Override today's date (YYYY-MM-DD) for testing",
@@ -754,7 +771,7 @@ def main(argv: list[str] | None = None) -> int:
     args = _parse_args(argv)
 
     try:
-        required, meta = load_required_checks(args.manifest)
+        required, meta = load_required_checks(args.manifest, repo_type=args.repo_type)
         registry = load_registry(args.registry)
     except (FileNotFoundError, ValueError, YAMLError) as exc:
         print(f"Error loading manifest or registry: {exc}", file=sys.stderr)
