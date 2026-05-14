@@ -47,56 +47,119 @@ Derive the expected status code from the request's `response` array in the colle
 or from the route decorator `status_code` field found in the OpenAPI spec.
 Fall back to 200 for GET, 201 for POST, 204 for DELETE.
 
-The template below contains `{{...}}` placeholders that the agent MUST substitute
+The template below contains `<...>` placeholders that the agent MUST substitute
 with concrete JavaScript values before writing the script into the collection.
-These are NOT Postman environment variables; they will produce JavaScript syntax
-errors at newman runtime if the agent leaves them as literal text. Substitute:
-- `{{expected_status}}` -> the integer status code (e.g., `200`, `201`, `204`)
-- `{{expected_field_assertions}}` -> the per-field `pm.expect(body).to.have.property(...)` lines
+These are NOT Postman environment variables; leaving them as literal text will
+produce JavaScript syntax errors at newman runtime. Substitute:
+- `<STATUS>` -> the integer status code (e.g., `200`, `201`, `204`)
+- `<FIELD_ASSERTIONS>` -> per-field assertion lines (see Field assertion rules below)
+
+Structure every test script in three explicit layers:
 
 ```javascript
-// Status code
+// Layer 1: liveness
 pm.test("Status code is <STATUS>", function () {
     pm.response.to.have.status(<STATUS>);
 });
 
-// Response time
 pm.test("Response time under 2000ms", function () {
     pm.expect(pm.response.responseTime).to.be.below(2000);
 });
 
-// Content-Type (skip for 204 No Content)
+// Layer 2 (anti-spoof): confirm we reached the real backend, not a proxy deny page.
+// Auth proxies (e.g. Authentik, oauth2-proxy) return 200 OK with text/html on deny;
+// this layer distinguishes a proxy block from an application error.
 if (<STATUS> !== 204) {
-    pm.test("Content-Type is application/json", function () {
-        pm.expect(pm.response.headers.get("Content-Type")).to.include("application/json");
+    pm.test("Content-Type is application/json (not auth proxy HTML)", function () {
+        const ct = pm.response.headers.get("Content-Type") || "";
+        pm.expect(ct.toLowerCase()).to.include("application/json");
+    });
+
+    pm.test("Response body parses as JSON", function () {
+        pm.expect(() => pm.response.json()).to.not.throw();
     });
 }
 
-// Response structure (check top-level keys from response_model schema)
-pm.test("Response body has expected structure", function () {
-    const body = pm.response.json();
-    // Validate against expected fields from OpenAPI response_model
-    <FIELD_ASSERTIONS>
-});
+// Layer 3 (contract): verify the response matches the OpenAPI response_model schema.
+if (<STATUS> !== 204) {
+    pm.test("Response body has expected structure", function () {
+        const body = pm.response.json();
+        <FIELD_ASSERTIONS>
+    });
+}
 ```
 
-Substitute `<STATUS>` with the integer expected status code (the same value in all
-three sites within a single request) and `<FIELD_ASSERTIONS>` with concrete
-`pm.expect(body).to.have.property(...)` lines derived from the OpenAPI spec's
-`response_model` schema. Example for a `HealthResponse` model:
+#### Field assertion rules
+
+Generate `<FIELD_ASSERTIONS>` from the OpenAPI `response_model` schema using these rules in order:
+
+1. **Required property existence:** For every field in the schema's `required` array, emit:
+   ```javascript
+   pm.expect(body).to.have.property("field_name");
+   ```
+
+2. **Type checks on required fields:** After each existence check, add a type assertion:
+   - `string` -> `pm.expect(body.field_name).to.be.a("string");`
+   - `integer` / `number` -> `pm.expect(body.field_name).to.be.a("number");`
+   - `boolean` -> `pm.expect(body.field_name).to.be.a("boolean");`
+   - `object` -> `pm.expect(body.field_name).to.be.an("object");`
+   - `array` -> `pm.expect(body.field_name).to.be.an("array");`
+
+3. **Enum / constant value assertions:** For fields constrained to a known set, emit a value assertion:
+   - Single constant (e.g. `status` always `"ok"` in `HealthResponse`): `pm.expect(body.status).to.equal("ok");`
+   - Known enum set: `pm.expect(body.overall_label).to.be.oneOf(["Human", "AI", "Mixed"]);`
+   - Derive the set from the schema `enum` list, field description, or Pydantic model literal values.
+
+4. **Non-empty assertions:** For object or array fields that must contain data:
+   - Non-empty object: `pm.expect(Object.keys(body.detectors).length).to.be.above(0);`
+   - Non-empty array: `pm.expect(body.results.length).to.be.above(0);`
+
+5. **Numeric range assertions:** For fields with known bounds (e.g. `score` 0.0-1.0, fractions), emit range checks guarded by a length check:
+   ```javascript
+   if (body.sentences && body.sentences.length > 0) {
+       pm.expect(body.sentences[0].score).to.be.within(0, 1);
+   }
+   ```
+
+Example for `HealthResponse`:
 ```javascript
     pm.expect(body).to.have.property("status");
+    pm.expect(body.status).to.be.a("string");
+    pm.expect(body.status).to.equal("ok");
     pm.expect(body).to.have.property("version");
+    pm.expect(body.version).to.be.a("string");
+    pm.expect(body).to.have.property("detectors");
+    pm.expect(body.detectors).to.be.an("object");
+    pm.expect(Object.keys(body.detectors).length).to.be.above(0);
+    pm.expect(body).to.have.property("sentence_detector");
+    pm.expect(body.sentence_detector).to.be.a("boolean");
+    pm.expect(body).to.have.property("c2pa_validator");
+    pm.expect(body.c2pa_validator).to.be.a("boolean");
 ```
 
 ### Negative test cases
 
-For each request that accepts a request body, add a sibling request with suffix
-`(invalid payload)`:
+For each request that accepts a request body, add two sibling negative requests.
+
+**Sibling 1: missing required field** (suffix `(invalid payload)`):
 - Method: same as original
 - URL: same
 - Body: `{}` (empty object, will fail Pydantic validation)
-- Test assertion: `pm.response.to.have.status(422);`
+- Test assertions:
+  ```javascript
+  pm.test("Status code is 422", function () {
+      pm.response.to.have.status(422);
+  });
+  pm.test("Content-Type is application/json (not auth proxy HTML)", function () {
+      const ct = pm.response.headers.get("Content-Type") || "";
+      pm.expect(ct.toLowerCase()).to.include("application/json");
+  });
+  ```
+
+**Sibling 2: text below minimum length** (suffix `(text too short)`): add only for endpoints
+where the request schema contains a `text` field with `minLength: 50`:
+- Body: `{"text": "too short"}`
+- Same test assertions as Sibling 1 (expects 422)
 
 ## Step 2: Newman execution on docker-host
 
