@@ -4,6 +4,9 @@
 
 config_version = "0"
 
+[plugins]
+enabled = ["ruff", "basedpyright", "bandit"]
+
 # File patterns to completely exclude from all analysis
 exclude_patterns = [
     "*.log",
@@ -104,13 +107,13 @@ file_complexity.threshold = 750
 # ============================================================================
 # Note on Security Scanning
 # ============================================================================
-# Security tools are run via pre-commit hooks instead of qlty plugins:
-# - detect-secrets: Secrets detection
-# - bandit: Python security linter (via pyproject.toml [tool.bandit])
-# - safety: Dependency vulnerability scanning
+# bandit runs in two places: as a qlty plugin (IDE feedback via [plugins] above)
+# and as a pre-commit hook (commit enforcement via .pre-commit-config.yaml).
+# The pre-commit hook is authoritative for CI; qlty provides faster local feedback.
 #
-# This approach is more reliable as qlty plugin availability varies.
-# See .pre-commit-config.yaml for the full security tool configuration.
+# Other security tools run only via pre-commit:
+# - detect-secrets: Secrets detection
+# - safety: Dependency vulnerability scanning
 
 # ============================================================================
 # Documentation and Maintenance

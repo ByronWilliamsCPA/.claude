@@ -16,3 +16,6 @@
 [submodule ".submodules/one-skill-to-rule-them-all"]
 	path = .submodules/one-skill-to-rule-them-all
 	url = https://github.com/rebelytics/one-skill-to-rule-them-all.git
+[submodule ".submodules/jeffallan-claude-skills"]
+	path = .submodules/jeffallan-claude-skills
+	url = https://github.com/Jeffallan/claude-skills.git
