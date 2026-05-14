@@ -148,13 +148,13 @@
         "scorecardFloor": 7.0,
         "scorecardTarget": 8.5,
         "exemptWorkflows": [
+          "dependency-review.yml",
           "mutation-testing.yml",
+          "postman-api-tests.yml",
           "release-sign.yml",
           "release.yml",
           "sbom.yml",
-          "slsa-provenance.yml",
-          "dependency-review.yml",
-          "postman-api-tests.yml"
+          "slsa-provenance.yml"
         ],
         "exemptHooks": []
       },
