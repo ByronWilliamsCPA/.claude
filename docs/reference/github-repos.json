@@ -150,7 +150,9 @@
           "release-sign.yml",
           "release.yml",
           "sbom.yml",
-          "slsa-provenance.yml"
+          "slsa-provenance.yml",
+          "dependency-review.yml",
+          "postman-api-tests.yml"
         ],
         "exemptHooks": []
       },

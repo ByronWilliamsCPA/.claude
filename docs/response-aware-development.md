@@ -63,7 +63,7 @@ We classify assumptions by potential impact and route them to appropriate models
 
 ### Dynamic Model Selection
 
-Leverages PAL MCP Server's intelligent routing to:
+Uses PAL MCP Server's intelligent routing to:
 
 - Select the best free model for each assumption type
 - Learn from patterns over time
