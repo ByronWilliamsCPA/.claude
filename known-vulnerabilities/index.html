@@ -88,7 +88,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#no-current-vulnerabilities" class="md-skip">
+        <a href="#pysec-2022-42969-py-v1110" class="md-skip">
           Skip to content
         </a>
       
@@ -2164,10 +2164,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#no-current-vulnerabilities" class="md-nav__link">
+  <a href="#pysec-2022-42969-py-v1110" class="md-nav__link">
     <span class="md-ellipsis">
       
-        No current vulnerabilities
+        PYSEC-2022-42969: py v1.11.0
       
     </span>
   </a>
@@ -2203,9 +2203,7 @@ The OpenSSF release gate blocks releases for any vulnerability older than 60 day
 </blockquote>
 <!-- Add a new entry below for each CVE using the template format. -->
 
-<h2 id="no-current-vulnerabilities">No current vulnerabilities<a class="headerlink" href="#no-current-vulnerabilities" title="Permanent link">&para;</a></h2>
-<p>No open CVEs as of 2026-04-21. Run <code>uv run pip-audit</code> to check for new findings.</p>
-<p>When a vulnerability is found that cannot be resolved immediately, add an entry:</p>
+<h2 id="pysec-2022-42969-py-v1110">PYSEC-2022-42969: py v1.11.0<a class="headerlink" href="#pysec-2022-42969-py-v1110" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
@@ -2216,34 +2214,34 @@ The OpenSSF release gate blocks releases for any vulnerability older than 60 day
 <tbody>
 <tr>
 <td><strong>Severity</strong></td>
-<td>Critical / High / Medium</td>
+<td>High</td>
 </tr>
 <tr>
 <td><strong>CVSS Score</strong></td>
-<td>X.X</td>
+<td>7.5</td>
 </tr>
 <tr>
 <td><strong>Affected package</strong></td>
-<td>package-name &gt;= X.Y, &lt; X.Z</td>
+<td>py &gt;= 1.11.0 (all versions)</td>
 </tr>
 <tr>
 <td><strong>Patched version</strong></td>
-<td>X.Z (not yet released / available but breaks X)</td>
+<td>None published; <code>py</code> is in maintenance-only mode</td>
 </tr>
 <tr>
 <td><strong>Date documented</strong></td>
-<td>YYYY-MM-DD</td>
+<td>2026-05-11</td>
 </tr>
 <tr>
 <td><strong>Reassessment due</strong></td>
-<td>YYYY-MM-DD (60 days max)</td>
+<td>2026-07-10</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Exploitation scenario</strong>: Describe what an attacker needs to exploit this in your context.</p>
-<p><strong>Why deferred</strong>: Specific reason: upstream unpatched, breaking API change required, etc.</p>
-<p><strong>Compensating control</strong>: What reduces the risk while the CVE remains open.</p>
-<p><strong>Planned resolution</strong>: Target version, migration path, or timeline.</p>
+<p><strong>Exploitation scenario</strong>: ReDoS (Regular Expression Denial of Service) in <code>py.path.svnwc</code> when processing attacker-controlled SVN working-copy path strings. Requires calling <code>py.path.svnwc</code> directly with untrusted input. This project uses <code>py</code> only as a transitive test dependency pulled in by pytest tooling; no code path calls <code>py.path.svnwc</code> or accepts SVN paths from external input.</p>
+<p><strong>Why deferred</strong>: The <code>py</code> package has no maintained release channel for security patches. The upstream project is effectively in maintenance-only mode with no published fix. The dependency cannot be dropped without removing pytest compatibility shims that would require broader test infrastructure changes.</p>
+<p><strong>Compensating control</strong>: <code>py</code> is a dev/test-only dependency not present in the production release. The vulnerable code path (<code>py.path.svnwc</code>) is never called in this project. No user-controlled input reaches the ReDoS pattern.</p>
+<p><strong>Planned resolution</strong>: Remove <code>py</code> when pytest fully deprecates its compatibility shim (expected with pytest 9.x). Reassess against the upstream issue tracker on 2026-07-10; if still unresolved and pytest 9 is stable, migrate and drop <code>py</code>.</p>
 
 
 
@@ -2266,7 +2264,7 @@ The OpenSSF release gate blocks releases for any vulnerability older than 60 day
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 27, 2026 22:56:05 UTC">April 27, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="May 14, 2026 02:14:00 UTC">May 14, 2026</span>
   </span>
 
     
