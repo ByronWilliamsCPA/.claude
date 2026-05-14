@@ -313,11 +313,19 @@
          <lastmod>2026-05-14</lastmod>
     </url>
     <url>
+         <loc>https://claude-config.readthedocs.io/reference/repo-compliance/</loc>
+         <lastmod>2026-05-14</lastmod>
+    </url>
+    <url>
          <loc>https://claude-config.readthedocs.io/reference/repo-type-taxonomy/</loc>
          <lastmod>2026-05-14</lastmod>
     </url>
     <url>
          <loc>https://claude-config.readthedocs.io/reference/skills/</loc>
+         <lastmod>2026-05-14</lastmod>
+    </url>
+    <url>
+         <loc>https://claude-config.readthedocs.io/reference/org-rulesets/</loc>
          <lastmod>2026-05-14</lastmod>
     </url>
     <url>

@@ -12,31 +12,27 @@
         <meta name="author" content="Byron Williams">
       
       
-        <link rel="canonical" href="https://claude-config.readthedocs.io/reference/">
+        <link rel="canonical" href="https://claude-config.readthedocs.io/reference/org-rulesets/">
       
       
-        <link rel="prev" href="../architecture/adr/ADR-007-dual-audience-docs/">
-      
-      
-        <link rel="next" href="agents/">
       
       
         
       
       
-      <link rel="icon" href="../assets/images/favicon.png">
+      <link rel="icon" href="../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
-        <title>Reference - Claude Code Configuration</title>
+        <title>Org-level and user-level ruleset bodies - Claude Code Configuration</title>
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -55,9 +51,9 @@
       
     
     
-      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
     
-    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
   
@@ -92,7 +88,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#catalogs" class="md-skip">
+        <a href="#ruleset-architecture" class="md-skip">
           Skip to content
         </a>
       
@@ -106,7 +102,7 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href=".." title="Claude Code Configuration" class="md-header__button md-logo" aria-label="Claude Code Configuration" data-md-component="logo">
+    <a href="../.." title="Claude Code Configuration" class="md-header__button md-logo" aria-label="Claude Code Configuration" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -126,7 +122,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Reference
+              Org-level and user-level ruleset bodies
             
           </span>
         </div>
@@ -239,7 +235,7 @@
   
   
     <li class="md-tabs__item">
-      <a href=".." class="md-tabs__link">
+      <a href="../.." class="md-tabs__link">
         
   
   
@@ -260,7 +256,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../getting-started/" class="md-tabs__link">
+        <a href="../../getting-started/" class="md-tabs__link">
           
   
   
@@ -282,7 +278,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../architecture/" class="md-tabs__link">
+        <a href="../../architecture/" class="md-tabs__link">
           
   
   
@@ -300,13 +296,11 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="./" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../" class="md-tabs__link">
           
   
   
@@ -328,7 +322,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../contributing/" class="md-tabs__link">
+        <a href="../../contributing/" class="md-tabs__link">
           
   
   
@@ -350,7 +344,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../project/roadmap/" class="md-tabs__link">
+        <a href="../../project/roadmap/" class="md-tabs__link">
           
   
   
@@ -386,7 +380,7 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href=".." title="Claude Code Configuration" class="md-nav__button md-logo" aria-label="Claude Code Configuration" data-md-component="logo">
+    <a href="../.." title="Claude Code Configuration" class="md-nav__button md-logo" aria-label="Claude Code Configuration" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -416,7 +410,7 @@
   
   
     <li class="md-nav__item">
-      <a href=".." class="md-nav__link">
+      <a href="../.." class="md-nav__link">
         
   
   
@@ -485,7 +479,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../getting-started/" class="md-nav__link ">
+            <a href="../../getting-started/" class="md-nav__link ">
               
   
   
@@ -536,7 +530,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../getting-started/install/" class="md-nav__link">
+      <a href="../../getting-started/install/" class="md-nav__link">
         
   
   
@@ -571,7 +565,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../getting-started/first-agent/" class="md-nav__link">
+      <a href="../../getting-started/first-agent/" class="md-nav__link">
         
   
   
@@ -606,7 +600,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../getting-started/first-skill/" class="md-nav__link">
+      <a href="../../getting-started/first-skill/" class="md-nav__link">
         
   
   
@@ -641,7 +635,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../getting-started/picking/" class="md-nav__link">
+      <a href="../../getting-started/picking/" class="md-nav__link">
         
   
   
@@ -676,7 +670,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../getting-started/troubleshooting/" class="md-nav__link">
+      <a href="../../getting-started/troubleshooting/" class="md-nav__link">
         
   
   
@@ -759,7 +753,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../architecture/" class="md-nav__link ">
+            <a href="../../architecture/" class="md-nav__link ">
               
   
   
@@ -810,7 +804,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/install-model/" class="md-nav__link">
+      <a href="../../architecture/install-model/" class="md-nav__link">
         
   
   
@@ -845,7 +839,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/hook-pipeline/" class="md-nav__link">
+      <a href="../../architecture/hook-pipeline/" class="md-nav__link">
         
   
   
@@ -880,7 +874,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/agent-dispatch/" class="md-nav__link">
+      <a href="../../architecture/agent-dispatch/" class="md-nav__link">
         
   
   
@@ -915,7 +909,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/mcp-tiered-loading/" class="md-nav__link">
+      <a href="../../architecture/mcp-tiered-loading/" class="md-nav__link">
         
   
   
@@ -950,7 +944,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/submodule-strategy/" class="md-nav__link">
+      <a href="../../architecture/submodule-strategy/" class="md-nav__link">
         
   
   
@@ -985,7 +979,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/rules-vs-standards/" class="md-nav__link">
+      <a href="../../architecture/rules-vs-standards/" class="md-nav__link">
         
   
   
@@ -1020,7 +1014,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/diagrams/" class="md-nav__link">
+      <a href="../../architecture/diagrams/" class="md-nav__link">
         
   
   
@@ -1094,7 +1088,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../architecture/adr/" class="md-nav__link ">
+            <a href="../../architecture/adr/" class="md-nav__link ">
               
   
   
@@ -1145,7 +1139,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/adr/ADR-001-two-layer-symlink-install/" class="md-nav__link">
+      <a href="../../architecture/adr/ADR-001-two-layer-symlink-install/" class="md-nav__link">
         
   
   
@@ -1180,7 +1174,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/adr/ADR-002-hook-composition/" class="md-nav__link">
+      <a href="../../architecture/adr/ADR-002-hook-composition/" class="md-nav__link">
         
   
   
@@ -1215,7 +1209,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/adr/ADR-003-tiered-mcp-loading/" class="md-nav__link">
+      <a href="../../architecture/adr/ADR-003-tiered-mcp-loading/" class="md-nav__link">
         
   
   
@@ -1250,7 +1244,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/adr/ADR-004-skill-vs-agent-boundary/" class="md-nav__link">
+      <a href="../../architecture/adr/ADR-004-skill-vs-agent-boundary/" class="md-nav__link">
         
   
   
@@ -1285,7 +1279,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/adr/ADR-005-submodule-extension-model/" class="md-nav__link">
+      <a href="../../architecture/adr/ADR-005-submodule-extension-model/" class="md-nav__link">
         
   
   
@@ -1320,7 +1314,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/adr/ADR-006-rules-vs-standards/" class="md-nav__link">
+      <a href="../../architecture/adr/ADR-006-rules-vs-standards/" class="md-nav__link">
         
   
   
@@ -1355,7 +1349,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/adr/ADR-007-dual-audience-docs/" class="md-nav__link">
+      <a href="../../architecture/adr/ADR-007-dual-audience-docs/" class="md-nav__link">
         
   
   
@@ -1402,8 +1396,6 @@
       
   
   
-    
-  
   
   
     
@@ -1427,23 +1419,22 @@
     
     
       
-        
-        
-      
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="./" class="md-nav__link md-nav__link--active">
+            <a href="../" class="md-nav__link ">
               
   
   
@@ -1468,13 +1459,13 @@
             </a>
             
               
-              <label class="md-nav__link md-nav__link--active" for="__nav_4" id="__nav_4_label" tabindex="">
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1494,7 +1485,7 @@
   
   
     <li class="md-nav__item">
-      <a href="agents/" class="md-nav__link">
+      <a href="../agents/" class="md-nav__link">
         
   
   
@@ -1529,7 +1520,7 @@
   
   
     <li class="md-nav__item">
-      <a href="skills/" class="md-nav__link">
+      <a href="../skills/" class="md-nav__link">
         
   
   
@@ -1564,7 +1555,7 @@
   
   
     <li class="md-nav__item">
-      <a href="hooks/" class="md-nav__link">
+      <a href="../hooks/" class="md-nav__link">
         
   
   
@@ -1599,7 +1590,7 @@
   
   
     <li class="md-nav__item">
-      <a href="mcp/" class="md-nav__link">
+      <a href="../mcp/" class="md-nav__link">
         
   
   
@@ -1634,7 +1625,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../api-reference/" class="md-nav__link">
+      <a href="../../api-reference/" class="md-nav__link">
         
   
   
@@ -1713,7 +1704,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../contributing/" class="md-nav__link ">
+            <a href="../../contributing/" class="md-nav__link ">
               
   
   
@@ -1764,7 +1755,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../contributing/adding-agents/" class="md-nav__link">
+      <a href="../../contributing/adding-agents/" class="md-nav__link">
         
   
   
@@ -1799,7 +1790,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../contributing/adding-skills/" class="md-nav__link">
+      <a href="../../contributing/adding-skills/" class="md-nav__link">
         
   
   
@@ -1834,7 +1825,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../contributing/adding-hooks/" class="md-nav__link">
+      <a href="../../contributing/adding-hooks/" class="md-nav__link">
         
   
   
@@ -1869,7 +1860,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../contributing/writing-adrs/" class="md-nav__link">
+      <a href="../../contributing/writing-adrs/" class="md-nav__link">
         
   
   
@@ -1904,7 +1895,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../contributing/writing-diagrams/" class="md-nav__link">
+      <a href="../../contributing/writing-diagrams/" class="md-nav__link">
         
   
   
@@ -1939,7 +1930,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../frontmatter-standard/" class="md-nav__link">
+      <a href="../../frontmatter-standard/" class="md-nav__link">
         
   
   
@@ -2043,7 +2034,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../project/roadmap/" class="md-nav__link">
+      <a href="../../project/roadmap/" class="md-nav__link">
         
   
   
@@ -2078,7 +2069,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../project/changelog/" class="md-nav__link">
+      <a href="../../project/changelog/" class="md-nav__link">
         
   
   
@@ -2113,7 +2104,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../project/license/" class="md-nav__link">
+      <a href="../../project/license/" class="md-nav__link">
         
   
   
@@ -2173,10 +2164,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#catalogs" class="md-nav__link">
+  <a href="#ruleset-architecture" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Catalogs
+        Ruleset Architecture
       
     </span>
   </a>
@@ -2184,10 +2175,49 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#compliance-and-standards" class="md-nav__link">
+  <a href="#file-inventory" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Compliance and Standards
+        File Inventory
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="File Inventory">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#byronwilliamscpa" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ByronWilliamsCPA
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#williaby" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        williaby
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#key-design-decisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Design Decisions
       
     </span>
   </a>
@@ -2195,10 +2225,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#see-also" class="md-nav__link">
+  <a href="#enforcement-migration-checklist" class="md-nav__link">
     <span class="md-ellipsis">
       
-        See Also
+        Enforcement Migration Checklist
       
     </span>
   </a>
@@ -2225,28 +2255,159 @@
   
 
 
-  <h1>Overview</h1>
+  <h1>Org-level and user-level ruleset bodies</h1>
 
-<p>Reference material for every agent, skill, hook, and MCP tool defined in the repo. These pages are catalogs, not tutorials: use the <a href="../getting-started/">Getting Started</a> section first if you are new.</p>
-<h2 id="catalogs">Catalogs<a class="headerlink" href="#catalogs" title="Permanent link">&para;</a></h2>
-<ul>
-<li><a href="agents/">Agents Catalog</a>: all 43 agents grouped by domain.</li>
-<li><a href="skills/">Skills Catalog</a>: all 40+ skills grouped by workflow stage.</li>
-<li><a href="hooks/">Hooks Reference</a>: all five hook types and their scripts.</li>
-<li><a href="mcp/">MCP Strategy</a>: tiered loading reference.</li>
-</ul>
-<h2 id="compliance-and-standards">Compliance and Standards<a class="headerlink" href="#compliance-and-standards" title="Permanent link">&para;</a></h2>
-<ul>
-<li><a href="repo-compliance/">Repo Compliance System</a>: standards manifest, domain agents, audit workflow, override system, and full check catalog overview.</li>
-<li><a href="github-workflow-audit/">GitHub Workflow Audit</a>: Sprint 0 baseline for branch protection and workflow status across all 44 repos.</li>
-<li><a href="org-rulesets/">Org Rulesets</a>: ruleset architecture, design decisions, and enforcement migration checklist.</li>
-<li><a href="repo-type-taxonomy/">Repository Type Taxonomy</a>: seven repo types and their audit exemption profiles.</li>
-</ul>
-<h2 id="see-also">See Also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
-<ul>
-<li><code>AGENTS-AND-SKILLS.md</code> at the repo root: the canonical catalog.</li>
-<li><code>CLAUDE.md</code> at the repo root: global development standards.</li>
-</ul>
+<p>JSON files in this directory define GitHub rulesets applied at the organization (ByronWilliamsCPA)
+or user-account (williaby) level. Apply via:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>scripts/setup_org_rulesets.py<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span>--org<span class="w"> </span>&lt;org&gt;<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span>--body<span class="w"> </span>docs/reference/org-rulesets/&lt;file&gt;.json<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span>--enforcement<span class="w"> </span>active
+</span></code></pre></div>
+<blockquote>
+<p><strong>williaby deployment note:</strong> <code>--org williaby</code> returns HTTP 404 because williaby is a personal
+account, not a GitHub organization. The <code>/orgs/{account}/rulesets</code> API endpoint only exists
+for organization accounts. For williaby repos, use the per-repo deployment path via
+<code>scripts/apply_williaby_repo_rulesets.sh</code> with templates from <code>docs/reference/repo-rulesets/</code>.
+Tag-protection deployment templates for williaby are not yet present in <code>repo-rulesets/</code>; that
+path is deferred until the per-repo ruleset infrastructure is extended.</p>
+</blockquote>
+<h2 id="ruleset-architecture">Ruleset Architecture<a class="headerlink" href="#ruleset-architecture" title="Permanent link">&para;</a></h2>
+<p>Each org has a two-tier ruleset stack that applies to every non-exempt default branch:</p>
+<table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>File</th>
+<th>Applies to</th>
+<th>Adds</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Universal baseline</td>
+<td><code>*-universal.json</code></td>
+<td>All repos</td>
+<td>Lifecycle rules, PR policy, status checks, trust-boundary file protection, file size cap</td>
+</tr>
+<tr>
+<td>Python CI gate</td>
+<td><code>*-python.json</code></td>
+<td>Python repos only</td>
+<td>CI Gate required check</td>
+</tr>
+<tr>
+<td>Tag protection</td>
+<td><code>*-tag-protection.json</code></td>
+<td>All repos with releases</td>
+<td>SemVer name enforcement, tag immutability (creation/deletion/update/non_fast_forward)</td>
+</tr>
+</tbody>
+</table>
+<p>A repo's effective protection is the union of every ruleset targeting its default branch.
+Per-repo rulesets in <code>../repo-rulesets/</code> layer on top of these org-level rules.</p>
+<h2 id="file-inventory">File Inventory<a class="headerlink" href="#file-inventory" title="Permanent link">&para;</a></h2>
+<h3 id="byronwilliamscpa">ByronWilliamsCPA<a class="headerlink" href="#byronwilliamscpa" title="Permanent link">&para;</a></h3>
+<p><strong><code>ByronWilliamsCPA-universal.json</code></strong>: <code>ByronWilliamsCPA-default-branch-baseline</code></p>
+<p>Applied to all repositories. Enforces:
+- Force push and branch deletion prohibition
+- Required linear history (squash or rebase merges only; no merge commits)
+- Required commit signatures (GPG/SSH)
+- Pull request policy: 0 required reviewers, CODEOWNERS review required, stale review
+  dismissal on push, squash/rebase merge methods only
+- Copilot code review on PR open/ready events
+- Required status checks: Security Analysis / Security Gate Validation, Dependency &amp; Standards Validation,
+  Check REUSE Compliance (all pinned to integration_id 15368)
+- File path restriction: trust-boundary path set protected from modification by non-bypass
+  actors: <code>.github/workflows/</code>, <code>.github/CODEOWNERS</code>, <code>.pre-commit-config.yaml</code>,
+  <code>pyproject.toml</code>, <code>renovate.json</code>, <code>sonar-project.properties</code>, <code>.gitleaks.toml</code>
+- File size cap: 100 MB per file (prevents large-binary commits by bypass actors that
+  bypass pre-commit hooks)</p>
+<p><strong><code>ByronWilliamsCPA-python.json</code></strong>: <code>ByronWilliamsCPA-python-tier-ci-gate</code></p>
+<p>Applied to Python repositories only (via generated repository pattern). Adds:
+- Required status check: CI Gate (pinned to integration_id 15368)
+- <code>do_not_enforce_on_create: true</code> so the first push to a new repo default branch is
+  not blocked before CI Gate workflow exists</p>
+<p><strong><code>ByronWilliamsCPA-tag-protection.json</code></strong>: <code>ByronWilliamsCPA-semver-tag-protection</code></p>
+<p>Applied to all repositories, targeting <code>refs/tags/v*</code> refs. Enforces:
+- Tag creation restricted to bypass actors
+- Tag deletion restricted to bypass actors
+- No tag movement (non_fast_forward)
+- No annotated-tag reassignment via the API (update)
+- Required signatures on tagged commits
+- Tag name must match SemVer regex <code>^v\d+\.\d+\.\d+(-[\w.]+)?$</code> (tag_name_pattern)</p>
+<h3 id="williaby">williaby<a class="headerlink" href="#williaby" title="Permanent link">&para;</a></h3>
+<p><strong><code>williaby-universal.json</code></strong>: <code>williaby-default-branch-baseline</code></p>
+<p>Identical to ByronWilliamsCPA-universal except excludes <code>homelab-agent-configs</code>.
+Applied as a user-level ruleset (williaby is a personal account, not an org).</p>
+<p><strong><code>williaby-python.json</code></strong>: <code>williaby-python-tier-ci-gate</code></p>
+<p>Identical to ByronWilliamsCPA-python: CI Gate required check, <code>do_not_enforce_on_create: true</code>.</p>
+<p><strong><code>williaby-tag-protection.json</code></strong>: <code>williaby-semver-tag-protection</code></p>
+<p>Identical to ByronWilliamsCPA-tag-protection except excludes <code>homelab-agent-configs</code>.</p>
+<h2 id="key-design-decisions">Key Design Decisions<a class="headerlink" href="#key-design-decisions" title="Permanent link">&para;</a></h2>
+<p><strong><code>integration_id: 15368</code></strong> on all required status checks: pins each check to the GitHub
+Actions app. Without this, any actor with write access can post a passing check with the
+same name and satisfy the requirement. 15368 is the stable GitHub Actions app ID; verify
+with <code>gh api /apps/github-actions --jq .id</code>.</p>
+<p><strong><code>strict_required_status_checks_policy: true</code></strong>: requires the PR branch to be current
+with the base branch before checks count. This prevents a class of race conditions
+(two passing PRs that touch overlapping code) at the cost of requiring rebase before merge.</p>
+<p><strong><code>file_path_restriction</code> expanded to seven trust-boundary paths</strong>: the restriction
+covers <code>.github/workflows/</code>, <code>.github/CODEOWNERS</code>, <code>.pre-commit-config.yaml</code>,
+<code>pyproject.toml</code>, <code>renovate.json</code>, <code>sonar-project.properties</code>, and <code>.gitleaks.toml</code>.
+These seven files collectively define the local gate stack: CI workflow definitions,
+who owns review gates, pre-commit hooks, Python tool and linting config, dependency
+update policy, SonarCloud project config, and secret detection rules. Any one of them
+can be modified to disable or circumvent compliance checks. Restricting the full set
+closes the gap where a contributor could weaken the hook or scanner config while
+leaving <code>workflows/</code> intact and passing audit.</p>
+<p><strong><code>max_file_size: 100</code> (MB) in universal rulesets</strong>: GitHub's pre-receive layer rejects
+any file exceeding 100 MB, regardless of bypass actor status. Pre-commit hooks that
+catch large binaries do not run when a bypass actor pushes directly; this server-side
+cap is the backstop. The limit matches GitHub's internal large-file warning threshold
+and is consistent with CI-032 in standards-manifest.yaml.</p>
+<p><strong><code>update</code> rule in tag-protection rulesets</strong>: <code>non_fast_forward</code> prevents tag movement
+(re-pointing an existing tag to a different commit via force-push), but it does not
+prevent the GitHub API from reassigning an annotated tag object to a different commit.
+Adding <code>update</code> closes this gap. Both rules are required for complete tag immutability.</p>
+<p><strong><code>tag_name_pattern</code> with SemVer regex</strong>: enforces <code>^v\d+\.\d+\.\d+(-[\w.]+)?$</code> at
+the server layer before the tag is created. Without this, a release workflow can push
+a tag like <code>release-20240101</code> or <code>v2</code> that satisfies creation-restricted access but
+does not align with semantic-release conventions. The pattern gate runs before any
+signature check, so a malformed tag name is rejected immediately without consuming
+a signing operation.</p>
+<p><strong><code>do_not_enforce_on_create: true</code> in python-tier rulesets</strong>: the CI Gate required
+check cannot exist before the CI Gate workflow file is committed. When a new Python
+repo is created, the first push to the default branch would fail the ruleset before
+any workflow is in place. Setting <code>do_not_enforce_on_create: true</code> allows the initial
+branch creation to proceed, after which CI Gate enforcement activates on subsequent
+pushes. This flag only skips the check on the branch-create event; it does not waive
+the check for any PR or subsequent push.</p>
+<p><strong><code>enforce: "evaluate"</code> across all rulesets</strong>: rulesets are in audit mode pending the
+CI-022/CI-023 remediation sweep across all repos. Flip to <code>active</code> after the sweep confirms
+required check names are consistent. See CI-025a/CI-025b in standards-manifest.yaml.</p>
+<p><strong><code>bypass_mode: "always"</code> on Admin role</strong> (actor_id: 5, actor_type: RepositoryRole): a solo
+developer context. The intention is to migrate bypass to a dedicated GitHub App (Integration
+actor type) once one is configured, and change the mode to <code>pull_request</code> to disallow direct
+push bypasses. See CI-028 notes in standards-manifest.yaml for the migration path.</p>
+<h2 id="enforcement-migration-checklist">Enforcement Migration Checklist<a class="headerlink" href="#enforcement-migration-checklist" title="Permanent link">&para;</a></h2>
+<p>Before flipping any ruleset from <code>evaluate</code> to <code>active</code>:</p>
+<ol>
+<li>Resolve all CI-022 true positives (workflow job naming drift) in every repo targeted
+   by the ruleset. Run: <code>uv run python scripts/check-required-checks.py --all-repos</code></li>
+<li>Verify CI-028: all required_status_checks entries have integration_id: 15368</li>
+<li>Verify CI-029: file_path_restriction is present in universal rulesets and covers all
+   seven trust-boundary paths</li>
+<li>Verify CI-030: tag-protection rulesets are present per org with creation, deletion,
+   non_fast_forward, update, required_signatures, and tag_name_pattern rules</li>
+<li>Verify CI-031: harden-runner egress-policy is <code>block</code> (not <code>audit</code>) in ci.yml,
+   pr-validation.yml, and reuse.yml for each targeted repo, or a dated deferral comment
+   is present</li>
+<li>Verify CI-032: universal rulesets include max_file_size with a value not exceeding 100 MB</li>
+<li>Confirm CI-023 passes (effective required checks match required_checks in manifest)</li>
+<li>Flip <code>"enforcement": "evaluate"</code> to <code>"enforcement": "active"</code> and re-apply</li>
+</ol>
+<p>Apply in order: universal baseline first, then python tier, then tag protection.</p>
 
 
 
@@ -2279,7 +2440,7 @@
     <span class="md-icon" title="Created">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 11, 2026 22:24:49 UTC">April 11, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="May 14, 2026 23:04:18 UTC">May 14, 2026</span>
   </span>
 
     
@@ -2356,10 +2517,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
     
   </body>
