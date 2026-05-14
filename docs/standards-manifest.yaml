@@ -1,6 +1,6 @@
 # docs/standards-manifest.yaml
 version: "1.0"
-last_updated: "2026-05-07"
+last_updated: "2026-05-14"
 
 # verify field is a hint to the domain agent, not executable DSL.
 # Agents interpret it using their own tools (Grep, Read, Glob, Bash).
@@ -597,6 +597,91 @@ checks:
       If renovate.json does not exist: skip this check (use CI-020 for the renovate.json gap).
       Exceptions: dart-frog-paludarium and homelab-agent-configs (Renovate ignored; may keep dependabot.yml).
     override_eligible: false
+
+  - id: CI-028
+    domain: ci
+    severity: critical
+    description: >-
+      Every required_status_checks entry in every active or evaluate-mode ruleset
+      specifies integration_id: 15368 (the GitHub Actions app ID). Without an
+      integration_id, any actor with repository write access can post a passing check
+      with the same name and satisfy the requirement.
+    verify: >-
+      Read docs/reference/org-rulesets/*.json and docs/reference/repo-rulesets/*.json.
+      For every object in rules[].parameters.required_status_checks[], verify that
+      integration_id is present and equals 15368. FAIL if any entry is missing
+      integration_id or has a different value.
+    override_eligible: false
+    notes: >-
+      integration_id 15368 is the stable GitHub Actions app ID. Retrieve via:
+      gh api /apps/github-actions --jq .id
+      This check applies to all ruleset files regardless of enforcement status --
+      evaluate-mode rulesets should match the active-mode configuration so that
+      flipping enforcement to active does not introduce a security gap.
+
+  - id: CI-029
+    domain: ci
+    severity: critical
+    description: >-
+      Universal branch rulesets (ByronWilliamsCPA-universal and williaby-universal)
+      include a file_path_restriction rule protecting .github/workflows/ from
+      modification by actors without bypass access.
+    verify: >-
+      Read docs/reference/org-rulesets/ByronWilliamsCPA-universal.json and
+      docs/reference/org-rulesets/williaby-universal.json. Verify each contains a
+      rule with type=file_path_restriction and .github/workflows/ in
+      parameters.restricted_file_paths. FAIL if the rule is absent or the path
+      is not listed.
+    override_eligible: false
+    notes: >-
+      This rule prevents contributors without bypass access from modifying CI
+      workflow definitions via the GitHub web editor or direct push. It is a
+      supply chain control: if workflows can be edited without CI running, the
+      entire CI gate is bypassable.
+
+  - id: CI-030
+    domain: ci
+    severity: important
+    description: >-
+      Tag protection rulesets present for each org targeting v* tag refs with
+      creation, deletion, non_fast_forward, and required_signatures rules.
+      Replaces the deprecated Tag Protection Rules API (sunset August 2024).
+    verify: >-
+      Read docs/reference/org-rulesets/ByronWilliamsCPA-tag-protection.json and
+      docs/reference/org-rulesets/williaby-tag-protection.json. Verify each file
+      exists, has target=tag, conditions.ref_name.include contains refs/tags/v*,
+      and rules include creation, deletion, non_fast_forward, and required_signatures
+      types. FAIL if any file is missing or any required rule type is absent.
+    override_eligible: true
+    not_applicable_when: "repo.branchProtectionExempt == true OR repo.hasNoReleases == true"
+    notes: >-
+      GitHub sunset the old Tag Protection Rules API in August 2024 and auto-migrated
+      existing rules to rulesets. New tag protection must be configured via rulesets.
+      The refs/tags/v* pattern covers all SemVer release tags. Add refs/tags/v*-*
+      to include pre-release tags (v1.0.0-rc.1) if needed.
+
+  - id: CI-031
+    domain: ci
+    severity: important
+    description: >-
+      harden-runner egress-policy is block (not audit) in CI and PR-validation
+      workflows once the initial onboarding period is complete. Audit mode is
+      observational only; block mode actually restricts outbound network egress.
+    verify: >-
+      Read .github/workflows/ci.yml, .github/workflows/pr-validation.yml, and
+      .github/workflows/reuse.yml. For each, check all steps that use
+      step-security/harden-runner and verify egress_policy is block, not audit.
+      PASS if all three use block. PASS if the file contains a comment explicitly
+      deferring escalation with a target date. FAIL if egress_policy is audit with
+      no deferral comment.
+    override_eligible: true
+    notes: >-
+      The initial onboarding workflow is: (1) deploy with egress-policy: audit,
+      (2) review egress logs in the GitHub Actions security tab after 30 days,
+      (3) build an allowedEndpoints list from the actual egress, (4) escalate to
+      egress-policy: block with the allowedEndpoints list. fips-compatibility.yml
+      and mutation-testing.yml may stay in audit mode longer; prioritize the
+      workflows that gate every PR merge.
 
   # ── Claude and Docs ──────────────────────────────────────────────────────────
 

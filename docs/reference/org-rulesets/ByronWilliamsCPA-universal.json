@@ -38,10 +38,16 @@
         "strict_required_status_checks_policy": true,
         "do_not_enforce_on_create": false,
         "required_status_checks": [
-          {"context": "Security Gate Validation"},
-          {"context": "Dependency & Standards Validation"},
-          {"context": "Check REUSE Compliance"}
+          {"context": "Security Gate Validation", "integration_id": 15368},
+          {"context": "Dependency & Standards Validation", "integration_id": 15368},
+          {"context": "Check REUSE Compliance", "integration_id": 15368}
         ]
+      }
+    },
+    {
+      "type": "file_path_restriction",
+      "parameters": {
+        "restricted_file_paths": [".github/workflows/"]
       }
     }
   ]
