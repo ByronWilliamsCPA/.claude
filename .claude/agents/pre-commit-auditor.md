@@ -1,6 +1,6 @@
 ---
 name: pre-commit-auditor
-description: Pre-commit configuration compliance auditor and remediator. Checks .pre-commit-config.yaml presence, required hook inventory (ruff, basedpyright, bandit, detect-secrets, darglint, interrogate, commitizen, yamllint, markdownlint, no-em-dash), and SHA pinning of all rev fields against PC-* checks in the standards manifest.
+description: Pre-commit configuration compliance auditor and remediator. Checks .pre-commit-config.yaml presence, required hook inventory (ruff, basedpyright, bandit, detect-secrets or trufflehog, darglint, interrogate, commitizen, yamllint, markdownlint, no-em-dash), and SHA pinning of all rev fields against PC-* checks in the standards manifest.
 model: sonnet
 tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
 ---
@@ -19,14 +19,19 @@ Compliance auditor and remediator for `.pre-commit-config.yaml`: hook presence, 
 
 For PC-001 (`file_exists`): use Glob to check for `.pre-commit-config.yaml`. If absent, report all other PC-* checks as not-evaluated (the file must exist before hooks can be checked).
 
-For `hook_present` checks: Read `.pre-commit-config.yaml`; search for the hook id string in the repos/hooks list.
+For `hook_present` checks: Read `.pre-commit-config.yaml` and search for hook IDs. The verify hint may contain logical operators; evaluate them as follows:
 
-For PC-012 (`sha_pinned`): Read all `rev:` lines in `.pre-commit-config.yaml`. A valid SHA pin is exactly 40 hexadecimal characters. Flag any rev that is a version tag (starts with `v` or contains only digits and dots).
+- `hook_present: <file>, A OR B`: PASS if either hook ID `A` or hook ID `B` is present in the hook list; FAIL only if neither is present
+- `hook_present: <file>, A AND B`: PASS only if both hook ID `A` and hook ID `B` are present; FAIL if either is absent
+- `hook_present: <file>, A`: standard single-hook check; PASS if `A` is present
 
-For `baseline_present` (PC-NEW-001): when the `detect-secrets` hook id is present in any repo block, use Glob to check for `.secrets.baseline` at the project root. If absent or zero bytes, report:
-- id: `PC-NEW-001`, severity: `important`, description: `detect-secrets hook present but .secrets.baseline absent or empty`
-- current_value: `file not found` or `file is empty`
-- remediation note: if `.secrets.baseline` is absent, run `detect-secrets scan > .secrets.baseline && git add .secrets.baseline`; if present but empty (zero bytes), run `detect-secrets scan --update .secrets.baseline && git add .secrets.baseline`
+For PC-005 specifically (secret scanning):
+- PASS if `detect-secrets` is present with `--baseline .secrets.baseline` in its args, OR if `trufflehog` is present without a silent-skip fallback (i.e., no `|| echo` or `|| true` in the entry)
+- If `detect-secrets` is present but the hook entry lacks `--baseline`: report FINDING with description `detect-secrets hook present but --baseline .secrets.baseline argument is missing`; remediation: add `args: ['--baseline', '.secrets.baseline']` and create the baseline file with `detect-secrets scan > .secrets.baseline`
+- If `detect-secrets` is present but `.secrets.baseline` is absent or zero bytes: report FINDING with description `detect-secrets hook present but .secrets.baseline file absent or empty`; remediation: run `detect-secrets scan > .secrets.baseline && git add .secrets.baseline`
+- If a trufflehog hook entry contains a silent-skip fallback (`command -v trufflehog || echo` or similar): report FINDING with description `trufflehog hook has silent-skip fallback; must fail closed when tool is absent`
+
+For PC-012 (`sha_pinned`): Read all `rev:` lines in `.pre-commit-config.yaml`. A valid SHA pin is exactly 40 hexadecimal characters. Flag any rev that is a version tag (starts with `v` or contains only digits and dots). Local hooks (no `repo: https://...`) have no `rev:` field and are exempt.
 
 Return findings with: id, severity, description, status, current_value (list of missing hooks or list of unpinned revs).
 
@@ -42,13 +47,38 @@ The required hook repositories and their hook IDs are:
 - `https://github.com/astral-sh/ruff-pre-commit`: `ruff`, `ruff-format`
 - `https://github.com/DetachHead/basedpyright`: `basedpyright`
 - `https://github.com/PyCQA/bandit`: `bandit`
-- `https://github.com/Yelp/detect-secrets`: `detect-secrets`
+- `https://github.com/trufflesecurity/trufflehog`: `trufflehog` (primary secret scanner; PC-005)
+- `https://github.com/Yelp/detect-secrets`: `detect-secrets` with `args: ['--baseline', '.secrets.baseline']` (baseline regression; PC-005 and PC-013)
 - `https://github.com/terrencepreilly/darglint`: `darglint`
 - `https://github.com/econchick/interrogate`: `interrogate`
 - `https://github.com/commitizen-tools/commitizen`: `commitizen`
 - `https://github.com/adrienverge/yamllint`: `yamllint`
 - `https://github.com/igorshubovych/markdownlint-cli`: `markdownlint`
 - local repo with pygrep entry for em-dash (`\u2014`)
+
+When adding `trufflehog`, use this entry (staged-files-only scan, fail-closed, with CHANGELOG.md
+and .submodules/ exclusions; POSIX-compatible null-delimiter handling via `tr` instead of GNU-only `grep -z`):
+
+```yaml
+- repo: https://github.com/trufflesecurity/trufflehog
+  rev: "<sha>"  # <version>  # pragma: allowlist secret
+  hooks:
+    - id: trufflehog
+      entry: bash -c 'git diff --cached -z --name-only --diff-filter=d 2>/dev/null | tr "\0" "\n" | grep -v "^CHANGELOG\.md$" | grep -v "^\.submodules/" | grep -v "^$" | tr "\n" "\0" | xargs -0 -r trufflehog filesystem --fail --no-update'
+      pass_filenames: false
+      stages: [pre-commit]
+```
+
+When adding `detect-secrets`, always include the `--baseline` arg and create the baseline file if absent:
+
+```yaml
+- repo: https://github.com/Yelp/detect-secrets
+  rev: "<sha>"  # <version>  # pragma: allowlist secret
+  hooks:
+    - id: detect-secrets
+      args: ['--baseline', '.secrets.baseline']
+      stages: [pre-commit]
+```
 
 **Before adding the `no-em-dash` hook to any repo:** run a preliminary scan for pre-existing em-dashes:
 

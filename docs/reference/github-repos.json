@@ -1,7 +1,7 @@
 {
   "_meta": {
     "linkedDoc": "docs/reference/repo-type-taxonomy.md",
-    "lastUpdated": "2026-05-07",
+    "lastUpdated": "2026-05-14",
     "refreshCommands": {
       "repoList": "gh repo list <org> --limit 100 --json name,url,defaultBranchRef,description,isPrivate,isArchived",
       "branchProtection": "gh api repos/<org>/<repo>/branches/<branch>/protection",
@@ -23,7 +23,7 @@
           "strict": true,
           "contexts": [
             "CI Gate",
-            "Security Gate Validation",
+            "Security Analysis / Security Gate Validation",
             "Dependency & Standards Validation",
             "Check REUSE Compliance"
           ]
@@ -33,7 +33,8 @@
           "dismissStaleReviews": false,
           "requireCodeOwnerReviews": false,
           "requireLastPushApproval": false
-        }
+        },
+        "_note": "Classic branch protection is replaced by org rulesets post-migration. CI-023 agents should query rulesets via gh api orgs/<org>/rulesets, not the classic branch protection API."
       },
       "codeql": {
         "workflowPresent": true
@@ -310,30 +311,13 @@
       "isArchived": false,
       "review": {
         "branchProtection": {
-          "enabled": true,
-          "enforceAdmins": true,
-          "requiredSignatures": true,
-          "requiredLinearHistory": true,
-          "allowForcePushes": false,
-          "allowDeletions": false,
-          "blockCreations": false,
-          "requiredConversationResolution": false,
-          "lockBranch": false,
-          "requiredStatusChecks": {
-            "strict": true,
-            "contexts": [
-              "CI Gate",
-              "Security Gate Validation",
-              "Dependency & Standards Validation",
-              "Check REUSE Compliance"
-            ]
+          "classicEnabled": false,
+          "migrationPhase": "complete",
+          "rulesets": {
+            "baseline": "ByronWilliamsCPA-default-branch-baseline",
+            "pythonTier": "ByronWilliamsCPA-python-tier-ci-gate"
           },
-          "requiredPullRequestReviews": {
-            "requiredApprovingReviewCount": 0,
-            "dismissStaleReviews": false,
-            "requireCodeOwnerReviews": false,
-            "requireLastPushApproval": false
-          }
+          "notes": "Classic branch protection removed; org rulesets are authoritative"
         },
         "codeql": {
           "workflowPresent": true
@@ -359,8 +343,8 @@
           "shaAutoPinning": true
         },
         "secretScanning": {
-          "enabled": false,
-          "pushProtection": false
+          "enabled": true,
+          "pushProtection": true
         },
         "ossfBadge": {
           "badgeId": 12685,
@@ -372,6 +356,8 @@
             "codeql.yml",
             "coverage.yml",
             "docs.yml",
+            "fips-compatibility.yml",
+            "mutation-testing.yml",
             "pr-validation.yml",
             "python-compatibility.yml",
             "release-sign.yml",
@@ -380,6 +366,7 @@
             "sbom.yml",
             "scorecard.yml",
             "security-analysis.yml",
+            "slsa-provenance.yml",
             "sonarcloud.yml"
           ],
           "presentFromExpected": [
@@ -387,6 +374,8 @@
             "codeql.yml",
             "coverage.yml",
             "docs.yml",
+            "fips-compatibility.yml",
+            "mutation-testing.yml",
             "pr-validation.yml",
             "python-compatibility.yml",
             "release-sign.yml",
@@ -395,6 +384,7 @@
             "sbom.yml",
             "scorecard.yml",
             "security-analysis.yml",
+            "slsa-provenance.yml",
             "sonarcloud.yml"
           ],
           "missingFromExpected": [],
@@ -404,8 +394,8 @@
           "securityMd": true,
           "contributingMd": true,
           "changelogMd": true,
-          "codeOfConduct": false,
-          "governanceMd": false,
+          "codeOfConduct": true,
+          "governanceMd": true,
           "agentsMd": true,
           "geminiMd": true,
           "claudeMd": true,
