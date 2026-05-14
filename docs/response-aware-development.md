@@ -67,7 +67,7 @@ Uses PAL MCP Server's intelligent routing to:
 
 - Select the best free model for each assumption type
 - Learn from patterns over time
-- Optimize cost while maintaining quality
+- Reduce cost by reserving premium models for critical assumptions only
 
 ## Implementation Strategy
 
@@ -230,9 +230,9 @@ $ git commit -m "feat: user profile update with verified assumptions"
 
 ## Conclusion
 
-Response-Aware Development represents a paradigm shift from "hope it works in production" to "verify assumptions systematically". By leveraging multiple AI models with fresh contexts, we can catch subtle issues that single-context development misses.
+Response-Aware Development represents a shift from "hope it works in production" to "verify assumptions systematically". By running multiple AI models with fresh contexts, we can catch subtle issues that single-context development misses.
 
-The tiered approach optimizes both quality and cost, using premium models only where critical while leveraging free models for the bulk of verification work.
+The tiered approach balances quality and cost: premium models handle critical assumptions while free models cover the bulk of verification work.
 
 Success will be measured by reduced production incidents, improved code quality, and developer confidence in AI-generated code.
 
