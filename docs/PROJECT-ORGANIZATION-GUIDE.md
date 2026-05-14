@@ -3,14 +3,14 @@ title: "Project Organization Guide"
 schema_type: common
 status: published
 owner: core-maintainer
-purpose: "Comprehensive guide for organizing Claude Code configurations and documentation."
+purpose: "Configuration and documentation guide for organizing Claude Code setups."
 tags:
   - guide
   - documentation
   - architecture
 ---
 
-> **Comprehensive guide for organizing Claude Code configurations, tools, and documentation**
+> **Reference guide for organizing Claude Code configurations, tools, and documentation**
 
 ## 🎯 Purpose
 

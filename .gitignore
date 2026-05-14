@@ -192,6 +192,7 @@ coverage.xml
 tmp/
 temp/
 *.tmp
+.tmp-*.md
 *.bak
 *.swp
 *.swo
