@@ -29,6 +29,7 @@ required_checks:
     produced_by: ".github/workflows/ci.yml"
     job_type: direct
     matrix_expansion: false
+    applies_to_types: ["python-package", "python-app", "python-script"]
   - name: "Security Analysis / Security Gate Validation"
     produced_by: ".github/workflows/security-analysis.yml"
     job_type: reusable_callee
@@ -472,7 +473,10 @@ checks:
     description: >-
       Every entry in required_checks has a workflow job that produces it,
       either locally or via a registered reusable workflow.
-    verify: "required_checks_have_producer: docs/standards-manifest.yaml, docs/reusable-workflow-jobs.yaml"  # yamllint disable-line rule:line-length
+    verify: >-
+      required_checks_have_producer: docs/standards-manifest.yaml, docs/reusable-workflow-jobs.yaml.
+      Pass --repo-type <repositoryType> to check-required-checks.py so entries with
+      applies_to_types that exclude this repo type are silently skipped.
     override_eligible: false
 
   - id: CI-023
