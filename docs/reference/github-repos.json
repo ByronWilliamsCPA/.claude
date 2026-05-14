@@ -177,7 +177,9 @@
         "scorecardFloor": 5.0,
         "scorecardTarget": 7.0,
         "exemptWorkflows": [
+          "ci.yml",
           "coverage.yml",
+          "docs.yml",
           "mutation-testing.yml",
           "python-compatibility.yml",
           "release-sign.yml",
@@ -192,6 +194,9 @@
           "bandit",
           "darglint",
           "interrogate"
+        ],
+        "exemptChecks": [
+          "CI-011"
         ]
       },
       "infrastructure": {
@@ -221,6 +226,7 @@
         "scorecardFloor": 4.0,
         "scorecardTarget": 6.0,
         "exemptWorkflows": [
+          "ci.yml",
           "codeql.yml",
           "coverage.yml",
           "mutation-testing.yml",
@@ -229,7 +235,8 @@
           "release.yml",
           "reuse.yml",
           "sbom.yml",
-          "slsa-provenance.yml"
+          "slsa-provenance.yml",
+          "sonarcloud.yml"
         ],
         "exemptHooks": [
           "ruff",
@@ -237,6 +244,10 @@
           "bandit",
           "darglint",
           "interrogate"
+        ],
+        "exemptChecks": [
+          "CI-011",
+          "CI-012"
         ]
       },
       "python-template": {
@@ -465,7 +476,7 @@
           }
         },
         "codeql": {
-          "workflowPresent": false
+          "workflowPresent": true
         },
         "scorecard": {
           "workflowPresent": true,
@@ -474,11 +485,11 @@
         },
         "sonarcloud": {
           "configPresent": false,
-          "workflowPresent": true
+          "workflowPresent": false
         },
         "codecov": {
           "configPresent": false,
-          "workflowPresent": true
+          "workflowPresent": false
         },
         "reuse": {
           "workflowPresent": true
@@ -521,20 +532,22 @@
             "shell-tests.yml"
           ],
           "presentFromExpected": [
-            "python-compatibility.yml"
+            "codeql.yml",
+            "pr-validation.yml",
+            "python-compatibility.yml",
+            "reuse.yml",
+            "scorecard.yml",
+            "security-analysis.yml"
           ],
           "missingFromExpected": [
             "ci.yml",
-            "codeql.yml",
             "coverage.yml",
             "docs.yml",
-            "pr-validation.yml",
+            "mutation-testing.yml",
             "release-sign.yml",
             "release.yml",
-            "reuse.yml",
             "sbom.yml",
-            "scorecard.yml",
-            "security-analysis.yml",
+            "slsa-provenance.yml",
             "sonarcloud.yml"
           ],
           "extras": [
