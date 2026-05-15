@@ -1351,7 +1351,7 @@ checks:
       - NIST SSDF RV.2.2 Regression Tests for Exploit Paths
 
   - id: FOUND-015
-    domain: found
+    domain: foundations
     severity: suggested
     override_eligible: true
     description: >-
