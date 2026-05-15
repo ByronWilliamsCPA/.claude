@@ -69,12 +69,12 @@ jobs:
           cache-local-path: ".uv-cache"
 
       - name: Install dependencies
-        run: uv sync --all-extras
+        run: uv sync --all-extras --frozen --no-build
 
       - name: Run vulture
         run: |
           echo "## Dead Code Report" >> $GITHUB_STEP_SUMMARY
-          uv run vulture src/ --min-confidence 90 | tee vulture-report.txt || true
+          uv run --frozen --no-build vulture src/ --min-confidence 90 | tee vulture-report.txt || true
           if [ -s vulture-report.txt ]; then
             echo '```' >> $GITHUB_STEP_SUMMARY
             cat vulture-report.txt >> $GITHUB_STEP_SUMMARY
@@ -119,12 +119,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 
-  # Qlty Coverage Upload (PR open/reopen only)
-  qlty-coverage:
-    name: Qlty Coverage Upload
+  # Qlty Code Smells (PR diff only)
+  qlty-smells:
+    name: Code Smells (Qlty)
     runs-on: ubuntu-latest
-    timeout-minutes: 20
-    if: github.event.action == 'opened' || github.event.action == 'reopened'
+    timeout-minutes: 10
     permissions:
       contents: read
     steps:
@@ -136,27 +135,40 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b  # v8.1.0
+      - name: Install Qlty
+        uses: qltysh/qlty-action/install@a19242102d17e497f437d7466aa01b528537e899  # v2
+
+      - name: Run qlty smells check
+        run: qlty check --filter=diff
+
+
+  # Qlty Coverage Upload (reuses artifact from core-validation, runs on every push)
+  qlty-coverage:
+    name: Qlty Coverage Upload
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [core-validation]
+    if: always() && needs.core-validation.result == 'success'
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - name: Harden the runner
+        uses: step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450  # v2.19.1
         with:
-          enable-cache: true
-          cache-dependency-glob: "uv.lock"
-          cache-local-path: ".uv-cache"
+          egress-policy: audit
 
-      - name: Set up Python
-        run: uv python install 3.12
-
-      - name: Install dependencies
-        run: uv sync --all-extras
-
-      - name: Run tests with coverage
-        run: uv run pytest --cov=src --cov-report=lcov:reports/lcov.info --cov-fail-under=80
+      - name: Download coverage artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093  # v4.3.0
+        with:
+          name: coverage-reports
+          path: reports/
 
       - name: Upload coverage to Qlty
         uses: qltysh/qlty-action/coverage@a19242102d17e497f437d7466aa01b528537e899  # v2
         with:
           token: ${{ secrets.QLTY_COVERAGE_TOKEN }}
-          files: reports/lcov.info
+          files: reports/coverage*.xml     # combined + per-suite breakdown
 
 
   # ==========================================================================
@@ -168,7 +180,7 @@ jobs:
     timeout-minutes: 5
     permissions:
       contents: read
-    needs: [core-validation, dead-code, link-check, qlty-coverage]
+    needs: [core-validation, dead-code, link-check, qlty-smells, qlty-coverage]
     if: always()
     steps:
       - name: Harden the runner
@@ -181,6 +193,7 @@ jobs:
           CORE_RESULT: ${{ needs.core-validation.result }}
           DEAD_CODE_RESULT: ${{ needs.dead-code.result }}
           LINK_CHECK_RESULT: ${{ needs.link-check.result }}
+          QLTY_SMELLS_RESULT: ${{ needs.qlty-smells.result }}
           QLTY_COVERAGE_RESULT: ${{ needs.qlty-coverage.result }}
         run: |
           echo "## PR Validation Summary" >> $GITHUB_STEP_SUMMARY
@@ -204,10 +217,16 @@ jobs:
             echo "Link Check: $LINK_CHECK_RESULT" >> $GITHUB_STEP_SUMMARY
           fi
 
+          if [ "$QLTY_SMELLS_RESULT" == "success" ]; then
+            echo "Code Smells: Passed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "Code Smells: $QLTY_SMELLS_RESULT" >> $GITHUB_STEP_SUMMARY
+          fi
+
           if [ "$QLTY_COVERAGE_RESULT" == "success" ]; then
             echo "Qlty Coverage: Uploaded" >> $GITHUB_STEP_SUMMARY
           elif [ "$QLTY_COVERAGE_RESULT" == "skipped" ]; then
-            echo "Qlty Coverage: Skipped (not opened/reopened)" >> $GITHUB_STEP_SUMMARY
+            echo "Qlty Coverage: Skipped (core-validation did not succeed)" >> $GITHUB_STEP_SUMMARY
           else
             echo "Qlty Coverage: $QLTY_COVERAGE_RESULT" >> $GITHUB_STEP_SUMMARY
           fi
@@ -215,6 +234,7 @@ jobs:
           BLOCK=0
           if [ "$CORE_RESULT" != "success" ]; then BLOCK=1; fi
           if [ "$DEAD_CODE_RESULT" == "failure" ]; then BLOCK=1; fi
+          if [ "$QLTY_SMELLS_RESULT" == "failure" ]; then BLOCK=1; fi
           if [ "$BLOCK" == "1" ]; then
             echo "One or more required checks failed. Please review and fix issues." >> $GITHUB_STEP_SUMMARY
             exit 1

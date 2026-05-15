@@ -55,8 +55,9 @@ test_patterns = [
 # hard-to-maintain code patterns.
 
 [smells]
-# Mode: comment (add PR comments) vs block (fail CI)
-mode = "comment"
+# Mode: block (fail CI and block PR merge) vs comment (add PR comments only)
+# All smells use block mode; thresholds are calibrated so violations are genuine issues.
+mode = "block"
 
 # Boolean logic complexity
 [smells.boolean_logic]
