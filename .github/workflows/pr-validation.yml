@@ -155,7 +155,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs: [core-validation]
-    if: always() && needs.core-validation.result == 'success' && github.event.pull_request.head.repo.fork != true
+    if: always() && needs.core-validation.result == 'success' && github.event.pull_request.head.repo.fork == false
     permissions:
       contents: read
       actions: read
