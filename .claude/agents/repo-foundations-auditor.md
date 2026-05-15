@@ -84,3 +84,7 @@ ACTION: Appended .worktrees/ to .gitignore
 ## Use Cases
 
 Invoked by the repo-compliance coordinator skill for the foundations domain in both audit and remediation modes.
+
+## Resource Constraints
+
+This agent operates under Claude Code's default session limits. Callers should set\nan explicit `timeout` in the Agent tool call for any invocation expected to run\nlonger than 5 minutes. No unbounded loops or recursive agent calls.

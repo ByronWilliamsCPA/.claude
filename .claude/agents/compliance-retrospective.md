@@ -74,3 +74,7 @@ For each pattern promoted to candidate status, include a ready-to-paste YAML blo
 ## Use Cases
 
 Invoked by the repo-compliance coordinator as the final step after all repos in a session have been audited. Runs in both interactive and scheduled modes.
+
+## Resource Constraints
+
+This agent operates under Claude Code's default session limits. Callers should set\nan explicit `timeout` in the Agent tool call for any invocation expected to run\nlonger than 5 minutes. No unbounded loops or recursive agent calls.

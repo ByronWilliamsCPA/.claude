@@ -71,6 +71,29 @@ To make a rule's scope explicit, rules files include a path-scoping note near th
 
 - The path-scoping note convention in rules files is social, not mechanical. It documents intent but does not prevent a rule from loading in unrelated sessions.
 
+## Security Considerations
+
+The rules/standards boundary has security implications that motivated its design:
+
+- **Privilege surface control**: Rules injected into every session expand the agent's
+  effective capability surface. A security guard placed in `standards/` instead of
+  `rules/` is silently skipped unless the agent explicitly loads it; a mis-filing
+  that looks correct in code review but removes the guard in practice.
+- **Audit trail**: Rules files are session-injected and therefore visible in every
+  Claude Code session's context. This makes security rules auditable at session start
+  rather than discoverable only when invoked.
+- **Least-privilege alignment**: Standards libraries (tools, references, writing guides)
+  are loaded on demand; they do not expand session capabilities by default. This is
+  consistent with least-privilege: agents only receive the additional context they
+  request.
+- **Attack surface of standards**: A compromised or tampered standards file loaded
+  on demand during a session can inject instructions into a running agent. Standards
+  files that handle sensitive decisions (security policies, permission checks) should
+  be treated as high-value targets and covered by signed-commit requirements.
+
+NIST SSDF PW.2.1 (design with security in mind) and OpenSSF Scorecard coverage apply
+to the standards manifest system that enforces checks on this architecture.
+
 ## References
 
 - `.claude/rules/`: session-injected behavioral constraints

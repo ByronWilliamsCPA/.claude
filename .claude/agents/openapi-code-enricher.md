@@ -211,3 +211,7 @@ constructor, not in `include_router()` calls.
 - Type annotations that are already complete and correct
 - Any file not containing FastAPI route definitions
 - Flask routes (handled separately if present)
+
+## Resource Constraints
+
+This agent operates under Claude Code's default session limits. Callers should set\nan explicit `timeout` in the Agent tool call for any invocation expected to run\nlonger than 5 minutes. No unbounded loops or recursive agent calls.

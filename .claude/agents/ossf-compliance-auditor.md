@@ -696,3 +696,7 @@ Five criteria currently GAP. For each: the exact badge questionnaire text, what 
 **Criterion text:** "At least one of the primary developers MUST know how to design secure software" and "At least one of the primary developers MUST know of common kinds of errors that lead to vulnerabilities."
 **What satisfies it:** Self-attestation only -- check the relevant boxes on the bestpractices.dev questionnaire. The standards already demonstrate this knowledge (FIPS crypto rules, OWASP tooling, RAD tagging). This is an action item, not a process gap.
 **Remediation:** On the bestpractices.dev questionnaire, check "Met" for both criteria and add justification citing the project's documented security standards.
+
+## Resource Constraints
+
+This agent operates under Claude Code's default session limits. Callers should set\nan explicit `timeout` in the Agent tool call for any invocation expected to run\nlonger than 5 minutes. No unbounded loops or recursive agent calls.

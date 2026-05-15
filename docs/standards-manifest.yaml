@@ -105,6 +105,7 @@ checks:
     description: "pyproject.toml author email is not a placeholder"
     verify: "metadata_value: pyproject.toml, authors[0].email, not_contains: example.com"
     override_eligible: true
+    not_applicable_when: "repo does not contain Python source files"
 
   - id: FOUND-008
     domain: foundations
@@ -112,6 +113,7 @@ checks:
     description: "pyproject.toml requires-python upper bound is <3.15 or unset"
     verify: "metadata_value: pyproject.toml, requires-python, not_contains: <3.15"
     override_eligible: true
+    not_applicable_when: "repo does not contain Python source files"
 
   - id: FOUND-009
     domain: foundations
@@ -120,6 +122,7 @@ checks:
     verify: "file_exists: docs/known-vulnerabilities.md"
     source_template: "/home/byron/dev/.claude/docs/known-vulnerabilities-template.md"
     override_eligible: true
+    not_applicable_when: "repo does not contain Python source files"
 
   - id: FOUND-010
     domain: foundations
@@ -173,6 +176,7 @@ checks:
     description: "ruff present in dev dependencies"
     verify: "dep_present: ruff"
     override_eligible: false
+    not_applicable_when: "repo does not contain Python source files"
 
   - id: TOOL-002
     domain: toolchain
@@ -180,6 +184,7 @@ checks:
     description: "black absent from dependencies (replaced by ruff format)"
     verify: "dep_absent: black"
     override_eligible: false
+    not_applicable_when: "repo does not contain Python source files"
 
   - id: TOOL-003
     domain: toolchain
@@ -187,6 +192,7 @@ checks:
     description: "mypy absent from dependencies (replaced by basedpyright)"
     verify: "dep_absent: mypy"
     override_eligible: false
+    not_applicable_when: "repo does not contain Python source files"
 
   - id: TOOL-004
     domain: toolchain
@@ -194,6 +200,7 @@ checks:
     description: "safety absent from dependencies (replaced by pip-audit)"
     verify: "dep_absent: safety"
     override_eligible: false
+    not_applicable_when: "repo does not contain Python source files"
 
   - id: TOOL-005
     domain: toolchain
@@ -201,6 +208,7 @@ checks:
     description: "basedpyright present in dev dependencies"
     verify: "dep_present: basedpyright"
     override_eligible: true
+    not_applicable_when: "repo does not contain Python source files"
 
   - id: TOOL-006
     domain: toolchain
@@ -208,6 +216,7 @@ checks:
     description: "pip-audit present in dev dependencies"
     verify: "dep_present: pip-audit"
     override_eligible: false
+    not_applicable_when: "repo does not contain Python source files"
 
   - id: TOOL-007
     domain: toolchain
@@ -215,6 +224,7 @@ checks:
     description: "darglint present in dev dependencies"
     verify: "dep_present: darglint"
     override_eligible: true
+    not_applicable_when: "repo does not contain Python source files"
 
   - id: TOOL-008
     domain: toolchain
@@ -222,6 +232,7 @@ checks:
     description: "interrogate present in dev dependencies"
     verify: "dep_present: interrogate"
     override_eligible: true
+    not_applicable_when: "repo does not contain Python source files"
 
   - id: TOOL-009
     domain: toolchain
@@ -229,6 +240,7 @@ checks:
     description: ".qlty/qlty.toml configuration file present"
     verify: "file_exists: .qlty/qlty.toml"
     override_eligible: true
+    not_applicable_when: "repo does not contain Python source files"
 
   - id: TOOL-010
     domain: toolchain
@@ -236,6 +248,7 @@ checks:
     description: "Ruff rule set contains all PyStrict-aligned codes"
     verify: "ruff_rules_include: BLE,EM,SLF,INP,ISC,PGH,RSE,TID,YTT,FA,T10,G,ANN,TCH,FBT,TRY,ERA,FURB,LOG,ASYNC"
     override_eligible: true
+    not_applicable_when: "repo does not contain Python source files"
 
   - id: TOOL-011
     domain: toolchain
@@ -243,6 +256,7 @@ checks:
     description: "Ruff target-version set in pyproject.toml"
     verify: "content_present: pyproject.toml, target-version"
     override_eligible: true
+    not_applicable_when: "repo does not contain Python source files"
 
   - id: TOOL-012
     domain: toolchain
@@ -250,6 +264,7 @@ checks:
     description: "[tool.basedpyright] block present with typeCheckingMode = strict"
     verify: "content_present: pyproject.toml, typeCheckingMode"
     override_eligible: true
+    not_applicable_when: "repo does not contain Python source files"
 
   # ── Pre-commit ───────────────────────────────────────────────────────────────
 
@@ -273,6 +288,7 @@ checks:
     description: "basedpyright hook present in .pre-commit-config.yaml"
     verify: "hook_present: .pre-commit-config.yaml, basedpyright"
     override_eligible: true
+    not_applicable_when: "repo does not contain Python source files"
 
   - id: PC-004
     domain: pre_commit
@@ -280,6 +296,7 @@ checks:
     description: "bandit hook present in .pre-commit-config.yaml"
     verify: "hook_present: .pre-commit-config.yaml, bandit"
     override_eligible: false
+    not_applicable_when: "repo does not contain Python source files"
 
   - id: PC-005
     domain: pre_commit
@@ -309,6 +326,7 @@ checks:
     description: "darglint hook present in .pre-commit-config.yaml"
     verify: "hook_present: .pre-commit-config.yaml, darglint"
     override_eligible: true
+    not_applicable_when: "repo does not contain Python source files"
 
   - id: PC-007
     domain: pre_commit
@@ -316,6 +334,7 @@ checks:
     description: "interrogate hook present in .pre-commit-config.yaml"
     verify: "hook_present: .pre-commit-config.yaml, interrogate"
     override_eligible: true
+    not_applicable_when: "repo does not contain Python source files"
 
   - id: PC-008
     domain: pre_commit
@@ -376,6 +395,7 @@ checks:
     description: "CI workflow uses org reusable python-ci.yml"
     verify: "content_present: .github/workflows/ci.yml, ByronWilliamsCPA/.github"
     override_eligible: true
+    not_applicable_when: "repo does not contain Python source files"
 
   - id: CI-002
     domain: ci
@@ -422,6 +442,7 @@ checks:
       metrics, Codecov tracks test coverage history and PR deltas)
     verify: "file_exists: .github/workflows/coverage.yml"
     override_eligible: true
+    not_applicable_when: "repo does not contain Python source files"
 
   - id: CI-005
     domain: ci
@@ -445,7 +466,7 @@ checks:
     domain: ci
     severity: important
     description: "Security scan jobs have no continue-on-error: true"
-    verify: "content_absent: .github/workflows/security.yml, continue-on-error"
+    verify: "content_absent: .github/workflows/security-analysis.yml, continue-on-error"
     override_eligible: false
 
   - id: CI-008
@@ -461,6 +482,7 @@ checks:
     description: "Codecov config file present at project root (.codecov.yml or codecov.yaml)"
     verify: "file_exists: .codecov.yml,codecov.yaml"
     override_eligible: true
+    not_applicable_when: "repo does not contain Python source files"
 
   - id: CI-010
     domain: ci
@@ -468,6 +490,7 @@ checks:
     description: "Codecov config minimum coverage threshold is 80% or above"
     verify: "content_present: .codecov.yml OR codecov.yaml, target: 80"
     override_eligible: true
+    not_applicable_when: "repo does not contain Python source files"
 
   - id: CI-011
     domain: ci
@@ -475,6 +498,7 @@ checks:
     description: "Codecov config defines separate coverage flags for unit and integration tests"
     verify: "content_present: .codecov.yml OR codecov.yaml, flags:"
     override_eligible: true
+    not_applicable_when: "repo does not contain Python source files"
 
   - id: CI-012
     domain: ci
@@ -668,6 +692,12 @@ checks:
       (OpenSSF Silver: signed_releases)
     verify: "content_present: .github/workflows/release.yml, slsa-framework/slsa-github-generator"
     override_eligible: true
+    not_applicable_when: "repo does not contain Python source files"
+    notes: >-
+      Genuine SLSA L3 isolation requires egress-policy: block in every harden-runner
+      step of the release and SLSA provenance workflows. egress-policy: audit logs
+      traffic but does not enforce isolation, undermining the L3 attestation claim.
+      See CI-044 for the enforcement check added by the 2026-05-14 gap analysis.
 
   - id: CI-019
     domain: ci
@@ -675,6 +705,7 @@ checks:
     description: "PyPI publish step in release.yml uses attestations: true (supply chain integrity)"
     verify: "content_present: .github/workflows/release.yml, attestations: true"
     override_eligible: true
+    not_applicable_when: "repo does not contain Python source files"
 
   - id: CI-020
     domain: ci
@@ -716,6 +747,9 @@ checks:
         not present on every job (job-level grants do not satisfy the workflow-level
         restriction requirement unless the workflow declares "permissions: {}").
     override_eligible: false
+    notes: >-
+      Scope: workflow-level top-level permissions block (not per-job). CI-034 handles
+      job-level timeout enforcement. These two checks are complementary, not overlapping.
 
   - id: CI-034
     domain: ci
@@ -731,6 +765,9 @@ checks:
       Jobs that call reusable workflows via "uses:" are exempt; the timeout should be
       set inside the callee workflow.
     override_eligible: false
+    notes: >-
+      Scope: job-level timeout-minutes on locally-defined jobs only. CI-033 handles
+      workflow-level permissions enforcement. These two checks are complementary.
 
   - id: CI-035
     domain: ci
@@ -909,6 +946,10 @@ checks:
     description: "No em-dash characters in docs/**/*.md files"
     verify: "em_dash_absent: docs/**/*.md"
     override_eligible: false
+    notes: >-
+      PC-011 mechanically enforces this rule via the no-em-dash pre-commit hook on
+      every commit. CLAUDE-007 is a conceptual reminder and documentation-scope check.
+      Consider removing in a future cleanup once PC-011 coverage is confirmed complete.
 
   - id: CLAUDE-008
     domain: claude_docs
@@ -942,6 +983,10 @@ checks:
       Advisories or equivalent)
     verify: "content_present: SECURITY.md, private"
     override_eligible: false
+    notes: >-
+      FOUND-001 checks file presence only. OSSF-002 checks content quality: the
+      file must document a private reporting channel. Do not merge or deduplicate
+      these two checks; they satisfy different framework requirements.
 
   - id: OSSF-003
     domain: ossf
@@ -1109,6 +1154,10 @@ checks:
     description: "CI workflow includes a mkdocs build step"
     verify: "ci_contains: mkdocs build"
     override_eligible: true
+    notes: >-
+      This check verifies a CI workflow step rather than documentation content or
+      structure. It is misplaced in the mkdocs domain and should migrate to the CI
+      domain in a future domain reorganization.
 
   # =========================================================================
   # API Domain (applies_to: api_repos -- skipped for servesApi=false repos)
@@ -1153,3 +1202,221 @@ checks:
     verify: "catalog_field: api.testStatus, equals: passing"
     applies_to: api_repos
     override_eligible: true
+
+  # ── Framework Gap Analysis Additions (2026-05-14) ────────────────────────────
+  # Source: 9-agent framework gap analysis against OWASP/NIST SSDF/OpenSSF/SLSA/
+  # GitHub Security/DORA/SOC 2/CNCF Security TAG.
+  # All IDs confirmed clean (no collisions). Append approved after human review.
+
+  - id: CI-043
+    domain: ci
+    severity: critical
+    override_eligible: false
+    description: >-
+      Detect dangerous workflow patterns combining privileged triggers
+      (pull_request_target or workflow_run) with checkout of untrusted code.
+      OpenSSF Scorecard assigns Critical weight to this finding because the
+      pattern allows untrusted PR code to execute in a privileged context
+      with access to repository secrets.
+    verify: >-
+      Run: for pattern in pull_request_target workflow_run; do
+      grep -rl "$pattern" .github/workflows/ 2>/dev/null
+      | xargs -r grep -l "actions/checkout" 2>/dev/null; done;
+      any match is a FAIL unless the workflow is manually verified to not
+      execute or trust the checked-out code.
+    source_frameworks:
+      - OpenSSF Scorecard Dangerous-Workflow
+      - GitHub Security Hardening
+      - OWASP A05 Security Misconfiguration
+
+  - id: CI-044
+    domain: ci
+    severity: important
+    override_eligible: false
+    description: >-
+      Verify step-security/harden-runner egress-policy is set to "block"
+      (not "audit") in release and SLSA provenance workflows. SLSA L3
+      requires hermetic build isolation; audit mode logs network traffic
+      but does not enforce isolation, undermining the L3 attestation claim.
+    verify: >-
+      Run: grep -A5 "harden-runner" .github/workflows/release.yml
+      .github/workflows/slsa-provenance.yml 2>/dev/null
+      | grep "egress-policy"; FAIL if any matched line shows "audit"
+      instead of "block".
+    source_frameworks:
+      - SLSA L3 Build Isolation
+      - CIS Software Supply Chain Security Control 2.3
+      - NIST SSDF PW.4.4
+
+  - id: CI-045
+    domain: ci
+    severity: important
+    override_eligible: true
+    description: >-
+      Verify release.yml specifies a named "environment:" field on
+      deployment or publish jobs. Named environments enable required
+      reviewers, wait timers, and deployment branch restrictions even
+      for solo-developer repositories.
+    verify: >-
+      Run: grep -B2 -A20 "deploy:\|release:\|publish:"
+      .github/workflows/release.yml 2>/dev/null
+      | grep "environment:"; PASS if found, WARN if absent.
+    source_frameworks:
+      - GitHub Security Hardening
+      - SOC 2 CC8.1 Change Management
+
+  - id: CI-046
+    domain: ci
+    severity: suggested
+    override_eligible: true
+    description: >-
+      Verify all third-party Actions referenced in workflows come from an
+      approved publisher allowlist (actions/, github/, slsa-framework/,
+      step-security/, codecov/, pypa/, sigstore/). Restricting publisher
+      orgs reduces supply-chain risk beyond SHA pinning alone.
+    verify: >-
+      Run: grep -rh "uses:" .github/workflows/ 2>/dev/null
+      | awk '{print $2}' | cut -d@ -f1 | sort -u;
+      manual review required to confirm each org is on the approved list.
+    source_frameworks:
+      - CIS Software Supply Chain Security Control 2.3
+      - SLSA L2
+      - OpenSSF Scorecard Pinned-Dependencies
+
+  - id: CI-047
+    domain: ci
+    severity: important
+    override_eligible: true
+    description: >-
+      Verify all Claude agent definitions in .claude/agents/*.md include
+      documented resource limits or timeout constraints. Agents that
+      execute user-controlled prompts without bounded execution risk
+      excessive resource consumption (OWASP LLM10).
+    verify: >-
+      Run: for f in .claude/agents/*.md; do
+      grep -qi "timeout\|max.*iterations\|resource.*limit" "$f"
+      || echo "MISSING: $f"; done; FAIL if any file is missing constraints.
+    source_frameworks:
+      - OWASP LLM10 Unrestricted Resource Consumption
+      - NIST SSDF PO.3.2
+
+  - id: CI-048
+    domain: ci
+    severity: suggested
+    override_eligible: true
+    description: >-
+      Verify semantic-release configuration includes a CHANGELOG.md update
+      plugin. Automated changelog generation provides deployment
+      traceability that supports MTTR analysis and SOC 2 change
+      documentation requirements.
+    verify: >-
+      Run: grep -r "@semantic-release/changelog\|changelog"
+      .releaserc* release.config.* .github/workflows/release.yml
+      2>/dev/null | head -5; PASS if any match found.
+    source_frameworks:
+      - DORA MTTR Proxy
+      - SOC 2 CC8.1
+
+  - id: CI-049
+    domain: ci
+    severity: suggested
+    override_eligible: true
+    description: >-
+      Verify a secret rotation policy is documented in SECURITY.md or
+      docs/security-analysis*.md. A documented rotation cadence (even
+      if quarterly) demonstrates SOC 2 CC6.1 control intent.
+    verify: >-
+      Run: grep -ril "rotation\|rotate.*secret\|secret.*rotat"
+      docs/security-analysis*.md SECURITY.md 2>/dev/null | wc -l;
+      WARN if result is 0.
+    source_frameworks:
+      - CNCF Security TAG Secret Management
+      - SOC 2 CC6.1
+      - NIST SSDF PO.2.2
+
+  - id: CI-050
+    domain: ci
+    severity: suggested
+    override_eligible: true
+    description: >-
+      Verify security fix commits reference corresponding regression test
+      additions. For each CHANGELOG entry citing a CVE or security fix,
+      a tests/ file should be modified in the same or adjacent commit.
+      This check is informational and requires manual review.
+    verify: >-
+      Manual review: For each commit fixing a CVE or security issue in
+      CHANGELOG.md, verify a tests/ file was modified in the same commit
+      (git log --name-only --grep="CVE\|security fix").
+    source_frameworks:
+      - NIST SSDF RV.2.2 Regression Tests for Exploit Paths
+
+  - id: FOUND-015
+    domain: found
+    severity: suggested
+    override_eligible: true
+    description: >-
+      Verify docs/ADRs/ or docs/architecture/ directory exists and at
+      least one ADR contains a "Security Considerations" section.
+      NIST SSDF PW.2.1 requires design review for security concerns;
+      ADR sections provide the documented trail.
+    verify: >-
+      Run: grep -rl "Security Considerations\|Security considerations"
+      docs/ADRs/ docs/architecture/ 2>/dev/null | wc -l; WARN if 0.
+    source_frameworks:
+      - NIST SSDF PW.2.1
+      - NIST SSDF PO.1.1
+
+  - id: OSSF-011
+    domain: ossf
+    severity: suggested
+    override_eligible: true
+    description: >-
+      Verify the repository has a fuzz testing setup (atheris, libFuzzer,
+      or a tests/fuzz/ directory). OpenSSF Silver badge criterion 6.1
+      requires dynamic analysis beyond mutation testing. Mutation testing
+      (CI-023) is unit-test quality measurement, not input fuzzing.
+    verify: >-
+      Run: ls tests/fuzz/ 2>/dev/null
+      || grep -r "atheris\|libFuzzer\|hypothesis.*fuzzing"
+      pyproject.toml 2>/dev/null; WARN if no match.
+    source_frameworks:
+      - OpenSSF Silver Badge criterion 6.1
+      - NIST SSDF PW.8.2
+
+  - id: OSSF-012
+    domain: ossf
+    severity: suggested
+    override_eligible: true
+    description: >-
+      Verify any PATs used as repository secrets are fine-grained
+      personal access tokens (not classic PATs). Fine-grained PATs
+      support per-repo scoping and shorter expiry, satisfying SOC 2
+      CC6.1 least-privilege controls.
+    verify: >-
+      Manual check: Review repo secrets in GitHub UI for any token
+      values; verify each is a fine-grained PAT. Additionally,
+      grep docs/security-analysis*.md for a documented PAT policy.
+    source_frameworks:
+      - SOC 2 CC6.1
+      - OpenSSF Scorecard Token-Permissions
+      - GitHub Security Hardening
+
+  - id: CLAUDE-009
+    domain: claude_docs
+    severity: important
+    override_eligible: true
+    description: >-
+      Verify .claude/settings.json does not enable
+      enableAllProjectMcpServers without a documented justification.
+      Unconstrained MCP tool access grants agents excessive authority
+      over external resources (OWASP LLM06, LLM08).
+    verify: >-
+      Run: python3 -c "import json, sys;
+      d=json.load(open('.claude/settings.json'));
+      sys.exit(0 if not d.get('enableAllProjectMcpServers') else 1)"
+      || grep -l "enableAllProjectMcpServers" docs/security-analysis*.md;
+      FAIL if flag is true and no justification documented.
+    source_frameworks:
+      - OWASP LLM06 Excessive Agency
+      - OWASP LLM08 Excessive Permissions
+      - CNCF Security TAG IAM

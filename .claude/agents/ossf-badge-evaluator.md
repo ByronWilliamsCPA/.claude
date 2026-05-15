@@ -398,3 +398,7 @@ Emit each URL as a labelled code block. Note any criteria excluded due to LOW co
 - **Medium**: Content of a file was read and assessed, reasonable inference
 - **Low**: Could not read relevant files, or criterion is ambiguous for this project type
 - **HUMAN**: Only the project owner can self-attest; no automated evidence is possible
+
+## Resource Constraints
+
+This agent operates under Claude Code's default session limits. Callers should set\nan explicit `timeout` in the Agent tool call for any invocation expected to run\nlonger than 5 minutes. No unbounded loops or recursive agent calls.

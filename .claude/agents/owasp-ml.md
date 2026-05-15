@@ -62,3 +62,7 @@ Generate tests per Testing Standards S11.8.4 (data poisoning), S11.8.5
 (supply chain), S11.8.6 (model inversion). Reference ML## IDs in all
 test docstrings. Focus on model checksum verification, pickle rejection,
 schema validation on training data, and confidence threshold enforcement.
+
+## Resource Constraints
+
+This agent operates under Claude Code's default session limits. Callers should set\nan explicit `timeout` in the Agent tool call for any invocation expected to run\nlonger than 5 minutes. No unbounded loops or recursive agent calls.

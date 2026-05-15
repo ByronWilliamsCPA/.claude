@@ -119,3 +119,7 @@ Via Agent tool: subagent_type="security-auditor"
 ```
 
 > The `/security` skill runs environment validation and dependency scanning — it is distinct from this agent. Use this agent for in-depth code security analysis.
+
+## Resource Constraints
+
+This agent operates under Claude Code's default session limits. Callers should set\nan explicit `timeout` in the Agent tool call for any invocation expected to run\nlonger than 5 minutes. No unbounded loops or recursive agent calls.

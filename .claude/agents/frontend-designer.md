@@ -123,3 +123,7 @@ These are the most common signs of low-quality frontend work:
 | No semantic color tokens | Theming impossible |
 | Placeholder-only form labels | Accessibility violation |
 | No loading/empty states | Incomplete UX |
+
+## Resource Constraints
+
+This agent operates under Claude Code's default session limits. Callers should set\nan explicit `timeout` in the Agent tool call for any invocation expected to run\nlonger than 5 minutes. No unbounded loops or recursive agent calls.

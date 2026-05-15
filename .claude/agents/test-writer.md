@@ -42,3 +42,7 @@ that target specific uncovered code paths.
 - Complete test file or additions to existing test file
 - Each test must target specific previously-uncovered lines
 - Run results showing all tests pass
+
+## Resource Constraints
+
+This agent operates under Claude Code's default session limits. Callers should set\nan explicit `timeout` in the Agent tool call for any invocation expected to run\nlonger than 5 minutes. No unbounded loops or recursive agent calls.

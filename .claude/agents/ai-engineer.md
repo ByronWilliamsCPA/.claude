@@ -53,3 +53,7 @@ Start with C.R.E.A.T.E. framework for all prompts → select appropriate vector 
 ## Use Cases
 
 Recommended for: LLM application development, RAG system implementation, multi-agent workflows, prompt optimization, AI API integrations, embedding pipeline design
+
+## Resource Constraints
+
+This agent operates under Claude Code's default session limits. Callers should set\nan explicit `timeout` in the Agent tool call for any invocation expected to run\nlonger than 5 minutes. No unbounded loops or recursive agent calls.

@@ -70,3 +70,7 @@ Review code changes for quality, maintainability, and adherence to project stand
 ```text
 Via Agent tool: subagent_type="code-reviewer"
 ```
+
+## Resource Constraints
+
+This agent operates under Claude Code's default session limits. Callers should set\nan explicit `timeout` in the Agent tool call for any invocation expected to run\nlonger than 5 minutes. No unbounded loops or recursive agent calls.

@@ -179,3 +179,7 @@ homelab-infra         | FAIL    | --  (newman: 2 assertion failures)
 - If any subagent returns an error: stop that repo's pipeline, log the error,
   continue with remaining repos.
 - Never open a PR if newman reported failures.
+
+## Resource Constraints
+
+This agent operates under Claude Code's default session limits. Callers should set\nan explicit `timeout` in the Agent tool call for any invocation expected to run\nlonger than 5 minutes. No unbounded loops or recursive agent calls.

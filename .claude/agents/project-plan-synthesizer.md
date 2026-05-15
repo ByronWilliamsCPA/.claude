@@ -109,3 +109,7 @@ Phase 0 execution without explicit user confirmation.
 ```yaml
 docs: synthesize project plan from planning documents
 ```
+
+## Resource Constraints
+
+This agent operates under Claude Code's default session limits. Callers should set\nan explicit `timeout` in the Agent tool call for any invocation expected to run\nlonger than 5 minutes. No unbounded loops or recursive agent calls.

@@ -75,3 +75,7 @@ Execute git workflows: branch strategy analysis → feature branch creation → 
 ## Use Cases
 
 Recommended for: git workflows, branch management, pull requests, code reviews, release management, changelog generation
+
+## Resource Constraints
+
+This agent operates under Claude Code's default session limits. Callers should set\nan explicit `timeout` in the Agent tool call for any invocation expected to run\nlonger than 5 minutes. No unbounded loops or recursive agent calls.

@@ -113,3 +113,7 @@ API Security Top 10 (2023); the `owasp-api` agent handles deep analysis.
 ## Use Cases
 
 Recommended for: API design, OpenAPI specifications, contract testing, API documentation, REST/GraphQL implementation, versioning strategy, integration workflows
+
+## Resource Constraints
+
+This agent operates under Claude Code's default session limits. Callers should set\nan explicit `timeout` in the Agent tool call for any invocation expected to run\nlonger than 5 minutes. No unbounded loops or recursive agent calls.
