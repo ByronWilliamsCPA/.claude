@@ -9,12 +9,15 @@ directory instead of the canonical global path.
 
 ### 1. Identify stray observation logs
 
-Search all repos for skill-observation logs, excluding the canonical one:
+Search all repos for skill-observation logs:
 
 ```bash
-find /home/byron/dev -name "log.md" -path "*/skill-observations/*" \
-  | grep -v "^/home/byron/dev/.claude/skill-observations/"
+find ~/dev -name "log.md" -path "*/skill-observations/*"
 ```
+
+Any `log.md` found here is a stray: the canonical global log lives at
+`~/.claude/skill-observations/log.md`, which is outside the `~/dev/`
+search tree and therefore never appears in these results.
 
 If no files are found, report: "No stray observation logs found. All
 observations are already in the global log." Stop here.
@@ -23,8 +26,11 @@ observations are already in the global log." Stop here.
 
 Read the file and extract all observations. For each observation, check
 whether it already exists in the canonical log at
-`/home/byron/.claude/skill-observations/log.md` by searching for its
-title (the text after `### Observation N: `).
+`~/.claude/skill-observations/log.md` by searching for a match on both
+the observation **title** (the text after `### Observation N: `) and
+**date** (the `Date:` field). Both must match to treat it as a duplicate;
+a title-only match is not sufficient because two observations from
+different repos or sessions can share a title but capture distinct events.
 
 Produce a table showing:
 - Source repo path
@@ -42,25 +48,37 @@ For any observation NOT already in the global log:
 
 ### 4. Import approved observations
 
-For each observation to import:
+For **each** observation to import, independently:
 
-a. Determine the next observation number in the global log:
+a. Determine the next observation number by reading the current global log:
    ```bash
    grep -oP '### Observation \K\d+' \
-     /home/byron/.claude/skill-observations/log.md \
+     ~/.claude/skill-observations/log.md \
      | sort -n | tail -1
    ```
+   Add 1 to this value. Re-run this command before each import, not once
+   before the loop, so concurrent appends do not cause number collisions.
 
 b. Append the observation to the global log with the new number.
    Preserve all fields exactly; add a note to the Session context field:
    `[imported from: /path/to/source/repo]`
 
-c. Verify the number does not collide (post-write check per the
-   task-observer collision protocol).
+c. Verify no collision occurred with a post-write check:
+   ```bash
+   grep -c "### Observation ${NEW_NUMBER}:" \
+     ~/.claude/skill-observations/log.md
+   ```
+   The count must be exactly 1. If it is 0, the write did not land; if it
+   is 2 or more, a concurrent write collided. In either case, stop
+   immediately and alert the user before importing any further observations.
 
-### 5. Archive or remove the stray log
+### 5. Verify import, then archive or remove the stray log
 
-After importing, ask the user whether to:
+Before offering to delete the stray log, confirm each imported observation
+is present in the canonical log by searching for its title and date.
+Only offer deletion after this verification passes.
+
+Then ask the user whether to:
 - Delete the stray log (it is now merged)
 - Leave it in place (the repo's .gitignore may not cover it)
 
