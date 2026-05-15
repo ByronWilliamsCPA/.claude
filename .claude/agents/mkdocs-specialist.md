@@ -116,3 +116,9 @@ Self-review: consider adding to mkdocs-specialist standards:
 ## Use Cases
 
 Invoke for: authoring pages surfaced by mkdocs-auditor update mode, reviewing existing pages for style consistency, writing new documentation to Material theme standards.
+
+## Resource Constraints
+
+This agent operates under Claude Code's default session limits. Callers should set
+an explicit `timeout` in the Agent tool call for any invocation expected to run
+longer than 5 minutes. No unbounded loops or recursive agent calls.

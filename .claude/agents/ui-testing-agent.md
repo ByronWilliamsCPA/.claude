@@ -62,3 +62,9 @@ Execute testing workflows: test scenario planning â†’ user journey automation â†
 ## Use Cases
 
 Recommended for: end-to-end testing, Playwright test suites, UI validation, user interaction testing, accessibility auditing, visual regression, performance testing
+
+## Resource Constraints
+
+This agent operates under Claude Code's default session limits. Callers should set
+an explicit `timeout` in the Agent tool call for any invocation expected to run
+longer than 5 minutes. No unbounded loops or recursive agent calls.

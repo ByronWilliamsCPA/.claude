@@ -345,3 +345,9 @@ Caller should pass:
 - For Mode 1: file path(s) or inline text, artifact class if known, and whether Pangram
   is explicitly requested
 - For Mode 2: paths to pipeline output samples, which reference library components to audit
+
+## Resource Constraints
+
+This agent operates under Claude Code's default session limits. Callers should set
+an explicit `timeout` in the Agent tool call for any invocation expected to run
+longer than 5 minutes. No unbounded loops or recursive agent calls.

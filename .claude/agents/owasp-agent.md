@@ -71,3 +71,9 @@ plan, act, and make decisions across complex workflows.
 Apply the agentic security testing patterns from Testing Standards S11.8.7
 and Testing Guide S11.8 (Agentic Security Testing section). All generated
 tests reference AG## category IDs.
+
+## Resource Constraints
+
+This agent operates under Claude Code's default session limits. Callers should set
+an explicit `timeout` in the Agent tool call for any invocation expected to run
+longer than 5 minutes. No unbounded loops or recursive agent calls.

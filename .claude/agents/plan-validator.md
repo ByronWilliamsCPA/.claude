@@ -110,3 +110,9 @@ Return a structured report:
 - The implementation plan is the source of truth, not opinions about what "should" be done
 - Flag items as scope creep candidates, but acknowledge that some infrastructure work (like setting up test fixtures) is implicitly required even if not listed
 - When in doubt, flag as "discuss with user" rather than making a judgment call
+
+## Resource Constraints
+
+This agent operates under Claude Code's default session limits. Callers should set
+an explicit `timeout` in the Agent tool call for any invocation expected to run
+longer than 5 minutes. No unbounded loops or recursive agent calls.

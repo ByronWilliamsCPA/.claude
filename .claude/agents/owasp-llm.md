@@ -90,3 +90,9 @@ Guide S11.8. Use pytest fixtures for mocked LLM responses (Tier 1/2)
 and @pytest.mark.llm_eval for behavioral tests (Tier 3).
 
 All generated tests MUST include the LLM category ID in docstrings.
+
+## Resource Constraints
+
+This agent operates under Claude Code's default session limits. Callers should set
+an explicit `timeout` in the Agent tool call for any invocation expected to run
+longer than 5 minutes. No unbounded loops or recursive agent calls.

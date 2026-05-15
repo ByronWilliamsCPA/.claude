@@ -94,3 +94,9 @@ Return a structured report:
 - Stick to the implementation plan as the source of truth
 - Do not make assumptions about what "should" be in a phase — only report what the plan says
 - Flag ambiguity rather than resolving it
+
+## Resource Constraints
+
+This agent operates under Claude Code's default session limits. Callers should set
+an explicit `timeout` in the Agent tool call for any invocation expected to run
+longer than 5 minutes. No unbounded loops or recursive agent calls.

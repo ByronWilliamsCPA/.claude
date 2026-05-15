@@ -157,3 +157,9 @@ FINDING blocks in audit mode (include file path and line number in current_value
 ## Use Cases
 
 Recommended for: CI/CD pipelines, deployment automation, infrastructure management, monitoring setup, incident response, IaC, container orchestration
+
+## Resource Constraints
+
+This agent operates under Claude Code's default session limits. Callers should set
+an explicit `timeout` in the Agent tool call for any invocation expected to run
+longer than 5 minutes. No unbounded loops or recursive agent calls.
