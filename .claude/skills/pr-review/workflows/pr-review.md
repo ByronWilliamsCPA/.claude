@@ -90,7 +90,7 @@ Do not block the rest of this workflow on the result.
 
 ```bash
 gh pr view "$PR_NUMBER" --repo "$OWNER/$REPO" \
-  --json title,body,state,isDraft,labels,baseRefName,headRefName,author,number
+  --json title,body,state,isDraft,labels,baseRefName,headRefName,author,number,mergeStateStatus
 ```
 
 **Eligibility check (Haiku agent):**
@@ -114,27 +114,54 @@ Store:
 - `PR_BODY`: PR description
 - `BASE_BRANCH`: baseRefName
 - `HEAD_BRANCH`: headRefName
+- `MERGE_STATE`: mergeStateStatus
 - `PR_DIFF`: full unified diff text
 - `CHANGED_FILES`: list of file paths from the files JSON
 
 ### 2c. CI status
 
+> Note: `gh pr checks --json` uses `state` and `link`, NOT `status`, `conclusion`, or `detailsUrl` — those are REST API field names. Passing the wrong names causes "Unknown JSON field" errors.
+
 ```bash
 gh pr checks "$PR_NUMBER" --repo "$OWNER/$REPO" \
-  --json name,status,conclusion,detailsUrl \
-  --jq '.[] | {name, status, conclusion, detailsUrl}'
+  --json name,state,description,link \
+  --jq '.[] | {name, state, description, link}'
 ```
 
-Store as `CI_CHECKS`. For any check with `conclusion != "success"` and
-`conclusion != null` (null means in-progress), emit a Critical finding immediately:
+Store as `CI_CHECKS`. For any check where `state` is not `SUCCESS` and not
+`PENDING` (PENDING means in-progress; skip it), classify the finding using the
+branch state diagnostic before emitting.
+
+**Branch state diagnostic (applies when `MERGE_STATE == "BEHIND"`):**
+
+When `MERGE_STATE` is `BEHIND`, a CI failure may originate in the diverged base
+history rather than in the PR's diff. Fetch the base branch's check results to
+distinguish the two cases:
+
+```bash
+BASE_SHA=$(gh api repos/"$OWNER"/"$REPO"/branches/"$BASE_BRANCH" \
+  --jq '.commit.sha')
+BASE_CHECKS=$(gh api repos/"$OWNER"/"$REPO"/commits/"$BASE_SHA"/check-runs \
+  --jq '[.check_runs[] | {name: .name, conclusion: .conclusion}]')
+```
+
+For each failing check in `CI_CHECKS`, look up the same check name in `BASE_CHECKS`:
+- Fails on base too: emit `[Critical - pre-existing, rebase needed]` — the fix is rebase, not code change.
+- Passes on base (or absent from base): emit `[Critical - PR-introduced]` — the fix is in the PR's diff.
+- `MERGE_STATE` is not `BEHIND`: emit `[Critical]` — divergence attribution does not apply.
+
+Emit each finding:
 
 ```text
-[Critical] CI: {check name}: {conclusion} ({detailsUrl})
+[Critical] CI: {check name}: {state} ({link})
 Confidence: 100 (objective CI result)
 ```
 
 If any Critical CI finding exists, the report header must include:
 **BUILD FAILING: do not merge until CI is green.**
+
+If any finding is tagged `[Critical - pre-existing, rebase needed]`, also add to the header:
+**BRANCH BEHIND: some failures may clear after rebasing on {BASE_BRANCH}.**
 
 ---
 
