@@ -69,12 +69,12 @@ jobs:
           cache-local-path: ".uv-cache"
 
       - name: Install dependencies
-        run: uv sync --all-extras --frozen --no-build
+        run: uv sync --all-extras --frozen
 
       - name: Run vulture
         run: |
           echo "## Dead Code Report" >> $GITHUB_STEP_SUMMARY
-          uv run --frozen --no-build vulture src/ --min-confidence 90 | tee vulture-report.txt || true
+          uv run --frozen vulture src/ --min-confidence 90 | tee vulture-report.txt || true
           if [ -s vulture-report.txt ]; then
             echo '```' >> $GITHUB_STEP_SUMMARY
             cat vulture-report.txt >> $GITHUB_STEP_SUMMARY
@@ -137,7 +137,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
-          fetch-depth: 0  # full history required; --filter=diff needs merge-base to be reachable
+          fetch-depth: 0  # full history required; --diff needs merge-base to be reachable
 
       - name: Fetch base ref for diff
         run: git fetch origin "$GITHUB_BASE_REF"
@@ -146,7 +146,7 @@ jobs:
         uses: qltysh/qlty-action/install@a19242102d17e497f437d7466aa01b528537e899  # v2
 
       - name: Run qlty check
-        run: qlty check --filter=diff
+        run: qlty check --diff
 
 
   # Qlty Coverage Upload (reuses artifact from core-validation, runs on synchronize events)
@@ -168,13 +168,15 @@ jobs:
           egress-policy: audit
 
       - name: Download coverage artifact
+        id: download-coverage
+        continue-on-error: true
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093  # v4.3.0
         with:
           name: coverage-reports
           path: reports/
 
       - name: Upload coverage to Qlty
-        if: env.QLTY_COVERAGE_TOKEN != ''
+        if: env.QLTY_COVERAGE_TOKEN != '' && steps.download-coverage.outcome == 'success'
         uses: qltysh/qlty-action/coverage@a19242102d17e497f437d7466aa01b528537e899  # v2
         with:
           token: ${{ secrets.QLTY_COVERAGE_TOKEN }}
