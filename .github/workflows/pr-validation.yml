@@ -119,9 +119,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 
-  # Qlty Code Smells (PR diff only)
+  # Qlty Checks (ruff, basedpyright, bandit, smells -- PR diff only)
   qlty-smells:
-    name: Code Smells (Qlty)
+    name: Qlty Checks
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -135,14 +135,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
 
+      - name: Fetch base ref for diff
+        run: git fetch origin ${{ github.base_ref }} --depth=1
+
       - name: Install Qlty
         uses: qltysh/qlty-action/install@a19242102d17e497f437d7466aa01b528537e899  # v2
 
-      - name: Run qlty smells check
+      - name: Run qlty check
         run: qlty check --filter=diff
 
 
-  # Qlty Coverage Upload (reuses artifact from core-validation, runs on every push)
+  # Qlty Coverage Upload (reuses artifact from core-validation, runs on synchronize events)
   qlty-coverage:
     name: Qlty Coverage Upload
     runs-on: ubuntu-latest
@@ -165,6 +168,7 @@ jobs:
           path: reports/
 
       - name: Upload coverage to Qlty
+        if: ${{ secrets.QLTY_COVERAGE_TOKEN != '' }}
         uses: qltysh/qlty-action/coverage@a19242102d17e497f437d7466aa01b528537e899  # v2
         with:
           token: ${{ secrets.QLTY_COVERAGE_TOKEN }}
@@ -218,9 +222,9 @@ jobs:
           fi
 
           if [ "$QLTY_SMELLS_RESULT" == "success" ]; then
-            echo "Code Smells: Passed" >> $GITHUB_STEP_SUMMARY
+            echo "Qlty Checks: Passed" >> $GITHUB_STEP_SUMMARY
           else
-            echo "Code Smells: $QLTY_SMELLS_RESULT" >> $GITHUB_STEP_SUMMARY
+            echo "Qlty Checks: $QLTY_SMELLS_RESULT" >> $GITHUB_STEP_SUMMARY
           fi
 
           if [ "$QLTY_COVERAGE_RESULT" == "success" ]; then
