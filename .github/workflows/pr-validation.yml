@@ -137,7 +137,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
-          fetch-depth: 0  # full history required; --diff needs merge-base to be reachable
+          fetch-depth: 0  # full history required; diff against base needs merge-base to be reachable
 
       - name: Fetch base ref for diff
         run: git fetch origin "$GITHUB_BASE_REF"
@@ -146,7 +146,13 @@ jobs:
         uses: qltysh/qlty-action/install@a19242102d17e497f437d7466aa01b528537e899  # v2
 
       - name: Run qlty check
-        run: qlty check --diff
+        run: |
+          mapfile -t CHANGED < <(git diff --name-only "origin/$GITHUB_BASE_REF")
+          if [ "${#CHANGED[@]}" -eq 0 ]; then
+            echo "No changed files to check"
+            exit 0
+          fi
+          qlty check "${CHANGED[@]}"
 
 
   # Qlty Coverage Upload (reuses artifact from core-validation, runs on synchronize events)
