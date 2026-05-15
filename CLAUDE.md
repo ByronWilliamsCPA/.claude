@@ -236,3 +236,10 @@ Available skills are listed in
 ~/.claude/skill-observations/available-skills.md
 (regenerated each session start). Use this file when the task-observer
 skill references <available_skills>.
+
+The task-observer workspace folder is always `/home/byron/.claude/` regardless
+of which repository the current session is working in. Use the absolute path
+`/home/byron/.claude/skill-observations/` when writing or reading any
+task-observer runtime files (log.md, cross-cutting-principles.md,
+last-review-date.txt, scheduler-registered.txt). Never resolve
+`[workspace folder]` to the current project root for task-observer.
