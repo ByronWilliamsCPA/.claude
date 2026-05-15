@@ -1479,6 +1479,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#security-considerations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security Considerations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#references" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2403,6 +2414,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#security-considerations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security Considerations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#references" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2482,6 +2504,27 @@
 <ul>
 <li>The path-scoping note convention in rules files is social, not mechanical. It documents intent but does not prevent a rule from loading in unrelated sessions.</li>
 </ul>
+<h2 id="security-considerations">Security Considerations<a class="headerlink" href="#security-considerations" title="Permanent link">&para;</a></h2>
+<p>The rules/standards boundary has security implications that motivated its design:</p>
+<ul>
+<li><strong>Privilege surface control</strong>: Rules injected into every session expand the agent's
+  effective capability surface. A security guard placed in <code>standards/</code> instead of
+  <code>rules/</code> is silently skipped unless the agent explicitly loads it; a mis-filing
+  that looks correct in code review but removes the guard in practice.</li>
+<li><strong>Audit trail</strong>: Rules files are session-injected and therefore visible in every
+  Claude Code session's context. This makes security rules auditable at session start
+  rather than discoverable only when invoked.</li>
+<li><strong>Least-privilege alignment</strong>: Standards libraries (tools, references, writing guides)
+  are loaded on demand; they do not expand session capabilities by default. This is
+  consistent with least-privilege: agents only receive the additional context they
+  request.</li>
+<li><strong>Attack surface of standards</strong>: A compromised or tampered standards file loaded
+  on demand during a session can inject instructions into a running agent. Standards
+  files that handle sensitive decisions (security policies, permission checks) should
+  be treated as high-value targets and covered by signed-commit requirements.</li>
+</ul>
+<p>NIST SSDF PW.2.1 (design with security in mind) and OpenSSF Scorecard coverage apply
+to the standards manifest system that enforces checks on this architecture.</p>
 <h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
 <ul>
 <li><code>.claude/rules/</code>: session-injected behavioral constraints</li>
@@ -2512,7 +2555,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 27, 2026 22:56:05 UTC">April 27, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="May 15, 2026 14:53:20 UTC">May 15, 2026</span>
   </span>
 
     
