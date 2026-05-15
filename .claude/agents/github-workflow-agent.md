@@ -193,3 +193,9 @@ This is an empirical workaround; the root cause in GitHub's validator is not pub
 ## Use Cases
 
 Recommended for: GitHub operations, pull requests, issues, repository management, GitHub Actions, code review workflows, project board management
+
+## Resource Constraints
+
+This agent operates under Claude Code's default session limits. Callers should set
+an explicit `timeout` in the Agent tool call for any invocation expected to run
+longer than 5 minutes. No unbounded loops or recursive agent calls.

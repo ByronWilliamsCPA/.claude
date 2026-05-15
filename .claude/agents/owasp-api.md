@@ -61,3 +61,9 @@ vulnerabilities in REST, GraphQL, gRPC, and WebSocket APIs.
 Generate API security tests using the project's test client (FastAPI
 TestClient, Flask test client, etc.) with parametrized attack payloads.
 Reference API## category IDs in all test docstrings.
+
+## Resource Constraints
+
+This agent operates under Claude Code's default session limits. Callers should set
+an explicit `timeout` in the Agent tool call for any invocation expected to run
+longer than 5 minutes. No unbounded loops or recursive agent calls.

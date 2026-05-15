@@ -155,3 +155,9 @@ Return a structured report:
 - Use the project's configured commands (check CLAUDE.md and pyproject.toml)
 - If a check cannot be run (missing dependency, no Docker), mark as SKIPPED with explanation
 - The verdict is mechanical: if any gate FAILS, the verdict is NOT READY
+
+## Resource Constraints
+
+This agent operates under Claude Code's default session limits. Callers should set
+an explicit `timeout` in the Agent tool call for any invocation expected to run
+longer than 5 minutes. No unbounded loops or recursive agent calls.

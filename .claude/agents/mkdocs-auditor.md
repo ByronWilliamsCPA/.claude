@@ -169,3 +169,9 @@ Self-review: consider adding to mkdocs-auditor rules:
 ## Use Cases
 
 Invoke for: new project mkdocs.yml setup (create), repo-compliance sweeps (audit), fixing existing config issues (remediate), post-sprint nav and content gap detection (update).
+
+## Resource Constraints
+
+This agent operates under Claude Code's default session limits. Callers should set
+an explicit `timeout` in the Agent tool call for any invocation expected to run
+longer than 5 minutes. No unbounded loops or recursive agent calls.

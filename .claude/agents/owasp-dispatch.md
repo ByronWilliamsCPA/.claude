@@ -58,3 +58,9 @@ Specialists skipped:
 
 Invoke each selected specialist sequentially. Aggregate their findings
 into a unified security report sorted by severity.
+
+## Resource Constraints
+
+This agent operates under Claude Code's default session limits. Callers should set
+an explicit `timeout` in the Agent tool call for any invocation expected to run
+longer than 5 minutes. No unbounded loops or recursive agent calls.

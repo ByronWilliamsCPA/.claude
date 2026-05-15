@@ -78,3 +78,9 @@ Same structure as repo-foundations-auditor: FINDING blocks in audit mode, ACTION
 ## Use Cases
 
 Invoked by the repo-compliance coordinator for the toolchain domain in both modes.
+
+## Resource Constraints
+
+This agent operates under Claude Code's default session limits. Callers should set
+an explicit `timeout` in the Agent tool call for any invocation expected to run
+longer than 5 minutes. No unbounded loops or recursive agent calls.

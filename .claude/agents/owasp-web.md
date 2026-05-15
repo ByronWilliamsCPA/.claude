@@ -110,3 +110,9 @@ All output MUST include:
 - File path and line number(s)
 - Specific finding description
 - Recommended remediation or generated test code
+
+## Resource Constraints
+
+This agent operates under Claude Code's default session limits. Callers should set
+an explicit `timeout` in the Agent tool call for any invocation expected to run
+longer than 5 minutes. No unbounded loops or recursive agent calls.

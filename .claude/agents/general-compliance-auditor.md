@@ -43,3 +43,9 @@ CANDIDATE:
 ## Use Cases
 
 Invoked by the repo-compliance coordinator after domain agents complete. Not intended for direct user invocation. Audit mode only -- passing remediation mode has no effect.
+
+## Resource Constraints
+
+This agent operates under Claude Code's default session limits. Callers should set
+an explicit `timeout` in the Agent tool call for any invocation expected to run
+longer than 5 minutes. No unbounded loops or recursive agent calls.

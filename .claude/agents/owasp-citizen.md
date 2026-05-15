@@ -51,3 +51,9 @@ Focus on patterns unique to AI-assisted development:
 Verify that AI-generated code has been security-reviewed and that tests
 cover the unique risk surface of citizen-developed applications. Generate
 tests that specifically target common AI code generation weaknesses.
+
+## Resource Constraints
+
+This agent operates under Claude Code's default session limits. Callers should set
+an explicit `timeout` in the Agent tool call for any invocation expected to run
+longer than 5 minutes. No unbounded loops or recursive agent calls.

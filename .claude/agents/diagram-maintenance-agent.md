@@ -399,3 +399,9 @@ Description.
 - Post-sprint diagram updates
 - Generating AI visuals for executive presentations or onboarding materials
 - Verifying diagram accuracy against current source code
+
+## Resource Constraints
+
+This agent operates under Claude Code's default session limits. Callers should set
+an explicit `timeout` in the Agent tool call for any invocation expected to run
+longer than 5 minutes. No unbounded loops or recursive agent calls.

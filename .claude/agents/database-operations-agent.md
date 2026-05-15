@@ -62,3 +62,9 @@ Execute database workflows: schema analysis → query optimization → migration
 ## Use Cases
 
 Recommended for: database schema management, query optimization, migrations, data integrity, performance tuning
+
+## Resource Constraints
+
+This agent operates under Claude Code's default session limits. Callers should set
+an explicit `timeout` in the Agent tool call for any invocation expected to run
+longer than 5 minutes. No unbounded loops or recursive agent calls.
