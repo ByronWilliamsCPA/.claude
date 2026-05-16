@@ -238,12 +238,13 @@ Available skills are listed in
 skill references <available_skills>.
 
 The task-observer workspace folder is always `~/.claude/` regardless
-of which repository the current session is working in. Use the absolute path
+of which repository the current session is working in. Use the path
 `~/.claude/skill-observations/` when writing or reading any
-task-observer runtime files (log.md, cross-cutting-principles.md,
-last-review-date.txt, scheduler-registered.txt,
-scheduled-review-decline.txt, scheduled-task-draft.md). Never resolve
-`[workspace folder]` to the current project root for task-observer.
-This override applies to the `skill-observations/` runtime files above
-only; the `skill-updates/` staging area is project-relative and is not
-affected by this override.
+task-observer runtime file (including available-skills.md, log.md,
+cross-cutting-principles.md, last-review-date.txt,
+scheduler-registered.txt, scheduled-review-decline.txt,
+scheduled-task-draft.md; some files exist only after specific events).
+Never resolve `[workspace folder]` to the current project root for
+task-observer. This override applies to everything under
+`skill-observations/`; the `skill-updates/` staging area is
+project-relative and is not affected.

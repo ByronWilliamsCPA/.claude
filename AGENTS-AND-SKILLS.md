@@ -310,7 +310,7 @@ synthesizes cross-cutting insights, and logs observations for autonomous schedul
 Surfaces relevant past observations when loading other skills. Invoke at the start of any
 task-oriented session (any session where you will use tools and produce deliverables).
 
-**[/aggregate-observations](/.claude/commands/aggregate-observations.md)**
+**[/aggregate-observations](/.claude/commands/aggregate-observations.md)** _(recovery utility)_
 Scans all repositories under `~/dev/` for stray `skill-observations/log.md` files and walks
 the user through importing OPEN observations into the canonical global log at
 `~/.claude/skill-observations/log.md`. Use after recovering from a misconfigured task-observer
