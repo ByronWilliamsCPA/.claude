@@ -1,6 +1,6 @@
 ---
 name: ossf-compliance-auditor
-description: Audits a repository's OpenSSF Best Practices Badge (Passing level) and Security Scorecard (4+ on all checks) compliance by querying live APIs and supplementing with local file checks. Emits FINDING blocks with specific remediation steps for every gap.
+description: Audits a repository's OpenSSF Best Practices Badge (Passing level) and Security Scorecard (4+ on all checks, subject to the solo-dev caps documented in `docs/reference/scorecard-policy.md`) compliance by querying live APIs and supplementing with local file checks. Emits FINDING blocks with specific remediation steps for every gap.
 model: sonnet
 tools: ["Read", "Bash", "Grep", "Glob"]
 ---
@@ -468,6 +468,24 @@ required).
 **Score >= 6 (Tier 2):** All of: require PR before merging, 1 required reviewer, dismiss stale reviews on new commits, require branches to be up to date.
 **Score >= 8 (Tier 3):** Tier 2 plus require linear history and no force push.
 
+**Solo-dev policy cap:** Both maintained owners (the ByronWilliamsCPA
+organization and the williaby user account) are solo-maintained. Tier 2
+requires `required_approving_review_count >= 1`, which GitHub will not
+allow a PR author to satisfy on their own PR; any non-zero value blocks
+every merge. The accepted floor is therefore Tier 1 (score 4), and the
+shared `validate_solo_dev_safe` guard (imported by both
+`setup_org_rulesets.py` and `setup_repo_rulesets.py`) enforces this by
+refusing any body containing `required_approving_review_count > 0`. Do
+NOT emit a FINDING when Branch-Protection scores 4 with the standard
+ruleset applied; that is the policy-accepted state. Findings remain
+valid when the score is below 4 (e.g., no required status checks, no
+required reviewers, or no protection at all on the default branch);
+those are the criteria the Scorecard Branch-Protection check actually
+measures. Org-ruleset rules such as `copilot_code_review` and signature
+requirements are tracked separately and do not change this check's
+score. Full policy:
+[docs/reference/scorecard-policy.md](../../docs/reference/scorecard-policy.md).
+
 **Remediation (preferred):** Apply the appropriate ruleset for the repo's owner type.
 
 ByronWilliamsCPA (organization, supports org-level rulesets):
@@ -521,7 +539,16 @@ Or navigate to: GitHub > Settings > Branches > Add rule > Branch name: `main`.
 
 **Measures:** Percentage of commits reviewed (via merged PRs with at least 1 approving review).
 **Score >= 4:** 40%+ of recent commits went through a PR with review.
-**Remediation:** This score follows automatically once Branch-Protection Tier 2 is enforced. The current policy-only approach ("never commit to main" in git-workflow.md) does not satisfy the Scorecard tool because it reads GitHub's actual merge history.
+
+**Solo-dev policy cap:** Code-Review measures actual merge history. On
+solo-dev repos every PR is opened and merged by the same account, so
+the score stays at 0 regardless of policy. Do NOT emit a FINDING when
+Code-Review scores below 4 and the repo is solo-maintained; any score
+below the 4+ default target is the policy-accepted state on these
+repos. Do NOT recommend lifting Branch-Protection to Tier 2 as a
+remediation path (that path is closed by the solo-dev policy). The
+restoration condition is documented at
+[docs/reference/scorecard-policy.md](../../docs/reference/scorecard-policy.md).
 
 ### Contributors (Low)
 
