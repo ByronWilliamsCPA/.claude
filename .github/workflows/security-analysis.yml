@@ -26,7 +26,7 @@ jobs:
       security-events: write
       pull-requests: write
       actions: read
-    uses: ByronWilliamsCPA/.github/.github/workflows/python-security-analysis.yml@b29a870cb21a8f913e5c6c5f08740a4bdd94d0ca # main
+    uses: ByronWilliamsCPA/.github/.github/workflows/python-security-analysis.yml@c50e799abfcd10e904749319f1b322f7eac7a813 # main
     with:
       python-version: "3.12"
       # safety is not in this project's dev deps; pip-audit covers the same
