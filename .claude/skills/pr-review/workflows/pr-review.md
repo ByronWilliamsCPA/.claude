@@ -142,8 +142,15 @@ For each failing check in `CI_CHECKS`:
   ```bash
   BASE_SHA=$(gh api repos/"$OWNER"/"$REPO"/branches/"$BASE_BRANCH" \
     --jq '.commit.sha')
-  BASE_CHECKS=$(gh api repos/"$OWNER"/"$REPO"/commits/"$BASE_SHA"/check-runs \
-    --jq '[.check_runs[] | {name: .name, conclusion: .conclusion}]')
+  # The check-runs endpoint is paginated (default 30/page). Use --paginate
+  # plus per_page=100 so repos with many checks return the full set; without
+  # this, BASE_CHECKS is truncated and a failure present on base may be
+  # misclassified as PR-introduced. --paginate emits each page as a
+  # separate JSON document; jq -s slurps them and flattens check_runs
+  # across all pages.
+  BASE_CHECKS=$(gh api --paginate \
+    "repos/$OWNER/$REPO/commits/$BASE_SHA/check-runs?per_page=100" \
+    | jq -s '[.[] | .check_runs[] | {name: .name, conclusion: .conclusion}]')
   ```
 
   Look up the failing check name in `BASE_CHECKS`:
