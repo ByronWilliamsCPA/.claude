@@ -3,7 +3,7 @@
   "target": "push",
   "enforcement": "evaluate",
   "bypass_actors": [
-    {"actor_id": 5, "actor_type": "RepositoryRole", "bypass_mode": "always"}
+    {"actor_id": 5, "actor_type": "RepositoryRole", "bypass_mode": "pull_request"}
   ],
   "conditions": {
     "repository_name": {"include": ["~ALL"], "exclude": ["homelab-agent-configs"], "protected": true}

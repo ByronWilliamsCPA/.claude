@@ -165,10 +165,14 @@ the check for any PR or subsequent push.
 CI-022/CI-023 remediation sweep across all repos. Flip to `active` after the sweep confirms
 required check names are consistent. See CI-025a/CI-025b in standards-manifest.yaml.
 
-**`bypass_mode: "always"` on Admin role** (actor_id: 5, actor_type: RepositoryRole): a solo
-developer context. The intention is to migrate bypass to a dedicated GitHub App (Integration
-actor type) once one is configured, and change the mode to `pull_request` to disallow direct
-push bypasses. See CI-028 notes in standards-manifest.yaml for the migration path.
+**`bypass_mode: "pull_request"` on Admin role** (actor_id: 5, actor_type: RepositoryRole):
+a solo developer context. RepositoryAdmin bypass is restricted to merged PRs only;
+direct pushes are NOT subject to bypass and the push-baseline rules apply uniformly.
+The push-baseline JSON files (`*-push-baseline.json`) were tightened from `always` to
+`pull_request` in PR #103 to close the direct-push attack surface ahead of flipping
+enforcement from `evaluate` to `active`. Long-term, bypass should migrate to a
+dedicated GitHub App (Integration actor type) once one is configured; see CI-028
+notes in standards-manifest.yaml for the migration path.
 
 ## Enforcement Migration Checklist
 
