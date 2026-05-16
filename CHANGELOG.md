@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+### Breaking
+
+* chore(deps)!: bump `actions/download-artifact` from v4.3.0 to v8.0.1 in
+  `.github/workflows/pr-validation.yml`. The action now requires Node.js 24
+  runtime (minimum Actions Runner 2.327.1, relevant for self-hosted runners),
+  has migrated to ESM, and defaults `digest-mismatch` to `error` rather than
+  `warn`. This repo's usage (name-based download on GitHub-hosted runners
+  with `continue-on-error: true` on the coverage upload path) is verified
+  compatible by CI on PR #101.
+
 ### Feature
 
 * feat(rulesets): harden CI gate, supply-chain controls, and secret scanning standards; pin all `required_status_checks` to `integration_id: 15368` (GitHub Actions app) across both org and python-tier rulesets to prevent check-name spoofing; expand `file_path_restriction` on universal rulesets to seven trust-boundary paths (`.github/workflows/`, `.github/CODEOWNERS`, `.pre-commit-config.yaml`, `pyproject.toml`, `renovate.json`, `sonar-project.properties`, `.gitleaks.toml`); add SemVer tag-protection rulesets for both orgs (`target: tag`, `v*` ref pattern, `required_signatures`), replacing the deprecated Tag Protection Rules API; add `max_file_size: 100 MB` cap and `do_not_enforce_on_create: true` on python-tier rulesets; add CI-028 through CI-032 to `docs/standards-manifest.yaml`; add PC-005 (trufflehog OR detect-secrets), PC-013 (both required), and OSSF-010 (SECURITY.md security surface section) manifest checks; document two-tier ruleset architecture and enforcement migration checklist in `docs/reference/org-rulesets/README.md`
