@@ -299,6 +299,10 @@ docs/audit-report.md
 
 # Git worktrees (always project-local, never at global paths)
 .worktrees/
+# Defensive: also catch worktrees mistakenly created under .claude/. The
+# CLAUDE.md global rule places worktrees at .worktrees/<branch-slug>; this
+# entry guards against the .claude/worktrees/ pattern that has surfaced.
+.claude/worktrees/
 
 # PlantUML runtime artifacts (Java font cache written by plantuml CLI)
 # The '?' pattern matches any single-char dir name that plantuml creates

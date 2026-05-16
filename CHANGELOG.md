@@ -62,6 +62,8 @@
 
 ### Chore
 
+* chore(catalog): refresh `docs/reference/github-repos.json` from the 2026-05-14 audit; corrects the `gleif` repo's foundations, sonarcloud, renovate, secret-scanning, and pre-commit flags; corrects `.claude` repo's universal-ruleset required-check name to `Security Analysis / Security Gate Validation` and removes the migrated CodeQL `Analyze (actions)` check; adds workflow files that landed since the prior snapshot (`python-precommit.yml`, `python-standard-stack.yml`, `self-test.yml`, `sonarcloud.yml`) and adds `dependency-review.yml` + `slsa-provenance.yml` to `.claude`'s `presentFromExpected`; adds migration notes to two universal entries linking active org rulesets 16183607 and 16183609; drops the now-migrated `magg` williaby entry; adds `.claude/worktrees/` to `.gitignore` as a defensive guard against worktrees created at the wrong path
+
 * chore(compliance): add `tools/create_community_health_pointers.py` to create
   `CODE_OF_CONDUCT.md` and `GOVERNANCE.md` pointer files across all org repos that are missing
   them; commits directly to default branch for unprotected repos, opens a PR for protected
