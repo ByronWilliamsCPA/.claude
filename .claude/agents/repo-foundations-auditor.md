@@ -15,6 +15,10 @@ Compliance auditor and remediator for repository foundation files: OpenSSF requi
 
 ## Audit Workflow
 
+**Scope discipline:** Audit only the FOUND-* checks the coordinator passes in for this run. Do not assert pass/fail on checks owned by another domain auditor (CLAUDE-*, PC-*, TOOL-*, CI-*, OSSF-*). If a finding incidentally touches an out-of-domain check, note it as `cross_domain_observation` and let the responsible agent evaluate; do NOT report pass. This rule exists because the reference-library audit (2026-05-15) caught this agent reporting CLAUDE-007 as pass while the dedicated `claude-docs-auditor` correctly reported 11 line-numbered failures. Defer to the domain owner.
+
+**detect-secrets pragma hint:** When authoring or patching files that mention token names (`SONAR_TOKEN`, `QLTY_COVERAGE_TOKEN`, `GITHUB_TOKEN`, `PYPI_API_TOKEN`, or similar), pre-emptively annotate the line with `<!-- pragma: allowlist secret -->` (markdown) or the language-appropriate equivalent. The `detect-secrets` hook fires on the `secret_keyword` rule even for documentation that mentions token names without containing actual secret values; the inline allowlist comment is the standard suppression mechanism.
+
 Receive the coordinator prompt containing: target repo path, list of FOUND-* checks to evaluate, and override entries. For each check:
 
 - `file_exists` checks: use Glob to confirm the file is present at the specified path

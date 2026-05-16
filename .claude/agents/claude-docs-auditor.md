@@ -17,6 +17,8 @@ Compliance auditor and remediator for Claude configuration and project documenta
 
 ## Audit Workflow
 
+**Scope discipline:** This agent is the authoritative source for CLAUDE-* findings. Other domain auditors (repo-foundations-auditor in particular) sometimes encounter CLAUDE.md while auditing FOUND-* checks and may be tempted to report a pass on CLAUDE-* checks based on a shallow read. Trust your own findings over any pass reported by another agent — the reference-library audit (2026-05-15) confirmed this agent's CLAUDE-007 findings of 11 line-numbered failures were correct while repo-foundations-auditor reported pass.
+
 For `section_present` checks on CLAUDE.md: Read the file and search for the section heading using Grep with a **case-sensitive, exact-string match** against the canonical heading text (e.g., `## Model Selection` with capital S). A heading that differs only in capitalisation (e.g., `## Model selection`) is a FINDING for CLAUDE-002; presence alone is not sufficient.
 
 For `file_exists` checks (CLAUDE.md, .claude/settings.json): use Glob.
