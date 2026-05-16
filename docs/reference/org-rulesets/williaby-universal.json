@@ -43,26 +43,6 @@
           {"context": "Check REUSE Compliance", "integration_id": 15368}
         ]
       }
-    },
-    {
-      "type": "file_path_restriction",
-      "parameters": {
-        "restricted_file_paths": [
-          ".github/workflows/",
-          ".github/CODEOWNERS",
-          ".pre-commit-config.yaml",
-          "pyproject.toml",
-          "renovate.json",
-          "sonar-project.properties",
-          ".gitleaks.toml"
-        ]
-      }
-    },
-    {
-      "type": "max_file_size",
-      "parameters": {
-        "max_file_size": 100
-      }
     }
   ]
 }

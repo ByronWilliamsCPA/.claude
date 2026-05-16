@@ -74,6 +74,35 @@
 
 ### Fix
 
+* fix(rulesets): split push-rule types into a dedicated `target: push` ruleset.
+  The GitHub Rulesets API rejects `file_path_restriction` and `max_file_size`
+  inside a `target: branch` body with HTTP 422 atomically, which had silently
+  blocked every prior re-apply of the universal baseline since PR #95.
+
+* fix(rulesets): ship `ByronWilliamsCPA-push-baseline.json` and
+  `williaby-push-baseline.json` (target: push, `~ALL` include, file-path
+  restriction and size-cap rules), strip those rules from `*-universal.json`,
+  and document the four-tier ruleset stack in
+  `docs/reference/org-rulesets/README.md`.
+
+* fix(rulesets): `scripts/setup_org_rulesets.py` gains
+  `validate_target_rule_compatibility` (fails fast on target/rule mismatch,
+  exit code 5 `EXIT_TARGET_RULE_MISMATCH`) and post-apply re-fetch with
+  `detect_drift` for silently-dropped rule types (exit code 6
+  `EXIT_DRIFT_DETECTED`). The `find_existing_ruleset` call now paginates so
+  orgs with more than 30 rulesets cannot silently miss matches. The
+  post-apply re-locate now fails closed: a missing ruleset after apply
+  raises `RulesetDriftError` instead of warning and exiting OK. Push
+  baseline `bypass_actors` use `pull_request` mode rather than `always`,
+  so RepositoryAdmin bypass only applies via merged PR.
+
+* fix(rulesets): BW org carries three active rulesets (16183607 universal,
+  16476283 push baseline, 16183609 python tier) with
+  `integration_id: 15368` persisted on all required status checks. The
+  williaby push-baseline JSON ships in lockstep but is not yet applied
+  (williaby remains deferred per the rulesets-migration roadmap). Clears
+  CI-028, CI-029, and CI-032 from the reference-library audit retrospective.
+
 * fix(catalog): refresh `ByronWilliamsCPA/.claude` catalog entry: add missing workflow files, set `secretScanning.enabled` and `pushProtection` to true, update foundations flags, replace stale classic branch-protection block with ruleset summary, and correct the required-check name from `Security Gate Validation` to `Security Analysis / Security Gate Validation`; correct OSSF-008/009 manifest notes to reflect that secret scanning is free on public repos (no GHAS license required)
 
 * fix(gitignore): ignore `.tmp-*.md` handoff files so session-boundary reference files written to the worktree root are never accidentally staged or committed
