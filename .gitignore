@@ -313,6 +313,12 @@ docs/architecture/diagrams/?/
 # Compliance reports (generated artifacts, not committed)
 docs/compliance-reports/
 
+# Compliance retrospectives (local-only notes for improving repo-compliance workflow)
+docs/compliance-retrospectives/
+
+# Audit result artifacts (regenerable CSV/JSON snapshots)
+data/audit-results/
+
 # Troubleshooting notes (operational decisions, incident notes, living docs)
 docs/troubleshooting/
 
