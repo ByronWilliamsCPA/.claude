@@ -136,7 +136,7 @@ def test_parse_config_missing_key_raises_key_error():
 
 **Negative test description accuracy:** For tests that verify error or failure paths, the `_<scenario>_<expected_outcome>` components must describe the actual validation rule that fires, not just the input shape. "Invalid text type" is wrong if the framework coerces the type and the failure is a different constraint (e.g., `min_length`). A wrong description creates a false mental model that persists until someone reads the raw error response.
 
-When reviewing negative tests, read the validation code — not just the test input — to verify the name matches the actual error path.
+When reviewing negative tests, read the validation code (not just the test input) to verify the name matches the actual error path.
 
 ```python
 # Anti-pattern: name implies type error, but Pydantic v2 coerces int → str

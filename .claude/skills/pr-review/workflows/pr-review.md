@@ -120,7 +120,7 @@ Store:
 
 ### 2c. CI status
 
-> Note: `gh pr checks --json` uses `state` and `link`, NOT `status`, `conclusion`, or `detailsUrl` — those are REST API field names. Passing the wrong names causes "Unknown JSON field" errors.
+> Note: `gh pr checks --json` uses `state` and `link`, NOT `status`, `conclusion`, or `detailsUrl`; those are REST API field names. Passing the wrong names causes "Unknown JSON field" errors.
 
 ```bash
 gh pr checks "$PR_NUMBER" --repo "$OWNER/$REPO" \
@@ -129,26 +129,26 @@ gh pr checks "$PR_NUMBER" --repo "$OWNER/$REPO" \
 ```
 
 Store as `CI_CHECKS`. For any check where `state` is not `SUCCESS` and not
-`PENDING` (PENDING means in-progress; skip it), classify the finding using the
-branch state diagnostic before emitting.
+`PENDING` (PENDING means in-progress; skip it), classify each failing check
+by branch state before emitting.
 
-**Branch state diagnostic (applies when `MERGE_STATE == "BEHIND"`):**
+**Classifying failing CI checks by branch state:**
 
-When `MERGE_STATE` is `BEHIND`, a CI failure may originate in the diverged base
-history rather than in the PR's diff. Fetch the base branch's check results to
-distinguish the two cases:
+For each failing check in `CI_CHECKS`:
 
-```bash
-BASE_SHA=$(gh api repos/"$OWNER"/"$REPO"/branches/"$BASE_BRANCH" \
-  --jq '.commit.sha')
-BASE_CHECKS=$(gh api repos/"$OWNER"/"$REPO"/commits/"$BASE_SHA"/check-runs \
-  --jq '[.check_runs[] | {name: .name, conclusion: .conclusion}]')
-```
+- If `MERGE_STATE` is not `BEHIND`: emit `[Critical]`; divergence attribution does not apply. No base-branch lookup is needed.
+- If `MERGE_STATE` is `BEHIND`: a CI failure may originate in the diverged base history rather than in the PR's diff. Fetch the base branch's check results to distinguish the two cases:
 
-For each failing check in `CI_CHECKS`, look up the same check name in `BASE_CHECKS`:
-- Fails on base too: emit `[Critical - pre-existing, rebase needed]` — the fix is rebase, not code change.
-- Passes on base (or absent from base): emit `[Critical - PR-introduced]` — the fix is in the PR's diff.
-- `MERGE_STATE` is not `BEHIND`: emit `[Critical]` — divergence attribution does not apply.
+  ```bash
+  BASE_SHA=$(gh api repos/"$OWNER"/"$REPO"/branches/"$BASE_BRANCH" \
+    --jq '.commit.sha')
+  BASE_CHECKS=$(gh api repos/"$OWNER"/"$REPO"/commits/"$BASE_SHA"/check-runs \
+    --jq '[.check_runs[] | {name: .name, conclusion: .conclusion}]')
+  ```
+
+  Look up the failing check name in `BASE_CHECKS`:
+  - Fails on base too: emit `[Critical - pre-existing, rebase needed]`; the fix is rebase, not a code change.
+  - Passes on base (or absent from base): emit `[Critical - PR-introduced]`; the fix is in the PR's diff.
 
 Emit each finding:
 
