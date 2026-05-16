@@ -15,6 +15,10 @@ Compliance auditor and remediator for repository foundation files: OpenSSF requi
 
 ## Audit Workflow
 
+**Scope discipline:** Audit only the FOUND-* checks the coordinator passes in for this run. Do not assert pass/fail on checks owned by another domain auditor (CLAUDE-*, PC-*, TOOL-*, CI-*, OSSF-*). If a check the coordinator passed in is out of this agent's domain, omit it from the findings list entirely and let the coordinator route it to its owning agent. Do NOT emit a `FINDING` with `status: pass` for an out-of-domain check, and do NOT invent new `status:` values outside the `pass|fail` contract. This rule exists because the reference-library audit (2026-05-15) caught this agent reporting CLAUDE-007 as pass while the dedicated `claude-docs-auditor` correctly reported 11 line-numbered failures. Defer to the domain owner.
+
+**detect-secrets pragma hint:** When authoring or patching files that mention token names (`SONAR_TOKEN`, `QLTY_COVERAGE_TOKEN`, `GITHUB_TOKEN`, `PYPI_API_TOKEN`, or similar), pre-emptively annotate the line with `# pragma: allowlist secret` (or the language-appropriate comment-prefix equivalent: `//` for JS/TS, `<!-- ... -->` for HTML). Place the pragma inline at end of line rather than at line start to avoid colliding with markdown heading syntax. The `detect-secrets` hook fires on the `secret_keyword` rule even for documentation that mentions token names without containing actual secret values; the inline allowlist comment is the standard suppression mechanism. Repo precedent: the `#`-prefix form is the only form currently used in this repository's markdown (see `docs/security-analysis-2026-05-01.md:291`, `docs/superpowers/plans/2026-05-02-compliance-agent-improvements.md:141,144`); prefer it for consistency.
+
 Receive the coordinator prompt containing: target repo path, list of FOUND-* checks to evaluate, and override entries. For each check:
 
 - `file_exists` checks: use Glob to confirm the file is present at the specified path
