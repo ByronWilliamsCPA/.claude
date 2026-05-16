@@ -3,8 +3,21 @@
 # Bash Pre-Hook -- PreToolUse Hook
 # =============================================================================
 # Intercepts Bash tool calls to:
-#   1. Block force-pushes to main or master (exit 2 with BLOCKED message)
-#   2. Write a timing start timestamp to ${HOME}/.claude/tmp_cleanup/bash-start
+#   1. Block bypass flags that defeat branch protection / commit hygiene:
+#        - gh pr merge --admin                          (bypasses required checks via CLI)
+#        - gh api ... /pulls/N/merge                    (bypasses required checks via REST)
+#        - git ... --no-verify                          (bypasses pre-commit/pre-push hooks)
+#        - git ... --no-gpg-sign                        (bypasses required commit signing)
+#        - git -c commit.gpgsign=<falsy>                (inline signing bypass, any case,
+#                                                        falsy = false|0|no|off)
+#        - git -c tag.gpgsign=<falsy>                   (inline tag signing bypass)
+#      The guards run per command segment (split on &&, ||, ;, |) so a bypass
+#      flag is only blocked when it belongs to the principal git/gh invocation,
+#      not to an unrelated tool that shares the command line. Indirection
+#      wrappers (eval, bash -c, sh -c, zsh -c) are unwrapped one level deep so
+#      flags inside the inner argument are still detected.
+#   2. Block force-pushes to main or master (exit 2 with BLOCKED message)
+#   3. Write a timing start timestamp to ${HOME}/.claude/tmp_cleanup/bash-start
 #      for the post-hook notification script to compute command duration.
 #      The marker lives under the user's home (audit H-01) to avoid the
 #      symlink-race window of a fixed /tmp path.
@@ -19,7 +32,12 @@
 set -uo pipefail
 # Note: -e is intentionally omitted. This is a PreToolUse hook that must never
 # exit non-zero unexpectedly (exit 2 is reserved for the block signal). Any
-# unhandled error must fall through to the allow path.
+# unhandled error must fall through to the allow path. This hook is an early-
+# warning UX layer; the authoritative enforcement of signed-commit, required-
+# status-check, and force-push policy lives in the GitHub rulesets, so a hook
+# failure degrades UX (slower feedback) rather than security. Do not "harden"
+# the script to fail-closed: that would brick Claude's Bash tool on any
+# transient sed/grep/jq glitch with no security gain.
 
 # Security (audit H-01): timing state lives under the user's home directory,
 # not world-writable /tmp. This eliminates the TOCTOU symlink-attack window
@@ -113,6 +131,231 @@ if [[ -z "$CMD" ]]; then
     write_start_marker
     exit 0
 fi
+
+# ---------------------------------------------------------------------------
+# Bypass-flag guards
+#
+# These flags defeat the branch-protection / commit-hygiene model:
+#
+#   gh pr merge --admin / gh api .../pulls/N/merge
+#     Bypass required status checks (CLI and REST forms, respectively). Only
+#     repo admins can use either, which means solo-dev repos can't rely on
+#     branch protection to stop Claude. If checks are failing, fix them.
+#
+#   git ... --no-verify
+#     Skips client-side hooks (pre-commit, pre-push, commit-msg). CLAUDE.md
+#     global rule: never skip hooks unless the user explicitly requests it.
+#
+#   git ... --no-gpg-sign / -c commit.gpgsign=<falsy> / -c tag.gpgsign=<falsy>
+#     Bypasses required commit signing. Every BW/williaby repo requires signed
+#     commits; an unsigned commit would either fail the ruleset or pollute
+#     history. The match is case-insensitive (git config keys are case-
+#     insensitive) and accepts every falsy boolean (false, 0, no, off).
+#
+# Detection design (rewritten in PR #105 follow-up):
+#
+#   * Only -m / --message argument VALUES are blanked, not all quoted spans.
+#     The shell strips quotes before exec, so `git commit "--no-verify"` is
+#     functionally identical to `git commit --no-verify`; broad quote
+#     stripping creates a false-negative class. Narrow message-arg stripping
+#     keeps documentation-text false positives away while leaving flag
+#     tokens visible to the regex.
+#
+#   * The command is split into segments at &&, ||, ;, |, and subshell
+#     delimiters. Each guard inspects one segment so a bypass flag is only
+#     blocked when the principal command is git or gh, not when an
+#     unrelated tool elsewhere in the pipeline happens to share the line.
+#
+#   * Indirection wrappers (eval, bash -c, sh -c, zsh -c) are unwrapped one
+#     level deep so a `bash -c "git commit --no-verify"` still trips the
+#     guard. Deeper or runtime-constructed indirection (e.g., backtick
+#     command substitution that yields the flag at execution) is not
+#     detectable by static analysis and is documented as a known limitation.
+#
+# Each guard blocks with a clear remediation path. If the user genuinely
+# needs one of these flags, they can run the command from a terminal outside
+# Claude.
+# ---------------------------------------------------------------------------
+
+# Helper: normalize the command string for guard inspection. Two passes:
+#
+# Pass 1 (message-arg blanking): blank ONLY the VALUE of -m / --message
+# arguments so a commit message containing flag-shaped documentation text
+# does not trip the guards. Handles `-m "msg"`, `-m 'msg'`, `-m"msg"`,
+# `--message="msg"`, `--message 'msg'`.
+#
+# Pass 2 (token-quote stripping): strip surrounding quotes from any
+# remaining quoted token that contains no spaces. Bash strips these quotes
+# before exec, so `"--no-verify"` is semantically identical to `--no-verify`;
+# without this step, every guard regex would emit a false negative on the
+# trivially-quoted form. Spaces inside the quotes (e.g., commit message
+# fragments not already blanked) disqualify the token, preserving the
+# default false-positive prevention for any non-arg quoted text.
+#
+# Order matters: message-arg blanking runs first so a single-word commit
+# message like `-m "fix"` is blanked to `-m ""` BEFORE the token-quote
+# pass would otherwise see `"fix"` and strip its quotes (which would be
+# harmless here but wastes the safety margin elsewhere).
+#
+# LC_ALL=C pins sed locale against multibyte input.
+blank_message_args() {
+    LC_ALL=C sed -E \
+        -e 's/(^|[[:space:]])(-m|--message)[[:space:]]+"[^"]*"/\1\2 ""/g' \
+        -e "s/(^|[[:space:]])(-m|--message)[[:space:]]+'[^']*'/\1\2 ''/g" \
+        -e 's/(^|[[:space:]])(-m|--message)="[^"]*"/\1\2=""/g' \
+        -e "s/(^|[[:space:]])(-m|--message)='[^']*'/\1\2=''/g" \
+        -e 's/(^|[[:space:]])-m"[^"]*"/\1-m""/g' \
+        -e "s/(^|[[:space:]])-m'[^']*'/\1-m''/g" \
+        -e 's/"([^"[:space:]]+)"/\1/g' \
+        -e "s/'([^'[:space:]]+)'/\1/g" 2>/dev/null
+}
+
+# Helper: split a command string into top-level segments at shell operators.
+# Operators handled: &&, ||, ;, |, and the parens / braces of subshell or
+# brace groups. Best effort; pathological nested quoting cannot be perfectly
+# parsed in sed and is documented as a known limitation.
+split_segments() {
+    LC_ALL=C sed -E 's/&&|\|\||;|\||\(|\)|\{|\}/\n/g' 2>/dev/null
+}
+
+# Helper: if the segment is an indirection wrapper (eval / bash -c / sh -c /
+# zsh -c), return the inner argument with surrounding quotes removed. One
+# level deep only. Otherwise returns the segment unchanged.
+unwrap_indirection() {
+    local seg="$1" arg
+    if arg=$(printf '%s' "$seg" | LC_ALL=C sed -nE \
+        -e 's/^[[:space:]]*eval[[:space:]]+(.*)$/\1/p' \
+        -e 's/^[[:space:]]*(ba|z)?sh[[:space:]]+-c[[:space:]]+(.*)$/\2/p' \
+        2>/dev/null) && [[ -n "$arg" ]]; then
+        # Strip a single layer of surrounding single or double quotes.
+        arg="${arg#\"}"; arg="${arg%\"}"
+        arg="${arg#\'}"; arg="${arg%\'}"
+        printf '%s' "$arg"
+    else
+        printf '%s' "$seg"
+    fi
+}
+
+# Per-segment scanners. Each returns 0 (true) when the segment violates
+# the policy, 1 (false) otherwise. The principal-command check ensures the
+# bypass flag belongs to the actual git/gh invocation, not to an unrelated
+# tool sharing the command line.
+
+violates_gh_pr_merge_admin() {
+    local seg
+    seg=$(unwrap_indirection "$1")
+    echo "$seg" | grep -qE '(^|[[:space:]])gh[[:space:]]+pr[[:space:]]+merge([[:space:]]|$)' \
+        && echo "$seg" | grep -qE '(^|[[:space:]])--admin([[:space:]]|=|$)'
+}
+
+violates_gh_api_merge() {
+    local seg
+    seg=$(unwrap_indirection "$1")
+    echo "$seg" | grep -qE '(^|[[:space:]])gh[[:space:]]+api([[:space:]]|$)' \
+        && echo "$seg" | grep -qE '/pulls?/[0-9]+/merge'
+}
+
+violates_git_no_verify() {
+    local seg
+    seg=$(unwrap_indirection "$1")
+    echo "$seg" | grep -qE '(^|[[:space:]])git([[:space:]]|$)' \
+        && echo "$seg" | grep -qE '(^|[[:space:]])--no-verify([[:space:]]|=|$)'
+}
+
+violates_git_no_sign() {
+    local seg
+    seg=$(unwrap_indirection "$1")
+    echo "$seg" | grep -qE '(^|[[:space:]])git([[:space:]]|$)' || return 1
+    # Case 1: --no-gpg-sign flag (CLI flag, case-sensitive in git).
+    if echo "$seg" | grep -qE '(^|[[:space:]])--no-gpg-sign([[:space:]]|=|$)'; then
+        return 0
+    fi
+    # Case 2: inline -c key=value with case-insensitive git config key and any
+    # falsy boolean. Left-anchored so `notag.gpgsign=...` does NOT match.
+    echo "$seg" | grep -qiE '(^|[[:space:]])(commit|tag)\.gpgsign[[:space:]]*=[[:space:]]*(false|0|no|off)([[:space:]]|$)'
+}
+
+# Pre-scan the command: blank message-arg values so documentation text inside
+# a commit message does not cause false-positive blocks.
+PRE_SCAN=$(printf '%s' "$CMD" | blank_message_args)
+if [[ -z "$PRE_SCAN" ]]; then
+    # blank_message_args returned empty (sed failed). Fall back to raw $CMD.
+    # This is fail-SAFE: real bypass flags sit outside message values and are
+    # still detected by the per-segment scanners. The only regression is a
+    # possible false-positive on a commit message containing flag-shaped text,
+    # which is acceptable for a security guard. Surface the fallback so a
+    # persistent sed failure is visible in the audit log.
+    PRE_SCAN="$CMD"
+    log "WARN: blank_message_args returned empty; using raw CMD for guard scan"
+fi
+
+# Iterate segments; emit the first violation found and exit. Multiple
+# violations in the same command produce a single block message (the user
+# only needs to fix the command to move forward).
+#
+# `|| [[ -n "$SEGMENT" ]]` is the standard idiom that processes the final
+# segment even when split_segments emits no trailing newline (the common
+# single-segment case, where sed produces no operator-replacement and
+# therefore no terminating \n). Without this, single-segment bypasses like
+# `git push --no-verify origin feature` would be silently allowed.
+while IFS= read -r SEGMENT || [[ -n "$SEGMENT" ]]; do
+    [[ -z "$SEGMENT" ]] && continue
+
+    if violates_gh_pr_merge_admin "$SEGMENT"; then
+        log "BLOCKED gh pr merge --admin: CMD=${CMD}"
+        cat >&2 <<'EOF'
+BLOCKED: 'gh pr merge --admin' bypasses required status checks.
+
+If checks are failing, fix the underlying issue. Do not merge admin-style
+just because you have the permission. If you genuinely need to admin-merge
+(e.g., a stuck required check), run the command yourself from a terminal
+outside Claude.
+EOF
+        exit 2
+    fi
+
+    if violates_gh_api_merge "$SEGMENT"; then
+        log "BLOCKED gh api admin-merge endpoint: CMD=${CMD}"
+        cat >&2 <<'EOF'
+BLOCKED: 'gh api .../pulls/N/merge' is the REST form of 'gh pr merge --admin'
+and bypasses required status checks when the caller has admin rights.
+
+If checks are failing, fix the underlying issue. Do not merge through the
+REST API just because the CLI form is blocked. Run the merge yourself from
+a terminal outside Claude if you have manually verified the gate is stuck.
+EOF
+        exit 2
+    fi
+
+    if violates_git_no_verify "$SEGMENT"; then
+        log "BLOCKED git --no-verify: CMD=${CMD}"
+        cat >&2 <<'EOF'
+BLOCKED: '--no-verify' skips pre-commit / pre-push / commit-msg hooks.
+
+Per CLAUDE.md: never skip hooks unless the user explicitly requests it. If
+a hook is failing, investigate and fix the underlying issue. Common fixes:
+  - pre-commit run --all-files     # see the actual failure
+  - pre-commit autoupdate          # if hook versions are out of date
+  - Address the lint / format / type / security violation the hook flagged
+EOF
+        exit 2
+    fi
+
+    if violates_git_no_sign "$SEGMENT"; then
+        log "BLOCKED signing bypass: CMD=${CMD}"
+        cat >&2 <<'EOF'
+BLOCKED: signing bypass flag detected.
+
+All ByronWilliamsCPA / williaby repos require signed commits. An unsigned
+commit will be rejected by the ruleset or pollute the audit trail. If
+signing is broken, fix the agent setup, not the commit:
+  - gpg --list-secret-keys                # confirm the signing key exists
+  - git config --global user.signingkey   # confirm the key is configured
+  - ssh-add -L                            # if using SSH signing
+EOF
+        exit 2
+    fi
+done < <(printf '%s' "$PRE_SCAN" | split_segments)
 
 # ---------------------------------------------------------------------------
 # Force-push guard
