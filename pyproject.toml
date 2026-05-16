@@ -386,6 +386,7 @@ exclude = [
     ".venv",
     "build",
     "dist",
+    ".submodules",
 ]
 
 # Strict mode customizations
@@ -487,6 +488,7 @@ omit = [
     "scripts/*",        # Utility scripts
     "notebooks/*",      # Jupyter notebooks
     "tmp_cleanup/*",    # Temporary files
+    ".submodules/*",    # Vendored upstream repos
 ]
 
 [tool.coverage.report]
@@ -507,7 +509,7 @@ show_missing = true
 [tool.interrogate]
 verbose = 1
 fail-under = 85
-exclude = ["tests", "docs", "build", "dist"]
+exclude = ["tests", "docs", "build", "dist", ".submodules"]
 ignore-init-method = true
 ignore-init-module = true
 color = true
@@ -557,6 +559,7 @@ exclude_dirs = [
     "venv",
     "build",
     "dist",
+    ".submodules",
 ]
 
 # Skip these checks (false positives or acceptable in context)

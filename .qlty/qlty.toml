@@ -25,6 +25,7 @@ exclude_patterns = [
     "**/data/**",
     "**/models/**",
     "**/.git/**",
+    "**/.submodules/**",
 ]
 
 # Patterns to identify test files for enhanced analysis
