@@ -10,9 +10,13 @@ with HTTP 422 atomically (a single bad rule drops the whole apply), so
 catching them client-side gives a clear error before the API call.
 
 Drift detection: after a successful apply, re-fetches the ruleset and
-warns if any rule type from the request body is missing in the response.
-This catches silent-drop drift where the API accepts the PUT but discards
-fields the current API version no longer recognises.
+raises RulesetDriftError if any rule type from the request body is
+missing in the response, or if the ruleset cannot be located by name
+immediately after the apply. The script exits with EXIT_DRIFT_DETECTED
+(6) on either condition; the prior warn-and-continue behaviour silently
+disabled the safeguard. This catches silent-drop drift where the API
+accepts the PUT but discards fields the current API version no longer
+recognises.
 """
 
 import argparse
