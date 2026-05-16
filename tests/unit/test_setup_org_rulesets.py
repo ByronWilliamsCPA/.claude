@@ -144,6 +144,189 @@ def test_apply_rejects_violating_body(monkeypatch, tmp_path):
         apply("BW", body_path, None, catalog, dry_run=True)
 
 
+def test_target_rule_compat_rejects_push_rule_in_branch_body():
+    from scripts.setup_org_rulesets import (
+        TargetRuleMismatchError,
+        validate_target_rule_compatibility,
+    )
+
+    body = {
+        "target": "branch",
+        "rules": [
+            {"type": "required_signatures"},
+            {
+                "type": "file_path_restriction",
+                "parameters": {"restricted_file_paths": []},
+            },
+        ],
+    }
+    with pytest.raises(TargetRuleMismatchError, match="file_path_restriction"):
+        validate_target_rule_compatibility(body)
+
+
+def test_target_rule_compat_rejects_max_file_size_in_branch_body():
+    from scripts.setup_org_rulesets import (
+        TargetRuleMismatchError,
+        validate_target_rule_compatibility,
+    )
+
+    body = {
+        "target": "branch",
+        "rules": [{"type": "max_file_size", "parameters": {"max_file_size": 100}}],
+    }
+    with pytest.raises(TargetRuleMismatchError, match="max_file_size"):
+        validate_target_rule_compatibility(body)
+
+
+def test_target_rule_compat_rejects_branch_rule_in_push_body():
+    from scripts.setup_org_rulesets import (
+        TargetRuleMismatchError,
+        validate_target_rule_compatibility,
+    )
+
+    body = {
+        "target": "push",
+        "rules": [
+            {"type": "max_file_size", "parameters": {"max_file_size": 100}},
+            {"type": "required_signatures"},
+        ],
+    }
+    with pytest.raises(TargetRuleMismatchError, match="required_signatures"):
+        validate_target_rule_compatibility(body)
+
+
+def test_target_rule_compat_accepts_push_only_rules_in_push_body():
+    from scripts.setup_org_rulesets import validate_target_rule_compatibility
+
+    body = {
+        "target": "push",
+        "rules": [
+            {
+                "type": "file_path_restriction",
+                "parameters": {"restricted_file_paths": []},
+            },
+            {"type": "max_file_size", "parameters": {"max_file_size": 100}},
+        ],
+    }
+    validate_target_rule_compatibility(body)  # no exception
+
+
+def test_target_rule_compat_accepts_branch_rules_in_branch_body():
+    from scripts.setup_org_rulesets import validate_target_rule_compatibility
+
+    body = {
+        "target": "branch",
+        "rules": [
+            {"type": "deletion"},
+            {"type": "required_signatures"},
+            {"type": "required_status_checks", "parameters": {}},
+        ],
+    }
+    validate_target_rule_compatibility(body)  # no exception
+
+
+def test_target_rule_compat_defaults_target_to_branch():
+    """An omitted target field defaults to 'branch' per GitHub API behaviour."""
+    from scripts.setup_org_rulesets import (
+        TargetRuleMismatchError,
+        validate_target_rule_compatibility,
+    )
+
+    body = {"rules": [{"type": "max_file_size", "parameters": {"max_file_size": 100}}]}
+    with pytest.raises(TargetRuleMismatchError):
+        validate_target_rule_compatibility(body)
+
+
+def test_detect_drift_reports_dropped_rule_types():
+    from scripts.setup_org_rulesets import detect_drift
+
+    request = {
+        "rules": [
+            {"type": "deletion"},
+            {"type": "required_signatures"},
+            {"type": "required_status_checks", "parameters": {}},
+        ]
+    }
+    response = {"rules": [{"type": "deletion"}, {"type": "required_signatures"}]}
+    drift = detect_drift(request, response)
+    assert len(drift) == 1
+    assert "required_status_checks" in drift[0]
+
+
+def test_detect_drift_empty_when_types_match():
+    from scripts.setup_org_rulesets import detect_drift
+
+    body = {"rules": [{"type": "deletion"}, {"type": "required_signatures"}]}
+    assert detect_drift(body, body) == []
+
+
+def test_detect_drift_ignores_extra_rule_types_in_response():
+    """Live state may include rules added by other apply paths; only dropped
+    rules indicate a problem with this apply."""
+    from scripts.setup_org_rulesets import detect_drift
+
+    request = {"rules": [{"type": "deletion"}]}
+    response = {"rules": [{"type": "deletion"}, {"type": "non_fast_forward"}]}
+    assert detect_drift(request, response) == []
+
+
+def test_main_returns_target_rule_mismatch_exit_code(monkeypatch, tmp_path):
+    from scripts.setup_org_rulesets import EXIT_TARGET_RULE_MISMATCH, main
+
+    body_path = tmp_path / "body.json"
+    body_path.write_text(
+        json.dumps(
+            {
+                "name": "bad",
+                "target": "branch",
+                "rules": [
+                    {"type": "max_file_size", "parameters": {"max_file_size": 100}},
+                ],
+                "conditions": {"repository_name": {"include": ["~ALL"]}},
+            }
+        )
+    )
+    catalog = tmp_path / "c.json"
+    catalog.write_text(json.dumps({"repos": []}))
+    rc = main(["--org", "BW", "--body", str(body_path), "--catalog", str(catalog)])
+    assert rc == EXIT_TARGET_RULE_MISMATCH
+
+
+def test_main_returns_drift_exit_code(monkeypatch, tmp_path):
+    """When the live ruleset is missing rules from the request, exit DRIFT."""
+    from scripts.setup_org_rulesets import EXIT_DRIFT_DETECTED, main
+
+    body_path = tmp_path / "body.json"
+    body_path.write_text(
+        json.dumps(
+            {
+                "name": "test",
+                "target": "branch",
+                "rules": [
+                    {"type": "deletion"},
+                    {"type": "required_signatures"},
+                ],
+                "conditions": {"repository_name": {"include": ["~ALL"]}},
+            }
+        )
+    )
+    catalog = tmp_path / "c.json"
+    catalog.write_text(json.dumps({"repos": []}))
+
+    monkeypatch.setattr(
+        "scripts.setup_org_rulesets.find_existing_ruleset",
+        lambda *a, **k: 999,
+    )
+    monkeypatch.setattr(
+        "scripts.setup_org_rulesets.fetch_ruleset",
+        lambda *a, **k: {"rules": [{"type": "deletion"}]},
+    )
+    monkeypatch.setattr("subprocess.run", lambda *a, **k: None)
+
+    rc = main(["--org", "BW", "--body", str(body_path), "--catalog", str(catalog)])
+    assert rc == EXIT_DRIFT_DETECTED
+
+
 def test_main_catches_gh_failure(monkeypatch, tmp_path, capsys):
     """gh CalledProcessError surfaces as a clean error message and exit code 4."""
     import subprocess

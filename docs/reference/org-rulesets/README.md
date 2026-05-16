@@ -28,16 +28,27 @@ uv run python scripts/setup_org_rulesets.py \
 
 ## Ruleset Architecture
 
-Each org has a two-tier ruleset stack that applies to every non-exempt default branch:
+Each org has a four-tier ruleset stack. The branch-target rulesets apply to the
+default branch on push and PR events; the push-target ruleset applies to every
+push regardless of branch:
 
-| Tier | File | Applies to | Adds |
-| ---- | ---- | ---------- | ---- |
-| Universal baseline | `*-universal.json` | All repos | Lifecycle rules, PR policy, status checks, trust-boundary file protection, file size cap |
-| Python CI gate | `*-python.json` | Python repos only | CI Gate required check |
-| Tag protection | `*-tag-protection.json` | All repos with releases | SemVer name enforcement, tag immutability (creation/deletion/update/non_fast_forward) |
+| Tier | File | Target | Applies to | Adds |
+| ---- | ---- | ------ | ---------- | ---- |
+| Universal baseline | `*-universal.json` | branch | All repos | Lifecycle rules, PR policy, status checks |
+| Push baseline | `*-push-baseline.json` | push | All repos | Trust-boundary file protection, file size cap |
+| Python CI gate | `*-python.json` | branch | Python repos only | CI Gate required check |
+| Tag protection | `*-tag-protection.json` | tag | All repos with releases | SemVer name enforcement, tag immutability (creation/deletion/update/non_fast_forward) |
 
-A repo's effective protection is the union of every ruleset targeting its default branch.
-Per-repo rulesets in `../repo-rulesets/` layer on top of these org-level rules.
+A repo's effective protection is the union of every ruleset whose target and
+conditions match the operation. Per-repo rulesets in `../repo-rulesets/` layer
+on top of these org-level rules.
+
+> **Why push baseline is a separate ruleset:** `file_path_restriction` and
+> `max_file_size` are push-rule types in the GitHub Rulesets API. The API
+> rejects them inside a `target: branch` body with a 422 Validation Failed.
+> Push rules do not accept branch targeting because they apply to every push,
+> not to a specific ref. Splitting the push baseline into its own ruleset is
+> the structurally required fix, not a stylistic choice.
 
 ## File Inventory
 
@@ -45,7 +56,7 @@ Per-repo rulesets in `../repo-rulesets/` layer on top of these org-level rules.
 
 **`ByronWilliamsCPA-universal.json`**: `ByronWilliamsCPA-default-branch-baseline`
 
-Applied to all repositories. Enforces:
+Applied to all repositories at `target: branch`. Enforces:
 - Force push and branch deletion prohibition
 - Required linear history (squash or rebase merges only; no merge commits)
 - Required commit signatures (GPG/SSH)
@@ -54,6 +65,10 @@ Applied to all repositories. Enforces:
 - Copilot code review on PR open/ready events
 - Required status checks: Security Analysis / Security Gate Validation, Dependency & Standards Validation,
   Check REUSE Compliance (all pinned to integration_id 15368)
+
+**`ByronWilliamsCPA-push-baseline.json`**: `ByronWilliamsCPA-push-baseline`
+
+Applied to all repositories at `target: push`. Enforces:
 - File path restriction: trust-boundary path set protected from modification by non-bypass
   actors: `.github/workflows/`, `.github/CODEOWNERS`, `.pre-commit-config.yaml`,
   `pyproject.toml`, `renovate.json`, `sonar-project.properties`, `.gitleaks.toml`
@@ -84,6 +99,13 @@ Applied to all repositories, targeting `refs/tags/v*` refs. Enforces:
 Identical to ByronWilliamsCPA-universal except excludes `homelab-agent-configs`.
 Applied as a user-level ruleset (williaby is a personal account, not an org).
 
+**`williaby-push-baseline.json`**: `williaby-push-baseline`
+
+Identical to ByronWilliamsCPA-push-baseline except excludes `homelab-agent-configs`.
+Williaby application is deferred (per the rulesets-migration roadmap); the JSON is
+maintained in lockstep with the BW counterpart so the structural fix lands together
+across both orgs.
+
 **`williaby-python.json`**: `williaby-python-tier-ci-gate`
 
 Identical to ByronWilliamsCPA-python: CI Gate required check, `do_not_enforce_on_create: true`.
@@ -113,7 +135,7 @@ can be modified to disable or circumvent compliance checks. Restricting the full
 closes the gap where a contributor could weaken the hook or scanner config while
 leaving `workflows/` intact and passing audit.
 
-**`max_file_size: 100` (MB) in universal rulesets**: GitHub's pre-receive layer rejects
+**`max_file_size: 100` (MB) in push-baseline rulesets**: GitHub's pre-receive layer rejects
 any file exceeding 100 MB, regardless of bypass actor status. Pre-commit hooks that
 catch large binaries do not run when a bypass actor pushes directly; this server-side
 cap is the backstop. The limit matches GitHub's internal large-file warning threshold
@@ -155,15 +177,15 @@ Before flipping any ruleset from `evaluate` to `active`:
 1. Resolve all CI-022 true positives (workflow job naming drift) in every repo targeted
    by the ruleset. Run: `uv run python scripts/check-required-checks.py --all-repos`
 2. Verify CI-028: all required_status_checks entries have integration_id: 15368
-3. Verify CI-029: file_path_restriction is present in universal rulesets and covers all
-   seven trust-boundary paths
+3. Verify CI-029: file_path_restriction is present in the push-baseline ruleset and
+   covers all seven trust-boundary paths
 4. Verify CI-030: tag-protection rulesets are present per org with creation, deletion,
    non_fast_forward, update, required_signatures, and tag_name_pattern rules
 5. Verify CI-031: harden-runner egress-policy is `block` (not `audit`) in ci.yml,
    pr-validation.yml, and reuse.yml for each targeted repo, or a dated deferral comment
    is present
-6. Verify CI-032: universal rulesets include max_file_size with a value not exceeding 100 MB
+6. Verify CI-032: push-baseline rulesets include max_file_size with a value not exceeding 100 MB
 7. Confirm CI-023 passes (effective required checks match required_checks in manifest)
 8. Flip `"enforcement": "evaluate"` to `"enforcement": "active"` and re-apply
 
-Apply in order: universal baseline first, then python tier, then tag protection.
+Apply in order: universal baseline first, then push baseline, then python tier, then tag protection.
