@@ -62,6 +62,13 @@
 
 ### Chore
 
+* chore(catalog): refresh `docs/reference/github-repos.json` from the 2026-05-14 audit:
+  * `gleif`: corrects `foundations`, `sonarcloud`, `renovate`, `secretScanning`, and `preCommit.configPresent` flags; flips `codeowners` to true; resyncs workflow list (adds `python-precommit.yml`, `python-standard-stack.yml`, `self-test.yml`, `sonarcloud.yml`); adds `_note` linking org rulesets 16183607 and 16183609
+  * `.github`: corrects required-check name to `Security Analysis / Security Gate Validation`; removes migrated CodeQL `Analyze (actions)` check; adds `sonarcloud.yml` to `presentFromExpected`; adds `_note` linking org ruleset 16183607
+  * `williaby/.claude`: re-syncs `foundations` (`codeOfConduct`, `governanceMd`, `claudeMd`), `reuse.workflowPresent`, `secretScanning`, workflow list, and `missingFromExpected`; adds `dependency-review.yml` + `slsa-provenance.yml` to `presentFromExpected`
+  * Drops the migrated `williaby/magg` entry
+  * Adds `.claude/worktrees/` to `.gitignore` as a defensive guard against worktrees created under `.claude/`; canonical location remains `.worktrees/<branch-slug>` per the global rule
+
 * chore(compliance): add `tools/create_community_health_pointers.py` to create
   `CODE_OF_CONDUCT.md` and `GOVERNANCE.md` pointer files across all org repos that are missing
   them; commits directly to default branch for unprotected repos, opens a PR for protected
