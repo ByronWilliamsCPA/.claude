@@ -468,6 +468,18 @@ required).
 **Score >= 6 (Tier 2):** All of: require PR before merging, 1 required reviewer, dismiss stale reviews on new commits, require branches to be up to date.
 **Score >= 8 (Tier 3):** Tier 2 plus require linear history and no force push.
 
+**Solo-dev policy cap:** Both maintained orgs are solo-maintained. Tier 2
+requires `required_approving_review_count >= 1`, which GitHub will not
+allow a PR author to satisfy on their own PR; any non-zero value blocks
+every merge. The accepted floor is therefore Tier 1 (score 4), and
+`setup_org_rulesets.py` enforces this with a hard guard that refuses
+any body containing `required_approving_review_count > 0`. Do NOT emit
+a FINDING when Branch-Protection scores 4 with the standard ruleset
+applied; that is the policy-accepted state. Findings remain valid when
+the score is below 4 (e.g., missing required status checks, missing
+copilot_code_review rule, missing signature requirement). Full policy:
+[docs/reference/scorecard-policy.md](../../docs/reference/scorecard-policy.md).
+
 **Remediation (preferred):** Apply the appropriate ruleset for the repo's owner type.
 
 ByronWilliamsCPA (organization, supports org-level rulesets):
@@ -521,7 +533,15 @@ Or navigate to: GitHub > Settings > Branches > Add rule > Branch name: `main`.
 
 **Measures:** Percentage of commits reviewed (via merged PRs with at least 1 approving review).
 **Score >= 4:** 40%+ of recent commits went through a PR with review.
-**Remediation:** This score follows automatically once Branch-Protection Tier 2 is enforced. The current policy-only approach ("never commit to main" in git-workflow.md) does not satisfy the Scorecard tool because it reads GitHub's actual merge history.
+
+**Solo-dev policy cap:** Code-Review measures actual merge history. On
+solo-maintained repos every PR is opened and merged by the same account,
+so the score stays at 0 regardless of policy. Do NOT emit a FINDING when
+Code-Review scores below 4 and the repo is solo-maintained, and do NOT
+recommend lifting Branch-Protection to Tier 2 as a remediation path
+(that path is closed by the solo-dev policy). The restoration condition
+is documented at
+[docs/reference/scorecard-policy.md](../../docs/reference/scorecard-policy.md).
 
 ### Contributors (Low)
 
