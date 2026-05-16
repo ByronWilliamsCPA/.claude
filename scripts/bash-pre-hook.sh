@@ -3,8 +3,14 @@
 # Bash Pre-Hook -- PreToolUse Hook
 # =============================================================================
 # Intercepts Bash tool calls to:
-#   1. Block force-pushes to main or master (exit 2 with BLOCKED message)
-#   2. Write a timing start timestamp to ${HOME}/.claude/tmp_cleanup/bash-start
+#   1. Block bypass flags that defeat branch protection / commit hygiene:
+#        - gh pr merge --admin           (bypasses required status checks)
+#        - git ... --no-verify           (bypasses pre-commit/pre-push hooks)
+#        - git ... --no-gpg-sign         (bypasses required commit signing)
+#        - git -c commit.gpgsign=false   (inline signing bypass)
+#        - git -c tag.gpgsign=false      (inline tag signing bypass)
+#   2. Block force-pushes to main or master (exit 2 with BLOCKED message)
+#   3. Write a timing start timestamp to ${HOME}/.claude/tmp_cleanup/bash-start
 #      for the post-hook notification script to compute command duration.
 #      The marker lives under the user's home (audit H-01) to avoid the
 #      symlink-race window of a fixed /tmp path.
@@ -112,6 +118,98 @@ CMD=$(jq -r '.tool_input.command // empty' 2>/dev/null <<< "$CONTEXT")
 if [[ -z "$CMD" ]]; then
     write_start_marker
     exit 0
+fi
+
+# ---------------------------------------------------------------------------
+# Bypass-flag guards (run for any Bash command, not just git push)
+#
+# These flags defeat the branch-protection / commit-hygiene model:
+#
+#   gh pr merge --admin
+#     Bypasses required status checks. Only repo admins can use it, which
+#     means solo-dev repos can't rely on branch protection to stop Claude.
+#     If checks are failing, fix them. Never merge admin-style.
+#
+#   git ... --no-verify
+#     Skips client-side hooks (pre-commit, pre-push, commit-msg). CLAUDE.md
+#     global rule: never skip hooks unless the user explicitly requests it.
+#     If a hook is failing, fix the underlying issue.
+#
+#   git ... --no-gpg-sign / -c commit.gpgsign=false / -c tag.gpgsign=false
+#     Bypasses required commit signing. Every ByronWilliamsCPA / williaby
+#     repo requires signed commits; an unsigned commit pushed by Claude would
+#     either fail the ruleset or pollute history. If signing is broken, fix
+#     the agent (GPG/SSH key setup), not the commit.
+#
+# Each guard blocks with a clear remediation path. If the user genuinely
+# needs to use one of these flags, they can run the command from a terminal
+# outside of Claude.
+# ---------------------------------------------------------------------------
+
+# Strip everything inside single- or double-quoted strings before flag matching
+# so that quoted documentation (e.g., a commit message that contains the word
+# "--admin" or "--no-verify") does not trigger a false-positive block.
+# LC_ALL=C pins sed locale so multibyte input cannot crash the regex engine.
+STRIPPED_CMD=$(printf '%s' "$CMD" | LC_ALL=C sed -E \
+    -e "s/'[^']*'/''/g" \
+    -e 's/"[^"]*"/""/g' 2>/dev/null) || STRIPPED_CMD="$CMD"
+
+# Guard 1: gh pr merge --admin
+# Detect gh pr merge anywhere in the (stripped) command paired with --admin.
+# Handles compound commands (foo && gh pr merge ... --admin) and flag-order
+# variants (gh pr merge --admin --squash | gh pr merge --squash --admin).
+if echo "$STRIPPED_CMD" | grep -qE '\bgh\s+pr\s+merge\b' && \
+   echo "$STRIPPED_CMD" | grep -qE '(^|[[:space:]])--admin\b'; then
+    log "BLOCKED gh pr merge --admin: CMD=${CMD}"
+    cat >&2 <<'EOF'
+BLOCKED: 'gh pr merge --admin' bypasses required status checks.
+
+If checks are failing, fix the underlying issue. Do not merge admin-style
+just because you have the permission. If you genuinely need to admin-merge
+(e.g., a stuck required check), run the command yourself from a terminal
+outside Claude.
+EOF
+    exit 2
+fi
+
+# Guard 2: git --no-verify
+# Matches --no-verify paired with any git subcommand (commit, push, merge,
+# rebase, cherry-pick, etc.). Bare `--no-verify` outside of git is harmless,
+# so we require a `git` token to anchor the match.
+if echo "$STRIPPED_CMD" | grep -qE '\bgit\b' && \
+   echo "$STRIPPED_CMD" | grep -qE '(^|[[:space:]])--no-verify\b'; then
+    log "BLOCKED git --no-verify: CMD=${CMD}"
+    cat >&2 <<'EOF'
+BLOCKED: '--no-verify' skips pre-commit / pre-push / commit-msg hooks.
+
+Per CLAUDE.md: never skip hooks unless the user explicitly requests it. If
+a hook is failing, investigate and fix the underlying issue. Common fixes:
+  - pre-commit run --all-files     # see the actual failure
+  - pre-commit autoupdate          # if hook versions are out of date
+  - Address the lint / format / type / security violation the hook flagged
+EOF
+    exit 2
+fi
+
+# Guard 3: signing-bypass flags
+# Matches --no-gpg-sign anywhere, or inline config that disables commit/tag
+# signing (-c commit.gpgsign=false, -c tag.gpgsign=false). The inline-config
+# match is anchored to the gpgsign key to avoid accidental matches on
+# unrelated `=false` config tokens.
+if echo "$STRIPPED_CMD" | grep -qE '\bgit\b' && \
+   echo "$STRIPPED_CMD" | grep -qE '(^|[[:space:]])--no-gpg-sign\b|(commit|tag)\.gpgsign[[:space:]]*=[[:space:]]*false\b'; then
+    log "BLOCKED signing bypass: CMD=${CMD}"
+    cat >&2 <<'EOF'
+BLOCKED: signing bypass flag detected.
+
+All ByronWilliamsCPA / williaby repos require signed commits. An unsigned
+commit will be rejected by the ruleset or pollute the audit trail. If
+signing is broken, fix the agent setup, not the commit:
+  - gpg --list-secret-keys                # confirm the signing key exists
+  - git config --global user.signingkey   # confirm the key is configured
+  - ssh-add -L                            # if using SSH signing
+EOF
+    exit 2
 fi
 
 # ---------------------------------------------------------------------------
