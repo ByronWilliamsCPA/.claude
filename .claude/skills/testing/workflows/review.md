@@ -134,6 +134,33 @@ def test_validate_email_malformed_address_returns_false():
 def test_parse_config_missing_key_raises_key_error():
 ```
 
+**Negative test description accuracy:** For tests that verify error or failure paths, the `_<scenario>_<expected_outcome>` components must describe the actual validation rule that fires, not just the input shape. "Invalid text type" is wrong if the framework coerces the type and the failure is a different constraint (e.g., `min_length`). A wrong description creates a false mental model that persists until someone reads the raw error response.
+
+When reviewing negative tests, read the validation code (not just the test input) to verify the name matches the actual error path.
+
+```python
+# Anti-pattern: name implies type error, but Pydantic v2 coerces int → str
+# and actual failure is min_length, not type mismatch
+def test_detect_invalid_text_type_returns_422():
+    response = client.post("/detect", json={"text": 12345})
+    assert response.status_code == 422
+
+# Fix option A: name reflects actual cause
+def test_detect_text_too_short_returns_422():
+    response = client.post("/detect", json={"text": "short"})
+    assert response.status_code == 422
+
+# Fix option B: split into two tests that each prove one thing
+def test_detect_integer_input_coerced_to_string():
+    # Send integer equivalent of >50 chars to prove coercion succeeds
+    response = client.post("/detect", json={"text": 99999999999999999999999999999999999999999999999999999})
+    assert response.status_code == 200  # coercion worked, length OK
+
+def test_detect_text_below_min_length_returns_422():
+    response = client.post("/detect", json={"text": "too short"})
+    assert response.status_code == 422
+```
+
 ### 6. No-exception-only tests
 
 Flag any test that only verifies no exception is raised, without asserting anything about
