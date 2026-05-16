@@ -1,0 +1,33 @@
+{
+  "name": "ByronWilliamsCPA-push-baseline",
+  "target": "push",
+  "enforcement": "evaluate",
+  "bypass_actors": [
+    {"actor_id": 5, "actor_type": "RepositoryRole", "bypass_mode": "pull_request"}
+  ],
+  "conditions": {
+    "repository_name": {"include": ["~ALL"], "exclude": [], "protected": true}
+  },
+  "rules": [
+    {
+      "type": "file_path_restriction",
+      "parameters": {
+        "restricted_file_paths": [
+          ".github/workflows/",
+          ".github/CODEOWNERS",
+          ".pre-commit-config.yaml",
+          "pyproject.toml",
+          "renovate.json",
+          "sonar-project.properties",
+          ".gitleaks.toml"
+        ]
+      }
+    },
+    {
+      "type": "max_file_size",
+      "parameters": {
+        "max_file_size": 100
+      }
+    }
+  ]
+}

@@ -2273,12 +2273,15 @@ Tag-protection deployment templates for williaby are not yet present in <code>re
 path is deferred until the per-repo ruleset infrastructure is extended.</p>
 </blockquote>
 <h2 id="ruleset-architecture">Ruleset Architecture<a class="headerlink" href="#ruleset-architecture" title="Permanent link">&para;</a></h2>
-<p>Each org has a two-tier ruleset stack that applies to every non-exempt default branch:</p>
+<p>Each org has a four-tier ruleset stack. The branch-target rulesets apply to the
+default branch on push and PR events; the push-target ruleset applies to every
+push regardless of branch:</p>
 <table>
 <thead>
 <tr>
 <th>Tier</th>
 <th>File</th>
+<th>Target</th>
 <th>Applies to</th>
 <th>Adds</th>
 </tr>
@@ -2287,29 +2290,48 @@ path is deferred until the per-repo ruleset infrastructure is extended.</p>
 <tr>
 <td>Universal baseline</td>
 <td><code>*-universal.json</code></td>
+<td>branch</td>
 <td>All repos</td>
-<td>Lifecycle rules, PR policy, status checks, trust-boundary file protection, file size cap</td>
+<td>Lifecycle rules, PR policy, status checks</td>
+</tr>
+<tr>
+<td>Push baseline</td>
+<td><code>*-push-baseline.json</code></td>
+<td>push</td>
+<td>All repos</td>
+<td>Trust-boundary file protection, file size cap</td>
 </tr>
 <tr>
 <td>Python CI gate</td>
 <td><code>*-python.json</code></td>
+<td>branch</td>
 <td>Python repos only</td>
 <td>CI Gate required check</td>
 </tr>
 <tr>
 <td>Tag protection</td>
 <td><code>*-tag-protection.json</code></td>
+<td>tag</td>
 <td>All repos with releases</td>
 <td>SemVer name enforcement, tag immutability (creation/deletion/update/non_fast_forward)</td>
 </tr>
 </tbody>
 </table>
-<p>A repo's effective protection is the union of every ruleset targeting its default branch.
-Per-repo rulesets in <code>../repo-rulesets/</code> layer on top of these org-level rules.</p>
+<p>A repo's effective protection is the union of every ruleset whose target and
+conditions match the operation. Per-repo rulesets in <code>../repo-rulesets/</code> layer
+on top of these org-level rules.</p>
+<blockquote>
+<p><strong>Why push baseline is a separate ruleset:</strong> <code>file_path_restriction</code> and
+<code>max_file_size</code> are push-rule types in the GitHub Rulesets API. The API
+rejects them inside a <code>target: branch</code> body with a 422 Validation Failed.
+Push rules do not accept branch targeting because they apply to every push,
+not to a specific ref. Splitting the push baseline into its own ruleset is
+the structurally required fix, not a stylistic choice.</p>
+</blockquote>
 <h2 id="file-inventory">File Inventory<a class="headerlink" href="#file-inventory" title="Permanent link">&para;</a></h2>
 <h3 id="byronwilliamscpa">ByronWilliamsCPA<a class="headerlink" href="#byronwilliamscpa" title="Permanent link">&para;</a></h3>
 <p><strong><code>ByronWilliamsCPA-universal.json</code></strong>: <code>ByronWilliamsCPA-default-branch-baseline</code></p>
-<p>Applied to all repositories. Enforces:
+<p>Applied to all repositories at <code>target: branch</code>. Enforces:
 - Force push and branch deletion prohibition
 - Required linear history (squash or rebase merges only; no merge commits)
 - Required commit signatures (GPG/SSH)
@@ -2317,7 +2339,9 @@ Per-repo rulesets in <code>../repo-rulesets/</code> layer on top of these org-le
   dismissal on push, squash/rebase merge methods only
 - Copilot code review on PR open/ready events
 - Required status checks: Security Analysis / Security Gate Validation, Dependency &amp; Standards Validation,
-  Check REUSE Compliance (all pinned to integration_id 15368)
+  Check REUSE Compliance (all pinned to integration_id 15368)</p>
+<p><strong><code>ByronWilliamsCPA-push-baseline.json</code></strong>: <code>ByronWilliamsCPA-push-baseline</code></p>
+<p>Applied to all repositories at <code>target: push</code>. Enforces:
 - File path restriction: trust-boundary path set protected from modification by non-bypass
   actors: <code>.github/workflows/</code>, <code>.github/CODEOWNERS</code>, <code>.pre-commit-config.yaml</code>,
   <code>pyproject.toml</code>, <code>renovate.json</code>, <code>sonar-project.properties</code>, <code>.gitleaks.toml</code>
@@ -2340,6 +2364,11 @@ Per-repo rulesets in <code>../repo-rulesets/</code> layer on top of these org-le
 <p><strong><code>williaby-universal.json</code></strong>: <code>williaby-default-branch-baseline</code></p>
 <p>Identical to ByronWilliamsCPA-universal except excludes <code>homelab-agent-configs</code>.
 Applied as a user-level ruleset (williaby is a personal account, not an org).</p>
+<p><strong><code>williaby-push-baseline.json</code></strong>: <code>williaby-push-baseline</code></p>
+<p>Identical to ByronWilliamsCPA-push-baseline except excludes <code>homelab-agent-configs</code>.
+Williaby application is deferred (per the rulesets-migration roadmap); the JSON is
+maintained in lockstep with the BW counterpart so the structural fix lands together
+across both orgs.</p>
 <p><strong><code>williaby-python.json</code></strong>: <code>williaby-python-tier-ci-gate</code></p>
 <p>Identical to ByronWilliamsCPA-python: CI Gate required check, <code>do_not_enforce_on_create: true</code>.</p>
 <p><strong><code>williaby-tag-protection.json</code></strong>: <code>williaby-semver-tag-protection</code></p>
@@ -2361,7 +2390,7 @@ update policy, SonarCloud project config, and secret detection rules. Any one of
 can be modified to disable or circumvent compliance checks. Restricting the full set
 closes the gap where a contributor could weaken the hook or scanner config while
 leaving <code>workflows/</code> intact and passing audit.</p>
-<p><strong><code>max_file_size: 100</code> (MB) in universal rulesets</strong>: GitHub's pre-receive layer rejects
+<p><strong><code>max_file_size: 100</code> (MB) in push-baseline rulesets</strong>: GitHub's pre-receive layer rejects
 any file exceeding 100 MB, regardless of bypass actor status. Pre-commit hooks that
 catch large binaries do not run when a bypass actor pushes directly; this server-side
 cap is the backstop. The limit matches GitHub's internal large-file warning threshold
@@ -2386,28 +2415,32 @@ the check for any PR or subsequent push.</p>
 <p><strong><code>enforce: "evaluate"</code> across all rulesets</strong>: rulesets are in audit mode pending the
 CI-022/CI-023 remediation sweep across all repos. Flip to <code>active</code> after the sweep confirms
 required check names are consistent. See CI-025a/CI-025b in standards-manifest.yaml.</p>
-<p><strong><code>bypass_mode: "always"</code> on Admin role</strong> (actor_id: 5, actor_type: RepositoryRole): a solo
-developer context. The intention is to migrate bypass to a dedicated GitHub App (Integration
-actor type) once one is configured, and change the mode to <code>pull_request</code> to disallow direct
-push bypasses. See CI-028 notes in standards-manifest.yaml for the migration path.</p>
+<p><strong><code>bypass_mode: "pull_request"</code> on Admin role</strong> (actor_id: 5, actor_type: RepositoryRole):
+a solo developer context. RepositoryAdmin bypass is restricted to merged PRs only;
+direct pushes are NOT subject to bypass and the push-baseline rules apply uniformly.
+The push-baseline JSON files (<code>*-push-baseline.json</code>) were tightened from <code>always</code> to
+<code>pull_request</code> in PR #103 to close the direct-push attack surface ahead of flipping
+enforcement from <code>evaluate</code> to <code>active</code>. Long-term, bypass should migrate to a
+dedicated GitHub App (Integration actor type) once one is configured; see CI-028
+notes in standards-manifest.yaml for the migration path.</p>
 <h2 id="enforcement-migration-checklist">Enforcement Migration Checklist<a class="headerlink" href="#enforcement-migration-checklist" title="Permanent link">&para;</a></h2>
 <p>Before flipping any ruleset from <code>evaluate</code> to <code>active</code>:</p>
 <ol>
 <li>Resolve all CI-022 true positives (workflow job naming drift) in every repo targeted
    by the ruleset. Run: <code>uv run python scripts/check-required-checks.py --all-repos</code></li>
 <li>Verify CI-028: all required_status_checks entries have integration_id: 15368</li>
-<li>Verify CI-029: file_path_restriction is present in universal rulesets and covers all
-   seven trust-boundary paths</li>
+<li>Verify CI-029: file_path_restriction is present in the push-baseline ruleset and
+   covers all seven trust-boundary paths</li>
 <li>Verify CI-030: tag-protection rulesets are present per org with creation, deletion,
    non_fast_forward, update, required_signatures, and tag_name_pattern rules</li>
 <li>Verify CI-031: harden-runner egress-policy is <code>block</code> (not <code>audit</code>) in ci.yml,
    pr-validation.yml, and reuse.yml for each targeted repo, or a dated deferral comment
    is present</li>
-<li>Verify CI-032: universal rulesets include max_file_size with a value not exceeding 100 MB</li>
+<li>Verify CI-032: push-baseline rulesets include max_file_size with a value not exceeding 100 MB</li>
 <li>Confirm CI-023 passes (effective required checks match required_checks in manifest)</li>
 <li>Flip <code>"enforcement": "evaluate"</code> to <code>"enforcement": "active"</code> and re-apply</li>
 </ol>
-<p>Apply in order: universal baseline first, then python tier, then tag protection.</p>
+<p>Apply in order: universal baseline first, then push baseline, then python tier, then tag protection.</p>
 
 
 
@@ -2430,7 +2463,7 @@ push bypasses. See CI-028 notes in standards-manifest.yaml for the migration pat
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="May 14, 2026 23:04:18 UTC">May 14, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="May 16, 2026 16:16:25 UTC">May 16, 2026</span>
   </span>
 
     
