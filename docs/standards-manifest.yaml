@@ -1,6 +1,6 @@
 # docs/standards-manifest.yaml
 version: "1.0"
-last_updated: "2026-05-14"
+last_updated: "2026-05-16"
 
 # verify field is a hint to the domain agent, not executable DSL.
 # Agents interpret it using their own tools (Grep, Read, Glob, Bash).
@@ -386,6 +386,37 @@ checks:
       the GitHub OAuth2 token pattern, causing false positives) and any .submodules/
       directories containing third-party placeholder credentials. Reference implementation:
       ByronWilliamsCPA/.claude/.pre-commit-config.yaml.
+
+  - id: PC-014
+    domain: pre_commit
+    severity: important
+    description: >-
+      Every no-em-dash hook exclude entry carries a tracked cleanup reference
+      (tracking issue, target date, or owner) within 6 lines above it.
+    verify: >-
+      Inspect .pre-commit-config.yaml for the no-em-dash hook. Its
+      exclusions may appear in two forms: a YAML list of paths under an
+      "exclude:" key (one path per line), or a regex pattern under
+      "exclude:" or as the complement of the "files:" positive pattern.
+      For each excluded path or regex alternation segment, require a
+      cleanup reference (GitHub issue link such as "#NNN" or a full URL,
+      or a "cleanup by YYYY-MM-DD" comment) within the 6 lines
+      immediately preceding either the individual list entry (list form)
+      or the "exclude:"/"files:" key line itself (regex form). Raise
+      FINDING for any excluded path or regex segment that lacks such a
+      reference.
+    override_eligible: true
+    not_applicable_when: "no-em-dash hook absent from .pre-commit-config.yaml"
+    notes: >-
+      The no-em-dash hook (PC-011) enforces a hard global writing rule.
+      Excluding paths without a cleanup deadline turns the rule into an
+      aspirational note. The reference-library audit (2026-05-15) found
+      938 untracked occurrences across 67 files; PC-014 is the structural
+      guard against that pattern recurring without owner accountability.
+      The 6-line proximity window accommodates a multi-line comment block
+      documenting a multi-line exclude stanza while remaining tight enough
+      that unrelated comments further above do not inadvertently satisfy
+      the rule.
 
   # ── CI ────────────────────────────────────────────────────────────────────────
 
@@ -1365,6 +1396,38 @@ checks:
     source_frameworks:
       - NIST SSDF PW.2.1
       - NIST SSDF PO.1.1
+
+  - id: FOUND-016
+    domain: foundations
+    severity: critical
+    description: >-
+      LICENSES/ files contain no unfilled OSI-template placeholders.
+      A LICENSE with literal angle-bracket placeholders reads as
+      unlicensed to most automated license scanners (SPDX, REUSE,
+      ScanCode), regardless of whether the project is properly licensed
+      via REUSE.toml.
+    verify: >-
+      For each file under LICENSES/ (or LICENSE / LICENSE.txt at the
+      repo root if no LICENSES/ directory exists), grep for literal
+      placeholders: "<year>", "<copyright holders>", "<name of author>",
+      "<organization>". Any angle-bracket placeholder in license text
+      is a FINDING. LICENSES/ files and REUSE.toml are orthogonal:
+      REUSE.toml carries per-file copyright statements, while LICENSES/
+      files carry license text. Placeholders in license text are
+      unacceptable regardless of REUSE.toml contents, because most
+      automated scanners (SPDX, REUSE, ScanCode) read the license file
+      directly and do not resolve attribution from REUSE.toml.
+    override_eligible: false
+    not_applicable_when: "repo has no LICENSE, LICENSE.txt, or LICENSES/ directory (a license-absence check is planned but not yet defined)"
+    source_frameworks:
+      - REUSE Specification 3.3
+      - SPDX REUSE Annex
+    notes: >-
+      Introduced after the reference-library audit (2026-05-15) found
+      template placeholders in shipped LICENSE files. The check is
+      mechanical (grep for angle-bracket strings) and false-positive
+      rate is effectively zero given that legitimate license text never
+      contains the OSI template placeholder syntax.
 
   - id: OSSF-011
     domain: ossf
