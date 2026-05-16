@@ -46,3 +46,6 @@ jobs:
       severity-threshold: 'CRITICAL,HIGH'
       artifact-retention-days: 90
       fail-on-forbidden-licenses: false
+      # Project builds claude-config from source (no published wheel);
+      # the shared workflow defaults no-build: true, which would fail.
+      no-build: false

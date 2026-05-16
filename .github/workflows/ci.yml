@@ -27,6 +27,9 @@ jobs:
     with:
       python-version: "3.12"
       coverage-threshold: 80
+      # Project builds claude-config from source (no published wheel);
+      # the shared workflow defaults no-build: true, which would fail.
+      no-build: false
 
   # ==========================================================================
   # CI Gate: aggregates the CI result; must pass for branch protection

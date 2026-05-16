@@ -48,6 +48,9 @@ jobs:
       # ci.yml and pr-validation.yml. Running it here a third time on the same
       # commit is pure duplication with no additional signal.
       run-bandit: false
+      # Project builds claude-config from source (no published wheel);
+      # the shared workflow defaults no-build: true, which would fail.
+      no-build: false
 
   # ==========================================================================
   # Security Gate Validation: aggregates the security scan result
