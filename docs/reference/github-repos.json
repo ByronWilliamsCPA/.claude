@@ -456,8 +456,7 @@
           "requiredStatusChecks": {
             "strict": true,
             "contexts": [
-              "Analyze (actions)",
-              "Security Gate Validation",
+              "Security Analysis / Security Gate Validation",
               "Dependency & Standards Validation",
               "Check REUSE Compliance"
             ]
@@ -467,7 +466,8 @@
             "dismissStaleReviews": false,
             "requireCodeOwnerReviews": false,
             "requireLastPushApproval": false
-          }
+          },
+          "_note": "Classic branch protection disabled (migrationPhase=complete). Active org ruleset: ByronWilliamsCPA-default-branch-baseline (id=16183607). CI Gate not in required checks; verify if needed for config type."
         },
         "codeql": {
           "workflowPresent": true
@@ -478,8 +478,8 @@
           "lastChecked": null
         },
         "sonarcloud": {
-          "configPresent": false,
-          "workflowPresent": false
+          "configPresent": true,
+          "workflowPresent": true
         },
         "codecov": {
           "configPresent": false,
@@ -489,12 +489,12 @@
           "workflowPresent": true
         },
         "renovate": {
-          "configured": false,
-          "shaAutoPinning": false
+          "configured": true,
+          "shaAutoPinning": true
         },
         "secretScanning": {
-          "enabled": false,
-          "pushProtection": false
+          "enabled": true,
+          "pushProtection": true
         },
         "ossfBadge": {
           "badgeId": null,
@@ -513,6 +513,7 @@
             "python-mutation.yml",
             "python-performance-regression.yml",
             "python-pr-validation.yml",
+            "python-precommit.yml",
             "python-publish-pypi.yml",
             "python-qlty-coverage.yml",
             "python-release.yml",
@@ -522,8 +523,11 @@
             "python-security-analysis.yml",
             "python-slsa.yml",
             "python-sonarcloud.yml",
+            "python-standard-stack.yml",
             "python-supplemental-checks.yml",
-            "shell-tests.yml"
+            "self-test.yml",
+            "shell-tests.yml",
+            "sonarcloud.yml"
           ],
           "presentFromExpected": [
             "codeql.yml",
@@ -531,7 +535,8 @@
             "python-compatibility.yml",
             "reuse.yml",
             "scorecard.yml",
-            "security-analysis.yml"
+            "security-analysis.yml",
+            "sonarcloud.yml"
           ],
           "missingFromExpected": [
             "ci.yml",
@@ -541,8 +546,7 @@
             "release-sign.yml",
             "release.yml",
             "sbom.yml",
-            "slsa-provenance.yml",
-            "sonarcloud.yml"
+            "slsa-provenance.yml"
           ],
           "extras": [
             "python-ci.yml",
@@ -555,6 +559,7 @@
             "python-mutation.yml",
             "python-performance-regression.yml",
             "python-pr-validation.yml",
+            "python-precommit.yml",
             "python-publish-pypi.yml",
             "python-qlty-coverage.yml",
             "python-release.yml",
@@ -564,7 +569,9 @@
             "python-security-analysis.yml",
             "python-slsa.yml",
             "python-sonarcloud.yml",
+            "python-standard-stack.yml",
             "python-supplemental-checks.yml",
+            "self-test.yml",
             "shell-tests.yml"
           ]
         },
@@ -578,10 +585,10 @@
           "geminiMd": false,
           "claudeMd": false,
           "knownVulnerabilities": false,
-          "codeowners": false
+          "codeowners": true
         },
         "preCommit": {
-          "configPresent": false,
+          "configPresent": true,
           "hooks": {
             "ruff": false,
             "basedpyright": false,
@@ -1495,7 +1502,7 @@
             "strict": true,
             "contexts": [
               "CI Gate",
-              "Security Gate Validation",
+              "Security Analysis / Security Gate Validation",
               "Dependency & Standards Validation",
               "Check REUSE Compliance"
             ]
@@ -1505,7 +1512,8 @@
             "dismissStaleReviews": false,
             "requireCodeOwnerReviews": false,
             "requireLastPushApproval": false
-          }
+          },
+          "_note": "Classic branch protection absent (migrationPhase=complete). Org rulesets 16183607 (default-branch-baseline) + 16183609 (python-tier-ci-gate) carry required status checks: CI Gate, Security Analysis / Security Gate Validation, Dependency & Standards Validation, Check REUSE Compliance."
         },
         "codeql": {
           "workflowPresent": true
@@ -1524,15 +1532,15 @@
           "workflowPresent": false
         },
         "reuse": {
-          "workflowPresent": false
+          "workflowPresent": true
         },
         "renovate": {
           "configured": true,
           "shaAutoPinning": true
         },
         "secretScanning": {
-          "enabled": false,
-          "pushProtection": false
+          "enabled": true,
+          "pushProtection": true
         },
         "ossfBadge": {
           "badgeId": null,
@@ -1542,41 +1550,69 @@
           "files": [
             "ci.yml",
             "codeql.yml",
+            "coverage.yml",
+            "dependency-review.yml",
+            "docs.yml",
+            "pr-validation.yml",
+            "python-compatibility.yml",
             "qlty.yml",
+            "release-sign.yml",
             "release.yml",
+            "reusable-codeql.yml",
+            "reusable-python-quality.yml",
+            "reusable-python-release.yml",
+            "reusable-python-test.yml",
+            "reusable-qlty-coverage.yml",
+            "reusable-scorecard.yml",
+            "reusable-security-analysis.yml",
+            "reuse.yml",
+            "sbom.yml",
             "scorecard.yml",
-            "security-analysis.yml"
+            "security-analysis.yml",
+            "slsa-provenance.yml"
           ],
           "presentFromExpected": [
             "ci.yml",
             "codeql.yml",
-            "release.yml",
-            "scorecard.yml",
-            "security-analysis.yml"
-          ],
-          "missingFromExpected": [
             "coverage.yml",
+            "dependency-review.yml",
             "docs.yml",
             "pr-validation.yml",
             "python-compatibility.yml",
             "release-sign.yml",
+            "release.yml",
             "reuse.yml",
             "sbom.yml",
+            "scorecard.yml",
+            "security-analysis.yml",
+            "slsa-provenance.yml"
+          ],
+          "missingFromExpected": [
+            "fips-compatibility.yml",
+            "mutation-testing.yml",
+            "postman-api-tests.yml",
             "sonarcloud.yml"
           ],
           "extras": [
-            "qlty.yml"
+            "qlty.yml",
+            "reusable-codeql.yml",
+            "reusable-python-quality.yml",
+            "reusable-python-release.yml",
+            "reusable-python-test.yml",
+            "reusable-qlty-coverage.yml",
+            "reusable-scorecard.yml",
+            "reusable-security-analysis.yml"
           ]
         },
         "foundations": {
           "securityMd": true,
           "contributingMd": true,
           "changelogMd": true,
-          "codeOfConduct": false,
-          "governanceMd": false,
+          "codeOfConduct": true,
+          "governanceMd": true,
           "agentsMd": false,
           "geminiMd": false,
-          "claudeMd": false,
+          "claudeMd": true,
           "knownVulnerabilities": true,
           "codeowners": true
         },
@@ -5418,146 +5454,6 @@
         },
         "toolchain": {
           "pyprojectToml": false,
-          "qltyConfig": false
-        },
-        "releaseHealth": {
-          "hasRelease": null,
-          "daysSinceRelease": null
-        },
-        "templateDrift": {
-          "sourceTemplate": null,
-          "driftScore": null
-        }
-      },
-      "usesDocker": false,
-      "migrationPhase": "pending"
-    },
-    {
-      "org": "williaby",
-      "repositoryType": "python-app",
-      "name": "magg",
-      "url": "https://github.com/williaby/magg",
-      "defaultBranch": "main",
-      "description": "",
-      "isPrivate": false,
-      "isArchived": false,
-      "review": {
-        "branchProtection": {
-          "enabled": true,
-          "enforceAdmins": true,
-          "requiredSignatures": true,
-          "requiredLinearHistory": true,
-          "allowForcePushes": false,
-          "allowDeletions": false,
-          "blockCreations": false,
-          "requiredConversationResolution": false,
-          "lockBranch": false,
-          "requiredStatusChecks": {
-            "strict": true,
-            "contexts": [
-              "CI Gate",
-              "Security Gate Validation",
-              "Dependency & Standards Validation",
-              "Check REUSE Compliance"
-            ]
-          },
-          "requiredPullRequestReviews": {
-            "requiredApprovingReviewCount": 0,
-            "dismissStaleReviews": false,
-            "requireCodeOwnerReviews": false,
-            "requireLastPushApproval": false
-          }
-        },
-        "codeql": {
-          "workflowPresent": false
-        },
-        "scorecard": {
-          "workflowPresent": false,
-          "score": null,
-          "lastChecked": null
-        },
-        "sonarcloud": {
-          "configPresent": false,
-          "workflowPresent": false
-        },
-        "codecov": {
-          "configPresent": false,
-          "workflowPresent": false
-        },
-        "reuse": {
-          "workflowPresent": false
-        },
-        "renovate": {
-          "configured": false,
-          "shaAutoPinning": false
-        },
-        "secretScanning": {
-          "enabled": false,
-          "pushProtection": false
-        },
-        "ossfBadge": {
-          "badgeId": null,
-          "percentagePassing": null
-        },
-        "workflows": {
-          "files": [
-            "docker-publish.yml",
-            "manual-publish.yml",
-            "publish.yml",
-            "test.yml"
-          ],
-          "presentFromExpected": [],
-          "missingFromExpected": [
-            "ci.yml",
-            "codeql.yml",
-            "coverage.yml",
-            "docs.yml",
-            "pr-validation.yml",
-            "python-compatibility.yml",
-            "release-sign.yml",
-            "release.yml",
-            "reuse.yml",
-            "sbom.yml",
-            "scorecard.yml",
-            "security-analysis.yml",
-            "sonarcloud.yml"
-          ],
-          "extras": [
-            "docker-publish.yml",
-            "manual-publish.yml",
-            "publish.yml",
-            "test.yml"
-          ]
-        },
-        "foundations": {
-          "securityMd": false,
-          "contributingMd": true,
-          "changelogMd": false,
-          "codeOfConduct": true,
-          "governanceMd": true,
-          "agentsMd": false,
-          "geminiMd": false,
-          "claudeMd": false,
-          "knownVulnerabilities": false,
-          "codeowners": false
-        },
-        "preCommit": {
-          "configPresent": false,
-          "hooks": {
-            "ruff": false,
-            "basedpyright": false,
-            "bandit": false,
-            "detectSecrets": false,
-            "darglint": false,
-            "interrogate": false,
-            "commitizen": false,
-            "yamllint": false,
-            "markdownlint": false,
-            "noEmDash": false
-          }
-        },
-        "toolchain": {
-          "pyprojectToml": true,
           "qltyConfig": false
         },
         "releaseHealth": {
