@@ -62,7 +62,12 @@
 
 ### Chore
 
-* chore(catalog): refresh `docs/reference/github-repos.json` from the 2026-05-14 audit; corrects the `gleif` repo's foundations, sonarcloud, renovate, secret-scanning, and pre-commit flags; corrects `.claude` repo's universal-ruleset required-check name to `Security Analysis / Security Gate Validation` and removes the migrated CodeQL `Analyze (actions)` check; adds workflow files that landed since the prior snapshot (`python-precommit.yml`, `python-standard-stack.yml`, `self-test.yml`, `sonarcloud.yml`) and adds `dependency-review.yml` + `slsa-provenance.yml` to `.claude`'s `presentFromExpected`; adds migration notes to two universal entries linking active org rulesets 16183607 and 16183609; drops the now-migrated `magg` williaby entry; adds `.claude/worktrees/` to `.gitignore` as a defensive guard against worktrees created at the wrong path
+* chore(catalog): refresh `docs/reference/github-repos.json` from the 2026-05-14 audit:
+  * `gleif`: corrects `foundations`, `sonarcloud`, `renovate`, `secretScanning`, and `preCommit.configPresent` flags; flips `codeowners` to true; resyncs workflow list (adds `python-precommit.yml`, `python-standard-stack.yml`, `self-test.yml`, `sonarcloud.yml`); adds `_note` linking org rulesets 16183607 and 16183609
+  * `.github`: corrects required-check name to `Security Analysis / Security Gate Validation`; removes migrated CodeQL `Analyze (actions)` check; adds `sonarcloud.yml` to `presentFromExpected`; adds `_note` linking org ruleset 16183607
+  * `williaby/.claude`: re-syncs `foundations` (`codeOfConduct`, `governanceMd`, `claudeMd`), `reuse.workflowPresent`, `secretScanning`, workflow list, and `missingFromExpected`; adds `dependency-review.yml` + `slsa-provenance.yml` to `presentFromExpected`
+  * Drops the migrated `williaby/magg` entry
+  * Adds `.claude/worktrees/` to `.gitignore` as a defensive guard against worktrees created under `.claude/`; canonical location remains `.worktrees/<branch-slug>` per the global rule
 
 * chore(compliance): add `tools/create_community_health_pointers.py` to create
   `CODE_OF_CONDUCT.md` and `GOVERNANCE.md` pointer files across all org repos that are missing

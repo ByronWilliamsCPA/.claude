@@ -1,7 +1,7 @@
 {
   "_meta": {
     "linkedDoc": "docs/reference/repo-type-taxonomy.md",
-    "lastUpdated": "2026-05-14 (gleif fields corrected from audit)",
+    "lastUpdated": "2026-05-14",
     "refreshCommands": {
       "repoList": "gh repo list <org> --limit 100 --json name,url,defaultBranchRef,description,isPrivate,isArchived",
       "branchProtection": "gh api repos/<org>/<repo>/branches/<branch>/protection",
@@ -467,7 +467,7 @@
             "requireCodeOwnerReviews": false,
             "requireLastPushApproval": false
           },
-          "_note": "Classic branch protection disabled (migrationPhase=complete). Active org ruleset: ByronWilliamsCPA-default-branch-baseline (id=16183607). CI Gate not in required checks \u2014 verify if needed for config type."
+          "_note": "Classic branch protection disabled (migrationPhase=complete). Active org ruleset: ByronWilliamsCPA-default-branch-baseline (id=16183607). CI Gate not in required checks; verify if needed for config type."
         },
         "codeql": {
           "workflowPresent": true
@@ -572,8 +572,7 @@
             "python-standard-stack.yml",
             "python-supplemental-checks.yml",
             "self-test.yml",
-            "shell-tests.yml",
-            "sonarcloud.yml"
+            "shell-tests.yml"
           ]
         },
         "foundations": {
@@ -1514,7 +1513,7 @@
             "requireCodeOwnerReviews": false,
             "requireLastPushApproval": false
           },
-          "migrationNote": "Classic branch protection absent (migrationPhase=complete). Org rulesets 16183607 (default-branch-baseline) + 16183609 (python-tier-ci-gate) carry required status checks: CI Gate, Security Analysis / Security Gate Validation, Dependency & Standards Validation, Check REUSE Compliance."
+          "_note": "Classic branch protection absent (migrationPhase=complete). Org rulesets 16183607 (default-branch-baseline) + 16183609 (python-tier-ci-gate) carry required status checks: CI Gate, Security Analysis / Security Gate Validation, Dependency & Standards Validation, Check REUSE Compliance."
         },
         "codeql": {
           "workflowPresent": true

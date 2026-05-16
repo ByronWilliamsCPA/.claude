@@ -302,6 +302,8 @@ docs/audit-report.md
 # Defensive: also catch worktrees mistakenly created under .claude/. The
 # CLAUDE.md global rule places worktrees at .worktrees/<branch-slug>; this
 # entry guards against the .claude/worktrees/ pattern that has surfaced.
+# TODO: remove this guard once the upstream cause of .claude/worktrees/
+# creation is confirmed fixed (no occurrences for 30 days).
 .claude/worktrees/
 
 # PlantUML runtime artifacts (Java font cache written by plantuml CLI)
