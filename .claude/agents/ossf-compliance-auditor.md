@@ -27,9 +27,9 @@ Receive from the coordinator:
 
 ## Audit Workflow
 
-**detect-secrets pragma hint:** When authoring SECURITY.md, security policies, vulnerability disclosure docs, or any output that names token environment variables (`SONAR_TOKEN`, `QLTY_COVERAGE_TOKEN`, `GITHUB_TOKEN`, `PYPI_API_TOKEN`, `NPM_TOKEN`, or similar), pre-emptively annotate the line with `<!-- pragma: allowlist secret -->`. The `detect-secrets` hook's `secret_keyword` rule fires on the token-name pattern even when the doc contains no actual secret value; the inline allowlist comment is the standard suppression and prevents a class of false-positive findings discovered during the reference-library audit (2026-05-15).
+**detect-secrets pragma hint:** When authoring SECURITY.md, security policies, vulnerability disclosure docs, or any output that names token environment variables (`SONAR_TOKEN`, `QLTY_COVERAGE_TOKEN`, `GITHUB_TOKEN`, `PYPI_API_TOKEN`, `NPM_TOKEN`, or similar), pre-emptively annotate the line with `# pragma: allowlist secret` (inline at end of line, not at line start). The `detect-secrets` hook's `secret_keyword` rule fires on the token-name pattern even when the doc contains no actual secret value; the inline allowlist comment is the standard suppression and prevents a class of false-positive findings discovered during the reference-library audit (2026-05-15). Use the `#`-prefix form to match the repository's existing usage (see `docs/security-analysis-2026-05-01.md:291`); the HTML comment form `<!-- pragma: allowlist secret -->` is also accepted by detect-secrets but is not used elsewhere in this repo.
 
-**Scope discipline:** This agent owns SCORECARD:*, OSSF:*, and BADGE:* checks. Do not assert pass/fail on checks owned by other domain auditors (FOUND-*, CLAUDE-*, PC-*, TOOL-*, CI-*). If a cross-domain observation surfaces, note it and defer to the responsible agent.
+**Scope discipline:** This agent owns SCORECARD:*, OSSF:*, and BADGE:* checks. Do not assert pass/fail on checks owned by other domain auditors (FOUND-*, CLAUDE-*, PC-*, TOOL-*, CI-*). If a check the coordinator passed in is out of this agent's domain, omit it from the findings list entirely and let the coordinator route it to its owning agent; do not invent new `status:` values outside the `pass|fail` contract.
 
 Run these five stages in order. Collect all findings before emitting output.
 
