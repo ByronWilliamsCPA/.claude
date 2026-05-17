@@ -60,7 +60,8 @@ def test_renders_empty_for_header_only_file(tmp_path: Path) -> None:
     render(jsonl, md)
 
     text = md.read_text(encoding="utf-8")
-    assert "# Compliance Master Log" in text
+    assert "title: Compliance Master Log" in text
+    assert "schema_type: common" in text
     assert "Total sessions:" in text
     assert "0" in text
 

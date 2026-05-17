@@ -2,7 +2,7 @@
 title: Compliance Master Log
 schema_type: common
 status: published
-owner: core-maintainer
+owner: engineering
 purpose: "Fleet-wide rollup of per-repo compliance retrospectives and action items."
 tags:
   - compliance
@@ -15,4 +15,4 @@ tags:
 **Open fleet actions:** 0
 
 ---
-*Rendered 2026-05-17 05:48:24 from master-log.jsonl by compliance_log_render.py.*
+*Rendered 2026-05-17 05:52:03 from master-log.jsonl by compliance_log_render.py.*

@@ -106,7 +106,7 @@ def render(jsonl_path: Path | None = None, md_path: Path | None = None) -> None:
         "title: Compliance Master Log\n",
         "schema_type: common\n",
         "status: published\n",
-        "owner: core-maintainer\n",
+        "owner: engineering\n",
         'purpose: "Fleet-wide rollup of per-repo compliance retrospectives and action items."\n',
         "tags:\n",
         "  - compliance\n",
