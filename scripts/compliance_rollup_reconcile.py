@@ -212,7 +212,11 @@ def parse_lessons_learned(path: Path, clone: Path) -> dict[str, Any]:
     text = path.read_text(encoding="utf-8")
 
     try:
-        rel_link = str(path.relative_to(clone))
+        # as_posix() forces forward slashes on every platform; without this,
+        # str() on a WindowsPath yields backslash-separated relative paths
+        # and the regression test (plus downstream GitHub URL construction)
+        # both break on windows-latest CI runners.
+        rel_link = path.relative_to(clone).as_posix()
     except ValueError as exc:
         raise InvalidRetrospectiveError(
             f"{path} is not inside clone root {clone}"
@@ -244,9 +248,12 @@ def _build_entry(
     The ``repo_path`` field is left empty for reconciled entries because
     the operator's local clone path is machine-specific and must not be
     committed. The ``repo`` slug (``org/name``) is the portable
-    identifier; ``links.lessons_learned`` provides the repo-relative
-    pointer set by :func:`parse_lessons_learned`.
+    identifier. ``links.lessons_learned`` is rewritten here as a GitHub
+    URL so the rendered Markdown view resolves cross-repo and mkdocs
+    --strict does not reject the link as a missing in-tree file.
     """
+    rel = parsed["links"].get("lessons_learned", "")
+    github_url = f"https://github.com/{repo_full}/blob/main/{rel}" if rel else ""
     return {
         "schema_version": SCHEMA_VERSION,
         "session_date": parsed["session_date"],
@@ -262,7 +269,7 @@ def _build_entry(
         "unclassified_candidates": parsed["unclassified_candidates"],
         "fleet_action_proposals": parsed["fleet_action_proposals"],
         "scope_expansion_flags": parsed["scope_expansion_flags"],
-        "links": parsed["links"],
+        "links": {"lessons_learned": github_url},
         "superseded_by": None,
     }
 
