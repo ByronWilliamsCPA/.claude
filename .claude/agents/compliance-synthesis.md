@@ -2,7 +2,7 @@
 name: compliance-synthesis
 description: Cross-session compliance retrospective synthesis. Reads the central master log, computes trending recurrence, stuck manifest candidates, fleet-action follow-through, coverage gaps, and override hotspots. Writes a weekly synthesis report to docs/compliance-reports/synthesis/YYYY-MM-DD.md.
 model: sonnet
-tools: ["Read", "Write", "Bash", "Grep", "Glob"]
+tools: ["Read", "Write", "Bash", "Grep", "Glob", "CronCreate"]
 ---
 
 Cross-session synthesis agent for the compliance retrospective
