@@ -2,6 +2,55 @@
 
 ## Unreleased
 
+### Fix
+
+* fix(compliance): rewrite committed `master-log.jsonl` and `master-log.md` so
+  `repo_path` and `links.lessons_learned` carry repo-relative paths instead of
+  the operator's absolute `/home/<user>/dev/...` paths (Copilot review #114)
+* fix(compliance): switch reconciler YAML candidate parsing from regex to
+  `yaml.safe_load` so block scalars (`description: >-`) are captured as the
+  actual text instead of the literal `">-"` marker token (Copilot review #114)
+* fix(compliance): broaden reconciler walker to catch `OSError` and
+  `UnicodeDecodeError` per-file so one bad lessons-learned file does not abort
+  the entire fleet walk
+* fix(compliance): wrap `master-log.jsonl` mutations in an exclusive
+  `fcntl.flock` on a sibling `.lock` file and combine supersede+append into a
+  single atomic `os.replace`; removes the false PIPE_BUF atomicity claim and
+  the SIGKILL window that could leave dangling `superseded_by` references
+* fix(compliance): surface renderer subprocess failures from the append path
+  to stderr and propagate a non-zero return so `master-log.md` no longer
+  silently diverges from the JSONL
+* fix(compliance): renderer accepts `--jsonl`/`--md` CLI args and the
+  reconciler propagates its `--jsonl` so non-default invocations render the
+  JSONL they actually updated (Copilot review #114)
+* fix(compliance): validate entry schema before append and replace runtime
+  `assert` statements with `RuntimeError`/`TypeError` raises so schema drift
+  surfaces with a clear error instead of silently passing under `python -O`
+* fix(compliance): give `load_entries` a `strict=False` default so one
+  malformed JSONL line no longer wedges every subsequent append; `strict=True`
+  retains file:line context for diagnostic callers
+* fix(compliance): reconciler exits `2` when the renderer fails and `3` on
+  missing or unreadable catalog so schedulers stop reporting silent green
+* fix(compliance): validate `--since` as ISO `YYYY-MM-DD` in argparse so a
+  malformed value rejects with a clear error instead of silently filtering
+  all entries via lexicographic compare
+* fix(compliance): update `dry_run` reconcile path to register
+  ``(date, repo)`` keys so the dry-run summary does not over-count when the
+  same key appears across multiple repo walks
+* fix(docs): rewrite `docs/compliance-reports/.gitignore` header to list
+  which subtrees are shared vs local-only (Copilot review #114)
+* fix(docs): close the inner YAML block in the compliance-retrospective
+  output template with a plain ``` fence so the outer fence stays balanced
+  (Copilot review #114)
+* fix(docs): replace empty `bash` code fences in `SCHEDULER.md` with prose
+  naming the actual MCP tool (`CronList`/`CronDelete`)
+* fix(compliance): `_format_summary_header` now emits date lines in
+  Newest-before-Oldest order regardless of whether the entry list is empty
+* test(compliance): regression tests for repo-relative
+  `links.lessons_learned`, YAML block-scalar description capture,
+  multi-active-prior supersede correctness, corrupted-JSONL-line tolerance,
+  and renderer determinism modulo the timestamp footer
+
 ### Breaking
 
 * chore(deps)!: bump `actions/download-artifact` from v4.3.0 to v8.0.1 in

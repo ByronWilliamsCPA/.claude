@@ -179,3 +179,34 @@ def test_does_not_render_reconciled_marker_when_absent(
     assert " |  |" in repo_rows[0] or repo_rows[0].rstrip().rstrip(
         "|"
     ).rstrip().endswith("|")
+
+
+def _strip_footer(text: str) -> str:
+    """Remove the rendered-at footer (the only non-deterministic line)."""
+    lines = text.splitlines()
+    return "\n".join(line for line in lines if not line.startswith("*Rendered "))
+
+
+def test_render_is_deterministic_modulo_timestamp_footer(
+    tmp_path: Path, sample_entry: dict
+) -> None:
+    """Regression test for finding #25 (determinism claim was unverified).
+
+    The PR description says the renderer is "deterministic modulo the
+    timestamp footer". This test renders the same JSONL twice, strips
+    the only non-deterministic line (the ``*Rendered ...*`` footer)
+    from each output, and asserts byte-for-byte equality.
+    """
+    from scripts.compliance_log_render import render
+
+    jsonl = tmp_path / "master-log.jsonl"
+    md1 = tmp_path / "first.md"
+    md2 = tmp_path / "second.md"
+    _write_jsonl(jsonl, sample_entry)
+
+    render(jsonl, md1)
+    render(jsonl, md2)
+
+    assert _strip_footer(md1.read_text(encoding="utf-8")) == _strip_footer(
+        md2.read_text(encoding="utf-8")
+    )

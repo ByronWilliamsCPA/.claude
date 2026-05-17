@@ -61,7 +61,7 @@ def test_parse_lessons_learned_extracts_totals(tmp_path: Path) -> None:
     f = tmp_path / "2026-05-16.md"
     f.write_text(SAMPLE_LESSONS)
 
-    parsed = parse_lessons_learned(f)
+    parsed = parse_lessons_learned(f, tmp_path)
 
     assert parsed["session_date"] == "2026-05-16"
     assert parsed["totals"]["critical"] == 0
@@ -76,7 +76,7 @@ def test_parse_extracts_findings_by_check_ids(tmp_path: Path) -> None:
     f = tmp_path / "2026-05-16.md"
     f.write_text(SAMPLE_LESSONS)
 
-    parsed = parse_lessons_learned(f)
+    parsed = parse_lessons_learned(f, tmp_path)
 
     ids = [c["id"] for c in parsed["findings_by_check"]]
     assert "FOUND-008" in ids
@@ -89,7 +89,7 @@ def test_parse_extracts_unclassified_candidate_ids(tmp_path: Path) -> None:
     f = tmp_path / "2026-05-16.md"
     f.write_text(SAMPLE_LESSONS)
 
-    parsed = parse_lessons_learned(f)
+    parsed = parse_lessons_learned(f, tmp_path)
 
     proposed_ids = [
         c["proposed_manifest_id"] for c in parsed["unclassified_candidates"]
@@ -110,7 +110,7 @@ def test_parse_handles_missing_optional_sections(tmp_path: Path) -> None:
     f = tmp_path / "2026-05-16.md"
     f.write_text(minimal)
 
-    parsed = parse_lessons_learned(f)
+    parsed = parse_lessons_learned(f, tmp_path)
 
     assert parsed["session_date"] == "2026-05-16"
     assert parsed["findings_by_check"] == []
@@ -127,7 +127,70 @@ def test_parse_raises_on_invalid_filename(tmp_path: Path) -> None:
     f.write_text("# x\n")
 
     with pytest.raises(InvalidRetrospectiveError):
-        parse_lessons_learned(f)
+        parse_lessons_learned(f, tmp_path)
+
+
+def test_parse_links_lessons_learned_is_repo_relative(tmp_path: Path) -> None:
+    """Regression test for finding #4 (absolute path leak).
+
+    The Copilot PR review flagged that ``links.lessons_learned`` was
+    being stored as the operator's absolute path (``/home/byron/dev/...``)
+    and committed into the master log. This test pins the contract that
+    the captured link is repo-relative to the clone root.
+    """
+    from scripts.compliance_rollup_reconcile import parse_lessons_learned
+
+    clone = tmp_path / "some-repo"
+    lessons_dir = clone / "docs" / "compliance-reports" / "lessons-learned"
+    lessons_dir.mkdir(parents=True)
+    f = lessons_dir / "2026-05-16.md"
+    f.write_text(SAMPLE_LESSONS)
+
+    parsed = parse_lessons_learned(f, clone)
+
+    assert (
+        parsed["links"]["lessons_learned"]
+        == "docs/compliance-reports/lessons-learned/2026-05-16.md"
+    )
+    # No absolute path component leaks into the entry.
+    assert str(tmp_path) not in parsed["links"]["lessons_learned"]
+
+
+def test_parse_block_scalar_description_extracted_as_text(tmp_path: Path) -> None:
+    """Regression test for finding #5 (YAML block scalar captured literal).
+
+    The previous regex-based parser stored ``description: >-`` as the
+    literal token ``">-"`` instead of the actual description text. This
+    test pins that ``yaml.safe_load`` is now used so block scalars
+    resolve to their content.
+    """
+    from scripts.compliance_rollup_reconcile import parse_lessons_learned
+
+    body = (
+        "# Compliance Retrospective: 2026-05-16\n\n"
+        "## Proposed Manifest Additions\n\n"
+        "```yaml\n"
+        "- id: FOUND-099\n"
+        "  domain: foundations\n"
+        "  severity: suggested\n"
+        "  description: >-\n"
+        "    Multi-line description text\n"
+        "    that spans block-scalar lines.\n"
+        '  verify: "file_exists: .editorconfig"\n'
+        "  override_eligible: true\n"
+        "```\n"
+    )
+    f = tmp_path / "2026-05-16.md"
+    f.write_text(body)
+
+    parsed = parse_lessons_learned(f, tmp_path)
+    candidates = parsed["unclassified_candidates"]
+
+    assert len(candidates) == 1
+    pattern = candidates[0]["pattern"]
+    assert "Multi-line description text" in pattern
+    assert pattern != ">-"
+    assert ">-" not in pattern
 
 
 def test_repo_local_path_resolves_with_slug_normalization(
