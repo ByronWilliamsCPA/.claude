@@ -59,16 +59,14 @@ policy); it is local-only.
 
 ## How to verify
 
-```bash
-# In a Claude Code session, invoke the CronList tool. The job named
-# above should appear with the cron expression and the prompt body.
-```
+In a Claude Code session, invoke the `CronList` tool with no arguments.
+The job registered above should appear with the cron expression
+`37 9 * * 1` and the prompt body `/compliance-synthesis --mode scheduled`.
 
 ## How to cancel
 
-```bash
-# Use CronDelete with the job ID stored in state/scheduler-registered.txt.
-```
+In a Claude Code session, invoke the `CronDelete` tool with the job ID
+stored in `state/scheduler-registered.txt`.
 
 ## What happens on a failed scheduled run
 
