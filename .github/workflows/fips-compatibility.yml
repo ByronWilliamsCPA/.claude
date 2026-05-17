@@ -54,19 +54,33 @@ jobs:
 
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
+      - name: Check applicability
+        id: applicability
+        run: |
+          if [ -f scripts/check_fips_compatibility.py ]; then
+            echo "applicable=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "applicable=false" >> "$GITHUB_OUTPUT"
+            echo "::notice title=FIPS check N/A::scripts/check_fips_compatibility.py is not present in this repo; the FIPS compatibility check has no work to do and will pass without running. To enable this check, add scripts/check_fips_compatibility.py from the canonical template."
+          fi
+
       - name: Install uv
+        if: steps.applicability.outputs.applicable == 'true'
         uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
         with:
           enable-cache: true
 
       - name: Set up Python
+        if: steps.applicability.outputs.applicable == 'true'
         run: uv python install 3.12
 
       - name: Install dependencies
+        if: steps.applicability.outputs.applicable == 'true'
         run: uv sync --frozen
 
       - name: Run FIPS compatibility check
         id: fips-check
+        if: steps.applicability.outputs.applicable == 'true'
         env:
           STRICT_MODE: ${{ github.event.inputs.strict_mode }}
         run: |
@@ -103,7 +117,7 @@ jobs:
           exit $EXIT_CODE
 
       - name: Upload FIPS report
-        if: always()
+        if: always() && steps.applicability.outputs.applicable == 'true'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: fips-compatibility-report
@@ -113,7 +127,7 @@ jobs:
           retention-days: 30
 
       - name: Comment on PR
-        if: always() && github.event_name == 'pull_request'
+        if: always() && steps.applicability.outputs.applicable == 'true' && github.event_name == 'pull_request'
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
