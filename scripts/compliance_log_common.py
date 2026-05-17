@@ -50,7 +50,7 @@ def resolve_canonical_per_key(
     3. Within each group, the canonical entry is the one with the
        lexicographically greatest ``session_id``.
     """
-    active = [e for e in entries if not e.get("superseded_by")]
+    active = [e for e in entries if e.get("superseded_by") is None]
 
     by_key: dict[DedupeKey, dict[str, Any]] = {}
     for entry in active:

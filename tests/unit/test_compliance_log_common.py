@@ -112,3 +112,30 @@ def test_make_dedupe_key_uses_date_and_repo(sample_entry: dict) -> None:
         "2026-05-16",
         "ByronWilliamsCPA/llc-manager",
     )
+
+
+def test_resolve_canonical_returns_empty_for_empty_input() -> None:
+    from scripts.compliance_log_common import resolve_canonical_per_key
+
+    assert resolve_canonical_per_key([]) == []
+
+
+def test_resolve_canonical_returns_empty_when_all_entries_superseded(
+    sample_entry: dict,
+) -> None:
+    from scripts.compliance_log_common import resolve_canonical_per_key
+
+    a = {**sample_entry, "session_id": "a", "superseded_by": "b"}
+    b = {**sample_entry, "session_id": "b", "superseded_by": "c"}
+
+    assert resolve_canonical_per_key([a, b]) == []
+
+
+def test_resolve_canonical_treats_empty_string_supersede_as_superseded(
+    sample_entry: dict,
+) -> None:
+    from scripts.compliance_log_common import resolve_canonical_per_key
+
+    superseded_with_empty = {**sample_entry, "session_id": "x", "superseded_by": ""}
+
+    assert resolve_canonical_per_key([superseded_with_empty]) == []
