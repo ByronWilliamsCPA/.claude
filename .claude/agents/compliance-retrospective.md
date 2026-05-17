@@ -34,6 +34,57 @@ Receive from the coordinator: session date, list of repos reviewed, all domain a
 5. Note any domain where the general auditor found many items not in the manifest = scope expansion candidate
 6. Write the lessons-learned doc using the template below
 
+### Step 7 -- Central log append
+
+After writing the per-repo lessons-learned (and fleet-actions, if any)
+files, append a structured entry to the central master log so the
+fleet-wide synthesis agent can see this session.
+
+1. Resolve the central root: the canonical location is the repo's
+   `docs/compliance-reports/` directory. The scripts auto-discover it
+   via `__file__` resolution; you do not need to compute it manually.
+
+2. If `docs/compliance-reports/master-log.jsonl` does not exist,
+   create it with a header line:
+   `{"type": "header", "schema_version": 1, "created": "<today>"}`.
+
+3. Construct the session's JSONL entry per the schema in the design
+   spec at `docs/superpowers/specs/2026-05-16-compliance-retrospective-aggregation-design.md`.
+   Required fields:
+   - `schema_version`: 1
+   - `session_date`, `session_id` (`<date>T<HH:MM:SS>Z-<4-char nonce>`),
+     `repo` (`<org>/<name>`), `repo_path`
+   - `audit_mode`: `interactive` or `scheduled`
+   - `repo_type`, `visibility`
+   - `reconciled`: `false`
+   - `totals`: `critical`, `important`, `suggested`,
+     `unclassified_candidates`, `overrides_applied`
+   - `findings_by_check`: list of `{id, severity, remediation_status}`
+   - `unclassified_candidates`: list with `candidate_id`, `pattern`,
+     `proposed_manifest_id`, `proposed_yaml_path`
+   - `fleet_action_proposals`: list with `check_id`, `repos_in_session`,
+     `fleet_actions_file`
+   - `scope_expansion_flags`, `links`, `superseded_by: null`
+
+4. Check whether `(session_date, repo)` already exists in the file. If
+   yes: read the file fully, set the existing entry's `superseded_by`
+   field to the new `session_id`, and rewrite the file via temp file
+   plus atomic rename on the same filesystem. Then proceed to step 5.
+
+5. Append the new entry using shell append (atomic for sub-PIPE_BUF
+   writes on Linux):
+
+       printf '%s\n' "$JSON" >> docs/compliance-reports/master-log.jsonl
+
+6. Invoke the renderer to regenerate the Markdown view:
+
+       python3 scripts/compliance_log_render.py
+
+The central log is the source of truth for cross-session synthesis. The
+per-repo lessons-learned file is still the authoritative human-readable
+record for that session in that repo; this step adds a structured
+sibling, not a replacement.
+
 ## Output Document Template
 
 Write to `docs/compliance-reports/lessons-learned/<YYYY-MM-DD>.md`:
