@@ -5385,6 +5385,12 @@ for evaluation in Sprint EV-1 (ByronWilliamsCPA) and Sprint EV-2 (williaby).</p>
 <td>20/20 applicable repos PASS (100%); 11 deployed (all williaby); 9 BW repos already had it. 5 BW Python repos (cookiecutter-template-sample, DeQA-Doc, gleif, template-sample, xero-crypto) marked N/A -- no check_fips_compatibility.py. Canonical template fixes command injection: STRICT_MODE passed via env var, not direct expression interpolation in bash. Also adds uv sync --frozen (resolves S8544), concurrency group, and JSON report artifact upload. image-preprocessing-detector (9575480+9694992), pp-security-master (15815381), PromptCraft (5939198) required ruleset enforcement=disabled.</td>
 </tr>
 <tr>
+<td>WF-16 remediation</td>
+<td>COMPLETE</td>
+<td>2026-05-16</td>
+<td>Williaby WF-16 deployment did NOT honor the script-presence gate that BW used; the workflow was blanket-deployed to all 11 williaby Python repos. 10 of those repos (GCS, PromptCraft, data_ingestor, image-generation, image-preprocessing-detector, ledgerbase, monte_carlo, pp-security-master, testing, zen-mcp-server) lack scripts/check_fips_compatibility.py and have been silently failing FIPS Compatibility runs since 2026-05-04 (12 days of red checks on every PR). Originally reported via williaby/image-generation. Remediation: (1) canonical template at .github/workflows/fips-compatibility.yml hardened to self-skip when scripts/check_fips_compatibility.py is absent (ByronWilliamsCPA/.claude#113), (2) workflow file removed from the 10 non-FIPS williaby repos via parallel PRs (williaby/GCS#16, PromptCraft#310, data_ingestor#32, image-generation#29, image-preprocessing-detector#186, ledgerbase#143, monte_carlo#32, pp-security-master#35, testing#23, zen-mcp-server#15). Repos correctly keeping the workflow: dna, exercise-competition (both have the script).</td>
+</tr>
+<tr>
 <td>Sprint WF-17</td>
 <td>COMPLETE</td>
 <td>2026-05-04</td>
@@ -5420,7 +5426,7 @@ for evaluation in Sprint EV-1 (ByronWilliamsCPA) and Sprint EV-2 (williaby).</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="May 5, 2026 05:30:37 UTC">May 5, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="May 17, 2026 22:46:49 UTC">May 17, 2026</span>
   </span>
 
     
