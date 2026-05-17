@@ -20,6 +20,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+import yaml
+
 if __name__ == "__main__" and __package__ is None:
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
@@ -130,7 +132,18 @@ def _parse_findings_by_check(text: str) -> list[dict[str, str]]:
 
 
 def _parse_unclassified_candidates(text: str) -> list[dict[str, str]]:
-    """Extract candidate IDs from Proposed Manifest Additions YAML blocks."""
+    """Extract candidate proposals from Proposed Manifest Additions blocks.
+
+    The source ``id:`` field is preserved as ``proposed_manifest_id`` so a
+    reviewer can trace the entry back to its origin. The returned
+    ``candidate_id`` is synthesised (``reconciled-<hex>``) rather than
+    copied from the source, because per-repo files do not carry stable
+    candidate IDs across rollups.
+
+    YAML block scalars (``description: >-``, ``|``, multi-line) are
+    parsed with ``yaml.safe_load`` so the captured description is the
+    real text, not the literal scalar marker.
+    """
     section_match = re.search(
         r"##\s+Proposed Manifest Additions\s*\n(.*?)(?=\n##\s+|\Z)",
         text,
@@ -146,30 +159,49 @@ def _parse_unclassified_candidates(text: str) -> list[dict[str, str]]:
         re.DOTALL,
     ):
         block = yaml_match.group(1)
-        id_match = re.search(r"^\s*-?\s*id:\s*(\S+)", block, re.MULTILINE)
-        desc_match = re.search(
-            r"^\s*description:\s*\"?([^\"\n]+)\"?",
-            block,
-            re.MULTILINE,
-        )
-        if id_match:
+        try:
+            parsed_yaml = yaml.safe_load(block)
+        except yaml.YAMLError:
+            continue
+        if isinstance(parsed_yaml, list):
+            items = [i for i in parsed_yaml if isinstance(i, dict)]
+        elif isinstance(parsed_yaml, dict):
+            items = [parsed_yaml]
+        else:
+            continue
+        for item in items:
+            item_id = item.get("id")
+            if not item_id:
+                continue
+            description = item.get("description", "")
             candidates.append(
                 {
                     "candidate_id": f"reconciled-{uuid.uuid4().hex[:8]}",
-                    "pattern": (desc_match.group(1).strip() if desc_match else ""),
-                    "proposed_manifest_id": id_match.group(1).strip(),
+                    "pattern": str(description).strip(),
+                    "proposed_manifest_id": str(item_id).strip(),
                     "proposed_yaml_path": "",
                 }
             )
     return candidates
 
 
-def parse_lessons_learned(path: Path) -> dict[str, Any]:
+def parse_lessons_learned(path: Path, clone: Path) -> dict[str, Any]:
     """Parse a per-repo lessons-learned Markdown file into a partial entry.
 
+    Args:
+        path: Absolute path to the lessons-learned Markdown file.
+        clone: Absolute path to the repo root containing the file. Used
+            to compute a repo-relative ``links.lessons_learned`` so the
+            committed master log does not leak local filesystem paths.
+
+    Returns:
+        Partial entry dict with parsed totals, findings, candidates,
+        and a repo-relative ``links.lessons_learned`` pointer.
+
     Raises:
-        InvalidRetrospectiveError: if the filename does not match the
-            expected YYYY-MM-DD[-tag].md pattern.
+        InvalidRetrospectiveError: If the filename does not match the
+            expected ``YYYY-MM-DD[-tag].md`` pattern, or if ``path`` is
+            not under ``clone``.
     """
     fname_match = DATE_FILENAME_RE.match(path.name)
     if not fname_match:
@@ -179,6 +211,13 @@ def parse_lessons_learned(path: Path) -> dict[str, Any]:
     session_date = fname_match.group(1)
     text = path.read_text(encoding="utf-8")
 
+    try:
+        rel_link = str(path.relative_to(clone))
+    except ValueError as exc:
+        raise InvalidRetrospectiveError(
+            f"{path} is not inside clone root {clone}"
+        ) from exc
+
     return {
         "session_date": session_date,
         "totals": _parse_session_summary_table(text),
@@ -186,7 +225,7 @@ def parse_lessons_learned(path: Path) -> dict[str, Any]:
         "unclassified_candidates": _parse_unclassified_candidates(text),
         "fleet_action_proposals": [],
         "scope_expansion_flags": [],
-        "links": {"lessons_learned": str(path)},
+        "links": {"lessons_learned": rel_link},
     }
 
 
@@ -198,16 +237,22 @@ def _make_session_id(date: str) -> str:
 
 def _build_entry(
     repo_full: str,
-    repo_path: Path,
     parsed: dict[str, Any],
 ) -> dict[str, Any]:
-    """Assemble a full master-log entry from a parsed per-repo file."""
+    """Assemble a full master-log entry from a parsed per-repo file.
+
+    The ``repo_path`` field is left empty for reconciled entries because
+    the operator's local clone path is machine-specific and must not be
+    committed. The ``repo`` slug (``org/name``) is the portable
+    identifier; ``links.lessons_learned`` provides the repo-relative
+    pointer set by :func:`parse_lessons_learned`.
+    """
     return {
         "schema_version": SCHEMA_VERSION,
         "session_date": parsed["session_date"],
         "session_id": _make_session_id(parsed["session_date"]),
         "repo": repo_full,
-        "repo_path": str(repo_path),
+        "repo_path": "",
         "audit_mode": "unknown",
         "repo_type": "unknown",
         "visibility": "unknown",
@@ -244,20 +289,66 @@ def reconcile(
     *,
     dry_run: bool = False,
 ) -> ReconcileResult:
-    """Walk all catalog repos and backfill missing per-repo retrospectives."""
+    """Walk all catalog repos and backfill missing per-repo retrospectives.
+
+    Args:
+        catalog_path: Optional path to the repo catalog JSON. Defaults
+            to ``docs/reference/github-repos.json`` discovered via the
+            script's repo root.
+        jsonl_path: Optional path to the master-log JSONL to append to.
+            Defaults to the production master log.
+        repos_root: Optional directory containing local clones of every
+            catalog repo. Defaults to ``$HOME/dev``.
+        since: Optional inclusive lower bound on ``session_date`` in
+            ISO ``YYYY-MM-DD`` form. Entries dated earlier are skipped.
+        dry_run: When True, parses and dedupes as usual but performs no
+            writes. The ``appended`` counter still increments to reflect
+            what a real run would have written.
+
+    Returns:
+        A :class:`ReconcileResult` carrying counters and any
+        ``parse_failures`` collected during the walk.
+
+    Raises:
+        FileNotFoundError: If the catalog file does not exist; the
+            caller's :func:`main` translates this into a non-zero exit.
+        ValueError: If the catalog file is unreadable or contains
+            invalid JSON; surfaced with the path and JSON column.
+    """
     catalog_path = catalog_path or DEFAULT_CATALOG
     jsonl_path = jsonl_path or DEFAULT_JSONL
     repos_root = repos_root or DEFAULT_REPOS_ROOT
 
-    catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+    try:
+        catalog_text = catalog_path.read_text(encoding="utf-8")
+    except FileNotFoundError as exc:
+        raise FileNotFoundError(
+            f"Catalog not found at {catalog_path}. "
+            f"Regenerate with: gh repo list <org> --json ... > {catalog_path}"
+        ) from exc
+    except OSError as exc:
+        msg = f"Catalog unreadable at {catalog_path}: {exc}"
+        raise ValueError(msg) from exc
+
+    try:
+        catalog = json.loads(catalog_text)
+    except json.JSONDecodeError as exc:
+        msg = f"Catalog JSON malformed at {catalog_path}: {exc}"
+        raise ValueError(msg) from exc
+
     known_keys = {make_dedupe_key(e) for e in load_entries(jsonl_path)}
     result = ReconcileResult()
 
     for repo in catalog.get("repos", []):
         if repo.get("isArchived"):
             continue
+        repo_name = repo.get("name")
+        repo_org = repo.get("org")
+        if not repo_name or not repo_org:
+            result.parse_failures.append(f"catalog entry missing name/org: {repo!r}")
+            continue
         result.walked += 1
-        clone = resolve_local_clone(repo["name"], repos_root)
+        clone = resolve_local_clone(repo_name, repos_root)
         if clone is None:
             result.skipped_no_clone += 1
             continue
@@ -269,39 +360,62 @@ def reconcile(
 
         for md in sorted(lessons_dir.glob("*.md")):
             try:
-                parsed = parse_lessons_learned(md)
+                parsed = parse_lessons_learned(md, clone)
             except InvalidRetrospectiveError as exc:
                 result.parse_failures.append(f"{md}: {exc}")
+                continue
+            except (OSError, UnicodeDecodeError) as exc:
+                result.parse_failures.append(
+                    f"{md}: read failed: {type(exc).__name__}: {exc}"
+                )
                 continue
 
             if since and parsed["session_date"] < since:
                 continue
 
-            repo_full = f"{repo['org']}/{repo['name']}"
+            repo_full = f"{repo_org}/{repo_name}"
             key = (parsed["session_date"], repo_full)
             if key in known_keys:
                 result.duplicates_skipped += 1
                 continue
 
-            entry = _build_entry(repo_full, clone, parsed)
+            entry = _build_entry(repo_full, parsed)
             if not dry_run:
                 _append_entry(jsonl_path, entry)
-                known_keys.add(key)
+            known_keys.add(key)
             result.appended += 1
 
     return result
 
 
-def _invoke_renderer() -> None:
+def _invoke_renderer(
+    jsonl_path: Path | None = None,
+    md_path: Path | None = None,
+) -> int:
     """Run the renderer script as a subprocess.
 
-    Uses a static argument list (no shell=True, no user input) so it is
-    safe for any caller. Surfaces renderer failures to stderr and to
-    the reconcile log so a stale Markdown view does not silently
-    diverge from the JSONL source of truth.
+    Args:
+        jsonl_path: Optional override of the source JSONL path. When
+            provided, propagated to the renderer as ``--jsonl`` so the
+            rendered Markdown matches the JSONL the caller actually
+            updated.
+        md_path: Optional override of the output Markdown path. When
+            provided, propagated to the renderer as ``--md``.
+
+    Returns:
+        The renderer subprocess return code. 0 on success; non-zero is
+        surfaced to stderr and to the reconcile log so a stale Markdown
+        view does not silently diverge from the JSONL source of truth.
+        Callers should propagate non-zero return codes as their own
+        exit code rather than reporting success.
     """
-    completed = subprocess.run(  # noqa: S603
-        [sys.executable, str(RENDERER_SCRIPT)],
+    args = [sys.executable, str(RENDERER_SCRIPT)]
+    if jsonl_path is not None:
+        args.extend(["--jsonl", str(jsonl_path)])
+    if md_path is not None:
+        args.extend(["--md", str(md_path)])
+    completed = subprocess.run(  # noqa: S603 -- args list is static-prefixed and trusted
+        args,
         check=False,
         capture_output=True,
         text=True,
@@ -316,25 +430,51 @@ def _invoke_renderer() -> None:
         with DEFAULT_RECONCILE_LOG.open("a", encoding="utf-8") as fh:
             ts = datetime.now(tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
             fh.write(f"[{ts}] {msg}\n")
+    return completed.returncode
+
+
+def _iso_date(value: str) -> str:
+    """Argparse type for ``--since``: validate ISO ``YYYY-MM-DD`` form."""
+    try:
+        datetime.strptime(value, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+    except ValueError as exc:
+        msg = f"--since must be ISO YYYY-MM-DD, got {value!r}"
+        raise argparse.ArgumentTypeError(msg) from exc
+    return value
 
 
 def main() -> int:
-    """CLI entrypoint for the reconciler."""
+    """CLI entrypoint for the reconciler.
+
+    Returns:
+        Exit code:
+        - ``0`` on full success.
+        - ``2`` when reconcile succeeded but the renderer failed; the
+          JSONL is correct but ``master-log.md`` may be stale.
+        - ``3`` when the catalog is missing or unreadable.
+    """
     parser = argparse.ArgumentParser(description="Reconcile compliance retrospectives.")
     parser.add_argument("--dry-run", action="store_true")
-    parser.add_argument("--since", help="ISO date YYYY-MM-DD")
+    parser.add_argument("--since", type=_iso_date, help="ISO date YYYY-MM-DD")
     parser.add_argument("--catalog", type=Path, default=None)
     parser.add_argument("--jsonl", type=Path, default=None)
     parser.add_argument("--repos-root", type=Path, default=None)
     args = parser.parse_args()
 
-    result = reconcile(
-        catalog_path=args.catalog,
-        jsonl_path=args.jsonl,
-        repos_root=args.repos_root,
-        since=args.since,
-        dry_run=args.dry_run,
-    )
+    try:
+        result = reconcile(
+            catalog_path=args.catalog,
+            jsonl_path=args.jsonl,
+            repos_root=args.repos_root,
+            since=args.since,
+            dry_run=args.dry_run,
+        )
+    except FileNotFoundError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 3
+    except ValueError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 3
 
     log_path = DEFAULT_RECONCILE_LOG
     log_path.parent.mkdir(parents=True, exist_ok=True)
@@ -356,8 +496,9 @@ def main() -> int:
         print(f"  ! {failure}")
 
     if not args.dry_run and result.appended > 0:
-        _invoke_renderer()
-
+        render_rc = _invoke_renderer(jsonl_path=args.jsonl)
+        if render_rc != 0:
+            return 2
     return 0
 
 
