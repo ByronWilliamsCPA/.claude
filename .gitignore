@@ -310,8 +310,9 @@ docs/audit-report.md
 # The '?' pattern matches any single-char dir name that plantuml creates
 docs/architecture/diagrams/?/
 
-# Compliance reports (generated artifacts, not committed)
-docs/compliance-reports/
+# Compliance aggregation runtime state (per-session, not for sharing)
+docs/compliance-reports/state/*
+!docs/compliance-reports/state/.gitkeep
 
 # Compliance retrospectives (local-only notes for improving repo-compliance workflow)
 docs/compliance-retrospectives/
