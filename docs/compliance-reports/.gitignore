@@ -1,3 +1,19 @@
-# All compliance reports are local only -- never pushed.
-*
-!.gitignore
+# Compliance aggregation gitignore policy:
+#   shared (committed):  synthesis/, master-log.jsonl, master-log.md
+#   local-only:          state/, lessons-learned/, fleet-actions/*.md,
+#                        archive/sessions/*.md
+# Each ignored subtree keeps its .gitkeep so the directory layout
+# survives a fresh clone.
+
+# Runtime aggregation state (scheduler registration, reconcile log).
+/state/*
+!/state/.gitkeep
+
+# Per-repo audit artifacts when .claude itself is audited.
+/lessons-learned/
+/fleet-actions/*.md
+!/fleet-actions/.gitkeep
+
+# Legacy session retrospectives migrated from docs/compliance-retrospectives/.
+/archive/sessions/*.md
+!/archive/sessions/.gitkeep
