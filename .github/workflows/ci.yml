@@ -23,7 +23,7 @@ jobs:
       contents: read
       pull-requests: write
       checks: write
-    uses: ByronWilliamsCPA/.github/.github/workflows/python-ci.yml@b29a870cb21a8f913e5c6c5f08740a4bdd94d0ca # main
+    uses: ByronWilliamsCPA/.github/.github/workflows/python-ci.yml@eb529609e38f05eb713419e4ee9cfff9cc95decc # main
     with:
       python-version: "3.12"
       coverage-threshold: 80
@@ -39,7 +39,7 @@ jobs:
     if: always()
     steps:
       - name: Harden runner
-        uses: step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450  # v2.19.1
+        uses: step-security/harden-runner@9ca718d3bf646d6534007c269a635b3e54cadf99  # v2.19.2
         with:
           egress-policy: audit
       - name: Check CI results
