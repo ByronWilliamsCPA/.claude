@@ -31,7 +31,6 @@ DEFAULT_MD = Path.home() / ".claude" / "docs" / "compliance-reports" / "master-l
 def _format_summary_header(entries: list[dict[str, Any]]) -> str:
     if not entries:
         return (
-            "# Compliance Master Log\n\n"
             "**Total sessions:** 0\n"
             "**Distinct repos:** 0\n"
             "**Oldest entry:** n/a\n"
@@ -48,7 +47,6 @@ def _format_summary_header(entries: list[dict[str, Any]]) -> str:
         if proposal
     )
     return (
-        "# Compliance Master Log\n\n"
         f"**Total sessions:** {len(entries)}\n"
         f"**Distinct repos:** {len(repos)}\n"
         f"**Newest entry:** {dates[-1]}\n"
@@ -103,7 +101,18 @@ def render(jsonl_path: Path | None = None, md_path: Path | None = None) -> None:
         month_key = e["session_date"][:7]
         by_month[month_key].append(e)
 
-    parts = [_format_summary_header(canonical)]
+    parts = [
+        "---\n",
+        "title: Compliance Master Log\n",
+        "schema_type: common\n",
+        "status: published\n",
+        "owner: core-maintainer\n",
+        'purpose: "Fleet-wide rollup of per-repo compliance retrospectives and action items."\n',
+        "tags:\n",
+        "  - compliance\n",
+        "---\n\n",
+        _format_summary_header(canonical),
+    ]
     parts.extend(
         _format_month_section(month, by_month[month])
         for month in sorted(by_month.keys(), reverse=True)
