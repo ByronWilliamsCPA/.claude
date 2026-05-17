@@ -81,7 +81,7 @@ def _format_month_section(month: str, entries: list[dict[str, Any]]) -> str:
         report = f"[report]({link})" if link else ""
         lines.append(
             f"| {e['session_date']} | {e['repo']} | "
-            f"{e.get('audit_mode', 'unknown')} | "
+            f"{e['audit_mode']} | "
             f"{t.get('critical', 0)} | {t.get('important', 0)} | "
             f"{t.get('suggested', 0)} | "
             f"{t.get('unclassified_candidates', 0)} | {flag} | {report} |"

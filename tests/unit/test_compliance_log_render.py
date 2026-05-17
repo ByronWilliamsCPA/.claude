@@ -144,4 +144,37 @@ def test_renders_reconciled_marker_when_present(
     render(jsonl, md)
 
     text = md.read_text(encoding="utf-8")
-    assert "yes" in text.lower() or "reconciled" in text.lower()
+    # Find the data row for this entry and confirm it contains "yes" in the reconciled column
+    repo_rows = [
+        line
+        for line in text.splitlines()
+        if "ByronWilliamsCPA/llc-manager" in line and line.startswith("|")
+    ]
+    assert len(repo_rows) == 1
+    # The reconciled column has "yes" followed by a pipe and the report column
+    assert " | yes |" in repo_rows[0]
+
+
+def test_does_not_render_reconciled_marker_when_absent(
+    tmp_path: Path, sample_entry: dict
+) -> None:
+    from scripts.compliance_log_render import render
+
+    plain = {**sample_entry, "reconciled": False}
+    jsonl = tmp_path / "master-log.jsonl"
+    md = tmp_path / "master-log.md"
+    _write_jsonl(jsonl, plain)
+
+    render(jsonl, md)
+
+    text = md.read_text(encoding="utf-8")
+    repo_rows = [
+        line
+        for line in text.splitlines()
+        if "ByronWilliamsCPA/llc-manager" in line and line.startswith("|")
+    ]
+    assert len(repo_rows) == 1
+    # The reconciled cell should be empty (not "yes"). Match the empty cell pattern.
+    assert " |  |" in repo_rows[0] or repo_rows[0].rstrip().rstrip(
+        "|"
+    ).rstrip().endswith("|")
