@@ -35,6 +35,12 @@ Follow the appropriate workflow file for the selected mode. Both modes share the
 4. Merge findings, filter overrides, sort by severity
 5. Run `compliance-retrospective` after all repos are processed
 
+The retrospective also appends a structured entry to
+`docs/compliance-reports/master-log.jsonl` and regenerates the
+Markdown view. Fleet-wide synthesis runs weekly via the
+`compliance-synthesis` agent; trigger an ad-hoc synthesis with
+`/compliance-synthesis`.
+
 ## Local Repo Inventory
 
 A pre-built catalog of all 44 repos across both orgs lives at:
