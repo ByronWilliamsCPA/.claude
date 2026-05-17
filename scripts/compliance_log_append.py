@@ -114,13 +114,22 @@ def _invoke_renderer() -> None:
     )
 
 
-def append_entry(entry: dict[str, object], jsonl_path: Path | None = None) -> None:
+def append_entry(
+    entry: dict[str, object],
+    jsonl_path: Path | None = None,
+    *,
+    render: bool = True,
+) -> None:
     """Append a session entry to the master log, handling supersede.
 
     Args:
         entry: Parsed session entry dictionary conforming to the schema.
         jsonl_path: Optional override of the target JSONL path; defaults
             to the central master log resolved via repo discovery.
+        render: When True (default), invoke the Markdown renderer against
+            the production default paths after the append. Tests that
+            pass a custom jsonl_path should set render=False to keep the
+            renderer from writing to the production master-log.md.
     """
     target = jsonl_path or DEFAULT_JSONL
     _ensure_header(target)
@@ -140,7 +149,8 @@ def append_entry(entry: dict[str, object], jsonl_path: Path | None = None) -> No
     with target.open("a", encoding="utf-8") as fh:
         fh.write(json.dumps(entry) + "\n")
 
-    _invoke_renderer()
+    if render:
+        _invoke_renderer()
 
 
 def main() -> int:

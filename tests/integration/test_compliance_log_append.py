@@ -57,7 +57,7 @@ def test_append_helper_writes_to_central_log_regardless_of_cwd(
     from scripts.compliance_log_append import append_entry
 
     fake_central = tmp_path / "central" / "master-log.jsonl"
-    append_entry(entry, jsonl_path=fake_central)
+    append_entry(entry, jsonl_path=fake_central, render=False)
 
     # Assert the entry landed in the central path, NOT under foreign_cwd.
     assert fake_central.exists(), "entry did not land in central log"
@@ -107,10 +107,10 @@ def test_append_helper_supersede_marks_existing_entry(tmp_path: Path) -> None:
         "links": {},
         "superseded_by": None,
     }
-    append_entry(base_entry, jsonl_path=fake_central)
+    append_entry(base_entry, jsonl_path=fake_central, render=False)
 
     new_entry = {**base_entry, "session_id": "2026-05-17T18:00:00Z-new2"}
-    append_entry(new_entry, jsonl_path=fake_central)
+    append_entry(new_entry, jsonl_path=fake_central, render=False)
 
     contents = fake_central.read_text(encoding="utf-8").splitlines()
     payloads = [json.loads(line) for line in contents if line.strip()]
