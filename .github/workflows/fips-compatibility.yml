@@ -57,6 +57,7 @@ jobs:
       - name: Check applicability
         id: applicability
         run: |
+          set -euo pipefail
           if [ -f scripts/check_fips_compatibility.py ]; then
             echo "applicable=true" >> "$GITHUB_OUTPUT"
           else
