@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """Render the compliance master JSONL log to a Markdown view.
 
-Pure transform: JSONL in, Markdown out. Called by the
-compliance-retrospective agent after every append and by the
-compliance-rollup reconciler after backfill operations.
+Idempotent except for the rendered-at timestamp in the footer.
+Called by the compliance-retrospective agent after every append and by
+the compliance-rollup reconciler after backfill operations.
 """
 
 from __future__ import annotations
 
+import argparse
 import sys
 from collections import defaultdict
 from datetime import datetime, timezone
@@ -29,12 +30,18 @@ DEFAULT_MD = _REPO_ROOT / "docs" / "compliance-reports" / "master-log.md"
 
 
 def _format_summary_header(entries: list[dict[str, Any]]) -> str:
+    """Return the rollup header block.
+
+    Date lines are always emitted Newest-before-Oldest regardless of
+    whether the entry list is empty, so consumers can rely on a stable
+    line order.
+    """
     if not entries:
         return (
             "**Total sessions:** 0\n"
             "**Distinct repos:** 0\n"
-            "**Oldest entry:** n/a\n"
             "**Newest entry:** n/a\n"
+            "**Oldest entry:** n/a\n"
             "**Open fleet actions:** 0\n"
         )
 
@@ -56,6 +63,11 @@ def _format_summary_header(entries: list[dict[str, Any]]) -> str:
 
 
 def _format_month_section(month: str, entries: list[dict[str, Any]]) -> str:
+    """Return one Markdown month section with a totals row per entry.
+
+    Entries are sorted by (session_date, repo) descending so the most
+    recent activity appears at the top of each month.
+    """
     lines = [f"\n## {month}\n", ""]
     lines.append(
         "| Date | Repo | Mode | Critical | Important | Suggested | "
@@ -89,7 +101,18 @@ def _format_month_section(month: str, entries: list[dict[str, Any]]) -> str:
 
 
 def render(jsonl_path: Path | None = None, md_path: Path | None = None) -> None:
-    """Read JSONL, write Markdown view. Pure function on filesystem."""
+    """Read JSONL at jsonl_path and write a Markdown view to md_path.
+
+    Args:
+        jsonl_path: Optional path to the source JSONL log. Defaults to
+            the production master log under docs/compliance-reports/.
+        md_path: Optional path to the output Markdown view. Defaults to
+            the production master-log.md alongside the JSONL.
+
+    The output is idempotent except for the rendered-at timestamp in
+    the footer; rendering the same input twice produces identical
+    bytes apart from that timestamp.
+    """
     jsonl_path = jsonl_path or DEFAULT_JSONL
     md_path = md_path or DEFAULT_MD
 
@@ -101,13 +124,17 @@ def render(jsonl_path: Path | None = None, md_path: Path | None = None) -> None:
         month_key = e["session_date"][:7]
         by_month[month_key].append(e)
 
+    purpose_line = (
+        'purpose: "Fleet-wide rollup of per-repo compliance '
+        'retrospectives and action items."\n'
+    )
     parts = [
         "---\n",
         "title: Compliance Master Log\n",
         "schema_type: common\n",
         "status: published\n",
         "owner: engineering\n",
-        'purpose: "Fleet-wide rollup of per-repo compliance retrospectives and action items."\n',
+        purpose_line,
         "tags:\n",
         "  - compliance\n",
         "---\n\n",
@@ -129,8 +156,17 @@ def render(jsonl_path: Path | None = None, md_path: Path | None = None) -> None:
 
 
 def main() -> None:
-    """Entry point for CLI execution against the default paths."""
-    render()
+    """Entry point for CLI execution.
+
+    Accepts optional ``--jsonl`` and ``--md`` overrides so callers can
+    redirect the source and destination away from the production paths
+    (used by tests and by the reconciler when ``--jsonl`` was supplied).
+    """
+    parser = argparse.ArgumentParser(description="Render compliance master log.")
+    parser.add_argument("--jsonl", type=Path, default=None)
+    parser.add_argument("--md", type=Path, default=None)
+    args = parser.parse_args()
+    render(jsonl_path=args.jsonl, md_path=args.md)
 
 
 if __name__ == "__main__":
