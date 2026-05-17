@@ -27,19 +27,14 @@ from scripts.compliance_log_common import (
     SCHEMA_VERSION,
     load_entries,
     make_dedupe_key,
+    repo_root_from,
 )
 
-DEFAULT_CATALOG = Path.home() / ".claude" / "docs" / "reference" / "github-repos.json"
-DEFAULT_JSONL = (
-    Path.home() / ".claude" / "docs" / "compliance-reports" / "master-log.jsonl"
-)
+_REPO_ROOT = repo_root_from(Path(__file__))
+DEFAULT_CATALOG = _REPO_ROOT / "docs" / "reference" / "github-repos.json"
+DEFAULT_JSONL = _REPO_ROOT / "docs" / "compliance-reports" / "master-log.jsonl"
 DEFAULT_RECONCILE_LOG = (
-    Path.home()
-    / ".claude"
-    / "docs"
-    / "compliance-reports"
-    / "state"
-    / "reconcile-log.txt"
+    _REPO_ROOT / "docs" / "compliance-reports" / "state" / "reconcile-log.txt"
 )
 DEFAULT_REPOS_ROOT = Path.home() / "dev"
 RENDERER_SCRIPT = Path(__file__).resolve().parent / "compliance_log_render.py"

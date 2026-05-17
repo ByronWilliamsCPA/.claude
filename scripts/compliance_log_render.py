@@ -19,13 +19,13 @@ if __name__ == "__main__" and __package__ is None:
 
 from scripts.compliance_log_common import (
     load_entries,
+    repo_root_from,
     resolve_canonical_per_key,
 )
 
-DEFAULT_JSONL = (
-    Path.home() / ".claude" / "docs" / "compliance-reports" / "master-log.jsonl"
-)
-DEFAULT_MD = Path.home() / ".claude" / "docs" / "compliance-reports" / "master-log.md"
+_REPO_ROOT = repo_root_from(Path(__file__))
+DEFAULT_JSONL = _REPO_ROOT / "docs" / "compliance-reports" / "master-log.jsonl"
+DEFAULT_MD = _REPO_ROOT / "docs" / "compliance-reports" / "master-log.md"
 
 
 def _format_summary_header(entries: list[dict[str, Any]]) -> str:

@@ -14,6 +14,16 @@ SCHEMA_VERSION: int = 1
 DedupeKey = tuple[str, str]
 
 
+def repo_root_from(script_path: Path) -> Path:
+    """Resolve the repo root from a script's __file__ path.
+
+    Scripts live at <repo>/scripts/*.py. Symlinks under ~/.claude/scripts/
+    resolve to the same physical files, so .resolve().parent.parent
+    yields the repo root in both invocation modes.
+    """
+    return script_path.resolve().parent.parent
+
+
 def make_dedupe_key(entry: dict[str, Any]) -> DedupeKey:
     """Return (session_date, repo) for use as a dedupe key."""
     return (entry["session_date"], entry["repo"])

@@ -139,3 +139,14 @@ def test_resolve_canonical_treats_empty_string_supersede_as_superseded(
     superseded_with_empty = {**sample_entry, "session_id": "x", "superseded_by": ""}
 
     assert resolve_canonical_per_key([superseded_with_empty]) == []
+
+
+def test_repo_root_from_resolves_two_levels_up(tmp_path: Path) -> None:
+    from scripts.compliance_log_common import repo_root_from
+
+    scripts_dir = tmp_path / "scripts"
+    scripts_dir.mkdir()
+    fake_script = scripts_dir / "fake_script.py"
+    fake_script.write_text("# placeholder")
+
+    assert repo_root_from(fake_script) == tmp_path
