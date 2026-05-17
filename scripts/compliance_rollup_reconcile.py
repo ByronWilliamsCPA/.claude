@@ -246,6 +246,7 @@ def reconcile(
     jsonl_path: Path | None = None,
     repos_root: Path | None = None,
     since: str | None = None,
+    *,
     dry_run: bool = False,
 ) -> ReconcileResult:
     """Walk all catalog repos and backfill missing per-repo retrospectives."""
@@ -300,12 +301,26 @@ def _invoke_renderer() -> None:
     """Run the renderer script as a subprocess.
 
     Uses a static argument list (no shell=True, no user input) so it is
-    safe for any caller.
+    safe for any caller. Surfaces renderer failures to stderr and to
+    the reconcile log so a stale Markdown view does not silently
+    diverge from the JSONL source of truth.
     """
-    subprocess.run(  # noqa: S603
+    completed = subprocess.run(  # noqa: S603
         [sys.executable, str(RENDERER_SCRIPT)],
         check=False,
+        capture_output=True,
+        text=True,
     )
+    if completed.returncode != 0:
+        msg = (
+            f"renderer exited with code {completed.returncode}; "
+            f"master-log.md may be stale. stderr: {completed.stderr.strip()}"
+        )
+        print(f"WARNING: {msg}", file=sys.stderr)
+        DEFAULT_RECONCILE_LOG.parent.mkdir(parents=True, exist_ok=True)
+        with DEFAULT_RECONCILE_LOG.open("a", encoding="utf-8") as fh:
+            ts = datetime.now(tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+            fh.write(f"[{ts}] {msg}\n")
 
 
 def main() -> int:

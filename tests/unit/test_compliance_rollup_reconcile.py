@@ -187,3 +187,81 @@ def test_reconcile_dedupe_skips_known_keys(tmp_path: Path) -> None:
 
     assert result.appended == 0
     assert result.duplicates_skipped == 1
+
+
+def test_reconcile_since_filter_excludes_older_entries(tmp_path: Path) -> None:
+    from scripts.compliance_rollup_reconcile import reconcile
+
+    jsonl = tmp_path / "master-log.jsonl"
+    jsonl.write_text(
+        '{"type": "header", "schema_version": 1, "created": "2026-05-16"}\n'
+    )
+
+    repos_root = tmp_path / "dev"
+    lessons_dir = (
+        repos_root / "llc-manager" / "docs" / "compliance-reports" / "lessons-learned"
+    )
+    lessons_dir.mkdir(parents=True)
+    # Old file: should be filtered out
+    (lessons_dir / "2025-01-01.md").write_text(
+        SAMPLE_LESSONS.replace("2026-05-16", "2025-01-01")
+    )
+    # New file: should be included
+    (lessons_dir / "2026-05-16.md").write_text(SAMPLE_LESSONS)
+
+    catalog = {
+        "repos": [
+            {"org": "ByronWilliamsCPA", "name": "llc-manager", "isArchived": False}
+        ]
+    }
+    catalog_file = tmp_path / "github-repos.json"
+    catalog_file.write_text(json.dumps(catalog))
+
+    result = reconcile(
+        catalog_path=catalog_file,
+        jsonl_path=jsonl,
+        repos_root=repos_root,
+        since="2026-01-01",
+        dry_run=False,
+    )
+
+    assert result.appended == 1
+    assert result.duplicates_skipped == 0
+
+
+def test_reconcile_isolates_parse_failures(tmp_path: Path) -> None:
+    from scripts.compliance_rollup_reconcile import reconcile
+
+    jsonl = tmp_path / "master-log.jsonl"
+    jsonl.write_text(
+        '{"type": "header", "schema_version": 1, "created": "2026-05-16"}\n'
+    )
+
+    repos_root = tmp_path / "dev"
+    lessons_dir = (
+        repos_root / "llc-manager" / "docs" / "compliance-reports" / "lessons-learned"
+    )
+    lessons_dir.mkdir(parents=True)
+    # Valid file
+    (lessons_dir / "2026-05-16.md").write_text(SAMPLE_LESSONS)
+    # Invalid filename (no date prefix) -- should be a parse failure
+    (lessons_dir / "garbage.md").write_text("not a retrospective")
+
+    catalog = {
+        "repos": [
+            {"org": "ByronWilliamsCPA", "name": "llc-manager", "isArchived": False}
+        ]
+    }
+    catalog_file = tmp_path / "github-repos.json"
+    catalog_file.write_text(json.dumps(catalog))
+
+    result = reconcile(
+        catalog_path=catalog_file,
+        jsonl_path=jsonl,
+        repos_root=repos_root,
+        dry_run=False,
+    )
+
+    assert result.appended == 1  # valid file processed
+    assert len(result.parse_failures) == 1
+    assert "garbage.md" in result.parse_failures[0]
