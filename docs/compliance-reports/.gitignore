@@ -2,3 +2,12 @@
 # Ignore state files but keep the marker
 /state/*
 !/state/.gitkeep
+
+# Per-repo audit artifacts when .claude itself is audited (local-only by policy)
+/lessons-learned/
+/fleet-actions/*.md
+!/fleet-actions/.gitkeep
+
+# Legacy session retrospectives migrated from docs/compliance-retrospectives/ (local-only)
+/archive/sessions/*.md
+!/archive/sessions/.gitkeep
