@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(python3 $HOME/.claude/scripts/compliance_log_render.py:*)",
-      "Bash(python3 $HOME/.claude/scripts/compliance_rollup_reconcile.py:*)"
+      "Bash(python3 $HOME/.claude/scripts/compliance_rollup_reconcile.py:*)",
+      "Bash(python3 $HOME/.claude/scripts/compliance_log_append.py:*)"
     ],
     "deny": []
   },
