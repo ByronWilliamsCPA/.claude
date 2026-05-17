@@ -8,11 +8,35 @@ tags:
   - compliance
 ---
 
-**Total sessions:** 0
-**Distinct repos:** 0
-**Oldest entry:** n/a
-**Newest entry:** n/a
+**Total sessions:** 12
+**Distinct repos:** 8
+**Newest entry:** 2026-05-16
+**Oldest entry:** 2026-04-25
 **Open fleet actions:** 0
 
+## 2026-05
+
+
+| Date | Repo | Mode | Critical | Important | Suggested | Candidates | Reconciled | Report |
+|------|------|------|---------:|----------:|----------:|-----------:|:----------:|--------|
+| 2026-05-16 | ByronWilliamsCPA/reference-library | unknown | 0 | 0 | 0 | 0 | yes | [report](/home/byron/dev/reference-library/docs/compliance-reports/lessons-learned/2026-05-16-b.md) |
+| 2026-05-16 | ByronWilliamsCPA/fragrance-rater | unknown | 8 | 30 | 21 | 21 | yes | [report](/home/byron/dev/fragrance_rater/docs/compliance-reports/lessons-learned/2026-05-16.md) |
+| 2026-05-16 | ByronWilliamsCPA/audio-processor | unknown | 12 | 38 | 15 | 11 | yes | [report](/home/byron/dev/audio_processor/docs/compliance-reports/lessons-learned/2026-05-16.md) |
+| 2026-05-14 | ByronWilliamsCPA/gleif | unknown | 0 | 21 | 5 | 0 | yes | [report](/home/byron/dev/gleif/docs/compliance-reports/lessons-learned/2026-05-14.md) |
+| 2026-05-14 | ByronWilliamsCPA/.claude | unknown | 6 | 17 | 8 | 0 | yes | [report](/home/byron/dev/.claude/docs/compliance-reports/lessons-learned/2026-05-14-github-repo.md) |
+| 2026-05-13 | ByronWilliamsCPA/reference-library | unknown | 3 | 28 | 2 | 4 | yes | [report](/home/byron/dev/reference-library/docs/compliance-reports/lessons-learned/2026-05-13.md) |
+| 2026-05-13 | ByronWilliamsCPA/.claude | unknown | 1 | 10 | 6 | 2 | yes | [report](/home/byron/dev/.claude/docs/compliance-reports/lessons-learned/2026-05-13.md) |
+| 2026-05-08 | ByronWilliamsCPA/family-office-portal | unknown | 6 | 24 | 8 | 3 | yes | [report](/home/byron/dev/family-office-portal/docs/compliance-reports/lessons-learned/2026-05-08.md) |
+| 2026-05-07 | ByronWilliamsCPA/homelab-infra | unknown | 0 | 5 | 1 | 4 | yes | [report](/home/byron/dev/homelab-infra/docs/compliance-reports/lessons-learned/2026-05-07.md) |
+| 2026-05-02 | ByronWilliamsCPA/homelab-infra | unknown | 7 | 42 | 13 | 7 | yes | [report](/home/byron/dev/homelab-infra/docs/compliance-reports/lessons-learned/2026-05-02.md) |
+
+## 2026-04
+
+
+| Date | Repo | Mode | Critical | Important | Suggested | Candidates | Reconciled | Report |
+|------|------|------|---------:|----------:|----------:|-----------:|:----------:|--------|
+| 2026-04-28 | ByronWilliamsCPA/llc-manager | unknown | 11 | 18 | 9 | 15 | yes | [report](/home/byron/dev/llc-manager/docs/compliance-reports/lessons-learned/2026-04-28.md) |
+| 2026-04-25 | ByronWilliamsCPA/gleif | unknown | 10 | 22 | 13 | 8 | yes | [report](/home/byron/dev/gleif/docs/compliance-reports/lessons-learned/2026-04-25.md) |
+
 ---
-*Rendered 2026-05-17 05:52:03 from master-log.jsonl by compliance_log_render.py.*
+*Rendered 2026-05-17 05:57:11 from master-log.jsonl by compliance_log_render.py.*
