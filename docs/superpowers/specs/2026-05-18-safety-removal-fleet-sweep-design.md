@@ -1,14 +1,14 @@
 ---
 schema_type: common
 title: Safety Scanner Removal Fleet Sweep Design
-status: published
+status: draft
 owner: engineering
 tags: [security, ci_cd, github_actions, compliance, standards]
 purpose: Design for removing the redundant safety SCA scanner from the org workflow, two cookiecutter templates, and five live consumer repos in BWCPA and williaby, replacing nothing because OSV-Scanner, pip-audit, Dependency-Review, and Renovate already cover Python dep vulnerability scanning.
 ---
 
 **Date**: 2026-05-18
-**Status**: Published
+**Status**: Draft
 **Author**: Byron Williams
 **Related**: `ByronWilliamsCPA/.github` PRs #136, #137, #138; `security-analysis-workflow-regression-report.md`
 
@@ -53,17 +53,6 @@ existing scanner stack.
 Safety's free tier provides only Python CVE scanning (a subset of OSV-Scanner's
 data sources). License scanning is a paid-tier feature and is not invoked by
 the workflow. No feature the workflow actually uses is lost by removal.
-
-**Correction (2026-05-18, post Task 0 pre-flight)**: an earlier version of this
-section asserted no current workflow uses paid safety features. Task 0 surfaced
-`williaby/PromptCraft/.github/workflows/renovate-auto-merge.yml`, which uses
-`safety scan` with a `SAFETY_API_KEY`. The key is on the free tier (single
-codebase, 100 scans/month, public vulnerability data, same data as
-unauthenticated scans). The key authenticates the safety web dashboard for the
-one registered codebase; it does NOT unlock proprietary vulnerability data,
-license scanning, or any other paid feature. Per user decision, this file is
-in scope for removal in Task 7; the `SAFETY_API_KEY` repository secret is
-deleted post-merge.
 
 ### Standards alignment
 
