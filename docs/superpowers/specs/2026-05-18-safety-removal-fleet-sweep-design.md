@@ -54,6 +54,17 @@ Safety's free tier provides only Python CVE scanning (a subset of OSV-Scanner's
 data sources). License scanning is a paid-tier feature and is not invoked by
 the workflow. No feature the workflow actually uses is lost by removal.
 
+**Correction (2026-05-18, post Task 0 pre-flight)**: an earlier version of this
+section asserted no current workflow uses paid safety features. Task 0 surfaced
+`williaby/PromptCraft/.github/workflows/renovate-auto-merge.yml`, which uses
+`safety scan` with a `SAFETY_API_KEY`. The key is on the free tier (single
+codebase, 100 scans/month, public vulnerability data, same data as
+unauthenticated scans). The key authenticates the safety web dashboard for the
+one registered codebase; it does NOT unlock proprietary vulnerability data,
+license scanning, or any other paid feature. Per user decision, this file is
+in scope for removal in Task 7; the `SAFETY_API_KEY` repository secret is
+deleted post-merge.
+
 ### Standards alignment
 
 - `CHECK-PYTOOL-005`: "safety absent from dependencies (replaced by pip-audit)"
