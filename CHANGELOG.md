@@ -106,6 +106,33 @@
 
 ### Feature
 
+* feat(catalog): add `scripts/populate-github-repos.py` (stdlib-only Python)
+  that merges live `gh repo list` output into
+  `docs/reference/github-repos.json` for both ByronWilliamsCPA and williaby
+  orgs, refreshing live fields (`name`, `url`, `defaultBranch`, `isPrivate`,
+  `isArchived`) while preserving every manual annotation (`repositoryType`,
+  `branchProtectionExempt`, `migrationPhase`, `usesDocker`, `servesApi`,
+  `review.*`, `api.*`); `description` is treated as a fill-on-first-add
+  annotation (set when a repo is added, never overwritten on refresh) because
+  several catalog entries carry curated descriptions richer than what is on
+  GitHub; new repos get a skeleton entry with `repositoryType: unclassified`
+  so the next compliance audit catches them; deletions default to
+  conservative (existing entries kept), opt-in `--prune` flag removes
+  catalog entries whose repo is absent from the live response; output is
+  sorted case-insensitively by `(org, name)` to match the existing layout;
+  exits 0 whether or not the file changed (CI inspects the git diff to
+  decide whether to open a PR); ships unit tests at
+  `tests/unit/test_populate_github_repos.py` covering round-trip annotation
+  preservation, skeleton entry creation, prune behaviour, no-change exit,
+  and sort order; ships `.github/workflows/catalog-refresh.yml` triggered
+  on `workflow_dispatch` and on merged PRs labeled `ci`, `enhancement`,
+  `security`, or `automated`, which runs the script and opens a follow-up
+  PR only when the catalog actually changed (no PR noise on no-op runs);
+  the workflow consumes only the PR number from event context, passed via
+  `env:` to prevent shell injection, and uses an optional
+  `CATALOG_REFRESH_PAT` secret with `GITHUB_TOKEN` fallback for cross-PR
+  authorship; closes #110
+
 * feat(compliance): add compliance retrospective aggregation system; introduces a central master log (`docs/compliance-reports/master-log.jsonl`) that consolidates per-repo compliance retrospectives into a fleet-wide rollup with a deterministic Markdown view (`master-log.md`); ships `scripts/compliance_log_common.py` (shared JSONL helpers: load, dedupe, supersede resolution), `scripts/compliance_log_render.py` (pure JSONL-to-Markdown renderer), `scripts/compliance_log_append.py` (write helper invoked by the compliance-retrospective agent; auto-resolves the central log path via repo discovery and handles supersede semantics), and `scripts/compliance_rollup_reconcile.py` (walks every catalog repo's per-repo retrospectives and backfills missing entries); adds the `/compliance-rollup` and `/compliance-synthesis` slash commands and a `compliance-synthesis` agent that computes trending recurrence, stuck candidates, fleet-action follow-through, coverage gaps, and override hotspots, then re-registers its weekly cron on success (self-perpetuating cadence); extends the `compliance-retrospective` agent with Step 7 (push a structured session entry to the central master log via `scripts/compliance_log_append.py`); narrows the `docs/compliance-reports/` gitignore to only `state/*` so the tracked master log and synthesis reports are versioned while per-repo audit artifacts and legacy session retrospectives remain ignored via the central root's child `.gitignore`; operational one-time setup steps documented in `docs/compliance-reports/POST_MERGE.md` and `SCHEDULER.md`
 
 * feat(compliance): add PC-014 (no-em-dash exclude tracking) and FOUND-016 (LICENSE placeholder detection) manifest checks; PC-014 requires every no-em-dash hook exclusion (whether a YAML list entry or a regex alternation segment under `exclude:`/`files:`) to carry a tracked cleanup reference (GitHub issue link or `cleanup by YYYY-MM-DD` comment) within 6 lines above the entry, addressing the reference-library audit (2026-05-15) finding of 938 untracked em-dash occurrences across 67 files; FOUND-016 (severity critical) flags literal OSI-template placeholders (`<year>`, `<copyright holders>`, `<name of author>`, `<organization>`) in LICENSES/ files because SPDX, REUSE, and ScanCode scanners read the license file directly and mark a placeholder-containing LICENSE as unlicensed regardless of REUSE.toml attribution; FOUND-016 carries `source_frameworks: [REUSE Specification 3.3, SPDX REUSE Annex]`; three additional retrospective candidates (FOUND-017 REUSE.toml year sanity, FOUND-018 README freshness, PC-015 yamllint explicit `--config-file`) deferred pending the 3-repo recurrence threshold or to avoid structural hedging against hypothetical tooling drift
