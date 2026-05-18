@@ -35,7 +35,7 @@ permissions:
 jobs:
   mutation:
     name: Mutation Testing
-    uses: ByronWilliamsCPA/.github/.github/workflows/python-mutation.yml@b29a870cb21a8f913e5c6c5f08740a4bdd94d0ca  # main
+    uses: ByronWilliamsCPA/.github/.github/workflows/python-mutation.yml@eb529609e38f05eb713419e4ee9cfff9cc95decc  # main
     with:
       python-version: '3.12'
       source-directory: 'src'
@@ -44,4 +44,7 @@ jobs:
       fail-under-threshold: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.fail_under_threshold == 'true' }}
       post-pr-comment: false
       timeout-minutes: 60
+      # claude-config has no published wheel; the shared workflow defaults
+      # no-build: true which would block the editable install.
+      no-build: false
     secrets: inherit  # pragma: allowlist secret
