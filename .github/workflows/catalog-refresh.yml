@@ -76,12 +76,43 @@ jobs:
       - name: Detect changes
         id: diff
         run: |
-          if git diff --quiet docs/reference/github-repos.json; then
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-            echo "Catalog is up to date; no PR needed."
-          else
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-            git diff --stat docs/reference/github-repos.json
+          set -euo pipefail
+          # Capture git diff exit code explicitly: 0 = no diff, 1 = diff,
+          # >1 = git error (missing file, repo corrupt). The conditional
+          # `if git diff` would mask >1 as "changed" and proceed to commit
+          # an unrelated state; `set -e` does not trip on the if-condition.
+          rc=0
+          git diff --quiet -- docs/reference/github-repos.json || rc=$?
+          case "$rc" in
+            0)
+              echo "changed=false" >> "$GITHUB_OUTPUT"
+              echo "Catalog is up to date; no PR needed."
+              ;;
+            1)
+              echo "changed=true" >> "$GITHUB_OUTPUT"
+              git diff --stat -- docs/reference/github-repos.json
+              ;;
+            *)
+              echo "::error::git diff failed with exit code $rc"
+              exit "$rc"
+              ;;
+          esac
+
+      - name: Verify CATALOG_REFRESH_PAT before push
+        # Precondition: fail loudly BEFORE git push if the PAT is missing.
+        # The fallback to GITHUB_TOKEN lets `gh pr create` succeed only on
+        # PATs with cross-PR scope; without the PAT, push leaves an orphan
+        # branch on origin and `gh pr create` fails after the fact. Run this
+        # check first so the failure happens before any remote mutation.
+        # Secrets are not allowed in `if:`; use env: + bash check instead.
+        if: steps.diff.outputs.changed == 'true'
+        env:
+          PAT: ${{ secrets.CATALOG_REFRESH_PAT }}
+        run: |
+          set -euo pipefail
+          if [ -z "${PAT:-}" ]; then
+            echo "::error::CATALOG_REFRESH_PAT secret is required to open the follow-up PR. Configure a fine-grained PAT with contents:write and pull-requests:write on this repo."
+            exit 1
           fi
 
       - name: Open follow-up PR
