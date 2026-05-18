@@ -40,10 +40,10 @@ Spend 30-60 minutes on this before writing code. If any link 404s, the canonical
 | 2 | [PR #116](https://github.com/ByronWilliamsCPA/.claude/pull/116) | The change that exposed the gaps being closed. |
 | 3 | [Issue #35](https://github.com/ByronWilliamsCPA/.claude/issues/35) | Original incident report (pp-security-master XXE escape). |
 | 4 | [ADR-006: Rules vs Standards](../../architecture/adr/ADR-006-rules-vs-standards.md) | Why allowlist lives in `docs/standards/`, not `.claude/standards/`. |
-| 5 | [`.claude/standards/manifest-changes.md`](../../../.claude/standards/manifest-changes.md) | Commit/PR classification policy. Your PR is `feat(compliance):`. |
+| 5 | `.claude/standards/manifest-changes.md` (repo root path; outside the mkdocs site) | Commit/PR classification policy. Your PR is `feat(compliance):`. |
 | 6 | `docs/standards-manifest.yaml` `CI-007` and `CI-007b` entries (locate by `id:` field; line numbers drift) | Current state you are replacing. |
 | 7 | `.claude/agents/devops-deployment-agent.md` Audit Workflow and Remediation Workflow sections (locate by heading; line numbers drift) | Current dispatch logic you are updating. |
-| 8 | [`.claude/agents/CLAUDE.md`](../../../.claude/agents/CLAUDE.md) | Agent authoring conventions (400-line ceiling; reference standards rather than embedding). |
+| 8 | `.claude/agents/CLAUDE.md` (repo root path; outside the mkdocs site) | Agent authoring conventions (400-line ceiling; reference standards rather than embedding). |
 | 9 | [`docs/_data/tags.yml`](../../_data/tags.yml) | Controlled vocabulary for frontmatter tags. Don't invent new ones; the validator will block your commit. |
 
 ---
