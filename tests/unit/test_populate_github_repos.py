@@ -207,8 +207,12 @@ def test_prune_removes_deleted_repo(
         "ByronWilliamsCPA",
         [{"name": "alpha", "description": "old description"}],
     )
-    # zeta is missing from williaby's live response.
-    fake_gh["williaby"] = []
+    # zeta is missing from williaby's live response, but another williaby
+    # repo is present so the org doesn't trip the empty-response prune guard.
+    fake_gh["williaby"] = _gh_response_for(
+        "williaby",
+        [{"name": "other", "description": "still here"}],
+    )
 
     module.refresh_catalog(catalog_path, prune=False)
     kept = json.loads(catalog_path.read_text(encoding="utf-8"))
@@ -268,7 +272,7 @@ def test_sort_order_is_case_insensitive_by_org_then_name(
     tmp_path: Path,
     fake_gh: dict[str, list[dict[str, Any]]],
 ) -> None:
-    """Repos in output are sorted by (org, name.lower()) to match existing layout."""
+    """Repos sort by (org, name.lower()); cross-org ordering matches existing layout."""
     module = load_module()
     catalog_path = tmp_path / "github-repos.json"
     catalog_path.write_text(
@@ -283,12 +287,155 @@ def test_sort_order_is_case_insensitive_by_org_then_name(
             {"name": "audio-processor"},
         ],
     )
-    fake_gh["williaby"] = []
+    fake_gh["williaby"] = _gh_response_for(
+        "williaby",
+        [
+            {"name": "Zeppelin"},
+            {"name": "alpha-tool"},
+        ],
+    )
 
     module.refresh_catalog(catalog_path, prune=False)
 
     out = json.loads(catalog_path.read_text(encoding="utf-8"))
-    names = [r["name"] for r in out["repos"]]
-    assert names == [".claude", "audio-processor", "DeQA-Doc"], (
-        "Expected case-insensitive sort, got: " + ", ".join(names)
+    pairs = [(r["org"], r["name"]) for r in out["repos"]]
+    # All ByronWilliamsCPA entries must sort before any williaby entry; within
+    # each org, names sort case-insensitively. A regression that swapped the
+    # tuple to (name.lower(), org) would interleave the two orgs.
+    assert pairs == [
+        ("ByronWilliamsCPA", ".claude"),
+        ("ByronWilliamsCPA", "audio-processor"),
+        ("ByronWilliamsCPA", "DeQA-Doc"),
+        ("williaby", "alpha-tool"),
+        ("williaby", "Zeppelin"),
+    ], f"Cross-org sort regression. Got: {pairs}"
+
+
+def test_new_repo_reports_changed_true(
+    tmp_path: Path,
+    fake_gh: dict[str, list[dict[str, Any]]],
+) -> None:
+    """Adding a new repo must mark the catalog as changed."""
+    module = load_module()
+    catalog_path = tmp_path / "github-repos.json"
+    catalog_path.write_text(
+        json.dumps(_seed_catalog(), indent=2) + "\n", encoding="utf-8"
     )
+
+    fake_gh["ByronWilliamsCPA"] = _gh_response_for(
+        "ByronWilliamsCPA",
+        [
+            {"name": "alpha", "description": "old description"},
+            {"name": "brand-new", "description": "fresh repo"},
+        ],
+    )
+    fake_gh["williaby"] = _gh_response_for(
+        "williaby",
+        [{"name": "zeta", "description": "old williaby description"}],
+    )
+
+    changed = module.refresh_catalog(catalog_path, prune=False)
+    assert changed is True
+
+
+def test_empty_description_is_preserved(
+    tmp_path: Path,
+    fake_gh: dict[str, list[dict[str, Any]]],
+) -> None:
+    """An existing entry with description="" must not be refilled from live."""
+    module = load_module()
+    catalog_path = tmp_path / "github-repos.json"
+    seed = _seed_catalog()
+    # Deliberately blank zeta's description to suppress display.
+    for repo in seed["repos"]:
+        if repo["name"] == "zeta":
+            repo["description"] = ""
+    catalog_path.write_text(json.dumps(seed, indent=2) + "\n", encoding="utf-8")
+
+    fake_gh["ByronWilliamsCPA"] = _gh_response_for(
+        "ByronWilliamsCPA",
+        [{"name": "alpha", "description": "old description"}],
+    )
+    fake_gh["williaby"] = _gh_response_for(
+        "williaby",
+        [{"name": "zeta", "description": "github would set this"}],
+    )
+
+    module.refresh_catalog(catalog_path, prune=False)
+
+    refreshed = json.loads(catalog_path.read_text(encoding="utf-8"))
+    zeta = next(r for r in refreshed["repos"] if r["name"] == "zeta")
+    assert zeta["description"] == "", (
+        'Deliberately empty "description": "" must be preserved, not refilled'
+    )
+
+
+def test_main_returns_zero_and_prints_status(
+    tmp_path: Path,
+    fake_gh: dict[str, list[dict[str, Any]]],
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """main() returns 0 and prints an unambiguous status message."""
+    module = load_module()
+    catalog_path = tmp_path / "github-repos.json"
+    catalog_path.write_text(
+        json.dumps(_seed_catalog(), indent=2) + "\n", encoding="utf-8"
+    )
+
+    fake_gh["ByronWilliamsCPA"] = _gh_response_for(
+        "ByronWilliamsCPA",
+        [
+            {
+                "name": "alpha",
+                "description": "old description",
+                "isPrivate": False,
+                "isArchived": False,
+            }
+        ],
+    )
+    fake_gh["williaby"] = _gh_response_for(
+        "williaby",
+        [
+            {
+                "name": "zeta",
+                "description": "old williaby description",
+                "isPrivate": False,
+                "isArchived": False,
+            }
+        ],
+    )
+
+    rc = module.main(["--catalog", str(catalog_path)])
+    assert rc == 0
+    captured = capsys.readouterr()
+    assert "is up to date" in captured.out
+
+
+def test_prune_refuses_empty_org_without_allow_empty(
+    tmp_path: Path,
+    fake_gh: dict[str, list[dict[str, Any]]],
+) -> None:
+    """--prune must refuse when an org returns zero repos unless --allow-empty."""
+    module = load_module()
+    catalog_path = tmp_path / "github-repos.json"
+    catalog_path.write_text(
+        json.dumps(_seed_catalog(), indent=2) + "\n", encoding="utf-8"
+    )
+
+    fake_gh["ByronWilliamsCPA"] = _gh_response_for(
+        "ByronWilliamsCPA",
+        [{"name": "alpha", "description": "old description"}],
+    )
+    fake_gh["williaby"] = []  # Simulate token-scope loss for williaby.
+
+    with pytest.raises(SystemExit) as exc:
+        module.refresh_catalog(catalog_path, prune=True)
+    assert "williaby" in str(exc.value)
+    # The original zeta entry must still be on disk after the refusal.
+    after = json.loads(catalog_path.read_text(encoding="utf-8"))
+    assert any(r["name"] == "zeta" for r in after["repos"])
+
+    # With allow_empty, prune proceeds and zeta is removed.
+    module.refresh_catalog(catalog_path, prune=True, allow_empty=True)
+    pruned = json.loads(catalog_path.read_text(encoding="utf-8"))
+    assert not any(r["name"] == "zeta" for r in pruned["repos"])
