@@ -20,20 +20,32 @@
   capture advisory output without suppressing the scanner's exit code; closes #35
 
 * fix(compliance): extend interrogate docstring coverage gate to `src/` (80%
-  threshold) alongside the existing `scripts/` (85%) invocation; updates
-  `.pre-commit-config.yaml` to register two aliased interrogate hooks
-  (`interrogate-scripts` and `interrogate-src`) with explicit per-path
-  `--fail-under` flags so the thresholds no longer rely on a single
-  pyproject-level setting that cannot diverge per path; updates
-  `docs/standards-manifest.yaml` PC-007 verify directive from
-  `hook_present` to `hook_args` (path scope and threshold checked, not just
-  hook existence) and adds PC-007b (severity important, override_eligible
-  true, not_applicable_when: no src/ package) so a project scoping interrogate
-  to a different path or lower threshold no longer false-passes; updates
-  `.claude/rules/python.md` and `.claude/rules/pre-commit.md` to document both
-  invocations and explain the complementary roles of Ruff D rules
-  (per-function) and interrogate (aggregate coverage trend); current repo
-  scores 100% on `src/` so the new hook passes without code changes; closes #36
+  threshold) alongside the existing `scripts/` (85%) invocation. Registers two
+  aliased hooks (`interrogate-scripts` and `interrogate-src`) in
+  `.pre-commit-config.yaml` with explicit per-path `--fail-under` flags so
+  the thresholds no longer rely on a single pyproject-level setting that
+  cannot diverge per path. Adds `minimum_pre_commit_version: '1.14.0'` (the
+  first release with `alias:` support) so older installs fail fast with a
+  clear message. Current repo scores 100% on `src/`, so the new hook ships
+  green from day one. Closes #36.
+
+* fix(compliance): upgrade PC-007 verify directive from `hook_present` to
+  `hook_args` so the standards auditor checks path scope and threshold rather
+  than just hook existence, and adds PC-007b (severity important,
+  override_eligible true, not_applicable_when: no src/ package) so a project
+  scoping interrogate to a different path or lower threshold no longer
+  false-passes. Extends `.claude/agents/pre-commit-auditor.md` with the
+  `hook_args` directive grammar and alias-based hook lookup so the new
+  manifest text actually enforces what it claims (without the agent
+  extension, the new verify lines would silently degrade to presence-only
+  checks).
+
+* docs: update `.claude/rules/python.md` and `.claude/rules/pre-commit.md` to
+  document both interrogate invocations and the complementary roles of Ruff
+  D rules (per-function) and interrogate (aggregate coverage trend). Adds a
+  CONTRIBUTING.md note documenting the Python 3.12 dev-tooling requirement
+  for pre-commit, which is stricter than the package's
+  `requires-python = ">=3.10"`.
 
 * fix(compliance): rewrite committed `master-log.jsonl` and `master-log.md` so
   `repo_path` and `links.lessons_learned` carry repo-relative paths instead of

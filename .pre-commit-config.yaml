@@ -9,6 +9,12 @@
 # Installation: curl https://qlty.sh | bash
 # Documentation: https://docs.qlty.sh
 
+# Required because PC-007 / PC-007b declare two `interrogate` hook instances
+# via the `alias:` key. `alias` has been supported since pre-commit 1.14.0
+# (Dec 2018); pinning this minimum makes older installs fail fast with a
+# clear error rather than erroring mid-hook execution.
+minimum_pre_commit_version: '1.14.0'
+
 ci:
   autoupdate_schedule: monthly
   autofix_prs: true

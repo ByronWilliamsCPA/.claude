@@ -21,10 +21,20 @@ This project adheres to the [ByronWilliamsCPA organization Code of Conduct](http
 
 ### Prerequisites
 
-- Python 3.10 or higher
+- Python 3.10 or higher for running the package
+- **Python 3.12 installed and available for pre-commit hook execution**
 - uv (0.5+ recommended) for dependency management
 - Git
+- pre-commit 1.14.0 or higher (for `alias:` support on the interrogate hooks)
 - GPG key configured for commit signing (recommended)
+
+> **Note on Python versions**: The package itself supports Python 3.10+ at
+> runtime (`requires-python = ">=3.10"` in `pyproject.toml`). However, the
+> pre-commit toolchain pins several hooks (`interrogate-scripts`,
+> `interrogate-src`, and others) to `language_version: python3.12` to keep
+> dev-time tooling consistent across contributors. Install Python 3.12
+> alongside your preferred runtime, for example with `uv python install 3.12`
+> or your system package manager.
 
 ### Development Environment Setup
 

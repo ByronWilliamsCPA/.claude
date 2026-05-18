@@ -333,21 +333,21 @@ checks:
     severity: important
     description: >-
       interrogate hook present in .pre-commit-config.yaml, scoped to scripts/
-      at a 85% fail-under threshold. Verifies both that the hook exists AND
+      at an 85% fail-under threshold. Verifies both that the hook exists AND
       that its args carry the expected path and threshold; a hook scoped to a
       different path or a lower threshold is a false-pass under hook_present
       alone.
     verify: |
-      hook_present: .pre-commit-config.yaml, interrogate (alias=interrogate-scripts OR args contain scripts/)
-      hook_args: .pre-commit-config.yaml, interrogate-scripts, contains=scripts/, --fail-under 85
+      hook_present: .pre-commit-config.yaml, interrogate
+      hook_args: .pre-commit-config.yaml, id=interrogate, alias=interrogate-scripts, args_contain=scripts/, --fail-under=85
     override_eligible: true
-    not_applicable_when: "repo does not contain Python source files"
+    not_applicable_when: "repo does not contain a scripts/ Python directory"
 
   - id: PC-007b
     domain: pre_commit
     severity: important
     description: >-
-      interrogate hook present in .pre-commit-config.yaml, scoped to src/ at a
+      interrogate hook present in .pre-commit-config.yaml, scoped to src/ at an
       80% fail-under threshold. Ruff D rules and interrogate are complementary:
       Ruff fires per-function on missing docstrings; interrogate measures
       aggregate coverage and catches gradual drift. Without a src/ invocation
@@ -355,8 +355,8 @@ checks:
       individual lint warnings across many PRs, never as a visible coverage
       trend.
     verify: |
-      hook_present: .pre-commit-config.yaml, interrogate (alias=interrogate-src OR second args entry contains src/)
-      hook_args: .pre-commit-config.yaml, interrogate-src, contains=src/, --fail-under 80
+      hook_present: .pre-commit-config.yaml, interrogate
+      hook_args: .pre-commit-config.yaml, id=interrogate, alias=interrogate-src, args_contain=src/, --fail-under=80
     override_eligible: true
     not_applicable_when: "repo does not contain a src/ Python package"
 

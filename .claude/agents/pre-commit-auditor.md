@@ -25,6 +25,49 @@ For `hook_present` checks: Read `.pre-commit-config.yaml` and search for hook ID
 - `hook_present: <file>, A AND B`: PASS only if both hook ID `A` and hook ID `B` are present; FAIL if either is absent
 - `hook_present: <file>, A`: standard single-hook check; PASS if `A` is present
 
+For `hook_args` checks (multi-line verify blocks): a verify block may pair a `hook_present` line with one or more `hook_args` lines (joined by YAML literal block style `|`). Both lines must PASS for the check to PASS. The `hook_args` directive enforces that a specific hook instance carries the expected path scope, threshold, or other CLI flags, closing the false-pass gap where a hook is present but configured to scan a placeholder path or at a permissive threshold.
+
+The `hook_args` grammar is:
+
+```text
+hook_args: <file>, <selector_clause> [, <selector_clause>...], <arg_assertion> [, <arg_assertion>...]
+```
+
+Selector clauses identify a specific hook instance (a single entry in the `hooks:` list under a `repo:` block). At least one `id=` selector is required. When `alias=` is present, both `id` and `alias` must match the YAML keys `id:` and `alias:` on the same hook entry; this disambiguates multiple instances of the same hook id (a pre-commit feature for declaring per-path hook variants).
+
+- `id=<value>`: required. Match the hook entry's `id:` field literally.
+- `alias=<value>`: optional. Match the hook entry's `alias:` field literally. When present, the agent must locate the unique hook with both this id AND this alias; FAIL if no entry matches both fields.
+
+Argument assertions check the matched hook's `args:` list (a YAML sequence of strings):
+
+- `args_contain=<substring>`: PASS if any element of `args:` contains the literal substring. Used for path matches like `args_contain=scripts/` to assert the hook is scoped to `scripts/`.
+- `--<flag>=<value>` or `<flag> <value>`: PASS if the `args:` list contains the flag immediately followed by the value, OR an entry of the form `--flag=value`. Both invocation styles (`['--fail-under', '85']` and `['--fail-under=85']`) must be accepted.
+- Multiple argument assertions on the same `hook_args` line are AND-combined: all must PASS.
+
+Example. Given this `.pre-commit-config.yaml` excerpt:
+
+```yaml
+- id: interrogate
+  alias: interrogate-scripts
+  args: ['-v', '-c', 'pyproject.toml', '--fail-under', '85', 'scripts/']
+```
+
+The verify block:
+
+```text
+hook_present: .pre-commit-config.yaml, interrogate
+hook_args: .pre-commit-config.yaml, id=interrogate, alias=interrogate-scripts, args_contain=scripts/, --fail-under=85
+```
+
+PASSes both lines: `interrogate` is present; the unique hook with id=`interrogate` AND alias=`interrogate-scripts` has an args element containing `scripts/` and the `--fail-under 85` flag/value pair.
+
+Failure modes the auditor must distinguish (each gets its own FINDING):
+
+- Hook id matches but no entry has the expected alias: `alias <X> not found on hook id=<Y>`
+- Alias matches but `args_contain` substring is absent: `hook <alias> args do not contain expected path <substring>`
+- Path substring present but `--flag=value` mismatch: `hook <alias> flag <flag> resolves to <actual> not <expected>` (include the actual value so the operator can see what the wrong threshold is)
+- The verify block is malformed (missing `id=`, unknown assertion key): `verify block malformed: <reason>`; report as a check-author bug, not a repo bug.
+
 For PC-005 specifically (secret scanning):
 - PASS if `detect-secrets` is present with `--baseline .secrets.baseline` in its args, OR if `trufflehog` is present without a silent-skip fallback (i.e., no `|| echo` or `|| true` in the entry)
 - If `detect-secrets` is present but the hook entry lacks `--baseline`: report FINDING with description `detect-secrets hook present but --baseline .secrets.baseline argument is missing`; remediation: add `args: ['--baseline', '.secrets.baseline']` and create the baseline file with `detect-secrets scan > .secrets.baseline`
