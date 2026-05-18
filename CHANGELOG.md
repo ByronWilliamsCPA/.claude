@@ -19,6 +19,22 @@
   including the `if: failure()` follow-up step pattern as the correct way to
   capture advisory output without suppressing the scanner's exit code; closes #35
 
+* fix(compliance): extend interrogate docstring coverage gate to `src/` (80%
+  threshold) alongside the existing `scripts/` (85%) invocation; updates
+  `.pre-commit-config.yaml` to register two aliased interrogate hooks
+  (`interrogate-scripts` and `interrogate-src`) with explicit per-path
+  `--fail-under` flags so the thresholds no longer rely on a single
+  pyproject-level setting that cannot diverge per path; updates
+  `docs/standards-manifest.yaml` PC-007 verify directive from
+  `hook_present` to `hook_args` (path scope and threshold checked, not just
+  hook existence) and adds PC-007b (severity important, override_eligible
+  true, not_applicable_when: no src/ package) so a project scoping interrogate
+  to a different path or lower threshold no longer false-passes; updates
+  `.claude/rules/python.md` and `.claude/rules/pre-commit.md` to document both
+  invocations and explain the complementary roles of Ruff D rules
+  (per-function) and interrogate (aggregate coverage trend); current repo
+  scores 100% on `src/` so the new hook passes without code changes; closes #36
+
 * fix(compliance): rewrite committed `master-log.jsonl` and `master-log.md` so
   `repo_path` and `links.lessons_learned` carry repo-relative paths instead of
   the operator's absolute `/home/<user>/dev/...` paths (Copilot review #114)

@@ -225,12 +225,21 @@ repos:
   # Python Docstring Coverage
   # ============================================================================
   # Interrogate ensures all Python code has proper docstrings
-  # Target: 85% coverage
+  # Targets: 85% coverage on scripts/, 80% coverage on src/
   - repo: https://github.com/econchick/interrogate
     rev: a6268877efd41a21197445cc04cbf28f9c6facba  # 1.7.0
     hooks:
       - id: interrogate
-        args: ['-v', '-c', 'pyproject.toml', 'scripts/']
+        alias: interrogate-scripts
+        name: interrogate (scripts/, 85%)
+        args: ['-v', '-c', 'pyproject.toml', '--fail-under', '85', 'scripts/']
+        language_version: python3.12
+        pass_filenames: false
+        stages: [pre-commit]
+      - id: interrogate
+        alias: interrogate-src
+        name: interrogate (src/, 80%)
+        args: ['-v', '-c', 'pyproject.toml', '--fail-under', '80', 'src/']
         language_version: python3.12
         pass_filenames: false
         stages: [pre-commit]
