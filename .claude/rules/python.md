@@ -171,11 +171,15 @@ class NotFoundError(AppError): ...    # e.g. resource_id: str
   (Google style)
 - **Type Hints**: Required on all function signatures (BasedPyright strict enforces this)
 
-**Docstring coverage gate**: `interrogate` runs at pre-commit and requires 85% docstring
-coverage in `scripts/`. Coverage dropping below the configured threshold blocks the commit;
-individual missing docstrings only fail the gate when they push coverage below 85%. The
-`scripts/` scope reflects the pre-commit gate; the "Required on all public functions" standard
-applies globally and is checked by Ruff `D` rules at lint time.
+**Docstring coverage gate**: `interrogate` runs at pre-commit as two invocations:
+`interrogate-scripts` (85% threshold on `scripts/`) and `interrogate-src` (80% threshold
+on `src/`). Coverage dropping below the configured threshold for either path blocks the
+commit; individual missing docstrings only fail the gate when they push aggregate coverage
+below the threshold. Ruff `D` rules and interrogate are complementary, not substitutes:
+Ruff fires per-function on every missing docstring, while interrogate measures the project-wide
+coverage rate and catches gradual drift. The lower 80% threshold on `src/` accommodates
+internal helpers while still catching trend regressions; `scripts/` sits at 85% because utility
+scripts have a flatter call surface and benefit from tighter documentation pressure.
 
 **Docstring argument validation**: `darglint` runs at pre-commit and validates that
 documented `Args`, `Returns`, and `Raises` sections match the actual function signature.
