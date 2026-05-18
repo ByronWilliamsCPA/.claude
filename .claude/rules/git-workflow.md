@@ -26,6 +26,14 @@ git checkout -b {type}/{descriptive-slug}
 | `hotfix/` | `fix:` | Patch (0.0.X) | Critical fixes |
 | `spike/` | `chore:` | No release | Exploratory/throwaway; reduced gate set (see below) |
 
+#### Manifest changes
+
+Changes to `docs/standards-manifest.yaml` follow a refinement of this table. New
+check IDs may be `feat:` or `fix:` depending on whether they close a documented
+gap or add new enforcement; `override_eligible` inversions and check-ID removals
+are `feat!:`. See `.claude/standards/manifest-changes.md` for the full decision
+tree, examples, and PR-splitting guidance.
+
 #### Spike branches
 
 `spike/` branches are for time-boxed exploration. They trade review depth for speed.

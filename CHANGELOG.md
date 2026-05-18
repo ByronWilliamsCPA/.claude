@@ -2,6 +2,24 @@
 
 ## Unreleased
 
+### Docs
+
+* docs(compliance): codify manifest-change classification policy in
+  `.claude/standards/manifest-changes.md`, mapping `fix:` / `feat:` / `feat!:` /
+  `docs:` to specific manifest-edit patterns with a decision tree and worked
+  examples; addresses the `fix:` vs `feat:` ambiguity surfaced by PR #116. The
+  policy lives in `.claude/standards/` (on-demand reference) per ADR-006 because
+  it only matters when modifying `docs/standards-manifest.yaml`. Adds a small
+  pointer subsection to `.claude/rules/git-workflow.md`.
+* docs(architecture): propose ADR-008 (two-tier scanner allowlist for CI-007 and
+  CI-007b) recording the design that closes the coverage and precision gaps left
+  by PR #116. Decision moves the scanner allowlist from inline manifest regex to
+  `docs/standards/scanner-allowlist.yaml` with explicit tier classification
+  (`must_block` vs `advisory_by_intent`), and switches audit detection to
+  `uses:`-first dispatch with `run:` regex as fallback. ADR is marked Proposed;
+  implementation lands in a separate `feat(compliance):` PR after the design
+  transitions to Accepted.
+
 ### Fix
 
 * fix(compliance): broaden CI-007 in `docs/standards-manifest.yaml` to scan every
