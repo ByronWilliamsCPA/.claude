@@ -313,6 +313,7 @@ known-first-party = ["claude_config"]
     "SIM",    # Simplification suggestions (scripts prioritize clarity)
     "N802",   # AST visitor methods require mixed-case names (visit_BinOp etc.)
     "RET504", # Unnecessary assignment before return (clarity over brevity)
+    "S603",   # Subprocess with controlled, non-user input (mirrors tools/**)
 ]
 
 # Benchmarks (performance testing)

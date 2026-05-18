@@ -1,0 +1,152 @@
+# Refresh docs/reference/github-repos.json from live `gh repo list` output.
+#
+# Triggers:
+#   - workflow_dispatch: manual refresh on demand.
+#   - pull_request_target (closed + merged): after any PR with the `ci`,
+#     `enhancement`, `security`, or `automated` label merges to main. Those
+#     labels are the realistic surface for workflow/standards changes that
+#     could rotate workflow files, archive a repo, or rename a default branch.
+#
+# Behaviour: runs scripts/populate-github-repos.py against a clean checkout of
+# main. If the catalog file changes, opens a follow-up PR; if not, exits with
+# no PR noise. Never auto-merges; always lands a human-reviewed PR so the
+# annotation-vs-live distinction stays human-validated.
+#
+# Security note: only github.event.pull_request.number is consumed from event
+# context, and it is passed via env: rather than ${{ }} interpolation in run:
+# blocks. No untrusted strings (titles, branch names, descriptions) reach a
+# shell command.
+
+name: Catalog Refresh
+
+on:
+  workflow_dispatch:
+  pull_request_target:
+    types: [closed]
+
+permissions: {}
+
+concurrency:
+  group: catalog-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    name: Refresh github-repos.json
+    if: >-
+      github.event_name == 'workflow_dispatch'
+      || (
+        github.event.pull_request.merged == true
+        && github.event.pull_request.base.ref == 'main'
+        && (
+          contains(github.event.pull_request.labels.*.name, 'ci')
+          || contains(github.event.pull_request.labels.*.name, 'enhancement')
+          || contains(github.event.pull_request.labels.*.name, 'security')
+          || contains(github.event.pull_request.labels.*.name, 'automated')
+        )
+      )
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Harden the runner
+        uses: step-security/harden-runner@9ca718d3bf646d6534007c269a635b3e54cadf99  # v2.19.2
+        with:
+          egress-policy: audit
+
+      - name: Checkout main
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          ref: main
+          # Default GITHUB_TOKEN cannot create PRs to the same repo when
+          # actions are restricted. The CATALOG_REFRESH_PAT secret carries a
+          # fine-grained PAT with contents:write and pull-requests:write on
+          # this repo only. If the secret is missing, fall back to
+          # GITHUB_TOKEN and let `gh pr create` fail with a clear message
+          # rather than silently committing without opening a PR.
+          token: ${{ secrets.CATALOG_REFRESH_PAT || secrets.GITHUB_TOKEN }}
+
+      - name: Run populate script
+        env:
+          GH_TOKEN: ${{ secrets.CATALOG_REFRESH_PAT || secrets.GITHUB_TOKEN }}
+        run: python3 scripts/populate-github-repos.py
+
+      - name: Detect changes
+        id: diff
+        run: |
+          set -euo pipefail
+          # Capture git diff exit code explicitly: 0 = no diff, 1 = diff,
+          # >1 = git error (missing file, repo corrupt). The conditional
+          # `if git diff` would mask >1 as "changed" and proceed to commit
+          # an unrelated state; `set -e` does not trip on the if-condition.
+          rc=0
+          git diff --quiet -- docs/reference/github-repos.json || rc=$?
+          case "$rc" in
+            0)
+              echo "changed=false" >> "$GITHUB_OUTPUT"
+              echo "Catalog is up to date; no PR needed."
+              ;;
+            1)
+              echo "changed=true" >> "$GITHUB_OUTPUT"
+              git diff --stat -- docs/reference/github-repos.json
+              ;;
+            *)
+              echo "::error::git diff failed with exit code $rc"
+              exit "$rc"
+              ;;
+          esac
+
+      - name: Verify CATALOG_REFRESH_PAT before push
+        # Precondition: fail loudly BEFORE git push if the PAT is missing.
+        # The fallback to GITHUB_TOKEN lets `gh pr create` succeed only on
+        # PATs with cross-PR scope; without the PAT, push leaves an orphan
+        # branch on origin and `gh pr create` fails after the fact. Run this
+        # check first so the failure happens before any remote mutation.
+        # Secrets are not allowed in `if:`; use env: + bash check instead.
+        if: steps.diff.outputs.changed == 'true'
+        env:
+          PAT: ${{ secrets.CATALOG_REFRESH_PAT }}
+        run: |
+          set -euo pipefail
+          if [ -z "${PAT:-}" ]; then
+            echo "::error::CATALOG_REFRESH_PAT secret is required to open the follow-up PR. Configure a fine-grained PAT with contents:write and pull-requests:write on this repo."
+            exit 1
+          fi
+
+      - name: Open follow-up PR
+        if: steps.diff.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.CATALOG_REFRESH_PAT || secrets.GITHUB_TOKEN }}
+          TRIGGER_PR: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          BRANCH="chore/catalog-refresh-$(date -u +%Y%m%d-%H%M%S)"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add docs/reference/github-repos.json
+          git commit -m "chore(catalog): refresh github-repos.json from live gh repo list"
+          git push -u origin "$BRANCH"
+          TRIGGER_LINE=""
+          if [ -n "${TRIGGER_PR:-}" ]; then
+            TRIGGER_LINE="Triggered by merge of #${TRIGGER_PR}."
+          fi
+          gh pr create \
+            --base main \
+            --head "$BRANCH" \
+            --title "chore(catalog): refresh github-repos.json" \
+            --body "Auto-generated by .github/workflows/catalog-refresh.yml.
+
+          Refreshes live fields (name, url, defaultBranch, isPrivate,
+          isArchived) and adds skeleton entries for new repos. Manual
+          annotations (repositoryType, branchProtectionExempt, migrationPhase,
+          servesApi, review.*, api.*, description on existing entries) are
+          preserved.
+
+          ${TRIGGER_LINE}
+
+          Review the diff before merging. The script does not prune deleted
+          repos by default; if any are listed for removal, confirm the repo is
+          intentionally gone from GitHub before approving."
