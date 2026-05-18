@@ -211,8 +211,10 @@ Pros: the verify field becomes a thin reference to the script; arbitrary logic
 is possible. Cons: pulls the manifest-LLM-interpreter contract into Python
 land for one check pair, breaking the consistency of how `repo-compliance`
 agents read the manifest; harder for non-coding contributors to add scanners.
-Deferred for now; reconsider if the YAML allowlist's expressivity becomes
-insufficient.
+**Rejected for now (deferred for re-evaluation):** if the YAML allowlist's
+expressivity proves insufficient (e.g., conditional dispatch based on
+workflow-level inputs the agent cannot statically resolve), this option
+re-opens.
 
 ## Consequences
 

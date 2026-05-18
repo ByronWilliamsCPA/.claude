@@ -127,7 +127,11 @@ CHANGELOG entries follow the same type derivation. The section headers must matc
 - `feat(compliance):` -> `### Feat` section under `[Unreleased]`
 - `feat!(compliance):` -> `### Breaking` section under `[Unreleased]`; include a
   `BREAKING CHANGE:` footer in the commit message describing what consumers must do
-- `docs(compliance):` -> no CHANGELOG entry required for purely editorial changes
+- `docs(compliance):` -> no CHANGELOG entry required for editorial changes to existing
+  manifest entries (typo fixes, rewording, `notes:` additions). When a `docs(compliance):`
+  commit adds an entirely new doc that explains manifest policy or design (e.g., a new
+  standard like this file, a new ADR), log a CHANGELOG entry under `### Docs` so
+  consumers can find the new reference.
 
 When a combined PR (per the inseparability exception above) is classified `fix:`,
 the CHANGELOG entry should still describe both halves in the body so consumers
@@ -140,7 +144,7 @@ Concrete examples mapped to types:
 | Change | Type | Rationale |
 | --- | --- | --- |
 | Add CI-014 for a previously-unchecked enforcement area | `feat(compliance):` | No preceding gap; new capability |
-| Add CI-007b to close a documented XXE-escape path | `fix(compliance):` | New ID, but closes incident; PR #116 precedent |
+| Add CI-007b to close a documented XXE-escape path | `fix(compliance):` | New ID, but closes incident; PR #116 precedent. NOTE: PR #116 also broadened CI-007's scope in the same commits; the combined PR took `fix:` per the inseparability exception below. A hypothetical standalone CI-007b addition that closes the same incident is still `fix:` because the dominant motivation is incident closure, not new capability. |
 | Broaden CI-007 verify from one file to all workflows | `fix(compliance):` | Scope was a bug in the original check |
 | Add a new `severity:` tier to the schema | `feat(compliance):` | New capability dimension |
 | Invert `override_eligible` on CI-005 from true to false | `feat!(compliance):` | Consumers who overrode can no longer do so |

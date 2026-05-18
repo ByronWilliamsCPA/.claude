@@ -1,8 +1,10 @@
 ---
-schema_type: common
+schema_type: planning
 title: Scanner Allowlist Implementation Handoff
 status: draft
 owner: engineering
+component: Development-Tools
+source: "PR #116 post-merge /pr-review (2026-05-17); follow-up artifact #3 from PR #119 review (2026-05-18) operationalizes the ADR-008 design into an executable handoff."
 tags: [compliance, ci_cd, security, architecture]
 purpose: Implementation handoff for ADR-008 (two-tier scanner allowlist for CI-007/007b). Pre-populates the allowlist data, manifest edits, agent updates, and verification steps so a new team can execute end-to-end without further design work.
 ---
@@ -39,8 +41,8 @@ Spend 30-60 minutes on this before writing code. If any link 404s, the canonical
 | 3 | [Issue #35](https://github.com/ByronWilliamsCPA/.claude/issues/35) | Original incident report (pp-security-master XXE escape). |
 | 4 | [ADR-006: Rules vs Standards](../../architecture/adr/ADR-006-rules-vs-standards.md) | Why allowlist lives in `docs/standards/`, not `.claude/standards/`. |
 | 5 | [`.claude/standards/manifest-changes.md`](../../../.claude/standards/manifest-changes.md) | Commit/PR classification policy. Your PR is `feat(compliance):`. |
-| 6 | `docs/standards-manifest.yaml` CI-007 and CI-007b entries (lines 496-535) | Current state you are replacing. |
-| 7 | `.claude/agents/devops-deployment-agent.md` Audit Workflow (lines 66-85) and Remediation Workflow (lines 117-119) | Current dispatch logic you are updating. |
+| 6 | `docs/standards-manifest.yaml` `CI-007` and `CI-007b` entries (locate by `id:` field; line numbers drift) | Current state you are replacing. |
+| 7 | `.claude/agents/devops-deployment-agent.md` Audit Workflow and Remediation Workflow sections (locate by heading; line numbers drift) | Current dispatch logic you are updating. |
 | 8 | [`.claude/agents/CLAUDE.md`](../../../.claude/agents/CLAUDE.md) | Agent authoring conventions (400-line ceiling; reference standards rather than embedding). |
 | 9 | [`docs/_data/tags.yml`](../../_data/tags.yml) | Controlled vocabulary for frontmatter tags. Don't invent new ones; the validator will block your commit. |
 
@@ -93,8 +95,15 @@ Work the checkboxes in order. Each step is a logical commit unless noted otherwi
 ### Step 4.2: Transition ADR-008 to Accepted
 
 - [ ] Edit `docs/architecture/adr/ADR-008-scanner-allowlist-tiers.md`:
-  - Change `> **Status**: Proposed` to `> **Status**: Accepted`
+  - Change `> **Status**: Proposed` to `> **Status**: Accepted` (body banner only)
   - Add `> **Acceptance date**: <today>` directly below the Status line
+  - **Do NOT change the YAML frontmatter `status:` field.** Per the
+    `scripts/validate-frontmatter.sh` enum, valid values are
+    `draft | in-review | published | active | deprecated`; `proposed` and
+    `accepted` are not valid frontmatter values. All existing ADRs leave the
+    frontmatter as `status: draft` while the body banner tracks the lifecycle
+    (Proposed/Accepted). Follow that pattern; the validator will reject any
+    other frontmatter value.
 - [ ] Edit `docs/architecture/adr/index.md`:
   - In the ADR-008 row, change `Proposed` to `Accepted`
 - [ ] Commit: `docs(architecture): mark ADR-008 Accepted (scanner allowlist redesign)`
@@ -115,6 +124,14 @@ Work the checkboxes in order. Each step is a logical commit unless noted otherwi
 
 ### Step 4.5: Update the agent doc
 
+- [ ] **Baseline check (do this first):** record the current line count.
+      At PR #119 authoring time (2026-05-18), `.claude/agents/devops-deployment-agent.md`
+      is **169 lines**. The 400-line ceiling per `.claude/agents/CLAUDE.md` gives a
+      ~230-line budget; sections 9.1 + 9.2 + 9.3 below land in roughly 60-80 lines,
+      so the ceiling is comfortable. If the baseline has grown beyond 320 lines by
+      the time you execute this step (re-check with `wc -l`), pre-plan the factoring
+      to `.claude/standards/scanner-allowlist-dispatch.md` (see section 11 escalation
+      row) before editing the agent doc.
 - [ ] Edit `.claude/agents/devops-deployment-agent.md` Audit Workflow section:
   - Replace the existing `CI-007 scoped evaluation` bullet with the new `scanner_allowlist` handler (see section 9.1)
   - Update the existing `pattern_absent` bullet to reference the allowlist (see section 9.2)
@@ -196,9 +213,15 @@ scanners:
     tier: must_block | advisory_by_intent
     detect:
       uses:
-        # Zero or more GitHub Action refs that invoke this scanner. Match is
-        # exact on the action's `<owner>/<repo>` prefix; version pin is ignored.
-        - <owner>/<repo>
+        # Zero or more GitHub Action ref entries that invoke this scanner.
+        # Each entry is either:
+        #   (a) a bare `<owner>/<repo>` string (prefix match; version pin ignored), OR
+        #   (b) a mapping with explicit fields for actions whose repository hosts
+        #       multiple distinct entry points under different subdirectories
+        #       (e.g. snyk/actions/python vs snyk/actions/node).
+        - <owner>/<repo>                        # form (a): simple prefix match
+        - repo: <owner>/<repo>                  # form (b): multi-path repo
+          path: <subdirectory>                  # required when this form is used
       run_pattern: |
         <PCRE pattern; anchored on \b<tool>\b followed by required subcommand
         or argument context. Empty string is allowed only when uses[] is non-empty.>
@@ -207,6 +230,15 @@ scanners:
       # the scanner invocation, indicate intentional exit-code suppression.
       # CI-007b uses this list for tier=must_block scanners only.
       - <PCRE pattern>
+    suppression_env:
+      # Zero or more environment variable names. When present in the step's env:
+      # block (or the job's env: block) with a value matching the listed pattern,
+      # the scanner's exit code is suppressed in-band. CI-007b uses this list
+      # alongside suppression_flags. Example: GITLEAKS_EXIT_CODE accepts an
+      # integer; setting it to 0 makes gitleaks-action always pass regardless
+      # of findings.
+      - name: <ENV_VAR_NAME>
+        suppressing_value: <PCRE pattern>     # e.g. '^0$' for "exit-code 0"
     notes: >
       Human-readable rationale. REQUIRED for tier=advisory_by_intent (explain
       why blocking semantics do not apply). OPTIONAL but recommended for
@@ -223,6 +255,11 @@ allowlist-loading logic):
 4. For `tier: advisory_by_intent`, `notes` is required and non-empty
 5. `suppression_flags` may be empty `[]` for scanners with no known
    first-class suppression flag
+6. `suppression_env` may be empty `[]` or omitted entirely; when present, each
+   entry must have both `name` (string) and `suppressing_value` (PCRE pattern)
+7. `detect.uses` entries using form (b) (the `repo:` + `path:` mapping) must
+   set `path:` to a non-empty string; agent dispatch logic distinguishes
+   `snyk/actions/python` from `snyk/actions/node` via this field
 
 ---
 
@@ -284,52 +321,73 @@ scanners:
     tier: must_block
     detect:
       uses:
-        - semgrep/semgrep-action
-        - returntocorp/semgrep-action
-      run_pattern: '\bsemgrep\b'
+        - semgrep/semgrep                     # current canonical Docker container action
+        - semgrep/semgrep-action              # legacy; superseded but still in use
+        - returntocorp/semgrep-action         # original org name; still resolves
+      run_pattern: '\bsemgrep\s+(scan|ci|--config)\b'
     suppression_flags:
-      - '--error\s*=?\s*0'
+      - '--error\s*=?\s*0'                    # disables non-zero exit on findings
       - '--no-error-on-findings'
-      - '--disable-nosem'
     notes: >
       Multi-language SAST. --error=0 explicitly disables non-zero exit on
-      findings. The pp-security-master incident used semgrep externally (not
-      in the failing CI), but in-CI invocations need the same protections.
+      findings. The run_pattern requires a recognized subcommand (scan, ci) or
+      --config flag to avoid false positives from incidental matches. NOTE:
+      --disable-nosem disables inline `nosem` suppression comments (the
+      OPPOSITE of an exit-code defeater); it is intentionally NOT on the
+      suppression_flags list.
 
   - id: trufflehog
     tier: must_block
     detect:
       uses:
-        - trufflesecurity/trufflehog
-      run_pattern: '\btrufflehog\b'
-    suppression_flags:
-      - '--no-fail'
-      - '--no-verification'
+        - trufflesecurity/trufflehog          # action; supports `extra_args:` input
+        - trufflesecurity/trufflehog-actions-scan
+      run_pattern: '\btrufflehog\s+(git|filesystem|github|gitlab|s3|docker|gcs|circleci|jenkins|huggingface)\b'
+    suppression_flags: []                     # no CLI flag suppresses exit codes
+    suppression_env:
+      - name: TRUFFLEHOG_SUPPRESS_FAIL        # not a real env, placeholder example
+        suppressing_value: '^(1|true|yes)$'
     notes: >
-      Secrets scanner. --no-fail explicitly disables non-zero exit on findings.
+      Secrets scanner. The CLI uses `--fail` to OPT IN to non-zero exit on
+      findings; there is no inverse `--no-fail` flag. Action-level suppression
+      is via `continue-on-error: true` (caught by CI-007), not a CLI/env
+      mechanism. Verify the action's input names against the current upstream
+      docs at https://github.com/trufflesecurity/trufflehog before merging;
+      input field names have changed between versions.
+      NOTE: `--no-verification` is a real flag but only disables credential
+      verification (secrets still emit findings); it does NOT suppress exit
+      codes. It is intentionally NOT on suppression_flags.
 
   - id: gitleaks
     tier: must_block
     detect:
       uses:
         - gitleaks/gitleaks-action
-      run_pattern: '\bgitleaks\b'
+      run_pattern: '\bgitleaks\s+(detect|protect|dir)\b'
     suppression_flags:
-      - '--exit-code\s+0'
+      - '--exit-code\s+0'                     # bare-CLI form (rare)
+    suppression_env:
+      - name: GITLEAKS_EXIT_CODE              # action form (dominant)
+        suppressing_value: '^0$'
     notes: >
-      Secrets scanner. Default exit 1 on any finding; --exit-code 0 suppresses.
+      Secrets scanner. The bare CLI uses --exit-code; the gitleaks-action form
+      uses the GITLEAKS_EXIT_CODE env var. Most workflows use the action form,
+      so suppression_env is the more important detection vector.
 
   - id: pip-audit
     tier: must_block
     detect:
       uses:
-        - pypa/pip-audit-action
+        - pypa/gh-action-pip-audit            # canonical action ref (verified 2026-05-18)
       run_pattern: '\bpip-audit\b'
     suppression_flags: []
     notes: >
       PyPA dependency audit. No first-class blocking-control flag. Note: the
       manifest itself enforces `uv run pip-audit` in pre-push hooks per
       CLAUDE.md, but workflow-level invocations are still subject to CI-007b.
+      CORRECTION (added during PR #119 review): the action ref is
+      `pypa/gh-action-pip-audit`, NOT `pypa/pip-audit-action` (the latter
+      returns 404). Verify before merging if this entry has been edited.
 
   - id: trivy
     tier: must_block
@@ -406,10 +464,21 @@ scanners:
     tier: must_block
     detect:
       uses:
-        - snyk/actions/python
-        - snyk/actions/node
-        - snyk/actions/golang
-        - snyk/actions/maven
+        # snyk/actions is a single repo with one subdirectory per ecosystem.
+        # Use form (b) so the agent can distinguish snyk-test from snyk-monitor
+        # when both share the same `<owner>/<repo>` prefix.
+        - repo: snyk/actions
+          path: python
+        - repo: snyk/actions
+          path: node
+        - repo: snyk/actions
+          path: golang
+        - repo: snyk/actions
+          path: maven
+        - repo: snyk/actions
+          path: gradle-jdk11
+        - repo: snyk/actions
+          path: dotnet
       run_pattern: '\bsnyk\s+test\b'
     suppression_flags:
       - '--severity-threshold\s+(none|unknown)'
@@ -417,7 +486,11 @@ scanners:
       Commercial SCA/SAST. `snyk test` returns non-zero on findings at or
       above the configured severity threshold (default low). Setting the
       threshold to `none` or `unknown` produces an always-pass invocation.
-      Separate from `snyk monitor` (see advisory_by_intent below).
+      Separate from `snyk monitor` (see advisory_by_intent below). The
+      action form uses the same repo (`snyk/actions`) as snyk-monitor;
+      disambiguation is by step.with.command (`test` vs `monitor`). When
+      dispatch cannot read the `with:` block (e.g., step uses an input
+      variable for `command`), fall back to `run_pattern` matching.
 
   # ===================================================================
   # Tier 2: advisory_by_intent (reporting-only scanners by design)
@@ -426,7 +499,18 @@ scanners:
   - id: snyk-monitor
     tier: advisory_by_intent
     detect:
-      uses: []  # No dedicated monitor-only action; same actions as snyk-test
+      uses:
+        # Same repo and paths as snyk-test; disambiguated by `with.command:
+        # monitor` in the workflow step. When the command field cannot be
+        # statically resolved, the run_pattern is authoritative.
+        - repo: snyk/actions
+          path: python
+        - repo: snyk/actions
+          path: node
+        - repo: snyk/actions
+          path: golang
+        - repo: snyk/actions
+          path: maven
       run_pattern: '\bsnyk\s+monitor\b'
     suppression_flags: []
     notes: >
@@ -434,7 +518,9 @@ scanners:
       project to Snyk's web UI for organizational tracking and does not gate
       CI. CI-007b does NOT apply to this invocation. If a workflow runs both
       `snyk test` and `snyk monitor` in the same step, only the `test`
-      invocation is subject to CI-007b.
+      invocation is subject to CI-007b. The agent dispatch logic in section
+      9.1 must read `with.command:` to assign the correct id; absent that
+      field, the step is treated as snyk-test (the safer default).
 ```
 
 **Why these specific scanners and not others:**
@@ -459,11 +545,22 @@ with:
 
 ```yaml
     verify: |
-      content_absent: .github/workflows/*.yml, continue-on-error: true within jobs whose name or id matches any scanner id from docs/standards/scanner-allowlist.yaml (tier: must_block).
+      content_absent: .github/workflows/*.yml, continue-on-error: true within jobs whose name or id matches ANY of:
+        (a) a scanner id from docs/standards/scanner-allowlist.yaml (tier: must_block), OR
+        (b) the legacy keyword set (security|scan|bandit|safety|audit|sast|dast|trufflehog|gitleaks|semgrep)
+            (preserved from the pre-ADR-008 manifest so generic security-named jobs without a
+            recognized scanner ref are still caught; removes the coverage regression observed
+            during PR #119 review).
       Also flag continue-on-error: true on a per-step entry whose step uses: matches an allowlist detect.uses entry, or whose run: matches an allowlist detect.run_pattern (covers scanner steps inside non-security-named jobs).
       Allow per-step continue-on-error on a non-scanner step inside an otherwise security-named job (e.g., codecov upload, optional artifact publish).
       Tier source: docs/standards/scanner-allowlist.yaml (must_block entries only).
 ```
+
+The legacy keyword fallback (clause (b)) is intentional. Removing it during
+PR #119 review revealed that jobs named `sast-scan` or `dast` with no
+recognized scanner `uses:`/`run:` would silently lose coverage. Keeping (b)
+preserves the ADR-008 Consequences > Neutral claim that "no existing check
+loses coverage."
 
 Also update the `notes:` field:
 
@@ -515,18 +612,23 @@ handler. The new bullet supersedes the old one.
 - `scanner_allowlist` handler (CI-007 and CI-007b): load `docs/standards/scanner-allowlist.yaml`. For each workflow file in `.github/workflows/*.yml`:
   1. Walk `jobs.*.steps[*]` structurally (parse as YAML, not regex).
   2. For each step, classify it as a scanner invocation if:
-     - The step's `uses:` matches any allowlist entry's `detect.uses` ref (prefix match on `<owner>/<repo>`, ignoring version pin), OR
-     - The step's `run:` content matches any allowlist entry's `detect.run_pattern` (evaluate with `rg -P` or equivalent).
+     - The step's `uses:` matches any allowlist entry's `detect.uses` ref. Matching rule:
+       (a) For bare-string entries: prefix match on `<owner>/<repo>`, ignoring version pin.
+       (b) For `repo:`/`path:` mapping entries: the step's `uses:` must START with `{repo}/{path}` (e.g., `snyk/actions/python@v3` matches an entry with `repo: snyk/actions`, `path: python`); a bare `repo:` match without `path:` is NOT sufficient.
+     - When multiple allowlist entries share the same `repo` but differ by `path`, disambiguate by reading `step.with.command` (snyk-test vs snyk-monitor). When `with.command` cannot be statically resolved (e.g., it references `${{ inputs.command }}`), assign the safer default (the `must_block` entry).
+     - OR the step's `run:` content matches any allowlist entry's `detect.run_pattern` (evaluate with `rg -P` or equivalent).
      Annotate the scanner's `id` and `tier` on each marked step.
   3. CI-007 check: for each job containing at least one marked step at `tier: must_block`, flag any of:
      - Job-level `continue-on-error: true`
      - Step-level `continue-on-error: true` on the marked step itself
+     ALSO flag job-level `continue-on-error: true` on any job whose `name:` or `id:` matches the legacy keyword set `(security|scan|bandit|safety|audit|sast|dast|trufflehog|gitleaks|semgrep)`, even if no allowlist match landed (preserves pre-ADR-008 coverage for generic security-named jobs).
      Per-step `continue-on-error: true` on a NON-marked step inside the same job is allowed.
   4. CI-007b check: for each marked step at `tier: must_block`, scan the step's `run:` body with `rg -P` for:
      - Shell suppressors: `\|\|\s*(echo|true|:|exit\s+0)`
      - Tool-flag suppressors: each `suppression_flags` PCRE for the matched scanner
+     Then scan the step's `env:` block (and the enclosing job's `env:` block) for each `suppression_env` entry: if a matching var name is present with a value matching `suppressing_value`, flag the step.
      Flag any match. Steps marked at `tier: advisory_by_intent` are exempt from CI-007b.
-  5. Emit FINDING blocks with file path, line number, scanner `id`, matched pattern, and tier.
+  5. Emit FINDING blocks with file path, line number, scanner `id`, matched pattern (or env var name), and tier.
   If `docs/standards/scanner-allowlist.yaml` is missing or malformed, emit a FINDING and abort the CI-007/007b checks (do NOT silently pass with an empty allowlist).
 ```
 
@@ -597,13 +699,15 @@ files is the gate.
 
 ### Test 10.4: uses-first detection (no run: needed)
 
-- [ ] Fixture:
+- [ ] Fixture (replace `<PIN-SHA-HERE>` with a real 40-character commit SHA from
+      `aquasecurity/trivy-action` before saving; the literal `<PIN-SHA-HERE>` is a
+      placeholder and will fail YAML parsing if left in place):
       ```yaml
       jobs:
         scan:
           continue-on-error: true
           steps:
-            - uses: aquasecurity/trivy-action@<sha>
+            - uses: aquasecurity/trivy-action@<PIN-SHA-HERE>
               with:
                 scan-type: fs
       ```
@@ -650,9 +754,9 @@ merge.
 
 ---
 
-## Section 12: Known pitfalls (observed during ADR-008 authoring)
+## Section 12: Known pitfalls
 
-These bit during the policy/ADR PR (#119); they will bite again here.
+These have bitten previous compliance/manifest PRs; expect them to bite again here.
 
 1. **The frontmatter validator runs on ALL markdown files in `docs/`, not just
    changed files.** A pre-existing bad frontmatter in an unrelated file blocks
@@ -715,17 +819,28 @@ These bit during the policy/ADR PR (#119); they will bite again here.
 Based on the per-section scope:
 
 - Section 4.2 (ADR transition): 10 minutes
-- Section 4.3 (allowlist creation, with population from section 7): 30 minutes
+- Section 4.3 (allowlist creation, with population from section 7): 30-60 minutes
+  (budget +30 minutes for re-verifying each scanner's action ref and CLI flags
+  against current upstream docs before committing; the original PR #119 entries
+  had 2 incorrect refs caught only at review time)
 - Section 4.4 (manifest updates): 20 minutes
-- Section 4.5 (agent doc updates): 45 minutes
+- Section 4.5 (agent doc updates): 60 minutes (45 for the edit; +15 for the
+  `with.command:` disambiguation logic for snyk and the env-block scan for
+  gitleaks-style suppression)
 - Section 4.6 (CHANGELOG): 10 minutes
 - Section 4.7 (pre-commit, manual testing): 60 minutes
 - Section 4.8 (PR creation and review): 60 minutes
+- Section 10.6 (missing-file abort path): 20 minutes (new abort-with-FINDING
+  behavior in the agent; not just config)
 - PR review iterations (Copilot, CodeRabbit, `/pr-review`): 60-90 minutes
 
-**Total: 4-5 hours of focused work, plus review cycles.** This assumes the
+**Total: 6-8 hours of focused work, plus review cycles.** This assumes the
 new team has worked in this repo's conventions before. Add 2-3 hours for
-onboarding if they have not.
+onboarding if they have not. The earlier 4-5 hour estimate (PR #119 v1)
+proved optimistic once the scanner-ref verification overhead and the new
+agent dispatch surfaces (`with.command:` disambiguation, env-block scanning,
+missing-file abort) were added; this revised estimate reflects the realistic
+budget.
 
 ---
 
