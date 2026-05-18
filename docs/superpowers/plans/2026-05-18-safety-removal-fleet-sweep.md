@@ -1,14 +1,14 @@
 ---
 schema_type: common
 title: Safety Scanner Removal Fleet Sweep Implementation Plan
-status: published
+status: draft
 owner: engineering
 tags: [security, ci_cd, github_actions, compliance, standards]
 purpose: Step-by-step plan to remove the redundant safety SCA scanner from the org workflow, two cookiecutter templates, and five live consumer repos, then register a manifest rule to prevent reintroduction.
 ---
 
 **Date**: 2026-05-18
-**Status**: Published
+**Status**: Draft
 **Author**: Byron Williams
 **Spec**: [2026-05-18-safety-removal-fleet-sweep-design.md](../specs/2026-05-18-safety-removal-fleet-sweep-design.md)
 
@@ -801,16 +801,10 @@ gh pr checks --watch
 
 **Files:**
 - Modify: `.github/workflows/ci.yml`
-- Modify: `.github/workflows/renovate-auto-merge.yml` (added 2026-05-18 after Task 0 pre-flight surfaced 2 `safety scan` calls with `SAFETY_API_KEY` auth)
-- Modify: `.agents/core/code-reviewer.yaml` (remove safety from tool list)
-- Modify: `.agents/discovery-config.yaml` (remove safety from package list)
 - Modify: `docs/planning/backups/ci-workflows/ci-optimized.yml`
 - Modify: `docs/planning/backups/ci-workflows/ci-original.yml`
-- Post-merge: delete the `SAFETY_API_KEY` repository secret via `gh secret delete SAFETY_API_KEY --repo williaby/PromptCraft`
 
 **Prerequisite:** Task 1 merged.
-
-**Note on Task 7 expanded scope:** Pre-flight (Task 0) surfaced two safety calls in `renovate-auto-merge.yml` that the original `gh search code "safety check"` query missed because the file uses safety 3.x syntax (`safety scan`). These calls use the org's free-tier SAFETY_API_KEY. Per the user's decision (2026-05-18), free tier is single-codebase and uses the same public data as unauthenticated `safety scan`, so the dashboard value does not justify keeping the integration. Remove and delete the secret.
 
 - [ ] **Step 1: Clone and branch**
 
@@ -822,31 +816,20 @@ git fetch origin main
 git checkout -B chore/remove-safety-scanner origin/main
 ```
 
-- [ ] **Step 2: Find safety references (broad)**
+- [ ] **Step 2: Find safety references**
 
 ```bash
-git grep -inE "safety|SAFETY_API_KEY" .github/ docs/planning/backups/ci-workflows/ .agents/ | tee /tmp/promptcraft-safety-refs.txt
+git grep -in "safety" .github/ docs/planning/backups/ci-workflows/ | tee /tmp/promptcraft-safety-refs.txt
 ```
 
 Expected references:
 - `.github/workflows/ci.yml`: `poetry run safety check || echo "Safety check completed with findings"`
-- `.github/workflows/renovate-auto-merge.yml`: two `poetry run safety scan ...` calls plus a `SAFETY_API_KEY: ${{ secrets.SAFETY_API_KEY }}` env entry, plus `safety-report.json` in artifact upload
-- `.agents/core/code-reviewer.yaml`: `safety` listed in a security tools list
-- `.agents/discovery-config.yaml`: `safety` listed in a package list
 - `docs/planning/backups/ci-workflows/ci-optimized.yml`: `poetry run safety check || echo "..."`
 - `docs/planning/backups/ci-workflows/ci-original.yml`: `- name: Run safety check` block
 
 - [ ] **Step 3: Edit `.github/workflows/ci.yml`**
 
 Delete the entire safety step (the `- name:` line through its `run:` block end). The `|| echo` suppression goes away with the step.
-
-- [ ] **Step 3b: Edit `.github/workflows/renovate-auto-merge.yml`**
-
-Delete both `poetry run safety scan ...` invocations (each is preceded by an `if [ -n "$SAFETY_API_KEY" ]` branch). Delete the surrounding shell logic that gates on `SAFETY_API_KEY` if it becomes empty after the safety calls are removed. Delete the `SAFETY_API_KEY: ${{ secrets.SAFETY_API_KEY }}` env entry. Delete `safety-report.json` from the artifact upload `path:` list (keep `osv-report.json` and `bandit-report.json`). Delete the `safety_api_key.txt` file management lines (`echo`, `rm`) since the secret no longer flows in.
-
-- [ ] **Step 3c: Edit `.agents/core/code-reviewer.yaml` and `.agents/discovery-config.yaml`**
-
-Remove the `safety` entry from each file's tool / package list. Adjust surrounding YAML structure (e.g., comma separators in flow-style lists, indentation in block-style lists) so the file remains valid YAML.
 
 - [ ] **Step 4: Edit `docs/planning/backups/ci-workflows/ci-optimized.yml` and `ci-original.yml`**
 
@@ -896,12 +879,9 @@ git add -A
 git commit -m "$(cat <<'EOF'
 chore(security): remove redundant safety scanner
 
-Removes safety from ci.yml, renovate-auto-merge.yml (paid-tier
-SAFETY_API_KEY auth flow), .agents/*.yaml tool lists, and the two
-ci-workflows backups under docs/planning/backups/. Coverage preserved
-by OSV-Scanner, Dependency-Review, and pip-audit. The SAFETY_API_KEY
-secret is now unused and will be deleted post-merge via
-`gh secret delete SAFETY_API_KEY --repo williaby/PromptCraft`.
+Removes safety from ci.yml plus the two ci-workflows backups under
+docs/planning/backups/. Coverage preserved by OSV-Scanner,
+Dependency-Review, and pip-audit.
 
 Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>
 EOF
@@ -909,25 +889,12 @@ EOF
 git push -u origin chore/remove-safety-scanner
 gh pr create --base main \
   --title "chore(security): remove redundant safety scanner" \
-  --body "Mirrors removal in ByronWilliamsCPA/.github. Also: (a) removes the safety scan in renovate-auto-merge.yml that used the free-tier SAFETY_API_KEY (the key is single-codebase on free tier, so it cannot scale to the fleet); (b) drops safety from two .agents/*.yaml tool lists; (c) cleans up two historical ci-workflow backup files under docs/planning/.
-
-Post-merge: \`gh secret delete SAFETY_API_KEY --repo williaby/PromptCraft\` to remove the now-unused secret.
+  --body "Mirrors removal in ByronWilliamsCPA/.github. Also cleans up two historical ci-workflow backup files under docs/planning/.
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)"
 gh pr merge --auto --squash --delete-branch
 gh pr checks --watch
 ```
-
-- [ ] **Step 10: Post-merge cleanup of unused SAFETY_API_KEY secret**
-
-After the PR merges (and only then, since the secret might still be referenced briefly during the merge window):
-
-```bash
-gh secret delete SAFETY_API_KEY --repo williaby/PromptCraft
-gh secret list --repo williaby/PromptCraft | grep -i safety && echo "FAIL: secret still listed" || echo "OK: secret deleted"
-```
-
-Expected: secret deleted and not listed.
 
 ---
 
@@ -1190,12 +1157,15 @@ Expected: Last 5 runs show `Security Analysis / Security Gate Validation` as SUC
 
 - [ ] **Step 4: Mark the design and plan as completed**
 
-Edit `~/dev/.claude/docs/superpowers/specs/2026-05-18-safety-removal-fleet-sweep-design.md` and change `status: draft` to `status: published` in the frontmatter (the project's frontmatter validator accepts only `draft|in-review|published|active|deprecated`; use `published` for completed work). Same for this plan file. Commit both changes in a single commit in `~/dev/.claude`:
+Edit `~/dev/.claude/docs/superpowers/specs/2026-05-18-safety-removal-fleet-sweep-design.md` and change `status: draft` to `status: completed` in the frontmatter. Same for this plan file. Commit both changes in a single commit in `~/dev/.claude`:
 
 ```bash
 cd ~/dev/.claude
-git fetch origin main
-git checkout -b docs/safety-sweep-mark-published origin/main
+git checkout main
+git pull origin main
+# Use a worktree if the working tree is dirty
+git status --short
+# If clean, edit in place; if dirty, create a worktree as in Task 9 Step 1
 ```
 
 Apply the frontmatter change to both files, then:
@@ -1204,7 +1174,7 @@ Apply the frontmatter change to both files, then:
 git add docs/superpowers/specs/2026-05-18-safety-removal-fleet-sweep-design.md \
         docs/superpowers/plans/2026-05-18-safety-removal-fleet-sweep.md
 git commit -m "$(cat <<'EOF'
-docs(spec): mark safety removal sweep as published
+docs(spec): mark safety removal sweep as completed
 
 All 9 PRs merged across BWCPA and williaby; manifest CI-051 active;
 post-merge audit confirmed no remaining safety invocations in
@@ -1213,10 +1183,7 @@ workflow YAML and fragrance-rater Security Gate flipped to SUCCESS.
 Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>
 EOF
 )"
-git push -u origin docs/safety-sweep-mark-published
-gh pr create --base main \
-  --title "docs(spec): mark safety removal sweep as published" \
-  --body "Flip plan and spec frontmatter from draft to published after all 9 sweep PRs merged."
+git push origin main
 ```
 
 ---
