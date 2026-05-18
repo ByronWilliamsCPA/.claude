@@ -4,6 +4,21 @@
 
 ### Fix
 
+* fix(compliance): broaden CI-007 in `docs/standards-manifest.yaml` to scan every
+  file under `.github/workflows/` (not just `security-analysis.yml`) for
+  `continue-on-error: true` on jobs whose name or id matches
+  `(security|scan|bandit|safety|audit|sast|dast|trufflehog|gitleaks|semgrep)`,
+  closing the gap that let a real XXE vulnerability in pp-security-master pass CI
+  when its bandit job lived in `ci.yml`; adds CI-007b (severity important,
+  override_eligible false) that flags command-line exit-code suppression
+  (`bandit ... || echo`, `safety ... || true`, `pip-audit ... || :`,
+  `semgrep ... || exit 0`, equivalents for `osv-scanner`, `trufflehog`,
+  `gitleaks`) in any workflow `run:` block; updates
+  `.claude/agents/devops-deployment-agent.md` with split remediation guidance for
+  the job-manifest path (CI-007) and the command-suppression path (CI-007b)
+  including the `if: failure()` follow-up step pattern as the correct way to
+  capture advisory output without suppressing the scanner's exit code; closes #35
+
 * fix(compliance): rewrite committed `master-log.jsonl` and `master-log.md` so
   `repo_path` and `links.lessons_learned` carry repo-relative paths instead of
   the operator's absolute `/home/<user>/dev/...` paths (Copilot review #114)

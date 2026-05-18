@@ -114,7 +114,9 @@ Replace the tag ref with the 40-char SHA and add the version as a comment: `@<sh
     egress-policy: audit
 ```
 
-**CI-007 (blocking security scan):** Remove `continue-on-error: true` from security workflow jobs using Edit.
+**CI-007 (blocking security scan, job manifest):** Search every file under `.github/workflows/` for jobs whose `name:` or job id matches `(security|scan|bandit|safety|audit|sast|dast|trufflehog|gitleaks|semgrep)`. For each match carrying `continue-on-error: true`, remove the line via Edit. Per-step `continue-on-error` on a non-security step inside the same job (codecov upload, optional artifact publish) is allowed; only the job-level setting and per-step settings on the scanner step itself are violations.
+
+**CI-007b (blocking security scan, command suppression):** In the same workflow files, grep each `run:` block for the pattern `(bandit|safety|osv-scanner|semgrep|trufflehog|gitleaks|pip-audit)\b.*\|\|\s*(echo|true|:|exit\s+0)`. For each hit, remove the `|| echo "..."` (or equivalent) so the scanner's non-zero exit code propagates. If the original intent was to capture advisory output for a comment, replace the suppressor with a follow-up step gated on `if: failure()`, not a same-line `||`.
 
 **CI-008 (copilot-instructions.md):** Create `.github/copilot-instructions.md` with:
 

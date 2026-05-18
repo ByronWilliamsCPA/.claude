@@ -496,9 +496,41 @@ checks:
   - id: CI-007
     domain: ci
     severity: important
-    description: "Security scan jobs have no continue-on-error: true"
-    verify: "content_absent: .github/workflows/security-analysis.yml, continue-on-error"
+    description: >-
+      No workflow job whose name or id contains "security", "scan", "bandit",
+      "safety", "audit", "sast", "dast", "trufflehog", "gitleaks", or "semgrep"
+      may carry continue-on-error: true. Applies to every file under
+      .github/workflows/, not just security-analysis.yml. A security job that
+      suppresses its own exit code makes the entire scan advisory and lets real
+      findings (CVEs, secrets, taint flows) pass CI silently.
+    verify: |
+      content_absent: .github/workflows/*.yml, continue-on-error: true
+      Scope: jobs whose name or id matches (security|scan|bandit|safety|audit|sast|dast|trufflehog|gitleaks|semgrep).
+      Per-step continue-on-error on a non-security step (e.g., codecov upload) is allowed.
     override_eligible: false
+    notes: >
+      Original scope (security-analysis.yml only) missed a real XXE vulnerability in
+      pp-security-master where the bandit job lived in ci.yml with continue-on-error: true.
+      Broadened to all workflows 2026-05-17 (issue #35).
+
+  - id: CI-007b
+    domain: ci
+    severity: important
+    description: >-
+      Security scan commands must not suppress their exit codes with || echo,
+      || true, || :, or || exit 0. This pattern produces a passing step even when
+      the scanner finds a high-severity issue, defeating CI-007 from the command
+      line rather than the job manifest.
+    verify: |
+      pattern_absent: .github/workflows/*.yml
+      Forbidden pattern: (bandit|safety|osv-scanner|semgrep|trufflehog|gitleaks|pip-audit)\b.*\|\|\s*(echo|true|:|exit\s+0)
+      Matches the scanner invocation followed on the same logical line by a shell
+      OR-suppressor. Multi-line scripts inside `run: |` blocks count.
+    override_eligible: false
+    notes: >
+      Companion to CI-007. Real incident: the same pp-security-master XXE escape used
+      `bandit -r src/ || echo "bandit advisory"` to convert a finding into a no-op
+      success. Added 2026-05-17 (issue #35).
 
   - id: CI-008
     domain: ci
