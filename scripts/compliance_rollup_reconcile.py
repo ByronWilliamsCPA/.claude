@@ -421,7 +421,7 @@ def _invoke_renderer(
         args.extend(["--jsonl", str(jsonl_path)])
     if md_path is not None:
         args.extend(["--md", str(md_path)])
-    completed = subprocess.run(  # noqa: S603 -- args list is static-prefixed and trusted
+    completed = subprocess.run(
         args,
         check=False,
         capture_output=True,
