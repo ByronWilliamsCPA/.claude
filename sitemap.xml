@@ -141,6 +141,10 @@
          <lastmod>2026-05-18</lastmod>
     </url>
     <url>
+         <loc>https://claude-config.readthedocs.io/architecture/adr/ADR-008-scanner-allowlist-tiers/</loc>
+         <lastmod>2026-05-18</lastmod>
+    </url>
+    <url>
          <loc>https://claude-config.readthedocs.io/architecture/diagrams/</loc>
          <lastmod>2026-05-18</lastmod>
     </url>
@@ -426,6 +430,10 @@
     </url>
     <url>
          <loc>https://claude-config.readthedocs.io/superpowers/plans/2026-05-16-compliance-retrospective-aggregation/</loc>
+         <lastmod>2026-05-18</lastmod>
+    </url>
+    <url>
+         <loc>https://claude-config.readthedocs.io/superpowers/plans/2026-05-18-scanner-allowlist-implementation/</loc>
          <lastmod>2026-05-18</lastmod>
     </url>
     <url>

@@ -12,31 +12,27 @@
         <meta name="author" content="Byron Williams">
       
       
-        <link rel="canonical" href="https://claude-config.readthedocs.io/architecture/adr/">
+        <link rel="canonical" href="https://claude-config.readthedocs.io/architecture/adr/ADR-008-scanner-allowlist-tiers/">
       
       
-        <link rel="prev" href="../diagrams/">
-      
-      
-        <link rel="next" href="ADR-001-two-layer-symlink-install/">
       
       
         
       
       
-      <link rel="icon" href="../../assets/images/favicon.png">
+      <link rel="icon" href="../../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
-        <title>Architecture Decision Records - Claude Code Configuration</title>
+        <title>ADR-008: Two-Tier Scanner Allowlist for CI-007 and CI-007b - Claude Code Configuration</title>
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -55,9 +51,9 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
     
-    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
   
@@ -92,7 +88,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#process" class="md-skip">
+        <a href="#context" class="md-skip">
           Skip to content
         </a>
       
@@ -106,7 +102,7 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="Claude Code Configuration" class="md-header__button md-logo" aria-label="Claude Code Configuration" data-md-component="logo">
+    <a href="../../.." title="Claude Code Configuration" class="md-header__button md-logo" aria-label="Claude Code Configuration" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -126,7 +122,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Architecture Decision Records
+              ADR-008: Two-Tier Scanner Allowlist for CI-007 and CI-007b
             
           </span>
         </div>
@@ -239,7 +235,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../.." class="md-tabs__link">
+      <a href="../../.." class="md-tabs__link">
         
   
   
@@ -260,7 +256,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../getting-started/" class="md-tabs__link">
+        <a href="../../../getting-started/" class="md-tabs__link">
           
   
   
@@ -278,13 +274,11 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="../" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../../" class="md-tabs__link">
           
   
   
@@ -306,7 +300,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../reference/" class="md-tabs__link">
+        <a href="../../../reference/" class="md-tabs__link">
           
   
   
@@ -328,7 +322,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../contributing/" class="md-tabs__link">
+        <a href="../../../contributing/" class="md-tabs__link">
           
   
   
@@ -350,7 +344,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../project/roadmap/" class="md-tabs__link">
+        <a href="../../../project/roadmap/" class="md-tabs__link">
           
   
   
@@ -386,7 +380,7 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="Claude Code Configuration" class="md-nav__button md-logo" aria-label="Claude Code Configuration" data-md-component="logo">
+    <a href="../../.." title="Claude Code Configuration" class="md-nav__button md-logo" aria-label="Claude Code Configuration" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -416,7 +410,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../.." class="md-nav__link">
+      <a href="../../.." class="md-nav__link">
         
   
   
@@ -485,7 +479,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../getting-started/" class="md-nav__link ">
+            <a href="../../../getting-started/" class="md-nav__link ">
               
   
   
@@ -536,7 +530,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../getting-started/install/" class="md-nav__link">
+      <a href="../../../getting-started/install/" class="md-nav__link">
         
   
   
@@ -571,7 +565,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../getting-started/first-agent/" class="md-nav__link">
+      <a href="../../../getting-started/first-agent/" class="md-nav__link">
         
   
   
@@ -606,7 +600,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../getting-started/first-skill/" class="md-nav__link">
+      <a href="../../../getting-started/first-skill/" class="md-nav__link">
         
   
   
@@ -641,7 +635,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../getting-started/picking/" class="md-nav__link">
+      <a href="../../../getting-started/picking/" class="md-nav__link">
         
   
   
@@ -676,7 +670,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../getting-started/troubleshooting/" class="md-nav__link">
+      <a href="../../../getting-started/troubleshooting/" class="md-nav__link">
         
   
   
@@ -715,8 +709,6 @@
       
   
   
-    
-  
   
   
     
@@ -746,23 +738,22 @@
     
     
       
-        
-        
-      
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../" class="md-nav__link ">
+            <a href="../../" class="md-nav__link ">
               
   
   
@@ -787,13 +778,13 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="">
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -813,7 +804,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../install-model/" class="md-nav__link">
+      <a href="../../install-model/" class="md-nav__link">
         
   
   
@@ -848,7 +839,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../hook-pipeline/" class="md-nav__link">
+      <a href="../../hook-pipeline/" class="md-nav__link">
         
   
   
@@ -883,7 +874,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../agent-dispatch/" class="md-nav__link">
+      <a href="../../agent-dispatch/" class="md-nav__link">
         
   
   
@@ -918,7 +909,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../mcp-tiered-loading/" class="md-nav__link">
+      <a href="../../mcp-tiered-loading/" class="md-nav__link">
         
   
   
@@ -953,7 +944,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../submodule-strategy/" class="md-nav__link">
+      <a href="../../submodule-strategy/" class="md-nav__link">
         
   
   
@@ -988,7 +979,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../rules-vs-standards/" class="md-nav__link">
+      <a href="../../rules-vs-standards/" class="md-nav__link">
         
   
   
@@ -1023,7 +1014,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../diagrams/" class="md-nav__link">
+      <a href="../../diagrams/" class="md-nav__link">
         
   
   
@@ -1055,8 +1046,6 @@
                 
   
   
-    
-  
   
   
     
@@ -1086,21 +1075,20 @@
       
       
         
-          
-          
-        
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_9" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_9" >
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="./" class="md-nav__link md-nav__link--active">
+            <a href="../" class="md-nav__link ">
               
   
   
@@ -1125,13 +1113,13 @@
             </a>
             
               
-              <label class="md-nav__link md-nav__link--active" for="__nav_3_9" id="__nav_3_9_label" tabindex="">
+              <label class="md-nav__link " for="__nav_3_9" id="__nav_3_9_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_9_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_9_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3_9">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1151,7 +1139,7 @@
   
   
     <li class="md-nav__item">
-      <a href="ADR-001-two-layer-symlink-install/" class="md-nav__link">
+      <a href="../ADR-001-two-layer-symlink-install/" class="md-nav__link">
         
   
   
@@ -1186,7 +1174,7 @@
   
   
     <li class="md-nav__item">
-      <a href="ADR-002-hook-composition/" class="md-nav__link">
+      <a href="../ADR-002-hook-composition/" class="md-nav__link">
         
   
   
@@ -1221,7 +1209,7 @@
   
   
     <li class="md-nav__item">
-      <a href="ADR-003-tiered-mcp-loading/" class="md-nav__link">
+      <a href="../ADR-003-tiered-mcp-loading/" class="md-nav__link">
         
   
   
@@ -1256,7 +1244,7 @@
   
   
     <li class="md-nav__item">
-      <a href="ADR-004-skill-vs-agent-boundary/" class="md-nav__link">
+      <a href="../ADR-004-skill-vs-agent-boundary/" class="md-nav__link">
         
   
   
@@ -1291,7 +1279,7 @@
   
   
     <li class="md-nav__item">
-      <a href="ADR-005-submodule-extension-model/" class="md-nav__link">
+      <a href="../ADR-005-submodule-extension-model/" class="md-nav__link">
         
   
   
@@ -1326,7 +1314,7 @@
   
   
     <li class="md-nav__item">
-      <a href="ADR-006-rules-vs-standards/" class="md-nav__link">
+      <a href="../ADR-006-rules-vs-standards/" class="md-nav__link">
         
   
   
@@ -1361,7 +1349,7 @@
   
   
     <li class="md-nav__item">
-      <a href="ADR-007-dual-audience-docs/" class="md-nav__link">
+      <a href="../ADR-007-dual-audience-docs/" class="md-nav__link">
         
   
   
@@ -1446,7 +1434,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../reference/" class="md-nav__link ">
+            <a href="../../../reference/" class="md-nav__link ">
               
   
   
@@ -1497,7 +1485,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/agents/" class="md-nav__link">
+      <a href="../../../reference/agents/" class="md-nav__link">
         
   
   
@@ -1532,7 +1520,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/skills/" class="md-nav__link">
+      <a href="../../../reference/skills/" class="md-nav__link">
         
   
   
@@ -1567,7 +1555,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/hooks/" class="md-nav__link">
+      <a href="../../../reference/hooks/" class="md-nav__link">
         
   
   
@@ -1602,7 +1590,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/mcp/" class="md-nav__link">
+      <a href="../../../reference/mcp/" class="md-nav__link">
         
   
   
@@ -1637,7 +1625,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/" class="md-nav__link">
+      <a href="../../../api-reference/" class="md-nav__link">
         
   
   
@@ -1716,7 +1704,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../contributing/" class="md-nav__link ">
+            <a href="../../../contributing/" class="md-nav__link ">
               
   
   
@@ -1767,7 +1755,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../contributing/adding-agents/" class="md-nav__link">
+      <a href="../../../contributing/adding-agents/" class="md-nav__link">
         
   
   
@@ -1802,7 +1790,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../contributing/adding-skills/" class="md-nav__link">
+      <a href="../../../contributing/adding-skills/" class="md-nav__link">
         
   
   
@@ -1837,7 +1825,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../contributing/adding-hooks/" class="md-nav__link">
+      <a href="../../../contributing/adding-hooks/" class="md-nav__link">
         
   
   
@@ -1872,7 +1860,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../contributing/writing-adrs/" class="md-nav__link">
+      <a href="../../../contributing/writing-adrs/" class="md-nav__link">
         
   
   
@@ -1907,7 +1895,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../contributing/writing-diagrams/" class="md-nav__link">
+      <a href="../../../contributing/writing-diagrams/" class="md-nav__link">
         
   
   
@@ -1942,7 +1930,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../frontmatter-standard/" class="md-nav__link">
+      <a href="../../../frontmatter-standard/" class="md-nav__link">
         
   
   
@@ -2046,7 +2034,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../project/roadmap/" class="md-nav__link">
+      <a href="../../../project/roadmap/" class="md-nav__link">
         
   
   
@@ -2081,7 +2069,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../project/changelog/" class="md-nav__link">
+      <a href="../../../project/changelog/" class="md-nav__link">
         
   
   
@@ -2116,7 +2104,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../project/license/" class="md-nav__link">
+      <a href="../../../project/license/" class="md-nav__link">
         
   
   
@@ -2176,10 +2164,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#process" class="md-nav__link">
+  <a href="#context" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Process
+        Context
       
     </span>
   </a>
@@ -2187,10 +2175,60 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#index" class="md-nav__link">
+  <a href="#decision" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Index
+        Decision
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Decision">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-allowlist-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The allowlist file
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ci-007-and-ci-007b-after-the-redesign" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CI-007 and CI-007b after the redesign
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-agents-audit-logic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The agent's audit logic
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#alternatives-considered" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Alternatives Considered
       
     </span>
   </a>
@@ -2198,10 +2236,82 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#see-also" class="md-nav__link">
+  <a href="#consequences" class="md-nav__link">
     <span class="md-ellipsis">
       
-        See Also
+        Consequences
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Consequences">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#positive" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Positive
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#negative" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Negative
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#neutral" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Neutral
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementation-plan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementation plan
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#security-considerations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security Considerations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
       
     </span>
   </a>
@@ -2228,82 +2338,308 @@
   
 
 
-  <h1>Index</h1>
+  <h1>ADR-008: Two-Tier Scanner Allowlist for CI-007 and CI-007b</h1>
 
-<p>Architecture Decision Records (ADRs) capture load-bearing design choices so future maintainers can understand <em>why</em> something is the way it is: not just <em>what</em> it is.</p>
-<h2 id="process">Process<a class="headerlink" href="#process" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p><strong>Status</strong>: Proposed</p>
+<p><strong>Decision date</strong>: 2026-05-18</p>
+<p><strong>Deciders</strong>: Byron Williams</p>
+</blockquote>
+<h2 id="context">Context<a class="headerlink" href="#context" title="Permanent link">&para;</a></h2>
+<p>PR #116 (merged 2026-05-17) broadened CI-007 to scan every workflow file and added
+CI-007b for command-line exit-code suppression patterns. The post-merge <code>/pr-review</code>
+analysis surfaced two coverage gaps that the PR did not address, marked as
+follow-up:</p>
 <ol>
-<li>A decision is load-bearing if silently changing it would break behavior, break the install, or break the mental model a reader needs.</li>
-<li>New ADRs use the slim template at <code>docs/architecture/adr/_template.md</code> (excluded from the built site; open it directly in the repo). The verbose reference variant at <code>docs/ADRs/adr-template.md</code> remains for unusually consequential decisions.</li>
-<li>ADRs are numbered sequentially. Once published, the title and number do not change: supersede with a new ADR instead.</li>
-<li>Every ADR carries <code>schema_type: common</code> frontmatter. The <code>status:</code> field is for the doc itself (<code>draft</code> / <code>in-review</code> / <code>published</code>); the ADR's decision status (<code>Proposed</code> / <code>Accepted</code> / <code>Deprecated</code> / <code>Superseded</code>) lives in a body banner near the top.</li>
+<li>
+<p>The scanner allowlist (<code>bandit|safety|osv-scanner|semgrep|trufflehog|gitleaks|pip-audit</code>)
+   omits common cloud-native scanners: <code>trivy</code>, <code>grype</code>, <code>checkov</code>, <code>kics</code>, <code>snyk</code>,
+   <code>tfsec</code>. The XXE-escape pattern that motivated PR #116 generalizes to all of
+   these tools, but the manifest does not currently catch them.</p>
+</li>
+<li>
+<p>The detection mechanism is regex-only against <code>run:</code> block content. This is
+   imprecise on two axes:</p>
+</li>
+<li>
+<p><strong>False positives from incidental text matches</strong>: <code>run: echo "installing
+     trivy now"</code> would match a substring-based addition for <code>trivy</code>. The current
+     allowlist is mostly safe because the entries (<code>bandit</code>, <code>pip-audit</code>,
+     <code>osv-scanner</code>) rarely appear outside actual invocations. Expanding the list
+     to common-word scanners (<code>safety</code>, <code>snyk</code>) amplifies this risk.</p>
+</li>
+<li>
+<p><strong>False negatives on tool-flag suppression</strong>: scanners increasingly support
+     first-class suppression flags (<code>trivy ... --exit-code 0</code>, <code>checkov
+     --soft-fail</code>, <code>bandit --exit-zero</code>, <code>semgrep --error=0</code>) that achieve the
+     same outcome as <code>|| true</code> but in different syntax. CI-007b's regex catches
+     the shell-operator form only.</p>
+</li>
+<li>
+<p>The manifest does not distinguish between scanners that block by intent
+   (<code>bandit</code>, <code>pip-audit</code>, <code>semgrep --error</code>, <code>gitleaks</code>) and scanners that are
+   advisory by design (<code>snyk monitor</code>, <code>trivy</code> without <code>--exit-code</code>, <code>checkov
+   --soft-fail</code>). Adding the advisory tools to a blanket suppression check would
+   flag legitimate intentional patterns.</p>
+</li>
+<li>
+<p>Most modern security scans in GitHub Actions run through official actions
+   (<code>aquasecurity/trivy-action</code>, <code>anchore/scan-action</code>, <code>bridgecrewio/checkov-action</code>)
+   rather than direct shell invocations. Detection via the <code>uses:</code> ref is both
+   more precise (no false positives from text matches) and more durable (action
+   refs don't change syntax across versions). The current manifest does not use
+   this signal.</p>
+</li>
+<li>
+<p>The scanner list is duplicated across CI-007's <code>verify</code> scope qualifier and
+   CI-007b's <code>verify</code> forbidden pattern. Additions require editing two regex
+   alternations in YAML, which is error-prone and easy to drift.</p>
+</li>
 </ol>
-<h2 id="index">Index<a class="headerlink" href="#index" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>#</th>
-<th>Title</th>
-<th>Decision Status</th>
-<th>Topic</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><a href="ADR-001-two-layer-symlink-install/">001</a></td>
-<td>Two-Layer Symlink Install</td>
-<td>Accepted</td>
-<td>Install model</td>
-</tr>
-<tr>
-<td><a href="ADR-002-hook-composition/">002</a></td>
-<td>Hook Composition and Ordering</td>
-<td>Accepted</td>
-<td>Hook system</td>
-</tr>
-<tr>
-<td><a href="ADR-003-tiered-mcp-loading/">003</a></td>
-<td>Tiered MCP Loading Strategy</td>
-<td>Accepted</td>
-<td>MCP context budget</td>
-</tr>
-<tr>
-<td><a href="ADR-004-skill-vs-agent-boundary/">004</a></td>
-<td>Skill vs Agent Boundary</td>
-<td>Accepted</td>
-<td>Capability taxonomy</td>
-</tr>
-<tr>
-<td><a href="ADR-005-submodule-extension-model/">005</a></td>
-<td>Submodule Extension Model</td>
-<td>Accepted</td>
-<td>External integration</td>
-</tr>
-<tr>
-<td><a href="ADR-006-rules-vs-standards/">006</a></td>
-<td>Rules vs Standards Boundary</td>
-<td>Accepted</td>
-<td>Context injection</td>
-</tr>
-<tr>
-<td><a href="ADR-007-dual-audience-docs/">007</a></td>
-<td>Dual-Audience Documentation Structure</td>
-<td>Accepted</td>
-<td>Documentation layout</td>
-</tr>
-<tr>
-<td><a href="ADR-008-scanner-allowlist-tiers/">008</a></td>
-<td>Two-Tier Scanner Allowlist for CI-007/007b</td>
-<td>Proposed</td>
-<td>Compliance / CI security</td>
-</tr>
-</tbody>
-</table>
-<h2 id="see-also">See Also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
+<h2 id="decision">Decision<a class="headerlink" href="#decision" title="Permanent link">&para;</a></h2>
+<p>We will separate the scanner allowlist into a dedicated configuration file with
+explicit tier classification, and rewrite CI-007 and CI-007b to consume the
+allowlist via a defined interface. The audit-mode logic in
+<code>.claude/agents/devops-deployment-agent.md</code> will dispatch by <code>uses:</code> ref first
+(precise), falling back to <code>run:</code> regex (catch-all) only when the action-based
+detection does not match.</p>
+<p>The change is recorded as <strong>Proposed</strong> here; <strong>Accepted</strong> transitions to
+implementation in a follow-up PR that ships the new config file, the manifest
+changes, and the agent doc updates together.</p>
+<h3 id="the-allowlist-file">The allowlist file<a class="headerlink" href="#the-allowlist-file" title="Permanent link">&para;</a></h3>
+<p>Location: <code>docs/standards/scanner-allowlist.yaml</code> (adjacent to <code>standards-manifest.yaml</code>
+for proximity to consumers; not under <code>.claude/standards/</code> because it is data, not
+agent-loaded prose).</p>
+<p>Schema sketch (final shape to be locked during implementation):</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">schema_version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nt">scanners</span><span class="p">:</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bandit</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="nt">tier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">must_block</span><span class="w">          </span><span class="c1"># tier 1: deterministic, exit-code-driven</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="nt">detect</span><span class="p">:</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">      </span><span class="nt">uses</span><span class="p">:</span><span class="w">                   </span><span class="c1"># GitHub Action refs that invoke this scanner</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PyCQA/bandit-action</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">      </span><span class="nt">run_pattern</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;\bbandit\b&#39;</span><span class="w">  </span><span class="c1"># PCRE; used by run: fallback</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">    </span><span class="nt">suppression_flags</span><span class="p">:</span><span class="w">        </span><span class="c1"># tool-flag forms that defeat the check</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;--exit-zero&#39;</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;--exit-code\s*[02-9]\d*&#39;</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">snyk</span>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="w">    </span><span class="nt">tier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">advisory_by_intent</span><span class="w">  </span><span class="c1"># tier 2: subcommand- or flag-dependent</span>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="w">    </span><span class="nt">detect</span><span class="p">:</span>
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="w">      </span><span class="nt">uses</span><span class="p">:</span>
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">snyk/actions/python</span>
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="w">      </span><span class="nt">run_pattern</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;\bsnyk\s+test\b&#39;</span><span class="w">  </span><span class="c1"># only `snyk test`; `snyk monitor` excluded by design</span>
+</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="w">    </span><span class="nt">suppression_flags</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span>
+</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="w">    </span><span class="nt">notes</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">&gt;</span>
+</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="w">      </span><span class="no">`snyk monitor` always returns 0 by design (reporting-only). Only `snyk test`</span>
+</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a><span class="w">      </span><span class="no">is subject to CI-007b.</span>
+</span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>
+</span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">trivy</span>
+</span><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a><span class="w">    </span><span class="nt">tier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">must_block</span>
+</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a><span class="w">    </span><span class="nt">detect</span><span class="p">:</span>
+</span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a><span class="w">      </span><span class="nt">uses</span><span class="p">:</span>
+</span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aquasecurity/trivy-action</span>
+</span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a><span class="w">      </span><span class="nt">run_pattern</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;\btrivy\b&#39;</span>
+</span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a><span class="w">    </span><span class="nt">suppression_flags</span><span class="p">:</span>
+</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;--exit-code\s*0&#39;</span>
+</span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;--severity\s+UNKNOWN&#39;</span><span class="w">  </span><span class="c1"># equivalent: only &quot;unknown&quot; severity reported</span>
+</span></code></pre></div>
+<p>Tier semantics:</p>
 <ul>
-<li><a href="../../frontmatter-standard/">Frontmatter Standard</a></li>
-<li><a href="../../contributing/writing-adrs/">Writing ADRs</a></li>
-<li><a href="../">Architecture Overview</a></li>
+<li>
+<p><strong><code>must_block</code></strong>: scanner is gate-quality. Any suppression (via shell <code>||</code> or
+  via tool flag) is a CI-007b violation. CI-007 also applies if such a job
+  carries <code>continue-on-error: true</code>.</p>
+</li>
+<li>
+<p><strong><code>advisory_by_intent</code></strong>: scanner is reporting-only by design for the listed
+  invocation pattern. CI-007b does NOT apply. CI-007 still applies if the
+  enclosing job carries <code>continue-on-error: true</code> and is name-matched.</p>
+</li>
+</ul>
+<h3 id="ci-007-and-ci-007b-after-the-redesign">CI-007 and CI-007b after the redesign<a class="headerlink" href="#ci-007-and-ci-007b-after-the-redesign" title="Permanent link">&para;</a></h3>
+<p>CI-007's <code>verify</code> references the allowlist by tier:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">verify</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="no">content_absent: continue-on-error: true within jobs matching scanner-allowlist tier:must_block.</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="no">Scope source: docs/standards/scanner-allowlist.yaml (tier=must_block entries).</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">  </span><span class="no">Also flag continue-on-error: true on per-step entries whose uses: or run: invokes</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">  </span><span class="no">any must_block scanner per the allowlist&#39;s detect block.</span>
+</span></code></pre></div>
+<p>CI-007b's <code>verify</code> references the allowlist's <code>run_pattern</code> union plus the
+<code>suppression_flags</code> union, both restricted to tier <code>must_block</code>:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nt">verify</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="no">pattern_absent: .github/workflows/*.yml</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span><span class="no">For each scanner in docs/standards/scanner-allowlist.yaml where tier == must_block:</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span><span class="no">1. Match invocation: &lt;run_pattern&gt;</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">    </span><span class="no">2. Forbidden suffix patterns:</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">       </span><span class="no">- shell suppressors:  \|\|\s*(echo|true|:|exit\s+0)</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">       </span><span class="no">- tool-flag suppressors: &lt;suppression_flags union&gt;</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">  </span><span class="no">Evaluate with `rg` (ripgrep) or `grep -P` (PCRE).</span>
+</span></code></pre></div>
+<h3 id="the-agents-audit-logic">The agent's audit logic<a class="headerlink" href="#the-agents-audit-logic" title="Permanent link">&para;</a></h3>
+<p><code>.claude/agents/devops-deployment-agent.md</code> Audit Workflow gains a <code>scanner_allowlist</code>
+handler:</p>
+<ol>
+<li>Read <code>docs/standards/scanner-allowlist.yaml</code>. Collect tier-must_block scanners.</li>
+<li>For each workflow file in <code>.github/workflows/*.yml</code>:
+   a. Walk <code>jobs.*.steps[*]</code> (YAML, not regex). For each step:<ul>
+<li>If <code>uses:</code> matches any allowlist <code>detect.uses</code> ref, mark the step as a
+    scanner invocation (precise path).</li>
+<li>If <code>run:</code> matches any allowlist <code>detect.run_pattern</code>, mark the step as a
+    scanner invocation (fallback path; flag a lower-confidence finding).
+   b. For each marked step:</li>
+<li>CI-007 check: scan the enclosing job and the step itself for
+    <code>continue-on-error: true</code>. Allow only on non-scanner steps inside a job
+    that has at least one marked step.</li>
+<li>CI-007b check: scan the <code>run:</code> body for any <code>suppression_flags</code> regex or
+    the universal shell-suppression regex.</li>
+</ul>
+</li>
+<li>Emit findings with <code>&lt;file&gt;:&lt;line&gt;</code> precision and tier annotation.</li>
+</ol>
+<p>The <code>uses:</code>-first dispatch closes the false-positive risk from incidental text
+matches: an <code>echo "installing trivy"</code> line is in <code>run:</code> content but does not
+match any allowlist <code>uses:</code> ref AND is excluded from <code>run_pattern</code> matching when
+the pattern is anchored on <code>\b&lt;tool&gt;\b\s+(&lt;subcommand&gt;|-)</code> rather than just
+<code>\b&lt;tool&gt;\b</code>. The detect block lets per-scanner configuration encode this.</p>
+<h2 id="alternatives-considered">Alternatives Considered<a class="headerlink" href="#alternatives-considered" title="Permanent link">&para;</a></h2>
+<p><strong>Option A: Expand the inline regex alternation in CI-007 and CI-007b only.</strong>
+The cheapest possible change. Adds entries directly to the YAML strings. Pros:
+one PR, no new files. Cons: doesn't address the tool-flag suppression gap;
+multiplies false-positive risk because <code>safety</code>, <code>snyk</code>, and <code>trivy</code> appear in
+non-tool contexts more often than <code>bandit</code> does; the same regex is now
+duplicated in CI-007 and CI-007b with no enforcement that they stay in sync.
+Rejected because it fixes the smallest dimension (coverage breadth) while
+amplifying the other two (precision, drift).</p>
+<p><strong>Option B: <code>uses:</code>-only detection, no <code>run:</code> fallback.</strong> Tighter still. Pros:
+near-zero false positives (an action ref unambiguously identifies the tool).
+Cons: misses ad-hoc shell invocations entirely. Repos that install scanners
+via <code>pip install bandit &amp;&amp; bandit -r src/</code> would not be checked. Rejected
+because PR #116's incident (pp-security-master) used shell invocation, not an
+action.</p>
+<p><strong>Option C: Per-scanner check IDs (CI-007c-trivy, CI-007d-checkov, etc.).</strong>
+Each scanner gets its own check entry. Pros: maximum precision per-scanner;
+straightforward to reason about. Cons: ID explosion (10+ new IDs for the
+common scanner set); each new scanner addition requires a new manifest entry
+and CHANGELOG note; consumers see one logical rule fragmented across many IDs.
+Rejected as not scalable to the security tooling landscape.</p>
+<p><strong>Option D: Move detection logic entirely into a Python script
+(<code>scripts/check-repo-compliance.py</code> already exists for CI-020/021 and BP-&#8536;).</strong>
+Pros: the verify field becomes a thin reference to the script; arbitrary logic
+is possible. Cons: pulls the manifest-LLM-interpreter contract into Python
+land for one check pair, breaking the consistency of how <code>repo-compliance</code>
+agents read the manifest; harder for non-coding contributors to add scanners.
+<strong>Rejected for now (deferred for re-evaluation):</strong> if the YAML allowlist's
+expressivity proves insufficient (e.g., conditional dispatch based on
+workflow-level inputs the agent cannot statically resolve), this option
+re-opens.</p>
+<h2 id="consequences">Consequences<a class="headerlink" href="#consequences" title="Permanent link">&para;</a></h2>
+<h3 id="positive">Positive<a class="headerlink" href="#positive" title="Permanent link">&para;</a></h3>
+<ul>
+<li>The scanner allowlist becomes a single source of truth, edited in one file
+  instead of two regex alternations.</li>
+<li>New scanners are added by appending to a YAML list with a clear schema, not
+  by editing alternation strings. Lower error rate; reviewable as a discrete
+  data change.</li>
+<li>Tier classification captures the deterministic-vs-advisory distinction
+  explicitly, preventing the noise that pure regex expansion would create on
+  intentional advisory invocations (<code>snyk monitor</code>, <code>trivy</code> without
+  <code>--exit-code</code>).</li>
+<li><code>uses:</code>-first detection dramatically reduces false positives from incidental
+  text matches in <code>run:</code> content.</li>
+<li>Tool-flag suppression detection (<code>--exit-zero</code>, <code>--exit-code 0</code>,
+  <code>--soft-fail</code>) becomes expressible per-scanner.</li>
+<li>The pattern generalizes: if future checks need similar lookup-table
+  semantics (e.g., a CI-014 "approved license list" or BP-006 "approved
+  base image registry"), the same external-config pattern applies.</li>
+</ul>
+<h3 id="negative">Negative<a class="headerlink" href="#negative" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Adds a new file to maintain. Drift between <code>scanner-allowlist.yaml</code> and
+  real-world scanner releases is the new failure mode. Mitigation: an
+  optional <code>/loop</code> recipe that checks the allowlist against current scanner
+  release notes quarterly (deferred to its own follow-up).</li>
+<li>The agent's audit logic grows more complex: it must parse the allowlist
+  YAML, then walk workflow YAML structurally (not just regex). Implementation
+  cost is roughly one new section of audit-workflow logic.</li>
+<li>The verify field of CI-007 and CI-007b now references a non-manifest file.
+  Any agent that consumes the manifest must read both. This is consistent
+  with other multi-file verify references (e.g., the Codecov filename
+  resolution in CI-009/010/011) but expands the surface.</li>
+</ul>
+<h3 id="neutral">Neutral<a class="headerlink" href="#neutral" title="Permanent link">&para;</a></h3>
+<ul>
+<li>The implementation PR will be classified <code>feat(compliance):</code> per the
+  policy in <code>.claude/standards/manifest-changes.md</code>: it expands enforcement
+  to a new dimension (tier-aware scanner detection) rather than fixing a
+  bug in existing detection. The CHANGELOG entry will appear under <code>### Feat</code>.</li>
+<li>The current scanner allowlist (<code>bandit</code>, <code>safety</code>, <code>osv-scanner</code>, <code>semgrep</code>,
+  <code>trufflehog</code>, <code>gitleaks</code>, <code>pip-audit</code>) is preserved in the new file with
+  appropriate tier classification. No existing check loses coverage.</li>
+</ul>
+<h2 id="implementation-plan">Implementation plan<a class="headerlink" href="#implementation-plan" title="Permanent link">&para;</a></h2>
+<p>The implementation lands in a separate <code>feat(compliance):</code> PR with these
+steps. Each step gets its own commit for traceability:</p>
+<ol>
+<li>
+<p>Create <code>docs/standards/scanner-allowlist.yaml</code> with the existing seven
+   scanners pre-populated at tier <code>must_block</code> plus the six expansion
+   scanners (<code>trivy</code>, <code>grype</code>, <code>checkov</code>, <code>kics</code>, <code>snyk</code>, <code>tfsec</code>) classified
+   per real-world usage.</p>
+</li>
+<li>
+<p>Update <code>docs/standards-manifest.yaml</code> CI-007 and CI-007b <code>verify</code> fields
+   to reference the allowlist instead of inlining the regex.</p>
+</li>
+<li>
+<p>Update <code>.claude/agents/devops-deployment-agent.md</code> Audit Workflow with
+   the <code>scanner_allowlist</code> handler (<code>uses:</code>-first, <code>run:</code> fallback, tier-aware).</p>
+</li>
+<li>
+<p>Update the same file's Remediation Workflow to reference the new dispatch
+   path.</p>
+</li>
+<li>
+<p>Add a section to <code>docs/known-vulnerabilities.md</code> (or a new section in the
+   manifest's <code>notes:</code> field) explaining the tier rationale for any
+   tier=<code>advisory_by_intent</code> entries, so future reviewers don't try to "fix"
+   them.</p>
+</li>
+<li>
+<p>CHANGELOG entry under <code>### Feat</code>.</p>
+</li>
+</ol>
+<p>The implementation PR is gated on this ADR transitioning to <strong>Accepted</strong> via
+review.</p>
+<h2 id="security-considerations">Security Considerations<a class="headerlink" href="#security-considerations" title="Permanent link">&para;</a></h2>
+<ul>
+<li>The scanner allowlist file becomes a high-value config: an attacker who can
+  modify it can demote a <code>must_block</code> scanner to <code>advisory_by_intent</code>,
+  silently disabling the suppression check for that scanner. Mitigation: the
+  file is covered by the same signed-commit and branch-protection rules as the
+  rest of <code>docs/standards/</code>. Per ADR-006's security considerations, standards
+  files that affect detection behavior are high-value targets and must be
+  covered by signed-commit enforcement.</li>
+<li>The tier classification is auditable: every tier=<code>advisory_by_intent</code> entry
+  must carry a <code>notes:</code> field explaining why blocking semantics do not apply.
+  A reviewer can challenge the demotion without needing additional context.</li>
+<li>The implementation must not silently fall back to an empty allowlist if the
+  file is missing or malformed. Failure to read the allowlist should emit a
+  FINDING (audit mode) or abort (remediation mode), not a vacuous PASS.</li>
+</ul>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<ul>
+<li>PR #116 (<a href="https://github.com/ByronWilliamsCPA/.claude/pull/116">merged 2026-05-17</a>):
+  the change that exposed the coverage and precision gaps closed here.</li>
+<li><code>docs/standards-manifest.yaml</code> checks CI-007 and CI-007b: the consumers
+  this ADR modifies.</li>
+<li><code>.claude/agents/devops-deployment-agent.md</code> Audit and Remediation
+  Workflows: the agent logic this ADR rewrites.</li>
+<li><code>.claude/standards/manifest-changes.md</code>: the policy that classifies this
+  ADR's implementation PR as <code>feat(compliance):</code>.</li>
+<li><a href="../ADR-006-rules-vs-standards/">ADR-006</a>: why the allowlist file is data
+  (<code>docs/standards/</code>) rather than agent-loaded prose (<code>.claude/standards/</code>).</li>
+<li><a href="https://www.conventionalcommits.org/">Conventional Commits 1.0</a></li>
 </ul>
 
 
@@ -2337,7 +2673,7 @@
     <span class="md-icon" title="Created">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 11, 2026 22:24:49 UTC">April 11, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="May 18, 2026 19:59:40 UTC">May 18, 2026</span>
   </span>
 
     
@@ -2414,10 +2750,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
     
   </body>
