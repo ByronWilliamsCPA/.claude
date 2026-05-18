@@ -35,6 +35,9 @@ jobs:
       python-version: '3.12'
       coverage-threshold: 80
       enable-dead-code-check: true
+      # claude-config has no published wheel; the shared workflow defaults
+      # no-build: true which would block the editable install.
+      no-build: false
 
   # ==========================================================================
   # Additional Checks (Template-Specific)

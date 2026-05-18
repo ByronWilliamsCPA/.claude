@@ -44,4 +44,7 @@ jobs:
       fail-under-threshold: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.fail_under_threshold == 'true' }}
       post-pr-comment: false
       timeout-minutes: 60
+      # claude-config has no published wheel; the shared workflow defaults
+      # no-build: true which would block the editable install.
+      no-build: false
     secrets: inherit  # pragma: allowlist secret

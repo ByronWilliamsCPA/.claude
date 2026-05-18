@@ -42,6 +42,9 @@ jobs:
       include-macos: true
       include-windows: true
       source-directory: 'src'
+      # claude-config has no published wheel; the shared workflow defaults
+      # no-build: true which would block the editable install.
+      no-build: false
       # Marker filter intentionally omitted: the org reusable workflow runs
       # `uv run $TEST_COMMAND` with the variable unquoted (shellcheck SC2086
       # disabled). Embedded quotes around `-m "not slow and not integration"`

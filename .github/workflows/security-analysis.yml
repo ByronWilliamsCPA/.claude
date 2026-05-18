@@ -44,6 +44,9 @@ jobs:
       # but is marked unused after filtering. pip-audit (dev dep) covers the same
       # surface. Re-enable once the org workflow updates to osv-scanner >= 2.3.0.
       run-osv: false
+      # claude-config has no published wheel; the shared workflow defaults
+      # no-build: true which would block the editable install.
+      no-build: false
       # Bandit runs twice already via python-ci.yml, which is called by both
       # ci.yml and pr-validation.yml. Running it here a third time on the same
       # commit is pure duplication with no additional signal.
