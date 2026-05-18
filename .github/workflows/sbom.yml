@@ -39,10 +39,13 @@ permissions:
 jobs:
   sbom:
     name: SBOM & Security
-    uses: ByronWilliamsCPA/.github/.github/workflows/python-sbom.yml@b29a870cb21a8f913e5c6c5f08740a4bdd94d0ca  # main
+    uses: ByronWilliamsCPA/.github/.github/workflows/python-sbom.yml@eb529609e38f05eb713419e4ee9cfff9cc95decc  # main
     with:
       python-version: '3.12'
       fail-on-vulnerabilities: true
       severity-threshold: 'CRITICAL,HIGH'
       artifact-retention-days: 90
       fail-on-forbidden-licenses: false
+      # claude-config has no published wheel; the shared workflow defaults
+      # no-build: true which would block the editable install.
+      no-build: false

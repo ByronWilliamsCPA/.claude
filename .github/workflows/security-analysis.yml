@@ -26,7 +26,7 @@ jobs:
       security-events: write
       pull-requests: write
       actions: read
-    uses: ByronWilliamsCPA/.github/.github/workflows/python-security-analysis.yml@b29a870cb21a8f913e5c6c5f08740a4bdd94d0ca # main
+    uses: ByronWilliamsCPA/.github/.github/workflows/python-security-analysis.yml@eb529609e38f05eb713419e4ee9cfff9cc95decc # main
     with:
       python-version: "3.12"
       # safety is not in this project's dev deps; pip-audit covers the same
@@ -44,6 +44,9 @@ jobs:
       # but is marked unused after filtering. pip-audit (dev dep) covers the same
       # surface. Re-enable once the org workflow updates to osv-scanner >= 2.3.0.
       run-osv: false
+      # claude-config has no published wheel; the shared workflow defaults
+      # no-build: true which would block the editable install.
+      no-build: false
       # Bandit runs twice already via python-ci.yml, which is called by both
       # ci.yml and pr-validation.yml. Running it here a third time on the same
       # commit is pure duplication with no additional signal.
@@ -60,7 +63,7 @@ jobs:
     if: always()
     steps:
       - name: Harden runner
-        uses: step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450  # v2.19.1
+        uses: step-security/harden-runner@9ca718d3bf646d6534007c269a635b3e54cadf99  # v2.19.2
         with:
           egress-policy: audit
       - name: Check security scan results
