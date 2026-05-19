@@ -1022,6 +1022,13 @@ checks:
     verify: "file_exists: .claude/settings.json"
     override_eligible: true
 
+  - id: CLAUDE-006
+    domain: claude_docs
+    severity: important
+    description: "CLAUDE.md Essential Commands do not reference legacy Python tools (black, mypy). Replaced by ruff format and basedpyright respectively. Safety check absence is covered separately by CI-051 (workflow YAML scope)."
+    verify: "content_absent_any: CLAUDE.md, black,mypy"
+    override_eligible: true
+
   - id: CLAUDE-007
     domain: claude_docs
     severity: critical
