@@ -168,7 +168,7 @@ def find_existing_ruleset(org: str, name: str) -> int | None:
     # --paginate + per_page=100 ensures orgs with >30 rulesets do not silently
     # truncate (gh default page size is 30). Without it, a match on page 2+
     # would return None and the script would create a duplicate ruleset.
-    out = subprocess.check_output(  # noqa: S603
+    out = subprocess.check_output(
         [  # noqa: S607
             "gh",
             "api",
@@ -206,7 +206,7 @@ def fetch_ruleset(org: str, ruleset_id: int) -> dict:
             runs after a successful apply, so signalling drift (not a gh
             CLI failure) is the appropriate exit code.
     """
-    out = subprocess.check_output(  # noqa: S603
+    out = subprocess.check_output(
         ["gh", "api", f"orgs/{org}/rulesets/{ruleset_id}"],  # noqa: S607
         text=True,
         timeout=_GH_TIMEOUT_SECONDS,
@@ -308,7 +308,7 @@ def apply(
         ]
     else:
         cmd = ["gh", "api", "-X", "POST", f"orgs/{org}/rulesets", "--input", "-"]
-    subprocess.run(  # noqa: S603
+    subprocess.run(
         cmd,
         input=payload,
         text=True,

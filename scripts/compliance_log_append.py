@@ -170,7 +170,7 @@ def _invoke_renderer(jsonl_path: Path | None = None) -> int:
     args = [sys.executable, str(RENDERER_SCRIPT)]
     if jsonl_path is not None:
         args.extend(["--jsonl", str(jsonl_path)])
-    completed = subprocess.run(  # noqa: S603 -- args list is static-prefixed and trusted
+    completed = subprocess.run(
         args,
         check=False,
         capture_output=True,
