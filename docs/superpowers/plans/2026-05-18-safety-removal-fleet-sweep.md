@@ -1,14 +1,14 @@
 ---
 schema_type: common
 title: Safety Scanner Removal Fleet Sweep Implementation Plan
-status: draft
+status: published
 owner: engineering
 tags: [security, ci_cd, github_actions, compliance, standards]
 purpose: Step-by-step plan to remove the redundant safety SCA scanner from the org workflow, two cookiecutter templates, and five live consumer repos, then register a manifest rule to prevent reintroduction.
 ---
 
 **Date**: 2026-05-18
-**Status**: Draft
+**Status**: Published
 **Author**: Byron Williams
 **Spec**: [2026-05-18-safety-removal-fleet-sweep-design.md](../specs/2026-05-18-safety-removal-fleet-sweep-design.md)
 
@@ -1190,15 +1190,12 @@ Expected: Last 5 runs show `Security Analysis / Security Gate Validation` as SUC
 
 - [ ] **Step 4: Mark the design and plan as completed**
 
-Edit `~/dev/.claude/docs/superpowers/specs/2026-05-18-safety-removal-fleet-sweep-design.md` and change `status: draft` to `status: completed` in the frontmatter. Same for this plan file. Commit both changes in a single commit in `~/dev/.claude`:
+Edit `~/dev/.claude/docs/superpowers/specs/2026-05-18-safety-removal-fleet-sweep-design.md` and change `status: draft` to `status: published` in the frontmatter (the project's frontmatter validator accepts only `draft|in-review|published|active|deprecated`; use `published` for completed work). Same for this plan file. Commit both changes in a single commit in `~/dev/.claude`:
 
 ```bash
 cd ~/dev/.claude
-git checkout main
-git pull origin main
-# Use a worktree if the working tree is dirty
-git status --short
-# If clean, edit in place; if dirty, create a worktree as in Task 9 Step 1
+git fetch origin main
+git checkout -b docs/safety-sweep-mark-published origin/main
 ```
 
 Apply the frontmatter change to both files, then:
@@ -1207,7 +1204,7 @@ Apply the frontmatter change to both files, then:
 git add docs/superpowers/specs/2026-05-18-safety-removal-fleet-sweep-design.md \
         docs/superpowers/plans/2026-05-18-safety-removal-fleet-sweep.md
 git commit -m "$(cat <<'EOF'
-docs(spec): mark safety removal sweep as completed
+docs(spec): mark safety removal sweep as published
 
 All 9 PRs merged across BWCPA and williaby; manifest CI-051 active;
 post-merge audit confirmed no remaining safety invocations in
@@ -1216,7 +1213,10 @@ workflow YAML and fragrance-rater Security Gate flipped to SUCCESS.
 Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>
 EOF
 )"
-git push origin main
+git push -u origin docs/safety-sweep-mark-published
+gh pr create --base main \
+  --title "docs(spec): mark safety removal sweep as published" \
+  --body "Flip plan and spec frontmatter from draft to published after all 9 sweep PRs merged."
 ```
 
 ---

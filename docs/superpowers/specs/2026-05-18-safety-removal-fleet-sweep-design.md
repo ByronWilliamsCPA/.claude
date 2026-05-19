@@ -1,14 +1,14 @@
 ---
 schema_type: common
 title: Safety Scanner Removal Fleet Sweep Design
-status: draft
+status: published
 owner: engineering
 tags: [security, ci_cd, github_actions, compliance, standards]
 purpose: Design for removing the redundant safety SCA scanner from the org workflow, two cookiecutter templates, and five live consumer repos in BWCPA and williaby, replacing nothing because OSV-Scanner, pip-audit, Dependency-Review, and Renovate already cover Python dep vulnerability scanning.
 ---
 
 **Date**: 2026-05-18
-**Status**: Draft
+**Status**: Published
 **Author**: Byron Williams
 **Related**: `ByronWilliamsCPA/.github` PRs #136, #137, #138; `security-analysis-workflow-regression-report.md`
 
