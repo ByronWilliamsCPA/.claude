@@ -1025,8 +1025,8 @@ checks:
   - id: CLAUDE-006
     domain: claude_docs
     severity: important
-    description: "CLAUDE.md Essential Commands do not reference removed tools (black, mypy, safety)"
-    verify: "content_absent_any: CLAUDE.md, black,mypy,safety check"
+    description: "CLAUDE.md Essential Commands do not reference legacy Python tools (black, mypy). Replaced by ruff format and basedpyright respectively. Safety check absence is covered separately by CI-051 (workflow YAML scope)."
+    verify: "content_absent_any: CLAUDE.md, black,mypy"
     override_eligible: true
 
   - id: CLAUDE-007
@@ -1438,6 +1438,26 @@ checks:
       (git log --name-only --grep="CVE\|security fix").
     source_frameworks:
       - NIST SSDF RV.2.2 Regression Tests for Exploit Paths
+
+  - id: CI-051
+    domain: ci
+    severity: important
+    override_eligible: false
+    description: >-
+      safety command absent from workflow YAML (replaced by OSV-Scanner,
+      Dependency-Review, and pip-audit). Prevents reintroduction of the
+      safety 3.x CLI drift surface that caused cascading regressions in
+      2026-05 (ByronWilliamsCPA/.github PRs #136/#137/#138).
+    verify: >-
+      content_absent_any: .github/workflows/*.yml, safety check, safety scan, safety --
+    source_frameworks:
+      - manifest-internal
+    notes: >-
+      Safety's free-tier Python CVE data is a strict subset of OSV-Scanner's
+      sources (PyPA + GHSA + OSS-Fuzz). License scanning requires Safety
+      paid tier and is not invoked by any current workflow. Coverage is
+      fully maintained by OSV-Scanner + Dependency-Review + pip-audit +
+      Renovate vulnerability alerts.
 
   - id: FOUND-015
     domain: foundations
