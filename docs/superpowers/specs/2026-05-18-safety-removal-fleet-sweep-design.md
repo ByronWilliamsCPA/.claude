@@ -1,16 +1,16 @@
 ---
 schema_type: common
 title: Safety Scanner Removal Fleet Sweep Design
-status: published
+status: draft
 owner: engineering
 tags: [security, ci_cd, github_actions, compliance, standards]
 purpose: Design for removing the redundant safety SCA scanner from the org workflow, two cookiecutter templates, and five live consumer repos in BWCPA and williaby, replacing nothing because OSV-Scanner, pip-audit, Dependency-Review, and Renovate already cover Python dep vulnerability scanning.
 ---
 
 **Date**: 2026-05-18
-**Status**: Published
+**Status**: Draft
 **Author**: Byron Williams
-**Related**: `ByronWilliamsCPA/.github` PRs #136, #137, #138; `security-analysis-workflow-regression-report.md`
+**Related**: `ByronWilliamsCPA/.github` PRs #136, #137, #138 (the safety-induced cascading regressions that triggered this sweep). The "Layer 8d" blocker referenced throughout this doc is the `--no-build: true` hardcode introduced by PR #138's merged form, which broke editable-install consumers' Security Gate Validation check.
 
 ---
 
@@ -112,7 +112,7 @@ Action: delete safety step and any associated exit-code suppression.
 | `ByronWilliamsCPA/xero-crypto` | `.github/workflows/ci.yml`, `.github/workflows/security-analysis.yml` | 3 safety calls total |
 | `williaby/image-preprocessing-detector` | `.github/workflows/security-analysis.yml` | 2 calls, uv-based |
 | `williaby/data_ingestor` | `.github/workflows/security-analysis.yml` | 2 calls, poetry-based |
-| `williaby/PromptCraft` | `.github/workflows/ci.yml` | Suppressed call |
+| `williaby/PromptCraft` | `.github/workflows/ci.yml`, `.github/workflows/renovate-auto-merge.yml`, `.agents/core/code-reviewer.yaml`, `.agents/discovery-config.yaml` | `ci.yml` has a suppressed `safety check`; `renovate-auto-merge.yml` has 2 `safety scan` calls with `SAFETY_API_KEY` (free-tier key, no proprietary data, deleted post-merge); `.agents/*.yaml` reference safety in tool/package lists |
 | `williaby/testing` | `.github/workflows/test.yml` | `|| true` suppressed |
 
 Action: delete safety step and exit-code suppression.
@@ -123,30 +123,37 @@ Action: delete safety step and exit-code suppression.
 
 Action: delete safety lines. Can ride along with the PromptCraft Tier 3 PR.
 
-### Manifest update (separate PR in `.claude` repo)
+### Manifest update (separate PR in `.claude` repo) -- LANDED
 
-Add `CHECK-CI-NN` (next available CI-* number) to `docs/standards-manifest.yaml`:
+`CI-051` was added to `docs/standards-manifest.yaml` via [PR #121](https://github.com/ByronWilliamsCPA/.claude/pull/121) (`chore(compliance): add CI-051 banning safety in workflow YAML`), merged before this design doc landed.
+
+The merged entry uses the standard manifest list-entry shape (entries live under a top-level `checks:` list as `- id: CI-051`, not as a `CHECK-CI-NN:` mapping). Severity is `important` (the CI-domain default), not `error`; the original spec value has been reconciled to the merged state.
+
+For reference, the actual merged entry:
 
 ```yaml
-CHECK-CI-NN:
-  id: CHECK-CI-NN
+- id: CI-051
   domain: ci
-  severity: error
-  description: "safety command absent from workflow YAML"
-  verify: |
+  severity: important
+  override_eligible: false
+  description: >-
+    safety command absent from workflow YAML (replaced by OSV-Scanner,
+    Dependency-Review, and pip-audit). Prevents reintroduction of the
+    safety 3.x CLI drift surface that caused cascading regressions in
+    2026-05 (ByronWilliamsCPA/.github PRs #136/#137/#138).
+  verify: >-
     content_absent_any: .github/workflows/*.yml, safety check, safety scan, safety --
-  rationale: |
-    Safety's free-tier vulnerability data is a subset of OSV-Scanner's. The
-    license-scanning feature requires Safety paid tier and is not invoked. The
-    safety 3.x CLI churned breaking changes that caused cascading regressions
-    in 2026-05 (PRs #136/#137/#138 in ByronWilliamsCPA/.github). Coverage is
-    fully maintained by OSV-Scanner, pip-audit, Dependency-Review, and Renovate.
-  fix: "Delete the safety step from the workflow YAML; verify OSV-Scanner is present in the same workflow or a sibling workflow."
+  source_frameworks:
+    - manifest-internal
+  notes: >-
+    Safety's free-tier Python CVE data is a strict subset of OSV-Scanner's
+    sources (PyPA + GHSA + OSS-Fuzz). License scanning requires Safety
+    paid tier and is not invoked by any current workflow. Coverage is
+    fully maintained by OSV-Scanner + Dependency-Review + pip-audit +
+    Renovate vulnerability alerts.
 ```
 
-Also remove the now-stale `CLAUDE.md, safety check` content check at
-`docs/standards-manifest.yaml:1028-1029` since the broader CI rule supersedes
-it.
+`CLAUDE-006` is now scoped to `black,mypy` only (its `verify` line reads `content_absent_any: CLAUDE.md, black,mypy`). The safety check is no longer in CLAUDE-006's `verify` because CI-051 covers it at workflow YAML scope; CLAUDE-006's description carries a cross-reference for traceability. No further manifest edit is required.
 
 ## Sequencing
 
