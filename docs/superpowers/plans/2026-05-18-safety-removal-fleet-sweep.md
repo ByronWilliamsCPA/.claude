@@ -524,7 +524,7 @@ gh pr checks --watch
 
 **Prerequisite:** Task 1 merged.
 
-**Note on Task 7 expanded scope:** Pre-flight (Task 0) surfaced two safety calls in `renovate-auto-merge.yml` that the original `gh search code "safety check"` query missed because the file uses safety 3.x syntax (`safety scan`). These calls use the org's free-tier SAFETY_API_KEY. Per the user's decision (2026-05-18), free tier is single-codebase and uses the same public data as unauthenticated `safety scan`, so the dashboard value does not justify keeping the integration. Remove and delete the secret.
+**Note on Task 7 expanded scope:** Pre-flight (Task 0) surfaced two safety calls in `renovate-auto-merge.yml` that the original `gh search code "safety check"` query missed because the file uses safety 3.x syntax (`safety scan`). These calls use PromptCraft's free-tier `SAFETY_API_KEY` (single-codebase per the free-tier license, so the key cannot scale to other repos in the fleet). Per the user's decision (2026-05-18), free tier uses the same public vulnerability data as unauthenticated `safety scan`, so the dashboard value does not justify keeping the integration. Remove and delete the secret.
 
 - [ ] **Step 1: Clone and branch**
 
@@ -787,7 +787,7 @@ Expected: Last 5 runs show `Security Analysis / Security Gate Validation` as SUC
 
 - [ ] **Step 4: Mark the design and plan as published**
 
-Edit `~/dev/.claude/docs/superpowers/specs/2026-05-18-safety-removal-fleet-sweep-design.md` and change `status: draft` to `status: published` in the frontmatter. Same for this plan file. The frontmatter schema for `schema_type: common` accepts `draft | in-review | published`; do not use `completed` (it will fail `scripts/validate-frontmatter.sh`). Note the completion summary in the body if you want to capture it. Commit both changes in a single commit in `~/dev/.claude`:
+Edit `~/dev/.claude/docs/superpowers/specs/2026-05-18-safety-removal-fleet-sweep-design.md` and change `status: draft` to `status: published` in the frontmatter. Same for this plan file. The frontmatter validator accepts `draft | in-review | published | active | deprecated` (see `scripts/validate-frontmatter.sh`); `completed` is NOT a valid value and will fail validation. For a finished design/plan, `published` is the right choice; `active` and `deprecated` apply to long-lived reference docs and are not appropriate here. Note the completion summary in the body if you want to capture it. Commit both changes in a single commit in `~/dev/.claude`:
 
 ```bash
 cd ~/dev/.claude
@@ -821,7 +821,8 @@ git push origin main
 ## Acceptance criteria (from spec)
 
 - [x] Task 1: Step 0 PR merged (`ByronWilliamsCPA/.github` PR #140). `fragrance-rater` PR #22's `Security Analysis / Security Gate Validation` passes.
-- [ ] Task 2: `cookiecutter-python-template` PR merged (DONE via PR #55, 2026-05-19 04:37Z). Task 3: `cookiecutter-template-sample` PR merged (PENDING). Generating a new repo from either template produces no `safety` references in workflow files.
+- [x] Task 2: `cookiecutter-python-template` PR merged (PR #55, 2026-05-19 04:37Z). Generating a new repo from this template produces no `safety` references in the rendered security workflow.
+- [ ] Task 3: `cookiecutter-template-sample` PR merged (PENDING). Generating a new repo from this template produces no `safety` references in workflow files.
 - [ ] Tasks 4-8: All Tier 3 PRs merged. `git grep -in safety` across affected repos returns no matches in `.github/workflows/`. (PENDING)
 - [ ] Task 7: PromptCraft Tier 4 backups updated. (PENDING; folded into the PromptCraft Tier 3 PR)
 - [x] Task 9: Manifest update merged (`.claude` PR #121). `CI-051` runs on the next `/repo-audit` and reports zero violations.
