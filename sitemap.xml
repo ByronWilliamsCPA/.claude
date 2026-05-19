@@ -433,6 +433,10 @@
          <lastmod>2026-05-19</lastmod>
     </url>
     <url>
+         <loc>https://claude-config.readthedocs.io/superpowers/plans/2026-05-18-safety-removal-fleet-sweep/</loc>
+         <lastmod>2026-05-19</lastmod>
+    </url>
+    <url>
          <loc>https://claude-config.readthedocs.io/superpowers/plans/2026-05-18-scanner-allowlist-implementation/</loc>
          <lastmod>2026-05-19</lastmod>
     </url>
@@ -494,6 +498,10 @@
     </url>
     <url>
          <loc>https://claude-config.readthedocs.io/superpowers/specs/2026-05-16-compliance-retrospective-aggregation-design/</loc>
+         <lastmod>2026-05-19</lastmod>
+    </url>
+    <url>
+         <loc>https://claude-config.readthedocs.io/superpowers/specs/2026-05-18-safety-removal-fleet-sweep-design/</loc>
          <lastmod>2026-05-19</lastmod>
     </url>
 </urlset>

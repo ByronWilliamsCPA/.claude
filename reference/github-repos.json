@@ -1330,6 +1330,21 @@
       "description": "Personal fragrance evaluation and recommendation system with LLM-powered recommendations",
       "isPrivate": false,
       "isArchived": false,
+      "api": {
+        "servesApi": true,
+        "frameworks": ["fastapi"],
+        "entryPoints": ["src/fragrance_rater/main.py"],
+        "externalClients": ["httpx", "requests"],
+        "openApiSpec": false,
+        "postmanCollection": false,
+        "lastAudited": null,
+        "testStatus": null
+      },
+      "frontend": {
+        "framework": "react",
+        "bundler": "vite",
+        "directory": "frontend"
+      },
       "review": {
         "branchProtection": {
           "enabled": true,
