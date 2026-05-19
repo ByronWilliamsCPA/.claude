@@ -518,7 +518,7 @@ def fetch_classic_protection_contexts(
             as drift.
     """
     try:
-        result = subprocess.run(  # nosec B603 B607  # noqa: S603 -- list args, shell=False; tracked: PR #74.
+        result = subprocess.run(  # nosec B603 B607
             [  # noqa: S607 -- gh resolved via PATH; tracked: PR #74.
                 "gh",
                 "api",
@@ -592,7 +592,7 @@ def _run_gh(args: list[str], timeout: int) -> tuple[str, str, int]:
             configuration error.
     """
     try:
-        result = subprocess.run(  # nosec B603 B607  # noqa: S603 -- list args, shell=False; tracked: PR #74.
+        result = subprocess.run(  # nosec B603 B607
             ["gh", *args],  # noqa: S607 -- gh resolved via PATH; tracked: PR #74.
             capture_output=True,
             text=True,
