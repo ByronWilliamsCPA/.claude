@@ -8,9 +8,9 @@ tags:
   - compliance
 ---
 
-**Total sessions:** 12
-**Distinct repos:** 8
-**Newest entry:** 2026-05-16
+**Total sessions:** 13
+**Distinct repos:** 9
+**Newest entry:** 2026-05-18
 **Oldest entry:** 2026-04-25
 **Open fleet actions:** 0
 
@@ -19,6 +19,7 @@ tags:
 
 | Date | Repo | Mode | Critical | Important | Suggested | Candidates | Reconciled | Report |
 |------|------|------|---------:|----------:|----------:|-----------:|:----------:|--------|
+| 2026-05-18 | williaby/image-generation | interactive | 0 | 8 | 10 | 20 |  | [report](/home/byron/.claude/docs/compliance-retrospectives/2026-05-18-image-generation.md) |
 | 2026-05-16 | ByronWilliamsCPA/reference-library | unknown | 0 | 0 | 0 | 0 | yes | [report](https://github.com/ByronWilliamsCPA/reference-library/blob/main/docs/compliance-reports/lessons-learned/2026-05-16-b.md) |
 | 2026-05-16 | ByronWilliamsCPA/fragrance-rater | unknown | 8 | 30 | 21 | 21 | yes | [report](https://github.com/ByronWilliamsCPA/fragrance-rater/blob/main/docs/compliance-reports/lessons-learned/2026-05-16.md) |
 | 2026-05-16 | ByronWilliamsCPA/audio-processor | unknown | 12 | 38 | 15 | 11 | yes | [report](https://github.com/ByronWilliamsCPA/audio-processor/blob/main/docs/compliance-reports/lessons-learned/2026-05-16.md) |
@@ -39,4 +40,4 @@ tags:
 | 2026-04-25 | ByronWilliamsCPA/gleif | unknown | 10 | 22 | 13 | 8 | yes | [report](https://github.com/ByronWilliamsCPA/gleif/blob/main/docs/compliance-reports/lessons-learned/2026-04-25.md) |
 
 ---
-*Rendered 2026-05-17 21:06:36 from master-log.jsonl by compliance_log_render.py.*
+*Rendered 2026-05-19 03:40:00 from master-log.jsonl by compliance_log_render.py.*
