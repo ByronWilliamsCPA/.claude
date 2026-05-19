@@ -2270,10 +2270,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#manifest-update-separate-pr-in-claude-repo" class="md-nav__link">
+  <a href="#manifest-update-separate-pr-in-claude-repo-landed" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Manifest update (separate PR in .claude repo)
+        Manifest update (separate PR in .claude repo) -- LANDED
       
     </span>
   </a>
@@ -2435,9 +2435,9 @@
   <h1>Safety Scanner Removal Fleet Sweep Design</h1>
 
 <p><strong>Date</strong>: 2026-05-18
-<strong>Status</strong>: Published
+<strong>Status</strong>: Draft
 <strong>Author</strong>: Byron Williams
-<strong>Related</strong>: <code>ByronWilliamsCPA/.github</code> PRs #136, #137, #138; <code>security-analysis-workflow-regression-report.md</code></p>
+<strong>Related</strong>: <code>ByronWilliamsCPA/.github</code> PRs #136, #137, #138 (the safety-induced cascading regressions that triggered this sweep). The "Layer 8d" blocker referenced throughout this doc is the <code>--no-build: true</code> hardcode introduced by PR #138's merged form, which broke editable-install consumers' Security Gate Validation check.</p>
 <hr />
 <h2 id="problem-statement">Problem statement<a class="headerlink" href="#problem-statement" title="Permanent link">&para;</a></h2>
 <p><code>safety</code> (the Python SCA tool) has caused four cascading CI regressions across the
@@ -2610,8 +2610,8 @@ deleted post-merge.</p>
 </tr>
 <tr>
 <td><code>williaby/PromptCraft</code></td>
-<td><code>.github/workflows/ci.yml</code></td>
-<td>Suppressed call</td>
+<td><code>.github/workflows/ci.yml</code>, <code>.github/workflows/renovate-auto-merge.yml</code>, <code>.agents/core/code-reviewer.yaml</code>, <code>.agents/discovery-config.yaml</code></td>
+<td><code>ci.yml</code> has a suppressed <code>safety check</code>; <code>renovate-auto-merge.yml</code> has 2 <code>safety scan</code> calls with <code>SAFETY_API_KEY</code> (free-tier key, no proprietary data, deleted post-merge); <code>.agents/*.yaml</code> reference safety in tool/package lists</td>
 </tr>
 <tr>
 <td><code>williaby/testing</code></td>
@@ -2624,26 +2624,31 @@ deleted post-merge.</p>
 <h3 id="tier-4-documentation-backups-optional-low-priority">Tier 4: Documentation backups (optional, low priority)<a class="headerlink" href="#tier-4-documentation-backups-optional-low-priority" title="Permanent link">&para;</a></h3>
 <p><code>williaby/PromptCraft/docs/planning/backups/ci-workflows/{ci-optimized,ci-original}.yml</code>.</p>
 <p>Action: delete safety lines. Can ride along with the PromptCraft Tier 3 PR.</p>
-<h3 id="manifest-update-separate-pr-in-claude-repo">Manifest update (separate PR in <code>.claude</code> repo)<a class="headerlink" href="#manifest-update-separate-pr-in-claude-repo" title="Permanent link">&para;</a></h3>
-<p>Add <code>CHECK-CI-NN</code> (next available CI-* number) to <code>docs/standards-manifest.yaml</code>:</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">CHECK-CI-NN</span><span class="p">:</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CHECK-CI-NN</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">domain</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ci</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span><span class="nt">severity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">error</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">  </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;safety</span><span class="nv"> </span><span class="s">command</span><span class="nv"> </span><span class="s">absent</span><span class="nv"> </span><span class="s">from</span><span class="nv"> </span><span class="s">workflow</span><span class="nv"> </span><span class="s">YAML&quot;</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">  </span><span class="nt">verify</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">    </span><span class="no">content_absent_any: .github/workflows/*.yml, safety check, safety scan, safety --</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">  </span><span class="nt">rationale</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">    </span><span class="no">Safety&#39;s free-tier vulnerability data is a subset of OSV-Scanner&#39;s. The</span>
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">    </span><span class="no">license-scanning feature requires Safety paid tier and is not invoked. The</span>
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">    </span><span class="no">safety 3.x CLI churned breaking changes that caused cascading regressions</span>
-</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">    </span><span class="no">in 2026-05 (PRs #136/#137/#138 in ByronWilliamsCPA/.github). Coverage is</span>
-</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">    </span><span class="no">fully maintained by OSV-Scanner, pip-audit, Dependency-Review, and Renovate.</span>
-</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="w">  </span><span class="nt">fix</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Delete</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">safety</span><span class="nv"> </span><span class="s">step</span><span class="nv"> </span><span class="s">from</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">workflow</span><span class="nv"> </span><span class="s">YAML;</span><span class="nv"> </span><span class="s">verify</span><span class="nv"> </span><span class="s">OSV-Scanner</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">present</span><span class="nv"> </span><span class="s">in</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">same</span><span class="nv"> </span><span class="s">workflow</span><span class="nv"> </span><span class="s">or</span><span class="nv"> </span><span class="s">a</span><span class="nv"> </span><span class="s">sibling</span><span class="nv"> </span><span class="s">workflow.&quot;</span>
+<h3 id="manifest-update-separate-pr-in-claude-repo-landed">Manifest update (separate PR in <code>.claude</code> repo) -- LANDED<a class="headerlink" href="#manifest-update-separate-pr-in-claude-repo-landed" title="Permanent link">&para;</a></h3>
+<p><code>CI-051</code> was added to <code>docs/standards-manifest.yaml</code> via <a href="https://github.com/ByronWilliamsCPA/.claude/pull/121">PR #121</a> (<code>chore(compliance): add CI-051 banning safety in workflow YAML</code>), merged before this design doc landed.</p>
+<p>The merged entry uses the standard manifest list-entry shape (entries live under a top-level <code>checks:</code> list as <code>- id: CI-051</code>, not as a <code>CHECK-CI-NN:</code> mapping). Severity is <code>important</code> (the CI-domain default), not <code>error</code>; the original spec value has been reconciled to the merged state.</p>
+<p>For reference, the actual merged entry:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CI-051</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">domain</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ci</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">severity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">important</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span><span class="nt">override_eligible</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">  </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">&gt;-</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">    </span><span class="no">safety command absent from workflow YAML (replaced by OSV-Scanner,</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">    </span><span class="no">Dependency-Review, and pip-audit). Prevents reintroduction of the</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">    </span><span class="no">safety 3.x CLI drift surface that caused cascading regressions in</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">    </span><span class="no">2026-05 (ByronWilliamsCPA/.github PRs #136/#137/#138).</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">  </span><span class="nt">verify</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">&gt;-</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">    </span><span class="no">content_absent_any: .github/workflows/*.yml, safety check, safety scan, safety --</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">  </span><span class="nt">source_frameworks</span><span class="p">:</span>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">manifest-internal</span>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="w">  </span><span class="nt">notes</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">&gt;-</span>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="w">    </span><span class="no">Safety&#39;s free-tier Python CVE data is a strict subset of OSV-Scanner&#39;s</span>
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="w">    </span><span class="no">sources (PyPA + GHSA + OSS-Fuzz). License scanning requires Safety</span>
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="w">    </span><span class="no">paid tier and is not invoked by any current workflow. Coverage is</span>
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="w">    </span><span class="no">fully maintained by OSV-Scanner + Dependency-Review + pip-audit +</span>
+</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="w">    </span><span class="no">Renovate vulnerability alerts.</span>
 </span></code></pre></div>
-<p>Also remove the now-stale <code>CLAUDE.md, safety check</code> content check at
-<code>docs/standards-manifest.yaml:1028-1029</code> since the broader CI rule supersedes
-it.</p>
+<p><code>CLAUDE-006</code> is now scoped to <code>black,mypy</code> only (its <code>verify</code> line reads <code>content_absent_any: CLAUDE.md, black,mypy</code>). The safety check is no longer in CLAUDE-006's <code>verify</code> because CI-051 covers it at workflow YAML scope; CLAUDE-006's description carries a cross-reference for traceability. No further manifest edit is required.</p>
 <h2 id="sequencing">Sequencing<a class="headerlink" href="#sequencing" title="Permanent link">&para;</a></h2>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>Step 0 (urgent)
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>  ├─ ByronWilliamsCPA/.github PR, merge first
@@ -2886,7 +2891,7 @@ and delete if present (verify with <code>git grep</code> that nothing else refer
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="May 19, 2026 15:29:49 UTC">May 19, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="May 19, 2026 15:58:35 UTC">May 19, 2026</span>
   </span>
 
     
