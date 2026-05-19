@@ -1,14 +1,14 @@
 ---
 schema_type: common
 title: Safety Scanner Removal Fleet Sweep Implementation Plan
-status: published
+status: draft
 owner: engineering
 tags: [security, ci_cd, github_actions, compliance, standards]
 purpose: Step-by-step plan to remove the redundant safety SCA scanner from the org workflow, two cookiecutter templates, and five live consumer repos, then register a manifest rule to prevent reintroduction.
 ---
 
 **Date**: 2026-05-18
-**Status**: Published
+**Status**: Draft
 **Author**: Byron Williams
 **Spec**: [2026-05-18-safety-removal-fleet-sweep-design.md](../specs/2026-05-18-safety-removal-fleet-sweep-design.md)
 
@@ -18,7 +18,7 @@ purpose: Step-by-step plan to remove the redundant safety SCA scanner from the o
 
 **Goal:** Remove `safety` from every workflow YAML across BWCPA and williaby, and add a manifest rule to prevent reintroduction.
 
-**Architecture:** Sequential per-repo PRs. Step 0 (the org workflow in `ByronWilliamsCPA/.github`) lands first and unblocks every editable-install consumer; then two cookiecutter templates land in parallel to stop the regression at the source; then five live-consumer PRs land in parallel batches of three; finally the `.claude` manifest rule lands.
+**Architecture:** Sequential per-repo PRs. Step 0 (the org workflow in `ByronWilliamsCPA/.github`) lands first and unblocks every editable-install consumer; then two cookiecutter templates land (Tasks 2 and 3 are mutually independent and can run concurrently once Task 1 is merged, though this plan documents them serially for ease of single-operator execution); then five live-consumer PRs (Tasks 4-8) land. These five can run in batches of three concurrent PRs (e.g., dispatch Tasks 4, 5, 6 in parallel; then Tasks 7, 8) when an operator coordinates them via parallel subagents or multiple terminal sessions; the plan documents them sequentially for the default single-operator flow. Finally the `.claude` manifest rule lands.
 
 **Tech Stack:** GitHub CLI (`gh`), git, pre-commit, ruff, yamllint, cookiecutter, uv, poetry. All commits signed; no `--no-verify`, no `--admin`.
 
@@ -26,7 +26,7 @@ purpose: Step-by-step plan to remove the redundant safety SCA scanner from the o
 
 ## File Structure
 
-The plan modifies files in 10 different repositories. Within each repo, edits stay inside `.github/workflows/` (and one `docs/` path for PromptCraft backups).
+The plan modifies files in 9 different repositories. Most edits live inside `.github/workflows/`; PromptCraft additionally touches a `docs/` path for backup workflows and two `.agents/` config files that reference safety in their tool/package lists.
 
 | Repo | Files touched |
 |---|---|
@@ -36,9 +36,9 @@ The plan modifies files in 10 different repositories. Within each repo, edits st
 | `ByronWilliamsCPA/xero-crypto` | `.github/workflows/ci.yml`, `.github/workflows/security-analysis.yml` |
 | `williaby/image-preprocessing-detector` | `.github/workflows/security-analysis.yml` |
 | `williaby/data_ingestor` | `.github/workflows/security-analysis.yml` |
-| `williaby/PromptCraft` | `.github/workflows/ci.yml`, `docs/planning/backups/ci-workflows/ci-optimized.yml`, `docs/planning/backups/ci-workflows/ci-original.yml` |
+| `williaby/PromptCraft` | `.github/workflows/ci.yml`, `.github/workflows/renovate-auto-merge.yml`, `docs/planning/backups/ci-workflows/ci-optimized.yml`, `docs/planning/backups/ci-workflows/ci-original.yml`, `.agents/core/code-reviewer.yaml`, `.agents/discovery-config.yaml` |
 | `williaby/testing` | `.github/workflows/test.yml` |
-| `~/dev/.claude` (this repo) | `docs/standards-manifest.yaml` (add CHECK-CI-051) |
+| `~/dev/.claude` (this repo) | `docs/standards-manifest.yaml` (CI-051 already added via PR #121) |
 
 ---
 
@@ -48,7 +48,7 @@ The plan modifies files in 10 different repositories. Within each repo, edits st
 - Branch name on every PR: `chore/remove-safety-scanner`.
 - Commit messages use the conventional-commit template defined in the spec.
 - Every commit signs (`git config commit.gpgsign true` already set per global standard); never use `--no-verify`, never `--admin`-merge.
-- After every edit, `pre-commit run --files <changed paths>` runs locally before commit. If the repo lacks a pre-commit config, run `yamllint <file>` instead.
+- Before committing, run `pre-commit run --all-files` in the affected repo per the global CLAUDE.md rule. If the repo lacks a pre-commit config, run `yamllint <file>` against each changed file instead.
 - Auto-merge enabled with `gh pr merge --auto --squash` only on Tier 2-4 PRs, never on Step 0.
 
 ---
@@ -116,354 +116,68 @@ Write the contents of `/tmp/safety-sweep-inventory.txt`, `/tmp/safety-report-con
 
 ---
 
-## Task 1: Step 0 for `ByronWilliamsCPA/.github` (live workflow + template mirror)
+## Task 1: Step 0 for `ByronWilliamsCPA/.github` (live workflow + template mirror) -- COMPLETE
 
-**Files:**
-- Modify: `.github/workflows/python-security-analysis.yml` (in `ByronWilliamsCPA/.github`)
-- Modify: `workflow-templates/python-security-analysis.yml` (in `ByronWilliamsCPA/.github`)
-- Modify: `CHANGELOG.md` (in `ByronWilliamsCPA/.github`)
+**Status:** Completed via [ByronWilliamsCPA/.github PR #140](https://github.com/ByronWilliamsCPA/.github/pull/140) (`chore(security)!: remove redundant safety scanner`), merged 2026-05-18 22:43Z.
 
-- [ ] **Step 1: Clone and create branch**
+**Files modified by PR #140:**
 
-```bash
-cd ~/dev
-[ -d dot-github ] || gh repo clone ByronWilliamsCPA/.github dot-github
-cd ~/dev/dot-github
-git fetch origin main
-git checkout -B chore/remove-safety-scanner origin/main
-```
+- `.github/workflows/python-security-analysis.yml`
+- `workflow-templates/python-security-analysis.yml`
+- `CHANGELOG.md`
 
-Expected: branch created from latest origin/main. If the branch already exists locally, the `-B` flag resets it.
-
-- [ ] **Step 2: Edit `.github/workflows/python-security-analysis.yml`**
-
-Open the file. Apply these edits exactly as shown in the spec's "Step 0 diff" section. To summarize, delete these blocks and lines:
-
-1. The entire `run-safety:` input block (under `on.workflow_call.inputs`).
-2. The `if:` expression on the `python-security` job, replacing `${{ inputs.run-bandit || inputs.run-safety }}` with `${{ inputs.run-bandit }}`.
-3. The job's `name:` field, changing `Python Security Scan` to `Python SAST (Bandit)`.
-4. The entire `- name: Safety Vulnerability Scan` step (from the `- name:` line through the end of its `run:` block).
-5. The `safety-report.json` line in the `Upload Security Reports` step's `path:` list. If the result is a single-line `path:`, collapse it to `path: bandit-report.json`.
-6. The workflow header comment, changing `Comprehensive security scanning with CodeQL, Bandit, Safety, OSV-Scanner, and OWASP` to `Comprehensive security scanning with CodeQL, Bandit, OSV-Scanner, and Dependency-Review`.
-
-- [ ] **Step 3: Edit `workflow-templates/python-security-analysis.yml`**
-
-Apply the **same** six edits as Step 2. This file is the template mirror; it must match the live workflow.
-
-- [ ] **Step 4: Add CHANGELOG entry**
-
-Open `CHANGELOG.md`. Add an entry under the `[Unreleased]` heading (create the heading if absent):
-
-```markdown
-## [Unreleased]
-
-### Removed
-
-- `safety` SCA scanner from `python-security-analysis.yml` and the
-  `workflow-templates/` mirror. Python dependency vulnerability scanning
-  is fully covered by OSV-Scanner, Dependency-Review, and consumer-side
-  `pip-audit`. Resolves the cascading regressions from PRs #136/#137/#138
-  and the editable-install blocker from #138's merged form. See design
-  doc in `~/.claude/docs/superpowers/specs/2026-05-18-safety-removal-fleet-sweep-design.md`.
-```
-
-- [ ] **Step 5: Validate YAML syntax**
+**Verification (read-only, confirms current state on main):**
 
 ```bash
-yamllint .github/workflows/python-security-analysis.yml \
-         workflow-templates/python-security-analysis.yml
+gh api repos/ByronWilliamsCPA/.github/contents/.github/workflows/python-security-analysis.yml \
+  --jq '.content' | base64 -d | grep -c -i safety
+# Expected: 0
+
+gh api repos/ByronWilliamsCPA/.github/contents/workflow-templates/python-security-analysis.yml \
+  --jq '.content' | base64 -d | grep -c -i safety
+# Expected: 0
 ```
 
-Expected: no errors. If lint complains about line length on a comment, wrap; otherwise the deletion is line-removing only and should not introduce new violations.
+**Downstream consumer impact:** Editable-install consumers (`fragrance-rater`, `llc-manager`) automatically picked up the change on their next workflow run because they reference `@main`. PR #140 unblocked all subsequent Tier 2 and Tier 3 work.
 
-- [ ] **Step 6: Run actionlint if available**
+<details>
+<summary>Original step-by-step plan (preserved for traceability)</summary>
 
-```bash
-command -v actionlint && actionlint .github/workflows/python-security-analysis.yml || echo "actionlint not installed, skipping"
-```
+The pre-execution plan called for: clone repo and branch; edit `.github/workflows/python-security-analysis.yml` and the `workflow-templates/` mirror to remove the `run-safety` input, the safety scan step, the `safety-report.json` artifact, and the workflow header comment reference; add a `CHANGELOG.md` entry under `[Unreleased]`; validate with `yamllint` and `actionlint`; run `pre-commit run --all-files`; commit signed; open PR without auto-merge; verify downstream by re-running `fragrance-rater` PR #22 Security Analysis; merge after green; snapshot post-merge fleet run state. PR #140 executed this plan as merged.
 
-Expected: no errors, or skip if actionlint is absent.
-
-- [ ] **Step 7: Run pre-commit on changed files**
-
-```bash
-pre-commit run --files \
-  .github/workflows/python-security-analysis.yml \
-  workflow-templates/python-security-analysis.yml \
-  CHANGELOG.md
-```
-
-Expected: all hooks pass. If `no-em-dash` flags anything, replace em-dashes with colons or commas per the global CLAUDE.md rule.
-
-- [ ] **Step 8: Commit**
-
-```bash
-git add .github/workflows/python-security-analysis.yml \
-        workflow-templates/python-security-analysis.yml \
-        CHANGELOG.md
-git commit -m "$(cat <<'EOF'
-chore(security): remove redundant safety scanner
-
-Removes the safety SCA call from python-security-analysis.yml (live)
-and workflow-templates/python-security-analysis.yml (template mirror).
-Python dependency vulnerability scanning is fully covered by:
-  - OSV-Scanner (multi-ecosystem, PyPA + GHSA + OSS-Fuzz data)
-  - Dependency-Review action (PR-time, GHSA-backed)
-  - pip-audit (dev dependency in consumer repos, PyPA-backed)
-  - Renovate osvVulnerabilityAlerts + vulnerabilityAlerts (ongoing)
-
-Aligns with manifest CHECK-PYTOOL-005 (safety absent from dependencies).
-Resolves the safety 3.x CLI drift surface that caused regressions in
-PRs #136, #137, #138 and the editable-install blocker from #138's
-merged form.
-
-Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>
-EOF
-)"
-```
-
-Expected: commit succeeds, pre-commit hooks pass on commit.
-
-- [ ] **Step 9: Push and open PR**
-
-```bash
-git push -u origin chore/remove-safety-scanner
-gh pr create \
-  --base main \
-  --title "chore(security): remove redundant safety scanner" \
-  --body "$(cat <<'EOF'
-## Summary
-
-Removes the `safety` SCA call from the org's reusable
-`python-security-analysis.yml` workflow and its `workflow-templates/`
-mirror. Replaces nothing.
-
-## Why
-
-The fleet runs five independent Python-dep vulnerability scanners
-today (OSV-Scanner, Dependency-Review action, consumer-side pip-audit,
-Renovate `osvVulnerabilityAlerts`, Renovate `vulnerabilityAlerts`).
-`safety` is the only one currently broken (Layer 8d from the
-regression report) and the only one whose Python-CVE coverage is a
-strict subset of OSV-Scanner's data sources.
-
-The fleet's own standards manifest (CHECK-PYTOOL-005) already declared
-the directional intent: "safety absent from dependencies (replaced by
-pip-audit)." This PR extends that intent to workflow YAML.
-
-## Resolves
-
-- Layer 8d (`--no-build` hardcode breaks editable-install consumers)
-  from the security-analysis-workflow-regression-report
-- The cascading safety-upstream drift surface that produced PRs
-  #136, #137, #138
-
-## Verification
-
-- Workflow self-test green on this PR
-- Manually retriggered `fragrance-rater` PR #22 Security Analysis
-  workflow run AFTER this PR's branch becomes the org workflow's main:
-  Security Gate Validation flips from FAILURE to SUCCESS
-- Manually retriggered latest `llc-manager` main run: same flip
-
-## Coverage preserved
-
-| Concern | Tool that covers it |
-|---|---|
-| Python dep CVE (full lockfile) | OSV-Scanner, pip-audit (consumer) |
-| Python dep CVE (PR diff) | Dependency-Review action |
-| Multi-ecosystem CVE | OSV-Scanner |
-| Ongoing vuln alerts | Renovate osvVulnerabilityAlerts + vulnerabilityAlerts |
-| Third-party license check (PR diff) | Dependency-Review `license-check: true` |
-| Own-source SPDX | REUSE workflow |
-| SAST | Bandit, CodeQL, SonarCloud |
-| SBOM | sbom.yml |
-
-## Out of scope
-
-- Centralizing williaby's per-repo security workflow copies; tracked
-  separately
-- Adding a downstream-consumer smoke test for the reusable workflow;
-  tracked separately
-- Removing safety from consumer-repo local workflow copies; covered by
-  follow-up PRs in cookiecutter-python-template, cookiecutter-template-sample,
-  xero-crypto, image-preprocessing-detector, data_ingestor, PromptCraft,
-  and testing
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-EOF
-)"
-```
-
-Expected: PR URL printed. **Do not enable auto-merge.** This PR needs manual verification against downstream consumers.
-
-- [ ] **Step 10: Capture the PR URL and number**
-
-```bash
-gh pr view --json url,number > /tmp/safety-sweep-pr-step0.json
-cat /tmp/safety-sweep-pr-step0.json
-```
-
-- [ ] **Step 11: Wait for the PR's self-test CI to go green**
-
-```bash
-gh pr checks --watch
-```
-
-Expected: All checks pass. The reusable workflow's self-test does NOT exercise the consumer code path (per the regression report's process observation #1), so this is necessary but not sufficient.
-
-- [ ] **Step 12: Verify downstream against `fragrance-rater` PR #22**
-
-Trigger a re-run of fragrance-rater's Security Analysis workflow against PR #22 using the branch from this PR:
-
-```bash
-# Get the head SHA of this PR's branch
-HEAD_SHA=$(git rev-parse HEAD)
-
-# fragrance-rater calls the org workflow via @main; to test against the
-# branch, the simplest path is to temporarily merge this PR into a fork
-# of the org workflow OR ask the reviewer to test by pinning the consumer
-# call to @chore/remove-safety-scanner.
-
-# Document the verification command for the reviewer:
-echo "To verify: in ByronWilliamsCPA/fragrance-rater PR #22, edit"
-echo "  uses: ByronWilliamsCPA/.github/.github/workflows/python-security-analysis.yml@main"
-echo "to"
-echo "  uses: ByronWilliamsCPA/.github/.github/workflows/python-security-analysis.yml@chore/remove-safety-scanner"
-echo "and confirm Security Gate Validation flips from FAILURE to SUCCESS."
-```
-
-Expected behavior: do not push speculative changes to fragrance-rater. Surface this verification step to the reviewer in a PR comment. If you have authority to make the test change, do it on a throwaway branch in fragrance-rater, NOT on PR #22 itself.
-
-- [ ] **Step 13: Merge after verification confirms**
-
-Only after Step 12 confirms downstream green:
-
-```bash
-gh pr merge --squash --delete-branch
-```
-
-Expected: PR merged, branch deleted, default branch updated.
-
-- [ ] **Step 14: Snapshot post-merge state**
-
-```bash
-gh run list --repo ByronWilliamsCPA/fragrance-rater --workflow "Security Analysis" --limit 3
-gh run list --repo ByronWilliamsCPA/llc-manager --workflow "Security Analysis" --limit 3
-```
-
-Expected: New runs (triggered automatically by the org workflow's `@main` update) show `Security Analysis / Security Gate Validation` as SUCCESS. If still FAILURE, investigate before proceeding to Task 2.
+</details>
 
 ---
 
-## Task 2: Tier 2a for `ByronWilliamsCPA/cookiecutter-python-template`
+## Task 2: Tier 2a for `ByronWilliamsCPA/cookiecutter-python-template` -- COMPLETE
 
-**Files:**
-- Modify: `{{cookiecutter.project_slug}}/.github/workflows/security-analysis.yml`
-- Modify: `docs/org-workflows/python-ci.yml`
+**Status:** Completed via [ByronWilliamsCPA/cookiecutter-python-template PR #55](https://github.com/ByronWilliamsCPA/cookiecutter-python-template/pull/55) (`chore(security): remove safety from rendered project + docs`), merged 2026-05-19 04:37Z.
 
-**Prerequisite:** Task 1 merged.
+**Files modified by PR #55:**
 
-- [ ] **Step 1: Clone and branch**
+- `{{cookiecutter.project_slug}}/.github/workflows/security-analysis.yml`
+- `docs/org-workflows/python-ci.yml`
 
-```bash
-cd ~/dev
-[ -d cookiecutter-python-template ] || gh repo clone ByronWilliamsCPA/cookiecutter-python-template
-cd ~/dev/cookiecutter-python-template
-git fetch origin main
-git checkout -B chore/remove-safety-scanner origin/main
-```
-
-- [ ] **Step 2: Edit `{{cookiecutter.project_slug}}/.github/workflows/security-analysis.yml`**
-
-Open the file. Find the `safety` step. The current content includes:
-
-```yaml
-- name: Run Safety
-  run: uv run safety check --output json > safety-report.json || true
-```
-
-Delete the entire step (the `- name:` line through the end of its `run:` block). Also delete any `safety-report.json` reference in the artifact upload step. If the step is the only content of its job, delete the job; otherwise leave the surrounding YAML intact.
-
-- [ ] **Step 3: Edit `docs/org-workflows/python-ci.yml`**
-
-This file currently contains:
-
-```yaml
-uv run safety check -r requirements.txt || {
-  ...
-}
-```
-
-Delete the safety invocation block, including the `|| { ... }` suppression. If the parent step has no remaining content, delete the step.
-
-- [ ] **Step 4: Render the cookiecutter to a throwaway dir and verify CI shape**
-
-No formal cookiecutter test harness exists in `.claude` per the Explore findings, so use the manual render-and-inspect pattern:
+**Verification (read-only, confirms current state on main):**
 
 ```bash
-rm -rf /tmp/cookiecutter-render-test
-uvx cookiecutter . --no-input --output-dir /tmp/cookiecutter-render-test
-cd /tmp/cookiecutter-render-test/*/
-grep -rn "safety" .github/workflows/ && echo "FAIL: safety still present" || echo "OK: no safety references"
-cd ~/dev/cookiecutter-python-template
+gh api repos/ByronWilliamsCPA/cookiecutter-python-template/contents/%7B%7Bcookiecutter.project_slug%7D%7D/.github/workflows/security-analysis.yml \
+  --jq '.content' | base64 -d | grep -c -i safety
+# Expected: 0
+
+gh api repos/ByronWilliamsCPA/cookiecutter-python-template/contents/docs/org-workflows/python-ci.yml \
+  --jq '.content' | base64 -d | grep -c -i safety
+# Expected: 0
 ```
 
-Expected: `OK: no safety references` printed. If `FAIL` printed, return to Step 2 and find the missed reference.
+**Downstream impact:** New projects bootstrapped from this template will no longer carry `safety` references in their rendered security workflow. The cookiecutter doc copy of the org workflow also no longer mentions `safety`.
 
-- [ ] **Step 5: Run pre-commit on changed files**
+<details>
+<summary>Original step-by-step plan (preserved for traceability)</summary>
 
-```bash
-pre-commit run --files \
-  '{{cookiecutter.project_slug}}/.github/workflows/security-analysis.yml' \
-  docs/org-workflows/python-ci.yml
-```
+The pre-execution plan called for: clone the template repo; remove the `Run Safety` step from the rendered `security-analysis.yml`; remove the `safety check -r requirements.txt` block from the org-workflow doc copy; render the template to `/tmp` and grep for `safety` to confirm zero references; run pre-commit on changed files; commit signed; open a PR with `gh pr merge --auto --squash`; wait for merge. PR #55 executed this plan as merged.
 
-Expected: hooks pass.
-
-- [ ] **Step 6: Commit**
-
-```bash
-git add '{{cookiecutter.project_slug}}/.github/workflows/security-analysis.yml' \
-        docs/org-workflows/python-ci.yml
-git commit -m "$(cat <<'EOF'
-chore(security): remove safety from rendered project + org-workflow doc
-
-Mirrors the removal in ByronWilliamsCPA/.github main. New projects
-bootstrapped from this template will no longer carry the safety 2.x
-syntax. Python dep vuln scanning remains covered by pip-audit
-(already a dev dep in the rendered project) and OSV-Scanner (in the
-rendered security workflow).
-
-Aligns with manifest CHECK-PYTOOL-005.
-
-Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>
-EOF
-)"
-```
-
-- [ ] **Step 7: Push, open PR, enable auto-merge**
-
-```bash
-git push -u origin chore/remove-safety-scanner
-gh pr create --base main \
-  --title "chore(security): remove safety from rendered project + docs" \
-  --body "Mirrors the removal in ByronWilliamsCPA/.github. See design doc in ~/.claude/docs/superpowers/specs/2026-05-18-safety-removal-fleet-sweep-design.md.
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)"
-gh pr merge --auto --squash --delete-branch
-```
-
-Expected: PR merges automatically once CI passes.
-
-- [ ] **Step 8: Wait for merge and confirm**
-
-```bash
-gh pr checks --watch
-gh pr view --json state -q '.state'
-```
-
-Expected: `MERGED`.
+</details>
 
 ---
 
@@ -810,7 +524,7 @@ gh pr checks --watch
 
 **Prerequisite:** Task 1 merged.
 
-**Note on Task 7 expanded scope:** Pre-flight (Task 0) surfaced two safety calls in `renovate-auto-merge.yml` that the original `gh search code "safety check"` query missed because the file uses safety 3.x syntax (`safety scan`). These calls use the org's free-tier SAFETY_API_KEY. Per the user's decision (2026-05-18), free tier is single-codebase and uses the same public data as unauthenticated `safety scan`, so the dashboard value does not justify keeping the integration. Remove and delete the secret.
+**Note on Task 7 expanded scope:** Pre-flight (Task 0) surfaced two safety calls in `renovate-auto-merge.yml` that the original `gh search code "safety check"` query missed because the file uses safety 3.x syntax (`safety scan`). These calls use PromptCraft's free-tier `SAFETY_API_KEY` (single-codebase per the free-tier license, so the key cannot scale to other repos in the fleet). Per the user's decision (2026-05-18), free tier uses the same public vulnerability data as unauthenticated `safety scan`, so the dashboard value does not justify keeping the integration. Remove and delete the secret.
 
 - [ ] **Step 1: Clone and branch**
 
@@ -920,6 +634,8 @@ gh pr checks --watch
 
 - [ ] **Step 10: Post-merge cleanup of unused SAFETY_API_KEY secret**
 
+**Before deletion (irreversible):** confirm a backup of the key value exists in 1Password (or accept that recovery requires re-registering the codebase with Safety to mint a fresh key). The free-tier key has no proprietary value, so re-registration is a low-cost recovery path; the 1Password copy is the cheaper option.
+
 After the PR merges (and only then, since the secret might still be referenced briefly during the merge window):
 
 ```bash
@@ -927,7 +643,7 @@ gh secret delete SAFETY_API_KEY --repo williaby/PromptCraft
 gh secret list --repo williaby/PromptCraft | grep -i safety && echo "FAIL: secret still listed" || echo "OK: secret deleted"
 ```
 
-Expected: secret deleted and not listed.
+Expected: secret deleted and not listed. After this step, Task 10's verification should include `gh secret list --repo williaby/PromptCraft | grep -v SAFETY_` to confirm no SAFETY_* secrets remain.
 
 ---
 
@@ -996,154 +712,35 @@ gh pr checks --watch
 
 ---
 
-## Task 9: Manifest update for `~/dev/.claude`
+## Task 9: Manifest update for `~/dev/.claude` -- COMPLETE (verification only)
 
-**Files:**
-- Modify: `docs/standards-manifest.yaml` (add CHECK-CI-051)
-- Modify: `docs/standards-manifest.yaml` (remove or update stale CHECK-CLAUDE-* mention of safety)
+**Status:** Both manifest changes already landed.
 
-**Prerequisite:** Tasks 1-8 all merged.
+- `CI-051` added via [`.claude` PR #121](https://github.com/ByronWilliamsCPA/.claude/pull/121) (`chore(compliance): add CI-051 banning safety in workflow YAML`).
+- `CLAUDE-006` was restored in the same PR scoped to `black,mypy` only; the safety check is intentionally NOT in its `verify` line because CI-051 covers it at workflow YAML scope. The description on `CLAUDE-006` notes "Safety check absence is covered separately by CI-051".
 
-- [ ] **Step 1: Create an isolated worktree to avoid the uncommitted work in the main checkout**
+**Severity reconciliation note:** The spec originally specified `severity: error` for CI-051. The merged manifest entry uses `severity: important`, which is consistent with the rest of the CI-domain checks. Spec has been updated to match.
 
-```bash
-cd ~/dev/.claude
-git fetch origin main
-git worktree add .worktrees/chore-add-safety-manifest-rule -b chore/add-safety-manifest-rule origin/main
-cd .worktrees/chore-add-safety-manifest-rule
-```
-
-Expected: worktree created at `~/dev/.claude/.worktrees/chore-add-safety-manifest-rule`.
-
-- [ ] **Step 2: Find the last CHECK-CI-* entry**
+**Verification (read-only):**
 
 ```bash
-grep -n "id: CI-0" docs/standards-manifest.yaml | tail -5
+# Confirm CI-051 is present
+gh api repos/ByronWilliamsCPA/.claude/contents/docs/standards-manifest.yaml \
+  --jq '.content' | base64 -d | grep -A 5 "id: CI-051" | head -10
+
+# Confirm CLAUDE-006 verify is scoped to black,mypy (NOT safety)
+gh api repos/ByronWilliamsCPA/.claude/contents/docs/standards-manifest.yaml \
+  --jq '.content' | base64 -d | grep -B 1 -A 6 "id: CLAUDE-006" | head -10
 ```
 
-Expected output includes `id: CI-050`. The next free number is CI-051.
+Expected: CI-051 entry returns with `severity: important` and `verify: content_absent_any: .github/workflows/*.yml, safety check, safety scan, safety --`. CLAUDE-006 verify shows `content_absent_any: CLAUDE.md, black,mypy` (no safety token).
 
-- [ ] **Step 3: Find the exact YAML location to insert CI-051**
+<details>
+<summary>Original step-by-step plan (preserved for traceability)</summary>
 
-```bash
-grep -n "CI-050" docs/standards-manifest.yaml
-```
+The pre-execution plan called for: create an isolated worktree on a new `chore/add-safety-manifest-rule` branch; locate the next free CI-* check number (CI-051); insert a new CHECK entry banning `safety` in workflow YAML; remove or narrow the stale CLAUDE-006 entry that previously checked CLAUDE.md for `safety check`; validate YAML; run pre-commit; commit signed; push and merge via `gh pr merge --auto --squash`. PR #121 executed this plan as merged.
 
-Note the line numbers. The new entry inserts immediately AFTER the closing block of CI-050.
-
-- [ ] **Step 4: Read the surrounding YAML structure**
-
-```bash
-sed -n '1420,1450p' docs/standards-manifest.yaml
-```
-
-Inspect the exact indentation, field order, and block style. Match the style precisely.
-
-- [ ] **Step 5: Insert the new CHECK-CI-051 entry**
-
-Using the Edit tool, append immediately after the last line of the CI-050 block:
-
-```yaml
-  - id: CI-051
-    domain: ci
-    severity: important
-    override_eligible: false
-    description: >-
-      safety command absent from workflow YAML (replaced by OSV-Scanner,
-      Dependency-Review, and pip-audit). Prevents reintroduction of the
-      safety 3.x CLI drift surface that caused cascading regressions in
-      2026-05 (ByronWilliamsCPA/.github PRs #136/#137/#138).
-    verify: >-
-      content_absent_any: .github/workflows/*.yml, safety check, safety scan, safety --
-    source_frameworks:
-      - manifest-internal
-    notes: >-
-      Safety's free-tier Python CVE data is a strict subset of OSV-Scanner's
-      sources (PyPA + GHSA + OSS-Fuzz). License scanning requires Safety
-      paid tier and is not invoked by any current workflow. Coverage is
-      fully maintained by OSV-Scanner + Dependency-Review + pip-audit +
-      Renovate vulnerability alerts.
-```
-
-Match the indentation of the CI-050 entry exactly. Field order: `id`, `domain`, `severity`, `override_eligible`, `description`, `verify`, then optional fields.
-
-- [ ] **Step 6: Remove or update the stale CHECK-CLAUDE-* safety entry**
-
-```bash
-grep -n "safety" docs/standards-manifest.yaml | grep -i "claude.md"
-```
-
-Expected output points to the entry at lines 1028-1029 that checks `CLAUDE.md, safety check` content absence. This is now superseded by CI-051.
-
-Edit option 1 (cleaner): delete that CHECK entry entirely.
-Edit option 2 (conservative): change the verify line to drop the `safety check` token, leaving the rest of the check intact.
-
-Pick option 1 unless the CHECK entry serves another purpose. Document the choice in the commit message.
-
-- [ ] **Step 7: Validate YAML**
-
-```bash
-python3 -c "import yaml; yaml.safe_load(open('docs/standards-manifest.yaml'))"
-```
-
-Expected: no error. If a `yaml.YAMLError` is raised, the indentation in Step 5 is wrong.
-
-- [ ] **Step 8: Run pre-commit on the manifest file**
-
-```bash
-pre-commit run --files docs/standards-manifest.yaml
-```
-
-Expected: all hooks pass (yamllint, no-em-dash, markdownlint frontmatter if it picks it up, etc.).
-
-- [ ] **Step 9: Commit**
-
-```bash
-git add docs/standards-manifest.yaml
-git commit -m "$(cat <<'EOF'
-chore(compliance): add CI-051 banning safety in workflow YAML
-
-Adds a new CI-domain check that prevents reintroduction of the safety
-SCA scanner into any .github/workflows/*.yml file. Pairs with the
-fleet-wide removal of safety (Tasks 1-8 of the 2026-05-18 safety
-removal sweep).
-
-Also removes the now-stale CHECK-CLAUDE entry that watched CLAUDE.md
-for "safety check" mentions; the broader CI rule supersedes it.
-
-Coverage preserved by OSV-Scanner, Dependency-Review, consumer-side
-pip-audit, and Renovate vulnerability alerts.
-
-Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>
-EOF
-)"
-```
-
-- [ ] **Step 10: Push and open PR**
-
-```bash
-git push -u origin chore/add-safety-manifest-rule
-gh pr create --base main \
-  --title "chore(compliance): add CI-051 banning safety in workflow YAML" \
-  --body "Prevents reintroduction of the safety SCA scanner after the fleet-wide removal completed in 2026-05.
-
-See design doc: \`docs/superpowers/specs/2026-05-18-safety-removal-fleet-sweep-design.md\`.
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)"
-gh pr merge --auto --squash --delete-branch
-gh pr checks --watch
-```
-
-Expected: PR merges.
-
-- [ ] **Step 11: Clean up the worktree**
-
-```bash
-cd ~/dev/.claude
-git worktree remove .worktrees/chore-add-safety-manifest-rule
-```
-
-Expected: worktree removed cleanly.
+</details>
 
 ---
 
@@ -1157,11 +754,11 @@ Expected: worktree removed cleanly.
 
 In a fresh Claude Code session in `~/dev/.claude`:
 
-```
+```text
 /repo-audit ByronWilliamsCPA/fragrance-rater
 ```
 
-Then for each of: `llc-manager`, `xero-crypto`, `cookiecutter-python-template`, `cookiecutter-template-sample`, `gleif`, `audio-processor`, `rag-processor`, `python-libs`, `maester-tests`, `homelab-infra`, `family-office-portal`, and each williaby repo affected.
+Then for each repo affected by this sweep: `cookiecutter-python-template`, `cookiecutter-template-sample`, `xero-crypto`, `image-preprocessing-detector`, `data_ingestor`, `PromptCraft`, `testing`. (Verification is intentionally scoped to repos that this sweep touched; a separate fleet-wide CI-051 audit can pick up the rest of the catalog.)
 
 Expected: CI-051 passes on every repo (no `safety` references in workflows). No CI checks newly fail because of the manifest update.
 
@@ -1186,16 +783,19 @@ If any line points to an executable safety invocation (`safety check`, `safety s
 gh run list --repo ByronWilliamsCPA/fragrance-rater --workflow "Security Analysis" --limit 5
 ```
 
-Expected: Last 5 runs show `Security Analysis / Security Gate Validation` as SUCCESS. The "Layer 8d" blocker from `security-analysis-workflow-regression-report.md` is closed.
+Expected: Last 5 runs show `Security Analysis / Security Gate Validation` as SUCCESS. The "Layer 8d" blocker (`--no-build` hardcode breaking editable-install consumers) is closed; see [ByronWilliamsCPA/.github PR #140](https://github.com/ByronWilliamsCPA/.github/pull/140) for the resolution.
 
-- [ ] **Step 4: Mark the design and plan as completed**
+- [ ] **Step 4: Mark the design and plan as published**
 
-Edit `~/dev/.claude/docs/superpowers/specs/2026-05-18-safety-removal-fleet-sweep-design.md` and change `status: draft` to `status: published` in the frontmatter (the project's frontmatter validator accepts only `draft|in-review|published|active|deprecated`; use `published` for completed work). Same for this plan file. Commit both changes in a single commit in `~/dev/.claude`:
+Edit `~/dev/.claude/docs/superpowers/specs/2026-05-18-safety-removal-fleet-sweep-design.md` and change `status: draft` to `status: published` in the frontmatter. Same for this plan file. The frontmatter validator accepts `draft | in-review | published | active | deprecated` (see `scripts/validate-frontmatter.sh`); `completed` is NOT a valid value and will fail validation. For a finished design/plan, `published` is the right choice; `active` and `deprecated` apply to long-lived reference docs and are not appropriate here. Note the completion summary in the body if you want to capture it. Commit both changes in a single commit in `~/dev/.claude`:
 
 ```bash
 cd ~/dev/.claude
-git fetch origin main
-git checkout -b docs/safety-sweep-mark-published origin/main
+git checkout main
+git pull origin main
+# Use a worktree if the working tree is dirty
+git status --short
+# If clean, edit in place; if dirty, create a worktree as in Task 9 Step 1
 ```
 
 Apply the frontmatter change to both files, then:
@@ -1204,7 +804,7 @@ Apply the frontmatter change to both files, then:
 git add docs/superpowers/specs/2026-05-18-safety-removal-fleet-sweep-design.md \
         docs/superpowers/plans/2026-05-18-safety-removal-fleet-sweep.md
 git commit -m "$(cat <<'EOF'
-docs(spec): mark safety removal sweep as published
+docs(spec): mark safety removal sweep as completed
 
 All 9 PRs merged across BWCPA and williaby; manifest CI-051 active;
 post-merge audit confirmed no remaining safety invocations in
@@ -1213,19 +813,19 @@ workflow YAML and fragrance-rater Security Gate flipped to SUCCESS.
 Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>
 EOF
 )"
-git push -u origin docs/safety-sweep-mark-published
-gh pr create --base main \
-  --title "docs(spec): mark safety removal sweep as published" \
-  --body "Flip plan and spec frontmatter from draft to published after all 9 sweep PRs merged."
+git push origin main
 ```
 
 ---
 
 ## Acceptance criteria (from spec)
 
-- [x] Task 1: Step 0 PR merged. `fragrance-rater` PR #22's `Security Analysis / Security Gate Validation` passes.
-- [x] Tasks 2-3: Cookiecutter PRs merged. Generating a new repo from `cookiecutter-python-template` produces no `safety` references in workflow files.
-- [x] Tasks 4-8: All Tier 3 PRs merged. `git grep -in safety` across affected repos returns no matches in `.github/workflows/`.
-- [x] Task 7: PromptCraft Tier 4 backups updated.
-- [x] Task 9: Manifest update merged. `CHECK-CI-051` runs on the next `/repo-audit` and reports zero violations.
-- [x] Task 10: All previously-failing editable-install consumer CIs are green.
+- [x] Task 1: Step 0 PR merged (`ByronWilliamsCPA/.github` PR #140). `fragrance-rater` PR #22's `Security Analysis / Security Gate Validation` passes.
+- [x] Task 2: `cookiecutter-python-template` PR merged (PR #55, 2026-05-19 04:37Z). Generating a new repo from this template produces no `safety` references in the rendered security workflow.
+- [ ] Task 3: `cookiecutter-template-sample` PR merged (PENDING). Generating a new repo from this template produces no `safety` references in workflow files.
+- [ ] Tasks 4-8: All Tier 3 PRs merged. `git grep -in safety` across affected repos returns no matches in `.github/workflows/`. (PENDING)
+- [ ] Task 7: PromptCraft Tier 4 backups updated. (PENDING; folded into the PromptCraft Tier 3 PR)
+- [x] Task 9: Manifest update merged (`.claude` PR #121). `CI-051` runs on the next `/repo-audit` and reports zero violations.
+- [ ] Task 10: All previously-failing editable-install consumer CIs are green. (PENDING; requires Tier 3 work to finish)
+
+Follow-up tracking (deferred from this sweep, listed in the spec's "Future work" section): file separate issues for (1) williaby `.github` centralization, (2) downstream-consumer smoke test for the reusable workflow, (3) Bandit removal analysis.
