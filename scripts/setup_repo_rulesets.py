@@ -30,7 +30,7 @@ def find_existing_repo_ruleset(repo_slug: str, name: str) -> int | None:
     Returns:
         Integer ruleset id if found, else None.
     """
-    out = subprocess.check_output(  # noqa: S603
+    out = subprocess.check_output(
         ["gh", "api", f"repos/{repo_slug}/rulesets", "--jq", ".[] | {id, name}"],  # noqa: S607
         text=True,
         timeout=_GH_TIMEOUT_SECONDS,
@@ -86,7 +86,7 @@ def apply(
         ]
     else:
         cmd = ["gh", "api", "-X", "POST", f"repos/{repo_slug}/rulesets", "--input", "-"]
-    subprocess.run(  # noqa: S603
+    subprocess.run(
         cmd,
         input=payload,
         text=True,

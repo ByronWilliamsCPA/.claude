@@ -125,7 +125,7 @@ class RepoResult:
 
 def gh(path: str) -> tuple[dict | list | None, str | None]:
     # path is always constructed from hardcoded f-strings, never from user-supplied input
-    r = subprocess.run(  # noqa: S603
+    r = subprocess.run(
         [_GH, "api", path],
         capture_output=True,
         text=True,
@@ -154,7 +154,7 @@ def gh_paginated_array(path: str) -> tuple[list | None, str | None]:
     Returns:
         (items, None) on success, (None, error_message) on gh failure.
     """
-    r = subprocess.run(  # noqa: S603
+    r = subprocess.run(
         [_GH, "api", "--paginate", "--jq", ".[]", path],
         capture_output=True,
         text=True,
