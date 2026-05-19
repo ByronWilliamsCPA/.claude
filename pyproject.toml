@@ -93,7 +93,7 @@ dev = [
     "basedpyright>=1.18.0",  # Stricter type checker (replaces mypy)
     "bandit>=1.7.0",
     "vulture>=2.11",  # Dead code detection
-    "pip-audit>=2.7.0",  # Python vulnerability scanning
+    "pip-audit>=2.7.0,<2.10",  # Python vulnerability scanning; 2.10 introduced strict PyPI-presence checks that fail this repo's editable claude-config build (PyPI unpublished); revert once the org reusable workflow adds --skip-editable
     "darglint>=1.8.1",  # Docstring argument validation
 
     # Pre-commit
