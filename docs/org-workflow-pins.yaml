@@ -10,8 +10,3 @@ sources:
     current_tag: v1.0.0
     current_sha: ea8e19054eac195e6ab7bc93e9c2319632560b77  # pragma: allowlist secret
     last_synced: '2026-05-21'
-
-  williaby/.github:
-    current_tag: v1.0.0
-    current_sha: ea8e19054eac195e6ab7bc93e9c2319632560b77  # pragma: allowlist secret
-    last_synced: '2026-05-21'
