@@ -4,14 +4,14 @@ title: Org Workflow Pin Tracking Implementation Plan
 status: draft
 owner: engineering
 tags: [compliance, ci_cd, github_actions, security, dependencies, standards]
-purpose: Implementation plan for semver tagging on org .github repos, a pin registry in this .claude repo, a daily sync workflow, three new compliance checks (CI-054/055/056), and Renovate consumer PR automation.
+purpose: Implementation plan for semver tagging on org .github repos, a pin registry in this .claude repo, a daily sync workflow, three new compliance checks (CI-055/056/057), and Renovate consumer PR automation.
 ---
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Automate the full lifecycle of org workflow SHA pins: semver tagging on `.github` repos per merged PR, a registry in this `.claude` repo, a daily sync workflow, three new compliance checks, and Renovate consumer PRs.
 
-**Architecture:** A `release-tag.yml` workflow in each org `.github` repo cuts annotated semver tags on every main-branch push. A daily `sync-org-pins.yml` in this repo reads the latest tag from the GitHub API and opens a PR to update `docs/org-workflow-pins.yaml`. Three new manifest checks (CI-054/055/056) surface stale registry entries and stale consumer pins during `/repo-audit`. Renovate's `followTag` handles per-consumer SHA-update PRs automatically.
+**Architecture:** A `release-tag.yml` workflow in each org `.github` repo cuts annotated semver tags on every main-branch push. A daily `sync-org-pins.yml` in this repo reads the latest tag from the GitHub API and opens a PR to update `docs/org-workflow-pins.yaml`. Three new manifest checks (CI-055/056/057) surface stale registry entries and stale consumer pins during `/repo-audit`. Renovate's `followTag` handles per-consumer SHA-update PRs automatically.
 
 **Tech Stack:** GitHub Actions (bash bump logic, gh CLI), Python 3.12 (sync script, unit tests), PyYAML, pytest, CATALOG_REFRESH_PAT (fine-grained PAT, already in repo secrets).
 
@@ -22,7 +22,7 @@ purpose: Implementation plan for semver tagging on org .github repos, a pin regi
 | File | Action | Purpose |
 |------|--------|---------|
 | `docs/org-workflow-pins.yaml` | Create | Registry: `current_tag`, `current_sha`, `last_synced` per source org |
-| `docs/standards-manifest.yaml` | Modify (line 1525) | Add CI-054, CI-055, CI-056 checks |
+| `docs/standards-manifest.yaml` | Modify (line 1525) | Add CI-055, CI-056, CI-057 checks |
 | `scripts/sync_org_pins.py` | Create | Python script called by workflow; reads registry, queries GitHub API, updates if stale |
 | `tests/unit/test_sync_org_pins.py` | Create | Unit tests for sync script logic |
 | `tests/unit/_load_sync_org_pins.py` | Create | Loader module for sync script (matches repo pattern) |
@@ -45,9 +45,9 @@ Initial values use the real `v1.0.0` SHA that both repos share today. The sync w
 # Canonical SHA pins for org workflow source repos.
 # Updated by .github/workflows/sync-org-pins.yml.
 # Consumers should pin to current_sha.
-# Compliance: CI-054 verifies registry matches latest tag on GitHub;
-# CI-055 verifies consumer repos match registry current_sha;
-# CI-056 verifies Renovate config targets org workflow sources.
+# Compliance: CI-055 verifies registry matches latest tag on GitHub;
+# CI-056 verifies consumer repos match registry current_sha;
+# CI-057 verifies Renovate config targets org workflow sources.
 
 sources:
   ByronWilliamsCPA/.github:
@@ -80,7 +80,7 @@ git commit -m "feat(pins): add org-workflow-pins registry with initial v1.0.0 va
 
 ---
 
-### Task 2: Add CI-054, CI-055, CI-056 to the standards manifest
+### Task 2: Add CI-055, CI-056, CI-057 to the standards manifest
 
 **Files:**
 - Modify: `docs/standards-manifest.yaml` (insert after line 1524, before line 1526)
@@ -104,7 +104,7 @@ Use Edit to insert after the `...clean; drift is per-repo, not template-sourced.
 
 ```yaml
 
-  - id: CI-054
+  - id: CI-055
     domain: ci
     severity: important
     override_eligible: true
@@ -115,7 +115,7 @@ Use Edit to insert after the `...clean; drift is per-repo, not template-sourced.
       job may simply not have run yet.
     verify: "registry_current: docs/org-workflow-pins.yaml, source=github_tags, max_lag_hours=24"
 
-  - id: CI-055
+  - id: CI-056
     domain: ci
     severity: important
     override_eligible: true
@@ -127,7 +127,7 @@ Use Edit to insert after the `...clean; drift is per-repo, not template-sourced.
       uses: williaby/.github/...@<sha> does not match the registry value.
     verify: "uses_sha_matches_registry: .github/workflows/*.yml, docs/org-workflow-pins.yaml"
 
-  - id: CI-056
+  - id: CI-057
     domain: ci
     severity: important
     override_eligible: true
@@ -147,10 +147,10 @@ Use Edit to insert after the `...clean; drift is per-repo, not template-sourced.
 - [ ] **Step 3: Verify IDs were inserted correctly**
 
 ```bash
-grep -n "CI-054\|CI-055\|CI-056" docs/standards-manifest.yaml
+grep -n "CI-055\|CI-056\|CI-057" docs/standards-manifest.yaml
 ```
 
-Expected: three hits, no CI-057 or higher.
+Expected: three hits -- CI-055, CI-056, CI-057.
 
 - [ ] **Step 4: Validate YAML**
 
@@ -172,7 +172,7 @@ Fix any findings before committing.
 
 ```bash
 git add docs/standards-manifest.yaml
-git commit -m "feat(manifest): add CI-054 CI-055 CI-056 org workflow pin tracking checks"
+git commit -m "feat(manifest): add CI-055 CI-056 CI-057 org workflow pin tracking checks"
 ```
 
 ---
@@ -401,9 +401,9 @@ def _write_registry(path: Path, registry: dict) -> None:
         "# Canonical SHA pins for org workflow source repos.\n"
         "# Updated by .github/workflows/sync-org-pins.yml.\n"
         "# Consumers should pin to current_sha.\n"
-        "# Compliance: CI-054 verifies registry matches latest tag on GitHub;\n"
-        "# CI-055 verifies consumer repos match registry current_sha;\n"
-        "# CI-056 verifies Renovate config targets org workflow sources.\n"
+        "# Compliance: CI-055 verifies registry matches latest tag on GitHub;\n"
+        "# CI-056 verifies consumer repos match registry current_sha;\n"
+        "# CI-057 verifies Renovate config targets org workflow sources.\n"
         "\n"
     )
     body = yaml.dump(registry, default_flow_style=False, sort_keys=False)
@@ -599,7 +599,7 @@ jobs:
           Updates docs/org-workflow-pins.yaml to reflect the latest semver
           tags on ByronWilliamsCPA/.github and williaby/.github.
 
-          Review the diff before merging. Once merged, CI-054 will clear on
+          Review the diff before merging. Once merged, CI-055 will clear on
           the next /repo-audit run. Consumer repos will receive Renovate PRs
           automatically after this merges."
 ```
@@ -1000,7 +1000,7 @@ gh pr create \
 ByronWilliamsCPA/.github and williaby/.github and opens SHA-update PRs when
 the org cuts a new release.
 
-CI-056 compliance requirement. See ByronWilliamsCPA/.claude
+CI-057 compliance requirement. See ByronWilliamsCPA/.claude
 docs/org-workflow-pins.yaml for the pin registry."
 ```
 
@@ -1014,7 +1014,7 @@ After CI passes on each PR, merge them. Renovate will open SHA-update PRs automa
 
 ### Task 10: Verify end-to-end
 
-- [ ] **Step 1: Confirm CI-054 clears after sync PR merges**
+- [ ] **Step 1: Confirm CI-055 clears after sync PR merges**
 
 Run `/repo-audit ByronWilliamsCPA/.claude` (or use the CI agent locally):
 
@@ -1037,7 +1037,7 @@ EOF
 
 Expected: both repos show `PASS`.
 
-- [ ] **Step 2: Confirm CI-055 state on a consumer repo**
+- [ ] **Step 2: Confirm CI-056 state on a consumer repo**
 
 Pick one consumer repo that has been updated with the Renovate rule. Check whether its `uses:` pins match the registry:
 
@@ -1092,9 +1092,9 @@ git commit -m "chore(pins): post-verification cleanup"
 | Semver tagging on `.github` repos | Tasks 6, 7, 8 |
 | Pin registry `docs/org-workflow-pins.yaml` | Task 1 |
 | Daily sync workflow `sync-org-pins.yml` | Task 5 |
-| CI-054 registry freshness check | Task 2 |
-| CI-055 consumer pin match check | Task 2 |
-| CI-056 Renovate config check | Task 2 |
+| CI-055 registry freshness check | Task 2 |
+| CI-056 consumer pin match check | Task 2 |
+| CI-057 Renovate config check | Task 2 |
 | Renovate `packageRules` fleet sweep | Task 9 |
 | End-to-end verification | Task 10 |
 

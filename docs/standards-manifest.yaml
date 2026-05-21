@@ -1476,7 +1476,6 @@ checks:
     verify: >-
       content_absent: .coderabbit.yaml, request_changes_workflow: true.
       Also check .coderabbit.yml (alternate extension) if present.
-      Both files absent = PASS (CodeRabbit default is false).
       Flag explicit `request_changes_workflow: true` only; explicit
       `false` or unset key both PASS.
     not_applicable_when: "neither .coderabbit.yaml nor .coderabbit.yml exists at the repo root (CodeRabbit either not installed or relying on defaults; default request_changes_workflow value is false)"
@@ -1502,15 +1501,17 @@ checks:
       runs add cost without proportional signal. The canonical
       cookiecutter template uses cron '0 2 * * 0' (Sundays 02:00 UTC).
     verify: >-
-      Read .github/workflows/mutation-testing.yml. PASS if both
-      `^  pull_request:` and `^  push:` are absent under the on: block,
-      AND a `schedule:` block exists with a cron no more frequent than
-      weekly (day-of-week field must be a single numeric value, not '*'
-      or step syntax). FAIL on any pull_request: or push: trigger. FAIL
-      on cron expressions with '*' day-of-week (daily or more frequent).
-      Also FAIL when `fail-under-threshold:` evaluates to true on any
-      non-schedule event AND a non-schedule trigger exists, because the
-      combination silently blocks PR merges.
+      Read .github/workflows/mutation-testing.yml. PASS only when the
+      on: block contains exactly `schedule:` (required) and optionally
+      `workflow_dispatch:`, and no other trigger keys. Any other trigger
+      key (pull_request, push, workflow_run, release, create, or any
+      event not in {schedule, workflow_dispatch}) is a FAIL. A `schedule:`
+      block must exist with a cron no more frequent than weekly
+      (day-of-week field must be a single numeric value, not '*' or step
+      syntax). FAIL on cron expressions with '*' day-of-week (daily or
+      more frequent). Also FAIL when `fail-under-threshold:` evaluates to
+      true on any non-schedule event AND a non-schedule trigger exists,
+      because the combination silently blocks PR merges.
     not_applicable_when: ".github/workflows/mutation-testing.yml is absent (mutation testing not configured for this repo; mutation testing is suggested only for Python repos with 80%+ baseline coverage per OSSF Silver criterion 6.1 guidance)"
     source_frameworks:
       - manifest-internal
@@ -1531,12 +1532,13 @@ checks:
       Codecov reports line coverage >= 80% and branch coverage >= 70% on the
       default branch (queried via Codecov v2 API).
     verify: >-
-      codecov_coverage: line_min=80, branch_min=70, branch=main.
+      codecov_coverage: line_min=80, branch_min=70, branch=default.
       Query https://app.codecov.io/api/v2/github/{owner}/repos/{repo}/ for
       totals.coverage (line %) and compute branch % as
-      totals.branches_covered / totals.branches * 100.
-      PASS if line >= 80 and branch >= 70 (or branch data absent, treat as
-      not measured and skip branch gate).
+      totals.branches_covered / totals.branches * 100 (when totals.branches
+      > 0; if totals.branches is 0 or null, treat branch coverage as not
+      measured and skip branch gate).
+      PASS if line >= 80 and branch >= 70 (or branch coverage not measured).
       VISIBILITY GATE: if .codecov.yml or codecov.yaml is present but the
       repo is private (isPrivate=true in repo catalog) and the unauthenticated
       API probe returns 404 or empty totals, record PASS (visibility-gated)
