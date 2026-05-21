@@ -155,3 +155,42 @@ def setup_logging() -> None:
     from claude_config.utils.logging import setup_logging
 
     setup_logging(level="DEBUG", json_logs=False, include_timestamp=False)
+
+
+# ============================================================================
+# Test Data Fixtures
+# ============================================================================
+
+
+@pytest.fixture
+def compliance_entry() -> dict:
+    """Minimal valid compliance log entry for unit and integration tests.
+
+    Keys match the schema enforced by scripts.compliance_log_common.validate_entry.
+    Tests that need a different repo, date, or totals should override specific
+    keys rather than duplicating this fixture.
+    """
+    return {
+        "schema_version": 1,
+        "session_date": "2026-05-16",
+        "session_id": "2026-05-16T19:42:11Z-fdc2",
+        "repo": "ByronWilliamsCPA/llc-manager",
+        "repo_path": "/home/byron/dev/llc-manager",
+        "audit_mode": "interactive",
+        "repo_type": "python-app",
+        "visibility": "public",
+        "reconciled": False,
+        "totals": {
+            "critical": 0,
+            "important": 3,
+            "suggested": 7,
+            "unclassified_candidates": 2,
+            "overrides_applied": 1,
+        },
+        "findings_by_check": [],
+        "unclassified_candidates": [],
+        "fleet_action_proposals": [],
+        "scope_expansion_flags": [],
+        "links": {},
+        "superseded_by": None,
+    }
