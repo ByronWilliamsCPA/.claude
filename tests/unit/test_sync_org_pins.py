@@ -5,13 +5,10 @@ from datetime import date
 
 import pytest
 import yaml
-from sync_org_pins import (
-    build_updated_registry,
-    load_registry,
-    needs_update,
-)
 
-import tests.unit._load_sync_org_pins  # noqa: F401
+from tests.unit._load_sync_org_pins import load_module
+
+sop = load_module()
 
 REGISTRY_YAML = textwrap.dedent("""\
     sources:
@@ -30,7 +27,7 @@ class TestLoadRegistry:
     def test_parses_sources(self, tmp_path):
         reg_file = tmp_path / "org-workflow-pins.yaml"
         reg_file.write_text(REGISTRY_YAML)
-        registry = load_registry(reg_file)
+        registry = sop.load_registry(reg_file)
         assert "ByronWilliamsCPA/.github" in registry["sources"]
         assert (
             registry["sources"]["ByronWilliamsCPA/.github"]["current_tag"] == "v1.0.0"
@@ -38,13 +35,13 @@ class TestLoadRegistry:
 
     def test_raises_on_missing_file(self, tmp_path):
         with pytest.raises(FileNotFoundError):
-            load_registry(tmp_path / "nonexistent.yaml")
+            sop.load_registry(tmp_path / "nonexistent.yaml")
 
     def test_raises_on_invalid_yaml(self, tmp_path):
         bad = tmp_path / "org-workflow-pins.yaml"
         bad.write_text("sources: [not: a: mapping]")
         with pytest.raises(yaml.YAMLError):
-            load_registry(bad)
+            sop.load_registry(bad)
 
 
 class TestNeedsUpdate:
@@ -54,7 +51,7 @@ class TestNeedsUpdate:
             "current_sha": "abc123",
             "last_synced": "2026-05-21",
         }
-        assert needs_update(entry, tag="v1.1.0", sha="def456") is True
+        assert sop.needs_update(entry, tag="v1.1.0", sha="def456") is True
 
     def test_returns_true_when_tag_only_differs(self):
         entry = {
@@ -62,7 +59,7 @@ class TestNeedsUpdate:
             "current_sha": "abc123",
             "last_synced": "2026-05-21",
         }
-        assert needs_update(entry, tag="v1.0.1", sha="abc123") is True
+        assert sop.needs_update(entry, tag="v1.0.1", sha="abc123") is True
 
     def test_returns_false_when_both_match(self):
         entry = {
@@ -70,14 +67,14 @@ class TestNeedsUpdate:
             "current_sha": "abc123",
             "last_synced": "2026-05-21",
         }
-        assert needs_update(entry, tag="v1.0.0", sha="abc123") is False
+        assert sop.needs_update(entry, tag="v1.0.0", sha="abc123") is False
 
 
 class TestBuildUpdatedRegistry:
     def test_updates_tag_sha_and_date(self):
         registry = yaml.safe_load(REGISTRY_YAML)
         today = date(2026, 5, 22)
-        updated = build_updated_registry(
+        updated = sop.build_updated_registry(
             registry,
             repo="ByronWilliamsCPA/.github",
             new_tag="v1.1.0",
@@ -92,7 +89,7 @@ class TestBuildUpdatedRegistry:
     def test_does_not_mutate_other_entries(self):
         registry = yaml.safe_load(REGISTRY_YAML)
         today = date(2026, 5, 22)
-        updated = build_updated_registry(
+        updated = sop.build_updated_registry(
             registry,
             repo="ByronWilliamsCPA/.github",
             new_tag="v1.1.0",
