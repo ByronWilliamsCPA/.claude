@@ -76,6 +76,36 @@ def _prepend_to_path(monkeypatch: pytest.MonkeyPatch, *prefixes: Path) -> None:
     monkeypatch.setenv("PATH", os.pathsep.join(parts))
 
 
+def _sweep_env(
+    catalog: Path,
+    log_path: Path | None = None,
+    dry_run: bool = False,
+    enforcement: str | None = None,
+) -> dict[str, str]:
+    """Build the env dict for subprocess.run() in sweep tests.
+
+    Args:
+        catalog: path to the catalog JSON file.
+        log_path: optional path to write the sweep log.
+        dry_run: whether to set DRY_RUN=true.
+        enforcement: optional ENFORCEMENT value (active, evaluate, or disabled).
+
+    Returns:
+        Dict ready for subprocess.run(env=...).
+    """
+    env = {
+        "PATH": os.environ["PATH"],
+        "CATALOG": str(catalog),
+    }
+    if log_path is not None:
+        env["LOG"] = str(log_path)
+    if dry_run:
+        env["DRY_RUN"] = "true"
+    if enforcement is not None:
+        env["ENFORCEMENT"] = enforcement
+    return env
+
+
 @pytest.fixture
 def fake_setup_script(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     """Stub the `uv` binary so the sweep can execute offline.
@@ -179,12 +209,10 @@ def test_repo_templates_share_ruleset_name():
 
 @requires_sweep_runtime
 def test_sweep_fails_when_catalog_missing(tmp_path: Path):
+    catalog = tmp_path / "nope.json"
     result = subprocess.run(
         [BASH, str(SWEEP_SCRIPT)],
-        env={
-            "PATH": os.environ["PATH"],
-            "CATALOG": str(tmp_path / "nope.json"),
-        },
+        env=_sweep_env(catalog),
         capture_output=True,
         text=True,
         check=False,
@@ -211,10 +239,7 @@ def test_sweep_fails_when_template_missing(tmp_path: Path):
 
     result = subprocess.run(
         [BASH, str(fake_sweep)],
-        env={
-            "PATH": os.environ["PATH"],
-            "CATALOG": str(catalog),
-        },
+        env=_sweep_env(catalog),
         capture_output=True,
         text=True,
         check=False,
@@ -247,12 +272,7 @@ def test_sweep_routes_python_repo_to_python_template(
     log = tmp_path / "sweep.log"
     result = subprocess.run(
         [BASH, str(SWEEP_SCRIPT)],
-        env={
-            "PATH": os.environ["PATH"],
-            "CATALOG": str(catalog),
-            "DRY_RUN": "true",
-            "LOG": str(log),
-        },
+        env=_sweep_env(catalog, log_path=log, dry_run=True),
         capture_output=True,
         text=True,
         check=False,
@@ -286,12 +306,7 @@ def test_sweep_routes_non_python_repo_to_universal_template(
     log = tmp_path / "sweep.log"
     result = subprocess.run(
         [BASH, str(SWEEP_SCRIPT)],
-        env={
-            "PATH": os.environ["PATH"],
-            "CATALOG": str(catalog),
-            "DRY_RUN": "true",
-            "LOG": str(log),
-        },
+        env=_sweep_env(catalog, log_path=log, dry_run=True),
         capture_output=True,
         text=True,
         check=False,
@@ -330,12 +345,7 @@ def test_sweep_skips_branch_protection_exempt_repos(
     log = tmp_path / "sweep.log"
     result = subprocess.run(
         [BASH, str(SWEEP_SCRIPT)],
-        env={
-            "PATH": os.environ["PATH"],
-            "CATALOG": str(catalog),
-            "DRY_RUN": "true",
-            "LOG": str(log),
-        },
+        env=_sweep_env(catalog, log_path=log, dry_run=True),
         capture_output=True,
         text=True,
         check=False,
@@ -371,12 +381,7 @@ def test_sweep_skips_other_orgs(tmp_path: Path, fake_setup_script: Path):
     log = tmp_path / "sweep.log"
     result = subprocess.run(
         [BASH, str(SWEEP_SCRIPT)],
-        env={
-            "PATH": os.environ["PATH"],
-            "CATALOG": str(catalog),
-            "DRY_RUN": "true",
-            "LOG": str(log),
-        },
+        env=_sweep_env(catalog, log_path=log, dry_run=True),
         capture_output=True,
         text=True,
         check=False,
@@ -398,11 +403,7 @@ def test_sweep_rejects_invalid_enforcement_value(tmp_path: Path):
     catalog.write_text(json.dumps({"repos": []}))
     result = subprocess.run(
         [BASH, str(SWEEP_SCRIPT)],
-        env={
-            "PATH": os.environ["PATH"],
-            "CATALOG": str(catalog),
-            "ENFORCEMENT": "Active",  # capital A: typo case
-        },
+        env=_sweep_env(catalog, enforcement="Active"),  # capital A: typo case
         capture_output=True,
         text=True,
         check=False,
@@ -434,13 +435,7 @@ def test_sweep_passes_enforcement_value_to_setup_script(
     log = tmp_path / "sweep.log"
     result = subprocess.run(
         [BASH, str(SWEEP_SCRIPT)],
-        env={
-            "PATH": os.environ["PATH"],
-            "CATALOG": str(catalog),
-            "ENFORCEMENT": "active",  # production value
-            "DRY_RUN": "true",
-            "LOG": str(log),
-        },
+        env=_sweep_env(catalog, log_path=log, dry_run=True, enforcement="active"),
         capture_output=True,
         text=True,
         check=False,
@@ -495,12 +490,7 @@ def test_sweep_tier_routing_covers_all_python_types(
     log = tmp_path / "sweep.log"
     result = subprocess.run(
         [BASH, str(SWEEP_SCRIPT)],
-        env={
-            "PATH": os.environ["PATH"],
-            "CATALOG": str(catalog),
-            "DRY_RUN": "true",
-            "LOG": str(log),
-        },
+        env=_sweep_env(catalog, log_path=log, dry_run=True),
         capture_output=True,
         text=True,
         check=False,
@@ -530,12 +520,7 @@ def test_sweep_warns_and_falls_back_when_repository_type_missing(
     log = tmp_path / "sweep.log"
     result = subprocess.run(
         [BASH, str(SWEEP_SCRIPT)],
-        env={
-            "PATH": os.environ["PATH"],
-            "CATALOG": str(catalog),
-            "DRY_RUN": "true",
-            "LOG": str(log),
-        },
+        env=_sweep_env(catalog, log_path=log, dry_run=True),
         capture_output=True,
         text=True,
         check=False,
@@ -577,12 +562,7 @@ def test_sweep_continues_after_repo_failure_and_exits_one(
     log = tmp_path / "sweep.log"
     result = subprocess.run(
         [BASH, str(SWEEP_SCRIPT)],
-        env={
-            "PATH": os.environ["PATH"],
-            "CATALOG": str(catalog),
-            "DRY_RUN": "true",
-            "LOG": str(log),
-        },
+        env=_sweep_env(catalog, log_path=log, dry_run=True),
         capture_output=True,
         text=True,
         check=False,
