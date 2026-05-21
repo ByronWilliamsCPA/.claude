@@ -340,6 +340,19 @@ def apply(
         )
 
 
+_POLICY_EXCEPTION_EXIT: dict[type[Exception], int] = {
+    SoloDevViolationError: EXIT_SOLO_DEV_VIOLATION,
+    TargetRuleMismatchError: EXIT_TARGET_RULE_MISMATCH,
+    RulesetDriftError: EXIT_DRIFT_DETECTED,
+}
+
+_POLICY_EXCEPTION_PREFIX: dict[type[Exception], str] = {
+    SoloDevViolationError: "REFUSED",
+    TargetRuleMismatchError: "REFUSED",
+    RulesetDriftError: "DRIFT",
+}
+
+
 def main(argv: list[str]) -> int:
     """CLI entry point.
 
@@ -371,15 +384,10 @@ def main(argv: list[str]) -> int:
     args = parser.parse_args(argv)
     try:
         apply(args.org, args.body, args.enforcement, args.catalog, args.dry_run)
-    except SoloDevViolationError as e:
-        print(f"REFUSED: {e}", file=sys.stderr)
-        return EXIT_SOLO_DEV_VIOLATION
-    except TargetRuleMismatchError as e:
-        print(f"REFUSED: {e}", file=sys.stderr)
-        return EXIT_TARGET_RULE_MISMATCH
-    except RulesetDriftError as e:
-        print(f"DRIFT: {e}", file=sys.stderr)
-        return EXIT_DRIFT_DETECTED
+    except (SoloDevViolationError, TargetRuleMismatchError, RulesetDriftError) as exc:
+        prefix = _POLICY_EXCEPTION_PREFIX[type(exc)]
+        print(f"{prefix}: {exc}", file=sys.stderr)
+        return _POLICY_EXCEPTION_EXIT[type(exc)]
     except subprocess.CalledProcessError as e:
         print(f"gh command failed: {e}", file=sys.stderr)
         return EXIT_GH_FAILURE

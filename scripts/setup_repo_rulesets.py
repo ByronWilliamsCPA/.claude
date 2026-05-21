@@ -121,17 +121,12 @@ def main(argv: list[str]) -> int:
     except SoloDevViolationError as e:
         print(f"REFUSED: {e}", file=sys.stderr)
         return EXIT_SOLO_DEV_VIOLATION
-    except subprocess.CalledProcessError as e:
+    except (
+        subprocess.CalledProcessError,
+        subprocess.TimeoutExpired,
+        FileNotFoundError,
+    ) as e:
         print(f"gh command failed: {e}", file=sys.stderr)
-        return EXIT_GH_FAILURE
-    except subprocess.TimeoutExpired as e:
-        print(
-            f"gh command timed out after {_GH_TIMEOUT_SECONDS}s: {e}",
-            file=sys.stderr,
-        )
-        return EXIT_GH_FAILURE
-    except FileNotFoundError as e:
-        print(f"gh CLI not on PATH: {e}", file=sys.stderr)
         return EXIT_GH_FAILURE
     return EXIT_OK
 
