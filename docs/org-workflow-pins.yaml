@@ -1,0 +1,17 @@
+# Canonical SHA pins for org workflow source repos.
+# Updated by .github/workflows/sync-org-pins.yml.
+# Consumers should pin to current_sha.
+# Compliance: CI-054 verifies registry matches latest tag on GitHub;
+# CI-055 verifies consumer repos match registry current_sha;
+# CI-056 verifies Renovate config targets org workflow sources.
+
+sources:
+  ByronWilliamsCPA/.github:
+    current_tag: v1.0.0
+    current_sha: ea8e19054eac195e6ab7bc93e9c2319632560b77  # pragma: allowlist secret
+    last_synced: '2026-05-21'
+
+  williaby/.github:
+    current_tag: v1.0.0
+    current_sha: ea8e19054eac195e6ab7bc93e9c2319632560b77  # pragma: allowlist secret
+    last_synced: '2026-05-21'
