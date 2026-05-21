@@ -28,15 +28,8 @@ def validate_email(address: str | None) -> bool:
     Returns:
         True if the address passes all validation rules, False otherwise.
     """
-    if address is None or not isinstance(address, str):
+    if not isinstance(address, str) or not address.strip():
         return False
-    if not address.strip():
-        return False
-    if len(address) > _MAX_TOTAL_LEN:
-        return False
-
     local_part = address.split("@")[0] if "@" in address else address
-    if len(local_part) > _MAX_LOCAL_LEN:
-        return False
-
-    return bool(_EMAIL_RE.match(address))
+    length_ok = len(address) <= _MAX_TOTAL_LEN and len(local_part) <= _MAX_LOCAL_LEN
+    return length_ok and bool(_EMAIL_RE.match(address))

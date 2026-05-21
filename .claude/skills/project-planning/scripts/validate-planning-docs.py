@@ -113,48 +113,45 @@ def validate_pvs(content: str, filepath: Path) -> list[str]:
     return issues
 
 
+def _validate_doc(
+    content: str,
+    filepath: Path,
+    *,
+    name: str,
+    max_words: int,
+    required_sections: list[str],
+) -> list[str]:
+    """Shared validator for any planning doc with a word-count cap and required sections."""
+    issues: list[str] = []
+    word_count = count_words(content)
+    if word_count > max_words:
+        issues.append(f"{filepath}: Too long ({word_count} words, max {max_words})")
+    issues.extend(check_required_sections(content, filepath, required_sections))
+    issues.extend(check_tldr(content, filepath))
+    issues.extend(check_placeholders(content, filepath))
+    return issues
+
+
 def validate_tech_spec(content: str, filepath: Path) -> list[str]:
     """Validate Technical Specification document."""
-    issues = []
-
-    # Check length (target 1000-1500, max 2000)
-    word_count = count_words(content)
-    if word_count > 2000:
-        issues.append(f"{filepath}: Too long ({word_count} words, max 2000)")
-
-    # Required sections
-    required = ["Technology Stack", "Architecture", "Data Model"]
-    issues.extend(check_required_sections(content, filepath, required))
-
-    # TL;DR
-    issues.extend(check_tldr(content, filepath))
-
-    # Placeholders
-    issues.extend(check_placeholders(content, filepath))
-
-    return issues
+    return _validate_doc(
+        content,
+        filepath,
+        name="tech_spec",
+        max_words=2000,
+        required_sections=["Technology Stack", "Architecture", "Data Model"],
+    )
 
 
 def validate_roadmap(content: str, filepath: Path) -> list[str]:
     """Validate Development Roadmap document."""
-    issues = []
-
-    # Check length (target 800-1200, max 1500)
-    word_count = count_words(content)
-    if word_count > 1500:
-        issues.append(f"{filepath}: Too long ({word_count} words, max 1500)")
-
-    # Required sections
-    required = ["Timeline", "Phase", "Milestone"]
-    issues.extend(check_required_sections(content, filepath, required))
-
-    # TL;DR
-    issues.extend(check_tldr(content, filepath))
-
-    # Placeholders
-    issues.extend(check_placeholders(content, filepath))
-
-    return issues
+    return _validate_doc(
+        content,
+        filepath,
+        name="roadmap",
+        max_words=1500,
+        required_sections=["Timeline", "Phase", "Milestone"],
+    )
 
 
 def validate_adr(content: str, filepath: Path) -> list[str]:
