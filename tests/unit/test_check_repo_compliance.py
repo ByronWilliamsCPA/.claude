@@ -10,6 +10,18 @@ from tests.unit._load_check_repo_compliance import load_module
 
 crc = load_module()
 
+# Shared fixture: a ruleset rules payload with one required_signatures rule.
+_RULESET_RULES_FIXTURE = json.dumps(
+    [
+        {
+            "ruleset_source_type": "Organization",
+            "ruleset_source": "testorg",
+            "ruleset_id": 99,
+            "type": "required_signatures",
+        }
+    ]
+)
+
 
 @pytest.mark.unit
 def test_signatures_enforced_via_ruleset(monkeypatch):
@@ -109,37 +121,46 @@ def test_branch_protection_exempt_fallback_when_catalog_missing():
 
 
 @pytest.mark.unit
-def test_check_repo_marks_exempt_repos_na_for_branch_protection() -> None:
+def test_check_repo_marks_exempt_repos_na_for_branch_protection(monkeypatch) -> None:
     """check_repo sets bp_4/bp_5 to N/A and ci_020 to PASS for exempt repos."""
-    from unittest.mock import patch
-
-    mod = load_module()
     catalog = {"williaby/homelab-agent-configs": {"branchProtectionExempt": True}}
-    with (
-        patch.object(mod, "file_exists", return_value=True),
-        patch.object(mod, "_signatures_enforced", return_value=True),
-        patch.object(mod, "_admins_enforced", return_value=True),
-        patch.object(mod, "applies_to_api_repos", return_value=False),
-    ):
-        result = mod.check_repo("williaby", "homelab-agent-configs", catalog)
+
+    mock_sig_calls: list[object] = []
+    mock_admins_calls: list[object] = []
+
+    def fake_sig(*args, **kwargs):
+        mock_sig_calls.append(args)
+        return True
+
+    def fake_admins(*args, **kwargs):
+        mock_admins_calls.append(args)
+        return True
+
+    monkeypatch.setattr(crc, "file_exists", lambda *a, **kw: True)
+    monkeypatch.setattr(crc, "_signatures_enforced", fake_sig)
+    monkeypatch.setattr(crc, "_admins_enforced", fake_admins)
+    monkeypatch.setattr(crc, "applies_to_api_repos", lambda *a, **kw: False)
+
+    result = crc.check_repo("williaby", "homelab-agent-configs", catalog)
+
     assert result.bp_4 == "N/A"
     assert result.bp_5 == "N/A"
     assert result.ci_020 == "PASS"
+    assert not mock_sig_calls, (
+        "_signatures_enforced must not be called for exempt repos"
+    )
+    assert not mock_admins_calls, "_admins_enforced must not be called for exempt repos"
 
 
 @pytest.mark.unit
-def test_check_repo_fails_ci020_when_renovate_missing() -> None:
+def test_check_repo_fails_ci020_when_renovate_missing(monkeypatch) -> None:
     """check_repo sets ci_020 to FAIL when renovate.json is absent."""
-    from unittest.mock import patch
+    monkeypatch.setattr(crc, "file_exists", lambda *a, **kw: False)
+    monkeypatch.setattr(crc, "_signatures_enforced", lambda *a, **kw: False)
+    monkeypatch.setattr(crc, "_admins_enforced", lambda *a, **kw: False)
+    monkeypatch.setattr(crc, "applies_to_api_repos", lambda *a, **kw: False)
 
-    mod = load_module()
-    with (
-        patch.object(mod, "file_exists", return_value=False),
-        patch.object(mod, "_signatures_enforced", return_value=False),
-        patch.object(mod, "_admins_enforced", return_value=False),
-        patch.object(mod, "applies_to_api_repos", return_value=False),
-    ):
-        result = mod.check_repo("ByronWilliamsCPA", "test-repo", {})
+    result = crc.check_repo("ByronWilliamsCPA", "test-repo", {})
     assert result.ci_020 == "FAIL"
 
 
@@ -148,17 +169,6 @@ def test_admins_enforced_returns_false_when_bypass_actor_id_5_present(
     monkeypatch,
 ) -> None:
     """_admins_enforced returns False when a RepositoryRole actor_id=5 bypass exists."""
-    mod = load_module()
-    rules = json.dumps(
-        [
-            {
-                "ruleset_source_type": "Organization",
-                "ruleset_source": "testorg",
-                "ruleset_id": 99,
-                "type": "required_signatures",
-            }
-        ]
-    )
     ruleset_with_bypass = json.dumps(
         {
             "bypass_actors": [
@@ -172,41 +182,26 @@ def test_admins_enforced_returns_false_when_bypass_actor_id_5_present(
         }
     )
 
-    call_count = 0
-
     def fake_gh(path: str):
-        nonlocal call_count
-        call_count += 1
         if "/rules/branches/" in path:
-            return (rules, None)
+            return (_RULESET_RULES_FIXTURE, None)
         return (ruleset_with_bypass, None)
 
-    monkeypatch.setattr(mod, "gh", fake_gh)
-    result = mod._admins_enforced("testorg", "testrepo", "main")
+    monkeypatch.setattr(crc, "gh", fake_gh)
+    result = crc._admins_enforced("testorg", "testrepo", "main")
     assert result is False
 
 
 @pytest.mark.unit
 def test_admins_enforced_returns_true_when_no_bypass(monkeypatch) -> None:
     """_admins_enforced returns True when the ruleset has no admin bypass actors."""
-    mod = load_module()
-    rules = json.dumps(
-        [
-            {
-                "ruleset_source_type": "Organization",
-                "ruleset_source": "testorg",
-                "ruleset_id": 99,
-                "type": "required_signatures",
-            }
-        ]
-    )
     clean_ruleset = json.dumps({"bypass_actors": [], "rules": []})
 
     def fake_gh(path: str):
         if "/rules/branches/" in path:
-            return (rules, None)
+            return (_RULESET_RULES_FIXTURE, None)
         return (clean_ruleset, None)
 
-    monkeypatch.setattr(mod, "gh", fake_gh)
-    result = mod._admins_enforced("testorg", "testrepo", "main")
+    monkeypatch.setattr(crc, "gh", fake_gh)
+    result = crc._admins_enforced("testorg", "testrepo", "main")
     assert result is True
