@@ -96,76 +96,95 @@ class FipsCodeVisitor(ast.NodeVisitor):
         self.issues: list[FipsIssue] = []
         self._in_hashlib_call = False
 
+    def _check_hashlib_call(self, node: ast.Call, func_name: str) -> None:
+        """Append a finding if hashlib.func_name() uses a non-FIPS hash without usedforsecurity=False.
+
+        Args:
+            node: The Call AST node being visited.
+            func_name: Lowercased attribute name (e.g., 'md5', 'sha1').
+        """
+        if func_name not in NON_FIPS_HASHES:
+            return
+        has_usedforsecurity_false = any(
+            kw.arg == "usedforsecurity"
+            and isinstance(kw.value, ast.Constant)
+            and kw.value.value is False
+            for kw in node.keywords
+        )
+        if has_usedforsecurity_false:
+            return
+        severity = "error" if func_name in {"md5", "md4"} else "warning"
+        self.issues.append(
+            FipsIssue(
+                file_path=self.file_path,
+                line_number=node.lineno,
+                severity=severity,
+                category="hash",
+                message=f"hashlib.{func_name}() is not FIPS-approved",
+                fix_hint=(
+                    f"Add usedforsecurity=False if not used for security: "
+                    f"hashlib.{func_name}(..., usedforsecurity=False)"
+                ),
+            )
+        )
+
+    def _check_cipher_call(self, node: ast.Call, func_name: str) -> None:
+        """Append a finding if func_name matches a known non-FIPS cipher.
+
+        Args:
+            node: The Call AST node being visited.
+            func_name: Lowercased attribute name to check against NON_FIPS_CIPHERS.
+        """
+        if func_name not in NON_FIPS_CIPHERS and not any(
+            c in func_name for c in NON_FIPS_CIPHERS
+        ):
+            return
+        self.issues.append(
+            FipsIssue(
+                file_path=self.file_path,
+                line_number=node.lineno,
+                severity="error",
+                category="cipher",
+                message=f"Non-FIPS cipher detected: {func_name}",
+                fix_hint="Use AES, ChaCha20-Poly1305, or other FIPS-approved algorithms",
+            )
+        )
+
+    def _check_new_call(self, node: ast.Call) -> None:
+        """Append a finding for each positional string arg to .new() that names a non-FIPS algorithm.
+
+        Args:
+            node: The Call AST node whose func.attr is 'new'.
+        """
+        for arg in node.args:
+            if not (isinstance(arg, ast.Constant) and isinstance(arg.value, str)):
+                continue
+            algo = arg.value.lower()
+            if algo not in NON_FIPS_HASHES and algo not in NON_FIPS_CIPHERS:
+                continue
+            self.issues.append(
+                FipsIssue(
+                    file_path=self.file_path,
+                    line_number=node.lineno,
+                    severity="error",
+                    category="cipher" if algo in NON_FIPS_CIPHERS else "hash",
+                    message=f"Non-FIPS algorithm: {algo}",
+                    fix_hint="Use FIPS-approved algorithms (AES, SHA-256, etc.)",
+                )
+            )
+
     def visit_Call(self, node: ast.Call) -> None:
-        """Visit function calls to detect crypto usage."""
-        # Check for hashlib.md5(), hashlib.sha1(), etc.
+        """Visit function calls to detect FIPS-incompatible crypto usage."""
         if isinstance(node.func, ast.Attribute):
             func_name = node.func.attr.lower()
-
-            # Check for hashlib calls
             if (
                 isinstance(node.func.value, ast.Name)
                 and node.func.value.id == "hashlib"
             ):
-                if func_name in NON_FIPS_HASHES:
-                    # Check if usedforsecurity=False is set
-                    has_usedforsecurity_false = False
-                    for keyword in node.keywords:
-                        if keyword.arg == "usedforsecurity":
-                            if (
-                                isinstance(keyword.value, ast.Constant)
-                                and keyword.value.value is False
-                            ):
-                                has_usedforsecurity_false = True
-
-                    if not has_usedforsecurity_false:
-                        severity = "error" if func_name in {"md5", "md4"} else "warning"
-                        self.issues.append(
-                            FipsIssue(
-                                file_path=self.file_path,
-                                line_number=node.lineno,
-                                severity=severity,
-                                category="hash",
-                                message=f"hashlib.{func_name}() is not FIPS-approved",
-                                fix_hint=f"Add usedforsecurity=False if not used for security: "
-                                f"hashlib.{func_name}(..., usedforsecurity=False)",
-                            )
-                        )
-
-            # Check for Crypto/Cryptodome cipher usage
-            if func_name in NON_FIPS_CIPHERS or any(
-                c in func_name for c in NON_FIPS_CIPHERS
-            ):
-                self.issues.append(
-                    FipsIssue(
-                        file_path=self.file_path,
-                        line_number=node.lineno,
-                        severity="error",
-                        category="cipher",
-                        message=f"Non-FIPS cipher detected: {func_name}",
-                        fix_hint="Use AES, ChaCha20-Poly1305, or other FIPS-approved algorithms",
-                    )
-                )
-
-        # Check for direct new() calls with algorithm names
-        if isinstance(node.func, ast.Attribute) and node.func.attr == "new":
-            for arg in node.args:
-                if isinstance(arg, ast.Constant) and isinstance(arg.value, str):
-                    algo = arg.value.lower()
-                    if algo in NON_FIPS_HASHES or algo in NON_FIPS_CIPHERS:
-                        self.issues.append(
-                            FipsIssue(
-                                file_path=self.file_path,
-                                line_number=node.lineno,
-                                severity="error",
-                                category="cipher"
-                                if algo in NON_FIPS_CIPHERS
-                                else "hash",
-                                message=f"Non-FIPS algorithm: {algo}",
-                                fix_hint="Use FIPS-approved algorithms (AES, SHA-256, etc.)",
-                            )
-                        )
-
+                self._check_hashlib_call(node, func_name)
+            self._check_cipher_call(node, func_name)
+            if node.func.attr == "new":
+                self._check_new_call(node)
         self.generic_visit(node)
 
     def visit_Import(self, node: ast.Import) -> None:
