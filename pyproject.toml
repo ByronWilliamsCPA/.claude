@@ -314,6 +314,8 @@ known-first-party = ["claude_config"]
     "N802",   # AST visitor methods require mixed-case names (visit_BinOp etc.)
     "RET504", # Unnecessary assignment before return (clarity over brevity)
     "S603",   # Subprocess with controlled, non-user input (mirrors tools/**)
+    "S607",   # Partial path for known CLI tools (gh, python, etc.)
+    "DTZ011", # date.today() without tz is fine for local sync date stamps
 ]
 
 # Benchmarks (performance testing)
