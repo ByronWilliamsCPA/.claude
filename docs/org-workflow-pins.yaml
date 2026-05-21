@@ -7,6 +7,6 @@
 
 sources:
   ByronWilliamsCPA/.github:
-    current_tag: v1.0.0
-    current_sha: ea8e19054eac195e6ab7bc93e9c2319632560b77  # pragma: allowlist secret
+    current_tag: v1.1.0
+    current_sha: 6f71aecae2c91214ca0a0a2206a36cf912aa31ac  # pragma: allowlist secret
     last_synced: '2026-05-21'

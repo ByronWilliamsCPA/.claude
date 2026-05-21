@@ -169,7 +169,7 @@ def find_existing_ruleset(org: str, name: str) -> int | None:
     # truncate (gh default page size is 30). Without it, a match on page 2+
     # would return None and the script would create a duplicate ruleset.
     out = subprocess.check_output(
-        [  # noqa: S607
+        [
             "gh",
             "api",
             "--paginate",
@@ -207,7 +207,7 @@ def fetch_ruleset(org: str, ruleset_id: int) -> dict:
             CLI failure) is the appropriate exit code.
     """
     out = subprocess.check_output(
-        ["gh", "api", f"orgs/{org}/rulesets/{ruleset_id}"],  # noqa: S607
+        ["gh", "api", f"orgs/{org}/rulesets/{ruleset_id}"],
         text=True,
         timeout=_GH_TIMEOUT_SECONDS,
     )
