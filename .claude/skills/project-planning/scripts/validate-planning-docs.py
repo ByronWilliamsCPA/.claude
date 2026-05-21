@@ -121,7 +121,7 @@ def _validate_doc(
     max_words: int,
     required_sections: list[str],
 ) -> list[str]:
-    """Shared validator for any planning doc with a word-count cap and required sections."""
+    """Validate any planning doc: enforce max_words word-count cap, required_sections presence, TL;DR block, and placeholder removal."""
     issues: list[str] = []
     word_count = count_words(content)
     if word_count > max_words:

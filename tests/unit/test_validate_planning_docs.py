@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import importlib.abc
 import importlib.util
+import sys
 from pathlib import Path
 
 _SCRIPT = (
@@ -20,6 +21,7 @@ def _load() -> object:
     spec = importlib.util.spec_from_file_location("validate_planning_docs", _SCRIPT)
     assert spec is not None
     mod = importlib.util.module_from_spec(spec)
+    sys.modules["validate_planning_docs"] = mod
     assert isinstance(spec.loader, importlib.abc.Loader)
     spec.loader.exec_module(mod)
     return mod
