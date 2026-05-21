@@ -20,13 +20,14 @@ import sys
 from copy import deepcopy
 from datetime import date
 from pathlib import Path
+from typing import Any
 
 import yaml
 
 _DEFAULT_REGISTRY = Path("docs/org-workflow-pins.yaml")
 
 
-def load_registry(path: Path) -> dict:
+def load_registry(path: Path) -> dict[str, Any]:
     """Load and parse the pin registry YAML file.
 
     Args:
@@ -100,7 +101,7 @@ def build_updated_registry(
     new_tag: str,
     new_sha: str,
     sync_date: date,
-) -> dict:
+) -> dict[str, Any]:
     """Return a deep-copy of registry with one source entry updated.
 
     Args:
