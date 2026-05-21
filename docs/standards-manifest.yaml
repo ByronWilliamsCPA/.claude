@@ -1560,6 +1560,44 @@ checks:
       because branch instrumentation is not always complete in integration-test
       suites. Standards source: CLAUDE.md "Testing" row (80% line, 70% branch).
 
+  - id: CI-055
+    domain: ci
+    severity: important
+    override_eligible: true
+    description: >-
+      docs/org-workflow-pins.yaml current_sha matches the latest tag SHA
+      on GitHub for each source repo. Findings older than 24 hours from
+      the tag creation date are reported; within 24 hours the daily sync
+      job may simply not have run yet.
+    verify: "registry_current: docs/org-workflow-pins.yaml, source=github_tags, max_lag_hours=24"
+
+  - id: CI-056
+    domain: ci
+    severity: important
+    override_eligible: true
+    description: >-
+      All uses: references to org workflow source repos in
+      .github/workflows/*.yml match the current_sha in
+      docs/org-workflow-pins.yaml. Fires on any consumer repo where a
+      uses: ByronWilliamsCPA/.github/...@<sha> or
+      uses: williaby/.github/...@<sha> does not match the registry value.
+    verify: "uses_sha_matches_registry: .github/workflows/*.yml, docs/org-workflow-pins.yaml"
+
+  - id: CI-057
+    domain: ci
+    severity: important
+    override_eligible: true
+    not_applicable_when: >-
+      Repo does not use org reusable workflows (no
+      ByronWilliamsCPA/.github or williaby/.github reference in
+      .github/workflows/*.yml). Skip silently when not applicable.
+    description: >-
+      renovate.json contains a packageRules entry targeting org workflow
+      source repos with followTag set to the floating major version tag
+      (v1). Without this, Renovate either ignores org workflow updates or
+      opens PRs on every non-tagged commit.
+    verify: "content_present: renovate.json, ByronWilliamsCPA/.github"
+
   - id: FOUND-015
     domain: foundations
     severity: suggested
