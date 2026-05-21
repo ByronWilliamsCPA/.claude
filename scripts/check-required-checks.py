@@ -326,43 +326,65 @@ def diff_required_vs_effective(
     return findings
 
 
+def _parse_last_verified(
+    path: str, entry: dict[str, Any]
+) -> tuple[date | None, Finding | None]:
+    """Parse the last_verified field from a registry entry.
+
+    Args:
+        path: Registry key (workflow path string) used in error messages.
+        entry: Registry entry dict to inspect.
+
+    Returns:
+        Tuple of (parsed date or None, Finding or None). Exactly one of the
+        two elements is non-None: a date when parsing succeeded, or a Finding
+        when the field is missing or unparseable.
+    """
+    last_verified_raw = entry.get("last_verified")
+    if isinstance(last_verified_raw, date):
+        return last_verified_raw, None
+    if isinstance(last_verified_raw, str):
+        try:
+            return date.fromisoformat(last_verified_raw), None
+        except ValueError:
+            return None, Finding(
+                check_id="CI-024",
+                severity="important",
+                message=(
+                    f"Registry entry {path} has unparseable "
+                    f"last_verified value: {last_verified_raw!r}"
+                ),
+            )
+    return None, Finding(
+        check_id="CI-024",
+        severity="important",
+        message=f"Registry entry {path} missing last_verified field.",
+    )
+
+
 def check_registry_freshness(
     registry: dict[str, dict[str, Any]],
     today: date,
     max_age_days: int = 90,
 ) -> list[Finding]:
-    """CI-024: every registry entry has last_verified within max_age_days."""
+    """CI-024: every registry entry has last_verified within max_age_days.
+
+    Args:
+        registry: Mapping from workflow path to entry dict.
+        today: Reference date for age calculation.
+        max_age_days: Maximum allowed age in days before a finding is emitted.
+
+    Returns:
+        List of findings for missing, unparseable, or stale last_verified fields.
+    """
     findings: list[Finding] = []
     cutoff = today - timedelta(days=max_age_days)
     for path, entry in sorted(registry.items()):
-        last_verified_raw = entry.get("last_verified")
-        if isinstance(last_verified_raw, date):
-            last_verified = last_verified_raw
-        elif isinstance(last_verified_raw, str):
-            try:
-                last_verified = date.fromisoformat(last_verified_raw)
-            except ValueError:
-                findings.append(
-                    Finding(
-                        check_id="CI-024",
-                        severity="important",
-                        message=(
-                            f"Registry entry {path} has unparseable "
-                            f"last_verified value: {last_verified_raw!r}"
-                        ),
-                    )
-                )
-                continue
-        else:
-            findings.append(
-                Finding(
-                    check_id="CI-024",
-                    severity="important",
-                    message=f"Registry entry {path} missing last_verified field.",
-                )
-            )
+        last_verified, parse_finding = _parse_last_verified(path, entry)
+        if parse_finding is not None:
+            findings.append(parse_finding)
             continue
-        if last_verified < cutoff:
+        if last_verified is not None and last_verified < cutoff:
             findings.append(
                 Finding(
                     check_id="CI-024",
@@ -374,6 +396,41 @@ def check_registry_freshness(
                 )
             )
     return findings
+
+
+def _validate_and_include_entry(
+    idx: int,
+    entry: Any,
+    repo_type: str,
+    names: set[str],
+    meta: dict[str, dict[str, Any]],
+) -> None:
+    """Validate a single required_checks entry and add it to names/meta if applicable.
+
+    Args:
+        idx: Zero-based index of the entry in the required_checks list (for error messages).
+        entry: Raw entry value from the manifest (expected to be a dict).
+        repo_type: Repository type filter; empty string means include all entries.
+        names: Accumulator set of check name strings to update in place.
+        meta: Accumulator dict mapping check name to full entry dict, updated in place.
+
+    Raises:
+        ValueError: If entry is not a mapping, or its name field is missing or empty.
+    """
+    if not isinstance(entry, dict):
+        raise ValueError(
+            f"required_checks[{idx}] must be a mapping, got {type(entry).__name__}"
+        )
+    name = entry.get("name")
+    if not isinstance(name, str) or not name.strip():
+        raise ValueError(
+            f"required_checks[{idx}] missing or empty 'name' field: {entry!r}"
+        )
+    applies_to = entry.get("applies_to_types")
+    if repo_type and applies_to is not None and repo_type not in applies_to:
+        return
+    names.add(name)
+    meta[name] = entry
 
 
 def load_required_checks(
@@ -415,20 +472,7 @@ def load_required_checks(
     names: set[str] = set()
     meta: dict[str, dict[str, Any]] = {}
     for idx, entry in enumerate(entries):
-        if not isinstance(entry, dict):
-            raise ValueError(
-                f"required_checks[{idx}] must be a mapping, got {type(entry).__name__}"
-            )
-        name = entry.get("name")
-        if not isinstance(name, str) or not name.strip():
-            raise ValueError(
-                f"required_checks[{idx}] missing or empty 'name' field: {entry!r}"
-            )
-        applies_to = entry.get("applies_to_types")
-        if repo_type and applies_to is not None and repo_type not in applies_to:
-            continue
-        names.add(name)
-        meta[name] = entry
+        _validate_and_include_entry(idx, entry, repo_type, names, meta)
     return names, meta
 
 

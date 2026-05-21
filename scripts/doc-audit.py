@@ -412,6 +412,48 @@ def _actual_counts(repo_root: str) -> dict[str, int]:
     }
 
 
+def _check_count_match(
+    match: re.Match[str],
+    actual: dict[str, int],
+    md_file: Path,
+    line_no: int,
+) -> Finding | None:
+    """Evaluate a single count-claim regex match against actual counts.
+
+    Args:
+        match: Regex match from _COUNT_RE with groups (number, category_word).
+        actual: Mapping from category key to actual filesystem count.
+        md_file: Source markdown file (used for the Finding file field).
+        line_no: 1-based line number in md_file (used for the Finding line field).
+
+    Returns:
+        A Finding if the claim is unrecognised or mismatched, else None.
+    """
+    claimed = int(match.group(1))
+    category_key = _COUNT_WORD_MAP.get(match.group(2).lower(), "")
+    if not category_key:
+        return Finding(
+            category="counts",
+            severity="INFO",
+            file=str(md_file),
+            line=line_no,
+            message=(
+                f"count claim '{match.group(2)}': "
+                "unrecognized category, flagged for manual review"
+            ),
+        )
+    real = actual.get(category_key, 0)
+    if claimed != real:
+        return Finding(
+            category="counts",
+            severity="WARN",
+            file=str(md_file),
+            line=line_no,
+            message=(f"claims '{claimed} {match.group(2)}': actual: {real}"),
+        )
+    return None
+
+
 def check_counts(scope: str, *, repo_root: str = ".") -> list[Finding]:
     """Verify count claims in markdown files against actual codebase counts.
 
@@ -432,35 +474,9 @@ def check_counts(scope: str, *, repo_root: str = ".") -> list[Finding]:
         content = md_file.read_text(encoding="utf-8")
         for line_no, line in enumerate(content.splitlines(), start=1):
             for match in _COUNT_RE.finditer(line):
-                claimed = int(match.group(1))
-                category_key = _COUNT_WORD_MAP.get(match.group(2).lower(), "")
-                if not category_key:
-                    findings.append(
-                        Finding(
-                            category="counts",
-                            severity="INFO",
-                            file=str(md_file),
-                            line=line_no,
-                            message=(
-                                f"count claim '{match.group(2)}': "
-                                "unrecognized category, flagged for manual review"
-                            ),
-                        )
-                    )
-                    continue
-                real = actual.get(category_key, 0)
-                if claimed != real:
-                    findings.append(
-                        Finding(
-                            category="counts",
-                            severity="WARN",
-                            file=str(md_file),
-                            line=line_no,
-                            message=(
-                                f"claims '{claimed} {match.group(2)}': actual: {real}"
-                            ),
-                        )
-                    )
+                finding = _check_count_match(match, actual, md_file, line_no)
+                if finding is not None:
+                    findings.append(finding)
 
     return findings
 
