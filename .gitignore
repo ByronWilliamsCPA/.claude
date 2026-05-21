@@ -317,6 +317,10 @@ docs/compliance-reports/state/*
 # Compliance retrospectives (local-only notes for improving repo-compliance workflow)
 docs/compliance-retrospectives/
 
+# Per-session compliance reports (review-then-integrate workflow; not tracked)
+docs/compliance-reports/[0-9]*-*
+docs/compliance-reports/*.lock
+
 # Audit result artifacts (regenerable CSV/JSON snapshots)
 data/audit-results/
 
