@@ -31,7 +31,7 @@ import sys
 from dataclasses import asdict, dataclass
 from datetime import date, timedelta
 from pathlib import Path
-from typing import Any
+from typing import Any, TypeAlias
 
 from ruamel.yaml import YAML
 from ruamel.yaml.error import YAMLError
@@ -71,6 +71,10 @@ class Finding:
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
+
+
+# Exactly one element is non-None: date on parse success, Finding on failure.
+_LastVerifiedResult: TypeAlias = tuple[date, None] | tuple[None, Finding]
 
 
 def _yaml_safe() -> YAML:
@@ -326,9 +330,7 @@ def diff_required_vs_effective(
     return findings
 
 
-def _parse_last_verified(
-    path: str, entry: dict[str, Any]
-) -> tuple[date | None, Finding | None]:
+def _parse_last_verified(path: str, entry: dict[str, Any]) -> _LastVerifiedResult:
     """Parse the last_verified field from a registry entry.
 
     Args:
@@ -336,8 +338,7 @@ def _parse_last_verified(
         entry: Registry entry dict to inspect.
 
     Returns:
-        Tuple of (parsed date or None, Finding or None). Exactly one of the
-        two elements is non-None: a date when parsing succeeded, or a Finding
+        A _LastVerifiedResult: (date, None) on success, or (None, Finding)
         when the field is missing or unparseable.
     """
     last_verified_raw = entry.get("last_verified")
@@ -402,17 +403,17 @@ def _validate_and_include_entry(
     idx: int,
     entry: Any,
     repo_type: str,
-    names: set[str],
-    meta: dict[str, dict[str, Any]],
-) -> None:
-    """Validate a single required_checks entry and add it to names/meta if applicable.
+) -> tuple[str, dict[str, Any]] | None:
+    """Validate a single required_checks entry and return it if applicable.
 
     Args:
         idx: Zero-based index of the entry in the required_checks list (for error messages).
         entry: Raw entry value from the manifest (expected to be a dict).
         repo_type: Repository type filter; empty string means include all entries.
-        names: Accumulator set of check name strings to update in place.
-        meta: Accumulator dict mapping check name to full entry dict, updated in place.
+
+    Returns:
+        Tuple of (name, entry) if the entry is valid and applies to repo_type,
+        or None if the entry is filtered out by repo_type.
 
     Raises:
         ValueError: If entry is not a mapping, or its name field is missing or empty.
@@ -428,9 +429,8 @@ def _validate_and_include_entry(
         )
     applies_to = entry.get("applies_to_types")
     if repo_type and applies_to is not None and repo_type not in applies_to:
-        return
-    names.add(name)
-    meta[name] = entry
+        return None
+    return name, entry
 
 
 def load_required_checks(
@@ -472,7 +472,11 @@ def load_required_checks(
     names: set[str] = set()
     meta: dict[str, dict[str, Any]] = {}
     for idx, entry in enumerate(entries):
-        _validate_and_include_entry(idx, entry, repo_type, names, meta)
+        result = _validate_and_include_entry(idx, entry, repo_type)
+        if result is not None:
+            name, validated_entry = result
+            names.add(name)
+            meta[name] = validated_entry
     return names, meta
 
 

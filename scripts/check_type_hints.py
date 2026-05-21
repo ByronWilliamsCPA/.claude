@@ -268,28 +268,27 @@ def _handle_violation(
     file_path: Path,
     message: str,
     fix: bool,
-    violations: list[tuple[Path, str]],
-    fixed: list[Path],
-) -> None:
+) -> tuple[tuple[Path, str] | None, Path | None]:
     """Apply fix or record violation for a single non-compliant file.
 
     Args:
         file_path: Path to the non-compliant Python file.
         message: Compliance message describing the violation.
         fix: If True, attempt to auto-fix the file.
-        violations: Accumulator list for (path, message) violation pairs.
-        fixed: Accumulator list for successfully auto-fixed paths.
+
+    Returns:
+        Tuple of (violation, fixed_path). Exactly one element is non-None.
+        violation is (path, message) when the file was not fixed; fixed_path
+        is the path when the file was successfully auto-fixed.
     """
     if fix:
         if add_future_import(file_path):
-            fixed.append(file_path)
             print(f"✓ Fixed: {file_path}")
-        else:
-            violations.append((file_path, message))
-            print(f"✗ Failed to fix: {file_path}: {message}", file=sys.stderr)
-    else:
-        violations.append((file_path, message))
-        print(f"✗ {file_path}: {message}", file=sys.stderr)
+            return None, file_path
+        print(f"✗ Failed to fix: {file_path}: {message}", file=sys.stderr)
+        return (file_path, message), None
+    print(f"✗ {file_path}: {message}", file=sys.stderr)
+    return (file_path, message), None
 
 
 def _process_files(
@@ -313,7 +312,11 @@ def _process_files(
             continue
         is_compliant, message = check_file(file_path)
         if not is_compliant:
-            _handle_violation(file_path, message, fix, violations, fixed)
+            violation, fixed_path = _handle_violation(file_path, message, fix)
+            if fixed_path is not None:
+                fixed.append(fixed_path)
+            if violation is not None:
+                violations.append(violation)
 
     return violations, fixed
 
