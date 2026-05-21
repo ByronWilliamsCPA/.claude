@@ -9,7 +9,7 @@ purpose: Design for cleaning up qlty's 523 reported smells and 30.7% duplication
 
 ## Context
 
-`qlty.sh` reports 523 smells and 30.7% duplication on `main`, with `base.py`
+`qlty` reports 523 smells and 30.7% duplication on `main`, with `base.py`
 flagged as a security hotspot. Investigation revealed two distinct problems:
 
 1. **Configuration bug (root cause of 90%+ of the count).** `.qlty/qlty.toml`
@@ -219,7 +219,7 @@ Collapse early-returns that share a return type into guard clauses for
 invalid input plus a single computed final return.
 
 ```python
-def _signatures_enforced(rules: list) -> bool:
+def _signatures_enforced(rules: dict) -> bool:
     if not rules or "signatures" not in rules:
         return False
     sig = rules["signatures"]
