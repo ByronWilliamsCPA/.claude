@@ -328,3 +328,33 @@ def test_reconcile_isolates_parse_failures(tmp_path: Path) -> None:
     assert result.appended == 1  # valid file processed
     assert len(result.parse_failures) == 1
     assert "garbage.md" in result.parse_failures[0]
+
+
+def test_reconcile_dry_run_does_not_write(tmp_path: Path) -> None:
+    """dry_run=True should not create the JSONL file."""
+    from scripts.compliance_rollup_reconcile import reconcile
+
+    catalog = tmp_path / "catalog.json"
+    catalog.write_text('{"repos": []}', encoding="utf-8")
+    jsonl = tmp_path / "log.jsonl"
+
+    result = reconcile(catalog_path=catalog, jsonl_path=jsonl, dry_run=True)
+
+    assert result.walked == 0
+    assert not jsonl.exists(), "dry_run should not create the JSONL"
+
+
+def test_reconcile_skips_archived_repos(tmp_path: Path) -> None:
+    """Repos with isArchived=true must be skipped silently."""
+    from scripts.compliance_rollup_reconcile import reconcile
+
+    catalog = tmp_path / "catalog.json"
+    catalog.write_text(
+        '{"repos": [{"name": "old-repo", "org": "testorg", "isArchived": true}]}',
+        encoding="utf-8",
+    )
+    jsonl = tmp_path / "log.jsonl"
+
+    result = reconcile(catalog_path=catalog, jsonl_path=jsonl, dry_run=False)
+
+    assert result.walked == 0

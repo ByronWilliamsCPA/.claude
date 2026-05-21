@@ -242,3 +242,33 @@ def test_supersede_skips_corrupted_jsonl_lines(
     assert len(superseded) == 1
     assert superseded[0]["session_id"] == "2026-05-17T08:00:00Z-old1"
     _ = entries  # keep the import wired so static analysis sees the dep
+
+
+def test_atomic_supersede_marks_prior_entry_superseded(
+    tmp_path: Path,
+    compliance_entry: dict,
+) -> None:
+    """Second append for the same (session_date, repo) must supersede the first.
+
+    Uses the shared compliance_entry fixture to verify that
+    _atomic_supersede_and_append updates superseded_by on the prior
+    active entry when a newer entry for the same key is written.
+    """
+    import json
+
+    from scripts.compliance_log_append import append_entry
+
+    log = tmp_path / "test-log.jsonl"
+    first_entry = {**compliance_entry, "session_id": "2026-05-16T10:00:00Z-aaaa"}
+    append_entry(first_entry, jsonl_path=log, render=False)
+
+    second_entry = {**compliance_entry, "session_id": "2026-05-16T11:00:00Z-bbbb"}
+    append_entry(second_entry, jsonl_path=log, render=False)
+
+    lines = [json.loads(ln) for ln in log.read_text().splitlines() if ln.strip()]
+    entries = [ln for ln in lines if ln.get("type") != "header"]
+    assert len(entries) == 2
+    first_written = next(e for e in entries if e["session_id"].endswith("aaaa"))
+    assert first_written["superseded_by"] == "2026-05-16T11:00:00Z-bbbb"
+    second_written = next(e for e in entries if e["session_id"].endswith("bbbb"))
+    assert second_written["superseded_by"] is None
