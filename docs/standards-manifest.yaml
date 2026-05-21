@@ -1570,6 +1570,8 @@ checks:
       the tag creation date are reported; within 24 hours the daily sync
       job may simply not have run yet.
     verify: "registry_current: docs/org-workflow-pins.yaml, source=github_tags, max_lag_hours=24"
+    source_frameworks:
+      - manifest-internal
 
   - id: CI-056
     domain: ci
@@ -1582,6 +1584,8 @@ checks:
       uses: ByronWilliamsCPA/.github/...@<sha> or
       uses: williaby/.github/...@<sha> does not match the registry value.
     verify: "uses_sha_matches_registry: .github/workflows/*.yml, docs/org-workflow-pins.yaml"
+    source_frameworks:
+      - manifest-internal
 
   - id: CI-057
     domain: ci
@@ -1597,6 +1601,8 @@ checks:
       (v1). Without this, Renovate either ignores org workflow updates or
       opens PRs on every non-tagged commit.
     verify: "content_present: renovate.json, ByronWilliamsCPA/.github"
+    source_frameworks:
+      - manifest-internal
 
   - id: FOUND-015
     domain: foundations
