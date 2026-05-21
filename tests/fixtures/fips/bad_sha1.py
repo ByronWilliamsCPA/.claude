@@ -12,4 +12,4 @@ def digest(data: bytes) -> str:
     Returns:
         Hex digest string.
     """
-    return hashlib.sha1(data).hexdigest()  # noqa: S324 -- intentional fixture: tests FIPS scanner against this pattern
+    return hashlib.sha1(data).hexdigest()

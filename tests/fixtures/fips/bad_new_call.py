@@ -12,5 +12,5 @@ def digest(data: bytes) -> str:
     Returns:
         Hex digest string.
     """
-    h = hashlib.new("md5", data)  # noqa: S324 -- intentional fixture: tests FIPS scanner against this pattern
+    h = hashlib.new("md5", data)
     return h.hexdigest()
