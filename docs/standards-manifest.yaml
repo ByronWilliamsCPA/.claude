@@ -1,6 +1,6 @@
 # docs/standards-manifest.yaml
 version: "1.0"
-last_updated: "2026-05-16"
+last_updated: "2026-05-21"
 
 # verify field is a hint to the domain agent, not executable DSL.
 # Agents interpret it using their own tools (Grep, Read, Glob, Bash).
@@ -1458,6 +1458,105 @@ checks:
       paid tier and is not invoked by any current workflow. Coverage is
       fully maintained by OSV-Scanner + Dependency-Review + pip-audit +
       Renovate vulnerability alerts.
+
+  - id: CI-052
+    domain: ci
+    severity: important
+    override_eligible: false
+    description: >-
+      CodeRabbit config must not enable request_changes_workflow.
+      When set to true, CodeRabbit submits formal CHANGES_REQUESTED
+      reviews that block PR merges through branch protection, even on
+      solo-dev repos where required_approving_review_count is 0.
+      Default CodeRabbit behavior (and the fleet-wide standard) is
+      plain inline comments and suggestions, not formal review gating.
+      Recurring finding: an 11-repo sweep on 2026-05-15 flipped the
+      flag after the bot began silently blocking otherwise-mergeable
+      PRs across both orgs.
+    verify: >-
+      content_absent: .coderabbit.yaml, request_changes_workflow: true.
+      Also check .coderabbit.yml (alternate extension) if present.
+      Both files absent = PASS (CodeRabbit default is false).
+      Flag explicit `request_changes_workflow: true` only; explicit
+      `false` or unset key both PASS.
+    not_applicable_when: "neither .coderabbit.yaml nor .coderabbit.yml exists at the repo root (CodeRabbit either not installed or relying on defaults; default request_changes_workflow value is false)"
+    source_frameworks:
+      - manifest-internal
+    notes: >-
+      The bot continues to post comments and suggestions when this
+      flag is false; only the formal CHANGES_REQUESTED gate is
+      disabled. Pair with bot-login filtering ("[bot]" suffix) when
+      auditing whether CodeRabbit reviews are being surfaced.
+
+  - id: CI-053
+    domain: ci
+    severity: important
+    override_eligible: false
+    description: >-
+      Mutation testing workflow (.github/workflows/mutation-testing.yml)
+      must not trigger on pull_request or push events. Mutation testing
+      is wall-clock expensive (60-minute typical timeout per run) and
+      blocks PR throughput when wired as a PR check. It must run on a
+      weekly schedule plus manual workflow_dispatch only. Weekly drift
+      detection adequately covers the regression-spotting need; per-PR
+      runs add cost without proportional signal. The canonical
+      cookiecutter template uses cron '0 2 * * 0' (Sundays 02:00 UTC).
+    verify: >-
+      Read .github/workflows/mutation-testing.yml. PASS if both
+      `^  pull_request:` and `^  push:` are absent under the on: block,
+      AND a `schedule:` block exists with a cron no more frequent than
+      weekly (day-of-week field must be a single numeric value, not '*'
+      or step syntax). FAIL on any pull_request: or push: trigger. FAIL
+      on cron expressions with '*' day-of-week (daily or more frequent).
+      Also FAIL when `fail-under-threshold:` evaluates to true on any
+      non-schedule event AND a non-schedule trigger exists, because the
+      combination silently blocks PR merges.
+    not_applicable_when: ".github/workflows/mutation-testing.yml is absent (mutation testing not configured for this repo; mutation testing is suggested only for Python repos with 80%+ baseline coverage per OSSF Silver criterion 6.1 guidance)"
+    source_frameworks:
+      - manifest-internal
+    notes: >-
+      Fleet sweep 2026-05-19 found 9 of 16 local clones with a
+      pull_request: trigger on mutation-testing.yml, and 3 additional
+      repos with the `fail-under-threshold: ${{ github.event_name !=
+      'schedule' }}` config that would silently fail any non-cron run
+      if a PR trigger were ever re-added. Cookiecutter template
+      (cookiecutter-python-template) is canonical and was verified
+      clean; drift is per-repo, not template-sourced.
+
+  - id: CI-054
+    domain: ci
+    severity: important
+    override_eligible: true
+    description: >-
+      Codecov reports line coverage >= 80% and branch coverage >= 70% on the
+      default branch (queried via Codecov v2 API).
+    verify: >-
+      codecov_coverage: line_min=80, branch_min=70, branch=main.
+      Query https://app.codecov.io/api/v2/github/{owner}/repos/{repo}/ for
+      totals.coverage (line %) and compute branch % as
+      totals.branches_covered / totals.branches * 100.
+      PASS if line >= 80 and branch >= 70 (or branch data absent, treat as
+      not measured and skip branch gate).
+      VISIBILITY GATE: if .codecov.yml or codecov.yaml is present but the
+      repo is private (isPrivate=true in repo catalog) and the unauthenticated
+      API probe returns 404 or empty totals, record PASS (visibility-gated)
+      instead of a FINDING. Private Codecov projects require a token; the
+      unauthenticated API cannot assess them.
+      NO-DATA GATE: if totals is null or coverage is null (Codecov has never
+      received a report for this repo), emit FINDING with message "No coverage
+      data on Codecov -- ensure coverage.yml workflow uploads reports on the
+      default branch."
+    not_applicable_when: >-
+      repo does not contain Python source files OR .codecov.yml and
+      codecov.yaml are both absent (Codecov not configured for this repo).
+    source_frameworks:
+      - manifest-internal
+    notes: >-
+      Complements CI-009/CI-010/CI-011 (config-presence checks) by verifying
+      the last actual run met the thresholds, not just that the config declares
+      them. Branch coverage floor (70%) is set lower than line coverage (80%)
+      because branch instrumentation is not always complete in integration-test
+      suites. Standards source: CLAUDE.md "Testing" row (80% line, 70% branch).
 
   - id: FOUND-015
     domain: foundations

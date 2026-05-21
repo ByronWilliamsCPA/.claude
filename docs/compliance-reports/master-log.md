@@ -8,9 +8,9 @@ tags:
   - compliance
 ---
 
-**Total sessions:** 13
-**Distinct repos:** 9
-**Newest entry:** 2026-05-18
+**Total sessions:** 14
+**Distinct repos:** 10
+**Newest entry:** 2026-05-19
 **Oldest entry:** 2026-04-25
 **Open fleet actions:** 0
 
@@ -19,6 +19,7 @@ tags:
 
 | Date | Repo | Mode | Critical | Important | Suggested | Candidates | Reconciled | Report |
 |------|------|------|---------:|----------:|----------:|-----------:|:----------:|--------|
+| 2026-05-19 | ByronWilliamsCPA/rag-processor | interactive | 8 | 32 | 11 | 8 |  | [report](https://github.com/ByronWilliamsCPA/rag-processor/blob/main/docs/compliance-reports/lessons-learned/2026-05-19-rag-processor.md) |
 | 2026-05-18 | williaby/image-generation | interactive | 0 | 8 | 10 | 20 |  |  |
 | 2026-05-16 | ByronWilliamsCPA/reference-library | unknown | 0 | 0 | 0 | 0 | yes | [report](https://github.com/ByronWilliamsCPA/reference-library/blob/main/docs/compliance-reports/lessons-learned/2026-05-16-b.md) |
 | 2026-05-16 | ByronWilliamsCPA/fragrance-rater | unknown | 8 | 30 | 21 | 21 | yes | [report](https://github.com/ByronWilliamsCPA/fragrance-rater/blob/main/docs/compliance-reports/lessons-learned/2026-05-16.md) |
@@ -40,4 +41,4 @@ tags:
 | 2026-04-25 | ByronWilliamsCPA/gleif | unknown | 10 | 22 | 13 | 8 | yes | [report](https://github.com/ByronWilliamsCPA/gleif/blob/main/docs/compliance-reports/lessons-learned/2026-04-25.md) |
 
 ---
-*Rendered 2026-05-19 14:29:07 from master-log.jsonl by compliance_log_render.py.*
+*Rendered 2026-05-19 20:04:04 from master-log.jsonl by compliance_log_render.py.*
