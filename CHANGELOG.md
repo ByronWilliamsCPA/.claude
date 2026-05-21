@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Fixed
+
+* fix(qlty): correct `.qlty/qlty.toml` TOML scoping so `exclude_patterns`,
+  `test_patterns`, and plugin configuration are read from the correct sections;
+  adds `**/.nox/**` to `exclude_patterns` and forces `pymdown-extensions>=10.21.3`
+  via `override-dependencies` to resolve GHSA-62q4-447f-wv8h in the transitive dep
+
 ### Docs
 
 * docs(compliance): codify manifest-change classification policy in
