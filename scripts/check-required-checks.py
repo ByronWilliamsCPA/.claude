@@ -519,7 +519,7 @@ def fetch_classic_protection_contexts(
     """
     try:
         result = subprocess.run(  # nosec B603 B607
-            [  # noqa: S607 -- gh resolved via PATH; tracked: PR #74.
+            [
                 "gh",
                 "api",
                 f"repos/{repo_slug}/branches/{branch}/protection",
@@ -593,7 +593,7 @@ def _run_gh(args: list[str], timeout: int) -> tuple[str, str, int]:
     """
     try:
         result = subprocess.run(  # nosec B603 B607
-            ["gh", *args],  # noqa: S607 -- gh resolved via PATH; tracked: PR #74.
+            ["gh", *args],
             capture_output=True,
             text=True,
             check=False,
@@ -803,9 +803,7 @@ def main(argv: list[str] | None = None) -> int:
         else:
             findings += diff_required_vs_effective(required, effective, provenance)
 
-    today_value = (
-        date.fromisoformat(args.today) if args.today else date.today()  # noqa: DTZ011 -- local TZ acceptable for 90-day cutoff; tracked: PR #74.
-    )
+    today_value = date.fromisoformat(args.today) if args.today else date.today()
     findings += check_registry_freshness(registry, today_value)
 
     print(json.dumps([f.to_dict() for f in findings], indent=2))
