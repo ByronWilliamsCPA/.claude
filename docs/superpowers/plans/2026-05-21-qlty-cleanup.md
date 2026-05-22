@@ -13,7 +13,7 @@ purpose: Drive qlty smells from 523 to 5 and duplication from 30.7% to 5% by fix
 
 **Architecture:** Phase 1 fixes `.qlty/qlty.toml`: three config keys are silently ignored because they live under `[plugins]` instead of top-level/`[plugins.enabled]`, causing qlty to scan every file under `.submodules/`. Phase 2 refactors the ~50 real smells using four established patterns (dispatch table, early-return/extract-method, shared helper extraction, guard-clause consolidation), with test-first commits for each high-risk PR.
 
-**Tech Stack:** Python 3.10+, qlty CLI, pytest (`pythonpath = [".", "src"]` set in pyproject.toml; no PYTHONPATH prefix needed), pre-commit
+**Tech Stack:** Python 3.10+, qlty CLI, pytest (`pythonpath = [".", "src"]` set in pyproject.toml; no PYTHONPATH prefix needed for test discovery; direct script execution still requires `PYTHONPATH=.`), pre-commit
 
 ---
 
