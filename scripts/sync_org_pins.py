@@ -132,9 +132,9 @@ def _write_registry(path: Path, registry: dict) -> None:
         "# Canonical SHA pins for org workflow source repos.\n"
         "# Updated by .github/workflows/sync-org-pins.yml.\n"
         "# Consumers should pin to current_sha.\n"
-        "# Compliance: CI-054 verifies registry matches latest tag on GitHub;\n"
-        "# CI-055 verifies consumer repos match registry current_sha;\n"
-        "# CI-056 verifies Renovate config targets org workflow sources.\n"
+        "# Compliance: CI-055 verifies registry matches latest tag on GitHub;\n"
+        "# CI-056 verifies consumer repos match registry current_sha;\n"
+        "# CI-057 verifies Renovate config targets org workflow sources.\n"
         "\n"
     )
     body = yaml.dump(registry, default_flow_style=False, sort_keys=False)

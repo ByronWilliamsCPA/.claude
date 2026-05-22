@@ -114,6 +114,6 @@ jobs:
           Updates docs/org-workflow-pins.yaml to reflect the latest semver
           tags on ByronWilliamsCPA/.github and williaby/.github.
 
-          Review the diff before merging. Once merged, CI-054 will clear on
+          Review the diff before merging. Once merged, CI-055 will clear on
           the next /repo-audit run. Consumer repos will receive Renovate PRs
           automatically after this merges."
