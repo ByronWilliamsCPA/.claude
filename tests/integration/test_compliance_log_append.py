@@ -82,7 +82,7 @@ def test_append_helper_supersede_marks_existing_entry(
         "session_date": "2026-05-17",
         "session_id": "2026-05-17T10:00:00Z-old1",
         "repo": "test-org/test-repo",
-        "repo_path": "/tmp/test",
+        "repo_path": "",
         "totals": {
             "critical": 0,
             "important": 0,
@@ -132,15 +132,31 @@ def test_supersede_handles_multiple_active_priors(
     # one active entry, so the multi-active state has to be simulated.
     fake_central.write_text(
         '{"type": "header", "schema_version": 1, "created": "2026-05-17"}\n'
-        + json.dumps({**compliance_entry, "session_id": "2026-05-17T08:00:00Z-old1"})
+        + json.dumps(
+            {
+                **compliance_entry,
+                "session_date": "2026-05-17",
+                "session_id": "2026-05-17T08:00:00Z-old1",
+            }
+        )
         + "\n"
-        + json.dumps({**compliance_entry, "session_id": "2026-05-17T09:00:00Z-old2"})
+        + json.dumps(
+            {
+                **compliance_entry,
+                "session_date": "2026-05-17",
+                "session_id": "2026-05-17T09:00:00Z-old2",
+            }
+        )
         + "\n",
         encoding="utf-8",
     )
 
     append_entry(
-        {**compliance_entry, "session_id": "2026-05-17T18:00:00Z-new3"},
+        {
+            **compliance_entry,
+            "session_date": "2026-05-17",
+            "session_id": "2026-05-17T18:00:00Z-new3",
+        },
         jsonl_path=fake_central,
         render=False,
     )
@@ -176,13 +192,23 @@ def test_supersede_skips_corrupted_jsonl_lines(
     fake_central.write_text(
         '{"type": "header", "schema_version": 1, "created": "2026-05-17"}\n'
         "{not valid json on this line}\n"
-        + json.dumps({**compliance_entry, "session_id": "2026-05-17T08:00:00Z-old1"})
+        + json.dumps(
+            {
+                **compliance_entry,
+                "session_date": "2026-05-17",
+                "session_id": "2026-05-17T08:00:00Z-old1",
+            }
+        )
         + "\n",
         encoding="utf-8",
     )
 
     append_entry(
-        {**compliance_entry, "session_id": "2026-05-17T18:00:00Z-new2"},
+        {
+            **compliance_entry,
+            "session_date": "2026-05-17",
+            "session_id": "2026-05-17T18:00:00Z-new2",
+        },
         jsonl_path=fake_central,
         render=False,
     )

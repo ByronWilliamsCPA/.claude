@@ -8,6 +8,7 @@ This module provides:
 """
 
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -163,19 +164,24 @@ def setup_logging() -> None:
 
 
 @pytest.fixture
-def compliance_entry() -> dict:
+def compliance_entry() -> dict[str, Any]:
     """Minimal valid compliance log entry for unit and integration tests.
 
-    Keys match the schema enforced by scripts.compliance_log_common.validate_entry.
+    Includes all fields written by the compliance audit tool. Required fields
+    (schema_version, session_date, session_id, repo) are validated by
+    scripts.compliance_log_common.validate_entry.
+
     Tests that need a different repo, date, or totals should override specific
-    keys rather than duplicating this fixture.
+    keys via spread rather than duplicating this fixture. Nested dicts like
+    ``totals`` are new objects on each fixture call; shallow spread is safe
+    provided callers do not mutate nested values in place.
     """
     return {
         "schema_version": 1,
         "session_date": "2026-05-16",
         "session_id": "2026-05-16T19:42:11Z-fdc2",
         "repo": "ByronWilliamsCPA/llc-manager",
-        "repo_path": "/home/byron/dev/llc-manager",
+        "repo_path": "",
         "audit_mode": "interactive",
         "repo_type": "python-app",
         "visibility": "public",

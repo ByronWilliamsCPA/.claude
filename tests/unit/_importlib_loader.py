@@ -26,18 +26,30 @@ def load_script(script_name: str, module_name: str) -> ModuleType:
     """Load a hyphenated script file as a Python module.
 
     Args:
-        script_name: Filename under scripts/, e.g. "check-repo-compliance.py".
+        script_name: Filename under scripts/ with no path separators,
+            e.g. "check-repo-compliance.py".
         module_name: Identifier to register in sys.modules, e.g.
             "check_repo_compliance". Must be a valid Python identifier.
 
     Returns:
-        The loaded module object, cached after first load.
+        The loaded module object. Results are cached for the process
+        lifetime via functools.cache. Callers sharing a pytest session
+        will receive the same module object; module-level globals mutated
+        in one test remain visible in subsequent tests.
+
+    Note:
+        Registers the module in sys.modules as a side effect.
     """
+    if "/" in script_name or "\\" in script_name:
+        msg = f"script_name must not contain path separators: {script_name!r}"
+        raise ValueError(msg)
     script_path = _PROJECT_ROOT / "scripts" / script_name
     spec = importlib.util.spec_from_file_location(module_name, script_path)
-    assert spec is not None, f"Script not found: {script_path}"
+    if spec is None:
+        raise FileNotFoundError(f"Script not found: {script_path}")
     module = importlib.util.module_from_spec(spec)
     sys.modules[module_name] = module
-    assert isinstance(spec.loader, importlib.abc.Loader)
+    if not isinstance(spec.loader, importlib.abc.Loader):
+        raise TypeError(f"No usable loader for {script_path}")
     spec.loader.exec_module(module)
     return module

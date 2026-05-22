@@ -94,7 +94,7 @@ def _sweep_env(
         Dict ready for subprocess.run(env=...).
     """
     env = {
-        "PATH": os.environ["PATH"],
+        "PATH": os.environ.get("PATH", ""),
         "CATALOG": str(catalog),
     }
     if log_path is not None:
