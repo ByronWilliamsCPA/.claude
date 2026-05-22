@@ -31,7 +31,7 @@ def find_existing_repo_ruleset(repo_slug: str, name: str) -> int | None:
         Integer ruleset id if found, else None.
     """
     out = subprocess.check_output(
-        ["gh", "api", f"repos/{repo_slug}/rulesets", "--jq", ".[] | {id, name}"],  # noqa: S607
+        ["gh", "api", f"repos/{repo_slug}/rulesets", "--jq", ".[] | {id, name}"],
         text=True,
         timeout=_GH_TIMEOUT_SECONDS,
     )

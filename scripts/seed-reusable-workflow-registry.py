@@ -126,7 +126,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument(
         "--today",
-        default=date.today().isoformat(),  # noqa: DTZ011 -- local TZ acceptable for daily seed timestamp; tracked: PR #74.
+        default=date.today().isoformat(),
     )
     args = parser.parse_args(argv)
     scan_org_repo(args.clone_path, args.org_slug, args.output, args.today)
