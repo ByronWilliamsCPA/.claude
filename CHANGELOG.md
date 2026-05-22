@@ -2,7 +2,28 @@
 
 ## Unreleased
 
+### Added
+
+* feat(compliance): add CI-052, CI-053, and CI-054 to `docs/standards-manifest.yaml`.
+  CI-052 gates CodeRabbit `request_changes_workflow` (must be absent or false) to
+  prevent bot-submitted CHANGES_REQUESTED reviews from blocking merges on solo-dev
+  repos with `required_approving_review_count: 0`. CI-053 enforces that mutation
+  testing workflows trigger only on `schedule:` (and optionally `workflow_dispatch:`),
+  rejecting `pull_request` or `push` triggers that cause excessive run frequency.
+  CI-054 verifies Codecov reports line coverage >= 80% and branch coverage >= 70%
+  on the default branch, with a visibility gate (private repos returning 404 pass)
+  and a no-data gate (null totals emit a finding). Updates
+  `.claude/agents/devops-deployment-agent.md` with the `codecov_coverage` check
+  implementation guidance for the devops audit agent.
+
 ### Fixed
+
+* fix(manifest): tighten CI-052/053/054 manifest entries based on PR review --
+  narrow CI-053 verify directive to reject any `on:` trigger beyond `schedule:` and
+  `workflow_dispatch:` (not just `pull_request`/`push`); add division-by-zero guard
+  to CI-054 branch coverage formula when `totals.branches` is zero or null; align
+  CI numbering references in `docs/superpowers/plans/2026-05-21-org-workflow-pin-tracking.md`
+  to match actual assigned IDs (CI-055/056/057 not CI-052/053/054).
 
 * fix(qlty): correct `.qlty/qlty.toml` TOML scoping so `exclude_patterns`,
   `test_patterns`, and plugin configuration are read from the correct sections;
