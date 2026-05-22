@@ -618,11 +618,13 @@ ignore-vuln = [
 # Note: UV now recommends using [dependency-groups] instead of dev-dependencies
 # We use [project.optional-dependencies] for dev dependencies (PEP 621 standard)
 
-# Force-bump transitive deps with known advisories. idna 3.11 carries GHSA-65pc-fj4g-8rjx;
-# the advisory's fix version is 3.15. Anyio + httpx pull idna in as a transitive without
-# an upper bound; we override here so the resolved lock pulls 3.15+ and pip-audit stops
-# flagging the vulnerability.
-override-dependencies = ["idna>=3.15"]
+# Force-bump transitive deps with known advisories.
+# idna 3.11 carries GHSA-65pc-fj4g-8rjx; the advisory's fix version is 3.15. Anyio + httpx
+# pull idna in as a transitive without an upper bound; we override here so the resolved lock
+# pulls 3.15+ and pip-audit stops flagging the vulnerability.
+# pymdown-extensions 10.21.2 carries GHSA-62q4-447f-wv8h; the advisory's fix version is
+# 10.21.3. mkdocs-material pulls this in as a transitive dep without an upper bound.
+override-dependencies = ["idna>=3.15", "pymdown-extensions>=10.21.3"]
 
 # Package Index Configuration
 # Google Assured OSS as primary source with PyPI fallback

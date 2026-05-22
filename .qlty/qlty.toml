@@ -4,9 +4,6 @@
 
 config_version = "0"
 
-[plugins]
-enabled = ["ruff", "basedpyright", "bandit"]
-
 # File patterns to completely exclude from all analysis
 exclude_patterns = [
     "*.log",
@@ -26,6 +23,7 @@ exclude_patterns = [
     "**/models/**",
     "**/.git/**",
     "**/.submodules/**",
+    "**/.nox/**",
 ]
 
 # Patterns to identify test files for enhanced analysis
@@ -34,6 +32,15 @@ test_patterns = [
     "**/test_*.py",
     "**/*_test.py",
 ]
+
+# ============================================================================
+# Plugin Configuration
+# ============================================================================
+
+[plugins.enabled]
+ruff = "latest"
+basedpyright = "latest"
+bandit = "latest"
 
 # ============================================================================
 # Python Linting and Formatting - Ruff
@@ -109,9 +116,9 @@ file_complexity.threshold = 750
 # ============================================================================
 # Note on Security Scanning
 # ============================================================================
-# bandit runs in two places: as a qlty plugin (IDE feedback via [plugins] above)
-# and as a pre-commit hook (commit enforcement via .pre-commit-config.yaml).
-# The pre-commit hook is authoritative for CI; qlty provides faster local feedback.
+# bandit runs in two places: as a qlty plugin and as a pre-commit hook
+# (commit enforcement via .pre-commit-config.yaml). The pre-commit hook is
+# authoritative for CI; qlty provides faster local feedback.
 #
 # Other security tools run only via pre-commit:
 # - detect-secrets: Secrets detection
