@@ -15,18 +15,14 @@ _MAX_TOTAL_LEN = 254
 def validate_email(address: str | None) -> bool:
     """Return True if address is a syntactically valid email address.
 
-    Validation rules (in order):
-    1. Must not be None and must be a str
-    2. Must not be empty or whitespace-only
-    3. Total length must be <= 254 characters
-    4. Local part (before @) must be <= 64 characters
-    5. Must match the RFC 5321 simplified pattern
+    Validates against RFC 5321 length limits (254 total, 64 local part) and a
+    simplified RFC 5321 pattern. Returns False for None or empty input.
 
     Args:
         address: Email address to validate, or None.
 
     Returns:
-        True if the address passes all validation rules, False otherwise.
+        True if the address is valid, False otherwise.
     """
     if not isinstance(address, str) or not address.strip():
         return False

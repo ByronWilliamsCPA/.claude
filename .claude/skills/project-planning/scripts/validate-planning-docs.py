@@ -91,37 +91,14 @@ def check_cross_references(content: str, filepath: Path, docs_dir: Path) -> list
     return issues
 
 
-def validate_pvs(content: str, filepath: Path) -> list[str]:
-    """Validate Project Vision & Scope document."""
-    issues = []
-
-    # Check length (target 500-800, max 1000)
-    word_count = count_words(content)
-    if word_count > 1000:
-        issues.append(f"{filepath}: Too long ({word_count} words, max 1000)")
-
-    # Required sections
-    required = ["Problem", "Solution", "Scope", "Constraints"]
-    issues.extend(check_required_sections(content, filepath, required))
-
-    # TL;DR
-    issues.extend(check_tldr(content, filepath))
-
-    # Placeholders
-    issues.extend(check_placeholders(content, filepath))
-
-    return issues
-
-
 def _validate_doc(
     content: str,
     filepath: Path,
     *,
-    name: str,
     max_words: int,
     required_sections: list[str],
 ) -> list[str]:
-    """Validate any planning doc: enforce max_words word-count cap, required_sections presence, TL;DR block, and placeholder removal."""
+    """Validate a planning doc: word count, sections, TL;DR, placeholder check."""
     issues: list[str] = []
     word_count = count_words(content)
     if word_count > max_words:
@@ -132,12 +109,21 @@ def _validate_doc(
     return issues
 
 
+def validate_pvs(content: str, filepath: Path) -> list[str]:
+    """Validate Project Vision & Scope document."""
+    return _validate_doc(
+        content,
+        filepath,
+        max_words=1000,
+        required_sections=["Problem", "Solution", "Scope", "Constraints"],
+    )
+
+
 def validate_tech_spec(content: str, filepath: Path) -> list[str]:
     """Validate Technical Specification document."""
     return _validate_doc(
         content,
         filepath,
-        name="tech_spec",
         max_words=2000,
         required_sections=["Technology Stack", "Architecture", "Data Model"],
     )
@@ -148,7 +134,6 @@ def validate_roadmap(content: str, filepath: Path) -> list[str]:
     return _validate_doc(
         content,
         filepath,
-        name="roadmap",
         max_words=1500,
         required_sections=["Timeline", "Phase", "Milestone"],
     )

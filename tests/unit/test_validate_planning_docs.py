@@ -38,7 +38,6 @@ def test_validate_doc_word_count_issue() -> None:
     issues = mod._validate_doc(
         content,
         Path("fake.md"),
-        name="test_doc",
         max_words=2000,
         required_sections=["Architecture"],
     )
@@ -51,7 +50,6 @@ def test_validate_doc_no_issues_for_compliant_content() -> None:
     issues = mod._validate_doc(
         content,
         Path("fake.md"),
-        name="test_doc",
         max_words=2000,
         required_sections=["Architecture"],
     )
