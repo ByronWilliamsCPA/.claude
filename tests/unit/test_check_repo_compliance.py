@@ -1,4 +1,4 @@
-"""Unit tests for scripts/check-repo-compliance.py BP-4/BP-5 ruleset awareness."""
+"""Unit tests for check-repo-compliance.py: BP-4/BP-5 ruleset rules, CI-020/CI-021 scoring, and exempt-repo handling."""
 
 from __future__ import annotations
 
