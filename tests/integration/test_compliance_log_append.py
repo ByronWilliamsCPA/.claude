@@ -254,8 +254,6 @@ def test_atomic_supersede_marks_prior_entry_superseded(
     _atomic_supersede_and_append updates superseded_by on the prior
     active entry when a newer entry for the same key is written.
     """
-    import json
-
     from scripts.compliance_log_append import append_entry
 
     log = tmp_path / "test-log.jsonl"
@@ -265,7 +263,11 @@ def test_atomic_supersede_marks_prior_entry_superseded(
     second_entry = {**compliance_entry, "session_id": "2026-05-16T11:00:00Z-bbbb"}
     append_entry(second_entry, jsonl_path=log, render=False)
 
-    lines = [json.loads(ln) for ln in log.read_text().splitlines() if ln.strip()]
+    lines = [
+        json.loads(ln)
+        for ln in log.read_text(encoding="utf-8").splitlines()
+        if ln.strip()
+    ]
     entries = [ln for ln in lines if ln.get("type") != "header"]
     assert len(entries) == 2
     first_written = next(e for e in entries if e["session_id"].endswith("aaaa"))

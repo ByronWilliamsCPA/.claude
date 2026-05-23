@@ -143,47 +143,6 @@ def tmp_cache_dir(tmp_path: Path) -> Path:
 
 
 # ============================================================================
-# Compliance Log Fixtures
-# ============================================================================
-
-
-@pytest.fixture
-def compliance_entry() -> dict:
-    """Return a minimal valid compliance log entry dict.
-
-    Provides a dict with all 16 required top-level keys so tests can
-    build entries without repeating the full schema boilerplate.
-
-    Returns:
-        A dict representing one compliance log entry with safe defaults.
-    """
-    return {
-        "schema_version": 1,
-        "session_date": "2026-05-16",
-        "session_id": "2026-05-16T10:00:00Z-fixture",
-        "repo": "test-org/test-repo",
-        "repo_path": "/tmp/test-repo",
-        "audit_mode": "interactive",
-        "repo_type": "python-app",
-        "visibility": "public",
-        "reconciled": False,
-        "totals": {
-            "critical": 0,
-            "important": 0,
-            "suggested": 0,
-            "unclassified_candidates": 0,
-            "overrides_applied": 0,
-        },
-        "findings_by_check": [],
-        "unclassified_candidates": [],
-        "fleet_action_proposals": [],
-        "scope_expansion_flags": [],
-        "links": {},
-        "superseded_by": None,
-    }
-
-
-# ============================================================================
 # Logging Fixtures
 # ============================================================================
 
