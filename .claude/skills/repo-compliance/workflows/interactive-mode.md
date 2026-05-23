@@ -13,29 +13,50 @@ cd "$TARGET_REPO"
 git status  # confirm it is a git repo
 ```
 
-Read `~/.claude/docs/standards-manifest.yaml`.
+Read `~/.claude/docs/standards-manifest.yaml`. Note its `last_updated` value as MANIFEST_VERSION.
 Read `$TARGET_REPO/.claude/compliance-overrides.md` if it exists; extract the Check ID column.
 
 **Load pre-fetched catalog data (if available):**
 Read `~/.claude/docs/reference/github-repos.json` if it exists. Derive the repo slug from the target repo's `git remote get-url origin` output (format: `org/repo-name`). Find the matching entry in `repos[]` by `org` + `name`. If found, extract the `review` object. Attach it to each domain agent's prompt under the key `cachedReview` so the agent can skip redundant GitHub API calls. Include the catalog `_meta.lastUpdated` date; if it is older than 30 days, flag cached data as potentially stale.
+
+**Load passing-agent cache (delta mode):**
+Read `~/.claude/docs/compliance-reports/state/last-audited.json` if it exists.
+Look up the entry keyed by the repo slug (format: `org/repo-name`).
+If an entry exists and its `manifest_version` matches MANIFEST_VERSION AND the user did not pass `--force`:
+- Set SKIP_DOMAINS to the list of domains in `clean_domains` for that entry.
+- Print: `Delta mode: skipping clean domains from last audit (${date}): ${SKIP_DOMAINS}`
+- Do NOT dispatch agents for domains in SKIP_DOMAINS.
+If no entry exists, or `manifest_version` differs, or `--force` was passed:
+- Set SKIP_DOMAINS to empty (full audit).
 
 ### 2. Parallel Audit Dispatch
 
 Use TodoWrite to track agent dispatch. Dispatch all domain agents in parallel using the Agent tool. Pass each agent the coordinator prompt template from SKILL.md populated with:
 - Mode: audit
 - Target repo: resolved absolute path
-- Manifest checks: the subset for that domain
+- Manifest checks: the subset for that domain (domain-relevant entries only, not the full manifest)
 - Override entries: IDs from compliance-overrides.md
+- cachedReview: only the fields relevant to that agent's domain (see domain field map below)
 
-Agents to dispatch simultaneously:
-- `repo-foundations-auditor` (FOUND-* checks)
-- `python-toolchain-auditor` (TOOL-* checks)
-- `pre-commit-auditor` (PC-* checks)
-- `devops-deployment-agent` in CI audit mode (CI-* checks)
-- `claude-docs-auditor` (CLAUDE-* checks)
-- `ossf-compliance-auditor` (OSSF-* and SCORECARD:* checks)
-- `general-compliance-auditor` (all checks as negative filter, freeform review)
-- `mkdocs-auditor` in audit mode (MKDOCS-* checks; skipped automatically when no mkdocs.yml is present in the project root)
+Domain-to-cachedReview field map (pass only these keys per agent):
+- `repo-foundations-auditor`: `foundations`, `codeowners`, `license`
+- `python-toolchain-auditor`: `toolchain`, `dependabot`
+- `pre-commit-auditor`: `preCommit`
+- `devops-deployment-agent`: `workflows`, `ci`
+- `claude-docs-auditor`: `claudeDocs`
+- `ossf-compliance-auditor`: `scorecard`, `ossfBadge`, `codeql`
+- `mkdocs-auditor`: `mkdocs`
+- `general-compliance-auditor`: full cachedReview (freeform review needs full context)
+
+Agents to dispatch simultaneously (skip any whose domain is in SKIP_DOMAINS):
+- `repo-foundations-auditor` (FOUND-* checks) -- domain: `foundations`
+- `python-toolchain-auditor` (TOOL-* checks) -- domain: `toolchain`
+- `pre-commit-auditor` (PC-* checks) -- domain: `pre_commit`
+- `devops-deployment-agent` in CI audit mode (CI-* checks) -- domain: `ci`
+- `claude-docs-auditor` (CLAUDE-* checks) -- domain: `claude_docs`
+- `ossf-compliance-auditor` (OSSF-* and SCORECARD:* checks) -- domain: `ossf`
+- `general-compliance-auditor` (all checks as negative filter, freeform review) -- never skipped
+- `mkdocs-auditor` in audit mode (MKDOCS-* checks; skipped automatically when no mkdocs.yml is present in the project root) -- domain: `mkdocs`
 
 ### 3. Merge and Present Findings
 
@@ -129,3 +150,37 @@ Dispatch `compliance-retrospective` with: session date, target repo path, all do
 
 After it writes the lessons-learned doc, print:
 "Retrospective written to docs/compliance-reports/lessons-learned/<date>.md; review before the next scheduled run."
+
+### 8. Update Passing-Agent Cache
+
+After the retrospective completes, update `~/.claude/docs/compliance-reports/state/last-audited.json`:
+
+```python
+import json, os, datetime
+
+cache_path = os.path.expanduser(
+    "~/.claude/docs/compliance-reports/state/last-audited.json"
+)
+cache = json.load(open(cache_path)) if os.path.exists(cache_path) else {}
+
+# Determine which domains produced zero findings in this run.
+# A domain is clean only if it was dispatched AND returned no FINDINGs.
+# Skipped domains (SKIP_DOMAINS) retain their clean status from the prior entry.
+prior_clean = cache.get(REPO_SLUG, {}).get("clean_domains", [])
+dispatched_clean = [d for d in DISPATCHED_DOMAINS if DOMAIN_FINDINGS[d] == 0]
+# Merge: prior clean domains + newly confirmed clean; remove any that had findings
+newly_dirty = [d for d in DISPATCHED_DOMAINS if DOMAIN_FINDINGS[d] > 0]
+merged_clean = sorted(set(prior_clean + dispatched_clean) - set(newly_dirty))
+
+cache[REPO_SLUG] = {
+    "manifest_version": MANIFEST_VERSION,
+    "audited_at": datetime.date.today().isoformat(),
+    "clean_domains": merged_clean,
+    "open_findings": [f["id"] for f in ALL_FINDINGS]
+}
+
+with open(cache_path, "w") as f:
+    json.dump(cache, f, indent=2)
+```
+
+Print: `Cache updated: ${REPO_SLUG} -- clean domains: ${merged_clean}`

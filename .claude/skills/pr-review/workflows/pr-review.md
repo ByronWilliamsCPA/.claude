@@ -185,13 +185,17 @@ Analyze `CHANGED_FILES` and the first 50 lines of `PR_DIFF` to classify:
 | Docstrings or `#` comment lines changed | comment-analyzer |
 | `.sh` / `.bash` files present | code-reviewer (shell mode) |
 | `.yml` / `.yaml` / `.json` / `.toml` / `.cfg` only | code-reviewer (config mode) |
-| `.md` / `.rst` / `.txt` only | comment-analyzer only |
+| `.md` / `.rst` / `.txt` only | comment-analyzer only; skip Agent C and Agent D |
 
 **Always active regardless of content:**
 
 - `code-reviewer` (CLAUDE.md compliance + bugs)
-- `git-history-agent` (blame + history context on modified files)
-- `prior-pr-agent` (past review comments on same files)
+- `git-history-agent` (blame + history context on modified files) -- **skip for docs-only PRs**
+- `prior-pr-agent` (past review comments on same files) -- **skip for docs-only PRs**
+
+Docs-only definition: every changed file has a `.md`, `.rst`, or `.txt` extension. A single
+non-doc file in the diff (e.g., a config change alongside a README update) makes the PR
+non-docs-only and restores Agents C and D.
 
 **Size classification:**
 
