@@ -822,6 +822,9 @@ def _parse_args(argv: list[str] | None) -> argparse.Namespace:
 
 def main(argv: list[str] | None = None) -> int:
     args = _parse_args(argv)
+    args.repo_path = args.repo_path.resolve()
+    args.manifest = args.manifest.resolve()
+    args.registry = args.registry.resolve()
 
     try:
         required, meta = load_required_checks(args.manifest, repo_type=args.repo_type)

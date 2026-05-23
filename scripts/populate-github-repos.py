@@ -27,6 +27,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -72,8 +73,14 @@ def fetch_org_repos(org: str) -> list[dict[str, Any]]:
             path emits an actionable message to stderr before exiting.
     """
     gh_bin = os.environ.get("GH_BINARY", "gh")
+    resolved_gh_bin = shutil.which(gh_bin)
+    if resolved_gh_bin is None:
+        sys.exit(
+            f"error: `{gh_bin}` not found on PATH. Install GitHub CLI "
+            f"(https://cli.github.com/) or set GH_BINARY to the absolute path."
+        )
     cmd: list[str] = [
-        gh_bin,
+        resolved_gh_bin,
         "repo",
         "list",
         org,
