@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""parse_coverage.py — Parse coverage.json into structured gap report."""
+"""parse_coverage.py: parse coverage.json into a structured gap report."""
 
 import ast
 import json
