@@ -340,6 +340,42 @@ def apply(
         )
 
 
+_POLICY_EXCEPTION_EXIT: dict[type[Exception], int] = {
+    SoloDevViolationError: EXIT_SOLO_DEV_VIOLATION,
+    TargetRuleMismatchError: EXIT_TARGET_RULE_MISMATCH,
+    RulesetDriftError: EXIT_DRIFT_DETECTED,
+}
+
+_POLICY_EXCEPTION_PREFIX: dict[type[Exception], str] = {
+    SoloDevViolationError: "REFUSED",
+    TargetRuleMismatchError: "REFUSED",
+    RulesetDriftError: "DRIFT",
+}
+
+
+def _gh_error_message(exc: Exception) -> str:
+    """Return a human-readable message for a gh-related subprocess exception.
+
+    Args:
+        exc: The caught exception (CalledProcessError, TimeoutExpired,
+            JSONDecodeError, or FileNotFoundError).
+
+    Returns:
+        A single-line error string suitable for stderr.
+    """
+    if isinstance(exc, subprocess.TimeoutExpired):
+        return f"gh command timed out after {_GH_TIMEOUT_SECONDS}s: {exc}"
+    if isinstance(exc, json.JSONDecodeError):
+        return f"gh produced unparseable JSON output: {exc}"
+    if isinstance(exc, FileNotFoundError):
+        return (
+            f"gh CLI not on PATH: {exc}"
+            if exc.filename == "gh"
+            else f"body file not found: {exc.filename}"
+        )
+    return f"gh command failed: {exc}"
+
+
 def main(argv: list[str]) -> int:
     """CLI entry point.
 
@@ -371,39 +407,17 @@ def main(argv: list[str]) -> int:
     args = parser.parse_args(argv)
     try:
         apply(args.org, args.body, args.enforcement, args.catalog, args.dry_run)
-    except SoloDevViolationError as e:
-        print(f"REFUSED: {e}", file=sys.stderr)
-        return EXIT_SOLO_DEV_VIOLATION
-    except TargetRuleMismatchError as e:
-        print(f"REFUSED: {e}", file=sys.stderr)
-        return EXIT_TARGET_RULE_MISMATCH
-    except RulesetDriftError as e:
-        print(f"DRIFT: {e}", file=sys.stderr)
-        return EXIT_DRIFT_DETECTED
-    except subprocess.CalledProcessError as e:
-        print(f"gh command failed: {e}", file=sys.stderr)
-        return EXIT_GH_FAILURE
-    except subprocess.TimeoutExpired as e:
-        print(
-            f"gh command timed out after {_GH_TIMEOUT_SECONDS}s: {e}",
-            file=sys.stderr,
-        )
-        return EXIT_GH_FAILURE
-    except json.JSONDecodeError as e:
-        # gh output was not parseable JSON. Most often this is a partial
-        # response during a network blip, or gh emitting a deprecation
-        # warning to stdout intermixed with --jq output.
-        print(f"gh produced unparseable JSON output: {e}", file=sys.stderr)
-        return EXIT_GH_FAILURE
-    except FileNotFoundError as e:
-        # Distinguish a missing gh binary from a missing --body file. The
-        # body file is read first (apply() opens it before any subprocess
-        # call), so its filename will be the body path; the gh binary
-        # surfaces as filename == "gh" from the subprocess module.
-        if e.filename == "gh":
-            print(f"gh CLI not on PATH: {e}", file=sys.stderr)
-        else:
-            print(f"body file not found: {e.filename}", file=sys.stderr)
+    except (SoloDevViolationError, TargetRuleMismatchError, RulesetDriftError) as exc:
+        prefix = _POLICY_EXCEPTION_PREFIX.get(type(exc), "ERROR")
+        print(f"{prefix}: {exc}", file=sys.stderr)
+        return _POLICY_EXCEPTION_EXIT.get(type(exc), EXIT_GH_FAILURE)
+    except (
+        subprocess.CalledProcessError,
+        subprocess.TimeoutExpired,
+        json.JSONDecodeError,
+        FileNotFoundError,
+    ) as e:
+        print(_gh_error_message(e), file=sys.stderr)
         return EXIT_GH_FAILURE
     return EXIT_OK
 
