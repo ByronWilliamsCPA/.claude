@@ -146,6 +146,7 @@ def test_check_repo_marks_exempt_repos_na_for_branch_protection(monkeypatch) -> 
     assert result.bp_4 == "N/A"
     assert result.bp_5 == "N/A"
     assert result.ci_020 == "PASS"
+    assert result.ci_021 == "N/A"
     assert not mock_sig_calls, (
         "_signatures_enforced must not be called for exempt repos"
     )
@@ -165,31 +166,36 @@ def test_check_repo_fails_ci020_when_renovate_missing(monkeypatch) -> None:
 
 
 @pytest.mark.unit
-def test_admins_enforced_returns_false_when_bypass_actor_id_5_present(
+def test_admins_enforced_uses_repo_path_for_repository_scoped_ruleset(
     monkeypatch,
 ) -> None:
-    """_admins_enforced returns False when a RepositoryRole actor_id=5 bypass exists."""
-    ruleset_with_bypass = json.dumps(
-        {
-            "bypass_actors": [
-                {
-                    "actor_type": "RepositoryRole",
-                    "actor_id": 5,
-                    "bypass_mode": "always",
-                }
-            ],
-            "rules": [],
-        }
+    """_admins_enforced resolves repos/ URL for Repository-scoped rulesets."""
+    repo_rules = json.dumps(
+        [
+            {
+                "ruleset_source_type": "Repository",
+                "ruleset_source": "testorg",
+                "ruleset_id": 77,
+                "type": "required_signatures",
+            }
+        ]
     )
+    clean_ruleset = json.dumps({"bypass_actors": [], "rules": []})
+    seen_paths: list[str] = []
 
-    def fake_gh(path: str):
+    def fake_gh(path: str) -> tuple[str, None]:
+        seen_paths.append(path)
         if "/rules/branches/" in path:
-            return (_RULESET_RULES_FIXTURE, None)
-        return (ruleset_with_bypass, None)
+            return (repo_rules, None)
+        return (clean_ruleset, None)
 
     monkeypatch.setattr(crc, "gh", fake_gh)
     result = crc._admins_enforced("testorg", "testrepo", "main")
-    assert result is False
+    assert result is True
+    ruleset_calls = [p for p in seen_paths if "rulesets/77" in p]
+    assert any("repos/testorg/testrepo/rulesets/77" in p for p in ruleset_calls), (
+        f"Expected repos/...rulesets path for Repository-scoped ruleset, got: {ruleset_calls}"
+    )
 
 
 @pytest.mark.unit
