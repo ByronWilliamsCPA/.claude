@@ -16,6 +16,7 @@ from scripts.setup_org_rulesets import (
     EXIT_OK,
     EXIT_SOLO_DEV_VIOLATION,
     SoloDevViolationError,
+    _gh_error_message,
     validate_solo_dev_safe,
 )
 
@@ -121,24 +122,12 @@ def main(argv: list[str]) -> int:
     except SoloDevViolationError as e:
         print(f"REFUSED: {e}", file=sys.stderr)
         return EXIT_SOLO_DEV_VIOLATION
-    except subprocess.CalledProcessError as e:
-        print(f"gh command failed: {e}", file=sys.stderr)
-        return EXIT_GH_FAILURE
-    except subprocess.TimeoutExpired as e:
-        print(
-            f"gh command timed out after {_GH_TIMEOUT_SECONDS}s: {e}",
-            file=sys.stderr,
-        )
-        return EXIT_GH_FAILURE
-    except FileNotFoundError as e:
-        # Distinguish a missing gh binary from a missing --body file. The
-        # body file is read first (apply() opens it before any subprocess
-        # call), so its filename will be the body path; the gh binary
-        # surfaces as filename == "gh" from the subprocess module.
-        if e.filename == "gh":
-            print(f"gh CLI not on PATH: {e}", file=sys.stderr)
-        else:
-            print(f"body file not found: {e.filename}", file=sys.stderr)
+    except (
+        subprocess.CalledProcessError,
+        subprocess.TimeoutExpired,
+        FileNotFoundError,
+    ) as e:
+        print(_gh_error_message(e), file=sys.stderr)
         return EXIT_GH_FAILURE
     return EXIT_OK
 
