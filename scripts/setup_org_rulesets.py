@@ -385,9 +385,9 @@ def main(argv: list[str]) -> int:
     try:
         apply(args.org, args.body, args.enforcement, args.catalog, args.dry_run)
     except (SoloDevViolationError, TargetRuleMismatchError, RulesetDriftError) as exc:
-        prefix = _POLICY_EXCEPTION_PREFIX[type(exc)]
+        prefix = _POLICY_EXCEPTION_PREFIX.get(type(exc), "ERROR")
         print(f"{prefix}: {exc}", file=sys.stderr)
-        return _POLICY_EXCEPTION_EXIT[type(exc)]
+        return _POLICY_EXCEPTION_EXIT.get(type(exc), EXIT_GH_FAILURE)
     except subprocess.CalledProcessError as e:
         print(f"gh command failed: {e}", file=sys.stderr)
         return EXIT_GH_FAILURE

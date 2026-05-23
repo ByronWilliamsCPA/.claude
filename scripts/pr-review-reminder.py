@@ -147,8 +147,8 @@ def _should_remind(prompt: str) -> bool:
     if not prompt or EXPLICIT_COMMAND_RE.search(prompt):
         return False
     # Normalize to lowercase with collapsed whitespace, then substring-match
-    # against the phrase tuple. No regex over user input beyond the PR URL
-    # check above, so no ReDoS surface.
+    # against the phrase tuple. The only regex over user input is PR_URL_RE
+    # in the return expression below, so the ReDoS surface is bounded.
     normalized = _WHITESPACE_RUN.sub(" ", prompt.lower())
     return PR_URL_RE.search(prompt) is not None or any(
         phrase in normalized for phrase in PR_PHRASES
