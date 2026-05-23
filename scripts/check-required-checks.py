@@ -385,6 +385,10 @@ def check_registry_freshness(
         if parse_finding is not None:
             findings.append(parse_finding)
             continue
+        # `last_verified is not None` is always True here: the _LastVerifiedResult
+        # invariant guarantees the (date, None) branch when parse_finding is None.
+        # The guard exists because BasedPyright narrows on the second element and
+        # does not deduce last_verified: date from parse_finding being None.
         if last_verified is not None and last_verified < cutoff:
             findings.append(
                 Finding(
@@ -457,7 +461,7 @@ def load_required_checks(
     """
     if not manifest_path.exists():
         raise FileNotFoundError(f"Manifest not found: {manifest_path}")
-    doc = _yaml_safe().load(manifest_path.read_text())
+    doc = _yaml_safe().load(manifest_path.read_text(encoding="utf-8"))
     if doc is None:
         return set(), {}
     if not isinstance(doc, dict):
@@ -488,7 +492,7 @@ def load_registry(registry_path: Path) -> dict[str, dict[str, Any]]:
     """
     if not registry_path.exists():
         return {}
-    doc = _yaml_safe().load(registry_path.read_text())
+    doc = _yaml_safe().load(registry_path.read_text(encoding="utf-8"))
     if doc is None:
         return {}
     if not isinstance(doc, dict):
@@ -806,7 +810,8 @@ def _parse_args(argv: list[str] | None) -> argparse.Namespace:
     )
     parser.add_argument(
         "--today",
-        default="",
+        default=None,
+        type=date.fromisoformat,
         help="Override today's date (YYYY-MM-DD) for testing",
     )
     args = parser.parse_args(argv)
@@ -851,7 +856,7 @@ def main(argv: list[str] | None = None) -> int:
         else:
             findings += diff_required_vs_effective(required, effective, provenance)
 
-    today_value = date.fromisoformat(args.today) if args.today else date.today()
+    today_value = args.today if args.today is not None else date.today()
     findings += check_registry_freshness(registry, today_value)
 
     print(json.dumps([f.to_dict() for f in findings], indent=2))

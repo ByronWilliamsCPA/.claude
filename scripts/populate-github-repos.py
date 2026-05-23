@@ -267,6 +267,11 @@ def refresh_catalog(
     """
     original_text, catalog = _load_catalog(catalog_path)
 
+    for i, r in enumerate(catalog["repos"]):
+        if not isinstance(r, dict) or "org" not in r or "name" not in r:
+            sys.exit(
+                f"error: catalog repos[{i}] is malformed (missing 'org' or 'name'): {r!r}"
+            )
     existing_by_slug: dict[tuple[str, str], dict[str, Any]] = {
         (r["org"], r["name"]): r for r in catalog["repos"]
     }

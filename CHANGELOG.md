@@ -30,6 +30,12 @@
   adds `**/.nox/**` to `exclude_patterns` and forces `pymdown-extensions>=10.21.3`
   via `override-dependencies` to resolve GHSA-62q4-447f-wv8h in the transitive dep
 
+* fix(scripts): eliminate mutable accumulator out-params in
+  `scripts/check-required-checks.py` and `scripts/check_type_hints.py`; introduce
+  `_LastVerifiedResult` discriminated-union type alias for `_parse_last_verified`
+  return values and refactor `_validate_and_include_entry` to return a value instead
+  of mutating a caller-provided accumulator
+
 ### Docs
 
 * docs(compliance): codify manifest-change classification policy in

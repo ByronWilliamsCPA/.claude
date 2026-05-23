@@ -132,8 +132,13 @@ def check_file(file_path: Path) -> tuple[bool, str]:
     """
     try:
         content = file_path.read_text(encoding="utf-8")
-    except Exception as e:
+    except OSError as e:
         return False, f"Error reading file: {e}"
+
+    try:
+        ast.parse(content)
+    except SyntaxError as e:
+        return False, f"Syntax error in file: {e}"
 
     has_union = has_union_pipe_syntax(content)
     has_import = has_future_annotations_import(content)
@@ -237,8 +242,14 @@ def add_future_import(file_path: Path) -> bool:
         # sonar: false positive pythonsecurity:S2083 (AZ1eBjvzS1usNdOdvc1l): path reconstructed from trusted CWD
         safe_path.write_text("".join(lines), encoding="utf-8")
         return True
-    except Exception as e:
-        print(f"Error adding import to {file_path}: {e}", file=sys.stderr)
+    except SyntaxError as e:
+        print(
+            f"Cannot add import to {file_path}: file has syntax errors: {e}",
+            file=sys.stderr,
+        )
+        return False
+    except OSError as e:
+        print(f"Error accessing {file_path}: {e}", file=sys.stderr)
         return False
 
 
