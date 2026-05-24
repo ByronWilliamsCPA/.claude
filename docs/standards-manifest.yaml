@@ -1,6 +1,6 @@
 # docs/standards-manifest.yaml
 version: "1.0"
-last_updated: "2026-05-21"
+last_updated: "2026-05-23"
 
 # verify field is a hint to the domain agent, not executable DSL.
 # Agents interpret it using their own tools (Grep, Read, Glob, Bash).
@@ -488,6 +488,34 @@ checks:
       secrets. Each williaby repo using SonarCloud MUST have a repo-level SONAR_TOKEN
       set individually. This is correct and expected, not a smell.
     override_eligible: false
+
+  - id: CI-003c
+    domain: ci
+    severity: important
+    description: >-
+      No inline SonarCloud scanning in ci.yml -- sonarqube-scan-action and
+      sonarqube-quality-gate-action belong in sonarcloud.yml (CI-003) or in a
+      reusable-workflow DEFINITION (see NOT APPLICABLE clause), never in ci.yml itself
+    verify: |
+      Check .github/workflows/ci.yml for any of the following action references
+      (case-insensitive match; any version, any pin: tag, branch, or SHA):
+        - SonarSource/sonarqube-scan-action
+        - SonarSource/sonarqube-quality-gate-action
+        - SonarSource/sonarcloud-github-action
+      FAIL if any of these appear in ci.yml. They belong in sonarcloud.yml, which calls
+      the org reusable workflow at
+      ByronWilliamsCPA/.github/.github/workflows/python-sonarcloud.yml. That reusable
+      workflow runs scan + quality gate internally; a second inline scan in ci.yml
+      duplicates the work and causes a race.
+      Known failure pattern: cookiecutter-python-template PR #69 -- having both a thin
+      caller in sonarcloud.yml AND an inline scan in ci.yml produced two concurrent
+      analyses for the same projectKey on the same SHA. They race in SonarCloud's
+      Compute Engine and the loser's task ID is superseded, producing a 404 from
+      sonarqube-quality-gate-action's polling step (curl exit code 22).
+      NOT APPLICABLE: this check only applies to ci.yml. The same actions appearing in
+      sonarcloud.yml itself (or in any reusable-workflow DEFINITION such as files under
+      docs/org-workflows/) are correct and expected.
+    override_eligible: true
 
   - id: CI-004
     domain: ci
