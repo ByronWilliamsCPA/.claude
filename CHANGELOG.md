@@ -4,6 +4,19 @@
 
 ### Added
 
+* feat(compliance): add CLAUDE-010 to `docs/standards-manifest.yaml`. CLAUDE-010
+  (severity important, not override-eligible) gates the `$schema` field in
+  `.claude/settings.json`: when present, the field must be exactly
+  `https://json.schemastore.org/claude-code-settings.json`. A missing field is
+  allowed (the IDE extension treats absent `$schema` as opt-out of validation),
+  but any wrong value is a hard fail. Closes the gap that let the invalid slug
+  `claude-code-config.json` propagate to downstream repos through the
+  compliance pipeline. The inline-python verify clause wraps `json.loads` in
+  a `try/except (json.JSONDecodeError, OSError)` so a malformed settings file
+  fails the check cleanly rather than aborting the audit with an uncaught
+  traceback; a `notes:` field documents the intentional deviation from the
+  manifest's normal `verify:` DSL prefixes.
+
 * feat(compliance): add CI-052, CI-053, and CI-054 to `docs/standards-manifest.yaml`.
   CI-052 gates CodeRabbit `request_changes_workflow` (must be absent or false) to
   prevent bot-submitted CHANGES_REQUESTED reviews from blocking merges on solo-dev
@@ -17,6 +30,17 @@
   implementation guidance for the devops audit agent.
 
 ### Fixed
+
+* fix(claude-config): correct `$schema` URL in `.claude/settings.local.json.example`
+  and pin the canonical schema URL in the `claude-docs-auditor` "Missing
+  .claude/settings.json" remediation template. The slug `claude-code-config.json`
+  is not published on schemastore.org and causes the Claude Code IDE extension
+  to reject the file with "Settings file failed to parse", silently disabling
+  every permission rule the file declares. Two upstream sources of the bad URL
+  existed in the live tree: the example file replicated the wrong slug, and the
+  remediator template did not pin a `$schema`, leaving the agent free to infer
+  one from nearby (broken) examples. Adds an inline warning to the template
+  naming the broken slug so the agent does not guess again.
 
 * fix(manifest): tighten CI-052/053/054 manifest entries based on PR review --
   narrow CI-053 verify directive to reject any `on:` trigger beyond `schedule:` and

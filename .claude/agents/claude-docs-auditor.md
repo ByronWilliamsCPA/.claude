@@ -61,11 +61,14 @@ See `docs/response-aware-development.md` for full tagging syntax and examples.
 **Missing .claude/settings.json:** Create with a minimal permissions block:
 ```json
 {
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "permissions": {
     "allow": []
   }
 }
 ```
+
+Use the `$schema` URL above exactly. The slug `claude-code-config.json` is invalid (not published on schemastore.org); writing it instead silently disables the file in the Claude Code IDE extension, which then reports "Settings file failed to parse" and ignores every permission rule the file declares. Do not infer the URL from nearby example files; the canonical value is in `.claude/rules/settings-and-permissions.md`.
 
 Note: the allow list should be populated based on the project's actual tool usage. Flag this to the user after creation.
 
