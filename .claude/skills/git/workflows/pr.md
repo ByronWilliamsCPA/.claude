@@ -168,20 +168,25 @@ wait for the review in Step 6 to complete before showing the URL.
 
 ### 6. Run automated code review
 
-Immediately after `gh pr create` succeeds, invoke `/pr-review` with the new PR URL:
+After `gh pr create` succeeds, present the PR URL and recommend the user run the
+review in a **new session**:
 
 ```text
-/pr-review <PR URL returned by gh pr create>
+PR created: <PR URL>
+
+Run the automated review in a new session to get the best results:
+  /pr-review <PR URL>
+
+Starting a fresh session before review has two benefits:
+- Lower cost: review agents start with a cold cache instead of inheriting the
+  accumulated cache-write overhead from this implementation session.
+- Unbiased evaluation: review agents have not seen the reasoning and trade-offs
+  from this session, so they challenge assumptions independently rather than
+  anchoring on decisions already made here.
 ```
 
-This triggers GitHub Copilot review, fetches SonarQube PR-specific findings, and runs
-up to 8 parallel agents (CLAUDE.md compliance, bug scan, git-history context, prior PR
-comments, comment accuracy, silent failures, test coverage, type design). All findings
-are reported in tiers (Critical / Important / Suggested / Informational); nothing is
-filtered. Optionally posts a consolidated comment to the PR.
-
-The PR URL was already shared with the user in Step 5. Present the final review report
-to the user after the review completes.
+Do NOT invoke `/pr-review` in the current session. Hand off the PR URL and let
+the user start a new session to trigger the review.
 
 ---
 
