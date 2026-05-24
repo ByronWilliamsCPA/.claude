@@ -29,9 +29,8 @@ jobs:
     uses: ByronWilliamsCPA/.github/.github/workflows/python-security-analysis.yml@6f71aecae2c91214ca0a0a2206a36cf912aa31ac # v1.1.0
     with:
       python-version: "3.12"
-      # safety is not in this project's dev deps; pip-audit covers the same
-      # vulnerability surface and is already in [project.optional-dependencies]
-      run-safety: false
+      # safety scanner support was removed in the v1.1.0 reusable workflow;
+      # pip-audit (in [project.optional-dependencies]) covers the same surface.
       # CodeQL is handled by the dedicated codeql.yml workflow to avoid
       # duplicate runs and double Security tab entries.
       run-codeql: false
