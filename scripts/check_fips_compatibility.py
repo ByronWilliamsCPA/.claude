@@ -94,7 +94,6 @@ class FipsCodeVisitor(ast.NodeVisitor):
     def __init__(self, file_path: Path) -> None:
         self.file_path = file_path
         self.issues: list[FipsIssue] = []
-        self._in_hashlib_call = False
 
     def _check_hashlib_call(self, node: ast.Call, func_name: str) -> None:
         """Append a finding if hashlib.func_name() uses a non-FIPS hash without usedforsecurity=False.
@@ -135,9 +134,7 @@ class FipsCodeVisitor(ast.NodeVisitor):
             node: The Call AST node being visited.
             func_name: Lowercased attribute name to check against NON_FIPS_CIPHERS.
         """
-        if func_name not in NON_FIPS_CIPHERS and not any(
-            c in func_name for c in NON_FIPS_CIPHERS
-        ):
+        if not any(c in func_name for c in NON_FIPS_CIPHERS):
             return
         self.issues.append(
             FipsIssue(
@@ -151,27 +148,35 @@ class FipsCodeVisitor(ast.NodeVisitor):
         )
 
     def _check_new_call(self, node: ast.Call) -> None:
-        """Append a finding for each positional string arg to .new() that names a non-FIPS algorithm.
+        """Append a finding if the first positional arg to .new() names a non-FIPS algorithm.
+
+        Only the first positional argument is inspected because that is the
+        algorithm-name slot for the call shapes this script targets
+        (hashlib.new(name, data=...), Crypto.Cipher.{X}.new(name, ...)).
+        Inspecting all positional args would false-positive on later
+        arguments that happen to be string literals.
 
         Args:
             node: The Call AST node whose func.attr is 'new'.
         """
-        for arg in node.args:
-            if not (isinstance(arg, ast.Constant) and isinstance(arg.value, str)):
-                continue
-            algo = arg.value.lower()
-            if algo not in NON_FIPS_HASHES and algo not in NON_FIPS_CIPHERS:
-                continue
-            self.issues.append(
-                FipsIssue(
-                    file_path=self.file_path,
-                    line_number=node.lineno,
-                    severity="error",
-                    category="cipher" if algo in NON_FIPS_CIPHERS else "hash",
-                    message=f"Non-FIPS algorithm: {algo}",
-                    fix_hint="Use FIPS-approved algorithms (AES, SHA-256, etc.)",
-                )
+        if not node.args:
+            return
+        arg = node.args[0]
+        if not (isinstance(arg, ast.Constant) and isinstance(arg.value, str)):
+            return
+        algo = arg.value.lower()
+        if algo not in NON_FIPS_HASHES and algo not in NON_FIPS_CIPHERS:
+            return
+        self.issues.append(
+            FipsIssue(
+                file_path=self.file_path,
+                line_number=node.lineno,
+                severity="error",
+                category="cipher" if algo in NON_FIPS_CIPHERS else "hash",
+                message=f"Non-FIPS algorithm: {algo}",
+                fix_hint="Use FIPS-approved algorithms (AES, SHA-256, etc.)",
             )
+        )
 
     def visit_Call(self, node: ast.Call) -> None:
         """Visit function calls to detect FIPS-incompatible crypto usage."""
@@ -447,7 +452,12 @@ Examples:
         dirs_to_check.append(Path("tests"))
 
     for file_path in find_python_files(dirs_to_check):
-        if "__pycache__" in str(file_path):
+        parts = file_path.parts
+        if "__pycache__" in parts:
+            continue
+        # Skip test fixture files: they contain intentional non-FIPS code as
+        # input data for the script's own test suite, not production usage.
+        if "fixtures" in parts and "tests" in parts:
             continue
         all_issues.extend(check_python_file(file_path))
 
