@@ -207,7 +207,8 @@ When dispatching each domain agent, include in the prompt:
 Mode: <audit|remediation>
 Target repo: <absolute path>
 Manifest checks for this domain:
-<paste the relevant check entries from standards-manifest.yaml>
+<paste ONLY the check entries whose ID prefix matches this agent's domain,
+ not the full manifest. E.g., CI-* only for devops-deployment-agent.>
 Override entries (skip these check IDs):
 <paste entries from compliance-overrides.md, or "none">
 Repository context:
@@ -219,6 +220,20 @@ Repository context:
   scorecard_floor: <floor>
   scorecard_target: <target>
   scorecard_api_skip: <true|false>
+Cached review data (domain-scoped):
+<paste only the cachedReview keys relevant to this agent's domain. Key
+ names must match the `review` schema in docs/reference/github-repos.json
+ exactly (branchProtection, codecov, codeql, foundations, ossfBadge,
+ preCommit, releaseHealth, renovate, reuse, scorecard, secretScanning,
+ sonarcloud, templateDrift, toolchain, workflows):
+  repo-foundations-auditor: foundations
+  python-toolchain-auditor: toolchain, renovate
+  pre-commit-auditor: preCommit
+  devops-deployment-agent: workflows, reuse
+  claude-docs-auditor: (no relevant cachedReview keys; verify on disk)
+  ossf-compliance-auditor: scorecard, ossfBadge, codeql, secretScanning
+  mkdocs-auditor: (no relevant cachedReview keys; verify on disk)
+  general-compliance-auditor: full cachedReview>
 ```
 
 For the `ossf-compliance-auditor` specifically, also include:
