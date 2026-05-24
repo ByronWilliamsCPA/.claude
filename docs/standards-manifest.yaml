@@ -1077,6 +1077,29 @@ checks:
     verify: "ai_patterns_absent: docs/**/*.md"
     override_eligible: true
 
+  - id: CLAUDE-010
+    domain: claude_docs
+    severity: important
+    override_eligible: false
+    description: >-
+      .claude/settings.json $schema field, when present, must be exactly
+      "https://json.schemastore.org/claude-code-settings.json". The slug
+      "claude-code-config.json" is not published on schemastore.org and causes
+      the Claude Code IDE extension to reject the file with "Settings file
+      failed to parse", silently disabling every permission rule it declares.
+    verify: >-
+      Run: python3 -c "import json, pathlib, sys;
+      p = pathlib.Path('.claude/settings.json');
+      s = json.loads(p.read_text()).get('$schema') if p.exists() else None;
+      sys.exit(0 if s is None or s == 'https://json.schemastore.org/claude-code-settings.json' else 1)";
+      FAIL if .claude/settings.json exists and its $schema field is set to
+      anything other than the canonical schemastore URL above. A missing
+      $schema field is allowed (the IDE extension treats it as opt-out of
+      schema validation); a wrong $schema is a hard fail because the
+      extension rejects the entire file and disables every permission rule.
+    source_frameworks:
+      - Claude Code settings schema (schemastore.org)
+
   # ── OSSF (Best Practices Badge + Scorecard) ──────────────────────────────────
   # These checks supplement the live Scorecard API and Badge API results with
   # local file content that those APIs cannot evaluate. The ossf-compliance-auditor
