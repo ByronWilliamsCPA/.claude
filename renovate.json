@@ -149,15 +149,14 @@
       ]
     },
     {
-      "description": "Track org workflow floating v1 tag for SHA pin updates",
+      "description": "Track org workflow floating v1 tag for SHA pin updates (CI-056)",
       "matchManagers": [
         "github-actions"
       ],
-      "matchPackagePatterns": [
+      "matchPackageNames": [
         "ByronWilliamsCPA/.github",
         "williaby/.github"
       ],
-      "versioning": "semver",
       "followTag": "v1"
     }
   ],
