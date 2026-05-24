@@ -301,6 +301,9 @@ known-first-party = ["claude_config"]
     "S603",   # subprocess_without_shell_equals_true - tests invoke project scripts with fixed args
 ]
 
+# FIPS compliance fixture files (intentionally use non-compliant algorithms for testing)
+"tests/fixtures/fips/*.py" = ["S324"]
+
 # Scripts (utility code - not packages)
 "scripts/**/*.py" = [
     "ANN", "D", "T20", "TRY", "PTH", "PLR",
