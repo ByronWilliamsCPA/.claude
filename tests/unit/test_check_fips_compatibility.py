@@ -69,3 +69,20 @@ def test_new_call_with_md5_string_flagged() -> None:
     assert any("md5" in i.message.lower() for i in issues), (
         f"Expected md5 finding from .new() call, got: {[i.message for i in issues]}"
     )
+
+
+@pytest.mark.unit
+def test_cipher_call_flagged_as_error() -> None:
+    """A method-call attribute matching NON_FIPS_CIPHERS must be reported.
+
+    Exercises the _check_cipher_call branch of the dispatcher independently
+    of hashlib/.new() paths. The fixture calls FakeCipher().des(...), which
+    matches the 'des' entry in NON_FIPS_CIPHERS by attribute name.
+    """
+    issues = _fips.check_python_file(_FIXTURES / "bad_cipher.py")
+    cipher_issues = [
+        i for i in issues if i.category == "cipher" and i.severity == "error"
+    ]
+    assert cipher_issues, (
+        f"Expected cipher error from .des() call, got: {[i.message for i in issues]}"
+    )

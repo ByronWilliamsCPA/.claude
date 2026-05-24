@@ -29,13 +29,18 @@ def load_module() -> ModuleType:
     Returns:
         The loaded module object, cached after first load via functools.cache.
     """
+    # spec_from_file_location() can return a non-None spec even when the
+    # target file does not exist, so check existence explicitly first to
+    # produce a useful diagnostic.
+    assert _SCRIPT_PATH.exists(), f"Script not found: {_SCRIPT_PATH}"
     spec = importlib.util.spec_from_file_location(
         "check_fips_compatibility",
         _SCRIPT_PATH,
     )
-    assert spec is not None, f"Script not found: {_SCRIPT_PATH}"
+    assert spec is not None, f"spec_from_file_location returned None for {_SCRIPT_PATH}"
+    assert spec.loader is not None, f"spec.loader is None for {_SCRIPT_PATH}"
+    assert isinstance(spec.loader, importlib.abc.Loader)
     module = importlib.util.module_from_spec(spec)
     sys.modules["check_fips_compatibility"] = module
-    assert isinstance(spec.loader, importlib.abc.Loader)
     spec.loader.exec_module(module)
     return module
