@@ -31,7 +31,7 @@ import sys
 from dataclasses import asdict, dataclass
 from datetime import date, timedelta
 from pathlib import Path
-from typing import Any
+from typing import Any, TypeAlias
 
 from ruamel.yaml import YAML
 from ruamel.yaml.error import YAMLError
@@ -71,6 +71,10 @@ class Finding:
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
+
+
+# Exactly one element is non-None: date on parse success, Finding on failure.
+_LastVerifiedResult: TypeAlias = tuple[date, None] | tuple[None, Finding]
 
 
 def _yaml_safe() -> YAML:
@@ -326,43 +330,66 @@ def diff_required_vs_effective(
     return findings
 
 
+def _parse_last_verified(path: str, entry: dict[str, Any]) -> _LastVerifiedResult:
+    """Parse the last_verified field from a registry entry.
+
+    Args:
+        path: Registry key (workflow path string) used in error messages.
+        entry: Registry entry dict to inspect.
+
+    Returns:
+        A _LastVerifiedResult: (date, None) on success, or (None, Finding)
+        when the field is missing or unparseable.
+    """
+    last_verified_raw = entry.get("last_verified")
+    if isinstance(last_verified_raw, date):
+        return last_verified_raw, None
+    if isinstance(last_verified_raw, str):
+        try:
+            return date.fromisoformat(last_verified_raw), None
+        except ValueError:
+            return None, Finding(
+                check_id="CI-024",
+                severity="important",
+                message=(
+                    f"Registry entry {path} has unparseable "
+                    f"last_verified value: {last_verified_raw!r}"
+                ),
+            )
+    return None, Finding(
+        check_id="CI-024",
+        severity="important",
+        message=f"Registry entry {path} missing last_verified field.",
+    )
+
+
 def check_registry_freshness(
     registry: dict[str, dict[str, Any]],
     today: date,
     max_age_days: int = 90,
 ) -> list[Finding]:
-    """CI-024: every registry entry has last_verified within max_age_days."""
+    """CI-024: every registry entry has last_verified within max_age_days.
+
+    Args:
+        registry: Mapping from workflow path to entry dict.
+        today: Reference date for age calculation.
+        max_age_days: Maximum allowed age in days before a finding is emitted.
+
+    Returns:
+        List of findings for missing, unparseable, or stale last_verified fields.
+    """
     findings: list[Finding] = []
     cutoff = today - timedelta(days=max_age_days)
     for path, entry in sorted(registry.items()):
-        last_verified_raw = entry.get("last_verified")
-        if isinstance(last_verified_raw, date):
-            last_verified = last_verified_raw
-        elif isinstance(last_verified_raw, str):
-            try:
-                last_verified = date.fromisoformat(last_verified_raw)
-            except ValueError:
-                findings.append(
-                    Finding(
-                        check_id="CI-024",
-                        severity="important",
-                        message=(
-                            f"Registry entry {path} has unparseable "
-                            f"last_verified value: {last_verified_raw!r}"
-                        ),
-                    )
-                )
-                continue
-        else:
-            findings.append(
-                Finding(
-                    check_id="CI-024",
-                    severity="important",
-                    message=f"Registry entry {path} missing last_verified field.",
-                )
-            )
+        last_verified, parse_finding = _parse_last_verified(path, entry)
+        if parse_finding is not None:
+            findings.append(parse_finding)
             continue
-        if last_verified < cutoff:
+        # `last_verified is not None` is always True here: the _LastVerifiedResult
+        # invariant guarantees the (date, None) branch when parse_finding is None.
+        # The guard exists because BasedPyright narrows on the second element and
+        # does not deduce last_verified: date from parse_finding being None.
+        if last_verified is not None and last_verified < cutoff:
             findings.append(
                 Finding(
                     check_id="CI-024",
@@ -374,6 +401,40 @@ def check_registry_freshness(
                 )
             )
     return findings
+
+
+def _validate_and_include_entry(
+    idx: int,
+    entry: Any,
+    repo_type: str,
+) -> tuple[str, dict[str, Any]] | None:
+    """Validate a single required_checks entry and return it if applicable.
+
+    Args:
+        idx: Zero-based index of the entry in the required_checks list (for error messages).
+        entry: Raw entry value from the manifest (expected to be a dict).
+        repo_type: Repository type filter; empty string means include all entries.
+
+    Returns:
+        Tuple of (name, entry) if the entry is valid and applies to repo_type,
+        or None if the entry is filtered out by repo_type.
+
+    Raises:
+        ValueError: If entry is not a mapping, or its name field is missing or empty.
+    """
+    if not isinstance(entry, dict):
+        raise ValueError(
+            f"required_checks[{idx}] must be a mapping, got {type(entry).__name__}"
+        )
+    name = entry.get("name")
+    if not isinstance(name, str) or not name.strip():
+        raise ValueError(
+            f"required_checks[{idx}] missing or empty 'name' field: {entry!r}"
+        )
+    applies_to = entry.get("applies_to_types")
+    if repo_type and applies_to is not None and repo_type not in applies_to:
+        return None
+    return name, entry
 
 
 def load_required_checks(
@@ -400,7 +461,7 @@ def load_required_checks(
     """
     if not manifest_path.exists():
         raise FileNotFoundError(f"Manifest not found: {manifest_path}")
-    doc = _yaml_safe().load(manifest_path.read_text())
+    doc = _yaml_safe().load(manifest_path.read_text(encoding="utf-8"))
     if doc is None:
         return set(), {}
     if not isinstance(doc, dict):
@@ -415,20 +476,11 @@ def load_required_checks(
     names: set[str] = set()
     meta: dict[str, dict[str, Any]] = {}
     for idx, entry in enumerate(entries):
-        if not isinstance(entry, dict):
-            raise ValueError(
-                f"required_checks[{idx}] must be a mapping, got {type(entry).__name__}"
-            )
-        name = entry.get("name")
-        if not isinstance(name, str) or not name.strip():
-            raise ValueError(
-                f"required_checks[{idx}] missing or empty 'name' field: {entry!r}"
-            )
-        applies_to = entry.get("applies_to_types")
-        if repo_type and applies_to is not None and repo_type not in applies_to:
-            continue
-        names.add(name)
-        meta[name] = entry
+        result = _validate_and_include_entry(idx, entry, repo_type)
+        if result is not None:
+            name, validated_entry = result
+            names.add(name)
+            meta[name] = validated_entry
     return names, meta
 
 
@@ -440,7 +492,7 @@ def load_registry(registry_path: Path) -> dict[str, dict[str, Any]]:
     """
     if not registry_path.exists():
         return {}
-    doc = _yaml_safe().load(registry_path.read_text())
+    doc = _yaml_safe().load(registry_path.read_text(encoding="utf-8"))
     if doc is None:
         return {}
     if not isinstance(doc, dict):
@@ -758,7 +810,8 @@ def _parse_args(argv: list[str] | None) -> argparse.Namespace:
     )
     parser.add_argument(
         "--today",
-        default="",
+        default=None,
+        type=date.fromisoformat,
         help="Override today's date (YYYY-MM-DD) for testing",
     )
     args = parser.parse_args(argv)
@@ -769,6 +822,9 @@ def _parse_args(argv: list[str] | None) -> argparse.Namespace:
 
 def main(argv: list[str] | None = None) -> int:
     args = _parse_args(argv)
+    args.repo_path = args.repo_path.resolve()
+    args.manifest = args.manifest.resolve()
+    args.registry = args.registry.resolve()
 
     try:
         required, meta = load_required_checks(args.manifest, repo_type=args.repo_type)
@@ -803,7 +859,7 @@ def main(argv: list[str] | None = None) -> int:
         else:
             findings += diff_required_vs_effective(required, effective, provenance)
 
-    today_value = date.fromisoformat(args.today) if args.today else date.today()
+    today_value = args.today if args.today is not None else date.today()
     findings += check_registry_freshness(registry, today_value)
 
     print(json.dumps([f.to_dict() for f in findings], indent=2))

@@ -27,6 +27,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -72,8 +73,14 @@ def fetch_org_repos(org: str) -> list[dict[str, Any]]:
             path emits an actionable message to stderr before exiting.
     """
     gh_bin = os.environ.get("GH_BINARY", "gh")
+    resolved_gh_bin = shutil.which(gh_bin)
+    if resolved_gh_bin is None:
+        sys.exit(
+            f"error: `{gh_bin}` not found on PATH. Install GitHub CLI "
+            f"(https://cli.github.com/) or set GH_BINARY to the absolute path."
+        )
     cmd: list[str] = [
-        gh_bin,
+        resolved_gh_bin,
         "repo",
         "list",
         org,
@@ -173,26 +180,18 @@ def _sort_key(entry: dict[str, Any]) -> tuple[str, str]:
     return (entry["org"], entry["name"].lower())
 
 
-def refresh_catalog(
-    catalog_path: Path, *, prune: bool, allow_empty: bool = False
-) -> bool:
-    """Refresh `catalog_path` in place. Returns True if the file changed.
+def _load_catalog(catalog_path: Path) -> tuple[str, dict[str, Any]]:
+    """Read and parse the catalog JSON file.
 
     Args:
-        catalog_path: Path to docs/reference/github-repos.json.
-        prune: When True, remove catalog entries whose repo no longer exists
-            on GitHub. When False (default), leave them intact.
-        allow_empty: When True, permit `--prune` even if an org returns an
-            empty live response. Defaults to False so a transient token-scope
-            loss cannot silently erase a whole org's catalog entries.
+        catalog_path: Path to the catalog JSON file.
 
     Returns:
-        True if the on-disk file content was modified, False otherwise.
+        Tuple of (original_text, catalog_dict) where catalog_dict has a 'repos' list.
 
     Raises:
-        SystemExit: When the catalog file is missing, not readable, not valid
-            JSON, has no `repos` list, or when `prune` is set and any org
-            returns an empty live response without `allow_empty`.
+        SystemExit: When the file is missing, unreadable, not valid JSON,
+            or does not contain a top-level 'repos' list.
     """
     try:
         original_text = catalog_path.read_text(encoding="utf-8")
@@ -219,12 +218,22 @@ def refresh_catalog(
             f"error: catalog at {catalog_path} must be a JSON object with a "
             f"top-level `repos` list."
         )
-    catalog: dict[str, Any] = raw_catalog
+    return original_text, raw_catalog
 
-    existing_by_slug: dict[tuple[str, str], dict[str, Any]] = {
-        (r["org"], r["name"]): r for r in catalog["repos"]
-    }
 
+def _fetch_live_repos(
+    existing_by_slug: dict[tuple[str, str], dict[str, Any]],
+) -> tuple[list[dict[str, Any]], set[tuple[str, str]], list[str]]:
+    """Fetch live repo data from all orgs and merge with existing catalog entries.
+
+    Args:
+        existing_by_slug: Mapping from (org, name) slug to existing catalog entry.
+
+    Returns:
+        Tuple of (merged_repos, live_slugs, empty_orgs) where merged_repos is
+        the combined list, live_slugs is the set of (org, name) pairs seen from
+        GitHub, and empty_orgs lists orgs that returned zero repos.
+    """
     live_slugs: set[tuple[str, str]] = set()
     merged_repos: list[dict[str, Any]] = []
     empty_orgs: list[str] = []
@@ -238,6 +247,43 @@ def refresh_catalog(
             slug = (org, live["name"])
             live_slugs.add(slug)
             merged_repos.append(_merge_entry(existing_by_slug.get(slug), live))
+
+    return merged_repos, live_slugs, empty_orgs
+
+
+def refresh_catalog(
+    catalog_path: Path, *, prune: bool, allow_empty: bool = False
+) -> bool:
+    """Refresh `catalog_path` in place. Returns True if the file changed.
+
+    Args:
+        catalog_path: Path to docs/reference/github-repos.json.
+        prune: When True, remove catalog entries whose repo no longer exists
+            on GitHub. When False (default), leave them intact.
+        allow_empty: When True, permit `--prune` even if an org returns an
+            empty live response. Defaults to False so a transient token-scope
+            loss cannot silently erase a whole org's catalog entries.
+
+    Returns:
+        True if the on-disk file content was modified, False otherwise.
+
+    Raises:
+        SystemExit: When the catalog file is missing, not readable, not valid
+            JSON, has no `repos` list, or when `prune` is set and any org
+            returns an empty live response without `allow_empty`.
+    """
+    original_text, catalog = _load_catalog(catalog_path)
+
+    for i, r in enumerate(catalog["repos"]):
+        if not isinstance(r, dict) or "org" not in r or "name" not in r:
+            sys.exit(
+                f"error: catalog repos[{i}] is malformed (missing 'org' or 'name'): {r!r}"
+            )
+    existing_by_slug: dict[tuple[str, str], dict[str, Any]] = {
+        (r["org"], r["name"]): r for r in catalog["repos"]
+    }
+
+    merged_repos, live_slugs, empty_orgs = _fetch_live_repos(existing_by_slug)
 
     if prune and empty_orgs and not allow_empty:
         sys.exit(
