@@ -1,6 +1,6 @@
 # docs/standards-manifest.yaml
 version: "1.0"
-last_updated: "2026-05-21"
+last_updated: "2026-05-23"
 
 # verify field is a hint to the domain agent, not executable DSL.
 # Agents interpret it using their own tools (Grep, Read, Glob, Bash).
@@ -493,14 +493,14 @@ checks:
     domain: ci
     severity: important
     description: >-
-      No inline SonarCloud scanning in ci.yml -- the dedicated sonarcloud.yml workflow
-      (CI-003) is the only place sonarqube-scan-action or sonarqube-quality-gate-action
-      may appear
+      No inline SonarCloud scanning in ci.yml -- sonarqube-scan-action and
+      sonarqube-quality-gate-action belong in sonarcloud.yml (CI-003) or in a
+      reusable-workflow DEFINITION (see NOT APPLICABLE clause), never in ci.yml itself
     verify: |
       Check .github/workflows/ci.yml for any of the following action references
-      (any version, any pin: tag, branch, or SHA):
-        - sonarsource/sonarqube-scan-action
-        - sonarsource/sonarqube-quality-gate-action
+      (case-insensitive match; any version, any pin: tag, branch, or SHA):
+        - SonarSource/sonarqube-scan-action
+        - SonarSource/sonarqube-quality-gate-action
         - SonarSource/sonarcloud-github-action
       FAIL if any of these appear in ci.yml. They belong in sonarcloud.yml, which calls
       the org reusable workflow at
