@@ -328,3 +328,58 @@ def test_reconcile_isolates_parse_failures(tmp_path: Path) -> None:
     assert result.appended == 1  # valid file processed
     assert len(result.parse_failures) == 1
     assert "garbage.md" in result.parse_failures[0]
+
+
+def test_reconcile_dry_run_does_not_write(tmp_path: Path) -> None:
+    """dry_run=True must not create the JSONL even when entries would be appended."""
+    from scripts.compliance_rollup_reconcile import reconcile
+
+    repos_root = tmp_path / "dev"
+    repo_clone = repos_root / "llc-manager"
+    (repo_clone / "docs" / "compliance-reports" / "lessons-learned").mkdir(parents=True)
+    (
+        repo_clone / "docs" / "compliance-reports" / "lessons-learned" / "2026-05-16.md"
+    ).write_text(SAMPLE_LESSONS)
+
+    catalog = tmp_path / "catalog.json"
+    catalog.write_text(
+        json.dumps(
+            {
+                "repos": [
+                    {
+                        "org": "ByronWilliamsCPA",
+                        "name": "llc-manager",
+                        "isArchived": False,
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    jsonl = tmp_path / "log.jsonl"
+
+    result = reconcile(
+        catalog_path=catalog, jsonl_path=jsonl, repos_root=repos_root, dry_run=True
+    )
+
+    assert result.appended == 1, (
+        "appended counter reflects what would have been written"
+    )
+    assert not jsonl.exists(), "dry_run must not create the JSONL file"
+
+
+def test_reconcile_skips_archived_repos(tmp_path: Path) -> None:
+    """Repos with isArchived=true must be skipped silently."""
+    from scripts.compliance_rollup_reconcile import reconcile
+
+    catalog = tmp_path / "catalog.json"
+    catalog.write_text(
+        '{"repos": [{"name": "old-repo", "org": "testorg", "isArchived": true}]}',
+        encoding="utf-8",
+    )
+    jsonl = tmp_path / "log.jsonl"
+
+    result = reconcile(catalog_path=catalog, jsonl_path=jsonl, dry_run=False)
+
+    assert result.walked == 0
+    assert not jsonl.exists(), "archived repos must not cause any writes"

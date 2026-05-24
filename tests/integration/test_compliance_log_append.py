@@ -15,6 +15,7 @@ if TYPE_CHECKING:
 def test_append_helper_writes_to_central_log_regardless_of_cwd(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
+    compliance_entry: dict,
 ) -> None:
     """Verify the append helper resolves the central log via __file__.
 
@@ -28,15 +29,11 @@ def test_append_helper_writes_to_central_log_regardless_of_cwd(
     monkeypatch.chdir(foreign_cwd)
 
     entry = {
-        "schema_version": 1,
+        **compliance_entry,
         "session_date": "2026-05-17",
         "session_id": "2026-05-17T10:00:00Z-test",
         "repo": "test-org/test-repo",
         "repo_path": str(foreign_cwd),
-        "audit_mode": "interactive",
-        "repo_type": "python-app",
-        "visibility": "public",
-        "reconciled": False,
         "totals": {
             "critical": 0,
             "important": 1,
@@ -44,12 +41,6 @@ def test_append_helper_writes_to_central_log_regardless_of_cwd(
             "unclassified_candidates": 0,
             "overrides_applied": 0,
         },
-        "findings_by_check": [],
-        "unclassified_candidates": [],
-        "fleet_action_proposals": [],
-        "scope_expansion_flags": [],
-        "links": {},
-        "superseded_by": None,
     }
 
     # Use append_entry directly with a fake jsonl_path to avoid mutating
@@ -73,7 +64,10 @@ def test_append_helper_writes_to_central_log_regardless_of_cwd(
     assert appended["repo"] == entry["repo"]
 
 
-def test_append_helper_supersede_marks_existing_entry(tmp_path: Path) -> None:
+def test_append_helper_supersede_marks_existing_entry(
+    tmp_path: Path,
+    compliance_entry: dict,
+) -> None:
     """Supersede semantics: prior active entry gets superseded_by set.
 
     When (session_date, repo) already exists, the old entry's
@@ -84,15 +78,11 @@ def test_append_helper_supersede_marks_existing_entry(tmp_path: Path) -> None:
     fake_central = tmp_path / "master-log.jsonl"
 
     base_entry = {
-        "schema_version": 1,
+        **compliance_entry,
         "session_date": "2026-05-17",
         "session_id": "2026-05-17T10:00:00Z-old1",
         "repo": "test-org/test-repo",
-        "repo_path": "/tmp/test",
-        "audit_mode": "interactive",
-        "repo_type": "python-app",
-        "visibility": "public",
-        "reconciled": False,
+        "repo_path": "",
         "totals": {
             "critical": 0,
             "important": 0,
@@ -100,12 +90,6 @@ def test_append_helper_supersede_marks_existing_entry(tmp_path: Path) -> None:
             "unclassified_candidates": 0,
             "overrides_applied": 0,
         },
-        "findings_by_check": [],
-        "unclassified_candidates": [],
-        "fleet_action_proposals": [],
-        "scope_expansion_flags": [],
-        "links": {},
-        "superseded_by": None,
     }
     append_entry(base_entry, jsonl_path=fake_central, render=False)
 
@@ -121,35 +105,10 @@ def test_append_helper_supersede_marks_existing_entry(tmp_path: Path) -> None:
     assert new["superseded_by"] is None
 
 
-def _entry(session_id: str, *, session_date: str = "2026-05-17") -> dict:
-    """Build a minimal valid entry for supersede-edge-case tests."""
-    return {
-        "schema_version": 1,
-        "session_date": session_date,
-        "session_id": session_id,
-        "repo": "test-org/test-repo",
-        "repo_path": "",
-        "audit_mode": "interactive",
-        "repo_type": "python-app",
-        "visibility": "public",
-        "reconciled": False,
-        "totals": {
-            "critical": 0,
-            "important": 0,
-            "suggested": 0,
-            "unclassified_candidates": 0,
-            "overrides_applied": 0,
-        },
-        "findings_by_check": [],
-        "unclassified_candidates": [],
-        "fleet_action_proposals": [],
-        "scope_expansion_flags": [],
-        "links": {},
-        "superseded_by": None,
-    }
-
-
-def test_supersede_handles_multiple_active_priors(tmp_path: Path) -> None:
+def test_supersede_handles_multiple_active_priors(
+    tmp_path: Path,
+    compliance_entry: dict,
+) -> None:
     """Regression test for finding #22 (multi prior-active supersede).
 
     A previous bug class: when two active entries already share a
@@ -173,15 +132,33 @@ def test_supersede_handles_multiple_active_priors(tmp_path: Path) -> None:
     # one active entry, so the multi-active state has to be simulated.
     fake_central.write_text(
         '{"type": "header", "schema_version": 1, "created": "2026-05-17"}\n'
-        + json.dumps(_entry("2026-05-17T08:00:00Z-old1"))
+        + json.dumps(
+            {
+                **compliance_entry,
+                "session_date": "2026-05-17",
+                "session_id": "2026-05-17T08:00:00Z-old1",
+            }
+        )
         + "\n"
-        + json.dumps(_entry("2026-05-17T09:00:00Z-old2"))
+        + json.dumps(
+            {
+                **compliance_entry,
+                "session_date": "2026-05-17",
+                "session_id": "2026-05-17T09:00:00Z-old2",
+            }
+        )
         + "\n",
         encoding="utf-8",
     )
 
     append_entry(
-        _entry("2026-05-17T18:00:00Z-new3"), jsonl_path=fake_central, render=False
+        {
+            **compliance_entry,
+            "session_date": "2026-05-17",
+            "session_id": "2026-05-17T18:00:00Z-new3",
+        },
+        jsonl_path=fake_central,
+        render=False,
     )
 
     entries = load_entries(fake_central)
@@ -191,7 +168,10 @@ def test_supersede_handles_multiple_active_priors(tmp_path: Path) -> None:
     assert canonical[0]["session_id"] == "2026-05-17T18:00:00Z-new3"
 
 
-def test_supersede_skips_corrupted_jsonl_lines(tmp_path: Path) -> None:
+def test_supersede_skips_corrupted_jsonl_lines(
+    tmp_path: Path,
+    compliance_entry: dict,
+) -> None:
     """Regression test for finding #23 (corrupted JSONL line in supersede).
 
     A malformed JSONL line between header and the active prior must be
@@ -212,13 +192,25 @@ def test_supersede_skips_corrupted_jsonl_lines(tmp_path: Path) -> None:
     fake_central.write_text(
         '{"type": "header", "schema_version": 1, "created": "2026-05-17"}\n'
         "{not valid json on this line}\n"
-        + json.dumps(_entry("2026-05-17T08:00:00Z-old1"))
+        + json.dumps(
+            {
+                **compliance_entry,
+                "session_date": "2026-05-17",
+                "session_id": "2026-05-17T08:00:00Z-old1",
+            }
+        )
         + "\n",
         encoding="utf-8",
     )
 
     append_entry(
-        _entry("2026-05-17T18:00:00Z-new2"), jsonl_path=fake_central, render=False
+        {
+            **compliance_entry,
+            "session_date": "2026-05-17",
+            "session_id": "2026-05-17T18:00:00Z-new2",
+        },
+        jsonl_path=fake_central,
+        render=False,
     )
 
     raw = fake_central.read_text(encoding="utf-8")
@@ -250,3 +242,35 @@ def test_supersede_skips_corrupted_jsonl_lines(tmp_path: Path) -> None:
     assert len(superseded) == 1
     assert superseded[0]["session_id"] == "2026-05-17T08:00:00Z-old1"
     _ = entries  # keep the import wired so static analysis sees the dep
+
+
+def test_atomic_supersede_marks_prior_entry_superseded(
+    tmp_path: Path,
+    compliance_entry: dict,
+) -> None:
+    """Second append for the same (session_date, repo) must supersede the first.
+
+    Uses the shared compliance_entry fixture to verify that
+    _atomic_supersede_and_append updates superseded_by on the prior
+    active entry when a newer entry for the same key is written.
+    """
+    from scripts.compliance_log_append import append_entry
+
+    log = tmp_path / "test-log.jsonl"
+    first_entry = {**compliance_entry, "session_id": "2026-05-16T10:00:00Z-aaaa"}
+    append_entry(first_entry, jsonl_path=log, render=False)
+
+    second_entry = {**compliance_entry, "session_id": "2026-05-16T11:00:00Z-bbbb"}
+    append_entry(second_entry, jsonl_path=log, render=False)
+
+    lines = [
+        json.loads(ln)
+        for ln in log.read_text(encoding="utf-8").splitlines()
+        if ln.strip()
+    ]
+    entries = [ln for ln in lines if ln.get("type") != "header"]
+    assert len(entries) == 2
+    first_written = next(e for e in entries if e["session_id"].endswith("aaaa"))
+    assert first_written["superseded_by"] == "2026-05-16T11:00:00Z-bbbb"
+    second_written = next(e for e in entries if e["session_id"].endswith("bbbb"))
+    assert second_written["superseded_by"] is None

@@ -132,8 +132,13 @@ def check_file(file_path: Path) -> tuple[bool, str]:
     """
     try:
         content = file_path.read_text(encoding="utf-8")
-    except Exception as e:
+    except OSError as e:
         return False, f"Error reading file: {e}"
+
+    try:
+        ast.parse(content)
+    except SyntaxError as e:
+        return False, f"Syntax error in file: {e}"
 
     has_union = has_union_pipe_syntax(content)
     has_import = has_future_annotations_import(content)
@@ -144,11 +149,43 @@ def check_file(file_path: Path) -> tuple[bool, str]:
     return True, "OK"
 
 
+def _advance_past_future_imports(lines: list[str], start: int) -> int:
+    """Return the index of the first non-future-import, non-comment line at or after start.
+
+    Scans lines beginning at start, skipping over 'from __future__ import ...'
+    lines and blank lines. Stops at the first line that is non-empty and is not
+    a future import or a comment. Returns the index of that stopping line, or
+    start if no such line exists before end of file.
+
+    Args:
+        lines: All lines of the source file.
+        start: Index to begin scanning from (inclusive).
+
+    Returns:
+        Index of the first content line after any future imports, or start if
+        none is found.
+    """
+    for i, line in enumerate(lines[start:], start=start):
+        stripped = line.strip()
+        if stripped.startswith("from __future__ import"):
+            continue
+        if stripped and not stripped.startswith("#"):
+            return i
+    return start
+
+
 def _find_insert_index(lines: list[str], content: str) -> int:
     """Find the line index at which to insert 'from __future__ import annotations'.
 
     Skips past any shebang, module docstring, and existing __future__ imports.
     Returns the integer index at which the new import line should be inserted.
+
+    Args:
+        lines: All lines of the source file (with line endings preserved).
+        content: Full source file text (used for AST parsing to locate docstrings).
+
+    Returns:
+        Integer index at which the new import line should be inserted.
     """
     insert_index = 0
 
@@ -164,19 +201,12 @@ def _find_insert_index(lines: list[str], content: str) -> int:
         docstring_end = tree.body[0].end_lineno or 0
         insert_index = max(insert_index, docstring_end)
 
-    for i, line in enumerate(lines[insert_index:], start=insert_index):
-        if line.strip().startswith("from __future__ import"):
-            continue
-        if line.strip() and not line.strip().startswith("#"):
-            insert_index = i
-            break
+    insert_index = _advance_past_future_imports(lines, insert_index)
 
     # Clamp to list length; docstring-only files with no trailing newline can
     # leave insert_index equal to len(lines), which is a valid insertion point
     # but must not exceed it.
-    insert_index = min(insert_index, len(lines))
-
-    return insert_index
+    return min(insert_index, len(lines))
 
 
 def add_future_import(file_path: Path) -> bool:
@@ -212,8 +242,14 @@ def add_future_import(file_path: Path) -> bool:
         # sonar: false positive pythonsecurity:S2083 (AZ1eBjvzS1usNdOdvc1l): path reconstructed from trusted CWD
         safe_path.write_text("".join(lines), encoding="utf-8")
         return True
-    except Exception as e:
-        print(f"Error adding import to {file_path}: {e}", file=sys.stderr)
+    except SyntaxError as e:
+        print(
+            f"Cannot add import to {file_path}: file has syntax errors: {e}",
+            file=sys.stderr,
+        )
+        return False
+    except OSError as e:
+        print(f"Error accessing {file_path}: {e}", file=sys.stderr)
         return False
 
 
@@ -239,6 +275,33 @@ def _collect_python_files(args: argparse.Namespace) -> list[Path]:
     return python_files
 
 
+def _handle_violation(
+    file_path: Path,
+    message: str,
+    fix: bool,
+) -> tuple[tuple[Path, str] | None, Path | None]:
+    """Apply fix or record violation for a single non-compliant file.
+
+    Args:
+        file_path: Path to the non-compliant Python file.
+        message: Compliance message describing the violation.
+        fix: If True, attempt to auto-fix the file.
+
+    Returns:
+        Tuple of (violation, fixed_path). Exactly one element is non-None.
+        violation is (path, message) when the file was not fixed; fixed_path
+        is the path when the file was successfully auto-fixed.
+    """
+    if fix:
+        if add_future_import(file_path):
+            print(f"✓ Fixed: {file_path}")
+            return None, file_path
+        print(f"✗ Failed to fix: {file_path}: {message}", file=sys.stderr)
+        return (file_path, message), None
+    print(f"✗ {file_path}: {message}", file=sys.stderr)
+    return (file_path, message), None
+
+
 def _process_files(
     python_files: list[Path], fix: bool
 ) -> tuple[list[tuple[Path, str]], list[Path]]:
@@ -258,20 +321,13 @@ def _process_files(
     for file_path in python_files:
         if "__pycache__" in str(file_path):
             continue
-
         is_compliant, message = check_file(file_path)
-
         if not is_compliant:
-            if fix:
-                if add_future_import(file_path):
-                    fixed.append(file_path)
-                    print(f"✓ Fixed: {file_path}")
-                else:
-                    violations.append((file_path, message))
-                    print(f"✗ Failed to fix: {file_path}: {message}", file=sys.stderr)
-            else:
-                violations.append((file_path, message))
-                print(f"✗ {file_path}: {message}", file=sys.stderr)
+            violation, fixed_path = _handle_violation(file_path, message, fix)
+            if fixed_path is not None:
+                fixed.append(fixed_path)
+            if violation is not None:
+                violations.append(violation)
 
     return violations, fixed
 

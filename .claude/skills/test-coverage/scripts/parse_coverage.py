@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""parse_coverage.py — Parse coverage.json into structured gap report."""
+"""parse_coverage.py: parse coverage.json into a structured gap report."""
 
 import ast
 import json
@@ -18,6 +18,37 @@ class UncoveredFunction:
     total_lines: int
     coverage_pct: float
     is_critical: bool = False
+
+
+def _collect_uncovered_functions(
+    filepath: str,
+    missing: set[int],
+    critical_modules: list[str],
+    tree: ast.Module,
+) -> list[UncoveredFunction]:
+    """Return UncoveredFunction entries for every partially-uncovered function in tree."""
+    found: list[UncoveredFunction] = []
+    for node in ast.walk(tree):
+        if isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef):
+            func_lines = set(range(node.lineno, (node.end_lineno or node.lineno) + 1))
+            func_missing = func_lines & missing
+            if func_missing:
+                total = len(func_lines)
+                covered = total - len(func_missing)
+                is_crit = any(m in filepath for m in critical_modules)
+                found.append(
+                    UncoveredFunction(
+                        file=filepath,
+                        name=node.name,
+                        start_line=node.lineno,
+                        end_line=node.end_lineno or node.lineno,
+                        missing_lines=sorted(func_missing),
+                        total_lines=total,
+                        coverage_pct=round(covered / total * 100, 1),
+                        is_critical=is_crit,
+                    )
+                )
+    return found
 
 
 def parse_coverage(
@@ -71,29 +102,9 @@ def parse_coverage(
                 tree = ast.parse(source_path.read_text())
             except SyntaxError:
                 continue
-
-            for node in ast.walk(tree):
-                if isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef):
-                    func_lines = set(
-                        range(node.lineno, (node.end_lineno or node.lineno) + 1)
-                    )
-                    func_missing = func_lines & missing
-                    if func_missing:
-                        total = len(func_lines)
-                        covered = total - len(func_missing)
-                        is_crit = any(m in filepath for m in critical_modules)
-                        results["uncovered_functions"].append(
-                            UncoveredFunction(
-                                file=filepath,
-                                name=node.name,
-                                start_line=node.lineno,
-                                end_line=node.end_lineno or node.lineno,
-                                missing_lines=sorted(func_missing),
-                                total_lines=total,
-                                coverage_pct=round(covered / total * 100, 1),
-                                is_critical=is_crit,
-                            )
-                        )
+            results["uncovered_functions"].extend(
+                _collect_uncovered_functions(filepath, missing, critical_modules, tree)
+            )
 
     # Sort: critical first, then by coverage ascending
     results["uncovered_functions"].sort(
