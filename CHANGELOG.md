@@ -30,6 +30,20 @@
   adds `**/.nox/**` to `exclude_patterns` and forces `pymdown-extensions>=10.21.3`
   via `override-dependencies` to resolve GHSA-62q4-447f-wv8h in the transitive dep
 
+* fix(scripts): eliminate mutable accumulator out-params in
+  `scripts/check-required-checks.py` and `scripts/check_type_hints.py`; introduce
+  `_LastVerifiedResult` discriminated-union type alias for `_parse_last_verified`
+  return values and refactor `_validate_and_include_entry` to return a value instead
+  of mutating a caller-provided accumulator
+
+* fix(scripts): address PR #130 review findings: wrap all `read_text()` calls
+  in `scripts/doc-audit.py` with `OSError` handlers so an unreadable file emits an
+  error `Finding` instead of aborting the audit run; validate `GH_BINARY` env var
+  via `shutil.which()` in `scripts/populate-github-repos.py` before passing it to
+  `subprocess.run`; canonicalize `--repo-path`, `--manifest`, and `--registry` CLI
+  paths with `Path.resolve()` in `scripts/check-required-checks.py` to prevent
+  path traversal via crafted `..` segments
+
 ### Docs
 
 * docs(compliance): codify manifest-change classification policy in

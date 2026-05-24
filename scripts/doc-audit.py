@@ -176,9 +176,13 @@ def _load_allowed_tags(repo_root: str) -> frozenset[str]:
     tags_path = Path(repo_root) / "docs" / "_data" / "tags.yml"
     if not tags_path.exists():
         return frozenset()
+    try:
+        tags_text = tags_path.read_text(encoding="utf-8")
+    except OSError:
+        return frozenset()
     tags: list[str] = []
     in_allowed = False
-    for line in tags_path.read_text(encoding="utf-8").splitlines():
+    for line in tags_text.splitlines():
         if line.strip() == "allowed:":
             in_allowed = True
             continue
@@ -214,7 +218,19 @@ def check_frontmatter(scope: str, *, repo_root: str = ".") -> list[Finding]:
     allowed_tags = _load_allowed_tags(repo_root)
 
     for md_file in sorted(Path(scope).rglob("*.md")):
-        content = md_file.read_text(encoding="utf-8")
+        try:
+            content = md_file.read_text(encoding="utf-8")
+        except OSError as e:
+            findings.append(
+                Finding(
+                    category="frontmatter",
+                    severity="ERROR",
+                    file=str(md_file),
+                    line=1,
+                    message=f"cannot read file: {e}",
+                )
+            )
+            continue
 
         if not content.startswith("---"):
             findings.append(
@@ -325,7 +341,18 @@ def _check_links_in_file(md_file: Path) -> list[Finding]:
         List of Finding dicts with severity ERROR for each broken link.
     """
     findings: list[Finding] = []
-    content = md_file.read_text(encoding="utf-8")
+    try:
+        content = md_file.read_text(encoding="utf-8")
+    except OSError as e:
+        return [
+            Finding(
+                category="links",
+                severity="ERROR",
+                file=str(md_file),
+                line=1,
+                message=f"cannot read file: {e}",
+            )
+        ]
     for line_no, line in enumerate(content.splitlines(), start=1):
         for match in _LINK_RE.finditer(line):
             path_part = _extract_local_path(match.group(2))
@@ -401,7 +428,7 @@ def _actual_counts(repo_root: str) -> dict[str, int]:
             hooks_count = len(hooks.get("PreToolUse", [])) + len(
                 hooks.get("PostToolUse", [])
             )
-        except (json.JSONDecodeError, KeyError, TypeError):
+        except (json.JSONDecodeError, KeyError, OSError, TypeError):
             hooks_count = 0
 
     return {
@@ -410,6 +437,48 @@ def _actual_counts(repo_root: str) -> dict[str, int]:
         "hooks": hooks_count,
         "docs": docs_count,
     }
+
+
+def _check_count_match(
+    match: re.Match[str],
+    actual: dict[str, int],
+    md_file: Path,
+    line_no: int,
+) -> Finding | None:
+    """Evaluate a single count-claim regex match against actual counts.
+
+    Args:
+        match: Regex match from _COUNT_RE with groups (number, category_word).
+        actual: Mapping from category key to actual filesystem count.
+        md_file: Source markdown file (used for the Finding file field).
+        line_no: 1-based line number in md_file (used for the Finding line field).
+
+    Returns:
+        A Finding if the claim is unrecognised or mismatched, else None.
+    """
+    claimed = int(match.group(1))
+    category_key = _COUNT_WORD_MAP.get(match.group(2).lower(), "")
+    if not category_key:
+        return Finding(
+            category="counts",
+            severity="INFO",
+            file=str(md_file),
+            line=line_no,
+            message=(
+                f"count claim '{match.group(2)}': "
+                "unrecognized category, flagged for manual review"
+            ),
+        )
+    real = actual.get(category_key, 0)
+    if claimed != real:
+        return Finding(
+            category="counts",
+            severity="WARN",
+            file=str(md_file),
+            line=line_no,
+            message=(f"claims '{claimed} {match.group(2)}': actual: {real}"),
+        )
+    return None
 
 
 def check_counts(scope: str, *, repo_root: str = ".") -> list[Finding]:
@@ -429,38 +498,24 @@ def check_counts(scope: str, *, repo_root: str = ".") -> list[Finding]:
     actual = _actual_counts(repo_root)
 
     for md_file in sorted(Path(scope).rglob("*.md")):
-        content = md_file.read_text(encoding="utf-8")
+        try:
+            content = md_file.read_text(encoding="utf-8")
+        except OSError as e:
+            findings.append(
+                Finding(
+                    category="counts",
+                    severity="ERROR",
+                    file=str(md_file),
+                    line=1,
+                    message=f"cannot read file: {e}",
+                )
+            )
+            continue
         for line_no, line in enumerate(content.splitlines(), start=1):
             for match in _COUNT_RE.finditer(line):
-                claimed = int(match.group(1))
-                category_key = _COUNT_WORD_MAP.get(match.group(2).lower(), "")
-                if not category_key:
-                    findings.append(
-                        Finding(
-                            category="counts",
-                            severity="INFO",
-                            file=str(md_file),
-                            line=line_no,
-                            message=(
-                                f"count claim '{match.group(2)}': "
-                                "unrecognized category, flagged for manual review"
-                            ),
-                        )
-                    )
-                    continue
-                real = actual.get(category_key, 0)
-                if claimed != real:
-                    findings.append(
-                        Finding(
-                            category="counts",
-                            severity="WARN",
-                            file=str(md_file),
-                            line=line_no,
-                            message=(
-                                f"claims '{claimed} {match.group(2)}': actual: {real}"
-                            ),
-                        )
-                    )
+                finding = _check_count_match(match, actual, md_file, line_no)
+                if finding is not None:
+                    findings.append(finding)
 
     return findings
 
@@ -506,7 +561,10 @@ def _load_python_range(
     pyproject = Path(repo_root) / "pyproject.toml"
     if not pyproject.exists():
         return None
-    content = pyproject.read_text(encoding="utf-8")
+    try:
+        content = pyproject.read_text(encoding="utf-8")
+    except OSError:
+        return None
     match = re.search(r'requires-python\s*=\s*"([^"]+)"', content)
     if not match:
         return None
@@ -619,9 +677,20 @@ def check_versions(scope: str, *, repo_root: str = ".") -> list[Finding]:
 
     for md_file in sorted(Path(scope).rglob("*.md")):
         file_path = str(md_file)
-        for line_no, line in enumerate(
-            md_file.read_text(encoding="utf-8").splitlines(), start=1
-        ):
+        try:
+            file_lines = md_file.read_text(encoding="utf-8").splitlines()
+        except OSError as e:
+            findings.append(
+                Finding(
+                    category="versions",
+                    severity="ERROR",
+                    file=file_path,
+                    line=1,
+                    message=f"cannot read file: {e}",
+                )
+            )
+            continue
+        for line_no, line in enumerate(file_lines, start=1):
             findings.extend(
                 _check_python_version(line, file_path, line_no, python_range)
             )
