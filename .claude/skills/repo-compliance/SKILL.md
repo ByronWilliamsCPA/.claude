@@ -221,14 +221,18 @@ Repository context:
   scorecard_target: <target>
   scorecard_api_skip: <true|false>
 Cached review data (domain-scoped):
-<paste only the cachedReview keys relevant to this agent's domain:
-  repo-foundations-auditor: foundations, codeowners, license
-  python-toolchain-auditor: toolchain, dependabot
+<paste only the cachedReview keys relevant to this agent's domain. Key
+ names must match the `review` schema in docs/reference/github-repos.json
+ exactly (branchProtection, codecov, codeql, foundations, ossfBadge,
+ preCommit, releaseHealth, renovate, reuse, scorecard, secretScanning,
+ sonarcloud, templateDrift, toolchain, workflows):
+  repo-foundations-auditor: foundations
+  python-toolchain-auditor: toolchain, renovate
   pre-commit-auditor: preCommit
-  devops-deployment-agent: workflows, ci
-  claude-docs-auditor: claudeDocs
-  ossf-compliance-auditor: scorecard, ossfBadge, codeql
-  mkdocs-auditor: mkdocs
+  devops-deployment-agent: workflows, reuse
+  claude-docs-auditor: (no relevant cachedReview keys; verify on disk)
+  ossf-compliance-auditor: scorecard, ossfBadge, codeql, secretScanning
+  mkdocs-auditor: (no relevant cachedReview keys; verify on disk)
   general-compliance-auditor: full cachedReview>
 ```
 

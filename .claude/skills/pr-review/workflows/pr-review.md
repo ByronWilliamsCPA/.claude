@@ -185,7 +185,7 @@ Analyze `CHANGED_FILES` and the first 50 lines of `PR_DIFF` to classify:
 | Docstrings or `#` comment lines changed | comment-analyzer |
 | `.sh` / `.bash` files present | code-reviewer (shell mode) |
 | `.yml` / `.yaml` / `.json` / `.toml` / `.cfg` only | code-reviewer (config mode) |
-| `.md` / `.rst` / `.txt` only | comment-analyzer only; skip Agent C and Agent D |
+| `.md` / `.rst` / `.txt` only | comment-analyzer (plus the always-on code-reviewer); skip Agent C and Agent D |
 
 **Always active regardless of content:**
 

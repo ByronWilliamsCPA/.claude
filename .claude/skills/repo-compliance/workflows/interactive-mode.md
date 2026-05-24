@@ -24,7 +24,7 @@ Read `~/.claude/docs/compliance-reports/state/last-audited.json` if it exists.
 Look up the entry keyed by the repo slug (format: `org/repo-name`).
 If an entry exists and its `manifest_version` matches MANIFEST_VERSION AND the user did not pass `--force`:
 - Set SKIP_DOMAINS to the list of domains in `clean_domains` for that entry.
-- Print: `Delta mode: skipping clean domains from last audit (${date}): ${SKIP_DOMAINS}`
+- Print: `Delta mode: skipping clean domains from last audit (${audited_at}): ${SKIP_DOMAINS}`
 - Do NOT dispatch agents for domains in SKIP_DOMAINS.
 If no entry exists, or `manifest_version` differs, or `--force` was passed:
 - Set SKIP_DOMAINS to empty (full audit).
@@ -38,14 +38,18 @@ Use TodoWrite to track agent dispatch. Dispatch all domain agents in parallel us
 - Override entries: IDs from compliance-overrides.md
 - cachedReview: only the fields relevant to that agent's domain (see domain field map below)
 
-Domain-to-cachedReview field map (pass only these keys per agent):
-- `repo-foundations-auditor`: `foundations`, `codeowners`, `license`
-- `python-toolchain-auditor`: `toolchain`, `dependabot`
+Domain-to-cachedReview field map (pass only these keys per agent). Key names
+must match the `review` object schema in `docs/reference/github-repos.json`
+exactly: `branchProtection`, `codecov`, `codeql`, `foundations`, `ossfBadge`,
+`preCommit`, `releaseHealth`, `renovate`, `reuse`, `scorecard`,
+`secretScanning`, `sonarcloud`, `templateDrift`, `toolchain`, `workflows`.
+- `repo-foundations-auditor`: `foundations`
+- `python-toolchain-auditor`: `toolchain`, `renovate`
 - `pre-commit-auditor`: `preCommit`
-- `devops-deployment-agent`: `workflows`, `ci`
-- `claude-docs-auditor`: `claudeDocs`
-- `ossf-compliance-auditor`: `scorecard`, `ossfBadge`, `codeql`
-- `mkdocs-auditor`: `mkdocs`
+- `devops-deployment-agent`: `workflows`, `reuse`
+- `claude-docs-auditor`: (no relevant cachedReview keys; verifies CLAUDE.md files on disk)
+- `ossf-compliance-auditor`: `scorecard`, `ossfBadge`, `codeql`, `secretScanning`
+- `mkdocs-auditor`: (no relevant cachedReview keys; verifies mkdocs.yml on disk)
 - `general-compliance-auditor`: full cachedReview (freeform review needs full context)
 
 Agents to dispatch simultaneously (skip any whose domain is in SKIP_DOMAINS):
@@ -161,6 +165,10 @@ import json, os, datetime
 cache_path = os.path.expanduser(
     "~/.claude/docs/compliance-reports/state/last-audited.json"
 )
+# Bootstrap the state directory; first-run write would otherwise raise
+# FileNotFoundError because ~/.claude/docs/compliance-reports/state/ does
+# not exist on a fresh install.
+os.makedirs(os.path.dirname(cache_path), exist_ok=True)
 cache = json.load(open(cache_path)) if os.path.exists(cache_path) else {}
 
 # Determine which domains produced zero findings in this run.
@@ -171,6 +179,10 @@ dispatched_clean = [d for d in DISPATCHED_DOMAINS if DOMAIN_FINDINGS[d] == 0]
 # Merge: prior clean domains + newly confirmed clean; remove any that had findings
 newly_dirty = [d for d in DISPATCHED_DOMAINS if DOMAIN_FINDINGS[d] > 0]
 merged_clean = sorted(set(prior_clean + dispatched_clean) - set(newly_dirty))
+# Invariant: general-compliance-auditor is never skipped (see dispatch list
+# in Step 2). Strip `general` from clean_domains so a clean general run on
+# this cycle does not cause the agent to be skipped on the next cycle.
+merged_clean = [d for d in merged_clean if d != "general"]
 
 cache[REPO_SLUG] = {
     "manifest_version": MANIFEST_VERSION,
