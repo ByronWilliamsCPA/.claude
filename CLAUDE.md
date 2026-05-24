@@ -197,10 +197,12 @@ closing a phase.
 
 **Session length**: Sessions accumulate rolling context with every exchange,
 increasing cache-write cost and slowing responses. After completing any
-discrete task unit, check if the session has grown long (the Stop hook warns
-above 150 API calls). If it has, tell the user the session is becoming
-expensive and suggest a clean break before starting the next task. Do not
-silently continue into a new task on a session that is already over-long.
+discrete task unit, self-assess whether the session has grown long (signals:
+visibly slower responses, many tool calls accumulated, the conversation has
+spanned several distinct task units). If it has, tell the user the session
+is becoming expensive and suggest a clean break before starting the next
+task. Do not silently continue into a new task on a session that is already
+over-long.
 
 ## Compact Instructions
 
