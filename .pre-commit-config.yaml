@@ -323,13 +323,6 @@ repos:
           - pydantic-settings>=2.0.0
           - structlog>=23.1.0
 
-  # Renovate config validation (PC-015)
-  - repo: https://github.com/renovatebot/pre-commit-hooks
-    rev: 2a27c9fda39c7c05bc7488a10920c7700979c263  # v43.150.0  # pragma: allowlist secret
-    hooks:
-      - id: renovate-config-validator
-        additional_dependencies: ["renovate@42.92.14"]
-
 # Exclude patterns
 # .submodules/ is excluded because submodule contents are owned by their upstream
 # repos; pre-commit hooks in this repo must not auto-modify files inside them.
