@@ -361,18 +361,29 @@ scanners:
   - id: gitleaks
     tier: must_block
     detect:
-      uses:
-        - gitleaks/gitleaks-action
+      uses: []                                # see notes (binary-only at this org)
       run_pattern: '\bgitleaks\s+(detect|protect|dir)\b'
     suppression_flags:
-      - '--exit-code\s+0'                     # bare-CLI form (rare)
+      - '--exit-code\s+0'                     # bare-CLI form (the only allowed form)
     suppression_env:
-      - name: GITLEAKS_EXIT_CODE              # action form (dominant)
+      - name: GITLEAKS_EXIT_CODE              # action form, retained as defense-in-depth
         suppressing_value: '^0$'
     notes: >
-      Secrets scanner. The bare CLI uses --exit-code; the gitleaks-action form
-      uses the GITLEAKS_EXIT_CODE env var. Most workflows use the action form,
-      so suppression_env is the more important detection vector.
+      Secrets scanner. AT THIS ORG, the gitleaks/gitleaks-action wrapper is
+      FORBIDDEN: it requires a paid commercial license for any GitHub
+      organization repo (verified 2026-05-25 against the homelab-infra
+      feat-gitleaks-scanner PR, which failed with "License key is required"
+      from the action's preamble before any scan executed). All gitleaks
+      invocations in org repos (ByronWilliamsCPA/*) MUST shell out to the
+      MIT-licensed binary directly via run:; williaby/* user-namespace repos
+      are not license-bound but should follow the binary pattern for
+      consistency. Detection is therefore run_pattern-only (uses: []). The
+      GITLEAKS_EXIT_CODE env entry is retained as defense-in-depth: if the
+      action ever reappears in a workflow, the env-suppression check will
+      still trip CI-007b in addition to the action being flagged by a
+      separate "forbidden action" check (out of scope for this allowlist;
+      track as a new check ID). Canonical binary pattern lives at
+      ByronWilliamsCPA/homelab-infra/.github/workflows/secret-scan.yml.
 
   - id: pip-audit
     tier: must_block

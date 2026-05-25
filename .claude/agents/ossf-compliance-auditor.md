@@ -329,8 +329,20 @@ remediation: |
 **Security gate `continue-on-error` bypass (CI-SEC-002):**
 
 Read all YAML files under `.github/workflows/` using Glob, then Read each one. For any workflow step that meets **both** conditions:
-1. The step's `uses:` field references one of: `anchore/scan-action`, `aquasecurity/trivy-action`, `actions/dependency-review-action`, `ossf/scorecard-action`, `gitleaks/gitleaks-action`, `snyk/actions/python`, `snyk/actions/node`, `snyk/actions/docker`, `github/codeql-action/analyze`, `returntocorp/semgrep-action`
+1. The step's `uses:` field references one of: `anchore/scan-action`, `aquasecurity/trivy-action`, `actions/dependency-review-action`, `ossf/scorecard-action`, `snyk/actions/python`, `snyk/actions/node`, `snyk/actions/docker`, `github/codeql-action/analyze`, `returntocorp/semgrep-action`
 2. The same step has `continue-on-error: true`
+
+> **`gitleaks/gitleaks-action` is intentionally excluded from this allowlist.**
+> The action requires a paid commercial license for any GitHub organization
+> repository (see [gitleaks.io](https://gitleaks.io/products.html)). Org repos
+> (`ByronWilliamsCPA/*`) must invoke the MIT-licensed gitleaks binary directly
+> via a `run:` step rather than the action. User-namespace repos
+> (`williaby/*`) are not subject to the org-license requirement but should
+> use the binary form for fleet consistency. Canonical pattern:
+> [`homelab-infra/.github/workflows/secret-scan.yml`](https://github.com/ByronWilliamsCPA/homelab-infra/blob/main/.github/workflows/secret-scan.yml).
+> Detection of the binary form is handled by CI-007b's `run:` regex
+> (`\bgitleaks\s+(detect|protect|dir)\b`) when the scanner-allowlist tier
+> dispatcher lands per ADR-008.
 
 Emit one FINDING per offending step:
 
