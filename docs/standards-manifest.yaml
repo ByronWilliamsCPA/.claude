@@ -460,11 +460,13 @@ checks:
       The Renovate global config at homelab-infra/services/renovate/config/config.json
       validates clean against renovate-config-validator pinned to the same Renovate
       MAJOR version as the homelab-infra self-hosted instance. Closes the structural
-      blind spot identified in the 2026-05-24 fleet audit: the v42-era PC-015 check
-      (now retired post-v43 cutover) covered only per-repo renovate.json files,
-      leaving the global config that the Docker stack mounts at /config/config.json
-      out of scope. An invalid global config can break PR generation for the entire
-      fleet simultaneously, with no per-repo audit signal.
+      blind spot identified in the 2026-05-24 fleet audit: the v42-era
+      renovate-config-validator pre-commit hook (orphan-added in #142 with the local
+      label "PC-015" but never landed as a manifest check; removed in this PR)
+      covered only per-repo renovate.json files, leaving the global config that the
+      Docker stack mounts at /config/config.json out of scope. An invalid global
+      config can break PR generation for the entire fleet simultaneously, with no
+      per-repo audit signal.
     verify: >-
       Run renovate-config-validator at the same major version as the homelab-infra
       Docker image against services/renovate/config/config.json. Exit code must be 0.
@@ -476,13 +478,16 @@ checks:
       Audit target is not the homelab-infra repo. This check only applies to
       homelab-infra/services/renovate/config/config.json.
     notes: >-
-      Added 2026-05-25 as severity: suggested. Will be promoted to critical once the
-      pre-commit hook is actually deployed to homelab-infra. The check exists to
-      prevent recurrence of the 2026-05-24 global-config "uv" trap (now fixed by the
-      v43 cutover, which accepts "uv" natively). v43 unified the validator and server
-      schemas, so the version-pin lockstep risk that motivated PC-015 is retired here
-      too. PC-016 remains useful for catching forward-compat issues (e.g., a future
-      v44 schema change). Cross-reference: feedback_renovate_uv_manager_trap.md,
+      Added 2026-05-25 as severity: suggested. Will be promoted to important in
+      Phase 3D once the pre-commit hook is actually deployed to homelab-infra
+      (aligns with the suggested to important target documented in the PR
+      description for CI-058/059/060/PC-016). The check exists to prevent
+      recurrence of the 2026-05-24 global-config "uv" trap (now fixed by the v43
+      cutover, which accepts "uv" natively). v43 unified the validator and server
+      schemas, so the version-pin lockstep risk that motivated the original
+      "PC-015" placeholder hook is retired here too. PC-016 remains useful for
+      catching forward-compat issues (e.g., a future v44 schema change).
+      Cross-reference: feedback_renovate_uv_manager_trap.md,
       feedback_policy_execution_gap.md,
       docs/audits/dependency-management-improvement-plan-2026-05-24.md P0-1.
 
@@ -1829,9 +1834,11 @@ checks:
     verify: >-
       Grep services/renovate/docker-compose.yml for the renovate service's image:
       line. The reference MUST match the regex
-      ^[\w./-]+:[\w.-]+@sha256:[a-f0-9]{64}$ (tag AND 64-hex digest both present).
-      A bare tag (e.g., renovate/renovate:43.150.0) or a bare digest fails. Allow
-      only the canonical form renovate/renovate:<tag>@sha256:<64-hex-digest>.
+      ^renovate/renovate:[\w.-]+@sha256:[a-f0-9]{64}$ (image name fixed to
+      renovate/renovate; tag AND 64-hex digest both present). A bare tag
+      (e.g., renovate/renovate:43.150.0), a bare digest, or any non-renovate
+      image name fails. This is the canonical form
+      renovate/renovate:<tag>@sha256:<64-hex-digest>.
     source_frameworks:
       - manifest-internal
     notes: >-
