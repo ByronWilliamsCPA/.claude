@@ -1726,11 +1726,12 @@ checks:
     description: >-
       python-sbom.yml reusable workflow is called from .github/workflows/ via
       uses: ByronWilliamsCPA/.github/.github/workflows/python-sbom.yml@<SHA>
-      with a SHA-pinned ref (not @main, not a tag). Closes the gap where 4
-      Python repos in the fleet (cookiecutter-template-sample, family-office-portal,
-      PromptCraft, monte_carlo) ship with no SBOM gate at all, and 6 repos pin the
-      workflow to floating @main (same risk class as the tj-actions/changed-files
-      CVE-2025-30066 attack).
+      with a SHA-pinned ref (not @main, not a tag). Closes the gap (canonical
+      missing-caller list and @main-pin list maintained in
+      docs/audits/dependency-management-improvement-plan-2026-05-24.md S-9)
+      where Python repos in the fleet ship with no SBOM gate at all, and others
+      pin the workflow to floating @main (same risk class as the
+      tj-actions/changed-files CVE-2025-30066 attack).
     verify: >-
       Search .github/workflows/*.yml for uses: ByronWilliamsCPA/.github/.github/
       workflows/python-sbom.yml@<ref>. The ref must be a 40-char SHA, not @main and
@@ -1760,10 +1761,12 @@ checks:
       from per-repo override).
     verify: >-
       Read repo file inventory; read effective enabledManagers from renovate.json
-      combined with the org template at ByronWilliamsCPA/.github/renovate.json
-      (renovate replaces, does not merge arrays; verify on the per-repo list, not
-      the union). For each detected ecosystem file pattern, confirm the corresponding
-      manager is in the effective list.
+      combined with the appropriate org template for the repo's owner
+      (ByronWilliamsCPA/.github/renovate.json for ByronWilliamsCPA/* repos;
+      williaby/.github/renovate.json for williaby/* repos). Renovate replaces,
+      does not merge arrays; verify on the per-repo list, not the union. For
+      each detected ecosystem file pattern, confirm the corresponding manager
+      is in the effective list.
     source_frameworks:
       - manifest-internal
     notes: >-
