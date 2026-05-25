@@ -1,6 +1,17 @@
 # docs/standards-manifest.yaml
 version: "1.0"
-last_updated: "2026-05-24"
+last_updated: "2026-05-25"
+# 2026-05-25: Phase 3A of the v43 cutover plan. Added CI-058 (python-sbom caller
+# SHA-pinned, suggested), CI-059 (semantic enabledManagers lint, suggested),
+# CI-060 (third-party Action SHA pins, suggested), CI-061 (Renovate Docker image
+# SHA-pin, critical; already enforced via homelab-infra PR #425), and PC-016
+# (global Renovate config validator, suggested). Severity promotions for CI-058/
+# 059/060/PC-016 will land in Phase 3D once the corresponding sweep PRs deploy
+# enforcement to 100% reach per feedback_policy_execution_gap.md. PC-015 (v42-era
+# renovate-config-validator pin lockstep) was never committed to main; its
+# motivating use case is retired by the v43 cutover. CI-059 is the structural
+# successor (catches a strictly larger class of misconfiguration).
+# Cross-reference: docs/audits/dependency-management-improvement-plan-2026-05-24.md
 
 # verify field is a hint to the domain agent, not executable DSL.
 # Agents interpret it using their own tools (Grep, Read, Glob, Bash).
@@ -441,6 +452,39 @@ checks:
       documenting a multi-line exclude stanza while remaining tight enough
       that unrelated comments further above do not inadvertently satisfy
       the rule.
+
+  - id: PC-016
+    domain: pre_commit
+    severity: suggested
+    description: >-
+      The Renovate global config at homelab-infra/services/renovate/config/config.json
+      validates clean against renovate-config-validator pinned to the same Renovate
+      MAJOR version as the homelab-infra self-hosted instance. Closes the structural
+      blind spot identified in the 2026-05-24 fleet audit: the v42-era PC-015 check
+      (now retired post-v43 cutover) covered only per-repo renovate.json files,
+      leaving the global config that the Docker stack mounts at /config/config.json
+      out of scope. An invalid global config can break PR generation for the entire
+      fleet simultaneously, with no per-repo audit signal.
+    verify: >-
+      Run renovate-config-validator at the same major version as the homelab-infra
+      Docker image against services/renovate/config/config.json. Exit code must be 0.
+      The hook MUST be present in the homelab-infra .pre-commit-config.yaml with the
+      same SHA pin and additional_dependencies version as the running renovate/renovate
+      image (currently renovate@43.x).
+    override_eligible: false
+    not_applicable_when: >-
+      Audit target is not the homelab-infra repo. This check only applies to
+      homelab-infra/services/renovate/config/config.json.
+    notes: >-
+      Added 2026-05-25 as severity: suggested. Will be promoted to critical once the
+      pre-commit hook is actually deployed to homelab-infra. The check exists to
+      prevent recurrence of the 2026-05-24 global-config "uv" trap (now fixed by the
+      v43 cutover, which accepts "uv" natively). v43 unified the validator and server
+      schemas, so the version-pin lockstep risk that motivated PC-015 is retired here
+      too. PC-016 remains useful for catching forward-compat issues (e.g., a future
+      v44 schema change). Cross-reference: feedback_renovate_uv_manager_trap.md,
+      feedback_policy_execution_gap.md,
+      docs/audits/dependency-management-improvement-plan-2026-05-24.md P0-1.
 
   # ── CI ────────────────────────────────────────────────────────────────────────
 
@@ -1672,6 +1716,130 @@ checks:
     verify: "content_present: renovate.json, ByronWilliamsCPA/.github"
     source_frameworks:
       - manifest-internal
+
+  - id: CI-058
+    domain: ci
+    severity: suggested
+    override_eligible: true
+    not_applicable_when: >-
+      Repo is not a Python project (no [project] table in pyproject.toml).
+    description: >-
+      python-sbom.yml reusable workflow is called from .github/workflows/ via
+      uses: ByronWilliamsCPA/.github/.github/workflows/python-sbom.yml@<SHA>
+      with a SHA-pinned ref (not @main, not a tag). Closes the gap where 4
+      Python repos in the fleet (cookiecutter-template-sample, family-office-portal,
+      PromptCraft, monte_carlo) ship with no SBOM gate at all, and 6 repos pin the
+      workflow to floating @main (same risk class as the tj-actions/changed-files
+      CVE-2025-30066 attack).
+    verify: >-
+      Search .github/workflows/*.yml for uses: ByronWilliamsCPA/.github/.github/
+      workflows/python-sbom.yml@<ref>. The ref must be a 40-char SHA, not @main and
+      not @vN tag form.
+    source_frameworks:
+      - manifest-internal
+    notes: >-
+      Added 2026-05-25 as severity: suggested. Will be promoted to important after
+      rollout PR sweep deploys callers to the 4 missing repos and fixes the 6 @main
+      pins. Cross-reference: docs/audits/dependency-management-improvement-plan-2026-05-24.md
+      S-9, feedback_policy_execution_gap.md.
+
+  - id: CI-059
+    domain: ci
+    severity: suggested
+    override_eligible: true
+    not_applicable_when: "renovate.json does not exist at repo root"
+    description: >-
+      renovate.json effective enabledManagers (after org template inheritance) includes
+      every manager required by the detected ecosystem files in the repo. Concretely:
+      if pyproject.toml has [project] then pep621 must be present; if .github/workflows/
+      exists then github-actions must be present; if Dockerfile exists then dockerfile;
+      if docker-compose*.yml then docker-compose; if package.json then npm; if *.tf then
+      terraform. Catches the silent-failure class where Renovate is enabled but produces
+      zero PRs because the manager for the actual ecosystem is missing (e.g., "poetry"
+      declared for a uv-managed project, replace-not-merge semantics dropping pep621
+      from per-repo override).
+    verify: >-
+      Read repo file inventory; read effective enabledManagers from renovate.json
+      combined with the org template at ByronWilliamsCPA/.github/renovate.json
+      (renovate replaces, does not merge arrays; verify on the per-repo list, not
+      the union). For each detected ecosystem file pattern, confirm the corresponding
+      manager is in the effective list.
+    source_frameworks:
+      - manifest-internal
+    notes: >-
+      Added 2026-05-25 as severity: suggested. Will be promoted to important after
+      the lint script is built and deployed as a local pre-commit hook and/or
+      fleet-wide CI check. This is the structural successor to the v42-era PC-015
+      schema-validation check (now retired post-v43 cutover); CI-059 catches a
+      strictly larger class of misconfiguration (semantic coverage gaps that PC-015
+      never caught even in principle). Likely accounts for most of the 47%
+      BLOCKED_BY_CONFIG finding in docs/audits/dependabot-renovate-coverage-2026-05-24.md.
+      Cross-reference: dependency-management-improvement-plan-2026-05-24.md S-3,
+      feedback_policy_execution_gap.md.
+
+  - id: CI-060
+    domain: ci
+    severity: suggested
+    override_eligible: true
+    not_applicable_when: ".github/workflows/ directory does not exist"
+    description: >-
+      All third-party GitHub Action references in .github/workflows/*.yml use a full
+      40-character commit SHA pin (e.g., uses: actions/checkout@
+      8edcb1bdb4e267140fa742c62e395cd74f332709 # v4.3.0), not a tag (@v4, @v4.3.0)
+      or branch (@main) pin. Pinning to tags or branches exposes the workflow to
+      retroactive pointer manipulation, the attack vector used in CVE-2025-30066
+      (tj-actions/changed-files compromise, March 2025, affected 23,000+ repos).
+      First-party org workflow refs (ByronWilliamsCPA/.github, williaby/.github)
+      are governed by CI-056 and excluded from this check.
+    verify: >-
+      Grep .github/workflows/*.yml for `uses: ` references. For each reference
+      whose owner is not ByronWilliamsCPA or williaby, the ref after @ must be a
+      40-character hex SHA. Tag refs (@v\d+) and branch refs (@main, @master) fail.
+      Allow trailing comment with the human-readable tag for readability.
+    source_frameworks:
+      - manifest-internal
+    notes: >-
+      Added 2026-05-25 as severity: suggested. Will be promoted to important after
+      fleet-wide SHA-pinning PR sweep completes. Renovate's pinDigests: true
+      packageRule automates ongoing maintenance; deploy that rule to the org template
+      alongside this check. Cross-reference:
+      dependency-management-improvement-plan-2026-05-24.md S-4.
+
+  - id: CI-061
+    domain: ci
+    severity: critical
+    override_eligible: false
+    not_applicable_when: >-
+      Audit target is not the homelab-infra repo. This check only applies to
+      homelab-infra/services/renovate/docker-compose.yml.
+    description: >-
+      The Renovate self-hosted Docker image in homelab-infra is pinned to a
+      cryptographic digest (sha256:...), not a floating tag. Tag-only pins leave a
+      silent-upgrade vector: every systemd timer fire (or docker compose pull) can
+      fetch a different image if upstream re-pushes the tag, with no audit trail of
+      what changed. Digest pinning closes this and gives an immutable reference
+      reviewable in PR diffs. The v43 cutover (homelab-infra PR #425) established
+      the tag@sha256:digest format; this check ensures the pattern stays in place.
+      A paired packageRule in config/config.json with pinDigests: true,
+      minimumReleaseAge: 14 days, and automerge: false handles ongoing digest bumps
+      via reviewable PRs.
+    verify: >-
+      Grep services/renovate/docker-compose.yml for the renovate service's image:
+      line. The reference MUST match the regex
+      ^[\w./-]+:[\w.-]+@sha256:[a-f0-9]{64}$ (tag AND 64-hex digest both present).
+      A bare tag (e.g., renovate/renovate:43.150.0) or a bare digest fails. Allow
+      only the canonical form renovate/renovate:<tag>@sha256:<64-hex-digest>.
+    source_frameworks:
+      - manifest-internal
+    notes: >-
+      Added 2026-05-25 as severity: critical. The silent-upgrade vector this check
+      prevents is directly observable: a re-pushed floating tag would pull a
+      different image on the next timer fire with no PR or notification. The check
+      is enforceable from day one (the digest pin landed in homelab-infra PR #425),
+      so unlike CI-058/059/060 which start at suggested until rollout completes,
+      CI-061 is critical from initial introduction. Cross-reference:
+      docs/audits/dependency-management-improvement-plan-2026-05-24.md S-1,
+      docs/superpowers/plans/immutable-inventing-pinwheel.md Phase 2.
 
   - id: FOUND-015
     domain: foundations
