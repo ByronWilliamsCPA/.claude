@@ -1,7 +1,7 @@
 {
   "_meta": {
     "linkedDoc": "docs/reference/repo-type-taxonomy.md",
-    "lastUpdated": "2026-05-14",
+    "lastUpdated": "2026-05-26",
     "refreshCommands": {
       "repoList": "gh repo list <org> --limit 100 --json name,url,defaultBranchRef,description,isPrivate,isArchived",
       "branchProtection": "gh api repos/<org>/<repo>/branches/<branch>/protection",
@@ -1332,9 +1332,16 @@
       "isArchived": false,
       "api": {
         "servesApi": true,
-        "frameworks": ["fastapi"],
-        "entryPoints": ["src/fragrance_rater/main.py"],
-        "externalClients": ["httpx", "requests"],
+        "frameworks": [
+          "fastapi"
+        ],
+        "entryPoints": [
+          "src/fragrance_rater/main.py"
+        ],
+        "externalClients": [
+          "httpx",
+          "requests"
+        ],
         "openApiSpec": false,
         "postmanCollection": false,
         "lastAudited": null,
@@ -2707,152 +2714,6 @@
         }
       },
       "usesDocker": false,
-      "migrationPhase": "complete"
-    },
-    {
-      "org": "ByronWilliamsCPA",
-      "repositoryType": "python-template",
-      "name": "template-sample",
-      "url": "https://github.com/ByronWilliamsCPA/template-sample",
-      "defaultBranch": "main",
-      "description": "Comprehensive test project with all template features enabled",
-      "isPrivate": false,
-      "isArchived": false,
-      "review": {
-        "branchProtection": {
-          "enabled": true,
-          "enforceAdmins": true,
-          "requiredSignatures": true,
-          "requiredLinearHistory": true,
-          "allowForcePushes": false,
-          "allowDeletions": false,
-          "blockCreations": false,
-          "requiredConversationResolution": false,
-          "lockBranch": false,
-          "requiredStatusChecks": {
-            "strict": true,
-            "contexts": [
-              "CI Gate",
-              "Security Gate Validation",
-              "Dependency & Standards Validation",
-              "Check REUSE Compliance"
-            ]
-          },
-          "requiredPullRequestReviews": {
-            "requiredApprovingReviewCount": 0,
-            "dismissStaleReviews": false,
-            "requireCodeOwnerReviews": false,
-            "requireLastPushApproval": false
-          }
-        },
-        "codeql": {
-          "workflowPresent": false
-        },
-        "scorecard": {
-          "workflowPresent": true,
-          "score": 5.7,
-          "lastChecked": "2026-02-03T21:33:34Z"
-        },
-        "sonarcloud": {
-          "configPresent": true,
-          "workflowPresent": true
-        },
-        "codecov": {
-          "configPresent": true,
-          "workflowPresent": false
-        },
-        "reuse": {
-          "workflowPresent": true
-        },
-        "renovate": {
-          "configured": true,
-          "shaAutoPinning": true
-        },
-        "secretScanning": {
-          "enabled": false,
-          "pushProtection": false
-        },
-        "ossfBadge": {
-          "badgeId": null,
-          "percentagePassing": null
-        },
-        "workflows": {
-          "files": [
-            "ci.yml",
-            "cifuzzy.yml",
-            "docs.yml",
-            "pr-validation.yml",
-            "publish-pypi.yml",
-            "release.yml",
-            "reuse.yml",
-            "sbom.yml",
-            "scorecard.yml",
-            "security-analysis.yml",
-            "sonarcloud.yml"
-          ],
-          "presentFromExpected": [
-            "ci.yml",
-            "docs.yml",
-            "pr-validation.yml",
-            "release.yml",
-            "reuse.yml",
-            "sbom.yml",
-            "scorecard.yml",
-            "security-analysis.yml",
-            "sonarcloud.yml"
-          ],
-          "missingFromExpected": [
-            "codeql.yml",
-            "coverage.yml",
-            "python-compatibility.yml",
-            "release-sign.yml"
-          ],
-          "extras": [
-            "cifuzzy.yml",
-            "publish-pypi.yml"
-          ]
-        },
-        "foundations": {
-          "securityMd": false,
-          "contributingMd": true,
-          "changelogMd": true,
-          "codeOfConduct": true,
-          "governanceMd": true,
-          "agentsMd": false,
-          "geminiMd": false,
-          "claudeMd": true,
-          "knownVulnerabilities": false,
-          "codeowners": true
-        },
-        "preCommit": {
-          "configPresent": true,
-          "hooks": {
-            "ruff": true,
-            "basedpyright": false,
-            "bandit": false,
-            "detectSecrets": false,
-            "darglint": false,
-            "interrogate": true,
-            "commitizen": false,
-            "yamllint": false,
-            "markdownlint": false,
-            "noEmDash": false
-          }
-        },
-        "toolchain": {
-          "pyprojectToml": true,
-          "qltyConfig": true
-        },
-        "releaseHealth": {
-          "hasRelease": null,
-          "daysSinceRelease": null
-        },
-        "templateDrift": {
-          "sourceTemplate": "ByronWilliamsCPA/cookiecutter-python-template",
-          "driftScore": null
-        }
-      },
-      "usesDocker": true,
       "migrationPhase": "complete"
     },
     {
