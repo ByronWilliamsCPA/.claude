@@ -142,6 +142,15 @@ jobs:
         working-directory: dist
         run: |
           set -euo pipefail
+          # Defense in depth: the prior step already guards artifact presence,
+          # but re-validate here so any future refactor of the download step
+          # cannot silently lose the protection.
+          shopt -s failglob
+          if ! compgen -G "./*.whl" >/dev/null || ! compgen -G "./*.tar.gz" >/dev/null; then
+            echo "::error::Expected .whl and .tar.gz artifacts not found in dist/"
+            ls -la
+            exit 1
+          fi
           HASHES=$(sha256sum ./*.whl ./*.tar.gz | base64 -w0)
           echo "hashes=$HASHES" >> "$GITHUB_OUTPUT"
 
@@ -155,9 +164,9 @@ jobs:
     name: Generate SLSA Provenance
     needs: [prepare]
     permissions:
-      actions: read
-      id-token: write
-      contents: write
+      actions: read       # SLSA generator reads this workflow's run metadata to bind the provenance to it
+      id-token: write     # OIDC token issuance for signing the provenance via Sigstore (fulcio/rekor)
+      contents: write     # Upload the generated `multiple.intoto.jsonl` asset to the GitHub Release
     uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@f7dd8c54c2067bafc12ca7a55595d5ee9b75204a  # v2.1.0
     with:
       base64-subjects: ${{ needs.prepare.outputs.hashes }}
