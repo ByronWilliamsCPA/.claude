@@ -4,6 +4,19 @@
 
 ### Added
 
+* feat(manifest): add CI-062 and promote CI-040 in `docs/standards-manifest.yaml`.
+  CI-062 (severity important, override-eligible) gates repos with auto-merging
+  dependency updates: when Renovate or Dependabot auto-merge is signaled, the
+  main-branch ruleset must declare a `merge_queue` rule. Without the queue,
+  N sequential auto-merges trigger N(N+1)/2 CI runs from cascading rebases;
+  the homelab-infra incident on 2026-05-24 (ByronWilliamsCPA/.github#154)
+  consumed roughly 30 min of paid Actions minutes to land 5 trivial Renovate
+  PRs. CI-040 (merge_group trigger on the primary CI workflow) is promoted
+  from suggested to important in lockstep, since both are required for the
+  queue to function. Also adds a "Merge queue and auto-merge" section to
+  `.claude/rules/git-workflow.md` covering enablement criteria, prerequisites,
+  and interaction with auto-merge. Refs ByronWilliamsCPA/.github#154.
+
 * feat(compliance): add CLAUDE-010 to `docs/standards-manifest.yaml`. CLAUDE-010
   (severity important, not override-eligible) gates the `$schema` field in
   `.claude/settings.json`: when present, the field must be exactly

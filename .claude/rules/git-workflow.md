@@ -229,6 +229,51 @@ Prefer splitting features at a natural seam before crossing the p90 threshold.
 
 Source: <https://x.com/bcherny/status/2038552880018538749>
 
+## Merge queue and auto-merge
+
+GitHub's merge queue batches compatible PRs so a single CI run validates the
+combined HEAD, instead of one run per PR. Without it, N auto-merging Renovate
+PRs cascade into N(N+1)/2 CI runs because each merge moves `main` forward and
+puts the next PR into BEHIND state.
+
+### When to enable
+
+Enable the merge queue on any repo where these signals appear together:
+
+- `automerge: true` in `renovate.json`, or `RENOVATE_AUTOMERGE=true`
+- Roughly 5 or more dependency-bump PRs per week (threshold drawn from the
+  homelab-infra incident in ByronWilliamsCPA/.github#154, where 5 batched
+  Renovate PRs consumed about 30 min of paid Actions minutes)
+- Required status checks slow enough that serial landing exceeds 30 minutes
+
+The queue is the wrong tool for repos with rare merges, fast checks under
+2 minutes, or PRs that frequently conflict on shared files; the speculative
+build would just thrash.
+
+### Two prerequisites
+
+1. **Workflows must emit on `merge_group`** (standards-manifest CI-040). The
+   queue blocks on required checks; if a required workflow has no `merge_group`
+   trigger, the queue waits forever and times out.
+2. **Ruleset must declare the queue** (CI-062). Configure on the main branch
+   ruleset with `merge_method: SQUASH`, `max_entries_to_build: 5`,
+   `min_entries_to_merge: 1`, and `min_entries_to_merge_wait_minutes: 5` so a
+   lone PR does not pay the queue's overhead.
+
+### Interaction with auto-merge
+
+Auto-merge and the queue compose. A PR's auto-merge state survives queue
+entry; once the speculative build passes, the queue lands the batch using
+the auto-merge method. Use `squash` for dependency batches to keep the
+default branch history clean.
+
+### References
+
+- GitHub docs:
+  <https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/configuring-pull-request-merges/managing-a-merge-queue>
+- Cost incident motivating these checks: ByronWilliamsCPA/.github#154
+- Standards: CI-040 (trigger), CI-062 (ruleset)
+
 ## Session Forking
 
 Claude Code supports two mechanisms for exploration that should not contaminate
