@@ -231,7 +231,7 @@ The reusable `python-sbom.yml` workflow in `ByronWilliamsCPA/.github` generates 
 | `grype` (advisory, parallel-run) | Scan SBOM for known CVEs; non-gating until 2026-06-24 parity checkpoint | Workflow `Scan Runtime Dependencies (Grype - advisory)` job |
 | License compliance check | Block forbidden SPDX licenses (default: GPL/AGPL family) | Workflow `License Compliance Check` job |
 
-**Parallel-run note (2026-05-25 to 2026-06-24, issue #152):** Trivy and Grype run
+**Parallel-run note (2026-05-25 to 2026-06-24, issue ByronWilliamsCPA/.github#152):** Trivy and Grype run
 side-by-side. Trivy remains the merge gate. Grype runs with `continue-on-error: true`
 and `fail-build: false`. A `parity-summary` job writes a results-comparison table to
 the run summary. At the day-30 checkpoint, a human spot-checks 3-5 caller-repo runs
@@ -243,7 +243,9 @@ and decides whether to cut over to Grype-only (separate PR) or extend the window
 - `severity-threshold`: defaults to `CRITICAL,HIGH`
 - `forbidden-licenses`: JSON array of SPDX IDs
 - `trivyignore-path`: `.trivyignore` to suppress known CVEs (must have tracked references).
-  DEPRECATED: removed at Trivy cutover (see issue #152).
+  Pending deprecation: scheduled for removal at Trivy cutover (target 2026-06-24,
+  see ByronWilliamsCPA/.github#152). Continue using it during the parallel-run window,
+  Trivy remains the gating scanner.
 - `grype-config-path`: `.grype.yaml` to suppress known CVEs in Grype
   (parallel-run; default `.grype.yaml`).
 
@@ -272,8 +274,8 @@ The `dependency-review.yml` reusable workflow runs on every pull request to main
 
 **How it differs from SBOM:**
 - SBOM scans the **entire installed environment** for vulnerabilities; dependency-review scans **only the diff**.
-- SBOM uses Trivy (parallel-run with Grype until 2026-06-24, see issue #152);
-  dependency-review uses GitHub's GHSA directly.
+- SBOM uses Trivy (parallel-run with Grype until 2026-06-24, see
+  ByronWilliamsCPA/.github#152); dependency-review uses GitHub's GHSA directly.
 - SBOM persists artifacts (90 days); dependency-review is ephemeral check-run output.
 
 **How it differs from Renovate:**
