@@ -161,7 +161,7 @@ branch creation to proceed, after which CI Gate enforcement activates on subsequ
 pushes. This flag only skips the check on the branch-create event; it does not waive
 the check for any PR or subsequent push.
 
-**`enforce: "evaluate"` across all rulesets**: rulesets are in audit mode pending the
+**`enforcement: "evaluate"` across all rulesets**: rulesets are in audit mode pending the
 CI-022/CI-023 remediation sweep across all repos. Flip to `active` after the sweep confirms
 required check names are consistent. See CI-025a/CI-025b in standards-manifest.yaml.
 
