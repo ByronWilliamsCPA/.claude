@@ -19,8 +19,8 @@ tags:
 
 | Date | Repo | Mode | Critical | Important | Suggested | Candidates | Reconciled | Report |
 |------|------|------|---------:|----------:|----------:|-----------:|:----------:|--------|
-| 2026-05-24 | ByronWilliamsCPA/llc-manager | interactive | 3 | 20 | 10 | 6 |  | [report](docs/compliance-retrospectives/2026-05-24-llc-manager.md) |
-| 2026-05-23 | ByronWilliamsCPA/rag-processor | interactive | 6 | 32 | 16 | 16 |  | [report](docs/compliance-reports/lessons-learned/2026-05-23.md) |
+| 2026-05-24 | ByronWilliamsCPA/llc-manager | interactive | 3 | 20 | 10 | 6 |  |  |
+| 2026-05-23 | ByronWilliamsCPA/rag-processor | interactive | 6 | 32 | 16 | 16 |  |  |
 | 2026-05-19 | ByronWilliamsCPA/rag-processor | interactive | 8 | 32 | 11 | 8 |  | [report](https://github.com/ByronWilliamsCPA/rag-processor/blob/main/docs/compliance-reports/lessons-learned/2026-05-19-rag-processor.md) |
 | 2026-05-18 | williaby/image-generation | interactive | 0 | 8 | 10 | 20 |  |  |
 | 2026-05-16 | ByronWilliamsCPA/reference-library | unknown | 0 | 0 | 0 | 0 | yes | [report](https://github.com/ByronWilliamsCPA/reference-library/blob/main/docs/compliance-reports/lessons-learned/2026-05-16-b.md) |
