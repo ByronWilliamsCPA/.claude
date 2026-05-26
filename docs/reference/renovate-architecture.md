@@ -22,8 +22,8 @@ This document is the canonical source of truth for how dependency updates and vu
 | Global config (applied to all repos) | `homelab-infra/services/renovate/config/config.json` |
 | Org template (BWCPA, redirects from williaby) | `ByronWilliamsCPA/.github/renovate.json` |
 | Per-repo override | `{repo}/renovate.json` |
-| Pre-commit validator hook (PC-015) | `{repo}/.pre-commit-config.yaml` |
-| Manifest checks | TOOL-013, PC-015, CI-020, CI-021 in `docs/standards-manifest.yaml` |
+| Pre-commit validator hook (PC-016) | `homelab-infra/.pre-commit-config.yaml` |
+| Manifest checks | TOOL-013, PC-016, CI-020, CI-021, CI-059, CI-061 in `docs/standards-manifest.yaml` |
 | Reusable SBOM workflow | `ByronWilliamsCPA/.github/.github/workflows/python-sbom.yml` |
 | Reusable dependency-review workflow | `ByronWilliamsCPA/.github/.github/workflows/dependency-review.yml` |
 
@@ -61,7 +61,7 @@ Renovate runs as a self-hosted Docker stack that processes every repo in the Byr
 │ LAYER 4: Per-repo config ({repo}/renovate.json)                │
 │ - REPLACES (not merges) array keys from upstream layers        │
 │ - Must include pep621 if the repo is uv-managed                │
-│ - Validated by PC-015 pre-commit hook                          │
+│ - Effective enabledManagers audited by CI-059 (semantic lint)  │
 └────────────────────────────────────────────────────────────────┘
 ```
 
@@ -95,7 +95,7 @@ The Renovate bot runs in Portainer/Docker on the homelab as a non-continuous con
 - Network isolated on dedicated bridge (`renovate-network`)
 - Resource caps: 2 CPUs, 4 GB RAM, 500 MB reservation
 
-**Operational note:** the running Renovate version is the gatekeeper for which schema features are valid. `v42.x` rejects manager identifiers like `"uv"` that `v43+` accepts. Any config change written against `v43` docs will silently break against the homelab `v42.92` server. See PC-015 below.
+**Operational note:** the running Renovate version is the gatekeeper for which schema features are valid. The homelab-infra v43 cutover (PR #425) unified the validator and server schemas, so the historical v42-era "validator pinned in lockstep with the server" risk no longer applies. CI-061 (critical) enforces that the Docker image stays digest-pinned so the running server cannot silently drift. See the Standards Manifest Enforcement section below.
 
 ## Layer 2: Global Config
 
@@ -184,18 +184,22 @@ That's it. Inheritance from the global config handles vulnerabilityAlerts, lockF
 
 ## Standards Manifest Enforcement
 
-The repo-compliance system enforces Renovate hygiene via four manifest checks:
+The repo-compliance system enforces Renovate hygiene via six manifest checks:
 
 | Check | Severity | Purpose |
 | --- | --- | --- |
 | **TOOL-013** | critical | uv is the primary Python package manager; `[tool.poetry]` is forbidden, `uv.lock` is required alongside `[project]` table |
-| **PC-015** | critical | `.pre-commit-config.yaml` must include `renovate-config-validator` pinned to `renovate@42.92.14` (matching the homelab server version) |
+| **PC-016** | suggested | `.pre-commit-config.yaml` includes `renovate-config-validator`; no version pin lockstep with the running server |
 | **CI-020** | important | `renovate.json` present at repo root |
 | **CI-021** | important | `dependabot.yml` absent when `renovate.json` is present (no duplicate PR engines) |
+| **CI-059** | suggested | `renovate.json` effective `enabledManagers` (after org template inheritance) covers every detected ecosystem in the repo |
+| **CI-061** | critical | Renovate Docker image in `homelab-infra` is `sha256:` digest-pinned |
 
-**The PC-015 version pin is load-bearing.** Default `npx renovate-config-validator` resolves to v43.150.0, which accepts `"uv"` as a manager. A v42-pinned validator is required to actually catch the trap that's been recurring since May 2026. See `feedback_renovate_uv_manager_trap.md` in the memory store.
+**PC-016 is a syntactic validator, not a version-pinned tripwire.** The v43 cutover unified the validator and server schemas, so the v42-era pre-commit pin (the retired "PC-015" placeholder hook) is no longer load-bearing. PC-016 keeps a config-validator hook in place at the homelab-infra layer to catch outright schema-invalid configs at commit time, without the lockstep maintenance burden the retired check required.
 
-**Migration on Renovate version bumps:** When the homelab Docker image bumps to a new major version, this manifest entry AND every per-repo `.pre-commit-config.yaml` `additional_dependencies` pin must be updated in lockstep. Without lockstep, either the validator gets ahead of the server (false-passes break in production) or the server gets ahead (validator rejects configs the server would accept).
+**CI-059 is the structural successor to the retired schema-pin check.** It runs at CI time and lints effective `enabledManagers` (after org template inheritance, with Renovate's replace-not-merge array semantics applied) against the ecosystem files actually present in each repo. This catches a strictly larger class of bug than the v42-era validator-pin approach ever could: cases like `"poetry"` declared for a uv-managed project, or a per-repo override silently dropping `pep621`, which are syntactically valid but semantically broken. See `feedback_renovate_uv_manager_trap.md` in the memory store.
+
+**CI-061 closes the silent-upgrade vector at the Docker layer.** The Renovate self-hosted image in `homelab-infra/services/renovate/docker-compose.yml` must match `renovate/renovate:<tag>@sha256:<digest>` (both tag AND 64-hex digest present). A bare floating tag would let an upstream re-push silently change which image runs on the next timer fire, with no audit trail. The digest pin landed in homelab-infra PR #425; CI-061 ensures it stays in place.
 
 ## Relationship to Dependabot
 
@@ -304,10 +308,10 @@ The `dependency-review.yml` reusable workflow runs on every pull request to main
 7. CI passes; PR auto-merges immediately (no stability gate for CRITICAL/HIGH CVEs).
 8. Dependabot Alert closes automatically when the merge lands.
 
-### Broken Renovate config (the May 2026 / this-session incident class)
-1. Someone writes `"uv"` in `enabledManagers` against v43 docs.
-2. **Without PC-015:** the commit lands. The next Renovate run logs `Config validation errors found: ... not supported: "uv"` and rejects the entire config. Repo silently stops getting PRs. Nobody notices for months.
-3. **With PC-015:** the local pre-commit run executes `renovate-config-validator` pinned to `renovate@42.92.14`. The hook exits non-zero and blocks the commit. Developer fixes the config to use `pep621` before push. No silent failure.
+### Broken Renovate config (the May 2026 incident class, post v43 cutover)
+1. Someone edits `renovate.json` and either writes an outright schema-invalid key, or declares a manager (e.g., `"poetry"`) that does not match the ecosystem files actually in the repo.
+2. **PC-016 (syntactic gate):** if the change is schema-invalid, the renovate-config-validator pre-commit hook exits non-zero on the homelab-infra config layer and blocks the commit at author time. Catches the outright-malformed class at the cheapest possible point.
+3. **CI-059 (semantic gate):** for changes that pass schema validation but break ecosystem coverage (e.g., `"poetry"` declared for a uv-managed repo, or a per-repo override silently dropping `pep621` via replace-not-merge), the CI lint reads the effective `enabledManagers` after org-template inheritance and compares it to the detected ecosystem files. It surfaces the gap on the PR rather than letting Renovate go silent for months. This is the structurally larger class of bug that the retired v42-era schema-pin check never caught even in principle.
 
 ## Common Pitfalls
 
@@ -317,8 +321,8 @@ The `dependency-review.yml` reusable workflow runs on every pull request to main
 | Removing `pep621` thinking `"uv"` will work | Same as above | Restore `pep621` |
 | Using `dependabot.yml` alongside `renovate.json` | Duplicate PRs, conflicting automerge | Delete `dependabot.yml` (CI-021) |
 | Forgetting `RENOVATE_BINARY_SOURCE=install` | uv.lock PRs fail with `artifacts: FAILURE` | Set env var in docker-compose |
-| Not pinning `additional_dependencies` in pre-commit | Validator passes locally, server rejects | Pin to `renovate@42.92.14` |
-| Bumping homelab Renovate without lockstep pre-commit pin update | Either validator or server gets ahead | Coordinated rollout (see PC-015 notes) |
+| Homelab Renovate image left as a bare floating tag | Upstream re-push silently changes which image runs on the next timer fire; no audit trail in PR diff | Pin `renovate/renovate:<tag>@sha256:<digest>` (CI-061 enforces); use `pinDigests: true` packageRule for ongoing bumps |
+| Per-repo manager list does not cover actual ecosystem (e.g., `"poetry"` only on a uv repo) | Schema-valid but Renovate produces zero PRs | List every manager the ecosystem files require; CI-059 audits the effective list |
 | Per-repo `enabledManagers` with one entry, expecting merge | Other managers silently disabled | Renovate replaces, does not merge; list every manager you need |
 
 ## Upgrade Procedure: Bumping the Renovate Major Version
@@ -328,19 +332,19 @@ When the homelab Renovate Docker image is upgraded to a new major version (e.g. 
 1. **Read the upstream changelog** for the new major. Identify breaking schema changes (e.g., the v42→v43 fileMatch→managerFilePatterns rename, matchSeverity placement changes, prPriority placement under vulnerabilityAlerts).
 2. **Audit existing configs** for any uses of the deprecated syntax. The renovate-config-validator pinned to the *new* version is the easiest way: run it against every `renovate.json` in the fleet and collect failures.
 3. **Open per-repo fix PRs** for each failing config, using the new syntax.
-4. **Update PC-015 in the standards manifest** to reference the new major version.
-5. **Update every repo's `.pre-commit-config.yaml`** `additional_dependencies` pin to the new Renovate version.
-6. **Update the Docker image tag** in `homelab-infra/services/renovate/docker-compose.yml`.
-7. **Deploy the new image** and watch the first run logs for `Config validation errors found`.
-8. **If any repo's config rejects on the new server,** roll back the Docker image immediately and fix the per-repo config before re-attempting.
+4. **Update the homelab-infra PC-016 pre-commit hook** `additional_dependencies` pin to the new Renovate major. Per-repo `.pre-commit-config.yaml` files do not need lockstep updates anymore; the v43-era validator and server share a unified schema.
+5. **Update the Docker image tag AND digest** in `homelab-infra/services/renovate/docker-compose.yml`. The image reference must remain in the `renovate/renovate:<tag>@sha256:<digest>` form that CI-061 enforces.
+6. **Deploy the new image** and watch the first run logs for `Config validation errors found`.
+7. **If any repo's config rejects on the new server,** roll back the Docker image immediately and fix the per-repo config before re-attempting.
+8. **Re-run the CI-059 lint** against every repo with a `renovate.json` once the new server is live, to confirm no per-repo override silently dropped a required manager during the migration.
 
-**Lockstep is essential.** All three layers (manifest entry + per-repo pre-commit pins + Docker image tag) must change together, or the validator and server will disagree on what's valid.
+**Atomic image bumps.** The Docker image tag and `sha256:` digest must change together (CI-061); a tag-only bump leaves the silent-upgrade vector open and breaks the audit trail in the docker-compose diff.
 
 ## References
 
 - **Memory entry:** `feedback_renovate_uv_manager_trap.md`: full incident history for the uv manager mistake
 - **Audit report:** `docs/audits/dependabot-renovate-coverage-2026-05-24.md`: fleet-wide coverage analysis
-- **Standards manifest:** `docs/standards-manifest.yaml`: TOOL-013, PC-015, CI-020, CI-021
+- **Standards manifest:** `docs/standards-manifest.yaml`: TOOL-013, PC-016, CI-020, CI-021, CI-059, CI-061
 - **Renovate upstream docs:** https://docs.renovatebot.com/ (use only when cross-checking against the v42 schema)
 - **CycloneDX:** https://cyclonedx.org/specification/ (SBOM format)
 - **GHSA vs OSV:** https://github.com/github/advisory-database vs https://osv.dev/
