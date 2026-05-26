@@ -33,7 +33,7 @@ The system has four layers:
 standards-manifest.yaml          (what to check and how to verify it)
         |
         v
-Domain agents (6 agents)         (read the manifest; audit or remediate)
+Domain agents (8 agents)         (read the manifest; audit or remediate)
         |
         v
 Coordinator skill                (dispatches agents in parallel; merges findings)
@@ -74,6 +74,9 @@ The `verify` field is a plain-text instruction for the auditing agent. Agents in
 | `pre_commit` | `pre-commit-auditor` | PC-* |
 | `ci` | `devops-deployment-agent` (CI audit mode) | CI-* |
 | `claude_docs` | `claude-docs-auditor` | CLAUDE-* |
+| `ossf` | `ossf-compliance-auditor` | OSSF-* (plus live Scorecard/Badge API) |
+| `mkdocs` | `mkdocs-auditor` | MKDOCS-* (skipped when mkdocs.yml absent) |
+| `api` | `openapi-compliance-agent` (via check-repo-compliance.py) | API-001..005 (when api.servesApi=true) |
 | General gaps | `general-compliance-auditor` | unclassified candidates |
 
 The general compliance auditor operates after domain agents complete. It receives the covered check IDs as a negative filter and performs a freeform review for anything not yet in the manifest. Its output feeds the retrospective, not the findings report.
@@ -88,15 +91,21 @@ The general compliance auditor operates after domain agents complete. It receive
 
 ### Check summary by domain
 
-**FOUND (Foundations, 11 checks):** OpenSSF required files (SECURITY.md, CONTRIBUTING.md, CHANGELOG.md), CODEOWNERS, .gitignore entries, pyproject.toml metadata, docs structure, known-vulnerabilities.md, AGENTS.md, GEMINI.md.
+**FOUND (Foundations, 16 checks):** OpenSSF required files (SECURITY.md, CONTRIBUTING.md, CHANGELOG.md), CODEOWNERS, .gitignore entries, pyproject.toml metadata, docs structure, known-vulnerabilities.md, AGENTS.md, GEMINI.md. Recent additions: FOUND-015 (ADR "Security Considerations" section presence under docs/ADRs/ or docs/architecture/, satisfying NIST SSDF PW.2.1) and FOUND-016 (LICENSES/ files contain no unfilled OSI-template placeholders such as `<year>` or `<copyright holders>`, which automated scanners treat as unlicensed).
 
 **TOOL (Toolchain, 12 checks):** Dev dependency presence (ruff, basedpyright, pip-audit, darglint, interrogate), absence of replaced tools (black, mypy, safety), Ruff PyStrict-aligned rule set, BasedPyright strict config, qlty config, target-version.
 
-**PC (Pre-commit, 12 checks):** Hook presence (ruff, basedpyright, bandit, detect-secrets, darglint, interrogate, commitizen, yamllint, markdownlint, no-em-dash), hook SHA pinning on all rev fields.
+**PC (Pre-commit, 16 checks):** Hook presence (ruff, basedpyright, bandit, detect-secrets, darglint, interrogate, commitizen, yamllint, markdownlint, no-em-dash), hook SHA pinning on all rev fields. The manifest now also includes PC-007b (alternative secret scanner coverage) and PC-016 (global Renovate config validator, suggested). PC-015 (v42-era renovate-config-validator pin lockstep) was never landed; CI-059 is its structural successor (see manifest header comment).
 
-**CI (CI/CD, 42 checks as of 2026-05-14):** Reusable workflow adoption, SHA pinning on all `uses:` references, harden-runner in every job, security scan hardening, required status checks, integration ID pinning, trust-boundary file path restrictions, tag protection rulesets, max file size cap, workflow permissions hygiene, timeout-minutes on all jobs, concurrency groups, dependency review, PR title enforcement, SBOM generation, Python matrix coverage, merge queue trigger, named environments, test result annotations.
+**CI (CI/CD, 61 checks as of 2026-05-25):** Reusable workflow adoption, SHA pinning on all `uses:` references, harden-runner in every job, security scan hardening, required status checks, integration ID pinning, trust-boundary file path restrictions, tag protection rulesets, max file size cap, workflow permissions hygiene, timeout-minutes on all jobs, concurrency groups, dependency review, PR title enforcement, SBOM generation, Python matrix coverage, merge queue trigger, named environments, test result annotations. Recent additions: CI-052 (CodeRabbit gating), CI-053 (mutation testing schedule), CI-054 (live Codecov coverage), CI-055/056/057 (org workflow SHA-pin registry), CI-058/059/060/061 (SBOM caller SHA-pin, Renovate semantic enabledManagers lint, third-party Action SHA pins, Renovate Docker image digest pin), and CI-003c (no inline SonarCloud actions in ci.yml; Scorecard workflow must carry a schedule trigger).
 
-**CLAUDE (Claude docs, 8 checks):** CLAUDE.md presence and required sections (Model Selection, RAD, cross-references), .claude/settings.json, no references to removed tools, no em-dashes in docs, no AI blacklist patterns.
+**CLAUDE (Claude docs, 10 checks):** CLAUDE.md presence and required sections (Model Selection, RAD, cross-references), .claude/settings.json, no references to removed tools, no em-dashes in docs, no AI blacklist patterns. Recent additions: CLAUDE-009 (`.claude/settings.json` must not enable `enableAllProjectMcpServers` without a documented justification, per OWASP LLM06/LLM08) and CLAUDE-010 (`$schema` field in `.claude/settings.json`, when present, must be exactly `https://json.schemastore.org/claude-code-settings.json`; the wrong slug silently disables every permission rule in the IDE extension).
+
+**OSSF (OSSF compliance, 12 checks):** OpenSSF Best Practices Badge passing, OpenSSF Security Scorecard at or above 4, branch protection, secret scanning + push protection, dependency review action, CodeQL workflow, plus OSSF-011 (fuzz testing setup such as atheris, libFuzzer, or a `tests/fuzz/` directory, per Silver Badge criterion 6.1) and OSSF-012 (any PATs used as repository secrets must be fine-grained, not classic, per SOC 2 CC6.1 least-privilege).
+
+**MKDOCS (MkDocs docs build, 12 checks):** mkdocs.yml metadata, theme, navigation, plugins, extensions, version pinning, docs/ structure, and CI build wiring. Skipped silently when `mkdocs.yml` is absent.
+
+**API (OpenAPI compliance, 5 checks):** OpenAPI spec presence (API-001..003 verified via the GitHub Contents API), plus Postman collection presence and last-audited timestamp (API-004/005 read from the catalog). Runs only when `api.servesApi: true` in the repo's catalog entry.
 
 ### Manifest versioning
 
