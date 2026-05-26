@@ -22,8 +22,8 @@ This document is the canonical source of truth for how dependency updates and vu
 | Global config (applied to all repos) | `homelab-infra/services/renovate/config/config.json` |
 | Org template (BWCPA, redirects from williaby) | `ByronWilliamsCPA/.github/renovate.json` |
 | Per-repo override | `{repo}/renovate.json` |
-| Pre-commit validator hook (PC-015) | `{repo}/.pre-commit-config.yaml` |
-| Manifest checks | TOOL-013, PC-015, CI-020, CI-021 in `docs/standards-manifest.yaml` |
+| Pre-commit validator hook (PC-016, homelab-infra only) | `homelab-infra/.pre-commit-config.yaml` |
+| Manifest checks | PC-016, CI-020, CI-021, CI-058, CI-059, CI-060, CI-061, CI-063, CI-064, REPO-001, REPO-002 in `docs/standards-manifest.yaml` |
 | Reusable SBOM workflow | `ByronWilliamsCPA/.github/.github/workflows/python-sbom.yml` |
 | Reusable dependency-review workflow | `ByronWilliamsCPA/.github/.github/workflows/dependency-review.yml` |
 
@@ -34,7 +34,7 @@ Renovate runs as a self-hosted Docker stack that processes every repo in the Byr
 ```text
 ┌────────────────────────────────────────────────────────────────┐
 │ LAYER 1: Docker stack (homelab-infra/services/renovate)        │
-│ - renovate/renovate:42.92 (the actual bot)                     │
+│ - renovate/renovate:43.150.0@sha256:... (digest-pinned bot)    │
 │ - Loki + Promtail (log aggregation)                            │
 │ - RENOVATE_BINARY_SOURCE=install (uv/poetry binary fetching)   │
 └────────────────────────────────────────────────────────────────┘
@@ -42,7 +42,8 @@ Renovate runs as a self-hosted Docker stack that processes every repo in the Byr
                               ▼
 ┌────────────────────────────────────────────────────────────────┐
 │ LAYER 2: Global config (config/config.json)                    │
-│ - enabledManagers fleet-wide                                   │
+│ - enabledManagers fleet-wide (v43 includes "uv" natively)      │
+│ - platformAutomerge: true (defensive explicit set, CI-064)     │
 │ - vulnerabilityAlerts, osvVulnerabilityAlerts                  │
 │ - lockFileMaintenance, transitiveRemediation                   │
 │ - packageRules (security severity gating, automerge policy)    │
@@ -60,8 +61,8 @@ Renovate runs as a self-hosted Docker stack that processes every repo in the Byr
 ┌────────────────────────────────────────────────────────────────┐
 │ LAYER 4: Per-repo config ({repo}/renovate.json)                │
 │ - REPLACES (not merges) array keys from upstream layers        │
-│ - Must include pep621 if the repo is uv-managed                │
-│ - Validated by PC-015 pre-commit hook                          │
+│ - Thin overlay; do NOT duplicate global packageRules (CI-063)  │
+│ - May use either "uv" or "pep621" on uv-managed projects (v43) │
 └────────────────────────────────────────────────────────────────┘
 ```
 
@@ -73,9 +74,11 @@ The Renovate bot runs in Portainer/Docker on the homelab as a non-continuous con
 
 | Service | Image | Purpose |
 | --- | --- | --- |
-| renovate | `renovate/renovate:42.92` | The bot itself, runs scans and opens PRs |
+| renovate | `renovate/renovate:43.150.0@sha256:...` (digest-pinned, CI-061) | The bot itself, runs scans and opens PRs |
 | loki | `grafana/loki:2.9.3` | Log aggregation for diagnostics |
 | promtail | `grafana/promtail:2.9.3` | Ships container logs to Loki |
+
+The Renovate image MUST be pinned to a 64-char sha256 digest alongside the human-readable tag (CI-061, critical). A bare tag is rejected; the canonical form is `renovate/renovate:<tag>@sha256:<digest>`. This closes the silent-upgrade vector where a re-pushed floating tag would change the running bot on the next systemd timer fire with no audit signal.
 
 **Critical environment variables:**
 
@@ -95,7 +98,7 @@ The Renovate bot runs in Portainer/Docker on the homelab as a non-continuous con
 - Network isolated on dedicated bridge (`renovate-network`)
 - Resource caps: 2 CPUs, 4 GB RAM, 500 MB reservation
 
-**Operational note:** the running Renovate version is the gatekeeper for which schema features are valid. `v42.x` rejects manager identifiers like `"uv"` that `v43+` accepts. Any config change written against `v43` docs will silently break against the homelab `v42.92` server. See PC-015 below.
+**Operational note:** the running Renovate version is the gatekeeper for which schema features are valid. The fleet runs `v43.150.0` as of the 2026-05-25 cutover (homelab-infra PR #425). v43 accepts the `"uv"` manager identifier natively, unified the validator and server schemas, and changed the `platformAutomerge` default to `true`. The historical v42 schema-mismatch trap that motivated the never-landed PC-015 check is retired; the structural successors are CI-059 (semantic enabledManagers lint), PC-016 (global config validator, suggested), and CI-064 (explicit `platformAutomerge` setting).
 
 ## Layer 2: Global Config
 
@@ -105,7 +108,8 @@ The Renovate bot runs in Portainer/Docker on the homelab as a non-continuous con
 
 | Field | Value | Purpose |
 | --- | --- | --- |
-| `enabledManagers` | `pep621, poetry, pip_requirements, pip-compile, github-actions, docker-compose, dockerfile, pre-commit, terraform, ansible, ansible-galaxy, npm, regex` | The complete fleet-wide allowlist of managers. **Does NOT include `uv`** because v42.x has no `uv` manager identifier; `pep621` handles uv-managed `pyproject.toml`. |
+| `enabledManagers` | `pep621, uv, poetry, pip_requirements, pip-compile, github-actions, docker-compose, dockerfile, pre-commit, terraform, ansible, ansible-galaxy, npm, regex` | The complete fleet-wide allowlist of managers. Since the 2026-05-25 v43 cutover, `"uv"` is a first-class manager identifier; `pep621` continues to handle the generic PEP 621 path for repos that have not added `"uv"` explicitly. |
+| `platformAutomerge` | `true` | Causes Renovate to enable GitHub native auto-merge on every PR it opens. Set explicitly (CI-064, suggested) rather than relying on the v40+ default; defensive against another silent default flip. Pairs with REPO-001 (`allow_auto_merge=true` at the repo level), which GitHub requires before any PR in the repo can have auto-merge enabled. |
 | `vulnerabilityAlerts.enabled` | `true` | Subscribes Renovate to GitHub's Dependabot Alerts feed for security PRs. Requires `security_events: read` on the PAT. |
 | `osvVulnerabilityAlerts` | `true` | Adds Open Source Vulnerabilities (OSV) database as a second source. Catches CVEs not yet in GHSA. |
 | `transitiveRemediation` | `true` | Deep-patches lockfiles to address CVEs in indirect dependencies. |
@@ -165,11 +169,18 @@ Only override the org template when the repo has manager needs the template does
 
 | Value | Why |
 | --- | --- |
-| `"uv"` in `enabledManagers` | Renovate v42.x rejects this; silently breaks the entire config. Use `"pep621"` instead. |
 | `"poetry"` in `enabledManagers` for a uv-managed repo | `poetry` manager looks for `[tool.poetry]`, not `[project]`; silently produces zero PRs. |
-| `matchSeverity` in packageRules | Not a valid v42 field; use `matchJsonata` on `vulnerabilitySeverity`. |
-| `fileMatch` in customManagers | Renamed to `managerFilePatterns` in newer Renovate. |
-| `prPriority` under `vulnerabilityAlerts` | Only valid under `packageRules` in v42; v43 relaxed this. |
+| Removing `pep621` from `enabledManagers` on a repo that has not explicitly added `"uv"` | Under v43 `pep621` still handles the generic PEP 621 path for repos that have not migrated their config to `"uv"`. Dropping `pep621` without adding `"uv"` leaves the repo with no manager for `pyproject.toml` and silently produces zero PRs. |
+| `matchSeverity` in packageRules | Use `matchJsonata` on `vulnerabilitySeverity` instead. |
+| `fileMatch` in customManagers | Renamed to `managerFilePatterns` in v43. Old key is silently ignored. |
+| Duplicating global `packageRules` in per-repo `renovate.json` | Renovate uses replace-not-merge semantics on arrays; the per-repo array shadows the global one. If the global rules later change, the per-repo override continues applying the stale set. (CI-063, suggested.) |
+
+**Historical pitfalls retired by the v43 cutover** (preserved here so audits do not re-flag them as regressions in old PRs or commits):
+
+| Value | Why it mattered under v42 | Status under v43 |
+| --- | --- | --- |
+| `"uv"` in `enabledManagers` | v42 had no `uv` manager identifier; the entire config was rejected and Renovate produced zero PRs. | `"uv"` is a first-class manager. |
+| `prPriority` under `vulnerabilityAlerts` | Only valid under `packageRules` in v42. | v43 relaxed the placement constraint. |
 
 **Per-repo config template (minimal, uv project):**
 ```json
@@ -184,18 +195,25 @@ That's it. Inheritance from the global config handles vulnerabilityAlerts, lockF
 
 ## Standards Manifest Enforcement
 
-The repo-compliance system enforces Renovate hygiene via four manifest checks:
+The repo-compliance system enforces Renovate hygiene via the following manifest checks. PC-015 was a historical placeholder for a v42-era validator pin lockstep and was never landed; the manifest header explicitly retires it.
 
 | Check | Severity | Purpose |
 | --- | --- | --- |
-| **TOOL-013** | critical | uv is the primary Python package manager; `[tool.poetry]` is forbidden, `uv.lock` is required alongside `[project]` table |
-| **PC-015** | critical | `.pre-commit-config.yaml` must include `renovate-config-validator` pinned to `renovate@42.92.14` (matching the homelab server version) |
+| **PC-016** | suggested | Global Renovate config at `homelab-infra/services/renovate/config/config.json` validates clean against renovate-config-validator pinned to the same major version as the running Docker image. Defensive against forward-compat issues with a future v44 schema. Applies only to homelab-infra. |
 | **CI-020** | important | `renovate.json` present at repo root |
 | **CI-021** | important | `dependabot.yml` absent when `renovate.json` is present (no duplicate PR engines) |
+| **CI-058** | suggested | python-sbom.yml reusable workflow called via SHA-pinned ref (not @main, not @vN) |
+| **CI-059** | suggested | renovate.json effective enabledManagers includes every manager required by the detected ecosystem files (catches the uv-trap class of silent-failure) |
+| **CI-060** | suggested | Third-party Action `uses:` references in workflows are full 40-char SHA pins |
+| **CI-061** | critical | Renovate Docker image is digest-pinned (`renovate/renovate:<tag>@sha256:<64-hex>`), not a bare tag |
+| **CI-063** | suggested | Per-repo `renovate.json` is a thin overlay; does not duplicate global `packageRules` or `groupName` entries |
+| **CI-064** | suggested | Global config explicitly sets `platformAutomerge: true` rather than relying on the v40+ default |
+| **REPO-001** | critical | Repository setting `allow_auto_merge=true` at the GitHub API level (without this, GitHub silently refuses every bot auto-merge request) |
+| **REPO-002** | important | Repository setting `delete_branch_on_merge=true` (prevents stale Renovate branches from accumulating after merge) |
 
-**The PC-015 version pin is load-bearing.** Default `npx renovate-config-validator` resolves to v43.150.0, which accepts `"uv"` as a manager. A v42-pinned validator is required to actually catch the trap that's been recurring since May 2026. See `feedback_renovate_uv_manager_trap.md` in the memory store.
+**Why REPO-001 is critical for Renovate:** Renovate's `platformAutomerge: true` triggers a GraphQL `enablePullRequestAutoMerge` call on every PR it opens. If the target repo has `allow_auto_merge=false`, that call fails silently and the PR opens without auto-merge attached. The 2026-05-26 audit found 11 of 42 repos in this state, blocking the entire Renovate auto-merge pipeline despite an otherwise-correct global config.
 
-**Migration on Renovate version bumps:** When the homelab Docker image bumps to a new major version, this manifest entry AND every per-repo `.pre-commit-config.yaml` `additional_dependencies` pin must be updated in lockstep. Without lockstep, either the validator gets ahead of the server (false-passes break in production) or the server gets ahead (validator rejects configs the server would accept).
+**Renovate version bumps no longer require validator lockstep.** v43 unified the validator and server schemas, so a single PC-016 pin (homelab-infra only) is sufficient. Per-repo `.pre-commit-config.yaml` files no longer need a `renovate-config-validator` hook.
 
 ## Relationship to Dependabot
 
@@ -322,44 +340,88 @@ The `dependency-review.yml` reusable workflow runs on every pull request to main
 7. CI passes; PR auto-merges immediately (no stability gate for CRITICAL/HIGH CVEs).
 8. Dependabot Alert closes automatically when the merge lands.
 
-### Broken Renovate config (the May 2026 / this-session incident class)
-1. Someone writes `"uv"` in `enabledManagers` against v43 docs.
-2. **Without PC-015:** the commit lands. The next Renovate run logs `Config validation errors found: ... not supported: "uv"` and rejects the entire config. Repo silently stops getting PRs. Nobody notices for months.
-3. **With PC-015:** the local pre-commit run executes `renovate-config-validator` pinned to `renovate@42.92.14`. The hook exits non-zero and blocks the commit. Developer fixes the config to use `pep621` before push. No silent failure.
+### Renovate config drift (semantic mismatch, post-v43)
+
+1. Someone declares `enabledManagers: ["poetry"]` on a uv-managed repo (the project has `[project]` in pyproject.toml, not `[tool.poetry]`).
+2. The config validator passes (the manager identifier is valid), so PC-016 does not fire.
+3. The next Renovate run completes with zero PRs because the `poetry` manager finds nothing to manage on this repo. No error is logged; the repo silently stops getting dependency updates.
+4. **CI-059** (semantic enabledManagers lint) is the structural guard: it reads the repo's file inventory and verifies that every detected ecosystem has a matching manager in the effective config. CI-059 flags this case as a finding even though the validator passed.
+
+This is the post-v43 equivalent of the v42-era "uv-trap" pattern. v43 made the validator stricter on identifier names, but the semantic-coverage class of failure (right name, wrong manager for this repo's actual ecosystem) is structurally distinct and required its own check.
+
+### Stuck pre-cutover PRs (the 2026-05-25 incident class)
+
+1. Renovate v42 opened PRs on dozens of repos without enabling GitHub native auto-merge (v42 default behavior).
+2. The homelab Docker image was bumped to v43 (cutover PR #425, 2026-05-25). v43's new default attaches `platformAutomerge` to newly created PRs.
+3. **Pre-cutover PRs do not get retroactively patched.** Renovate does not click the auto-merge button on existing PRs when its defaults change.
+4. Fleet symptom: every PR created before 2026-05-25 sits open without auto-merge; every PR created after 2026-05-25 auto-merges normally.
+5. Diagnosis: correlate stuck-PR creation timestamps with the cutover date, not config-file state. See the Cutover Playbook section below.
 
 ## Common Pitfalls
 
 | Pitfall | Symptom | Fix |
 | --- | --- | --- |
-| Adding `"uv"` to enabledManagers | Renovate rejects entire config; zero PRs | Use `"pep621"` |
-| Removing `pep621` thinking `"uv"` will work | Same as above | Restore `pep621` |
+| Declaring `enabledManagers: ["poetry"]` on a uv-managed repo | Renovate runs cleanly but produces zero PRs (poetry manager finds nothing) | Use `["pep621"]` or `["uv"]`; CI-059 catches this |
 | Using `dependabot.yml` alongside `renovate.json` | Duplicate PRs, conflicting automerge | Delete `dependabot.yml` (CI-021) |
 | Forgetting `RENOVATE_BINARY_SOURCE=install` | uv.lock PRs fail with `artifacts: FAILURE` | Set env var in docker-compose |
-| Not pinning `additional_dependencies` in pre-commit | Validator passes locally, server rejects | Pin to `renovate@42.92.14` |
-| Bumping homelab Renovate without lockstep pre-commit pin update | Either validator or server gets ahead | Coordinated rollout (see PC-015 notes) |
+| Pinning the Docker image to a bare tag | Re-pushed upstream tag silently changes the running bot at the next timer fire | Pin to `renovate/renovate:<tag>@sha256:<digest>` (CI-061) |
+| Repo has `allow_auto_merge=false` at the GitHub settings layer | Renovate's `platformAutomerge: true` is silently ignored on this repo; PRs open without auto-merge | Run `gh api repos/<org>/<repo> -X PATCH -f allow_auto_merge=true` (REPO-001) |
+| Per-repo `renovate.json` redeclaring global `packageRules` | Global rule changes silently shadowed by stale per-repo overlay | Audit per-repo files for redundancy (CI-063); keep overlays thin |
 | Per-repo `enabledManagers` with one entry, expecting merge | Other managers silently disabled | Renovate replaces, does not merge; list every manager you need |
 
-## Upgrade Procedure: Bumping the Renovate Major Version
+## Cutover Playbook: Bumping the Renovate Major Version
 
-When the homelab Renovate Docker image is upgraded to a new major version (e.g. v42 → v43), do all of these in a single coordinated PR set:
+When the homelab Renovate Docker image is upgraded to a new major version (e.g. v42 → v43), do all of these in a single coordinated PR set, then run the post-cutover cleanup. The playbook is derived from the 2026-05-26 Renovate auto-merge fleet rollout, which surfaced two recurring lessons: required-check verification methodology and the post-cutover PR cleanup phase.
 
-1. **Read the upstream changelog** for the new major. Identify breaking schema changes (e.g., the v42→v43 fileMatch→managerFilePatterns rename, matchSeverity placement changes, prPriority placement under vulnerabilityAlerts).
-2. **Audit existing configs** for any uses of the deprecated syntax. The renovate-config-validator pinned to the *new* version is the easiest way: run it against every `renovate.json` in the fleet and collect failures.
+### Phase 1: Schema audit and config fixes
+
+1. **Read the upstream changelog** for the new major. Identify breaking schema changes (e.g., the v42→v43 `fileMatch` → `managerFilePatterns` rename, `matchSeverity` placement changes, `prPriority` placement under `vulnerabilityAlerts`, default behavior flips like `platformAutomerge`).
+2. **Audit existing configs** for any uses of deprecated syntax. The renovate-config-validator pinned to the *new* version is the easiest way: run it against every `renovate.json` in the fleet and collect failures.
 3. **Open per-repo fix PRs** for each failing config, using the new syntax.
-4. **Update PC-015 in the standards manifest** to reference the new major version.
-5. **Update every repo's `.pre-commit-config.yaml`** `additional_dependencies` pin to the new Renovate version.
-6. **Update the Docker image tag** in `homelab-infra/services/renovate/docker-compose.yml`.
+4. **Identify default-behavior changes** that the validator does NOT flag (e.g., the v43 `platformAutomerge` default flip). For each, add an explicit setting to the global config so that future default flips do not silently change behavior again. (CI-064 is the manifest record of one such defensive setting.)
+
+### Phase 2: Image deploy
+
+5. **Update the Docker image tag AND sha256 digest** in `homelab-infra/services/renovate/docker-compose.yml`. The canonical form is `renovate/renovate:<tag>@sha256:<digest>` (CI-061).
+6. **Update PC-016 in the standards manifest** if the validator version pin needs to track a new major.
 7. **Deploy the new image** and watch the first run logs for `Config validation errors found`.
 8. **If any repo's config rejects on the new server,** roll back the Docker image immediately and fix the per-repo config before re-attempting.
 
-**Lockstep is essential.** All three layers (manifest entry + per-repo pre-commit pins + Docker image tag) must change together, or the validator and server will disagree on what's valid.
+### Phase 3: Post-cutover PR cleanup (do not skip)
+
+Bot upgrades do not retroactively change behavior on PRs that already exist. The 2026-05-26 audit found 54 PRs stuck open across both orgs because pre-cutover Renovate (v42) had opened them without `platformAutomerge` attached and v43 does not retroactively click the auto-merge button. The cleanup is mechanical but invisible if you do not know to look for it.
+
+9. **List all open Renovate PRs** that pre-date the cutover commit timestamp:
+   ```bash
+   gh search prs --state open --author "@me" --created "<YYYY-MM-DD" \
+     --json repository,number,title,headRefName \
+     --jq '.[] | select(.headRefName | startswith("renovate/"))'
+   ```
+   (Filter by `headRefName`, not author: self-hosted Renovate authenticates as a PAT and shows the human user as PR author, per L-004.)
+10. **Close each pre-cutover PR with an explanatory comment** referencing the cutover commit SHA. Renovate will recreate them on the next scheduled run with the new defaults attached.
+11. **Exclude from cleanup:** major-version bumps (intentional manual review per the global config's `automerge: false` for majors), in-progress human-authored config PRs, and any PR explicitly marked "abandoned" in the title (closing it would erase the abandonment signal).
+12. **Verify auto-merge attachment on recreated PRs:**
+    ```bash
+    gh pr list -R <org>/<repo> --json number,autoMergeRequest \
+      --jq '.[] | select(.autoMergeRequest == null) | .number'
+    ```
+    Any number returned is a PR that still lacks auto-merge after recreation; investigate before closing more PRs.
+
+### Diagnostic pattern: cutover date as fleet-failure signal
+
+When investigating "why is X intermittently broken across the fleet," check whether the failure correlates with a single bot or runtime upgrade date before inspecting per-repo configs. In the 2026-05-26 audit every stuck PR predated the v43 cutover and every auto-merging PR postdated it. This was a far cleaner diagnostic than reading 42 `renovate.json` files. The signal generalizes: any fleet-wide bot, runner, or reusable workflow upgrade can present as "config drift" when it is actually a cutover artifact.
+
+### Verification methodology (do not use commit check-runs)
+
+Verifying required-check coverage after a cutover: query `gh pr view <PR> --json statusCheckRollup` on a recent merged PR. Do NOT use `gh api repos/<owner>/<repo>/commits/<sha>/check-runs` on main HEAD; workflows triggered by `pull_request` events do not re-run on the merge commit and are absent from commit-level check-runs. See `docs/reference/repo-compliance.md` § "Audit methodology gotchas".
 
 ## References
 
-- **Memory entry:** `feedback_renovate_uv_manager_trap.md`: full incident history for the uv manager mistake
-- **Audit report:** `docs/audits/dependabot-renovate-coverage-2026-05-24.md`: fleet-wide coverage analysis
-- **Standards manifest:** `docs/standards-manifest.yaml`: TOOL-013, PC-015, CI-020, CI-021
-- **Renovate upstream docs:** https://docs.renovatebot.com/ (use only when cross-checking against the v42 schema)
+- **Memory entry:** `feedback_renovate_uv_manager_trap.md`: full incident history for the v42-era uv manager mistake (retired by the v43 cutover; preserved for context)
+- **Memory entry:** `project_renovate_selfhost_architecture.md`: notes on the PAT auth model and `headRefName` filter pattern
+- **Audit report:** `docs/audits/dependabot-renovate-coverage-2026-05-24.md`: fleet-wide coverage analysis (BLOCKED_BY_CONFIG breakdown)
+- **Standards manifest:** `docs/standards-manifest.yaml`: PC-016, CI-020/CI-021, CI-058 through CI-064, REPO-001, REPO-002
+- **Renovate upstream docs:** https://docs.renovatebot.com/ (current v43 schema)
 - **CycloneDX:** https://cyclonedx.org/specification/ (SBOM format)
 - **GHSA vs OSV:** https://github.com/github/advisory-database vs https://osv.dev/
 - **CLAUDE.md** § "Unfixed CVEs": pip-audit suppression policy
