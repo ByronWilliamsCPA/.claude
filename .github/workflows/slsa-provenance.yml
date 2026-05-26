@@ -1,44 +1,64 @@
 # SLSA Provenance Generation
 # Generates SLSA Level 3 provenance attestations for published packages.
 #
-# This workflow builds the package, generates hashes, and calls the org-level
-# SLSA provenance workflow to create cryptographic attestations.
+# Pattern: Download pre-built artifacts from the GitHub Release that the
+# Semantic Release workflow just created, compute base64 SHA256 subjects
+# from those downloaded files, then call the official SLSA generator
+# reusable workflow directly. Locally rebuilding with `uv build` would
+# produce non-deterministic artifacts whose hashes diverge from what was
+# actually published, defeating the purpose of supply chain provenance.
+#
+# Trigger model: `release: types: [published]` gives us the published
+# tag deterministically via `github.event.release.tag_name`, avoiding the
+# "latest release" race that a `workflow_run` trigger introduces when
+# multiple semantic-release runs land close together.
+#
+# This workflow is the single canonical SLSA provenance path for the
+# repository. The previous inline `provenance` job in `release.yml` was
+# removed when this workflow was consolidated; do not re-introduce it.
 #
 # Reference: https://slsa.dev/
 name: SLSA Provenance
 
 on:
-  # Trigger after successful release
-  workflow_run:
-    workflows: ["Semantic Release"]
-    types: [completed]
-    branches: [main, master]
-  # Manual trigger for re-generating provenance
+  # Fire when Semantic Release publishes a new GitHub Release. The release
+  # event supplies `github.event.release.tag_name` so there is no need to
+  # query for the latest tag at job-start time.
+  release:
+    types: [published]
+  # Manual trigger for re-generating provenance against an existing tag.
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version to generate provenance for (e.g., 0.1.0)'
+        description: 'Version (tag with or without leading v) to generate provenance for (e.g., 0.1.0 or v0.1.0)'
         required: true
         type: string
 
-permissions:
-  contents: write
-  id-token: write
-  actions: read
-  attestations: write
+# Serialize runs so two close-together releases (or a release plus a manual
+# re-attestation) do not race to upload `multiple.intoto.jsonl` to the same
+# release. `cancel-in-progress: false` ensures an in-flight attestation
+# completes rather than being killed mid-upload.
+concurrency:
+  group: slsa-provenance-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions: {}
 
 jobs:
   # ==========================================================================
-  # Build and Generate Hashes
+  # Resolve Release Tag and Download Pre-Built Artifacts
   # ==========================================================================
-  build:
-    name: Build Package
+  # NOTE: This job DOES NOT rebuild the package. SLSA provenance must attest
+  # to the exact bytes that were published; rebuilding would yield different
+  # sha256 (timestamps, build paths, tool versions) and break the chain.
+  prepare:
+    name: Prepare Subjects
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    permissions:
+      contents: read
     outputs:
       hashes: ${{ steps.hashes.outputs.hashes }}
-      version: ${{ steps.version.outputs.version }}
-
+      tag: ${{ steps.tag.outputs.tag }}
     steps:
       - name: Harden the runner
         uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
@@ -49,75 +69,107 @@ jobs:
             github.com:443
             objects.githubusercontent.com:443
             release-assets.githubusercontent.com:443
-            pipelines.actions.githubusercontent.com:443
             uploads.github.com:443
+            pipelines.actions.githubusercontent.com:443
             token.actions.githubusercontent.com:443
-            pypi.org:443
-            files.pythonhosted.org:443
-            fulcio.sigstore.dev:443
-            rekor.sigstore.dev:443
-            tlog.sigstore.dev:443
 
-      - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          fetch-depth: 0
-
-      - name: Set up Python
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
-        with:
-          python-version: "3.12"
-
-      - name: Install UV
-        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
-        with:
-          enable-cache: true
-
-      - name: Determine version
-        id: version
+      - name: Resolve release tag
+        id: tag
         env:
           INPUT_VERSION: ${{ github.event.inputs.version }}
+          EVENT_TAG: ${{ github.event.release.tag_name }}
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
         run: |
-          if [ -n "$INPUT_VERSION" ]; then
-            VERSION="$INPUT_VERSION"
+          set -euo pipefail
+          if [ -n "${INPUT_VERSION:-}" ]; then
+            # Manual dispatch: validate input then normalize "0.1.0" / "v0.1.0"
+            # to the actual tag GitHub used.
+            if ! [[ "$INPUT_VERSION" =~ ^[A-Za-z0-9._+-]+$ ]]; then
+              echo "::error::Invalid version input: must match ^[A-Za-z0-9._+-]+$"
+              exit 1
+            fi
+            CAND="$INPUT_VERSION"
+            if gh release view "$CAND" >/dev/null 2>&1; then
+              TAG="$CAND"
+            elif gh release view "v$CAND" >/dev/null 2>&1; then
+              TAG="v$CAND"
+            else
+              echo "::error::No GitHub Release found for '$CAND' or 'v$CAND'"
+              exit 1
+            fi
+          elif [ -n "${EVENT_TAG:-}" ]; then
+            # release.published path: tag is supplied by the event payload,
+            # deterministically bound to the release that triggered this run.
+            TAG="$EVENT_TAG"
           else
-            VERSION=$(grep -Po '(?<=^version = ")[^"]*' pyproject.toml)
+            echo "::error::Unable to resolve a release tag (no INPUT_VERSION and no release.tag_name in payload)"
+            exit 1
           fi
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "Resolved tag: $TAG"
 
-      - name: Build package
-        run: uv build
-
-      - name: Generate SHA256 hashes
-        id: hashes
+      - name: Download release artifacts (pre-built)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ steps.tag.outputs.tag }}
         run: |
-          cd dist
-          HASHES=$(sha256sum * | base64 -w0)
-          echo "hashes=$HASHES" >> $GITHUB_OUTPUT
+          set -euo pipefail
+          mkdir -p dist
+          # Download only the Python distribution artifacts published by
+          # the Semantic Release workflow. We intentionally do NOT rebuild.
+          gh release download "$TAG" \
+            --pattern '*.whl' \
+            --pattern '*.tar.gz' \
+            --dir dist
+          # Verify at least one wheel and one sdist actually arrived. Without
+          # this guard, an empty download produces an opaque sha256sum error
+          # in the next step ("./*.whl: No such file or directory") rather
+          # than an actionable message.
+          shopt -s nullglob
+          whls=(dist/*.whl)
+          sdists=(dist/*.tar.gz)
+          if [ "${#whls[@]}" -eq 0 ] || [ "${#sdists[@]}" -eq 0 ]; then
+            echo "::error::No matching artifacts in release '$TAG' (wheels: ${#whls[@]}, sdists: ${#sdists[@]}). Verify the Semantic Release job uploaded them via upload_to_vcs_release."
+            exit 1
+          fi
+          echo "Downloaded artifacts:"
+          ls -lh dist/
 
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: dist-${{ steps.version.outputs.version }}
-          path: dist/
-          retention-days: 90
-
-      - name: Generate artifact attestation
-        uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
-        with:
-          subject-path: 'dist/*'
+      - name: Generate SHA256 subjects (base64)
+        id: hashes
+        working-directory: dist
+        run: |
+          set -euo pipefail
+          # Defense in depth: the prior step already guards artifact presence,
+          # but re-validate here so any future refactor of the download step
+          # cannot silently lose the protection.
+          shopt -s failglob
+          if ! compgen -G "./*.whl" >/dev/null || ! compgen -G "./*.tar.gz" >/dev/null; then
+            echo "::error::Expected .whl and .tar.gz artifacts not found in dist/"
+            ls -la
+            exit 1
+          fi
+          HASHES=$(sha256sum ./*.whl ./*.tar.gz | base64 -w0)
+          echo "hashes=$HASHES" >> "$GITHUB_OUTPUT"
 
   # ==========================================================================
-  # SLSA Level 3 Provenance (Org-Level Reusable Workflow)
+  # SLSA Level 3 Provenance
   # ==========================================================================
-  slsa:
-    name: SLSA Level 3
-    needs: [build]
-    uses: ByronWilliamsCPA/.github/.github/workflows/python-slsa.yml@6f71aecae2c91214ca0a0a2206a36cf912aa31ac  # v1.1.0
-    with:
-      base64-subjects: ${{ needs.build.outputs.hashes }}
-      upload-assets: true
+  # Calls the official SLSA generator directly. The org-level python-slsa.yml
+  # is a documentation template (workflow_dispatch only), not a callable
+  # reusable workflow, so the direct invocation here is the supported path.
+  provenance:
+    name: Generate SLSA Provenance
+    needs: [prepare]
     permissions:
-      id-token: write
-      contents: write
-      actions: read
+      actions: read       # SLSA generator reads this workflow's run metadata to bind the provenance to it
+      id-token: write     # OIDC token issuance for signing the provenance via Sigstore (fulcio/rekor)
+      contents: write     # Upload the generated `multiple.intoto.jsonl` asset to the GitHub Release
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@f7dd8c54c2067bafc12ca7a55595d5ee9b75204a  # v2.1.0
+    with:
+      base64-subjects: ${{ needs.prepare.outputs.hashes }}
+      upload-assets: true
+      upload-tag-name: ${{ needs.prepare.outputs.tag }}
+      provenance-name: multiple.intoto.jsonl
