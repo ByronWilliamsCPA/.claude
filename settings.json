@@ -4,6 +4,8 @@
   "permissions": {
     "allow": [
       "Bash(poetry run ruff:*)",
+      "Bash(gh api -X POST repos/*/pulls/*/comments*)",
+      "Bash(gh api -X POST repos/*/pulls/*/reviews*)",
       "WebSearch",
       "WebFetch",
       "Read",
