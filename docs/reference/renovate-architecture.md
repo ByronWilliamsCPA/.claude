@@ -227,21 +227,36 @@ The reusable `python-sbom.yml` workflow in `ByronWilliamsCPA/.github` generates 
 | Tool | Role | Trigger |
 | --- | --- | --- |
 | `cyclonedx-bom==7.3.0` | Generate SBOM from installed environment | Workflow `Generate SBOMs` job |
-| `trivy` | Scan SBOM for known CVEs (CRITICAL/HIGH by default) | Workflow `Scan Runtime Dependencies` job |
+| `trivy` (gating, parallel-run) | Scan SBOM for known CVEs (CRITICAL/HIGH by default) | Workflow `Scan Runtime Dependencies` job |
+| `grype` (advisory, parallel-run) | Scan SBOM for known CVEs; non-gating until 2026-06-24 parity checkpoint | Workflow `Scan Runtime Dependencies (Grype - advisory)` job |
 | License compliance check | Block forbidden SPDX licenses (default: GPL/AGPL family) | Workflow `License Compliance Check` job |
+
+**Parallel-run note (2026-05-25 to 2026-06-24, issue #152):** Trivy and Grype run
+side-by-side. Trivy remains the merge gate. Grype runs with `continue-on-error: true`
+and `fail-build: false`. A `parity-summary` job writes a results-comparison table to
+the run summary. At the day-30 checkpoint, a human spot-checks 3-5 caller-repo runs
+and decides whether to cut over to Grype-only (separate PR) or extend the window.
 
 **Workflow inputs:**
 - `python-version`: which interpreter to scan against
 - `fail-on-vulnerabilities`: true by default; blocks merge on CRITICAL/HIGH
 - `severity-threshold`: defaults to `CRITICAL,HIGH`
 - `forbidden-licenses`: JSON array of SPDX IDs
-- `trivyignore-path`: `.trivyignore` to suppress known CVEs (must have tracked references)
+- `trivyignore-path`: `.trivyignore` to suppress known CVEs (must have tracked references).
+  DEPRECATED: removed at Trivy cutover (see issue #152).
+- `grype-config-path`: `.grype.yaml` to suppress known CVEs in Grype
+  (parallel-run; default `.grype.yaml`).
 
 **How SBOM and Renovate interact:**
 1. Renovate proposes a dependency PR (routine or vulnerability-triggered).
 2. The PR triggers CI, which runs `python-sbom.yml`.
-3. Trivy scans the post-update SBOM. If a CRITICAL/HIGH CVE remains, CI fails and the PR cannot merge.
-4. If Trivy finds a CVE Renovate doesn't know about (e.g., not yet in OSV or GHSA), the SBOM scan blocks the PR even though Renovate would have allowed it.
+3. Trivy scans the post-update SBOM. If a CRITICAL/HIGH CVE remains, CI fails and the PR
+   cannot merge. Grype scans the same SBOM in parallel during the 2026-05-25 to 2026-06-24
+   parity window; Grype findings are advisory only.
+4. If Trivy finds a CVE Renovate doesn't know about (e.g., not yet in OSV or GHSA), the
+   SBOM scan blocks the PR even though Renovate would have allowed it. Grype's independent
+   CVE DB provides a cross-check; parity divergence surfaces in the `parity-summary` step
+   output.
 
 **Net effect:** SBOM scanning is the *last line of defense* against vulnerable dependencies sneaking into main. It does not generate PRs; it gates them. The 90-day artifact retention preserves SBOMs for audit.
 
@@ -257,7 +272,8 @@ The `dependency-review.yml` reusable workflow runs on every pull request to main
 
 **How it differs from SBOM:**
 - SBOM scans the **entire installed environment** for vulnerabilities; dependency-review scans **only the diff**.
-- SBOM uses Trivy (broader CVE coverage); dependency-review uses GitHub's GHSA directly.
+- SBOM uses Trivy (parallel-run with Grype until 2026-06-24, see issue #152);
+  dependency-review uses GitHub's GHSA directly.
 - SBOM persists artifacts (90 days); dependency-review is ephemeral check-run output.
 
 **How it differs from Renovate:**
@@ -272,7 +288,7 @@ The `dependency-review.yml` reusable workflow runs on every pull request to main
 | --- | --- | --- | --- |
 | Where it runs | Developer machine + CI | Self-hosted Docker | GitHub Actions |
 | What it scans | Installed environment | Lockfile + manifest | Generated SBOM |
-| Data source | PyPI Advisory DB | OSV + GHSA | Trivy DB |
+| Data source | PyPI Advisory DB | OSV + GHSA | Trivy DB + Anchore Grype DB (parallel-run) |
 | Output | CLI report | PR | SARIF + artifact |
 | Cadence | On-demand | Scheduled + on PR | On every PR |
 
