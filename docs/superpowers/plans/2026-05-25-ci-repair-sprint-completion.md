@@ -259,15 +259,25 @@ git -C /home/byron/dev/.claude commit -m "docs(audits): mark CI Repair Sprint Ph
 
 ### Pattern Selection Guide (READ BEFORE EVERY TASK 2.N)
 
-**This supersedes the handoff doc's "proven NOSONAR detect-state pattern" section.** Source: empirical findings at `BWCPA/.github`:`docs/sonarcloud-nosonar-patterns.md`.
+**This supersedes the handoff doc's "proven NOSONAR detect-state pattern" section.** Source: empirical findings at `BWCPA/.github`:`docs/sonarcloud-nosonar-patterns.md` (strengthened 2026-05-26 by Wave 1C / PR #166 / PR #170).
+
+**STRENGTHENED RULE (Wave 1C, 2026-05-26):** Only single-line `run:` shape reliably honors NOSONAR for the `githubactions` ruleset. Any NOSONAR placement inside a `run: |` block scalar is unreliable, regardless of position (preceding-line OR inline-trailing) or flag type (literal OR dynamic). Wave 1C PR #166 empirically confirmed this: both preceding-line (`556a09f`) AND inline-trailing (`bb31ec1`) NOSONAR inside `run: |` blocks left the quality gate ERROR; only the structural rewrite to single-line `run:` (`251ba35`) achieved gate=OK.
 
 The `Detect repo state` step (state outputs `skip`/`poetry-not-supported`/`uv-locked`/`uv-no-lock`) is still the right shape. The change is how the `uv sync` / `uv run` lines suppress SonarCloud's `S8541` (`--no-build` omission) and `S8544` (`--frozen` omission) rules. Pick per-line based on shape:
 
 | Shape | Pattern | Suppression |
 |---|---|---|
-| Single-line `run: uv sync ...` or `run: uv run ...` | **Pattern A** | Inline: append `  # NOSONAR(S8541,S8544): <rationale>` to the same physical YAML line. Honors comma-separated rule list. |
-| Multi-line `run: \|` block with literal `--frozen` (e.g., install step ran first) | **Pattern B** | Preceding-line `# NOSONAR(S8541): ...` inside the block scalar, ONLY for `--no-build`. The literal `--frozen` token prevents S8544 from firing. |
-| Multi-line `run: \|` block with dynamic `$FROZEN_FLAG` | **ANTI-PATTERN** | NOSONAR is NOT honored here. Restructure: either split into install (literal `--frozen`) + run (literal `--frozen`) per Pattern B, or collapse to single line per Pattern A. |
+| Single-line `run: uv sync ...` or `run: uv run ...` | **Pattern A (PREFERRED)** | Inline: append `  # NOSONAR(S8541,S8544): <rationale>` to the same physical YAML line. Honors comma-separated rule list. The ONLY reliable placement. |
+| Multi-line `run: \|` block with literal `--frozen` (install step ran first) | **Pattern B (FRAGILE)** | Preceding-line `# NOSONAR(S8541): ...` inside the block scalar for `--no-build` only. The literal `--frozen` token prevents S8544 from firing structurally. Suppression itself may be a lucky non-failure rather than honored. Verify the SonarCloud gate per PR; do not assume. |
+| Multi-line `run: \|` block with dynamic `$FROZEN_FLAG` | **ANTI-PATTERN** | NOSONAR is NOT honored here. Restructure to single-line. |
+| Multi-line `run: \|` block with inline-trailing NOSONAR on each line | **ANTI-PATTERN (NEW)** | NOSONAR is NOT honored anywhere inside `run: \|`. Restructure to single-line. |
+
+**Default restructuring strategies (in order of preference):**
+
+1. **Split into two `if:`-guarded steps** with literal flags each (one `uv-locked`, one `uv-no-lock`). Both single-line `run:`. Pattern A inline on each. This is the canonical fix used in merged PRs #156, #158, #159, #160, #164, #165.
+2. **Extract flag-computation into an output-emitting helper step (Option 3 from PR #166)** when the workflow has additional dynamic logic (e.g., resolving `--extra` from a workflow input). Helper step emits `steps.<id>.outputs.<name>`; install step references it from single-line `run:`.
+3. **Collapse multi-line shell logic to a single-line `run:`** with the entire command on one physical YAML line. Accept yamllint line-length warnings as the cost.
+4. **Pattern B (preceding-line inside `run: |` with literal `--frozen`)** is acceptable ONLY when none of the above work AND the literal `--frozen` is structurally present. Verify the gate per PR.
 
 **Practical rule:** prefer Pattern A for new single-line steps. For multi-line blocks, prefer Option 1 from `sonarcloud-nosonar-patterns.md` §"Restructuring to expose a literal --frozen": add an install step that branches on `state` (Pattern A on each install) so the run step downstream can always use literal `--frozen` (Pattern B).
 
