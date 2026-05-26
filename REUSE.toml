@@ -128,6 +128,7 @@ path = [
     "benchmarks/LICENSES.md",
     "benchmarks/registry.yml",
     "notebooks/**/*.ipynb",  # Jupyter notebooks (Colab training examples)
+    "session-report-*.html",  # Generated session usage reports (session-report skill output)
 ]
 SPDX-License-Identifier = "CC0-1.0"
 SPDX-FileCopyrightText = "2025 Byron Williams"
