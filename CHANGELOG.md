@@ -31,6 +31,15 @@
 
 ### Fixed
 
+* fix(reuse): cover generated `session-report-*.html` files in `REUSE.toml`. The
+  `Check REUSE Compliance` CI job has been failing on `main` since
+  `session-report-20260521-2145.html` and `session-report-20260521-2204.html`
+  were committed in dd2bdcd (2026-05-21) without a matching annotation block,
+  blocking every downstream PR (including #147) on a failure unrelated to the
+  PR's own diff. Adds the `session-report-*.html` glob to the CC0-1.0
+  generated-metadata block alongside `benchmarks/reports/**/*.md` and
+  `notebooks/**/*.ipynb`, restoring REUSE compliance to 563/563 files.
+
 * fix(claude-config): correct `$schema` URL in `.claude/settings.local.json.example`
   and pin the canonical schema URL in the `claude-docs-auditor` "Missing
   .claude/settings.json" remediation template. The slug `claude-code-config.json`
