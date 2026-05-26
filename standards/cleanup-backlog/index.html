@@ -12,7 +12,7 @@
         <meta name="author" content="Byron Williams">
       
       
-        <link rel="canonical" href="https://claude-config.readthedocs.io/compliance-reports/master-log/">
+        <link rel="canonical" href="https://claude-config.readthedocs.io/standards/cleanup-backlog/">
       
       
       
@@ -25,7 +25,7 @@
     
     
       
-        <title>Compliance Master Log - Claude Code Configuration</title>
+        <title>Cleanup Backlog System - Claude Code Configuration</title>
       
     
     
@@ -88,7 +88,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#2026-05" class="md-skip">
+        <a href="#purpose" class="md-skip">
           Skip to content
         </a>
       
@@ -122,7 +122,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Compliance Master Log
+              Cleanup Backlog System
             
           </span>
         </div>
@@ -2164,10 +2164,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#2026-05" class="md-nav__link">
+  <a href="#purpose" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2026-05
+        Purpose
       
     </span>
   </a>
@@ -2175,10 +2175,143 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2026-04" class="md-nav__link">
+  <a href="#storage" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2026-04
+        Storage
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Storage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#backup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backup
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#directory-layout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Directory layout
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#per-task-frontmatter-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Per-task frontmatter schema
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Per-task frontmatter schema">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#field-validation-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Field validation rules
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-five-worker-gates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The five worker gates
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#status-transitions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Status transitions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scout-agent-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scout agent integration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reviewer-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reviewer integration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#worker-contract-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worker contract (summary)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#integration-with-existing-systems" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Integration with existing systems
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#versioning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Versioning
       
     </span>
   </a>
@@ -2205,227 +2338,205 @@
   
 
 
-  <h1>Compliance Master Log</h1>
+  <h1>Cleanup Backlog System</h1>
 
-<p><strong>Total sessions:</strong> 16
-<strong>Distinct repos:</strong> 10
-<strong>Newest entry:</strong> 2026-05-24
-<strong>Oldest entry:</strong> 2026-04-25
-<strong>Open fleet actions:</strong> 0</p>
-<h2 id="2026-05">2026-05<a class="headerlink" href="#2026-05" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p><strong>Status</strong>: Active | Core Standard | <strong>Version</strong>: 1.0.0 | <strong>Last Updated</strong>: 2026-05-24</p>
+</blockquote>
+<h2 id="purpose">Purpose<a class="headerlink" href="#purpose" title="Permanent link">&para;</a></h2>
+<p>A queue of mechanical cleanup tasks across the BWCPA and williaby repo fleet that a
+local model can execute autonomously, with Claude reviewing the resulting PRs.
+Splits work by judgment cost: rote changes drain to local, judgment-heavy work
+stays with Claude.</p>
+<h2 id="storage">Storage<a class="headerlink" href="#storage" title="Permanent link">&para;</a></h2>
+<p>Runtime data lives at <code>~/dev/homelab-infra/cleanup-backlog/</code> and is <strong>gitignored</strong>
+in that repo. Rationale: every push to homelab-infra triggers CI; backlog churn
+should not consume CI capacity. See <code>gitignore-patch.md</code> in this directory for
+the exact .gitignore entries.</p>
+<p>Schema, worker spec, and agent definition live in this repo and are committed.
+If the runtime directory is ever lost, it is fully reconstructible from this
+spec plus the most recent backup.</p>
+<h3 id="backup">Backup<a class="headerlink" href="#backup" title="Permanent link">&para;</a></h3>
+<p>The runtime directory must be included in your homelab backup target. Suggested:
+nightly rsync or restic snapshot of <code>~/dev/homelab-infra/cleanup-backlog/</code> to
+the homelab NAS. The schema in this repo survives independently in git.</p>
+<h2 id="directory-layout">Directory layout<a class="headerlink" href="#directory-layout" title="Permanent link">&para;</a></h2>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>~/dev/homelab-infra/cleanup-backlog/
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>├── pending/    # Available; worker claims oldest local-safe entry
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>├── active/     # Claimed and in progress
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>├── review/     # PR opened, awaiting reviewer
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>├── blocked/    # Worker failed gates; needs Claude intervention
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>└── done/       # Merged or rejected with final reason
+</span></code></pre></div>
+<p>State transitions are filesystem renames (<code>git mv</code>-style, but with plain <code>mv</code>
+since the directory is gitignored). Renames are atomic on Unix filesystems,
+which gives concurrency safety without locking.</p>
+<h2 id="per-task-frontmatter-schema">Per-task frontmatter schema<a class="headerlink" href="#per-task-frontmatter-schema" title="Permanent link">&para;</a></h2>
+<p>Every task file uses this frontmatter contract. The body below the frontmatter
+contains context, procedure, and out-of-scope notes for the worker.</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nn">---</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">LOCAL-0001</span><span class="w">                          </span><span class="c1"># Stable, monotonic, sortable. Allocator:</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">                                        </span><span class="c1"># max existing LOCAL-NNNN across all status dirs + 1</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="nt">schema_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cleanup-task</span><span class="w">               </span><span class="c1"># For validate-frontmatter.sh compatibility</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="nt">title</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Short</span><span class="nv"> </span><span class="s">imperative</span><span class="nv"> </span><span class="s">title&quot;</span><span class="w">         </span><span class="c1"># One line, ~60 chars</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="nt">repo</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ByronWilliamsCPA/repo-name</span><span class="w">        </span><span class="c1"># Full owner/name. Single repo per entry.</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="nt">difficulty</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">local-safe</span><span class="w">                  </span><span class="c1"># local-safe | claude-required</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="nt">risk</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">low</span><span class="w">                               </span><span class="c1"># low | medium | high. high never goes to local.</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="nt">created</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2026-05-24</span><span class="w">                     </span><span class="c1"># ISO date</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="nt">created_by</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">claude</span><span class="w">                      </span><span class="c1"># claude | scout-agent | human</span>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="nt">source</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">doc-audit</span><span class="w">                       </span><span class="c1"># Optional: what surfaced the task</span>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="w">                                        </span><span class="c1"># (doc-audit | repo-compliance | scout-agent | human | memory:&lt;slug&gt;)</span>
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="nt">claimed_by</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">null</span><span class="w">                        </span><span class="c1"># Worker id once claimed (e.g. &quot;worker-01&quot;)</span>
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="nt">attempts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span><span class="w">                             </span><span class="c1"># Incremented per failed pre-commit/test cycle</span>
+</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="nt">max_attempts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span><span class="w">                         </span><span class="c1"># After this, auto-escalate to blocked/</span>
+</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="nt">pr</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">null</span><span class="w">                                </span><span class="c1"># URL once opened</span>
+</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="nt">expected_paths</span><span class="p">:</span><span class="w">                         </span><span class="c1"># Worker aborts if diff touches anything outside</span>
+</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;docs/**/*.md&quot;</span>
+</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="nt">forbidden_paths</span><span class="p">:</span><span class="w">                        </span><span class="c1"># Worker aborts immediately if it tries to edit</span>
+</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;.github/workflows/**&quot;</span>
+</span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;**/secrets*&quot;</span>
+</span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;**/.env*&quot;</span>
+</span><span id="__span-1-23"><a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;**/CHANGELOG.md&quot;</span><span class="w">                   </span><span class="c1"># Convention: only humans/release tooling write here</span>
+</span><span id="__span-1-24"><a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a><span class="nt">acceptance</span><span class="p">:</span><span class="w">                             </span><span class="c1"># All must be machine-verifiable</span>
+</span><span id="__span-1-25"><a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;no-em-dash</span><span class="nv"> </span><span class="s">pre-commit</span><span class="nv"> </span><span class="s">hook</span><span class="nv"> </span><span class="s">passes&quot;</span>
+</span><span id="__span-1-26"><a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;all</span><span class="nv"> </span><span class="s">other</span><span class="nv"> </span><span class="s">pre-commit</span><span class="nv"> </span><span class="s">hooks</span><span class="nv"> </span><span class="s">pass&quot;</span>
+</span><span id="__span-1-27"><a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;diff</span><span class="nv"> </span><span class="s">touches</span><span class="nv"> </span><span class="s">only</span><span class="nv"> </span><span class="s">files</span><span class="nv"> </span><span class="s">matching</span><span class="nv"> </span><span class="s">expected_paths&quot;</span>
+</span><span id="__span-1-28"><a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a><span class="nt">estimated_diff_lines</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;5-30&quot;</span><span class="w">            </span><span class="c1"># Range. Worker aborts if outside upper bound.</span>
+</span><span id="__span-1-29"><a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a><span class="nt">history</span><span class="p">:</span><span class="w">                                </span><span class="c1"># Replaces git log for this gitignored file</span>
+</span><span id="__span-1-30"><a id="__codelineno-1-30" name="__codelineno-1-30" href="#__codelineno-1-30"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;2026-05-24T09:12</span><span class="nv"> </span><span class="s">created</span><span class="nv"> </span><span class="s">by</span><span class="nv"> </span><span class="s">scout-agent</span><span class="nv"> </span><span class="s">(source:</span><span class="nv"> </span><span class="s">doc-audit</span><span class="nv"> </span><span class="s">finding)&quot;</span>
+</span><span id="__span-1-31"><a id="__codelineno-1-31" name="__codelineno-1-31" href="#__codelineno-1-31"></a><span class="nn">---</span>
+</span></code></pre></div>
+<h3 id="field-validation-rules">Field validation rules<a class="headerlink" href="#field-validation-rules" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>id</code> must be unique across all status directories. Allocator scans all five dirs.</li>
+<li><code>difficulty: local-safe</code> is only valid if <strong>all</strong> of: risk is low or medium, all
+  acceptance items are machine-verifiable, <code>expected_paths</code> is non-empty,
+  <code>forbidden_paths</code> excludes everything in <code>.github/workflows/</code>, secrets, env files,
+  and CHANGELOG.md, <code>estimated_diff_lines</code> upper bound is &lt;=200.</li>
+<li><code>difficulty: claude-required</code> skips all the above checks. These entries are
+  reserved for Claude in interactive sessions and are not claimable by the worker.</li>
+<li><code>history</code> is append-only. Workers and the scout agent only add entries; never
+  rewrite or delete past entries.</li>
+</ul>
+<h2 id="the-five-worker-gates">The five worker gates<a class="headerlink" href="#the-five-worker-gates" title="Permanent link">&para;</a></h2>
+<p>A task entry is only valid as <code>local-safe</code> if a worker can verify all five gates
+mechanically with no model judgment:</p>
+<ol>
+<li><strong>Pre-commit gate</strong>: <code>pre-commit run --all-files</code> must pass after the change.
+   This is the primary correctness contract. Includes the no-em-dash hook, ruff,
+   bandit, frontmatter validators, and everything else wired into pre-commit.</li>
+<li><strong>Test gate</strong>: project tests must pass with the change applied. If the repo
+   has no test suite, this gate is skipped (note in the task body if so).</li>
+<li><strong>Expected-paths gate</strong>: the worker's diff must touch only paths matching
+   <code>expected_paths</code> globs. Touching anything else aborts the work and moves the
+   entry to <code>blocked/</code>.</li>
+<li><strong>Forbidden-paths gate</strong>: the worker must refuse to read or write anything
+   matching <code>forbidden_paths</code> even if the patch logically requires it. Refusal
+   means abort, not workaround.</li>
+<li><strong>Diff-size gate</strong>: the diff must be within <code>estimated_diff_lines</code> range.
+   Exploding diffs indicate scope drift; abort.</li>
+</ol>
+<p>Failure of any gate moves the entry from <code>active/</code> to <code>blocked/</code>, increments
+<code>attempts</code>, and appends a history line describing the failure. After
+<code>max_attempts</code>, the entry stays in <code>blocked/</code> and is surfaced to Claude in the
+next interactive session.</p>
+<h2 id="status-transitions">Status transitions<a class="headerlink" href="#status-transitions" title="Permanent link">&para;</a></h2>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>pending/  -&gt; active/      worker claims oldest local-safe entry (mv)
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>active/   -&gt; review/      worker pushes branch, opens PR, sets pr field, mv
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>active/   -&gt; blocked/     any gate fails; attempts++; mv
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>blocked/  -&gt; pending/     Claude fixes the entry (narrows paths, splits, etc.); mv
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>review/   -&gt; done/        PR merged; final history line added; mv
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>review/   -&gt; blocked/     reviewer requests changes worker cannot satisfy; mv
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>*         -&gt; done/        rejected by Claude with reason in history; mv
+</span></code></pre></div>
+<p>The worker never moves entries to <code>done/</code> directly. Only the reviewer (Claude,
+or an automated post-merge hook) does that.</p>
+<h2 id="scout-agent-integration">Scout agent integration<a class="headerlink" href="#scout-agent-integration" title="Permanent link">&para;</a></h2>
+<p>The <code>cleanup-backlog-scout</code> agent (defined at
+<code>~/dev/.claude/.claude/agents/cleanup-backlog-scout.md</code>) writes new entries to
+<code>pending/</code>. It is the primary author of backlog entries.</p>
+<p>Three invocation patterns:</p>
+<ol>
+<li><strong>Targeted scout</strong>: "scout repo X for cleanup work" -- agent surveys one repo
+   and writes 0-N entries.</li>
+<li><strong>Fleet scout</strong>: "scout the fleet" -- agent iterates the repo catalog in
+   <code>docs/reference/github-repos.md</code> and writes entries per repo.</li>
+<li><strong>Post-audit scout</strong>: when another skill (repo-compliance, doc-audit,
+   general-compliance-auditor) produces findings, the scout agent converts the
+   findings whose severity matches its difficulty bar into backlog entries.</li>
+</ol>
+<p>The scout is conservative: when in doubt about classification, it marks
+<code>claude-required</code>, not <code>local-safe</code>. Claude can always rewrite later; a wrong
+<code>local-safe</code> classification gets executed by the worker before review.</p>
+<h2 id="reviewer-integration">Reviewer integration<a class="headerlink" href="#reviewer-integration" title="Permanent link">&para;</a></h2>
+<p>For now, review happens in interactive sessions. When a <code>local-dev</code>-labeled PR
+opens in any repo, Claude triggers <code>/pr-review</code> against it in the next session
+where you ask for fleet status, or directly when you invoke review.</p>
+<p>The reviewer's responsibilities:
+- Verify the diff actually matches the task description in <code>pr.body</code> (which
+  links back to the LOCAL-NNNN id).
+- Confirm <code>expected_paths</code> and <code>forbidden_paths</code> were honored.
+- Merge if clean; request changes if recoverable; close and move entry to
+  <code>blocked/</code> with reason if not.</p>
+<p>When a PR merges, Claude moves the task file from <code>review/</code> to <code>done/</code>,
+appending a final history line with the merge SHA and date.</p>
+<h2 id="worker-contract-summary">Worker contract (summary)<a class="headerlink" href="#worker-contract-summary" title="Permanent link">&para;</a></h2>
+<p>The worker is implemented separately (see future
+<code>~/dev/.claude/docs/standards/cleanup-backlog/worker-spec.md</code> when written).
+For now, the contract is:</p>
+<ul>
+<li>Reads only from <code>pending/</code>.</li>
+<li>Claims by <code>mv pending/X.md active/X.md</code>.</li>
+<li>Operates in a fresh git clone per task at <code>/tmp/cleanup-work/&lt;task-id&gt;/</code>.</li>
+<li>Uses signed commits (the worker must have access to the GPG key configured
+  on the host).</li>
+<li>Pushes to a branch named <code>chore/local-&lt;task-id&gt;</code>.</li>
+<li>Opens PR with label <code>local-dev</code> and body linking back to the task id.</li>
+<li>Never bypasses pre-commit (<code>--no-verify</code>) or signing (<code>--no-gpg-sign</code>).
+  These are already blocked by <code>bash-pre-hook.sh</code> if the worker runs through
+  Claude Code; if it runs standalone, the worker code must encode the same
+  refusals.</li>
+</ul>
+<h2 id="integration-with-existing-systems">Integration with existing systems<a class="headerlink" href="#integration-with-existing-systems" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>Date</th>
-<th>Repo</th>
-<th>Mode</th>
-<th style="text-align: right;">Critical</th>
-<th style="text-align: right;">Important</th>
-<th style="text-align: right;">Suggested</th>
-<th style="text-align: right;">Candidates</th>
-<th style="text-align: center;">Reconciled</th>
-<th>Report</th>
+<th>System</th>
+<th>Relationship</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>2026-05-24</td>
-<td>ByronWilliamsCPA/llc-manager</td>
-<td>interactive</td>
-<td style="text-align: right;">3</td>
-<td style="text-align: right;">20</td>
-<td style="text-align: right;">10</td>
-<td style="text-align: right;">6</td>
-<td style="text-align: center;"></td>
-<td></td>
+<td><code>bash-pre-hook.sh</code></td>
+<td>Blocks --no-verify, --no-gpg-sign, force-push to main. Worker inherits these protections if it routes through Claude Code.</td>
 </tr>
 <tr>
-<td>2026-05-23</td>
-<td>ByronWilliamsCPA/rag-processor</td>
-<td>interactive</td>
-<td style="text-align: right;">6</td>
-<td style="text-align: right;">32</td>
-<td style="text-align: right;">16</td>
-<td style="text-align: right;">16</td>
-<td style="text-align: center;"></td>
-<td></td>
+<td><code>validate-frontmatter.sh</code></td>
+<td>Validates the <code>schema_type: cleanup-task</code> frontmatter. Add <code>cleanup-task</code> to its known types.</td>
 </tr>
 <tr>
-<td>2026-05-19</td>
-<td>ByronWilliamsCPA/rag-processor</td>
-<td>interactive</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: right;">32</td>
-<td style="text-align: right;">11</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: center;"></td>
-<td><a href="https://github.com/ByronWilliamsCPA/rag-processor/blob/main/docs/compliance-reports/lessons-learned/2026-05-19-rag-processor.md">report</a></td>
+<td><code>repo-compliance</code> skill</td>
+<td>Findings can be piped to scout for backlog conversion.</td>
 </tr>
 <tr>
-<td>2026-05-18</td>
-<td>williaby/image-generation</td>
-<td>interactive</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: right;">10</td>
-<td style="text-align: right;">20</td>
-<td style="text-align: center;"></td>
-<td></td>
+<td><code>doc-audit</code> skill</td>
+<td>Same.</td>
 </tr>
 <tr>
-<td>2026-05-16</td>
-<td>ByronWilliamsCPA/reference-library</td>
-<td>unknown</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/reference-library/blob/main/docs/compliance-reports/lessons-learned/2026-05-16-b.md">report</a></td>
+<td><code>/pr-review</code> skill</td>
+<td>Reviewer for <code>local-dev</code> labeled PRs.</td>
 </tr>
 <tr>
-<td>2026-05-16</td>
-<td>ByronWilliamsCPA/fragrance-rater</td>
-<td>unknown</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: right;">30</td>
-<td style="text-align: right;">21</td>
-<td style="text-align: right;">21</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/fragrance-rater/blob/main/docs/compliance-reports/lessons-learned/2026-05-16.md">report</a></td>
-</tr>
-<tr>
-<td>2026-05-16</td>
-<td>ByronWilliamsCPA/audio-processor</td>
-<td>unknown</td>
-<td style="text-align: right;">12</td>
-<td style="text-align: right;">38</td>
-<td style="text-align: right;">15</td>
-<td style="text-align: right;">11</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/audio-processor/blob/main/docs/compliance-reports/lessons-learned/2026-05-16.md">report</a></td>
-</tr>
-<tr>
-<td>2026-05-14</td>
-<td>ByronWilliamsCPA/gleif</td>
-<td>unknown</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">21</td>
-<td style="text-align: right;">5</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/gleif/blob/main/docs/compliance-reports/lessons-learned/2026-05-14.md">report</a></td>
-</tr>
-<tr>
-<td>2026-05-14</td>
-<td>ByronWilliamsCPA/.claude</td>
-<td>unknown</td>
-<td style="text-align: right;">6</td>
-<td style="text-align: right;">17</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/.claude/blob/main/docs/compliance-reports/lessons-learned/2026-05-14-github-repo.md">report</a></td>
-</tr>
-<tr>
-<td>2026-05-13</td>
-<td>ByronWilliamsCPA/reference-library</td>
-<td>unknown</td>
-<td style="text-align: right;">3</td>
-<td style="text-align: right;">28</td>
-<td style="text-align: right;">2</td>
-<td style="text-align: right;">4</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/reference-library/blob/main/docs/compliance-reports/lessons-learned/2026-05-13.md">report</a></td>
-</tr>
-<tr>
-<td>2026-05-13</td>
-<td>ByronWilliamsCPA/.claude</td>
-<td>unknown</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">10</td>
-<td style="text-align: right;">6</td>
-<td style="text-align: right;">2</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/.claude/blob/main/docs/compliance-reports/lessons-learned/2026-05-13.md">report</a></td>
-</tr>
-<tr>
-<td>2026-05-08</td>
-<td>ByronWilliamsCPA/family-office-portal</td>
-<td>unknown</td>
-<td style="text-align: right;">6</td>
-<td style="text-align: right;">24</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: right;">3</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/family-office-portal/blob/main/docs/compliance-reports/lessons-learned/2026-05-08.md">report</a></td>
-</tr>
-<tr>
-<td>2026-05-07</td>
-<td>ByronWilliamsCPA/homelab-infra</td>
-<td>unknown</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">5</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">4</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/homelab-infra/blob/main/docs/compliance-reports/lessons-learned/2026-05-07.md">report</a></td>
-</tr>
-<tr>
-<td>2026-05-02</td>
-<td>ByronWilliamsCPA/homelab-infra</td>
-<td>unknown</td>
-<td style="text-align: right;">7</td>
-<td style="text-align: right;">42</td>
-<td style="text-align: right;">13</td>
-<td style="text-align: right;">7</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/homelab-infra/blob/main/docs/compliance-reports/lessons-learned/2026-05-02.md">report</a></td>
+<td>Branch protection rulesets</td>
+<td>PRs from worker are subject to all required checks unchanged. No special bypass.</td>
 </tr>
 </tbody>
 </table>
-<h2 id="2026-04">2026-04<a class="headerlink" href="#2026-04" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Date</th>
-<th>Repo</th>
-<th>Mode</th>
-<th style="text-align: right;">Critical</th>
-<th style="text-align: right;">Important</th>
-<th style="text-align: right;">Suggested</th>
-<th style="text-align: right;">Candidates</th>
-<th style="text-align: center;">Reconciled</th>
-<th>Report</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>2026-04-28</td>
-<td>ByronWilliamsCPA/llc-manager</td>
-<td>unknown</td>
-<td style="text-align: right;">11</td>
-<td style="text-align: right;">18</td>
-<td style="text-align: right;">9</td>
-<td style="text-align: right;">15</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/llc-manager/blob/main/docs/compliance-reports/lessons-learned/2026-04-28.md">report</a></td>
-</tr>
-<tr>
-<td>2026-04-25</td>
-<td>ByronWilliamsCPA/gleif</td>
-<td>unknown</td>
-<td style="text-align: right;">10</td>
-<td style="text-align: right;">22</td>
-<td style="text-align: right;">13</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/gleif/blob/main/docs/compliance-reports/lessons-learned/2026-04-25.md">report</a></td>
-</tr>
-</tbody>
-</table>
-<hr />
-<p><em>Rendered 2026-05-25 05:22:35 from master-log.jsonl by compliance_log_render.py.</em></p>
+<h2 id="versioning">Versioning<a class="headerlink" href="#versioning" title="Permanent link">&para;</a></h2>
+<p>This document is the source of truth for the schema. When the schema changes,
+bump the version line at the top and add a <code>## Migration</code> section describing
+how existing entries should be updated. Workers and the scout agent must check
+the version on startup and refuse to operate against a schema they do not know.</p>
 
 
 
@@ -2448,7 +2559,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="May 26, 2026 04:07:49 UTC">May 26, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="May 25, 2026 23:07:00 UTC">May 25, 2026</span>
   </span>
 
     
@@ -2458,7 +2569,7 @@
     <span class="md-icon" title="Created">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="May 17, 2026 22:44:10 UTC">May 17, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="May 25, 2026 23:07:00 UTC">May 25, 2026</span>
   </span>
 
     

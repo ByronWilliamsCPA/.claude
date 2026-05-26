@@ -12,7 +12,7 @@
         <meta name="author" content="Byron Williams">
       
       
-        <link rel="canonical" href="https://claude-config.readthedocs.io/compliance-reports/master-log/">
+        <link rel="canonical" href="https://claude-config.readthedocs.io/audits/phase-3bc-handoff-2026-05-25/">
       
       
       
@@ -25,7 +25,7 @@
     
     
       
-        <title>Compliance Master Log - Claude Code Configuration</title>
+        <title>Phase 3B/3C Sweep Handoff - Claude Code Configuration</title>
       
     
     
@@ -88,7 +88,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#2026-05" class="md-skip">
+        <a href="#resume-context" class="md-skip">
           Skip to content
         </a>
       
@@ -122,7 +122,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Compliance Master Log
+              Phase 3B/3C Sweep Handoff
             
           </span>
         </div>
@@ -2164,10 +2164,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#2026-05" class="md-nav__link">
+  <a href="#resume-context" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2026-05
+        Resume context
       
     </span>
   </a>
@@ -2175,10 +2175,154 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2026-04" class="md-nav__link">
+  <a href="#phase-3b-36-dependabotyml-deletes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2026-04
+        Phase 3B: 36 dependabot.yml deletes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Phase 3B: 36 dependabot.yml deletes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#repos-with-githubdependabotyml-to-delete" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Repos with .github/dependabot.yml to delete
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#per-repo-pr-template" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Per-repo PR template
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#per-repo-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Per-repo workflow
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-3c-9-poetry-to-pep621-fixes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 3C: 9 poetry to pep621 fixes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Phase 3C: 9 poetry to pep621 fixes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#repos-with-poetry-declared-on-uv-managed-projects" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Repos with "poetry" declared on uv-managed projects
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#per-repo-pr-template_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Per-repo PR template
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#per-repo-edit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Per-repo edit
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-3d-manifest-severity-promotions-after-3b-3c-land" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 3D: manifest severity promotions (after 3B + 3C land)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hard-rules-reminders" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hard rules reminders
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quick-session-start-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quick session-start checklist
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#open-prs-at-session-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Open PRs at session boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tracking-issues-for-deferred-from-plan-items-still-open-not-part-of-phase-3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tracking issues for deferred-from-plan items (still open, not part of Phase 3)
       
     </span>
   </a>
@@ -2205,227 +2349,263 @@
   
 
 
-  <h1>Compliance Master Log</h1>
+  <h1>Phase 3B/3C Sweep Handoff</h1>
 
-<p><strong>Total sessions:</strong> 16
-<strong>Distinct repos:</strong> 10
-<strong>Newest entry:</strong> 2026-05-24
-<strong>Oldest entry:</strong> 2026-04-25
-<strong>Open fleet actions:</strong> 0</p>
-<h2 id="2026-05">2026-05<a class="headerlink" href="#2026-05" title="Permanent link">&para;</a></h2>
+<h2 id="resume-context">Resume context<a class="headerlink" href="#resume-context" title="Permanent link">&para;</a></h2>
+<p>The v43 cutover (Phases 0-2) and the manifest reconciliation (Phase 3A) are <strong>complete and merged</strong>. The remaining work is two fleet-wide sweep PR series:</p>
 <table>
 <thead>
 <tr>
-<th>Date</th>
-<th>Repo</th>
-<th>Mode</th>
-<th style="text-align: right;">Critical</th>
-<th style="text-align: right;">Important</th>
-<th style="text-align: right;">Suggested</th>
-<th style="text-align: right;">Candidates</th>
-<th style="text-align: center;">Reconciled</th>
-<th>Report</th>
+<th>Phase</th>
+<th>Work</th>
+<th>Repo count</th>
+<th>Estimated PRs</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>2026-05-24</td>
-<td>ByronWilliamsCPA/llc-manager</td>
-<td>interactive</td>
-<td style="text-align: right;">3</td>
-<td style="text-align: right;">20</td>
-<td style="text-align: right;">10</td>
-<td style="text-align: right;">6</td>
-<td style="text-align: center;"></td>
-<td></td>
+<td><strong>3B</strong></td>
+<td>Delete <code>.github/dependabot.yml</code> (CI-021 violation: dual PR engines)</td>
+<td>36</td>
+<td>36</td>
 </tr>
 <tr>
-<td>2026-05-23</td>
-<td>ByronWilliamsCPA/rag-processor</td>
-<td>interactive</td>
-<td style="text-align: right;">6</td>
-<td style="text-align: right;">32</td>
-<td style="text-align: right;">16</td>
-<td style="text-align: right;">16</td>
-<td style="text-align: center;"></td>
-<td></td>
+<td><strong>3C</strong></td>
+<td>Replace <code>"poetry"</code> with <code>"pep621"</code> in <code>enabledManagers</code> (silent zero-PR bug)</td>
+<td>9</td>
+<td>9</td>
 </tr>
 <tr>
-<td>2026-05-19</td>
-<td>ByronWilliamsCPA/rag-processor</td>
-<td>interactive</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: right;">32</td>
-<td style="text-align: right;">11</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: center;"></td>
-<td><a href="https://github.com/ByronWilliamsCPA/rag-processor/blob/main/docs/compliance-reports/lessons-learned/2026-05-19-rag-processor.md">report</a></td>
-</tr>
-<tr>
-<td>2026-05-18</td>
-<td>williaby/image-generation</td>
-<td>interactive</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: right;">10</td>
-<td style="text-align: right;">20</td>
-<td style="text-align: center;"></td>
-<td></td>
-</tr>
-<tr>
-<td>2026-05-16</td>
-<td>ByronWilliamsCPA/reference-library</td>
-<td>unknown</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/reference-library/blob/main/docs/compliance-reports/lessons-learned/2026-05-16-b.md">report</a></td>
-</tr>
-<tr>
-<td>2026-05-16</td>
-<td>ByronWilliamsCPA/fragrance-rater</td>
-<td>unknown</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: right;">30</td>
-<td style="text-align: right;">21</td>
-<td style="text-align: right;">21</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/fragrance-rater/blob/main/docs/compliance-reports/lessons-learned/2026-05-16.md">report</a></td>
-</tr>
-<tr>
-<td>2026-05-16</td>
-<td>ByronWilliamsCPA/audio-processor</td>
-<td>unknown</td>
-<td style="text-align: right;">12</td>
-<td style="text-align: right;">38</td>
-<td style="text-align: right;">15</td>
-<td style="text-align: right;">11</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/audio-processor/blob/main/docs/compliance-reports/lessons-learned/2026-05-16.md">report</a></td>
-</tr>
-<tr>
-<td>2026-05-14</td>
-<td>ByronWilliamsCPA/gleif</td>
-<td>unknown</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">21</td>
-<td style="text-align: right;">5</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/gleif/blob/main/docs/compliance-reports/lessons-learned/2026-05-14.md">report</a></td>
-</tr>
-<tr>
-<td>2026-05-14</td>
-<td>ByronWilliamsCPA/.claude</td>
-<td>unknown</td>
-<td style="text-align: right;">6</td>
-<td style="text-align: right;">17</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/.claude/blob/main/docs/compliance-reports/lessons-learned/2026-05-14-github-repo.md">report</a></td>
-</tr>
-<tr>
-<td>2026-05-13</td>
-<td>ByronWilliamsCPA/reference-library</td>
-<td>unknown</td>
-<td style="text-align: right;">3</td>
-<td style="text-align: right;">28</td>
-<td style="text-align: right;">2</td>
-<td style="text-align: right;">4</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/reference-library/blob/main/docs/compliance-reports/lessons-learned/2026-05-13.md">report</a></td>
-</tr>
-<tr>
-<td>2026-05-13</td>
-<td>ByronWilliamsCPA/.claude</td>
-<td>unknown</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">10</td>
-<td style="text-align: right;">6</td>
-<td style="text-align: right;">2</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/.claude/blob/main/docs/compliance-reports/lessons-learned/2026-05-13.md">report</a></td>
-</tr>
-<tr>
-<td>2026-05-08</td>
-<td>ByronWilliamsCPA/family-office-portal</td>
-<td>unknown</td>
-<td style="text-align: right;">6</td>
-<td style="text-align: right;">24</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: right;">3</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/family-office-portal/blob/main/docs/compliance-reports/lessons-learned/2026-05-08.md">report</a></td>
-</tr>
-<tr>
-<td>2026-05-07</td>
-<td>ByronWilliamsCPA/homelab-infra</td>
-<td>unknown</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">5</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">4</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/homelab-infra/blob/main/docs/compliance-reports/lessons-learned/2026-05-07.md">report</a></td>
-</tr>
-<tr>
-<td>2026-05-02</td>
-<td>ByronWilliamsCPA/homelab-infra</td>
-<td>unknown</td>
-<td style="text-align: right;">7</td>
-<td style="text-align: right;">42</td>
-<td style="text-align: right;">13</td>
-<td style="text-align: right;">7</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/homelab-infra/blob/main/docs/compliance-reports/lessons-learned/2026-05-02.md">report</a></td>
+<td><strong>3D</strong></td>
+<td>Promote CI-058/059/060/PC-016 from <code>suggested</code> → <code>important</code> in manifest</td>
+<td>1 PR</td>
+<td>1</td>
 </tr>
 </tbody>
 </table>
-<h2 id="2026-04">2026-04<a class="headerlink" href="#2026-04" title="Permanent link">&para;</a></h2>
+<p><strong>User decision (end of 2026-05-25 session):</strong> separate PRs per change type. No consolidation of 3B and 3C even when both apply to the same repo. Total: 45 PRs across the fleet.</p>
+<h2 id="phase-3b-36-dependabotyml-deletes">Phase 3B: 36 dependabot.yml deletes<a class="headerlink" href="#phase-3b-36-dependabotyml-deletes" title="Permanent link">&para;</a></h2>
+<h3 id="repos-with-githubdependabotyml-to-delete">Repos with <code>.github/dependabot.yml</code> to delete<a class="headerlink" href="#repos-with-githubdependabotyml-to-delete" title="Permanent link">&para;</a></h3>
+<p>Per the 2026-05-24 fleet audit. Confirmed pattern: every Renovate-enabled repo EXCEPT three categories has the duplicate-engine condition.</p>
+<p><strong>Exclusions (do NOT touch):</strong>
+- <code>xero-crypto</code> (no dependabot.yml on origin/main)
+- <code>template-sample</code> (no renovate.json, not applicable)
+- 6 repos missing renovate.json (CI-020 gap, separate from CI-021): <code>williaby/{exercise-competition, ledgerbase, zen-mcp-server, pp-security-master, GCS, testing}</code>
+- 2 exempt-from-Renovate repos that keep dependabot.yml intentionally: <code>williaby/{dart-frog-paludarium, homelab-agent-configs}</code></p>
+<p><strong>Refresh the canonical list at session start with:</strong></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># For each org, list repos with both renovate.json AND dependabot.yml</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="k">for</span><span class="w"> </span>org<span class="w"> </span><span class="k">in</span><span class="w"> </span>ByronWilliamsCPA<span class="w"> </span>williaby<span class="p">;</span><span class="w"> </span><span class="k">do</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="k">while</span><span class="w"> </span><span class="nb">read</span><span class="w"> </span>-r<span class="w"> </span>repo<span class="p">;</span><span class="w"> </span><span class="k">do</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="nv">has_ren</span><span class="o">=</span><span class="k">$(</span>gh<span class="w"> </span>api<span class="w"> </span><span class="s2">&quot;repos/</span><span class="nv">$org</span><span class="s2">/</span><span class="nv">$repo</span><span class="s2">/contents/renovate.json&quot;</span><span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>-r<span class="w"> </span>.name<span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="k">)</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="nv">has_dep</span><span class="o">=</span><span class="k">$(</span>gh<span class="w"> </span>api<span class="w"> </span><span class="s2">&quot;repos/</span><span class="nv">$org</span><span class="s2">/</span><span class="nv">$repo</span><span class="s2">/contents/.github/dependabot.yml&quot;</span><span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>-r<span class="w"> </span>.name<span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="k">)</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="o">[</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$has_ren</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;renovate.json&quot;</span><span class="w"> </span><span class="o">]</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">[</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$has_dep</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;dependabot.yml&quot;</span><span class="w"> </span><span class="o">]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">      </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$org</span><span class="s2">/</span><span class="nv">$repo</span><span class="s2">&quot;</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">    </span><span class="k">fi</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">  </span><span class="k">done</span><span class="w"> </span>&lt;<span class="w"> </span>&lt;<span class="o">(</span>gh<span class="w"> </span>repo<span class="w"> </span>list<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$org</span><span class="s2">&quot;</span><span class="w"> </span>--limit<span class="w"> </span><span class="m">50</span><span class="w"> </span>--no-archived<span class="w"> </span>--json<span class="w"> </span>name<span class="w"> </span>-q<span class="w"> </span><span class="s1">&#39;.[].name&#39;</span><span class="o">)</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="k">done</span>
+</span></code></pre></div>
+<h3 id="per-repo-pr-template">Per-repo PR template<a class="headerlink" href="#per-repo-pr-template" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Branch:</strong> <code>chore/remove-dependabot-yml-ci-021</code></li>
+<li><strong>Title:</strong> <code>chore(deps): remove dependabot.yml superseded by Renovate (CI-021)</code></li>
+<li><strong>Commit message:</strong>
+  <div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>chore(deps): remove dependabot.yml superseded by Renovate (CI-021)
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>This repo has both renovate.json AND .github/dependabot.yml, violating
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>manifest check CI-021 (dependabot.yml must be absent when renovate.json
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>is present). Running both creates duplicate dependency PRs and conflicting
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>automerge rules.
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>Renovate has been the canonical dependency-update engine across the fleet
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>since the 2026-05 standardization. Dependabot Alerts (the security
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>feature) remains enabled at the org level and continues to work; only
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>the .github/dependabot.yml file (the version-updates config) is removed
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>here.
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>Reference: docs/audits/dependency-management-improvement-plan-2026-05-24.md
+</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>P0-5 (36 repos identified in the 2026-05-24 fleet audit).
+</span></code></pre></div></li>
+<li><strong>PR body:</strong> brief, references the manifest check and the improvement plan</li>
+</ul>
+<h3 id="per-repo-workflow">Per-repo workflow<a class="headerlink" href="#per-repo-workflow" title="Permanent link">&para;</a></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Per repo:</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>gh<span class="w"> </span>repo<span class="w"> </span>clone<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$org</span><span class="s2">/</span><span class="nv">$repo</span><span class="s2">&quot;</span><span class="w"> </span><span class="s2">&quot;/tmp/sweep-3b/</span><span class="nv">$repo</span><span class="s2">&quot;</span><span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">(</span><span class="nb">cd</span><span class="w"> </span><span class="s2">&quot;/tmp/sweep-3b/</span><span class="nv">$repo</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>git<span class="w"> </span>fetch<span class="w"> </span>origin<span class="w"> </span>main<span class="w"> </span>--quiet<span class="o">)</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="nb">cd</span><span class="w"> </span><span class="s2">&quot;/tmp/sweep-3b/</span><span class="nv">$repo</span><span class="s2">&quot;</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>git<span class="w"> </span>worktree<span class="w"> </span>add<span class="w"> </span><span class="s2">&quot;.worktrees/remove-dependabot-yml&quot;</span><span class="w"> </span>-b<span class="w"> </span>chore/remove-dependabot-yml-ci-021<span class="w"> </span>origin/main<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="o">||</span><span class="w"> </span>git<span class="w"> </span>checkout<span class="w"> </span>-b<span class="w"> </span>chore/remove-dependabot-yml-ci-021<span class="w"> </span>origin/main
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="nb">cd</span><span class="w"> </span><span class="s2">&quot;.worktrees/remove-dependabot-yml&quot;</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>git<span class="w"> </span>rm<span class="w"> </span>.github/dependabot.yml
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="nv">SKIP</span><span class="o">=</span>compose-validation<span class="w"> </span>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;...&quot;</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>git<span class="w"> </span>push<span class="w"> </span>-u<span class="w"> </span>origin<span class="w"> </span>chore/remove-dependabot-yml-ci-021
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>gh<span class="w"> </span>pr<span class="w"> </span>create<span class="w"> </span>--base<span class="w"> </span>main<span class="w"> </span>--title<span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="w"> </span>--body<span class="w"> </span><span class="s2">&quot;...&quot;</span>
+</span></code></pre></div>
+<h2 id="phase-3c-9-poetry-to-pep621-fixes">Phase 3C: 9 poetry to pep621 fixes<a class="headerlink" href="#phase-3c-9-poetry-to-pep621-fixes" title="Permanent link">&para;</a></h2>
+<h3 id="repos-with-poetry-declared-on-uv-managed-projects">Repos with <code>"poetry"</code> declared on uv-managed projects<a class="headerlink" href="#repos-with-poetry-declared-on-uv-managed-projects" title="Permanent link">&para;</a></h3>
+<p><strong>Canonical list</strong> (do NOT add or remove without re-auditing pyproject.toml for <code>[project]</code> vs <code>[tool.poetry]</code>):</p>
+<ol>
+<li><code>ByronWilliamsCPA/Unify</code></li>
+<li><code>ByronWilliamsCPA/audio-processor</code></li>
+<li><code>ByronWilliamsCPA/cookiecutter-template-sample</code></li>
+<li><code>ByronWilliamsCPA/fragrance-rater</code></li>
+<li><code>ByronWilliamsCPA/maester-tests</code></li>
+<li><code>ByronWilliamsCPA/python-libs</code></li>
+<li><code>ByronWilliamsCPA/rag-processor</code></li>
+<li><code>williaby/dna</code></li>
+<li><code>williaby/image-preprocessing-detector</code></li>
+</ol>
+<p><strong>Per-repo verification before editing:</strong> confirm <code>pyproject.toml</code> has <code>[project]</code> and that <code>[tool.poetry]</code> is either absent or the build-backend is something other than <code>poetry.core.masonry.api</code>. If a repo legitimately uses poetry as its build backend, do NOT include it in 3C; it needs a different remediation.</p>
+<h3 id="per-repo-pr-template_1">Per-repo PR template<a class="headerlink" href="#per-repo-pr-template_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Branch:</strong> <code>chore/renovate-poetry-to-pep621</code></li>
+<li><strong>Title:</strong> <code>fix(renovate): use pep621 manager instead of poetry for uv-managed project</code></li>
+<li><strong>Commit message:</strong>
+  <div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>fix(renovate): use pep621 manager instead of poetry for uv-managed project
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>This repo&#39;s pyproject.toml uses the PEP 621 [project] table (uv-managed),
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>but renovate.json declared &quot;poetry&quot; in enabledManagers. The Renovate
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>poetry manager looks for [tool.poetry], not [project], so it silently
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>produced zero PRs for this repo&#39;s Python dependencies despite Renovate
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>being enabled.
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>Replacing &quot;poetry&quot; with &quot;pep621&quot; restores normal PR generation. The
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>pep621 manager correctly reads PEP 621 [project.dependencies].
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>Reference: docs/audits/dependency-management-improvement-plan-2026-05-24.md
+</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>P0-4 (9 repos identified in the 2026-05-24 fleet audit). Likely explains
+</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>most of the 47% BLOCKED_BY_CONFIG finding in
+</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>docs/audits/dependabot-renovate-coverage-2026-05-24.md.
+</span></code></pre></div></li>
+</ul>
+<h3 id="per-repo-edit">Per-repo edit<a class="headerlink" href="#per-repo-edit" title="Permanent link">&para;</a></h3>
+<p>The change is one line per repo: in <code>renovate.json</code>, replace <code>"poetry"</code> with <code>"pep621"</code> inside the <code>enabledManagers</code> array. Some repos may have it inside <code>matchManagers</code> arrays in packageRules too; those can either be left alone (silently no-op since <code>pep621</code> replaces) or also updated for clarity.</p>
+<h2 id="phase-3d-manifest-severity-promotions-after-3b-3c-land">Phase 3D: manifest severity promotions (after 3B + 3C land)<a class="headerlink" href="#phase-3d-manifest-severity-promotions-after-3b-3c-land" title="Permanent link">&para;</a></h2>
+<p>Single PR to <code>ByronWilliamsCPA/.claude</code> updating <code>docs/standards-manifest.yaml</code>:</p>
 <table>
 <thead>
 <tr>
-<th>Date</th>
-<th>Repo</th>
-<th>Mode</th>
-<th style="text-align: right;">Critical</th>
-<th style="text-align: right;">Important</th>
-<th style="text-align: right;">Suggested</th>
-<th style="text-align: right;">Candidates</th>
-<th style="text-align: center;">Reconciled</th>
-<th>Report</th>
+<th>Check ID</th>
+<th>Current severity</th>
+<th>New severity</th>
+<th>Reasoning</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>2026-04-28</td>
-<td>ByronWilliamsCPA/llc-manager</td>
-<td>unknown</td>
-<td style="text-align: right;">11</td>
-<td style="text-align: right;">18</td>
-<td style="text-align: right;">9</td>
-<td style="text-align: right;">15</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/llc-manager/blob/main/docs/compliance-reports/lessons-learned/2026-04-28.md">report</a></td>
+<td>CI-058</td>
+<td>suggested</td>
+<td>important</td>
+<td>After 3B+3C lands, the SBOM workflow caller gap is the only remaining major rollout gap; promote to important once those are filled in a follow-up</td>
 </tr>
 <tr>
-<td>2026-04-25</td>
-<td>ByronWilliamsCPA/gleif</td>
-<td>unknown</td>
-<td style="text-align: right;">10</td>
-<td style="text-align: right;">22</td>
-<td style="text-align: right;">13</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/gleif/blob/main/docs/compliance-reports/lessons-learned/2026-04-25.md">report</a></td>
+<td>CI-059</td>
+<td>suggested</td>
+<td>important</td>
+<td>Lint script needs to be written + deployed first; promote when fleet-wide enforcement reaches 100%</td>
+</tr>
+<tr>
+<td>CI-060</td>
+<td>suggested</td>
+<td>important</td>
+<td>After fleet-wide SHA-pin sweep (separate from 3B/3C)</td>
+</tr>
+<tr>
+<td>PC-016</td>
+<td>suggested</td>
+<td>critical</td>
+<td>After homelab-infra deploys the pre-commit hook for the global config</td>
 </tr>
 </tbody>
 </table>
-<hr />
-<p><em>Rendered 2026-05-25 05:22:35 from master-log.jsonl by compliance_log_render.py.</em></p>
+<p><strong>Important:</strong> CI-058/060/PC-016 promotion is gated on additional follow-up work beyond Phases 3B/3C. Only CI-059 promotion is gated solely on 3B/3C. Phase 3D may end up promoting just CI-059 and deferring the others to later sweep phases.</p>
+<h2 id="hard-rules-reminders">Hard rules reminders<a class="headerlink" href="#hard-rules-reminders" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Worktrees inside the project at <code>.worktrees/&lt;branch-slug&gt;</code> (never global paths)</li>
+<li>Pre-commit before each commit (<code>SKIP=compose-validation</code> if WSL has no docker)</li>
+<li>Signed commits (default; do NOT use <code>--no-gpg-sign</code>)</li>
+<li>Never use em-dashes (U+2014) in any commit message, PR body, or doc; comma/semicolon/colon/parens instead</li>
+<li>Conventional Commits: <code>chore(deps):</code> for 3B, <code>fix(renovate):</code> for 3C</li>
+<li>Per <code>feedback_github_contents_api.md</code>: signed commits required; use local clone → commit → push, never the GitHub Contents API</li>
+</ul>
+<h2 id="quick-session-start-checklist">Quick session-start checklist<a class="headerlink" href="#quick-session-start-checklist" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Read this handoff doc (you are here)</li>
+<li>Read <code>docs/audits/dependency-management-improvement-plan-2026-05-24.md</code> for full context</li>
+<li>Read <code>docs/superpowers/plans/immutable-inventing-pinwheel.md</code> for the v43 cutover plan</li>
+<li>Re-run the canonical list refresh commands above (the fleet shifts daily)</li>
+<li>Pick 3B or 3C to start (3B is bigger but simpler)</li>
+<li>Dispatch parallel subagents (~6 batches) OR run a serial script</li>
+<li>Track PR URLs as they land; aggregate for the final summary</li>
+</ol>
+<h2 id="open-prs-at-session-boundary">Open PRs at session boundary<a class="headerlink" href="#open-prs-at-session-boundary" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>PR</th>
+<th>Repo</th>
+<th>State</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0 (P0-2)</td>
+<td><a href="https://github.com/ByronWilliamsCPA/cookiecutter-python-template/pull/79">#79</a></td>
+<td>cookiecutter-python-template</td>
+<td>Open (cookiecutter uv→pep621 fix)</td>
+</tr>
+<tr>
+<td>0 (P0-3)</td>
+<td><a href="https://github.com/williaby/PromptCraft/pull/317">#317</a></td>
+<td>williaby/PromptCraft</td>
+<td>Open (vulnerabilityAlerts.prPriority fix)</td>
+</tr>
+<tr>
+<td>0 (cosmetic)</td>
+<td><a href="https://github.com/ByronWilliamsCPA/homelab-infra/pull/422">#422</a></td>
+<td>homelab-infra</td>
+<td><strong>MERGED</strong></td>
+</tr>
+<tr>
+<td>2 cutover</td>
+<td><a href="https://github.com/ByronWilliamsCPA/homelab-infra/pull/425">#425</a></td>
+<td>homelab-infra</td>
+<td><strong>MERGED</strong></td>
+</tr>
+<tr>
+<td>2 symlink</td>
+<td><a href="https://github.com/ByronWilliamsCPA/homelab-infra/pull/431">#431</a></td>
+<td>homelab-infra</td>
+<td><strong>MERGED</strong></td>
+</tr>
+<tr>
+<td>2 customEnvVariables</td>
+<td><a href="https://github.com/ByronWilliamsCPA/homelab-infra/pull/432">#432</a></td>
+<td>homelab-infra</td>
+<td><strong>MERGED</strong> (inert but harmless)</td>
+</tr>
+<tr>
+<td>2 GPG bind-mount</td>
+<td><a href="https://github.com/ByronWilliamsCPA/homelab-infra/pull/433">#433</a></td>
+<td>homelab-infra</td>
+<td><strong>MERGED</strong></td>
+</tr>
+<tr>
+<td>3A manifest</td>
+<td><a href="https://github.com/ByronWilliamsCPA/.claude/pull/144">#144</a></td>
+<td>.claude</td>
+<td><strong>MERGED</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Phase 0 PRs #79 and #317 remain open. They were superseded by the v43 cutover (v43 auto-migrates the syntax they fix), so they're no longer urgent. Can be closed-without-merge or left open as documentation. User's choice.</p>
+<h2 id="tracking-issues-for-deferred-from-plan-items-still-open-not-part-of-phase-3">Tracking issues for deferred-from-plan items (still open, not part of Phase 3)<a class="headerlink" href="#tracking-issues-for-deferred-from-plan-items-still-open-not-part-of-phase-3" title="Permanent link">&para;</a></h2>
+<ul>
+<li>ByronWilliamsCPA/homelab-infra#418 (S-5: minimumReleaseAge 3d → 14d)</li>
+<li>ByronWilliamsCPA/homelab-infra#419 (Pr-1: lockFileMaintenance automerge true)</li>
+<li>ByronWilliamsCPA/homelab-infra#420 (S-8: Loki alert rule wiring)</li>
+<li>ByronWilliamsCPA/.github#152 (S-6: Trivy → Grype migration)</li>
+<li>ByronWilliamsCPA/.github#153 (S-4: third-party Action SHA pinning sweep)</li>
+</ul>
+<p>These are separate workstreams; do NOT bundle them into Phase 3.</p>
 
 
 
@@ -2448,7 +2628,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="May 26, 2026 04:07:49 UTC">May 26, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="May 25, 2026 23:06:17 UTC">May 25, 2026</span>
   </span>
 
     
@@ -2458,7 +2638,7 @@
     <span class="md-icon" title="Created">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="May 17, 2026 22:44:10 UTC">May 17, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="May 25, 2026 23:06:17 UTC">May 25, 2026</span>
   </span>
 
     

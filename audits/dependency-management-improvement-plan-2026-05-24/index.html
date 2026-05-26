@@ -12,7 +12,7 @@
         <meta name="author" content="Byron Williams">
       
       
-        <link rel="canonical" href="https://claude-config.readthedocs.io/compliance-reports/master-log/">
+        <link rel="canonical" href="https://claude-config.readthedocs.io/audits/dependency-management-improvement-plan-2026-05-24/">
       
       
       
@@ -25,7 +25,7 @@
     
     
       
-        <title>Compliance Master Log - Claude Code Configuration</title>
+        <title>Dependency Management & Supply-Chain Security Improvement Plan - Claude Code Configuration</title>
       
     
     
@@ -88,7 +88,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#2026-05" class="md-skip">
+        <a href="#tldr" class="md-skip">
           Skip to content
         </a>
       
@@ -122,7 +122,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Compliance Master Log
+              Dependency Management & Supply-Chain Security Improvement Plan
             
           </span>
         </div>
@@ -2164,10 +2164,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#2026-05" class="md-nav__link">
+  <a href="#tldr" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2026-05
+        TL;DR
       
     </span>
   </a>
@@ -2175,10 +2175,381 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2026-04" class="md-nav__link">
+  <a href="#active-problems-fix-this-week" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2026-04
+        Active Problems (fix this week)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Active Problems (fix this week)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#p0-1-global-configjson-has-uv-in-enabledmanagers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P0-1: Global config.json has "uv" in enabledManagers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p0-2-cookiecutter-python-template-ships-the-uv-trap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P0-2: cookiecutter-python-template ships the "uv" trap
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p0-3-williabypromptcraft-has-a-triple-defect-renovate-config" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P0-3: williaby/PromptCraft has a triple-defect Renovate config
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p0-4-9-python-repos-declare-poetry-against-uv-managed-projects" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P0-4: 9 Python repos declare "poetry" against uv-managed projects
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p0-5-36-of-44-repos-run-both-renovate-and-dependabot-version-updates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P0-5: 36 of 44 repos run both Renovate and Dependabot Version Updates
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#strategic-pivots-fix-next-30-days" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Strategic Pivots (fix next 30 days)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Strategic Pivots (fix next 30 days)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#s-1-upgrade-renovate-v4292-v43x" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        S-1: Upgrade Renovate v42.92 → v43.x
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#s-2-roll-out-pc-015-to-all-44-repos-or-defer-pending-s-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        S-2: Roll out PC-015 to all 44 repos (or defer pending S-1)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#s-3-add-semantic-lint-check-for-enabledmanagers-vs-detected-ecosystem-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        S-3: Add semantic-lint check for enabledManagers vs detected ecosystem files
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#s-4-pin-all-third-party-github-actions-to-commit-shas-tj-actions-class-defense" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        S-4: Pin all third-party GitHub Actions to commit SHAs (tj-actions class defense)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#s-5-raise-minimumreleaseage-from-3-days-to-14-days-for-non-security-automerge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        S-5: Raise minimumReleaseAge from 3 days to 14 days for non-security automerge
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#s-6-switch-trivy-grype-or-add-grype-as-primary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        S-6: Switch Trivy → Grype (or add Grype as primary)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#s-7-pin-renovate-docker-image-to-sha256digest" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        S-7: Pin Renovate Docker image to @sha256:&lt;digest&gt;
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#s-8-wire-loki-alert-rules-to-ntfy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        S-8: Wire Loki alert rules to ntfy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#s-9-close-the-sbom-workflow-gaps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        S-9: Close the SBOM workflow gaps
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#coverage-blind-spots-fix-this-quarter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Coverage Blind Spots (fix this quarter)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Coverage Blind Spots (fix this quarter)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#b-1-docker-base-image-os-packages-are-scanned-by-nothing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        B-1: Docker base image OS packages are scanned by NOTHING
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b-2-terraform-cve-coverage-is-zero" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        B-2: Terraform CVE coverage is ZERO
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b-3-npm-has-no-dev-time-cve-scanning-equivalent-to-pip-audit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        B-3: npm has no dev-time CVE scanning equivalent to pip-audit
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b-4-github-actions-supply-chain-compromised-actions-before-ghsa-publishes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        B-4: GitHub Actions supply chain (compromised actions before GHSA publishes)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#provenance-attestation-fix-this-quarter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Provenance &amp; Attestation (fix this quarter)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Provenance &amp; Attestation (fix this quarter)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-1-pypi-attestations-via-pypagh-action-pypi-publish" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A-1: PyPI attestations via pypa/gh-action-pypi-publish
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-2-cosign-keyless-signing-for-docker-images" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A-2: cosign keyless signing for Docker images
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-3-enforce-uv-run-frozen-not-uv-sync-in-ci" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A-3: Enforce uv run --frozen (not uv sync) in CI
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#process-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Process Changes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Process Changes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pr-1-lockfilemaintenance-automerge-true-currently-false" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pr-1: lockFileMaintenance: { automerge: true } (currently false)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pr-2-add-a-middle-automerge-tier-for-devtooling-minors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pr-2: Add a middle automerge tier for dev/tooling minors
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pr-3-weekly-dependency-dashboard-triage-cadence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pr-3: Weekly Dependency Dashboard triage cadence
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pr-4-defer-retiring-dependabot-security-updates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pr-4: Defer retiring Dependabot Security Updates
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deferred-scale-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deferred / Scale-Only
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#priority-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Priority Summary
       
     </span>
   </a>
@@ -2205,227 +2576,264 @@
   
 
 
-  <h1>Compliance Master Log</h1>
+  <h1>Dependency Management & Supply-Chain Security Improvement Plan</h1>
 
-<p><strong>Total sessions:</strong> 16
-<strong>Distinct repos:</strong> 10
-<strong>Newest entry:</strong> 2026-05-24
-<strong>Oldest entry:</strong> 2026-04-25
-<strong>Open fleet actions:</strong> 0</p>
-<h2 id="2026-05">2026-05<a class="headerlink" href="#2026-05" title="Permanent link">&para;</a></h2>
+<p>This is the action plan derived from a four-agent analysis run on 2026-05-24. Read alongside <code>docs/reference/renovate-architecture.md</code> (the reference) and <code>docs/audits/dependabot-renovate-coverage-2026-05-24.md</code> (the prior coverage audit).</p>
+<h2 id="tldr">TL;DR<a class="headerlink" href="#tldr" title="Permanent link">&para;</a></h2>
+<p>The Renovate stack is structurally sound but operationally broken in several places that the existing checks did not catch. Three findings reframe the next 90 days:</p>
+<ol>
+<li><strong>PC-015 is installed on 0 of 44 non-exempt repos.</strong> The hook that exists specifically to prevent the recurring <code>"uv"</code> trap is in the manifest but was never rolled out. The trap recurred three times because the hook never ran anywhere.</li>
+<li><strong>Renovate v42 reached EOL on 2026-01-29.</strong> The homelab is running an unsupported version. v43 eliminates the <code>"uv"</code> trap, the validator-pin lockstep, and the <code>prPriority</code> placement quirk in one upgrade. Upgrading retires the entire motivation for PC-015.</li>
+<li><strong>Trivy's release infrastructure was compromised in March 2026</strong> with vuln DB updates suspended. The SBOM workflow depends on it. Switching to Grype is the recommended pivot.</li>
+</ol>
+<p>Plus one urgent fleet-state finding: <strong>36 of 44 non-exempt repos run BOTH Renovate and Dependabot Version Updates</strong> (CI-021 violation). Duplicate PR engines have been shipping in parallel.</p>
+<h2 id="active-problems-fix-this-week">Active Problems (fix this week)<a class="headerlink" href="#active-problems-fix-this-week" title="Permanent link">&para;</a></h2>
+<h3 id="p0-1-global-configjson-has-uv-in-enabledmanagers">P0-1: Global <code>config.json</code> has <code>"uv"</code> in enabledManagers<a class="headerlink" href="#p0-1-global-configjson-has-uv-in-enabledmanagers" title="Permanent link">&para;</a></h3>
+<p><strong>Where:</strong> <code>homelab-infra/services/renovate/config/config.json</code> line 319, plus two <code>matchManagers</code> entries in packageRules (lines 47 and 55).</p>
+<p><strong>Why critical:</strong> Renovate v42.x rejects <code>"uv"</code> as an unsupported manager identifier and discards the entire config. Because this is the <em>global</em> mounted config, the rejection cascades to every repo simultaneously. The likely current state: Renovate is opening zero PRs fleet-wide.</p>
+<p><strong>Why PC-015 did not catch it:</strong> PC-015 validates per-repo <code>renovate.json</code> files. The global Docker-mounted config was never in scope.</p>
+<p><strong>Fix:</strong>
+1. Replace <code>"uv"</code> with <code>"pep621"</code> in <code>enabledManagers</code> (line 319).
+2. Remove the two <code>"uv"</code> entries from <code>matchManagers</code> arrays in packageRules (lines 47, 55). They silently do nothing in v42 but cause confusion.
+3. Validate the updated config locally with <code>npx renovate-config-validator@42.92.14 config/config.json</code>.
+4. Restart the renovate container; tail the next run logs for <code>Config validation errors found</code>.
+5. Add a new manifest check (CI-022 or PC-016) that extends PC-015's validation to <code>homelab-infra/services/renovate/config/config.json</code>.</p>
+<h3 id="p0-2-cookiecutter-python-template-ships-the-uv-trap">P0-2: <code>cookiecutter-python-template</code> ships the <code>"uv"</code> trap<a class="headerlink" href="#p0-2-cookiecutter-python-template-ships-the-uv-trap" title="Permanent link">&para;</a></h3>
+<p><strong>Why critical:</strong> Every new project bootstrapped from the template inherits the broken config. The template is the <em>source</em> of the recurring trap, not its victim. <code>ByronWilliamsCPA/Unify</code> already exhibits the downstream symptom (<code>enabledManagers: github-actions,poetry</code>, missing <code>pep621</code>).</p>
+<p><strong>Fix:</strong> Replace <code>"uv"</code> → <code>"pep621"</code> in the template. Add the PC-015 hook to the template's <code>.pre-commit-config.yaml</code>. Bump the template version and tag a release.</p>
+<h3 id="p0-3-williabypromptcraft-has-a-triple-defect-renovate-config">P0-3: <code>williaby/PromptCraft</code> has a triple-defect Renovate config<a class="headerlink" href="#p0-3-williabypromptcraft-has-a-triple-defect-renovate-config" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Empty <code>enabledManagers: []</code> (no PRs at all)</li>
+<li><code>managerFilePatterns</code> (v43-only field, fails on v42)</li>
+<li><code>prPriority</code> inside <code>vulnerabilityAlerts</code> (v42 rejects)</li>
+</ul>
+<p>Almost certain this repo's Renovate scans are erroring on every run. Fix the config to a known-good v42 baseline.</p>
+<h3 id="p0-4-9-python-repos-declare-poetry-against-uv-managed-projects">P0-4: 9 Python repos declare <code>"poetry"</code> against uv-managed projects<a class="headerlink" href="#p0-4-9-python-repos-declare-poetry-against-uv-managed-projects" title="Permanent link">&para;</a></h3>
+<p><strong>Repos:</strong> <code>Unify</code>, <code>audio-processor</code>, <code>cookiecutter-template-sample</code>, <code>fragrance-rater</code>, <code>maester-tests</code>, <code>python-libs</code>, <code>rag-processor</code>, <code>williaby/dna</code>, <code>williaby/image-preprocessing-detector</code>.</p>
+<p><strong>Why critical:</strong> Per the architecture doc forbidden-values table, the <code>poetry</code> manager looks for <code>[tool.poetry]</code> but uv uses <code>[project]</code>. Result: silently zero dependency PRs. Functionally identical to the <code>"uv"</code> trap outcome.</p>
+<p><strong>This explains most of the May 2026 BLOCKED_BY_CONFIG audit finding.</strong> 47% of repos were classified as such; 9 repos with this exact pattern is consistent with that fraction.</p>
+<p><strong>Fix:</strong> Replace <code>"poetry"</code> with <code>"pep621"</code> in each repo's <code>renovate.json</code>. One PR per repo or one sweep PR with per-repo commits.</p>
+<h3 id="p0-5-36-of-44-repos-run-both-renovate-and-dependabot-version-updates">P0-5: 36 of 44 repos run both Renovate and Dependabot Version Updates<a class="headerlink" href="#p0-5-36-of-44-repos-run-both-renovate-and-dependabot-version-updates" title="Permanent link">&para;</a></h3>
+<p>CI-021 says <code>dependabot.yml</code> must be absent when <code>renovate.json</code> is present. Spot-check confirms <code>Unify</code>'s <code>dependabot.yml</code> is a full <code>version: 2</code> config scheduling <code>pip</code> and <code>github-actions</code> weekly, not an alert-only stub.</p>
+<p><strong>Fix:</strong> Mass-delete <code>.github/dependabot.yml</code> from the 36 affected repos. Single sweep PR per repo (or use the <code>cleanup-backlog-scout</code> agent to scope a batch). Dependabot <strong>Alerts</strong> continue working independently; they are a separate GitHub feature not controlled by <code>dependabot.yml</code>.</p>
+<h2 id="strategic-pivots-fix-next-30-days">Strategic Pivots (fix next 30 days)<a class="headerlink" href="#strategic-pivots-fix-next-30-days" title="Permanent link">&para;</a></h2>
+<h3 id="s-1-upgrade-renovate-v4292-v43x">S-1: Upgrade Renovate v42.92 → v43.x<a class="headerlink" href="#s-1-upgrade-renovate-v4292-v43x" title="Permanent link">&para;</a></h3>
+<p>This is the highest-leverage change in the entire plan because it retires multiple existing pieces of complexity:</p>
+<ul>
+<li>The <code>"uv"</code> manager trap <strong>disappears entirely</strong> (v43 accepts it).</li>
+<li>The "validator pin must match server" lockstep <strong>disappears entirely</strong> (v43 validator and server accept the same schema).</li>
+<li>The 15 repos using <code>managerFilePatterns</code> / <code>matchSeverity</code> / <code>prPriority</code>-under-vulnerabilityAlerts that currently fail on v42 will pass.</li>
+<li>PC-015 can be downgraded from "exact patch pin" to a tilde-range pin like <code>renovate@~43</code> or removed entirely.</li>
+</ul>
+<p><strong>Coordinated rollout (per the existing upgrade procedure in the architecture doc):</strong></p>
+<ol>
+<li>Read v43 release notes; identify any <em>new</em> breaking changes since current v42.92.</li>
+<li>Validate the updated global config and a sample of per-repo configs against <code>renovate-config-validator@latest</code>.</li>
+<li>Bump the Docker image tag in <code>homelab-infra/services/renovate/docker-compose.yml</code> to a <em>digest-pinned</em> v43 image: <code>renovate/renovate@sha256:&lt;digest&gt;</code>, not a floating <code>:43.x</code> tag.</li>
+<li>Update PC-015 to a v43-pinned validator (or relax to <code>renovate@~43</code> if confident).</li>
+<li>Update every repo's <code>.pre-commit-config.yaml</code> <code>additional_dependencies</code> pin in lockstep.</li>
+<li>Deploy, watch first-run logs for <code>Config validation errors found</code>.</li>
+</ol>
+<h3 id="s-2-roll-out-pc-015-to-all-44-repos-or-defer-pending-s-1">S-2: Roll out PC-015 to all 44 repos (or defer pending S-1)<a class="headerlink" href="#s-2-roll-out-pc-015-to-all-44-repos-or-defer-pending-s-1" title="Permanent link">&para;</a></h3>
+<p><strong>Decision point:</strong> PC-015 exists precisely to catch the <code>"uv"</code> trap. v43 makes the trap impossible. If S-1 (v43 upgrade) is going to happen in the next 30 days, the value of PC-015 deployment drops to "catch other invalid syntax" rather than "catch the recurring uv trap."</p>
+<p><strong>Two options:</strong></p>
+<ul>
+<li><strong>Option A (do both):</strong> Deploy PC-015 now to catch existing v43-deprecated syntax in 15 repos (<code>fileMatch</code>, <code>matchSeverity</code>, <code>managerFilePatterns</code>, <code>prPriority</code> placement). Then on v43 upgrade, downgrade or remove the pin.</li>
+<li><strong>Option B (skip PC-015, jump to v43):</strong> Accept that the existing v43-syntax repos will be fixed by upgrading the server; the validator never had to catch them.</li>
+</ul>
+<p>Recommendation: <strong>Option A</strong>, because PC-015 also catches the <em>next</em> class of invalid syntax (e.g., a developer copy-pastes from a Renovate plugin doc that uses v44 syntax). The pre-commit gate is structurally valuable beyond the uv trap.</p>
+<h3 id="s-3-add-semantic-lint-check-for-enabledmanagers-vs-detected-ecosystem-files">S-3: Add semantic-lint check for enabledManagers vs detected ecosystem files<a class="headerlink" href="#s-3-add-semantic-lint-check-for-enabledmanagers-vs-detected-ecosystem-files" title="Permanent link">&para;</a></h3>
+<p>PC-015 catches schema errors. It does NOT catch a uv-managed repo with <code>enabledManagers: ["github-actions"]</code> only (silently drops Python deps). This is the <strong>other class of silent failure</strong> beyond the <code>"uv"</code> trap.</p>
+<p><strong>Implementation:</strong> 30-line Python script as a <code>local</code> pre-commit hook. For each repo: if <code>pyproject.toml</code> with <code>[project]</code> exists, assert effective <code>enabledManagers</code> (after org template inheritance) includes <code>pep621</code>. If <code>.github/workflows/</code> exists, assert it includes <code>github-actions</code>. Etc.</p>
+<p>Add as <strong>CI-023</strong> in the standards manifest, severity: important.</p>
+<h3 id="s-4-pin-all-third-party-github-actions-to-commit-shas-tj-actions-class-defense">S-4: Pin all third-party GitHub Actions to commit SHAs (tj-actions class defense)<a class="headerlink" href="#s-4-pin-all-third-party-github-actions-to-commit-shas-tj-actions-class-defense" title="Permanent link">&para;</a></h3>
+<p>The tj-actions/changed-files compromise (CVE-2025-30066, March 2025) retroactively poisoned 23,000+ repos via tag-pointer manipulation. <strong>Repos that pinned to commit SHAs were unaffected.</strong> This is the single highest-impact defensive control available; the cost is one find-and-replace per workflow file.</p>
+<p><strong>Implementation:</strong> Audit all <code>.github/workflows/*.yml</code> for <code>uses: org/action@v4</code>-style refs (tag pins). Replace with <code>uses: org/action@&lt;full-sha&gt;</code> and add a comment <code># v4.1.7</code> for readability. Renovate's <code>pinDigests: true</code> packageRule automates this going forward.</p>
+<p><strong>Add manifest check:</strong> <strong>CI-024</strong> (severity: important): third-party action references must be SHA-pinned.</p>
+<h3 id="s-5-raise-minimumreleaseage-from-3-days-to-14-days-for-non-security-automerge">S-5: Raise <code>minimumReleaseAge</code> from 3 days to 14 days for non-security automerge<a class="headerlink" href="#s-5-raise-minimumreleaseage-from-3-days-to-14-days-for-non-security-automerge" title="Permanent link">&para;</a></h3>
+<p>The Renovate upstream documentation now uses 14 days in its examples. Industry rationale: the axios npm compromise (March 2026) was live for ~4 hours; 3-day windows do not defeat that attack class, but 14-day windows do, because ecosystem monitoring catches malicious uploads within 24-48 hours.</p>
+<p><strong>Critical exception preserved:</strong> vulnerability-triggered PRs continue to use <code>minimumReleaseAge: 0</code> for CRITICAL/HIGH CVEs. The 14-day floor applies only to routine version updates.</p>
+<h3 id="s-6-switch-trivy-grype-or-add-grype-as-primary">S-6: Switch Trivy → Grype (or add Grype as primary)<a class="headerlink" href="#s-6-switch-trivy-grype-or-add-grype-as-primary" title="Permanent link">&para;</a></h3>
+<p>Trivy's release infrastructure was compromised in March 2026 with vulnerability database updates suspended. Anchore's Grype is the recommended alternative: 30-40% faster for pure CVE scanning, SBOM-first workflow (works with the existing CycloneDX output), unaffected by the Trivy incident.</p>
+<p><strong>Implementation:</strong> Update <code>python-sbom.yml</code> to call <code>grype sbom:./sbom.cdx.json --fail-on high</code> instead of <code>trivy sbom</code>. Keep both tools temporarily for a 30-day comparison window; remove Trivy when parity is confirmed.</p>
+<p><strong>Status (2026-05-25):</strong> Parallel-run phase IN PROGRESS. Grype added as non-gating sibling job in
+<code>python-sbom.yml</code> via ByronWilliamsCPA/.github PR #169. Trivy remains gating. Day-30 parity checkpoint
+scheduled for <strong>2026-06-24</strong>. Cutover (Trivy removal) is a separate spec authored at the checkpoint.</p>
+<h3 id="s-7-pin-renovate-docker-image-to-sha256digest">S-7: Pin Renovate Docker image to <code>@sha256:&lt;digest&gt;</code><a class="headerlink" href="#s-7-pin-renovate-docker-image-to-sha256digest" title="Permanent link">&para;</a></h3>
+<p>Currently the systemd timer runs <code>docker compose pull --quiet renovate</code> every 3 hours against tag <code>renovate/renovate:42.92</code>. If this is a floating minor tag and a breaking patch ships, the next 3-hour run silently upgrades.</p>
+<p><strong>Fix:</strong> Pin to <code>renovate/renovate@sha256:&lt;digest&gt;</code>. Renovate itself can manage the digest bump via the docker-compose manager.</p>
+<h3 id="s-8-wire-loki-alert-rules-to-ntfy">S-8: Wire Loki alert rules to ntfy<a class="headerlink" href="#s-8-wire-loki-alert-rules-to-ntfy" title="Permanent link">&para;</a></h3>
+<p>Loki + Promtail are deployed but nothing consumes their output. The OBSERVABILITY.md doc has example alert rules but they were never installed.</p>
+<p><strong>Fix:</strong> Install the two example rules (high error rate, CRITICAL CVE detected). Configure the Loki ruler to push alerts to <code>scripts/notify.sh</code> (ntfy). The integration is already scaffolded in OBSERVABILITY.md; wire it up.</p>
+<p><strong>Why this matters:</strong> without alerting, the next time the global config breaks (like the current <code>"uv"</code> trap), nobody will know until they notice PRs stopped arriving. The infrastructure exists; the alerting glue does not.</p>
+<h3 id="s-9-close-the-sbom-workflow-gaps">S-9: Close the SBOM workflow gaps<a class="headerlink" href="#s-9-close-the-sbom-workflow-gaps" title="Permanent link">&para;</a></h3>
+<p><strong>Missing SBOM workflow (4 Python repos):</strong> <code>cookiecutter-template-sample</code>, <code>family-office-portal</code>, <code>PromptCraft</code>, <code>monte_carlo</code>.
+<strong>Missing dependency-review (7 repos):</strong> <code>cookiecutter-template-sample</code>, <code>family-office-portal</code>, <code>xero-crypto</code>, <code>GCS</code>, <code>PromptCraft</code>, <code>data_ingestor</code>, <code>monte_carlo</code>.
+<strong>Pinned to <code>@main</code> (6 repos):</strong> <code>dataset_dev</code>, <code>exercise_competition</code>, <code>foundry_unify</code>, <code>maester_tests</code>, <code>python-libs</code>, <code>python_libs</code>. <code>@main</code> is a floating ref, same class of risk as the tj-actions attack.</p>
+<p><strong>Fix:</strong> Add the missing callers; replace <code>@main</code> with SHA pins. Add <strong>CI-022</strong> (severity: important): python-sbom.yml caller present and SHA-pinned.</p>
+<h2 id="coverage-blind-spots-fix-this-quarter">Coverage Blind Spots (fix this quarter)<a class="headerlink" href="#coverage-blind-spots-fix-this-quarter" title="Permanent link">&para;</a></h2>
+<h3 id="b-1-docker-base-image-os-packages-are-scanned-by-nothing">B-1: Docker base image OS packages are scanned by NOTHING<a class="headerlink" href="#b-1-docker-base-image-os-packages-are-scanned-by-nothing" title="Permanent link">&para;</a></h3>
+<p><code>cyclonedx-bom</code> builds the SBOM from the Python venv only. A CVE in <code>libexpat</code>, <code>openssl</code>, or <code>glibc</code> in the base image passes every current gate.</p>
+<p><strong>Fix:</strong> Add a <code>trivy image &lt;image&gt;</code> (or <code>grype &lt;image&gt;</code>) step in <code>python-sbom.yml</code> for PRs that touch <code>Dockerfile</code> or <code>docker-compose.yml</code>. Cost: 3-5 CI minutes per affected PR. No infrastructure required.</p>
+<h3 id="b-2-terraform-cve-coverage-is-zero">B-2: Terraform CVE coverage is ZERO<a class="headerlink" href="#b-2-terraform-cve-coverage-is-zero" title="Permanent link">&para;</a></h3>
+<p>Renovate updates version pins. No tool reads a Terraform-specific CVE database.</p>
+<p><strong>Fix:</strong> Add Checkov or tfsec to repos containing <code>*.tf</code>. Both have pre-built GitHub Actions; both catch misconfigurations <em>and</em> known-vulnerable provider versions.</p>
+<h3 id="b-3-npm-has-no-dev-time-cve-scanning-equivalent-to-pip-audit">B-3: npm has no dev-time CVE scanning equivalent to pip-audit<a class="headerlink" href="#b-3-npm-has-no-dev-time-cve-scanning-equivalent-to-pip-audit" title="Permanent link">&para;</a></h3>
+<p>Even free <code>npm audit</code> would provide parity with pip-audit. Recommended for the small number of npm-touching repos.</p>
+<h3 id="b-4-github-actions-supply-chain-compromised-actions-before-ghsa-publishes">B-4: GitHub Actions supply chain (compromised actions before GHSA publishes)<a class="headerlink" href="#b-4-github-actions-supply-chain-compromised-actions-before-ghsa-publishes" title="Permanent link">&para;</a></h3>
+<p>Solution path: pin to SHAs (S-4 above) eliminates retroactive tag-poisoning. For real-time compromised-Action detection, the options are paid (Aikido, Socket) and likely overkill at this scale.</p>
+<h2 id="provenance-attestation-fix-this-quarter">Provenance &amp; Attestation (fix this quarter)<a class="headerlink" href="#provenance-attestation-fix-this-quarter" title="Permanent link">&para;</a></h2>
+<h3 id="a-1-pypi-attestations-via-pypagh-action-pypi-publish">A-1: PyPI attestations via <code>pypa/gh-action-pypi-publish</code><a class="headerlink" href="#a-1-pypi-attestations-via-pypagh-action-pypi-publish" title="Permanent link">&para;</a></h3>
+<p>Free attestations attach automatically when <code>id-token: write</code> is granted. PEP 740 GA November 2024; 132K+ packages already attesting. For any Python package published from this fleet to PyPI, the cost is one line in a workflow.</p>
+<h3 id="a-2-cosign-keyless-signing-for-docker-images">A-2: cosign keyless signing for Docker images<a class="headerlink" href="#a-2-cosign-keyless-signing-for-docker-images" title="Permanent link">&para;</a></h3>
+<p><code>cosign sign --yes $IMAGE_DIGEST</code> in a workflow with <code>id-token: write</code>. No key management; signatures stored in registry as <code>.sig</code> OCI artifacts. Verification at deploy time via Kyverno or Sigstore Policy Controller.</p>
+<h3 id="a-3-enforce-uv-run-frozen-not-uv-sync-in-ci">A-3: Enforce <code>uv run --frozen</code> (not <code>uv sync</code>) in CI<a class="headerlink" href="#a-3-enforce-uv-run-frozen-not-uv-sync-in-ci" title="Permanent link">&para;</a></h3>
+<p>Without <code>--frozen</code>, <code>uv sync</code> is permitted to mutate the lockfile to accommodate dependency drift. This silently weakens lockfile integrity. The fix is one flag in every CI workflow.</p>
+<h2 id="process-changes">Process Changes<a class="headerlink" href="#process-changes" title="Permanent link">&para;</a></h2>
+<h3 id="pr-1-lockfilemaintenance-automerge-true-currently-false">Pr-1: <code>lockFileMaintenance: { automerge: true }</code> (currently false)<a class="headerlink" href="#pr-1-lockfilemaintenance-automerge-true-currently-false" title="Permanent link">&para;</a></h3>
+<p>Weekly lockfile PRs sit unmerged → superseded by next week's PR → continuous treadmill with no net effect. Lockfile-only PRs contain no logic changes; CI is sufficient gate. If a repo has flaky CI, override per-repo.</p>
+<h3 id="pr-2-add-a-middle-automerge-tier-for-devtooling-minors">Pr-2: Add a middle automerge tier for dev/tooling minors<a class="headerlink" href="#pr-2-add-a-middle-automerge-tier-for-devtooling-minors" title="Permanent link">&para;</a></h3>
+<p>Current policy: CRITICAL/HIGH auto immediately, patches auto after 14 days (per S-5), everything else manual. Add: minor updates on dev dependencies (test frameworks, linters, type checkers) auto-merge after 3 days with passing CI. These have near-zero production risk and currently sit in the manual review queue indefinitely.</p>
+<h3 id="pr-3-weekly-dependency-dashboard-triage-cadence">Pr-3: Weekly Dependency Dashboard triage cadence<a class="headerlink" href="#pr-3-weekly-dependency-dashboard-triage-cadence" title="Permanent link">&para;</a></h3>
+<p>Aligns with <code>lockFileMaintenance</code> (Monday). Any open Renovate PR where CI passes and <code>minimumReleaseAge</code> has elapsed should be merged or labeled <code>stop-updating</code>. PRs open &gt; 14 days with passing CI are blocked by process, not by content.</p>
+<h3 id="pr-4-defer-retiring-dependabot-security-updates">Pr-4: Defer retiring Dependabot Security Updates<a class="headerlink" href="#pr-4-defer-retiring-dependabot-security-updates" title="Permanent link">&para;</a></h3>
+<p>The doc proposes retiring this once Renovate config is verified clean. The fleet audit shows that "clean" is fragile: replace-not-merge semantics on <code>enabledManagers</code> means a single per-repo edit can silently narrow coverage below Dependabot. <strong>Recommendation:</strong> keep Dependabot Security Updates enabled until (a) S-3 (semantic enabledManagers lint) is deployed AND (b) two consecutive monthly Renovate audits show zero <code>BLOCKED_BY_CONFIG</code> repos.</p>
+<h2 id="deferred-scale-only">Deferred / Scale-Only<a class="headerlink" href="#deferred-scale-only" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Socket.dev / Aikido</strong> for malicious package detection (PyPI/npm). Behavior-based detection beyond CVEs. Paid; appropriate at higher scale.</li>
+<li><strong>PEP 770</strong> (SBOM in wheel METADATA). Watch but do not implement; spec still in draft as of mid-2026.</li>
+<li><strong>Renovate App</strong> (managed) instead of self-hosted. Eliminates lockstep entirely but introduces a different validator-pin tracking problem. Self-hosted + v43 is the right call at this scale.</li>
+<li><strong>Sigstore Policy Controller / Kyverno</strong> for image signature verification at deploy time. Requires Kubernetes; not applicable to current homelab posture.</li>
+</ul>
+<h2 id="priority-summary">Priority Summary<a class="headerlink" href="#priority-summary" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>Date</th>
-<th>Repo</th>
-<th>Mode</th>
-<th style="text-align: right;">Critical</th>
-<th style="text-align: right;">Important</th>
-<th style="text-align: right;">Suggested</th>
-<th style="text-align: right;">Candidates</th>
-<th style="text-align: center;">Reconciled</th>
-<th>Report</th>
+<th>Priority</th>
+<th>Item</th>
+<th>Effort</th>
+<th>Risk if not done</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>2026-05-24</td>
-<td>ByronWilliamsCPA/llc-manager</td>
-<td>interactive</td>
-<td style="text-align: right;">3</td>
-<td style="text-align: right;">20</td>
-<td style="text-align: right;">10</td>
-<td style="text-align: right;">6</td>
-<td style="text-align: center;"></td>
-<td></td>
+<td>P0-1</td>
+<td>Fix global config.json <code>"uv"</code></td>
+<td>30 min</td>
+<td>Fleet-wide Renovate failure</td>
 </tr>
 <tr>
-<td>2026-05-23</td>
-<td>ByronWilliamsCPA/rag-processor</td>
-<td>interactive</td>
-<td style="text-align: right;">6</td>
-<td style="text-align: right;">32</td>
-<td style="text-align: right;">16</td>
-<td style="text-align: right;">16</td>
-<td style="text-align: center;"></td>
-<td></td>
+<td>P0-2</td>
+<td>Fix cookiecutter-python-template</td>
+<td>1 hr</td>
+<td>New projects inherit trap</td>
 </tr>
 <tr>
-<td>2026-05-19</td>
-<td>ByronWilliamsCPA/rag-processor</td>
-<td>interactive</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: right;">32</td>
-<td style="text-align: right;">11</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: center;"></td>
-<td><a href="https://github.com/ByronWilliamsCPA/rag-processor/blob/main/docs/compliance-reports/lessons-learned/2026-05-19-rag-processor.md">report</a></td>
+<td>P0-3</td>
+<td>Fix PromptCraft triple-defect</td>
+<td>30 min</td>
+<td>Renovate erroring per-run</td>
 </tr>
 <tr>
-<td>2026-05-18</td>
-<td>williaby/image-generation</td>
-<td>interactive</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: right;">10</td>
-<td style="text-align: right;">20</td>
-<td style="text-align: center;"></td>
-<td></td>
+<td>P0-4</td>
+<td>Fix 9 <code>poetry</code>→<code>pep621</code> repos</td>
+<td>2 hr</td>
+<td>Silent zero PRs continue</td>
 </tr>
 <tr>
-<td>2026-05-16</td>
-<td>ByronWilliamsCPA/reference-library</td>
-<td>unknown</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/reference-library/blob/main/docs/compliance-reports/lessons-learned/2026-05-16-b.md">report</a></td>
+<td>P0-5</td>
+<td>Delete 36 dependabot.yml files</td>
+<td>4 hr</td>
+<td>Duplicate PR engines</td>
 </tr>
 <tr>
-<td>2026-05-16</td>
-<td>ByronWilliamsCPA/fragrance-rater</td>
-<td>unknown</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: right;">30</td>
-<td style="text-align: right;">21</td>
-<td style="text-align: right;">21</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/fragrance-rater/blob/main/docs/compliance-reports/lessons-learned/2026-05-16.md">report</a></td>
+<td>S-1</td>
+<td>Upgrade Renovate v42→v43</td>
+<td>1 day</td>
+<td>Running on EOL'd version</td>
 </tr>
 <tr>
-<td>2026-05-16</td>
-<td>ByronWilliamsCPA/audio-processor</td>
-<td>unknown</td>
-<td style="text-align: right;">12</td>
-<td style="text-align: right;">38</td>
-<td style="text-align: right;">15</td>
-<td style="text-align: right;">11</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/audio-processor/blob/main/docs/compliance-reports/lessons-learned/2026-05-16.md">report</a></td>
+<td>S-2</td>
+<td>Roll out PC-015 to 44 repos</td>
+<td>4 hr</td>
+<td>Next trap also goes unblocked</td>
 </tr>
 <tr>
-<td>2026-05-14</td>
-<td>ByronWilliamsCPA/gleif</td>
-<td>unknown</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">21</td>
-<td style="text-align: right;">5</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/gleif/blob/main/docs/compliance-reports/lessons-learned/2026-05-14.md">report</a></td>
+<td>S-3</td>
+<td>Add semantic enabledManagers lint</td>
+<td>1 day</td>
+<td>Silent coverage gaps recur</td>
 </tr>
 <tr>
-<td>2026-05-14</td>
-<td>ByronWilliamsCPA/.claude</td>
-<td>unknown</td>
-<td style="text-align: right;">6</td>
-<td style="text-align: right;">17</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/.claude/blob/main/docs/compliance-reports/lessons-learned/2026-05-14-github-repo.md">report</a></td>
+<td>S-4</td>
+<td>SHA-pin third-party Actions</td>
+<td>1 day</td>
+<td>tj-actions class exposure</td>
 </tr>
 <tr>
-<td>2026-05-13</td>
-<td>ByronWilliamsCPA/reference-library</td>
-<td>unknown</td>
-<td style="text-align: right;">3</td>
-<td style="text-align: right;">28</td>
-<td style="text-align: right;">2</td>
-<td style="text-align: right;">4</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/reference-library/blob/main/docs/compliance-reports/lessons-learned/2026-05-13.md">report</a></td>
+<td>S-5</td>
+<td>minimumReleaseAge 3d → 14d</td>
+<td>30 min</td>
+<td>axios-class exposure</td>
 </tr>
 <tr>
-<td>2026-05-13</td>
-<td>ByronWilliamsCPA/.claude</td>
-<td>unknown</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">10</td>
-<td style="text-align: right;">6</td>
-<td style="text-align: right;">2</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/.claude/blob/main/docs/compliance-reports/lessons-learned/2026-05-13.md">report</a></td>
+<td>S-6</td>
+<td>Trivy → Grype migration</td>
+<td>1 day</td>
+<td>Trivy compromise propagates</td>
 </tr>
 <tr>
-<td>2026-05-08</td>
-<td>ByronWilliamsCPA/family-office-portal</td>
-<td>unknown</td>
-<td style="text-align: right;">6</td>
-<td style="text-align: right;">24</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: right;">3</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/family-office-portal/blob/main/docs/compliance-reports/lessons-learned/2026-05-08.md">report</a></td>
+<td>S-7</td>
+<td>Pin Renovate image to SHA digest</td>
+<td>30 min</td>
+<td>Silent breaking upgrades</td>
 </tr>
 <tr>
-<td>2026-05-07</td>
-<td>ByronWilliamsCPA/homelab-infra</td>
-<td>unknown</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">5</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">4</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/homelab-infra/blob/main/docs/compliance-reports/lessons-learned/2026-05-07.md">report</a></td>
+<td>S-8</td>
+<td>Wire Loki alerts to ntfy</td>
+<td>2 hr</td>
+<td>Future failures stay silent</td>
 </tr>
 <tr>
-<td>2026-05-02</td>
-<td>ByronWilliamsCPA/homelab-infra</td>
-<td>unknown</td>
-<td style="text-align: right;">7</td>
-<td style="text-align: right;">42</td>
-<td style="text-align: right;">13</td>
-<td style="text-align: right;">7</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/homelab-infra/blob/main/docs/compliance-reports/lessons-learned/2026-05-02.md">report</a></td>
+<td>S-9</td>
+<td>Close SBOM caller gaps</td>
+<td>4 hr</td>
+<td>4-7 repos missing gates</td>
+</tr>
+<tr>
+<td>B-1</td>
+<td>Trivy/Grype direct image scanning</td>
+<td>4 hr</td>
+<td>Docker base CVE blind spot</td>
+</tr>
+<tr>
+<td>B-2</td>
+<td>Checkov for Terraform</td>
+<td>2 hr</td>
+<td>Terraform CVE blind spot</td>
+</tr>
+<tr>
+<td>A-1</td>
+<td>PyPI attestations</td>
+<td>1 hr per repo</td>
+<td>Missing free provenance</td>
+</tr>
+<tr>
+<td>A-2</td>
+<td>cosign image signing</td>
+<td>1 day</td>
+<td>No signature verification</td>
+</tr>
+<tr>
+<td>Pr-1</td>
+<td>lockFileMaintenance automerge</td>
+<td>15 min</td>
+<td>PR treadmill</td>
 </tr>
 </tbody>
 </table>
-<h2 id="2026-04">2026-04<a class="headerlink" href="#2026-04" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Date</th>
-<th>Repo</th>
-<th>Mode</th>
-<th style="text-align: right;">Critical</th>
-<th style="text-align: right;">Important</th>
-<th style="text-align: right;">Suggested</th>
-<th style="text-align: right;">Candidates</th>
-<th style="text-align: center;">Reconciled</th>
-<th>Report</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>2026-04-28</td>
-<td>ByronWilliamsCPA/llc-manager</td>
-<td>unknown</td>
-<td style="text-align: right;">11</td>
-<td style="text-align: right;">18</td>
-<td style="text-align: right;">9</td>
-<td style="text-align: right;">15</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/llc-manager/blob/main/docs/compliance-reports/lessons-learned/2026-04-28.md">report</a></td>
-</tr>
-<tr>
-<td>2026-04-25</td>
-<td>ByronWilliamsCPA/gleif</td>
-<td>unknown</td>
-<td style="text-align: right;">10</td>
-<td style="text-align: right;">22</td>
-<td style="text-align: right;">13</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/gleif/blob/main/docs/compliance-reports/lessons-learned/2026-04-25.md">report</a></td>
-</tr>
-</tbody>
-</table>
-<hr />
-<p><em>Rendered 2026-05-25 05:22:35 from master-log.jsonl by compliance_log_render.py.</em></p>
+<p><strong>Total P0 work: ~8 hours.</strong> Should be done this week; P0-1 is the most urgent.
+<strong>Total S-tier work: ~5 days spread across 30 days.</strong></p>
 
 
 
@@ -2458,7 +2866,7 @@
     <span class="md-icon" title="Created">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="May 17, 2026 22:44:10 UTC">May 17, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="May 25, 2026 23:06:17 UTC">May 25, 2026</span>
   </span>
 
     
