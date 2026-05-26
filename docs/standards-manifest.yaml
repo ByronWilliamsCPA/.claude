@@ -1,6 +1,6 @@
 # docs/standards-manifest.yaml
 version: "1.0"
-last_updated: "2026-05-25"
+last_updated: "2026-05-26"
 # 2026-05-25: Phase 3A of the v43 cutover plan. Added CI-058 (python-sbom caller
 # SHA-pinned, suggested), CI-059 (semantic enabledManagers lint, suggested),
 # CI-060 (third-party Action SHA pins, suggested), CI-061 (Renovate Docker image
@@ -12,6 +12,17 @@ last_updated: "2026-05-25"
 # motivating use case is retired by the v43 cutover. CI-059 is the structural
 # successor (catches a strictly larger class of misconfiguration).
 # Cross-reference: docs/audits/dependency-management-improvement-plan-2026-05-24.md
+#
+# 2026-05-26: Merge queue rollout (ByronWilliamsCPA/.github#154). Added CI-062
+# (merge_queue enabled on main ruleset for auto-merging repos, important) and
+# promoted CI-040 (merge_group trigger on primary CI workflow) from suggested
+# to important. The cost incident in homelab-infra on 2026-05-24 (5 Renovate
+# PRs consuming roughly 30 min of paid Actions minutes via cascading rebases)
+# motivated the immediate important severity. CI-040 was promoted in lockstep
+# because the queue cannot land PRs without the trigger; both must be true
+# together. Companion rollout PR (org templates): ByronWilliamsCPA/.github#163.
+# Consumer rollout (homelab-infra workflows): tracked separately. Cross-reference:
+# https://github.com/ByronWilliamsCPA/.github/issues/154
 
 # verify field is a hint to the domain agent, not executable DSL.
 # Agents interpret it using their own tools (Grep, Read, Glob, Bash).
@@ -1017,7 +1028,7 @@ checks:
 
   - id: CI-040
     domain: ci
-    severity: suggested
+    severity: important
     description: >-
       The primary CI workflow should respond to the merge_group event so that merge
       queue builds run the same gate set as PR builds. Without this trigger, the merge
@@ -1027,9 +1038,13 @@ checks:
       content_present: .github/workflows/ci.yml, merge_group
     override_eligible: true
     notes: >
-      Override eligible with a dated deferral comment when the merge queue feature has
-      not been enabled on the repo. The merge queue must be enabled in the repo settings
-      before adding the trigger has any effect.
+      Promoted from suggested to important on 2026-05-25 as part of the merge queue
+      rollout (ByronWilliamsCPA/.github#154). The cost of the trigger when the queue
+      is disabled is zero (the event never fires), so there is no downside to having
+      it present everywhere. Override eligible with a dated deferral comment when the
+      consumer repo has not yet pulled the updated org workflow template
+      (ByronWilliamsCPA/.github#163); the rollout is being done per repo. Companion
+      check: CI-062 covers the ruleset side.
 
   - id: CI-041
     domain: ci
@@ -1850,6 +1865,55 @@ checks:
       CI-061 is critical from initial introduction. Cross-reference:
       docs/audits/dependency-management-improvement-plan-2026-05-24.md S-1,
       docs/superpowers/plans/immutable-inventing-pinwheel.md Phase 2.
+
+  - id: CI-062
+    domain: ci
+    severity: important
+    description: >-
+      Repos that accept auto-merging dependency updates (Renovate or Dependabot
+      with auto-merge enabled, or any RENOVATE_AUTOMERGE=true config) should
+      enable merge_queue on the main branch ruleset to batch compatible changes.
+      Without the queue, N sequential auto-merges trigger N(N+1)/2 CI runs from
+      cascading rebases: each merge moves main forward and forces every other
+      queued PR into BEHIND state, requiring another rebase plus full CI run.
+      The cost incident in ByronWilliamsCPA/.github#154 (homelab-infra, 2026-05-24)
+      consumed roughly 30 min of paid Actions minutes to land 5 trivial Renovate
+      PRs. Queue-batched, the same workload would have required 1 to 2 CI runs.
+    verify: |
+      1. Check repo for auto-merge signals:
+         - renovate.json at repo root contains "automerge": true (BWCPA org
+           standard per CI-020; .renovaterc.json or .github/renovate.json
+           accepted as non-standard fallback locations)
+         - RENOVATE_AUTOMERGE org or repo secret set to true
+         - .github/dependabot.yml present with an auto-approve workflow
+      2. If no signal present: skip (treat as N/A per not_applicable_when).
+      3. If signal present: query the GitHub Rulesets API and confirm a
+         merge_queue rule exists on the main-branch ruleset specifically.
+         The filter must pin the ruleset to main (either by the literal
+         refs/heads/main include or the ~DEFAULT_BRANCH alias); a queue
+         rule on a non-main ruleset does not satisfy this check:
+         gh api repos/<org>/<repo>/rulesets --jq '.[] |
+           select(.target=="branch") |
+           select(.conditions.ref_name.include[]? == "refs/heads/main"
+                  or .conditions.ref_name.include[]? == "~DEFAULT_BRANCH") |
+           {name, rules: [.rules[] | select(.type=="merge_queue")]}'
+         PASS if at least one merge_queue rule exists on the main-branch
+         ruleset; FAIL otherwise.
+    override_eligible: true
+    not_applicable_when: "repo does not auto-merge any PRs"
+    source_frameworks:
+      - manifest-internal
+    notes: >-
+      Added 2026-05-25 as severity: important based on the cost incident in
+      ByronWilliamsCPA/.github#154. The incident is real, measurable, and
+      recurring: GitHub-hosted runner minutes are paid, Renovate batches arrive
+      weekly, and the N(N+1)/2 cascade compounds with fleet size. Companion to
+      CI-040, which covers the trigger side. Both are required for the queue to
+      function: CI-040 ensures gates emit on merge_group, CI-062 ensures the
+      ruleset enables the queue. Recommended ruleset settings:
+      merge_method=SQUASH, max_entries_to_build=5, min_entries_to_merge=1,
+      min_entries_to_merge_wait_minutes=5 (the wait prevents single-PR overhead
+      while still batching when activity is steady).
 
   - id: FOUND-015
     domain: foundations
