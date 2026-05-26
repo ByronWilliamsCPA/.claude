@@ -2342,6 +2342,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#audit-methodology-gotchas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Audit methodology gotchas
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#finding-output-format" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2486,7 +2497,7 @@
 <div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>standards-manifest.yaml          (what to check and how to verify it)
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>        |
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>        v
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>Domain agents (6 agents)         (read the manifest; audit or remediate)
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>Domain agents (8 agents)         (read the manifest; audit or remediate)
 </span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>        |
 </span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>        v
 </span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>Coordinator skill                (dispatches agents in parallel; merges findings)
@@ -2525,6 +2536,11 @@
 <td>FOUND-*</td>
 </tr>
 <tr>
+<td><code>repo_settings</code></td>
+<td><code>repo-foundations-auditor</code> (extended; queries <code>gh api repos/{owner}/{repo}</code>)</td>
+<td>REPO-*</td>
+</tr>
+<tr>
 <td><code>toolchain</code></td>
 <td><code>python-toolchain-auditor</code></td>
 <td>TOOL-*</td>
@@ -2545,12 +2561,28 @@
 <td>CLAUDE-*</td>
 </tr>
 <tr>
+<td><code>ossf</code></td>
+<td><code>ossf-compliance-auditor</code></td>
+<td>OSSF-* (plus live Scorecard/Badge API)</td>
+</tr>
+<tr>
+<td><code>mkdocs</code></td>
+<td><code>mkdocs-auditor</code></td>
+<td>MKDOCS-* (skipped when mkdocs.yml absent)</td>
+</tr>
+<tr>
+<td><code>api</code></td>
+<td><code>openapi-compliance-agent</code> (via check-repo-compliance.py)</td>
+<td>API-001..005 (when <code>api.servesApi: true</code>)</td>
+</tr>
+<tr>
 <td>General gaps</td>
 <td><code>general-compliance-auditor</code></td>
 <td>unclassified candidates</td>
 </tr>
 </tbody>
 </table>
+<p>The <code>repo_settings</code> domain audits GitHub repository toggles that are not visible in the working tree (e.g., <code>allow_auto_merge</code>, <code>delete_branch_on_merge</code>). It is the only domain whose source of truth is the GitHub API rather than a file in the repo. Added 2026-05-26 after the Renovate auto-merge fleet rollout audit revealed that 11 of 42 repos had <code>allow_auto_merge=false</code> and 38 of 42 had <code>delete_branch_on_merge=false</code> with no manifest check covering either toggle.</p>
 <p>The general compliance auditor operates after domain agents complete. It receives the covered check IDs as a negative filter and performs a freeform review for anything not yet in the manifest. Its output feeds the retrospective, not the findings report.</p>
 <h3 id="severity-levels">Severity levels<a class="headerlink" href="#severity-levels" title="Permanent link">&para;</a></h3>
 <table>
@@ -2580,11 +2612,15 @@
 </tbody>
 </table>
 <h3 id="check-summary-by-domain">Check summary by domain<a class="headerlink" href="#check-summary-by-domain" title="Permanent link">&para;</a></h3>
-<p><strong>FOUND (Foundations, 11 checks):</strong> OpenSSF required files (SECURITY.md, CONTRIBUTING.md, CHANGELOG.md), CODEOWNERS, .gitignore entries, pyproject.toml metadata, docs structure, known-vulnerabilities.md, AGENTS.md, GEMINI.md.</p>
+<p><strong>FOUND (Foundations, 16 checks):</strong> OpenSSF required files (SECURITY.md, CONTRIBUTING.md, CHANGELOG.md), CODEOWNERS, .gitignore entries, pyproject.toml metadata, docs structure, known-vulnerabilities.md, AGENTS.md, GEMINI.md. Recent additions: FOUND-015 (ADR "Security Considerations" section presence under docs/ADRs/ or docs/architecture/, satisfying NIST SSDF PW.2.1) and FOUND-016 (LICENSES/ files contain no unfilled OSI-template placeholders such as <code>&lt;year&gt;</code> or <code>&lt;copyright holders&gt;</code>, which automated scanners treat as unlicensed).</p>
 <p><strong>TOOL (Toolchain, 12 checks):</strong> Dev dependency presence (ruff, basedpyright, pip-audit, darglint, interrogate), absence of replaced tools (black, mypy, safety), Ruff PyStrict-aligned rule set, BasedPyright strict config, qlty config, target-version.</p>
-<p><strong>PC (Pre-commit, 12 checks):</strong> Hook presence (ruff, basedpyright, bandit, detect-secrets, darglint, interrogate, commitizen, yamllint, markdownlint, no-em-dash), hook SHA pinning on all rev fields.</p>
-<p><strong>CI (CI/CD, 42 checks as of 2026-05-14):</strong> Reusable workflow adoption, SHA pinning on all <code>uses:</code> references, harden-runner in every job, security scan hardening, required status checks, integration ID pinning, trust-boundary file path restrictions, tag protection rulesets, max file size cap, workflow permissions hygiene, timeout-minutes on all jobs, concurrency groups, dependency review, PR title enforcement, SBOM generation, Python matrix coverage, merge queue trigger, named environments, test result annotations.</p>
-<p><strong>CLAUDE (Claude docs, 8 checks):</strong> CLAUDE.md presence and required sections (Model Selection, RAD, cross-references), .claude/settings.json, no references to removed tools, no em-dashes in docs, no AI blacklist patterns.</p>
+<p><strong>PC (Pre-commit, 16 checks):</strong> Hook presence (ruff, basedpyright, bandit, detect-secrets, darglint, interrogate, commitizen, yamllint, markdownlint, no-em-dash), hook SHA pinning on all rev fields. The manifest now also includes PC-007b (interrogate hook scoped to <code>src/</code> at 80% fail-under, complementing PC-007 which scopes to <code>scripts/</code> at 85%) and PC-016 (global Renovate config validator, suggested). PC-015 (v42-era renovate-config-validator pin lockstep) was never landed; CI-059 is its structural successor (see manifest header comment).</p>
+<p><strong>CI (CI/CD, 64 checks as of 2026-05-26):</strong> Reusable workflow adoption, SHA pinning on all <code>uses:</code> references, harden-runner in every job, security scan hardening, required status checks, integration ID pinning, trust-boundary file path restrictions, tag protection rulesets, max file size cap, workflow permissions hygiene, timeout-minutes on all jobs, concurrency groups, dependency review, PR title enforcement, SBOM generation, Python matrix coverage, merge queue trigger, named environments, test result annotations. Recent additions: CI-052 (CodeRabbit gating), CI-053 (mutation testing schedule), CI-054 (live Codecov coverage), CI-055/056/057 (org workflow SHA-pin registry), CI-058/059/060/061 (SBOM caller SHA-pin, Renovate semantic enabledManagers lint, third-party Action SHA pins, Renovate Docker image digest pin), CI-003c (no inline SonarCloud actions in ci.yml), CI-062 (merge_queue rule on main-branch ruleset for auto-merging repos, important; landed via merge-queue rollout PR), and CI-063/064 (per-repo <code>renovate.json</code> is a thin overlay rather than a redundant duplicate of global rules; global Renovate config explicit <code>platformAutomerge</code>).</p>
+<p><strong>REPO (Repo settings, 2 checks as of 2026-05-26):</strong> GitHub repo-level toggles queried via <code>gh api repos/{owner}/{repo}</code>. REPO-001 (<code>allow_auto_merge=true</code>, critical) is required for any bot-driven auto-merge to function; REPO-002 (<code>delete_branch_on_merge=true</code>, important) prevents stale Renovate branches from accumulating after merge. This domain is distinct from CI (workflows), foundations (in-tree files), and OSSF (Scorecard/Badge APIs) because its source of truth is the GitHub repo settings object, not the working tree.</p>
+<p><strong>CLAUDE (Claude docs, 10 checks):</strong> CLAUDE.md presence and required sections (Model Selection, RAD, cross-references), .claude/settings.json, no references to removed tools, no em-dashes in docs, no AI blacklist patterns. Recent additions: CLAUDE-009 (<code>.claude/settings.json</code> must not enable <code>enableAllProjectMcpServers</code> without a documented justification, per OWASP LLM06/LLM08) and CLAUDE-010 (<code>$schema</code> field in <code>.claude/settings.json</code>, when present, must be exactly <code>https://json.schemastore.org/claude-code-settings.json</code>; the wrong slug silently disables every permission rule in the IDE extension).</p>
+<p><strong>OSSF (OSSF compliance, 12 checks):</strong> OpenSSF Best Practices Badge passing, OpenSSF Security Scorecard at or above 4, branch protection, secret scanning + push protection, dependency review action, CodeQL workflow, plus OSSF-011 (fuzz testing setup such as atheris, libFuzzer, or a <code>tests/fuzz/</code> directory, per Silver Badge criterion 6.1) and OSSF-012 (any PATs used as repository secrets must be fine-grained, not classic, per SOC 2 CC6.1 least-privilege).</p>
+<p><strong>MKDOCS (MkDocs docs build, 12 checks):</strong> mkdocs.yml metadata, theme, navigation, plugins, extensions, version pinning, docs/ structure, and CI build wiring. Skipped silently when <code>mkdocs.yml</code> is absent.</p>
+<p><strong>API (OpenAPI compliance, 5 checks):</strong> OpenAPI spec presence (API-001..003 verified via the GitHub Contents API), plus Postman collection presence and last-audited timestamp (API-004/005 read from the catalog). Runs only when <code>api.servesApi: true</code> in the repo's catalog entry.</p>
 <h3 id="manifest-versioning">Manifest versioning<a class="headerlink" href="#manifest-versioning" title="Permanent link">&para;</a></h3>
 <p>The manifest carries <code>version</code> and <code>last_updated</code> fields at the top level. Bump <code>last_updated</code> (ISO date) whenever checks are added, modified, or removed. There is no semantic versioning for the manifest; the <code>last_updated</code> date is the version identifier used in compliance reports.</p>
 <h2 id="override-system">Override System<a class="headerlink" href="#override-system" title="Permanent link">&para;</a></h2>
@@ -2631,18 +2667,32 @@
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>/repo-audit<span class="w"> </span>--scheduled
 </span></code></pre></div>
 <p>Scheduled mode discovers repos from local <code>~/dev/</code> clones and remote org listings (<code>gh repo list ByronWilliamsCPA</code>, <code>gh repo list williaby</code>). It writes one report file per repo to <code>docs/compliance-reports/&lt;date&gt;-&lt;repo-slug&gt;.md</code>. All reports are gitignored.</p>
+<h3 id="audit-methodology-gotchas">Audit methodology gotchas<a class="headerlink" href="#audit-methodology-gotchas" title="Permanent link">&para;</a></h3>
+<p>These verification patterns have produced false positives in past audits. Always use the corrected method below.</p>
+<p><strong>Required-check coverage (CI-022/CI-023):</strong> Verify against a recently merged PR's status rollup, never against the merge commit's check-runs.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># CORRECT: queries the PR&#39;s check rollup, which includes pull_request-event-only workflows</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>gh<span class="w"> </span>pr<span class="w"> </span>view<span class="w"> </span>&lt;PR_NUMBER&gt;<span class="w"> </span>--repo<span class="w"> </span>&lt;org&gt;/&lt;repo&gt;<span class="w"> </span>--json<span class="w"> </span>statusCheckRollup<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">  </span>--jq<span class="w"> </span><span class="s1">&#39;.statusCheckRollup[].name&#39;</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="c1"># WRONG: workflows triggered by pull_request do not re-run on the merge commit,</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="c1"># so they are absent from this output. The 2026-05-26 audit used this method</span>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="c1"># and incorrectly flagged every repo in ByronWilliamsCPA as missing the</span>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="c1"># &quot;Dependency &amp; Standards Validation&quot; check.</span>
+</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>gh<span class="w"> </span>api<span class="w"> </span>repos/&lt;org&gt;/&lt;repo&gt;/commits/&lt;sha&gt;/check-runs<span class="w"> </span>--jq<span class="w"> </span><span class="s1">&#39;.check_runs[].name&#39;</span>
+</span></code></pre></div>
+<p><strong>Bot PR filtering:</strong> Self-hosted Renovate authenticates as a PAT, so <code>author == "renovate[bot]"</code> returns zero results. Filter by <code>headRefName</code> matching <code>renovate/*</code> instead. Bot logins from GitHub Apps end in the literal <code>[bot]</code> suffix, e.g. <code>Copilot[bot]</code>, <code>coderabbitai[bot]</code> (memory: <code>feedback_bot_login_suffix.md</code>).</p>
 <h3 id="finding-output-format">Finding output format<a class="headerlink" href="#finding-output-format" title="Permanent link">&para;</a></h3>
 <p>Each failing check is emitted as a FINDING block by the domain agent:</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nt">FINDING</span><span class="p">:</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">FOUND-001</span>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">  </span><span class="nt">severity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">critical</span>
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">  </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SECURITY.md absent from project root</span>
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">  </span><span class="nt">status</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fail</span>
-</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">  </span><span class="nt">current_value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">file not found</span>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="nt">FINDING</span><span class="p">:</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">  </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">FOUND-001</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">  </span><span class="nt">severity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">critical</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">  </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SECURITY.md absent from project root</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">  </span><span class="nt">status</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fail</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="w">  </span><span class="nt">current_value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">file not found</span>
 </span></code></pre></div>
 <p>Remediation actions are emitted as ACTION lines:</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="nt">ACTION</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Created SECURITY.md from template /home/byron/dev/.github/SECURITY.md</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="nt">ACTION</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Appended .worktrees/ to .gitignore</span>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="nt">ACTION</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Created SECURITY.md from template /home/byron/dev/.github/SECURITY.md</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="nt">ACTION</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Appended .worktrees/ to .gitignore</span>
 </span></code></pre></div>
 <h2 id="retrospective-and-self-improvement">Retrospective and Self-Improvement<a class="headerlink" href="#retrospective-and-self-improvement" title="Permanent link">&para;</a></h2>
 <p>After each session (interactive or scheduled), <code>compliance-retrospective</code> reads all findings and unclassified candidates across every repo reviewed. It:</p>
@@ -2779,7 +2829,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="May 14, 2026 23:04:18 UTC">May 14, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="May 26, 2026 19:40:56 UTC">May 26, 2026</span>
   </span>
 
     
