@@ -241,7 +241,9 @@ puts the next PR into BEHIND state.
 Enable the merge queue on any repo where these signals appear together:
 
 - `automerge: true` in `renovate.json`, or `RENOVATE_AUTOMERGE=true`
-- 5 or more dependency-bump PRs per week
+- Roughly 5 or more dependency-bump PRs per week (threshold drawn from the
+  homelab-infra incident in ByronWilliamsCPA/.github#154, where 5 batched
+  Renovate PRs consumed about 30 min of paid Actions minutes)
 - Required status checks slow enough that serial landing exceeds 30 minutes
 
 The queue is the wrong tool for repos with rare merges, fast checks under
