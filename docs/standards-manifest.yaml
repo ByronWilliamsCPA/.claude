@@ -1,6 +1,20 @@
 # docs/standards-manifest.yaml
 version: "1.0"
 last_updated: "2026-05-26"
+# 2026-05-26: Post-audit revisions following the Renovate auto-merge fleet
+# rollout. Added new repo_settings domain with REPO-001 (allow_auto_merge=true,
+# critical) and REPO-002 (delete_branch_on_merge=true, important); added
+# CI-063 (per-repo renovate.json is a thin overlay, not a duplicate of global
+# rules, suggested) and CI-064 (Renovate global config explicitly sets
+# platformAutomerge: true, suggested, defensive). Note: CI-062 was
+# concurrently claimed by the merge queue rollout PR; the platformAutomerge
+# check was renumbered to CI-064 to avoid collision. Corrected CI-023
+# verification methodology: the previous note instructed use of
+# /commits/{sha}/check-runs, which excludes pull_request-event-only workflows
+# and produced a fleet-wide false positive for "Dependency & Standards
+# Validation". Correct methodology is `gh pr view --json statusCheckRollup`
+# on a recent merged PR.
+#
 # 2026-05-25: Phase 3A of the v43 cutover plan. Added CI-058 (python-sbom caller
 # SHA-pinned, suggested), CI-059 (semantic enabledManagers lint, suggested),
 # CI-060 (third-party Action SHA pins, suggested), CI-061 (Renovate Docker image
@@ -726,7 +740,13 @@ checks:
       Check run names must match the GitHub Checks API output, NOT the PR UI display.
       Direct jobs: name = job `name:` field only (e.g., "CI Gate", not "CI / CI Gate").
       Reusable-workflow callee jobs: name = "{calling_job_name} / {internal_job_name}".
-      Verification: gh api repos/<org>/<repo>/commits/<sha>/check-runs --jq '.check_runs[].name'
+      Verification: gh pr view <PR_NUMBER> --repo <org>/<repo> --json statusCheckRollup
+        --jq '.statusCheckRollup[].name' against any recently merged PR.
+      DO NOT use `gh api repos/<org>/<repo>/commits/<sha>/check-runs` on main HEAD.
+      Workflows triggered by pull_request (or pull_request_target) do not re-run on
+      the merge commit, so they are absent from commit-level check-runs and the audit
+      produces false positives (every repo appears to be missing "Dependency &
+      Standards Validation"). This was confirmed in the 2026-05-26 fleet audit.
       Compare against this file's required_checks[].name entries. The PR UI prepends
       the workflow name as a visual prefix for ALL checks -- this is cosmetic only for direct jobs.
 
@@ -1863,8 +1883,7 @@ checks:
       is enforceable from day one (the digest pin landed in homelab-infra PR #425),
       so unlike CI-058/059/060 which start at suggested until rollout completes,
       CI-061 is critical from initial introduction. Cross-reference:
-      docs/audits/dependency-management-improvement-plan-2026-05-24.md S-1,
-      docs/superpowers/plans/immutable-inventing-pinwheel.md Phase 2.
+      docs/audits/dependency-management-improvement-plan-2026-05-24.md S-1.
 
   - id: CI-062
     domain: ci
@@ -1914,6 +1933,67 @@ checks:
       merge_method=SQUASH, max_entries_to_build=5, min_entries_to_merge=1,
       min_entries_to_merge_wait_minutes=5 (the wait prevents single-PR overhead
       while still batching when activity is steady).
+
+  - id: CI-063
+    domain: ci
+    severity: suggested
+    override_eligible: true
+    not_applicable_when: "renovate.json does not exist at repo root"
+    description: >-
+      Per-repo renovate.json is a thin overlay containing only repo-specific
+      rules, not duplicates of the global config or org template. Specifically,
+      a per-repo renovate.json MUST NOT redeclare packageRules or groupName
+      entries that already exist in the global config at
+      homelab-infra/services/renovate/config/config.json or the org template at
+      ByronWilliamsCPA/.github/renovate.json or williaby/.github/renovate.json.
+      Renovate config layers use replace semantics on arrays, not merge, so a
+      redundant per-repo packageRules array silently shadows the global rules.
+      If the global config later changes (e.g., adds a new CVE auto-merge rule),
+      the per-repo override will continue applying the stale rule set with no
+      visible diff in the per-repo config file.
+    verify: >-
+      Read the repo's renovate.json. For each top-level array key
+      (packageRules, groupName, ignoreDeps, postUpdateOptions, prHourlyLimit,
+      schedule), check whether the same key is set in the applicable global
+      config or org template. PASS if the per-repo value is genuinely different
+      from the global value (a legitimate override). FAIL if the per-repo value
+      is identical to or a subset of the global value (redundant shadow).
+    source_frameworks:
+      - manifest-internal
+    notes: >-
+      Added 2026-05-26 as severity: suggested. Diagnostic, not blocking;
+      redundant overlays are harmless until the global config changes. The
+      2026-05-26 audit (KL-004) identified this as a latent drift risk worth
+      catching before the global config evolves further.
+
+  - id: CI-064
+    domain: ci
+    severity: suggested
+    override_eligible: false
+    not_applicable_when: >-
+      Audit target is not the homelab-infra repo. This check only applies to
+      homelab-infra/services/renovate/config/config.json.
+    description: >-
+      The Renovate global config explicitly sets platformAutomerge: true rather
+      than relying on the v40+ default. Defensive against a future Renovate
+      version flipping the default again. The 2026-05-26 audit found that the
+      v42 to v43 cutover silently changed the platformAutomerge default behavior;
+      had the global config been explicit, the cutover would have produced
+      identical behavior regardless of the upstream default.
+    verify: >-
+      Read homelab-infra/services/renovate/config/config.json. PASS only when
+      the top-level platformAutomerge key is present and set to true. A missing
+      key (relying on Renovate's default) is a FAIL.
+    source_frameworks:
+      - manifest-internal
+    notes: >-
+      Added 2026-05-26 as severity: suggested. Defensive check; the current
+      behavior is correct (v43 default is true), but explicitness in the global
+      config removes a future failure mode where an upstream default flip would
+      silently change fleet-wide auto-merge behavior with no audit signal.
+      Originally introduced as CI-062 in PR #154; renumbered to CI-064 when
+      the merge queue rollout PR (ByronWilliamsCPA/.github#154) landed CI-062
+      on main first with a different semantic.
 
   - id: FOUND-015
     domain: foundations
@@ -2017,3 +2097,52 @@ checks:
       - OWASP LLM06 Excessive Agency
       - OWASP LLM08 Excessive Permissions
       - CNCF Security TAG IAM
+
+  # ── Repo Settings (GitHub repo-level toggles, not in-tree files) ─────────────
+  # Audits repository settings accessible only via the GitHub API
+  # (gh api repos/{owner}/{repo}). Distinct from foundations (in-tree files),
+  # CI (workflows), and OSSF (Scorecard/Badge APIs). Added 2026-05-26 after the
+  # Renovate auto-merge fleet rollout audit revealed that 11 of 42 repos had
+  # allow_auto_merge=false and 38 of 42 had delete_branch_on_merge=false with
+  # no manifest check covering either toggle.
+
+  - id: REPO-001
+    domain: repo_settings
+    severity: critical
+    description: >-
+      Repository setting allow_auto_merge is true. Without this toggle GitHub
+      silently refuses to enable auto-merge on any PR, regardless of bot
+      configuration. Renovate, Dependabot, and any other bot that requests
+      platform auto-merge will appear to "work" (the API call succeeds) but
+      the PR will never auto-merge. The 2026-05-26 audit found 11 of 42 repos
+      had this set to false, blocking the entire Renovate auto-merge pipeline.
+    verify: >-
+      Run: gh api repos/<org>/<repo> --jq '.allow_auto_merge'.
+      PASS if value is true. FAIL if false or null.
+    override_eligible: false
+    source_frameworks:
+      - manifest-internal
+    notes: >-
+      Idempotent remediation: gh api repos/<org>/<repo> -X PATCH -f allow_auto_merge=true.
+      Cross-reference: docs/reference/renovate-architecture.md (cutover playbook).
+
+  - id: REPO-002
+    domain: repo_settings
+    severity: important
+    description: >-
+      Repository setting delete_branch_on_merge is true. When false, merged
+      Renovate (and other bot) branches accumulate indefinitely, cluttering the
+      branch list and confusing future bot runs (Renovate's branch-reuse logic
+      assumes branches are deleted post-merge). The 2026-05-26 audit found 38
+      of 42 repos with this disabled.
+    verify: >-
+      Run: gh api repos/<org>/<repo> --jq '.delete_branch_on_merge'.
+      PASS if value is true. FAIL if false or null.
+    override_eligible: true
+    source_frameworks:
+      - manifest-internal
+    notes: >-
+      Idempotent remediation: gh api repos/<org>/<repo> -X PATCH
+      -f delete_branch_on_merge=true. Override eligible for repos that
+      intentionally retain merged branches for historical reference, but no
+      such repo currently exists in either org.
