@@ -179,7 +179,7 @@ Per `/tmp/ci-failure-inventory.tsv`, ranked by leverage (repos affected). All ma
 
 | Task | Repos affected | Status | Notes |
 |---|---|---|---|
-| SLSA per-repo fixes | 7 | not started | python-slsa.yml in BWCPA/.github is a copy-paste template, NOT a reusable workflow (GitHub forbids nested reusable workflow calls for the SLSA Generic Generator). Each downstream repo has its OWN .github/workflows/slsa-provenance.yml that needs the detect-state pattern applied per repo. See [feedback_slsa_provenance_pattern.md](../../memory/feedback_slsa_provenance_pattern.md). |
+| SLSA per-repo fixes | 7 | not started | python-slsa.yml in BWCPA/.github is a copy-paste template, NOT a reusable workflow (GitHub forbids nested reusable workflow calls for the SLSA Generic Generator). Each downstream repo has its OWN .github/workflows/slsa-provenance.yml that needs the detect-state pattern applied per repo. See `feedback_slsa_provenance_pattern` (auto-memory). |
 | CodeQL per-repo | 7 | not started | The SARIF upload bug in python-libs is private-repo-specific (likely GHAS Code Scanning configuration). Public repos (e.g., .github) pass CodeQL cleanly. Per-repo investigation needed. |
 | SonarCloud per-repo | 3 + variations | not started | python-libs has `sonar.tests=tests/,packages/*/tests/` wildcards; cookiecutter-python-template has Jinja `{{cookiecutter.project_slug}}` placeholder; Unify has stale 2026-05-08 cache miss. (The reusable-workflow piece is done via PR #166; these per-repo variants are independent.) |
 
@@ -300,8 +300,8 @@ These are not part of the CI Repair Sprint but should be resolved during the bro
 
 ## Memory entries created this session
 
-- [feedback_subagent_relay_citations.md](../../memory/feedback_subagent_relay_citations.md): When relaying user feedback to subagents via SendMessage, include verifiable file:line citations. The python-ci agent correctly refused a pattern change because the relay's load-bearing claim ("line 292 has NOSONAR") was false (NOSONAR actually lives at python-mutation.yml lines 159-169).
-- [feedback_sonarcloud_nosonar_placement.md](../../memory/feedback_sonarcloud_nosonar_placement.md): S8541/S8544 honor inline-on-YAML-line NOSONAR for any rule combination, but preceding-line NOSONAR inside `run: |` with dynamic `$FROZEN_FLAG` is NOT honored. Restructure to expose literal `--frozen` or split into single-line `run:` with inline NOSONAR. PRs #157/#158/#159 had ERROR gates because of this; all remediated using the split-install pattern.
+- `feedback_subagent_relay_citations` (auto-memory): When relaying user feedback to subagents via SendMessage, include verifiable file:line citations. The python-ci agent correctly refused a pattern change because the relay's load-bearing claim ("line 292 has NOSONAR") was false (NOSONAR actually lives at python-mutation.yml lines 159-169).
+- `feedback_sonarcloud_nosonar_placement` (auto-memory): S8541/S8544 honor inline-on-YAML-line NOSONAR for any rule combination, but preceding-line NOSONAR inside `run: |` with dynamic `$FROZEN_FLAG` is NOT honored. Restructure to expose literal `--frozen` or split into single-line `run:` with inline NOSONAR. PRs #157/#158/#159 had ERROR gates because of this; all remediated using the split-install pattern.
 
 ## Phase 7 follow-ups (track separately)
 

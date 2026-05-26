@@ -132,6 +132,10 @@ Trivy's release infrastructure was compromised in March 2026 with vulnerability 
 
 **Implementation:** Update `python-sbom.yml` to call `grype sbom:./sbom.cdx.json --fail-on high` instead of `trivy sbom`. Keep both tools temporarily for a 30-day comparison window; remove Trivy when parity is confirmed.
 
+**Status (2026-05-25):** Parallel-run phase IN PROGRESS. Grype added as non-gating sibling job in
+`python-sbom.yml` via ByronWilliamsCPA/.github PR #169. Trivy remains gating. Day-30 parity checkpoint
+scheduled for **2026-06-24**. Cutover (Trivy removal) is a separate spec authored at the checkpoint.
+
 ### S-7: Pin Renovate Docker image to `@sha256:<digest>`
 
 Currently the systemd timer runs `docker compose pull --quiet renovate` every 3 hours against tag `renovate/renovate:42.92`. If this is a floating minor tag and a breaking patch ships, the next 3-hour run silently upgrades.
