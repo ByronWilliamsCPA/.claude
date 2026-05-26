@@ -1,6 +1,14 @@
 # docs/standards-manifest.yaml
 version: "1.0"
-last_updated: "2026-05-25"
+last_updated: "2026-05-26"
+# 2026-05-26: Finalized the merge-queue rollout side of the manifest. Added
+# CI-062 (important, override_eligible: true) requiring the default-branch
+# ruleset to enable the GitHub merge queue when auto-merge is enabled on the
+# same ruleset; without queueing, concurrent auto-merge PRs cascade-rebase at
+# N(N+1)/2 CI runs. Promoted CI-040 (workflow merge_group: trigger) from
+# suggested to important now that ByronWilliamsCPA/.github PR #163 (merged
+# 2026-05-25) has propagated `merge_group:` triggers to consumer-repo
+# workflow templates through Renovate.
 # 2026-05-25: Phase 3A of the v43 cutover plan. Added CI-058 (python-sbom caller
 # SHA-pinned, suggested), CI-059 (semantic enabledManagers lint, suggested),
 # CI-060 (third-party Action SHA pins, suggested), CI-061 (Renovate Docker image
@@ -1017,7 +1025,7 @@ checks:
 
   - id: CI-040
     domain: ci
-    severity: suggested
+    severity: important
     description: >-
       The primary CI workflow should respond to the merge_group event so that merge
       queue builds run the same gate set as PR builds. Without this trigger, the merge
@@ -1026,10 +1034,13 @@ checks:
     verify: |
       content_present: .github/workflows/ci.yml, merge_group
     override_eligible: true
-    notes: >
-      Override eligible with a dated deferral comment when the merge queue feature has
-      not been enabled on the repo. The merge queue must be enabled in the repo settings
-      before adding the trigger has any effect.
+    notes: >-
+      Promoted from suggested to important on 2026-05-26 after
+      ByronWilliamsCPA/.github PR #163 (workflow-template merge_group: trigger
+      rollout, merged 2026-05-25) propagated through Renovate to consumer
+      repos. Still override_eligible: true with a dated comment for repos
+      that have not yet enabled the merge queue in branch settings; the
+      merge queue must be enabled before adding the trigger has any effect.
 
   - id: CI-041
     domain: ci
@@ -1850,6 +1861,40 @@ checks:
       CI-061 is critical from initial introduction. Cross-reference:
       docs/audits/dependency-management-improvement-plan-2026-05-24.md S-1,
       docs/superpowers/plans/immutable-inventing-pinwheel.md Phase 2.
+
+  - id: CI-062
+    domain: ci
+    severity: important
+    override_eligible: true
+    not_applicable_when: >-
+      Repo's default-branch ruleset does not enable auto-merge for bots
+      (auto-merge is opt-in; this gate only matters when Renovate or
+      another integration can land approved PRs without a human gate).
+    description: >-
+      When a repo enables auto-merge on its default-branch ruleset, the
+      same ruleset must also enable the GitHub merge queue. Without queue
+      enablement, concurrent auto-merge PRs cascade-rebase at N(N+1)/2 CI
+      runs per N PRs as each merged PR invalidates the others. With the
+      merge queue active, GitHub batches PRs against a single speculative
+      HEAD and the cost drops to O(N). CI-040 (workflow templates respond
+      to merge_group:) is the template-level prerequisite for this check;
+      both must hold for the queue to actually gate merges.
+    verify: >-
+      Read the default-branch ruleset via
+      `gh api repos/{owner}/{repo}/rulesets` and drill into rules. If
+      `gh repo view {owner}/{repo} --json autoMergeAllowed --jq .autoMergeAllowed`
+      returns true, the ruleset must contain a rule with
+      `type: merge_queue`. If autoMergeAllowed is true and no merge_queue
+      rule is present, FAIL. If autoMergeAllowed is false, log
+      NOT_APPLICABLE and skip.
+    source_frameworks:
+      - manifest-internal
+    notes: >-
+      Added 2026-05-26 following ByronWilliamsCPA/.github PR #163, which
+      finished the workflow-template side of the merge queue rollout by
+      adding `merge_group:` triggers to the nine PR-gate templates. CI-040
+      (template-level merge_group trigger) is the prerequisite for this
+      check; both must hold for the queue to actually gate merges.
 
   - id: FOUND-015
     domain: foundations

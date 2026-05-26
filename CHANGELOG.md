@@ -4,6 +4,24 @@
 
 ### Added
 
+* feat(compliance): add CI-062 to `docs/standards-manifest.yaml`. CI-062
+  (severity important, override_eligible true) requires that when a repo
+  enables auto-merge on its default-branch ruleset, the same ruleset must
+  also enable the GitHub merge queue. Without queue enablement, concurrent
+  auto-merge PRs cascade-rebase at N(N+1)/2 CI runs per N PRs; with the
+  queue, GitHub batches PRs against a single speculative HEAD and cost
+  drops to O(N). Follow-up to ByronWilliamsCPA/.github PR #163
+  (workflow-template `merge_group:` trigger rollout, merged 2026-05-25).
+
+* feat(compliance): promote CI-040 (workflow `merge_group:` trigger) from
+  `suggested` to `important` in `docs/standards-manifest.yaml`. The
+  promotion was deferred in the original CI-040 entry until the
+  template-side rollout completed; ByronWilliamsCPA/.github PR #163
+  (merged 2026-05-25) has now propagated `merge_group:` triggers through
+  Renovate to consumer-repo workflow templates, so the gate is enforceable
+  fleet-wide. Still override_eligible for repos that have not yet enabled
+  the merge queue in branch settings.
+
 * feat(compliance): add CLAUDE-010 to `docs/standards-manifest.yaml`. CLAUDE-010
   (severity important, not override-eligible) gates the `$schema` field in
   `.claude/settings.json`: when present, the field must be exactly
