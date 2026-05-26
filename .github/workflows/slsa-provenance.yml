@@ -8,24 +8,39 @@
 # produce non-deterministic artifacts whose hashes diverge from what was
 # actually published, defeating the purpose of supply chain provenance.
 #
+# Trigger model: `release: types: [published]` gives us the published
+# tag deterministically via `github.event.release.tag_name`, avoiding the
+# "latest release" race that a `workflow_run` trigger introduces when
+# multiple semantic-release runs land close together.
+#
+# This workflow is the single canonical SLSA provenance path for the
+# repository. The previous inline `provenance` job in `release.yml` was
+# removed when this workflow was consolidated; do not re-introduce it.
+#
 # Reference: https://slsa.dev/
-# See also: ByronWilliamsCPA/.github/.github/workflows/python-slsa.yml
-# (a template, not callable; copy its provenance job per its instructions)
 name: SLSA Provenance
 
 on:
-  # Trigger after successful release
-  workflow_run:
-    workflows: ["Semantic Release"]
-    types: [completed]
-    branches: [main, master]
-  # Manual trigger for re-generating provenance
+  # Fire when Semantic Release publishes a new GitHub Release. The release
+  # event supplies `github.event.release.tag_name` so there is no need to
+  # query for the latest tag at job-start time.
+  release:
+    types: [published]
+  # Manual trigger for re-generating provenance against an existing tag.
   workflow_dispatch:
     inputs:
       version:
         description: 'Version (tag with or without leading v) to generate provenance for (e.g., 0.1.0 or v0.1.0)'
         required: true
         type: string
+
+# Serialize runs so two close-together releases (or a release plus a manual
+# re-attestation) do not race to upload `multiple.intoto.jsonl` to the same
+# release. `cancel-in-progress: false` ensures an in-flight attestation
+# completes rather than being killed mid-upload.
+concurrency:
+  group: slsa-provenance-${{ github.ref }}
+  cancel-in-progress: false
 
 permissions: {}
 
@@ -39,7 +54,6 @@ jobs:
   prepare:
     name: Prepare Subjects
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     permissions:
       contents: read
     outputs:
@@ -49,23 +63,32 @@ jobs:
       - name: Harden the runner
         uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
         with:
-          egress-policy: audit
+          egress-policy: block
+          allowed-endpoints: |
+            api.github.com:443
+            github.com:443
+            objects.githubusercontent.com:443
+            release-assets.githubusercontent.com:443
+            uploads.github.com:443
+            pipelines.actions.githubusercontent.com:443
+            token.actions.githubusercontent.com:443
 
       - name: Resolve release tag
         id: tag
         env:
           INPUT_VERSION: ${{ github.event.inputs.version }}
+          EVENT_TAG: ${{ github.event.release.tag_name }}
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
           if [ -n "${INPUT_VERSION:-}" ]; then
-            # Validate version string to allow only semver-like characters
+            # Manual dispatch: validate input then normalize "0.1.0" / "v0.1.0"
+            # to the actual tag GitHub used.
             if ! [[ "$INPUT_VERSION" =~ ^[A-Za-z0-9._+-]+$ ]]; then
               echo "::error::Invalid version input: must match ^[A-Za-z0-9._+-]+$"
               exit 1
             fi
-            # Accept either "0.1.0" or "v0.1.0"; normalize to the tag GH used.
             CAND="$INPUT_VERSION"
             if gh release view "$CAND" >/dev/null 2>&1; then
               TAG="$CAND"
@@ -75,12 +98,13 @@ jobs:
               echo "::error::No GitHub Release found for '$CAND' or 'v$CAND'"
               exit 1
             fi
+          elif [ -n "${EVENT_TAG:-}" ]; then
+            # release.published path: tag is supplied by the event payload,
+            # deterministically bound to the release that triggered this run.
+            TAG="$EVENT_TAG"
           else
-            TAG=$(gh release view --json tagName --jq '.tagName')
-            if [ -z "$TAG" ]; then
-              echo "::error::Could not determine latest release tag"
-              exit 1
-            fi
+            echo "::error::Unable to resolve a release tag (no INPUT_VERSION and no release.tag_name in payload)"
+            exit 1
           fi
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "Resolved tag: $TAG"
@@ -99,6 +123,17 @@ jobs:
             --pattern '*.whl' \
             --pattern '*.tar.gz' \
             --dir dist
+          # Verify at least one wheel and one sdist actually arrived. Without
+          # this guard, an empty download produces an opaque sha256sum error
+          # in the next step ("./*.whl: No such file or directory") rather
+          # than an actionable message.
+          shopt -s nullglob
+          whls=(dist/*.whl)
+          sdists=(dist/*.tar.gz)
+          if [ "${#whls[@]}" -eq 0 ] || [ "${#sdists[@]}" -eq 0 ]; then
+            echo "::error::No matching artifacts in release '$TAG' (wheels: ${#whls[@]}, sdists: ${#sdists[@]}). Verify the Semantic Release job uploaded them via upload_to_vcs_release."
+            exit 1
+          fi
           echo "Downloaded artifacts:"
           ls -lh dist/
 
@@ -113,9 +148,9 @@ jobs:
   # ==========================================================================
   # SLSA Level 3 Provenance
   # ==========================================================================
-  # The org-level python-slsa.yml is a template (workflow_dispatch only),
-  # not a callable reusable workflow. Per its own instructions we call the
-  # official SLSA generator directly here.
+  # Calls the official SLSA generator directly. The org-level python-slsa.yml
+  # is a documentation template (workflow_dispatch only), not a callable
+  # reusable workflow, so the direct invocation here is the supported path.
   provenance:
     name: Generate SLSA Provenance
     needs: [prepare]
