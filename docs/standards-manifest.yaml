@@ -1,6 +1,6 @@
 # docs/standards-manifest.yaml
 version: "1.0"
-last_updated: "2026-05-25"
+last_updated: "2026-05-26"
 # 2026-05-25: Phase 3A of the v43 cutover plan. Added CI-058 (python-sbom caller
 # SHA-pinned, suggested), CI-059 (semantic enabledManagers lint, suggested),
 # CI-060 (third-party Action SHA pins, suggested), CI-061 (Renovate Docker image
@@ -13,7 +13,7 @@ last_updated: "2026-05-25"
 # successor (catches a strictly larger class of misconfiguration).
 # Cross-reference: docs/audits/dependency-management-improvement-plan-2026-05-24.md
 #
-# 2026-05-25: Merge queue rollout (ByronWilliamsCPA/.github#154). Added CI-062
+# 2026-05-26: Merge queue rollout (ByronWilliamsCPA/.github#154). Added CI-062
 # (merge_queue enabled on main ruleset for auto-merging repos, important) and
 # promoted CI-040 (merge_group trigger on primary CI workflow) from suggested
 # to important. The cost incident in homelab-infra on 2026-05-24 (5 Renovate
@@ -1881,15 +1881,24 @@ checks:
       PRs. Queue-batched, the same workload would have required 1 to 2 CI runs.
     verify: |
       1. Check repo for auto-merge signals:
-         - .github/renovate.json or .renovaterc.json contains "automerge": true
+         - renovate.json at repo root contains "automerge": true (BWCPA org
+           standard per CI-020; .renovaterc.json or .github/renovate.json
+           accepted as non-standard fallback locations)
          - RENOVATE_AUTOMERGE org or repo secret set to true
          - .github/dependabot.yml present with an auto-approve workflow
-      2. If no signal present: n/a (PASS).
-      3. If signal present: query the GitHub Rulesets API for the main branch
-         ruleset and confirm a rule of type "merge_queue" exists:
-         gh api repos/<org>/<repo>/rulesets --jq '.[] | select(.target=="branch") |
+      2. If no signal present: skip (treat as N/A per not_applicable_when).
+      3. If signal present: query the GitHub Rulesets API and confirm a
+         merge_queue rule exists on the main-branch ruleset specifically.
+         The filter must pin the ruleset to main (either by the literal
+         refs/heads/main include or the ~DEFAULT_BRANCH alias); a queue
+         rule on a non-main ruleset does not satisfy this check:
+         gh api repos/<org>/<repo>/rulesets --jq '.[] |
+           select(.target=="branch") |
+           select(.conditions.ref_name.include[]? == "refs/heads/main"
+                  or .conditions.ref_name.include[]? == "~DEFAULT_BRANCH") |
            {name, rules: [.rules[] | select(.type=="merge_queue")]}'
-         PASS if at least one merge_queue rule exists; FAIL otherwise.
+         PASS if at least one merge_queue rule exists on the main-branch
+         ruleset; FAIL otherwise.
     override_eligible: true
     not_applicable_when: "repo does not auto-merge any PRs"
     source_frameworks:
