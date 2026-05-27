@@ -44,6 +44,25 @@
 
 ### Fixed
 
+* fix(ci): pin `step-security/harden-runner` to v2.19.3 in block-mode workflows
+  and add defensive `include-hidden-files: true` to v7 `upload-artifact` steps.
+  v2.19.4 introduced a block-mode regression that drops legitimate
+  `github.com:443` traffic at the eBPF layer with a sub-millisecond signature,
+  causing every `Pre-Release Tests` job on `main` to fail at `actions/checkout`
+  since the Renovate bump landed (run IDs 26478726993 and 26478698517). Rolls
+  back the two affected `egress-policy: block` workflows (`release.yml`,
+  `slsa-provenance.yml`) to v2.19.3 (`ab7a9404c0f3da075243ca237b5fac12c98deaa5`,
+  the SHA already in use across all 30 workflows in
+  `ByronWilliamsCPA/.github`). The other 7 audit-mode workflows in this repo
+  remain on v2.19.4; the regression is block-mode specific. Adds a Renovate
+  `packageRules` entry scoped via `matchFileNames` to the two block-mode
+  workflows so the hold does not strand audit-mode files. Also adds
+  `include-hidden-files: true` to the v7 `actions/upload-artifact` steps in
+  `fips-compatibility.yml` and `reuse.yml`: these workflows run in a
+  dot-prefixed repo workspace (`/home/runner/work/.claude/.claude`) where any
+  glob traversal from the workspace root matches `/^\./` and is silently
+  skipped under the `excludeHiddenFiles: true` default introduced in v7.
+
 * fix(reuse): cover generated `session-report-*.html` files in `REUSE.toml`. The
   `Check REUSE Compliance` CI job has been failing on `main` since
   `session-report-20260521-2145.html` and `session-report-20260521-2204.html`
