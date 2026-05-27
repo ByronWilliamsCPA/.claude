@@ -1,8 +1,19 @@
 name: Sign Release Artifacts
 
 on:
-  release:
-    types: [published]
+  # Auto-trigger on `release: types: [published]` is intentionally disabled.
+  # This repo does not publish wheels or sdists. The download step below has
+  # a graceful "no assets" skip, but firing on every release produces noisy
+  # no-op runs in the Actions tab. When PyPI publishing is restored in
+  # release.yml, re-enable this block:
+  #   release:
+  #     types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing release tag to sign (e.g., v0.13.0)'
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -31,7 +42,7 @@ jobs:
         id: download
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          RELEASE_TAG: ${{ inputs.tag }}
         run: |
           mkdir -p release-assets
           if ! gh release download "$RELEASE_TAG" --dir release-assets/; then
@@ -49,7 +60,7 @@ jobs:
         if: steps.download.outputs.skip != 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          RELEASE_TAG: ${{ inputs.tag }}
         run: |
           cd release-assets
           signed_count=0
@@ -71,7 +82,7 @@ jobs:
         if: steps.download.outputs.skip != 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          RELEASE_TAG: ${{ inputs.tag }}
         run: |
           cd release-assets
           sig_files=()
