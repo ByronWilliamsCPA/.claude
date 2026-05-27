@@ -21,12 +21,12 @@
 name: SLSA Provenance
 
 on:
-  # Fire when Semantic Release publishes a new GitHub Release. The release
-  # event supplies `github.event.release.tag_name` so there is no need to
-  # query for the latest tag at job-start time.
-  release:
-    types: [published]
-  # Manual trigger for re-generating provenance against an existing tag.
+  # Auto-trigger on `release: types: [published]` is intentionally disabled.
+  # This repo does not publish wheels or sdists, so the "Download release
+  # artifacts" step would hard-fail with "No matching artifacts in release".
+  # When PyPI publishing is restored in release.yml, re-enable this block:
+  #   release:
+  #     types: [published]
   workflow_dispatch:
     inputs:
       version:

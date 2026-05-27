@@ -1,15 +1,34 @@
 # Semantic Release Workflow for Claude Code Configuration
-# Handles automated releases with semantic versioning.
+# Handles automated tag + GitHub Release creation. This repository does NOT
+# publish to PyPI; semantic-release is used purely for version bookkeeping
+# (conventional-commit-driven version bumps, CHANGELOG, and tag/Release
+# creation).
+#
+# Trigger: fires after the CI workflow completes successfully on main/master.
+# This guarantees the full CI suite (lint, types, multi-version tests, Bandit,
+# pip-audit) has passed before any version bump or release tag is created.
+# A redundant pre-release test job is not needed because the CI Gate enforces
+# all of that before this workflow starts.
 #
 # Features:
-#   - Pre-release testing
 #   - Semantic versioning based on conventional commits
-#   - PyPI publishing with OIDC trusted publishing
-#   - GitHub Release creation
+#   - CHANGELOG generation
+#   - GitHub Release creation (no PyPI upload, no artifact signing)
+#
+# To re-enable PyPI publishing later: restore the `Publish to PyPI` step,
+# re-add `id-token: write` + `attestations: write` to job permissions, re-add
+# pypi.org + files.pythonhosted.org + upload.pypi.org +
+# fulcio/rekor/tlog.sigstore.dev to the harden-runner egress allowlist, and
+# re-enable the auto-triggers on slsa-provenance.yml and release-sign.yml.
 name: Semantic Release
 
 on:
-  push:
+  # Fire only after CI completes successfully; this replaces the former
+  # `push: main` + `needs: test` pattern. The workflow_run trigger enforces
+  # that the full CI suite (not just a subset pytest run) has passed.
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
     branches:
       - main
       - master
@@ -28,50 +47,17 @@ on:
 
 # Prevent concurrent releases
 concurrency:
-  group: release-${{ github.ref }}
+  group: release-${{ github.event.workflow_run.head_branch || github.ref_name }}
   cancel-in-progress: false
 
 jobs:
-  test:
-    name: Pre-Release Tests
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      - name: Harden the runner
-        uses: step-security/harden-runner@ab7a9404c0f3da075243ca237b5fac12c98deaa5 # v2.19.3
-        with:
-          egress-policy: block
-          allowed-endpoints: |
-            api.github.com:443
-            github.com:443
-            objects.githubusercontent.com:443
-            release-assets.githubusercontent.com:443
-            pypi.org:443
-            files.pythonhosted.org:443
-
-      - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
-        with:
-          fetch-depth: 0
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b  # v8.1.0
-        with:
-          enable-cache: true
-
-      - name: Set up Python
-        run: uv python install 3.12
-
-      - name: Install dependencies
-        run: uv sync --all-extras
-
-      - name: Run tests
-        run: uv run pytest -v --cov=src --cov-report=xml --cov-fail-under=80
-
   release:
     name: Semantic Release
-    needs: test
+    # workflow_run fires on both success and failure; only proceed if CI passed.
+    # workflow_dispatch has no workflow_run context, so the OR short-circuits.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     outputs:
       released: ${{ steps.release.outputs.released }}
@@ -80,8 +66,6 @@ jobs:
       contents: write
       issues: write
       pull-requests: write
-      id-token: write
-      attestations: write
     steps:
       - name: Harden the runner
         uses: step-security/harden-runner@ab7a9404c0f3da075243ca237b5fac12c98deaa5 # v2.19.3
@@ -93,19 +77,25 @@ jobs:
             objects.githubusercontent.com:443
             release-assets.githubusercontent.com:443
             uploads.github.com:443
-            pipelines.actions.githubusercontent.com:443
-            token.actions.githubusercontent.com:443
-            pypi.org:443
-            files.pythonhosted.org:443
-            upload.pypi.org:443
-            fulcio.sigstore.dev:443
-            rekor.sigstore.dev:443
-            tlog.sigstore.dev:443
+
+      - name: Verify trusted workflow_run source
+        if: github.event_name == 'workflow_run'
+        env:
+          HEAD_OWNER: ${{ github.event.workflow_run.head_repository.owner.login }}
+          REPO_OWNER: ${{ github.repository_owner }}
+        run: |
+          if [ "$HEAD_OWNER" != "$REPO_OWNER" ]; then
+            echo "::error::Refusing: triggering workflow originated from a fork (owner: $HEAD_OWNER)"
+            exit 1
+          fi
 
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           fetch-depth: 0
+          # workflow_run: check out the exact commit that passed CI, not HEAD.
+          # workflow_dispatch: fall back to github.sha (the dispatched commit).
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install uv
@@ -125,17 +115,15 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Publish to PyPI
-        if: steps.release.outputs.released == 'true'
-        uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b  # release/v1
-        with:
-          attestations: true
-
-# SLSA Level 3 provenance is generated by `.github/workflows/slsa-provenance.yml`,
-# which fires on `release: types: [published]` after this workflow's
-# python-semantic-release step publishes the GitHub Release. That workflow
-# downloads the published artifacts and attests the exact bytes that landed
-# on the Release, avoiding the non-determinism of rebuilding here. Do not
-# re-introduce a `provenance:` (or `build-dist:`) job in this file; that
-# would create two competing attestations writing to the same release asset
-# (`multiple.intoto.jsonl`).
+# PyPI publishing is intentionally not performed here. This repo is a
+# personal config tree, not a distributed library. python-semantic-release
+# above handles version bumping in pyproject.toml, CHANGELOG generation,
+# tag creation, and GitHub Release creation; those four are the entire
+# contract this workflow needs to satisfy.
+#
+# SLSA Level 3 provenance (`slsa-provenance.yml`) and cosign signing
+# (`release-sign.yml`) are intentionally not auto-triggered. With no
+# `*.whl` / `*.tar.gz` artifacts on the GitHub Release, the SLSA generator
+# would hard-fail at the subject-hash step and the signing workflow would
+# emit "no assets" no-op runs. Both remain available via `workflow_dispatch`
+# in case a future tag genuinely needs an attested artifact set.
