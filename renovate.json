@@ -158,20 +158,6 @@
         "williaby/.github"
       ],
       "followTag": "v1"
-    },
-    {
-      "description": "Hold step-security/harden-runner at v2.19.3 in block-mode workflows only -- v2.19.4 introduced a block-mode regression that drops legitimate github.com:443 traffic at the eBPF layer. Audit-mode workflows are unaffected and bump normally. matchFileNames scopes the constraint to the two block-mode workflows in this repo (release.yml, slsa-provenance.yml). Remove this rule once upstream ships a fix and we have verified those two files pass on a newer version.",
-      "matchManagers": [
-        "github-actions"
-      ],
-      "matchPackageNames": [
-        "step-security/harden-runner"
-      ],
-      "matchFileNames": [
-        "**/release.yml",
-        "**/slsa-provenance.yml"
-      ],
-      "allowedVersions": "<=2.19.3"
     }
   ],
   "python": {

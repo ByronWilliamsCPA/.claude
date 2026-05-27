@@ -44,6 +44,25 @@
 
 ### Fixed
 
+* fix(ci): demote `egress-policy: block` to `audit` in `release.yml` and
+  `slsa-provenance.yml`; remove now-dead Renovate hold rule for
+  `step-security/harden-runner`. The previous fix (see below) pinned
+  harden-runner to v2.19.3 on the assumption that block-mode was stable there,
+  but the 2026-05-27 manual workflow sweep (run IDs 26513198544 and 26513209273)
+  showed v2.19.3 reproduces the same eBPF regression: legitimate
+  `github.com:443` connections are refused at the 2 ms mark despite appearing
+  in `allowed-endpoints`, aborting `actions/checkout` and `gh release view`
+  respectively. The root cause is eBPF-layer enforcement: the kernel-level
+  policy drops SYN packets before the TCP handshake completes, independently of
+  which version introduced the change. Switching all three block-mode job
+  declarations to `audit` restores green pipelines immediately; `audit` mode
+  logs anomalous egress to the StepSecurity dashboard without blocking traffic,
+  so the `allowed-endpoints` lists are preserved as a telemetry baseline rather
+  than removed. OpenSSF Scorecard `Token-Permissions` and `Pinned-Dependencies`
+  credit is unaffected by the policy-mode change. The Renovate
+  `packageRules` hold scoped to `release.yml` and `slsa-provenance.yml` is
+  removed because no block-mode workflows remain in the repo.
+
 * fix(ci): pin `step-security/harden-runner` to v2.19.3 in block-mode workflows
   and add defensive `include-hidden-files: true` to v7 `upload-artifact` steps.
   v2.19.4 introduced a block-mode regression that drops legitimate
