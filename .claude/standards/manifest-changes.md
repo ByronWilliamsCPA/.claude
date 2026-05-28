@@ -88,9 +88,9 @@ In words:
    no longer suppress the finding): `feat!(compliance):`. This is a behavior change
    for downstream audit consumers.
 
-6. **Increasing severity** (e.g., `suggested` -> `important` -> `blocker`) when the
+6. **Increasing severity** (e.g., `suggested` -> `important` -> `critical`) when the
    higher severity is enforced as a merge gate: `feat!(compliance):` if the change
-   converts a non-blocking advisory into a merge blocker. Otherwise `fix(compliance):`
+   converts a non-blocking advisory into a blocking finding. Otherwise `fix(compliance):`
    if the severity bump corrects a misclassification.
 
 7. **Removing a check ID** (deprecating an obsolete rule): `feat!(compliance):` because
