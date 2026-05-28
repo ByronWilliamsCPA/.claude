@@ -1,0 +1,15 @@
+name: Labeler
+on:
+  pull_request_target:
+    types: [opened, synchronize]
+permissions:
+  contents: read
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Apply labels
+        run: echo "labeling PR from checked-out untrusted code"

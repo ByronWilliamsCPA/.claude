@@ -1,0 +1,21 @@
+{
+  "name": "compliance-fixture-baseline",
+  "target": "branch",
+  "enforcement": "active",
+  "rules": [
+    {
+      "type": "required_status_checks",
+      "parameters": {
+        "required_status_checks": [
+          { "context": "CI / CI Gate", "integration_id": 15368 },
+          {
+            "context": "Security Analysis / Security Gate Validation",
+            "integration_id": 15368
+          },
+          { "context": "Check REUSE Compliance", "integration_id": 15368 }
+        ],
+        "strict_required_status_checks_policy": true
+      }
+    }
+  ]
+}

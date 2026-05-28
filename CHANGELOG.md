@@ -42,6 +42,19 @@
   `.claude/agents/devops-deployment-agent.md` with the `codecov_coverage` check
   implementation guidance for the devops audit agent.
 
+* feat(compliance): add a compliance-auditor regression fixture corpus under
+  `data/test_fixtures/compliance_auditor/` (a clean `control/` plus six defect
+  fixtures for FOUND-001, FOUND-002, CI-028, CI-043, CI-061, and CI-018) that
+  asserts the auditor still FAILS a known-bad repo, catching silent drift in
+  LLM-interpreted `verify` logic. Adds a `--local-path`/`--check-id`/`--output
+  json` local-audit mode to `scripts/check-repo-compliance.py`, a structural and
+  auditor-assertion test at `tests/integration/test_auditor_regression.py`, a
+  runner at `scripts/run-auditor-regression.sh`, and a weekly
+  `auditor-regression.yml` workflow triggered on a Sunday cron and on manifest or
+  auditor-prompt changes. Documents the fixture-authoring step in
+  `.claude/standards/manifest-changes.md`. Refs
+  `docs/handoffs/standards-review-2026-05-28/03-auditor-regression-fixtures.md`.
+
 ### Fixed
 
 * fix(ci): pin `step-security/harden-runner` to v2.19.3 in block-mode workflows
