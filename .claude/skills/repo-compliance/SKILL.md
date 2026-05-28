@@ -90,13 +90,13 @@ potentially stale.
 
 When CI-001 fires because the repo maintains a local `reusable-*.yml` workflow layer (pattern: 7+ files matching `.github/workflows/reusable-*.yml`), annotate the finding with an elevated CI-028 risk note. Local workflow files introduce additional script injection surface that the shared org library handles centrally in org-delegating repos. Explicitly check all local `reusable-*.yml` files for `${{ github.event.* }}` inputs used directly in `run:` steps (S7630 pattern) as part of CI-001 triage; do not wait for the CI-012/SonarCloud gate to surface them.
 
-Tag the finding: `[BLOCKER/HIGH] CI-001 + elevated CI-028 risk: local reusable workflow layer found; script injection audit required.`
+Tag the finding: `[CRITICAL] CI-001 + elevated CI-028 risk: local reusable workflow layer found; script injection audit required.`
 
 **CI-003c: Scorecard workflow trigger absence (distinct from absent or misconfigured)**
 
 When the Scorecard API returns 0 scores or shows 74+ consecutive failures, check for CI-003c before assuming a configuration error: open `.github/workflows/scorecard.yml` (or equivalent) and verify it contains an `on.schedule.cron` entry. A `workflow_dispatch`-only workflow is syntactically valid and passes file-presence checks (CI-003) but never runs automatically, producing a sustained 0-score result that is indistinguishable from a broken workflow at the API level.
 
-If `on.schedule.cron` is absent: emit `[BLOCKER] CI-003c: Scorecard workflow has no schedule trigger; add a weekly cron (e.g., \`0 1 * * 1\`) to enable automatic scoring.`
+If `on.schedule.cron` is absent: emit `[CRITICAL] CI-003c: Scorecard workflow has no schedule trigger; add a weekly cron (e.g., \`0 1 * * 1\`) to enable automatic scoring.`
 
 Run CI-003c first when Scorecard shows 0 scores; the one-line fix (adding a cron trigger) is far cheaper than diagnosing a configuration error that does not exist.
 
