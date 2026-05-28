@@ -5,6 +5,7 @@ extends: default
 ignore: |
   .venv/
   node_modules/
+  data/test_fixtures/compliance_auditor/
 
 rules:
   line-length:

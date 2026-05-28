@@ -1,0 +1,57 @@
+# Auditor Regression
+# Runs the compliance auditor against the seeded fixture corpus to catch silent
+# drift in LLM-interpreted verify logic. The structural fixture assertions also
+# run in the CI Gate; this workflow adds the auditor-against-fixtures run on a
+# weekly cron and whenever the manifest or an auditor prompt changes.
+name: Auditor Regression
+
+on:
+  schedule:
+    - cron: '0 3 * * 0'  # Sundays at 03:00 UTC (offset from mutation-testing)
+  workflow_dispatch:
+  push:
+    paths:
+      - 'docs/standards-manifest.yaml'
+      - '.claude/skills/repo-compliance/**'
+      - '.claude/agents/**auditor**'
+      - 'data/test_fixtures/compliance_auditor/**'
+      - 'scripts/check-repo-compliance.py'
+      - 'scripts/run-auditor-regression.sh'
+      - 'tests/integration/test_auditor_regression.py'
+
+concurrency:
+  group: auditor-regression-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  regression:
+    name: Auditor Regression Fixtures
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden the runner
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411  # v2.19.4
+        with:
+          egress-policy: audit
+
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b  # v8.1.0
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      - name: Structural fixture assertions
+        run: uv run pytest tests/integration/test_auditor_regression.py -v
+
+      - name: Auditor regression against fixtures
+        run: bash scripts/run-auditor-regression.sh

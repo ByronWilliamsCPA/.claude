@@ -1,0 +1,5 @@
+services:
+  renovate:
+    image: renovate/renovate:latest
+    environment:
+      LOG_LEVEL: info

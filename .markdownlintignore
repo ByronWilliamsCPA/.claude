@@ -6,3 +6,4 @@ CHANGELOG.md
 .claude/rules/**
 .claude/cowork/**
 .claude/context/**
+data/test_fixtures/compliance_auditor/**
