@@ -1128,7 +1128,7 @@ checks:
     domain: claude_docs
     severity: suggested
     description: "CLAUDE.md contains cross-references to global rule files"
-    verify: "content_present: CLAUDE.md, ~/.claude/.claude/rules/"
+    verify: "content_present: CLAUDE.md, .claude/rules/"
     override_eligible: true
 
   - id: CLAUDE-005
