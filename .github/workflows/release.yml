@@ -130,12 +130,28 @@ jobs:
           # the version-bump commit means PSR only pushes a tag, which succeeds
           # without any bypass actor. GitHub Releases carry the release notes.
           commit: "false"
+          # PSR v10.5.3 serializes draft/prerelease as JSON strings ("false")
+          # instead of booleans, which GitHub's Releases API rejects with 422.
+          # Release creation is handled by the step below via gh, which types
+          # booleans correctly.
+          vcs_release: "false"
+
+      - name: Create GitHub Release
+        if: steps.release.outputs.released == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          gh release create "$TAG" \
+            --title "$TAG" \
+            --generate-notes \
+            --repo "$GITHUB_REPOSITORY"
 
 # PyPI publishing is intentionally not performed here. This repo is a
-# personal config tree, not a distributed library. python-semantic-release
-# above handles version bumping in pyproject.toml, CHANGELOG generation,
-# tag creation, and GitHub Release creation; those four are the entire
-# contract this workflow needs to satisfy.
+# personal config tree, not a distributed library. PSR handles version
+# determination, CHANGELOG generation, and tag push. GitHub Release creation
+# is delegated to `gh release create` due to a PSR v10.5.3 bug that sends
+# draft/prerelease as JSON strings rather than booleans (GitHub returns 422).
 #
 # SLSA Level 3 provenance (`slsa-provenance.yml`) and cosign signing
 # (`release-sign.yml`) are intentionally not auto-triggered. With no
