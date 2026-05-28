@@ -1999,6 +1999,89 @@ checks:
       the merge queue rollout PR (ByronWilliamsCPA/.github#154) landed CI-062
       on main first with a different semantic.
 
+  - id: CI-065
+    domain: ci
+    severity: important
+    override_eligible: false
+    not_applicable_when: >-
+      No workflow file whose name matches fuzz*.yml, *fuzzing*.yml, or
+      *-fuzz.yml exists under .github/workflows/. When fuzz testing runs
+      inline with pytest (Hypothesis @given in tests/fuzz/, no dedicated
+      workflow), this check does not apply -- trigger scheduling is
+      governed by the CI workflow (CI-001) instead.
+    description: >-
+      Any dedicated fuzz testing workflow (.github/workflows/fuzz*.yml,
+      *-fuzzing.yml, or *-fuzz.yml) must not trigger on pull_request or
+      push events. Coverage-guided fuzzing (atheris, libFuzzer) and
+      large-scale property-based fuzzing runs have runtimes of 30-120
+      minutes per corpus cycle. Wiring them as PR checks blocks merge
+      throughput by the same mechanism as mutation testing (CI-053). Fuzz
+      workflows must run on a weekly schedule plus manual workflow_dispatch
+      only.
+    verify: >-
+      Enumerate .github/workflows/*.yml. For any workflow file whose name
+      matches fuzz*.yml, *-fuzzing.yml, or *-fuzz.yml: read the on: block.
+      PASS only when the on: block contains exactly `schedule:` (required)
+      and optionally `workflow_dispatch:`, and no other trigger keys. FAIL
+      on any pull_request, push, workflow_run, or release trigger. A
+      schedule: block must exist with a cron no more frequent than weekly
+      (the day-of-week field must not be '*' or a step expression). If
+      multiple fuzz workflow files exist, every one must pass independently.
+    source_frameworks:
+      - manifest-internal
+    notes: >-
+      Added 2026-05-28. Companion to CI-053 (mutation testing trigger).
+      Currently not applicable across the fleet -- the only repo with fuzz
+      tests (llc-manager) runs them inline with pytest via Hypothesis @given,
+      not a dedicated workflow. Check is forward-looking: prevents trigger
+      drift if any repo later adds a dedicated fuzz workflow.
+
+  - id: CI-066
+    domain: ci
+    severity: suggested
+    override_eligible: true
+    not_applicable_when: >-
+      Repo does not contain Python source files (no pyproject.toml with a
+      [project] table), or has no test suite (no tests/ directory with
+      Python files matching test_*.py or *_test.py), or Codecov reports
+      line coverage below 80% for the default branch (per CI-054 -- mutation
+      testing below 80% coverage produces high noise and low actionable
+      signal), or repo is infrastructure, configuration, or documentation
+      only (no src/ or app/ directory with substantive Python source).
+    description: >-
+      Python repos with an established test suite (80%+ line coverage)
+      should have mutation-testing.yml configured. Mutation testing
+      validates that tests detect real code changes rather than passing
+      vacuously. A repo with a fully-passing test suite at 80%+ coverage
+      but no mutation testing may have tests that never exercise the code
+      paths they claim to cover. OSSF Silver criterion 6.1 cites mutation
+      testing as one accepted form of code-quality dynamic analysis.
+      This check flags the absence of the workflow; CI-053 governs correct
+      trigger configuration once the workflow exists.
+    verify: >-
+      1. Confirm pyproject.toml exists with a [project] table. If absent,
+         skip (not_applicable_when).
+      2. Confirm tests/ contains at least one file matching test_*.py or
+         *_test.py. If absent, skip.
+      3. Consult CI-054 Codecov data: if line coverage is below 80% or
+         unmeasured, skip (PASS silently -- pre-condition not met).
+      4. Check whether .github/workflows/mutation-testing.yml exists.
+         PASS if present (configuration correctness is CI-053's scope).
+         WARN if absent: "Repo qualifies for mutation testing (Python +
+         tests + 80%+ coverage) but mutation-testing.yml is missing."
+    source_frameworks:
+      - OpenSSF Silver Badge criterion 6.1
+      - NIST SSDF PW.8.1
+    notes: >-
+      Added 2026-05-28. Current fleet state (2026-05-28): 12 repos have
+      mutation-testing.yml across both orgs; 32 do not. The coverage gate
+      (step 3) is the primary applicability filter -- run CI-054 data first
+      to identify the qualifying subset before raising WARN findings for
+      absent workflows. Repos without the workflow that appear to have
+      Python source and tests include data_ingestor, gleif, monte_carlo,
+      zen-mcp-server, and xero-practice-management, but coverage data is
+      required to confirm they meet the 80% threshold.
+
   - id: FOUND-015
     domain: foundations
     severity: suggested
@@ -2051,15 +2134,31 @@ checks:
     domain: ossf
     severity: suggested
     override_eligible: true
+    not_applicable_when: >-
+      Repo does not contain Python source files (no pyproject.toml with a
+      [project] table). Non-Python repos have no fuzz testing surface.
     description: >-
       Verify the repository has a fuzz testing setup (atheris, libFuzzer,
-      or a tests/fuzz/ directory). OpenSSF Silver badge criterion 6.1
-      requires dynamic analysis beyond mutation testing. Mutation testing
-      (CI-023) is unit-test quality measurement, not input fuzzing.
+      Hypothesis @given in a dedicated tests/fuzz/ directory, or a
+      fuzz workflow). OpenSSF Silver badge criterion 6.1 requires dynamic
+      analysis with many diverse inputs beyond mutation testing. Mutation
+      testing (CI-053) is unit-test quality measurement, not input fuzzing.
     verify: >-
-      Run: ls tests/fuzz/ 2>/dev/null
-      || grep -r "atheris\|libFuzzer\|hypothesis.*fuzzing"
-      pyproject.toml 2>/dev/null; WARN if no match.
+      Check for actual fuzz testing setup; ruff lint-ignore configurations
+      that mention Atheris in comments are NOT sufficient:
+      1. tests/fuzz/ directory exists and contains at least one .py file
+         that imports atheris, defines TestOneInput, or uses @given
+         (Hypothesis property testing).
+      2. pyproject.toml lists atheris or libFuzzer as an actual dependency
+         in [project.optional-dependencies], [tool.uv.dev-dependencies], or
+         [build-system.requires] -- not inside a comment or ruff config block.
+      3. .github/workflows/ contains a workflow file whose name matches
+         fuzz*.yml, *-fuzzing.yml, or *-fuzz.yml.
+      WARN if none found. Note: ruff ignore rules suppressing N802 or S110
+      with inline comments citing Atheris naming conventions are pre-configured
+      stubs in the cookiecutter template, not fuzz tests. See OSSF-013 for
+      the companion check evaluating whether fuzz testing SHOULD be present
+      based on the repo's external-input surface.
     source_frameworks:
       - OpenSSF Silver Badge criterion 6.1
       - NIST SSDF PW.8.2
@@ -2081,6 +2180,60 @@ checks:
       - SOC 2 CC6.1
       - OpenSSF Scorecard Token-Permissions
       - GitHub Security Hardening
+
+  - id: OSSF-013
+    domain: ossf
+    severity: suggested
+    override_eligible: true
+    not_applicable_when: >-
+      Repo does not contain Python source files (no pyproject.toml with a
+      [project] table), or is infrastructure, configuration, or
+      documentation only (no src/ or app/ directory with substantive
+      Python source), or has no detectable external-input-processing
+      patterns (see verify step 1 -- no HTTP API framework, no file
+      parsing from external sources, no CLI accepting arbitrary data).
+    description: >-
+      Python repos that expose HTTP API endpoints or process
+      external/untrusted input should have fuzz testing configured. Fuzz
+      testing validates that input-handling code survives unexpected or
+      adversarial inputs without raising unhandled exceptions, crashes, or
+      data corruption. OSSF Silver criterion 6.1 requires at least one
+      form of dynamic analysis with diverse inputs. Accepted forms include
+      atheris/libFuzzer corpus-guided fuzzing, Hypothesis @given-decorated
+      property tests in a dedicated tests/fuzz/ directory, or OSS-Fuzz
+      integration. OSSF-011 checks whether any fuzz setup exists; this
+      check evaluates whether one SHOULD exist based on the repo's input
+      surface. Repos with no external input processing (pure computation
+      libraries, config-only repos) are exempt via not_applicable_when.
+    verify: >-
+      1. Detect external-input-processing patterns in src/ or app/:
+         - HTTP API: grep -r "FastAPI()\|APIRouter\|@app\.(get\|post\|put
+           \|delete\|patch)\|@router\.(get\|post\|put\|delete\|patch)"
+         - File parsing from external sources: grep -r "UploadFile\|
+           request\.files\|open(.*request\|BytesIO\|StreamingResponse"
+         - CLI accepting data: grep -r "argparse\|@click\.argument\|
+           typer\.Argument" combined with file or stdin patterns
+         If none found anywhere in src/ or app/, PASS silently
+         (not_applicable_when applies).
+      2. Check for fuzz testing setup using OSSF-011 criteria (tests/fuzz/
+         with @given or TestOneInput, atheris in actual dependencies, or
+         fuzz workflow file). If any found, PASS.
+      3. If step 1 found external-input patterns but step 2 found no fuzz
+         setup: WARN "Repo has external-input-processing patterns but no
+         fuzz testing (tests/fuzz/, atheris dependency, or fuzz workflow).
+         See OSSF Silver criterion 6.1."
+    source_frameworks:
+      - OpenSSF Silver Badge criterion 6.1
+      - NIST SSDF PW.8.2
+    notes: >-
+      Added 2026-05-28. Companion to OSSF-011 (presence check) and CI-065
+      (trigger scheduling). Current fleet state (2026-05-28): llc-manager
+      is the only repo with fuzz tests (Hypothesis @given in tests/fuzz/).
+      API repos without fuzz testing that appear to qualify based on
+      FastAPI/APIRouter usage include rag-processor, fragrance-rater,
+      data_ingestor, family-office-portal, and gleif -- run this check
+      against each to confirm the input-surface detection before raising
+      findings.
 
   - id: CLAUDE-009
     domain: claude_docs
