@@ -663,11 +663,9 @@ update_changelog_on_bump = false
 # Version location in this file
 version_toml = ["pyproject.toml:project.version"]
 
-# No build command: this repo does not publish to PyPI. PSR is used only for
-# version bookkeeping (bump pyproject.toml, CHANGELOG, tag, GitHub Release).
-# uv lock regeneration is omitted because the PSR docker container does not
-# have uv on PATH; run `uv lock` locally after any manual version bump if needed.
-build_command = false
+# build_command is intentionally omitted. Building is disabled at the workflow
+# level via the PSR action's build: "false" input. This repo does not publish
+# to PyPI; PSR is used only for version bump, CHANGELOG, tag, and GitHub Release.
 
 # Commit message parsing
 commit_parser = "angular"
