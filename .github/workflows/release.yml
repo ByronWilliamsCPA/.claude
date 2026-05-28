@@ -98,6 +98,17 @@ jobs:
           ref: ${{ github.event.workflow_run.head_sha || github.sha }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Attach HEAD to branch
+        if: github.event_name == 'workflow_run'
+        env:
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+        run: |
+          # Checking out a SHA leaves the repo in detached HEAD state.
+          # PSR needs an attached branch to match against branches config.
+          # This creates a local branch at the current (CI-tested) SHA
+          # without advancing to origin/main tip.
+          git checkout -B "$HEAD_BRANCH"
+
       - name: Install uv
         uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b  # v8.1.0
         with:
