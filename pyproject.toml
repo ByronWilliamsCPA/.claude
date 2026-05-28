@@ -663,8 +663,11 @@ update_changelog_on_bump = false
 # Version location in this file
 version_toml = ["pyproject.toml:project.version"]
 
-# Regenerate uv.lock after version bump so it stays in sync with pyproject.toml
-build_command = "uv lock"
+# No build command: this repo does not publish to PyPI. PSR is used only for
+# version bookkeeping (bump pyproject.toml, CHANGELOG, tag, GitHub Release).
+# uv lock regeneration is omitted because the PSR docker container does not
+# have uv on PATH; run `uv lock` locally after any manual version bump if needed.
+build_command = false
 
 # Commit message parsing
 commit_parser = "angular"
