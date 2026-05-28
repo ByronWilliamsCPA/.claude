@@ -692,7 +692,6 @@ prerelease_token = "rc"
 
 # Changelog configuration
 [tool.semantic_release.changelog]
-template_dir = "templates"
 exclude_commit_patterns = [
     "^chore\\(release\\):",
     "^ci:",
