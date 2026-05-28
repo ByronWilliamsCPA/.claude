@@ -21,9 +21,11 @@ Usage:
 import argparse
 import datetime
 import json
+import re
 import shutil
 import subprocess
 import sys
+from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -401,11 +403,231 @@ def check_repo(org: str, repo: str, catalog: dict) -> RepoResult:
     return result
 
 
+# --------------------------------------------------------------------------- #
+# Local-path auditor                                                          #
+#                                                                             #
+# These checks evaluate a single manifest check against a local repo          #
+# directory (e.g. a regression fixture) using only file inspection, no        #
+# GitHub API calls. Each returns (passed, detail). They mirror the manifest   #
+# `verify` fields for the checks the auditor-regression corpus covers.        #
+# --------------------------------------------------------------------------- #
+
+REQUIRED_INTEGRATION_ID = 15368
+_RENOVATE_PIN_RE = re.compile(r"^renovate/renovate:[\w.-]+@sha256:[a-f0-9]{64}$")
+
+
+def _iter_required_status_checks(obj: object) -> Iterator[list[object]]:
+    """Yield every ``required_status_checks`` list found in a ruleset document.
+
+    Walks the JSON structure recursively so the check is robust to the exact
+    nesting GitHub uses (``rules[].parameters.required_status_checks``).
+
+    Args:
+        obj: A decoded JSON value (dict, list, or scalar).
+
+    Yields:
+        Each ``required_status_checks`` list encountered, in document order.
+    """
+    if isinstance(obj, dict):
+        for key, value in obj.items():
+            if key == "required_status_checks" and isinstance(value, list):
+                yield value
+            else:
+                yield from _iter_required_status_checks(value)
+    elif isinstance(obj, list):
+        for item in obj:
+            yield from _iter_required_status_checks(item)
+
+
+def local_found_001(root: Path) -> tuple[bool, str]:
+    """FOUND-001: SECURITY.md present at the repo root."""
+    present = (root / "SECURITY.md").is_file()
+    return present, "SECURITY.md present" if present else "SECURITY.md missing"
+
+
+def local_found_002(root: Path) -> tuple[bool, str]:
+    """FOUND-002: CONTRIBUTING.md present at the repo root."""
+    present = (root / "CONTRIBUTING.md").is_file()
+    return present, "CONTRIBUTING.md present" if present else "CONTRIBUTING.md missing"
+
+
+def local_ci_028(root: Path) -> tuple[bool, str]:
+    """CI-028: every required_status_checks entry carries integration_id 15368.
+
+    Scans ``docs/reference/org-rulesets/*.json``. With no ruleset files present
+    the check is vacuously satisfied (there is nothing to mis-pin).
+    """
+    files = sorted((root / "docs" / "reference" / "org-rulesets").glob("*.json"))
+    if not files:
+        return True, "no org-ruleset files present; check vacuously satisfied"
+    bad: list[str] = []
+    for ruleset_file in files:
+        try:
+            data = json.loads(ruleset_file.read_text())
+        except (json.JSONDecodeError, OSError) as exc:
+            bad.append(f"{ruleset_file.name}: unreadable ({exc})")
+            continue
+        for entries in _iter_required_status_checks(data):
+            for entry in entries:
+                if not isinstance(entry, dict):
+                    continue
+                if entry.get("integration_id") != REQUIRED_INTEGRATION_ID:
+                    ctx = entry.get("context", "<unknown>")
+                    bad.append(
+                        f"{ruleset_file.name}: '{ctx}' missing "
+                        f"integration_id:{REQUIRED_INTEGRATION_ID}"
+                    )
+    if bad:
+        return False, "; ".join(bad)
+    return True, f"all entries pinned to integration_id:{REQUIRED_INTEGRATION_ID}"
+
+
+def _workflow_files(root: Path) -> list[Path]:
+    """Return all workflow files under ``.github/workflows`` (``.yml``/``.yaml``)."""
+    wf_dir = root / ".github" / "workflows"
+    return sorted([*wf_dir.glob("*.yml"), *wf_dir.glob("*.yaml")])
+
+
+def local_ci_043(root: Path) -> tuple[bool, str]:
+    """CI-043: no workflow combines a privileged trigger with code checkout.
+
+    A ``pull_request_target`` or ``workflow_run`` trigger that also runs
+    ``actions/checkout`` can execute untrusted PR code with elevated
+    permissions. Any such workflow fails the check.
+    """
+    offenders: list[str] = []
+    for workflow in _workflow_files(root):
+        text = workflow.read_text()
+        privileged = "pull_request_target" in text or "workflow_run" in text
+        if privileged and "actions/checkout" in text:
+            offenders.append(workflow.name)
+    if offenders:
+        return False, "privileged trigger + checkout in: " + ", ".join(offenders)
+    return True, "no privileged-trigger workflow checks out untrusted code"
+
+
+def local_ci_061(root: Path) -> tuple[bool, str]:
+    """CI-061: the Renovate Docker image is digest-pinned, not a floating tag."""
+    compose = root / "services" / "renovate" / "docker-compose.yml"
+    if not compose.is_file():
+        return False, "services/renovate/docker-compose.yml missing"
+    image: str | None = None
+    for line in compose.read_text().splitlines():
+        match = re.search(r"image:\s*(\S+)", line)
+        if match and "renovate/renovate" in match.group(1):
+            image = match.group(1).strip("\"'")
+            break
+    if image is None:
+        return False, "no renovate/renovate image: line found"
+    if _RENOVATE_PIN_RE.match(image):
+        return True, f"renovate image digest-pinned: {image}"
+    return False, f"renovate image not digest-pinned: {image}"
+
+
+def local_ci_018(root: Path) -> tuple[bool, str]:
+    """CI-018: release.yml contains a SLSA provenance job."""
+    release = root / ".github" / "workflows" / "release.yml"
+    if not release.is_file():
+        return False, ".github/workflows/release.yml missing"
+    if "slsa-framework/slsa-github-generator" in release.read_text():
+        return True, "SLSA provenance job present in release.yml"
+    return False, "release.yml has no slsa-framework/slsa-github-generator job"
+
+
+LOCAL_CHECKS: dict[str, Callable[[Path], tuple[bool, str]]] = {
+    "FOUND-001": local_found_001,
+    "FOUND-002": local_found_002,
+    "CI-028": local_ci_028,
+    "CI-043": local_ci_043,
+    "CI-061": local_ci_061,
+    "CI-018": local_ci_018,
+}
+
+
+def audit_local(path: Path, check_id: str) -> dict[str, str]:
+    """Evaluate one manifest check against a local repo directory.
+
+    Args:
+        path: Path to the local repo root (e.g. a regression fixture).
+        check_id: Manifest check ID; must be a key in ``LOCAL_CHECKS``.
+
+    Returns:
+        Dict with keys ``check_id``, ``path``, ``status`` ("pass"|"fail"),
+        and ``detail``.
+
+    Raises:
+        KeyError: if ``check_id`` is not a locally-auditable check.
+    """
+    checker = LOCAL_CHECKS[check_id]
+    passed, detail = checker(Path(path))
+    return {
+        "check_id": check_id,
+        "path": str(path),
+        "status": "pass" if passed else "fail",
+        "detail": detail,
+    }
+
+
+def _run_local_audit(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
+    """Handle ``--local-path`` mode: audit one check and report the result.
+
+    Args:
+        args: Parsed CLI arguments (expects ``check_id`` and ``output``).
+        parser: The argument parser, used for usage errors.
+
+    Returns:
+        Process exit code: 0 on PASS, 1 on FAIL, 2 on a usage/unknown-check
+        error.
+    """
+    if not args.check_id:
+        parser.error("--local-path requires --check-id")
+    if args.check_id not in LOCAL_CHECKS:
+        valid = ", ".join(sorted(LOCAL_CHECKS))
+        msg = f"{args.check_id} is not locally auditable; valid: {valid}"
+        if args.output == "json":
+            print(
+                json.dumps(
+                    {
+                        "check_id": args.check_id,
+                        "path": args.local_path,
+                        "status": "error",
+                        "detail": msg,
+                    }
+                )
+            )
+        else:
+            print(f"error: {msg}", file=sys.stderr)
+        return 2
+    result = audit_local(Path(args.local_path), args.check_id)
+    if args.output == "json":
+        print(json.dumps(result))
+    else:
+        print(f"{result['check_id']} {result['status'].upper()}: {result['detail']}")
+    return 0 if result["status"] == "pass" else 1
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Repo compliance sweep")
     parser.add_argument("--org", help="Limit to one org")
     parser.add_argument("--repo", help="Check a single repo (owner/repo)")
+    parser.add_argument(
+        "--local-path",
+        help="Audit a local repo directory instead of live GitHub (needs --check-id)",
+    )
+    parser.add_argument(
+        "--check-id",
+        help="With --local-path, the single manifest check to evaluate",
+    )
+    parser.add_argument(
+        "--output",
+        choices=["table", "json"],
+        default="table",
+        help="Output format for --local-path mode (default: table)",
+    )
     args = parser.parse_args()
+
+    if args.local_path:
+        return _run_local_audit(args, parser)
 
     catalog = load_catalog()
 

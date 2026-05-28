@@ -154,6 +154,8 @@ exclude = [
     "build",
     ".submodules",
     ".submodules/**",
+    # Compliance auditor regression fixtures intentionally violate standards.
+    "data/test_fixtures/compliance_auditor",
 ]
 
 [tool.ruff.format]
@@ -394,6 +396,8 @@ exclude = [
     "build",
     "dist",
     ".submodules",
+    # Compliance auditor regression fixtures intentionally violate standards.
+    "data/test_fixtures/compliance_auditor",
 ]
 
 # Strict mode customizations

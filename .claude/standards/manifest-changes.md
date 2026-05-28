@@ -100,6 +100,24 @@ In words:
 8. **Editorial changes** (wording, formatting, examples, rationale notes) with no
    change to detection or remediation behavior: `docs(compliance):`. No version impact.
 
+## Regression fixtures for critical checks
+
+When you add a new check that is `severity: critical` with
+`override_eligible: false`, or promote an existing check into that tier, add a
+matching regression fixture under `data/test_fixtures/compliance_auditor/`:
+
+1. Copy `control/` to `defect_<CHECK_ID>/` and introduce exactly one defect that
+   the check's `verify` field must catch.
+2. Add a structural assertion to `tests/integration/test_auditor_regression.py`.
+3. If the check can be evaluated by local file inspection, add a `local_*`
+   handler and `LOCAL_CHECKS` entry in `scripts/check-repo-compliance.py`, plus a
+   `run_check` line in `scripts/run-auditor-regression.sh`.
+
+This corpus is the first signal when an LLM auditor silently drifts into
+interpreting a `verify` field too leniently. A critical check without a fixture
+can degrade to a no-op with no alarm. See
+`data/test_fixtures/compliance_auditor/README.md` for the contract.
+
 ## When a single PR does multiple types
 
 The PR-splitting rule: when a single PR contains changes that map to two different
