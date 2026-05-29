@@ -71,6 +71,34 @@
   critical + non-overridable after a fleet sweep confirms 100% clean across
   all 44 repos. This repo was confirmed clean on 2026-05-28.
 
+* feat(compliance): add OSSF-014 and OSSF-015 in `docs/standards-manifest.yaml`
+  to close two account-posture gaps from the 2026-05-28 standards review.
+  OSSF-014 (severity important, not override-eligible) verifies a manual 2FA
+  attestation for the williaby GitHub user account at `docs/security/2fa-attestation.yaml`:
+  the entry must be present, two_factor_enabled true, confirmed_date within 90
+  days, and renewal_deadline in the future. GitHub does not expose user-account
+  2FA via the org-2FA API that OSSF-007 uses, and the williaby account holds 26
+  of the 44 fleet repos, so a dated attestation file is the sole verifiable
+  record. The attestation file is committed with placeholder values
+  (two_factor_enabled: false) and OSSF-014 is expected to FAIL by design until
+  the owner verifies 2FA on the williaby account and fills the real
+  confirmed_date and renewal_deadline. OSSF-015 (severity important,
+  override-eligible, not_applicable_when no gitleaks/trufflehog CI job) verifies
+  that a secret-scan CI job is registered as a required status check on the
+  default branch ruleset, closing the gap between push-protection coverage and
+  merge-gate coverage; it complements OSSF-008, OSSF-009, CI-029, and CI-007 to
+  form the full secret-scanning gate stack and applies regardless of repo
+  visibility because it checks the CI job, not the GHAS platform scan. Also
+  updates the OSSF-007 notes to reference OSSF-014 and explain the user-account
+  API limitation (description and verify unchanged). Both checks are wired into
+  `.claude/agents/ossf-compliance-auditor.md` (OSSF-015 in the Stage 4 GitHub-API
+  checks, OSSF-014 in the Stage 5 local-file checks) so `/repo-audit` evaluates
+  them rather than leaving them documentation-only. OSSF-015's verify also pins
+  the required-status-check `integration_id` to 15368 (the GitHub Actions app),
+  mirroring CI-028, so a same-named check from a different app cannot spoof the
+  gate. The attestation file records `confirmed_by` as a GitHub username and
+  omits any password-manager vault or item name, since the file is public.
+
 * feat(manifest): add CI-062 and promote CI-040 in `docs/standards-manifest.yaml`.
   CI-062 (severity important, override-eligible) gates repos with auto-merging
   dependency updates: when Renovate or Dependabot auto-merge is signaled, the

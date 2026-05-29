@@ -1,6 +1,6 @@
 # docs/standards-manifest.yaml
 version: "1.0"
-last_updated: "2026-05-27"
+last_updated: "2026-05-28"
 # 2026-05-26: Post-audit revisions following the Renovate auto-merge fleet
 # rollout. Added new repo_settings domain with REPO-001 (allow_auto_merge=true,
 # critical) and REPO-002 (delete_branch_on_merge=true, important); added
@@ -1271,6 +1271,11 @@ checks:
     description: "GitHub org requires 2FA for all members -- verified via GitHub API (OpenSSF Gold: require_2FA)"
     verify: "github_org_2fa: ByronWilliamsCPA, two_factor_requirement_enabled=true"
     override_eligible: false
+    notes: >-
+      Covers the ByronWilliamsCPA org only. The GitHub org-2FA API
+      (two_factor_requirement_enabled) does not apply to user accounts.
+      The williaby user account is covered by OSSF-014 (manual attestation),
+      because GitHub does not expose user-account 2FA status via any public API.
 
   - id: OSSF-008
     domain: ossf
@@ -2334,6 +2339,76 @@ checks:
       data_ingestor, family-office-portal, and gleif -- run this check
       against each to confirm the input-surface detection before raising
       findings.
+
+  - id: OSSF-014
+    domain: ossf
+    severity: important
+    override_eligible: false
+    description: >-
+      Manual 2FA attestation for the williaby GitHub user account is present,
+      current (within 90 days), and renewal_deadline is in the future.
+      GitHub user accounts do not expose 2FA status via the org-2FA API,
+      so a dated attestation file is the sole verifiable record.
+    verify: |
+      FAIL if docs/security/2fa-attestation.yaml does not exist.
+      FAIL if no entry for account: williaby is present.
+      FAIL if two_factor_enabled is not true.
+      FAIL if confirmed_date is absent or older than 90 days from audit date.
+      FAIL if renewal_deadline is absent or in the past.
+      PASS if all fields are present, two_factor_enabled is true, confirmed_date
+           is within 90 days, and renewal_deadline is in the future.
+    notes: >-
+      Added 2026-05-28 to close the gap left by OSSF-007, which only covers the
+      ByronWilliamsCPA org (org-2FA API). The williaby account holds 26 of the
+      44 fleet repos and has no API-verifiable 2FA check. The attestation file
+      lives in this repo (ByronWilliamsCPA/.claude) only, not in each fleet repo;
+      this check is fleet-scoped against the standards authority, so a sweep
+      reports one finding (this repo), not 44. Quarterly renewal is sufficient;
+      set a calendar reminder or scheduled cron task to renew before
+      renewal_deadline expires. The initial committed attestation uses placeholder
+      values (two_factor_enabled: false) and is expected to FAIL until the owner
+      verifies 2FA on the williaby account and fills the real confirmed_date and
+      renewal_deadline.
+
+  - id: OSSF-015
+    domain: ossf
+    severity: important
+    override_eligible: true
+    not_applicable_when: "repo has no gitleaks or trufflehog CI job"
+    description: >-
+      The gitleaks or trufflehog CI job must be registered as a required status
+      check on the default branch ruleset. Secret scanning that runs in CI but is
+      not a required check cannot block a PR that contains secrets discovered after
+      the branch was pushed (gap between push-protection coverage and merge-gate
+      coverage).
+    verify: |
+      For each repo where .github/workflows/*.yml contains a job whose name or id
+      matches (gitleaks|trufflehog):
+        Retrieve the branch protection ruleset for the default branch via GitHub API.
+        FAIL if the matching job name does not appear in required_status_checks.
+        FAIL if the matching required_status_checks entry has integration_id absent
+             or != 15368 (the GitHub Actions app); a context-string match alone is
+             spoofable by any actor who can register a same-named check from a
+             different app, mirroring CI-028's integration_id pin.
+        PASS if the job name is present in required_status_checks AND its
+             integration_id is 15368.
+      Repos with no gitleaks/trufflehog CI job: apply OSSF-008/OSSF-009 platform
+      scan check only; this check is N/A.
+    notes: >-
+      Added 2026-05-28. Complements OSSF-008 (platform alerting), OSSF-009
+      (push protection), and CI-029 (config file protection). These checks
+      together form the full secret-scanning gate stack:
+      CI-029 prevents .gitleaks.toml tampering by non-bypass actors;
+      CI-007 prevents secret-scanning jobs from carrying continue-on-error: true;
+      OSSF-008 confirms GitHub platform scan alerting is enabled;
+      OSSF-009 confirms GitHub platform push protection is enabled;
+      OSSF-015 confirms the CI job is wired as a required merge gate.
+      Private repos: OSSF-008 and OSSF-009 may be unavailable without GHAS,
+      but OSSF-015 applies regardless of visibility because it checks the CI job,
+      not the platform scan. Do not gate OSSF-015 on visibility. The job name in
+      required_status_checks must exactly match the job name: or, if unset, the
+      job key in the workflow YAML; a mismatch silently passes while providing no
+      protection, so confirm the exact name in each fleet security-analysis.yml.
 
   - id: CLAUDE-009
     domain: claude_docs
