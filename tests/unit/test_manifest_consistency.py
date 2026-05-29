@@ -57,13 +57,73 @@ CRITICAL_OVERRIDE_EXCEPTIONS: frozenset[str] = frozenset()
 pytestmark = pytest.mark.unit
 
 
+def _extract_checks(data: object, source: str) -> list[dict[str, Any]]:
+    """Validate parsed manifest data and return its list of check entries.
+
+    Separated from file parsing so the malformed-manifest guards below are
+    exercisable with synthetic data; reading the real manifest can only ever
+    take the happy path.
+
+    Args:
+        data: The object produced by parsing the manifest YAML.
+        source: Human-readable manifest location, used in error messages.
+
+    Returns:
+        The list of check mappings under the ``checks`` key.
+
+    Raises:
+        TypeError: If ``data`` is not a mapping, ``checks`` is not a list, or
+            any entry under ``checks`` is not a mapping.
+        KeyError: If the ``checks`` key is absent.
+    """
+    if not isinstance(data, dict):
+        raise TypeError(
+            f"manifest at {source} must be a YAML mapping; "
+            f"got {type(data).__name__!r} (is the file empty or truncated?)"
+        )
+    if "checks" not in data:
+        raise KeyError(
+            f"manifest at {source} has no 'checks' key; keys present: {sorted(data)}"
+        )
+    checks = data["checks"]
+    if not isinstance(checks, list):
+        raise TypeError(
+            f"manifest 'checks' must be a list, got {type(checks).__name__!r}"
+        )
+    non_mappings = [
+        f"index {index}: {type(entry).__name__}"
+        for index, entry in enumerate(checks)
+        if not isinstance(entry, dict)
+    ]
+    if non_mappings:
+        raise TypeError(
+            "manifest 'checks' entries must all be mappings; "
+            f"non-mapping entries: {'; '.join(non_mappings)}"
+        )
+    return checks
+
+
+def _has_valid_verify(check: dict[str, Any]) -> bool:
+    """Return whether ``check`` carries a non-empty string ``verify`` directive.
+
+    Extracted so the non-string rejection (``null``, ``{}``) is testable; the
+    live manifest only contains valid string directives.
+
+    Args:
+        check: A single check mapping from the manifest.
+
+    Returns:
+        ``True`` if ``verify`` is a string with non-whitespace content.
+    """
+    verify = check.get("verify")
+    return isinstance(verify, str) and bool(verify.strip())
+
+
 def _load_checks() -> list[dict[str, Any]]:
-    """Parse the manifest and return its list of check entries."""
+    """Parse the manifest file and return its list of check entries."""
     with MANIFEST_PATH.open(encoding="utf-8") as handle:
         data = yaml.safe_load(handle)
-    checks = data["checks"]
-    assert isinstance(checks, list), "manifest 'checks' must be a list"
-    return checks
+    return _extract_checks(data, str(MANIFEST_PATH))
 
 
 CHECKS: list[dict[str, Any]] = _load_checks()
@@ -81,7 +141,14 @@ def test_manifest_has_checks() -> None:
 
 def test_required_fields_present() -> None:
     """Every check carries the fields the invariants below depend on."""
-    required = ("id", "domain", "severity", "override_eligible", "verify")
+    required = (
+        "id",
+        "domain",
+        "severity",
+        "description",
+        "override_eligible",
+        "verify",
+    )
     offenders = [
         f"{c.get('id', '<no id>')}: missing {field}"
         for c in CHECKS
@@ -96,9 +163,14 @@ def test_ids_unique() -> None:
     seen: set[str] = set()
     duplicates: set[str] = set()
     for check in CHECKS:
-        cid = check["id"]
+        cid = check.get("id")
+        if cid is None:
+            # A missing or null id is reported by test_required_fields_present;
+            # skipping it here keeps this test's failure message about genuine
+            # duplicates rather than a misleading "duplicate: None".
+            continue
         if cid in seen:
-            duplicates.add(cid)
+            duplicates.add(str(cid))
         seen.add(cid)
     assert not duplicates, f"duplicate check IDs: {', '.join(sorted(duplicates))}"
 
@@ -160,8 +232,51 @@ def test_suggested_not_marked_non_overridable() -> None:
 
 def test_verify_non_empty() -> None:
     """Every check defines a non-empty ``verify`` directive."""
-    offenders = [c for c in CHECKS if not str(c.get("verify", "")).strip()]
-    assert not offenders, f"checks with empty/missing verify: {_ids(offenders)}"
+    offenders = [c for c in CHECKS if not _has_valid_verify(c)]
+    assert not offenders, (
+        f"checks with empty/missing/non-string verify: {_ids(offenders)}"
+    )
+
+
+def test_extract_checks_rejects_non_mapping_manifest() -> None:
+    """A manifest that is not a mapping (empty file, list, scalar) is rejected."""
+    with pytest.raises(TypeError, match="must be a YAML mapping"):
+        _extract_checks([], "test-manifest")
+
+
+def test_extract_checks_rejects_missing_checks_key() -> None:
+    """A mapping without a ``checks`` key raises a path-bearing ``KeyError``."""
+    with pytest.raises(KeyError, match="no 'checks' key"):
+        _extract_checks({"version": "1.0"}, "test-manifest")
+
+
+def test_extract_checks_rejects_non_list_checks() -> None:
+    """A ``checks`` value that is not a list is rejected."""
+    with pytest.raises(TypeError, match="'checks' must be a list"):
+        _extract_checks({"checks": {}}, "test-manifest")
+
+
+def test_extract_checks_rejects_non_mapping_entry() -> None:
+    """A ``checks`` list containing a non-mapping entry is rejected at load time."""
+    with pytest.raises(TypeError, match="entries must all be mappings"):
+        _extract_checks({"checks": [{"id": "OK"}, "CI-001"]}, "test-manifest")
+
+
+def test_extract_checks_accepts_valid_data() -> None:
+    """A well-formed mapping returns its ``checks`` list unchanged."""
+    checks = [{"id": "CI-001"}]
+    assert _extract_checks({"checks": checks}, "test-manifest") == checks
+
+
+@pytest.mark.parametrize("verify", [None, {}, [], 42, "", "   "])
+def test_has_valid_verify_rejects_invalid(verify: object) -> None:
+    """Non-string, empty, or whitespace-only ``verify`` directives are rejected."""
+    assert not _has_valid_verify({"verify": verify})
+
+
+def test_has_valid_verify_accepts_non_empty_string() -> None:
+    """A non-empty string ``verify`` directive is accepted."""
+    assert _has_valid_verify({"verify": "file_exists: LICENSE"})
 
 
 def test_domains_known() -> None:
