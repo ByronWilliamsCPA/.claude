@@ -1225,6 +1225,112 @@ checks:
     source_frameworks:
       - Claude Code settings schema (schemastore.org)
 
+  - id: CLAUDE-011
+    domain: claude_docs
+    severity: important
+    description: >-
+      All file paths and commands referenced in CLAUDE.md and AGENTS.md resolve
+      against the current repository tree. Stale references indicate the steering
+      file has not been updated after a rename or deletion.
+    verify: |
+      script: scripts/check-steering-refs.sh
+      The script must:
+      1. Extract paths from DSL-style verbs (file_exists:, content_present:,
+         section_present:, etc.), ~/.claude/ and ~/dev/.claude/ globals, and
+         bare relative paths with an extension inside backtick spans.
+      2. For each extracted path, confirm the file or directory exists on disk;
+         global ~/.claude paths resolve against the installed config tree.
+      3. For each known command leader referenced in backticks (ruff,
+         pre-commit, basedpyright, git, gh, python3), confirm it is on PATH.
+      4. Exit non-zero if any reference is broken; print the broken references.
+    override_eligible: true
+    notes: >-
+      Scope: referenced paths and commands only. Do not parse or score prose
+      content; this check is not a style or completeness gate. The intent is to
+      catch file moves (for example .claude/rules/python.md renamed or deleted)
+      that leave a dangling reference in CLAUDE.md without any other signal.
+      CLAUDE-004 already checks that cross-references to .claude/rules/ are
+      present; CLAUDE-011 checks that those referenced files actually exist.
+
+  - id: CLAUDE-012
+    domain: claude_docs
+    severity: important
+    description: >-
+      AGENTS.md, CLAUDE.md, and GEMINI.md carry consistent core directives.
+      The core directive block (sentinel: <!-- core-directives:v1 -->) must be
+      present in every steering file that exists and must match across them.
+    verify: |
+      script: scripts/check-steering-parity.sh
+      The script must:
+      1. Locate the block delimited by <!-- core-directives:v1 --> ...
+         <!-- /core-directives --> in AGENTS.md, CLAUDE.md, and GEMINI.md.
+      2. Normalize whitespace and compare the blocks across the files present.
+      3. Fail if a present file is missing the sentinel block or if the blocks
+         differ across files.
+      4. Output a unified diff of the divergent blocks.
+    override_eligible: true
+    not_applicable_when: >-
+      A steering file is absent on disk. GEMINI.md is optional (its FOUND-011
+      presence requirement is advisory); the parity check skips any steering
+      file that does not exist and enforces parity only across the files
+      present. A file that exists but lacks the sentinel block still fails.
+    notes: >-
+      The core directive block should contain directives that must be identical
+      across all agents: signed commits, no-em-dash, conventional commits, the
+      RAD tagging requirement, and the untrusted-input directive. Tool-specific
+      sections (Model Selection, Compact Instructions) live outside the sentinel
+      block and are not checked. This is the parity enforcement for the
+      three-file Option B architecture described in the handoff.
+
+  - id: CLAUDE-013
+    domain: claude_docs
+    severity: suggested
+    description: >-
+      Agent steering files contain an explicit directive instructing agents to
+      treat issue, PR, and external web content as data, not as instructions
+      (OWASP LLM01 prompt injection mitigation).
+    verify: |
+      content_present_any:
+        - AGENTS.md, untrusted data
+        - AGENTS.md, prompt injection
+        - CLAUDE.md, untrusted data
+        - CLAUDE.md, prompt injection
+    override_eligible: true
+    notes: >-
+      OWASP LLM01 (Prompt Injection) is the top risk for agentic systems that
+      read GitHub issues, PR bodies, or external URLs. A one-line directive in
+      the steering file is low-cost mitigation. The check does not validate the
+      quality of the directive, only its presence. Suggested severity because
+      omission is a gap, not an active failure. The directive lives inside the
+      CLAUDE-012 core-directives block so it stays in parity across files.
+
+  - id: CLAUDE-014
+    domain: claude_docs
+    severity: suggested
+    description: >-
+      No credentials, tokens, API keys, or connection strings are embedded in
+      CLAUDE.md, AGENTS.md, GEMINI.md, or .claude/settings.json.
+    verify: |
+      script: scripts/check-steering-secrets.sh
+      The script runs a pattern scan against the four config-surface files.
+      Minimum patterns:
+      - gh[pousr]_[A-Za-z0-9]{36,}  (GitHub PAT)
+      - sk-[A-Za-z0-9]{32,}          (OpenAI key pattern)
+      - AIza[A-Za-z0-9_-]{35}        (Google API key)
+      - [0-9a-fA-F]{32,}             (generic hex token, 32+ chars)
+      - password\s*[:=]\s*\S+        (plaintext password assignment)
+      Exit non-zero and print the matching line (redacted) if any pattern hits.
+    override_eligible: true
+    notes: >-
+      These files are the most likely location for an agent's working
+      credentials to appear (for example a token pasted to give the agent
+      access to a service). They are also committed to version control. This is
+      a defense-in-depth check; the primary control is the pre-commit
+      detect-secrets and trufflehog hooks. Suggested severity because this is a
+      belt-and-suspenders check for a setup already covered by pre-commit.
+      CLAUDE-010 covers the settings.json $schema field; this check covers a
+      different surface (secret content, not schema URL).
+
   # ── OSSF (Best Practices Badge + Scorecard) ──────────────────────────────────
   # These checks supplement the live Scorecard API and Badge API results with
   # local file content that those APIs cannot evaluate. The ossf-compliance-auditor
