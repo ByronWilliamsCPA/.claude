@@ -4,7 +4,7 @@
 
 ### Breaking
 
-* feat!(compliance): elevate PC-003 (basedpyright pre-commit hook) from
+* feat(compliance)!: elevate PC-003 (basedpyright pre-commit hook) from
   severity important to critical, and invert override_eligible to false in
   `docs/standards-manifest.yaml`. The hook that runs basedpyright before
   every commit cannot logically be graded lower than the presence check that
@@ -14,14 +14,14 @@
   BREAKING CHANGE: PC-003 override suppression no longer accepted; repos that
   previously overrode PC-003 must wire basedpyright into pre-commit.
 
-* feat!(compliance): elevate TOOL-012 (basedpyright strict-mode config) from
+* feat(compliance)!: elevate TOOL-012 (basedpyright strict-mode config) from
   severity important to critical, and invert override_eligible to false in
   `docs/standards-manifest.yaml`. Repos must have a [tool.basedpyright] block
   with typeCheckingMode = strict in pyproject.toml; per-repo suppression is no
   longer accepted.
   BREAKING CHANGE: TOOL-012 override suppression no longer accepted; repos must
   have [tool.basedpyright] with typeCheckingMode = strict in pyproject.toml.
-* feat!(compliance): retire FOUND-011 (GEMINI.md presence check) from
+* feat(compliance)!: retire FOUND-011 (GEMINI.md presence check) from
   `docs/standards-manifest.yaml`. FOUND-011 required GEMINI.md at the project
   root, but GEMINI.md has no OpenSSF criterion and no org-satisfaction path.
   The substantive guidance (create a GEMINI.md with equivalent steering if you
@@ -30,7 +30,7 @@
   fleet-wide; no repo is required to create it.
   BREAKING CHANGE: FOUND-011 finding stream removed. Consumers who relied on
   FOUND-011 audit output will no longer see findings for missing GEMINI.md files.
-* feat!(compliance): recalibrate MkDocs compliance domain in
+* feat(compliance)!: recalibrate MkDocs compliance domain in
   `docs/standards-manifest.yaml`. Three breaking changes land in this PR:
 
   1. **MKDOCS-001 and MKDOCS-006 down-tiered.** Both checks were `severity:
@@ -68,7 +68,7 @@
      repo owners must explicitly set `publishesDocs: true` for repos that deploy
      to GitHub Pages or another public host.
 
-* feat!(compliance): make TOOL-005 (basedpyright present in dev dependencies)
+* feat(compliance)!: make TOOL-005 (basedpyright present in dev dependencies)
   non-overridable in `docs/standards-manifest.yaml`. TOOL-005 was the only
   `critical` check carrying `override_eligible: true`; every other critical
   check is a non-bypassable security or supply-chain control. Inverting the
@@ -265,6 +265,16 @@
   remain scoped to the homelab-infra repo through their `not_applicable_when`
   clauses; only their suppressibility changed, not their applicability. These were
   two of the three violations the new manifest self-consistency gate now prevents.
+
+* fix(compliance): harden the manifest self-consistency gate and refresh its
+  metadata following PR #162 review. `test_verify_non_empty` now rejects
+  non-string `verify` values (`null`, `{}`) that `str()` coercion let pass;
+  `_load_checks` raises explicit, path-bearing errors instead of an opaque
+  collection failure when the manifest is missing or malformed; `description`
+  is now a required field; and `test_ids_unique` no longer raises a bare
+  `KeyError` on a missing `id`. Also corrects the malformed breaking-change
+  token (`feat!(compliance):`) to `feat(compliance)!:` across all five
+  `### Breaking` entries in this changelog.
 
 * fix(ci): pin `step-security/harden-runner` to v2.19.3 in block-mode workflows
   and add defensive `include-hidden-files: true` to v7 `upload-artifact` steps.
