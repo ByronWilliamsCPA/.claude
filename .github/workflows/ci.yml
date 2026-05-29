@@ -32,13 +32,42 @@ jobs:
       no-build: false
 
   # ==========================================================================
+  # Manifest self-consistency: validates docs/standards-manifest.yaml invariants
+  # (severity/override-eligibility coherence, unique IDs, known domains). Runs as
+  # a separately named check so a manifest contradiction surfaces clearly rather
+  # than buried in the reusable workflow's pytest output.
+  # ==========================================================================
+  manifest-consistency:
+    name: Manifest self-consistency
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411  # v2.19.4
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Install uv
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          enable-cache: true
+      - name: Set up Python
+        run: uv python install 3.12
+      - name: Install dependencies
+        run: uv sync --frozen --extra dev
+      - name: Validate manifest consistency
+        run: uv run pytest tests/unit/test_manifest_consistency.py -v
+
+  # ==========================================================================
   # CI Gate: aggregates the CI result; must pass for branch protection
   # ==========================================================================
   ci-gate:
     name: CI Gate
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    needs: [ci]
+    needs: [ci, manifest-consistency]
     if: always()
     steps:
       - name: Harden runner
@@ -48,9 +77,14 @@ jobs:
       - name: Check CI results
         env:
           CI_RESULT: ${{ needs.ci.result }}
+          MANIFEST_RESULT: ${{ needs.manifest-consistency.result }}
         run: |
           if [ "$CI_RESULT" != "success" ]; then
             echo "::error::CI Gate failed: CI result is $CI_RESULT"
+            exit 1
+          fi
+          if [ "$MANIFEST_RESULT" != "success" ]; then
+            echo "::error::CI Gate failed: manifest-consistency result is $MANIFEST_RESULT"
             exit 1
           fi
           echo "CI Gate passed"

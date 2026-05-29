@@ -243,7 +243,7 @@ checks:
     severity: critical
     description: "basedpyright present in dev dependencies"
     verify: "dep_present: basedpyright"
-    override_eligible: true
+    override_eligible: false
     not_applicable_when: "repo does not contain Python source files"
 
   - id: TOOL-006
@@ -498,7 +498,7 @@ checks:
       The hook MUST be present in the homelab-infra .pre-commit-config.yaml with the
       same SHA pin and additional_dependencies version as the running renovate/renovate
       image (currently renovate@43.x).
-    override_eligible: false
+    override_eligible: true
     not_applicable_when: >-
       Audit target is not the homelab-infra repo. This check only applies to
       homelab-infra/services/renovate/config/config.json.
@@ -1973,7 +1973,7 @@ checks:
   - id: CI-064
     domain: ci
     severity: suggested
-    override_eligible: false
+    override_eligible: true
     not_applicable_when: >-
       Audit target is not the homelab-infra repo. This check only applies to
       homelab-infra/services/renovate/config/config.json.
