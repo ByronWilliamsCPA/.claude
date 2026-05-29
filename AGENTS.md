@@ -75,6 +75,15 @@ Specialized subagents available in this Claude Code configuration. Invoke via th
 | `api-development-agent` | REST/GraphQL APIs, OpenAPI specifications, contract testing |
 | `frontend-designer` | UI/UX creative direction, accessible components, React performance |
 
+
+## Gemini / Other AI Assistants
+
+If you use Gemini CLI or another AI assistant alongside Claude Code,
+create a `GEMINI.md` at the project root (same location as `AGENTS.md`)
+with equivalent steering: allowed tools, prohibited operations, and
+project conventions. Gemini CLI reads `GEMINI.md` automatically.
+See AGENTS.md for the authoritative project conventions to replicate.
+
 ## Built-in Subagents
 
 Two subagents are native to Claude Code (not defined in `.claude/agents/`):
