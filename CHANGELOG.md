@@ -4,6 +4,24 @@
 
 ### Breaking
 
+* feat!(compliance): elevate PC-003 (basedpyright pre-commit hook) from
+  severity important to critical, and invert override_eligible to false in
+  `docs/standards-manifest.yaml`. The hook that runs basedpyright before
+  every commit cannot logically be graded lower than the presence check that
+  confirms the tool is installed. Repos that previously suppressed PC-003 via
+  a compliance-overrides.md entry can no longer do so; they must wire
+  basedpyright into .pre-commit-config.yaml.
+  BREAKING CHANGE: PC-003 override suppression no longer accepted; repos that
+  previously overrode PC-003 must wire basedpyright into pre-commit.
+
+* feat!(compliance): elevate TOOL-012 (basedpyright strict-mode config) from
+  severity important to critical, and invert override_eligible to false in
+  `docs/standards-manifest.yaml`. Repos must have a [tool.basedpyright] block
+  with typeCheckingMode = strict in pyproject.toml; per-repo suppression is no
+  longer accepted.
+  BREAKING CHANGE: TOOL-012 override suppression no longer accepted; repos must
+  have [tool.basedpyright] with typeCheckingMode = strict in pyproject.toml.
+
 * feat!(compliance): make TOOL-005 (basedpyright present in dev dependencies)
   non-overridable in `docs/standards-manifest.yaml`. TOOL-005 was the only
   `critical` check carrying `override_eligible: true`; every other critical
@@ -19,7 +37,26 @@
   to dev dependencies, or rely on the `not_applicable_when` no-Python-source
   scope.
 
+### Fixed
+
+* fix(compliance): replace incorrect Python-only exemption in TOOL-009 (.qlty/qlty.toml
+  presence) with a documentation-only exemption in `docs/standards-manifest.yaml`.
+  Qlty is a language-agnostic meta-linter wrapping ESLint, ShellCheck, Actionlint,
+  and others; restricting its applicability to Python repos was a drafting error that
+  silently exempt JS/TS, shell-script, and GitHub Actions config repos. The new
+  not_applicable_when clause reads: "repo contains no source files (documentation-only
+  repo)", matching repos that genuinely have no lintable source of any kind.
+
 ### Added
+* feat(compliance): add CI-072 (Codecov patch coverage target gate) to
+  `docs/standards-manifest.yaml`. CI-072 (severity important, override-eligible)
+  asserts that the .codecov.yml or codecov.yaml config declares patch: >= 90,
+  enforcing the 90% patch coverage target stated in CLAUDE.md alongside the
+  existing 80% line and 70% branch floors. CI-054 gates actual Codecov data;
+  CI-072 gates the config declaration (analogous to CI-010 for the overall
+  threshold). The not_applicable_when scope matches CI-054 exactly: non-Python
+  repos and repos without a Codecov config file are exempt.
+
 
 * feat(compliance): add CI-070 to `docs/standards-manifest.yaml`. CI-070
   (severity suggested, override-eligible) flags any GitHub Actions workflow
