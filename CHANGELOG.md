@@ -2,6 +2,23 @@
 
 ## Unreleased
 
+### Breaking
+
+* feat!(compliance): make TOOL-005 (basedpyright present in dev dependencies)
+  non-overridable in `docs/standards-manifest.yaml`. TOOL-005 was the only
+  `critical` check carrying `override_eligible: true`; every other critical
+  check is a non-bypassable security or supply-chain control. Inverting the
+  flag to `false` aligns the check with the tier's meaning: basedpyright is
+  now mandatory for Python repos with no per-repo suppression through
+  `compliance-overrides.md`. The `not_applicable_when` clause (repo has no
+  Python source files) still scopes the check, so non-Python repos are
+  unaffected. A fleet-wide search found no repo carrying a TOOL-005 override,
+  so no coordinated cleanup was required.
+  BREAKING CHANGE: repos that relied on a TOOL-005 entry in
+  `compliance-overrides.md` can no longer suppress the finding; add basedpyright
+  to dev dependencies, or rely on the `not_applicable_when` no-Python-source
+  scope.
+
 ### Added
 
 * feat(manifest): add CI-062 and promote CI-040 in `docs/standards-manifest.yaml`.
@@ -54,8 +71,30 @@
   auditor-prompt changes. Documents the fixture-authoring step in
   `.claude/standards/manifest-changes.md`. Refs
   `docs/handoffs/standards-review-2026-05-28/03-auditor-regression-fixtures.md`.
+* feat(compliance): add a machine-checkable self-consistency gate over
+  `docs/standards-manifest.yaml`. New `tests/unit/test_manifest_consistency.py`
+  asserts the manifest's cross-field invariants: unique check IDs, severity in
+  `{critical, important, suggested}`, `critical` implies non-overridable (with an
+  empty, comment-required allowlist), `suggested` is never marked non-overridable,
+  non-empty `verify`, known `domain` and `applies_to` values, and ISO-8601 parsing
+  for any future `created`/`modified` fields. Each invariant is a separate test
+  that names every offending check, so one run surfaces all violations. Wired into
+  pre-commit (a `manifest-consistency` local hook scoped to the manifest path) and
+  into CI as a dedicated, separately named `Manifest self-consistency` job gated by
+  the existing CI Gate aggregator. Before this gate, nothing validated the
+  manifest's internal logic: a contradictory entry reached
+  `scripts/check-repo-compliance.py` and the LLM audit agents with no warning.
 
 ### Fixed
+
+* fix(compliance): clear the inert `override_eligible: false` flag on PC-016 and
+  CI-064 in `docs/standards-manifest.yaml`, setting both to `true`. Both are
+  `suggested` (advisory, non-blocking) checks, so marking them non-overridable was
+  meaningless: a finding that cannot block cannot be unblocked by refusing an
+  override. The flag is now consistent with the tier's semantics. Both checks
+  remain scoped to the homelab-infra repo through their `not_applicable_when`
+  clauses; only their suppressibility changed, not their applicability. These were
+  two of the three violations the new manifest self-consistency gate now prevents.
 
 * fix(ci): pin `step-security/harden-runner` to v2.19.3 in block-mode workflows
   and add defensive `include-hidden-files: true` to v7 `upload-artifact` steps.
