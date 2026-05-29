@@ -157,6 +157,38 @@
   gate. The attestation file records `confirmed_by` as a GitHub username and
   omits any password-manager vault or item name, since the file is public.
 
+* feat(compliance): add steering-file integrity checks CLAUDE-011 through
+  CLAUDE-014 to the `claude_docs` domain in `docs/standards-manifest.yaml`.
+  CLAUDE-011 (important) verifies that file paths and commands referenced in
+  CLAUDE.md and AGENTS.md resolve against the repository tree, catching stale
+  references left by a rename or deletion. CLAUDE-012 (important) enforces
+  parity of a sentinel-delimited core directive block (`<!-- core-directives:v1 -->`)
+  across AGENTS.md, CLAUDE.md, and GEMINI.md, skipping any steering file that
+  is absent so an optional GEMINI.md does not force a failure. CLAUDE-013
+  (suggested) requires an OWASP LLM01 prompt-injection directive instructing
+  agents to treat issue, PR, and external content as untrusted data. CLAUDE-014
+  (suggested) scans the four config-surface files for embedded credentials as a
+  defense-in-depth complement to the pre-commit secret hooks. Adds the three
+  verifier scripts `scripts/check-steering-refs.sh`,
+  `scripts/check-steering-parity.sh`, and `scripts/check-steering-secrets.sh`,
+  and the shared core directive block to the three steering files.
+* feat(compliance): add CI-067, CI-068, and CI-069 to `docs/standards-manifest.yaml`,
+  three coupled dependency-intake defenses that close the largest AI-era gap in the
+  baseline: an AI agent or Renovate bot auto-merging a zero-day-old malicious,
+  hallucinated, or typosquatted package before any human review. CI-067 (fleet
+  dependency cooldown) requires repos with auto-merge enabled to enforce
+  `minimumReleaseAge >= "3 days"`, satisfiable via the org-level Renovate config or a
+  per-repo `renovate.json` packageRules entry; it generalizes the homelab-only
+  CI-061/CI-064 cooldown to all 44 repos. CI-068 (lockfile integrity) requires uv
+  repos to commit `uv.lock` and install with `uv sync --frozen`, closing the drift
+  window that would let a new release bypass CI-067. CI-069 (dependency existence
+  gate) defends against hallucinated and typosquatted package names via a PyPI
+  registry-age check (Option A) or a maintained allowlist (Option B). All three are
+  introduced at `severity: suggested` per the policy-execution-gap pattern
+  (`feedback_policy_execution_gap.md`); promotion targets are critical (CI-067) and
+  important (CI-068, CI-069) after a fleet sweep confirms 100% reach. Refs
+  `docs/handoffs/standards-review-2026-05-28/04-dependency-intake-defenses.md`.
+
 * feat(manifest): add CI-062 and promote CI-040 in `docs/standards-manifest.yaml`.
   CI-062 (severity important, override-eligible) gates repos with auto-merging
   dependency updates: when Renovate or Dependabot auto-merge is signaled, the
