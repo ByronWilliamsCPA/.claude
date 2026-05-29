@@ -1346,69 +1346,121 @@ checks:
       SECURITY.md "Scope" section. Template: add to .github/SECURITY.md under a
       "Security surface areas" heading with repo-specific placeholders.
 
-  # MkDocs Configuration Checks
+  # =========================================================================
+  # MkDocs Domain (applies_to: docs_repos -- skipped for publishesDocs=false repos)
+  # MKDOCS-002/003/004/005/007/008 retired 2026-05-28; consolidated into
+  # MKDOCS-013 (source-linking fields) and MKDOCS-014 (cosmetic metadata fields).
+  # Retired IDs are preserved below as deprecated stubs for audit-trail continuity.
+  # Do not reuse retired IDs; any new checks must use MKDOCS-015+.
+  # =========================================================================
 
   - id: MKDOCS-001
     domain: mkdocs
-    severity: critical
+    severity: important
     description: "mkdocs.yml has site_url set"
     verify: "field_present: site_url"
-    override_eligible: false
+    applies_to: docs_repos
+    override_eligible: true
+    notes: >-
+      Down-tiered from critical to important 2026-05-28. A missing site_url breaks
+      canonical link headers and sitemap generation on a published site; it is a
+      documentation quality failure, not a security or data-integrity failure. An
+      operator may have a legitimate reason to omit it (self-hosted deployment behind
+      a private DNS name not known at build time). Changed override_eligible from
+      false to true to reflect this.
 
   - id: MKDOCS-002
     domain: mkdocs
     severity: important
-    description: "mkdocs.yml has repo_url set"
+    description: "mkdocs.yml has repo_url set (DEPRECATED -- use MKDOCS-013)"
     verify: "field_present: repo_url"
+    applies_to: docs_repos
     override_eligible: true
+    deprecated_by: MKDOCS-013
+    notes: >-
+      Retired 2026-05-28. Consolidated into MKDOCS-013 along with MKDOCS-003 and
+      MKDOCS-005. Do not reuse this ID.
 
   - id: MKDOCS-003
     domain: mkdocs
     severity: important
-    description: "mkdocs.yml has repo_name set"
+    description: "mkdocs.yml has repo_name set (DEPRECATED -- use MKDOCS-013)"
     verify: "field_present: repo_name"
+    applies_to: docs_repos
     override_eligible: true
+    deprecated_by: MKDOCS-013
+    notes: >-
+      Retired 2026-05-28. Consolidated into MKDOCS-013 along with MKDOCS-002 and
+      MKDOCS-005. Do not reuse this ID.
 
   - id: MKDOCS-004
     domain: mkdocs
     severity: suggested
-    description: "mkdocs.yml has edit_uri set"
+    description: "mkdocs.yml has edit_uri set (DEPRECATED -- use MKDOCS-014)"
     verify: "field_present: edit_uri"
+    applies_to: docs_repos
     override_eligible: true
+    deprecated_by: MKDOCS-014
+    notes: >-
+      Retired 2026-05-28. Consolidated into MKDOCS-014 along with MKDOCS-007 and
+      MKDOCS-008. Do not reuse this ID.
 
   - id: MKDOCS-005
     domain: mkdocs
     severity: important
-    description: "mkdocs.yml has copyright set"
+    description: "mkdocs.yml has copyright set (DEPRECATED -- use MKDOCS-013)"
     verify: "field_present: copyright"
+    applies_to: docs_repos
     override_eligible: true
+    deprecated_by: MKDOCS-013
+    notes: >-
+      Retired 2026-05-28. Consolidated into MKDOCS-013 along with MKDOCS-002 and
+      MKDOCS-003. Do not reuse this ID.
 
   - id: MKDOCS-006
     domain: mkdocs
-    severity: critical
+    severity: important
     description: "mkdocs.yml has site_name set"
     verify: "field_present: site_name"
-    override_eligible: false
+    applies_to: docs_repos
+    override_eligible: true
+    notes: >-
+      Down-tiered from critical to important 2026-05-28. A missing site_name causes
+      MkDocs to use a fallback name; it is a cosmetic/metadata failure. MkDocs itself
+      does not error on a missing site_name in all versions; treating its absence as a
+      no-override critical was inconsistent with the rest of the metadata field checks.
+      Changed override_eligible from false to true to reflect this.
 
   - id: MKDOCS-007
     domain: mkdocs
     severity: suggested
-    description: "mkdocs.yml has site_description set"
+    description: "mkdocs.yml has site_description set (DEPRECATED -- use MKDOCS-014)"
     verify: "field_present: site_description"
+    applies_to: docs_repos
     override_eligible: true
+    deprecated_by: MKDOCS-014
+    notes: >-
+      Retired 2026-05-28. Consolidated into MKDOCS-014 along with MKDOCS-004 and
+      MKDOCS-008. Do not reuse this ID.
 
   - id: MKDOCS-008
     domain: mkdocs
     severity: suggested
-    description: "mkdocs.yml has site_author set"
+    description: "mkdocs.yml has site_author set (DEPRECATED -- use MKDOCS-014)"
     verify: "field_present: site_author"
+    applies_to: docs_repos
     override_eligible: true
+    deprecated_by: MKDOCS-014
+    notes: >-
+      Retired 2026-05-28. Consolidated into MKDOCS-014 along with MKDOCS-004 and
+      MKDOCS-007. Do not reuse this ID.
 
   - id: MKDOCS-009
     domain: mkdocs
     severity: suggested
     description: "No unused needs-proof markdown extensions configured in mkdocs.yml"
     verify: "scan_docs_for_extension_usage: footnotes, md_in_html, pymdownx.tabbed, pymdownx.arithmatex, content.tabs.link"  # yamllint disable-line rule:line-length
+    applies_to: docs_repos
     override_eligible: true
 
   - id: MKDOCS-010
@@ -1416,6 +1468,7 @@ checks:
     severity: important
     description: "toc.integrate not combined with navigation.sections or navigation.tabs"
     verify: "feature_conflict: toc.integrate"
+    applies_to: docs_repos
     override_eligible: true
 
   - id: MKDOCS-011
@@ -1423,6 +1476,7 @@ checks:
     severity: suggested
     description: "mkdocs-material has an upper-bound version pin in pyproject.toml or requirements"
     verify: "version_upper_bound: mkdocs-material"
+    applies_to: docs_repos
     override_eligible: true
 
   - id: MKDOCS-012
@@ -1435,6 +1489,37 @@ checks:
       This check verifies a CI workflow step rather than documentation content or
       structure. It is misplaced in the mkdocs domain and should migrate to the CI
       domain in a future domain reorganization.
+
+  - id: MKDOCS-013
+    domain: mkdocs
+    severity: important
+    description: >-
+      mkdocs.yml has the required source-linking fields: repo_url, repo_name,
+      and copyright. These fields link the published site back to its source
+      repository and satisfy basic attribution requirements.
+    verify: "fields_present: mkdocs.yml, [repo_url, repo_name, copyright]"
+    applies_to: docs_repos
+    override_eligible: true
+    notes: >-
+      Consolidates MKDOCS-002 (repo_url), MKDOCS-003 (repo_name), and
+      MKDOCS-005 (copyright). All three fields serve the same purpose: linking
+      the published site to its source. A single finding with a single
+      remediation action is more actionable than three separate findings.
+
+  - id: MKDOCS-014
+    domain: mkdocs
+    severity: suggested
+    description: >-
+      mkdocs.yml has the optional cosmetic metadata fields: edit_uri,
+      site_description, and site_author.
+    verify: "fields_present: mkdocs.yml, [edit_uri, site_description, site_author]"
+    applies_to: docs_repos
+    override_eligible: true
+    notes: >-
+      Consolidates MKDOCS-004 (edit_uri), MKDOCS-007 (site_description), and
+      MKDOCS-008 (site_author). These fields are genuinely optional; their
+      absence does not affect site function. Grouping them reduces finding
+      noise for repos that intentionally omit cosmetic fields.
 
   # =========================================================================
   # API Domain (applies_to: api_repos -- skipped for servesApi=false repos)

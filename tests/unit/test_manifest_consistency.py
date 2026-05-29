@@ -43,10 +43,10 @@ VALID_DOMAINS: frozenset[str] = frozenset(
     }
 )
 
-# Known ``applies_to`` values. The manifest currently scopes only API checks via
-# ``applies_to: api_repos``. Extend this set in the same commit that adds a new
-# applicability scope.
-VALID_APPLIES_TO: frozenset[str] = frozenset({"api_repos"})
+# Known ``applies_to`` values. The manifest scopes API checks via ``applies_to:
+# api_repos`` and MkDocs checks via ``applies_to: docs_repos`` (publishesDocs=true
+# repos only). Extend this set in the same commit that adds a new applicability scope.
+VALID_APPLIES_TO: frozenset[str] = frozenset({"api_repos", "docs_repos"})
 
 # IDs deliberately exempt from the critical-implies-non-overridable rule.
 # Each entry requires a comment explaining the exception. Keep this empty: a
