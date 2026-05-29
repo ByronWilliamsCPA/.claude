@@ -109,6 +109,19 @@ def applies_to_api_repos(org: str, repo: str, catalog: dict) -> bool:
     return bool(api.get("servesApi", False))
 
 
+def applies_to_docs_repos(org: str, repo: str, catalog: dict) -> bool:
+    """Return True if the repo publishes a documentation site (publishesDocs == true).
+
+    Mirrors the servesApi pattern: reads a top-level boolean field on the catalog
+    entry. Repos without the field or with publishesDocs: false are excluded from
+    MkDocs domain checks (MKDOCS-001 through MKDOCS-011, MKDOCS-013, MKDOCS-014).
+    MKDOCS-012 (CI build step) is intentionally excluded from this gate because it
+    belongs in the CI domain and will migrate there in a future PR.
+    """
+    entry = catalog.get(f"{org}/{repo}", {})
+    return bool(entry.get("publishesDocs", False))
+
+
 @dataclass
 class RepoResult:
     slug: str
