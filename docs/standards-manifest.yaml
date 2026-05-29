@@ -1,6 +1,17 @@
 # docs/standards-manifest.yaml
 version: "1.0"
 last_updated: "2026-05-28"
+# 2026-05-28: Dependency intake defenses. Added CI-067 (fleet dependency
+# cooldown -- minimum release age >= 3 days on auto-merging repos, suggested),
+# CI-068 (uv.lock committed and installed with --frozen, suggested), and CI-069
+# (PR-introduced dependency existence/age gate against hallucinated and
+# typosquatted packages, suggested). All three start at severity: suggested per
+# feedback_policy_execution_gap.md; promotion targets are critical (CI-067) and
+# important (CI-068, CI-069) after a fleet sweep confirms 100% reach. These
+# generalize the homelab-only CI-061/CI-064 cooldown to the whole fleet and
+# close the largest AI-era intake gap: an agent or Renovate auto-merging a
+# zero-day-old malicious, hallucinated, or typosquatted package before review.
+# Cross-reference: docs/handoffs/standards-review-2026-05-28/04-dependency-intake-defenses.md
 # 2026-05-26: Post-audit revisions following the Renovate auto-merge fleet
 # rollout. Added new repo_settings domain with REPO-001 (allow_auto_merge=true,
 # critical) and REPO-002 (delete_branch_on_merge=true, important); added
@@ -2403,6 +2414,132 @@ checks:
       This repo (ByronWilliamsCPA/.claude) was confirmed clean on 2026-05-28:
       all github.event.* usage is in env: assignments, if: conditions, or
       concurrency.group (integer context only).
+  - id: CI-067
+    domain: ci
+    severity: suggested
+    override_eligible: true
+    not_applicable_when: >-
+      Repo has no auto-merge signals: renovate.json does not contain
+      "automerge": true, RENOVATE_AUTOMERGE env/secret is not set to true,
+      and no dependabot auto-approve workflow exists.
+    description: >-
+      Any repo with Renovate or Dependabot auto-merge enabled must enforce a
+      minimum release age of at least 3 days on incoming dependency updates.
+      Without this gate, a zero-day-old package (malicious, hallucinated by an
+      AI agent, or typosquatted) can be auto-merged and deployed before any
+      human observes it. The 3-day window matches the median time for the
+      security community to identify and report a malicious PyPI package.
+      The cooldown can be satisfied by: (a) the org-level Renovate global config
+      at homelab-infra/services/renovate/config/config.json setting
+      minimumReleaseAge >= "3 days", or (b) the repo's own renovate.json
+      packageRules setting minimumReleaseAge >= "3 days" on all or the
+      automerge:true subset.
+    verify: |
+      1. Check for auto-merge signals (same as CI-062 step 1). If none: skip.
+      2. Read homelab-infra/services/renovate/config/config.json. If
+         minimumReleaseAge is present and >= "3 days" at the top level or
+         in a packageRules entry covering all packages: PASS.
+      3. If org config does not set minimumReleaseAge: read the repo's
+         renovate.json. PASS if a packageRules entry covering automerge:true
+         packages sets minimumReleaseAge >= "3 days".
+      4. If neither file satisfies steps 2 or 3: FAIL.
+    source_frameworks:
+      - manifest-internal
+      - OWASP Top 10 CI/CD A08 Ungoverned Usage of Third-Party Services
+    notes: >-
+      Added 2026-05-28. CI-061 and CI-064 cover homelab-infra only; this check
+      generalizes the cooldown requirement to the fleet. Start at severity:
+      suggested per the policy-execution-gap pattern and promote to critical
+      after a fleet sweep confirms 100% reach. Renovate config edits must pass
+      renovate-config-validator; use enabledManagers "pep621" not "uv" (see
+      feedback_renovate_uv_manager_trap.md -- silent full-config rejection trap).
+      Override eligible for repos that require same-day security patches; document
+      the override with the rationale and an emergency-merge procedure. Do not
+      promote to critical until the org-level Renovate config is confirmed to set
+      minimumReleaseAge and the sweep verifies it on all 44 repos.
+
+  - id: CI-068
+    domain: ci
+    severity: suggested
+    override_eligible: true
+    not_applicable_when: >-
+      Repo does not use uv as its package manager (no uv.lock at repo root)
+      or does not contain Python source files.
+    description: >-
+      Python repos using uv must have uv.lock committed to version control and
+      CI must install dependencies with "uv sync --frozen" (or equivalent
+      "--require-hashes" flag), not "uv sync" without lockfile enforcement.
+      An uncommitted or non-frozen install allows silent dependency drift:
+      a new malicious release can be resolved and installed between the last
+      lock and the next CI run, bypassing the cooldown check (CI-067) entirely.
+    verify: |
+      1. Confirm uv.lock exists at repo root: FAIL if absent.
+      2. Confirm uv.lock is tracked by git (not in .gitignore):
+         git ls-files uv.lock; FAIL if not listed.
+      3. Search CI workflow files (.github/workflows/ci.yml,
+         .github/workflows/python-ci.yml, or the org reusable workflow caller):
+         grep -r "uv sync" .github/workflows/
+         FAIL if any "uv sync" call lacks --frozen flag.
+         PASS if all uv sync calls carry --frozen.
+    source_frameworks:
+      - manifest-internal
+      - OWASP Top 10 CI/CD A06 Insufficient Credential Hygiene
+      - NIST SSDF PS.1.1
+    notes: >-
+      Added 2026-05-28 at severity: suggested per the policy-execution-gap
+      pattern; promote to important after a fleet sweep confirms 100% reach.
+      CLAUDE.md and project memory reference uv sync --frozen extensively, but
+      no manifest check enforces it. The org-level reusable workflow at
+      ByronWilliamsCPA/.github/.github/workflows/python-ci.yml should be audited
+      first; if it uses --frozen fleet-wide, individual repos that call it
+      inherit compliance and this check may PASS for free on the majority of
+      the fleet, which is also the first reach step before promotion.
+
+  - id: CI-069
+    domain: ci
+    severity: suggested
+    override_eligible: true
+    not_applicable_when: >-
+      Repo does not contain Python source files or does not use a public
+      package registry (private/internal packages only).
+    description: >-
+      PR-introduced dependencies must resolve to packages with verifiable
+      registry history predating the PR by at least 24 hours, or the package
+      must appear on a project-maintained allowlist. This check defends against
+      hallucinated package names added by AI agents and against typosquatted
+      packages uploaded specifically to target a PR review window. This is the
+      hardest of the three intake defenses to automate; two implementation
+      options are described below.
+    verify: |
+      Option A (OSV/registry-age check, preferred):
+        In the PR diff, extract any new package names added to
+        pyproject.toml [project.dependencies] or [project.optional-dependencies].
+        For each new package: query PyPI JSON API:
+          curl -s https://pypi.org/pypi/<package>/json | jq '.info.version'
+        FAIL if the API returns 404 (package does not exist).
+        FAIL if the earliest release date (releases object, first key date)
+        is within 24 hours of the PR open time.
+        PASS if the package has existed for >= 24 hours.
+      Option B (allowlist gate, lower automation cost):
+        Maintain .github/dependency-allowlist.txt listing approved packages.
+        Any new package not on the allowlist blocks merge until a human adds
+        it with a signed commit. This is higher-friction but zero false-negatives.
+      Recommend starting with Option B on low-churn repos and Option A on
+      repos where Renovate manages the majority of updates.
+    source_frameworks:
+      - manifest-internal
+      - OWASP Top 10 CI/CD A08 Ungoverned Usage of Third-Party Services
+      - OpenSSF Scorecard Dependency-Update-Tool
+    notes: >-
+      Added 2026-05-28. This is the lower-confidence check in this group:
+      the verify implementation requires tooling not yet present in the fleet
+      (PyPI API calls in CI or an allowlist workflow). Mark as severity: suggested
+      at introduction and promote to important only after at least one reference
+      implementation exists in a fleet repo. The OSV scanner
+      (google/osv-scanner) partially covers this for known-bad packages but
+      does not catch zero-day-published names. Option B (allowlist) is the
+      recommended starting point for AI-heavy workflows where agents propose
+      package names.
 
   - id: CI-071
     domain: ci
