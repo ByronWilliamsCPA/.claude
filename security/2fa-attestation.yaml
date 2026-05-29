@@ -1,0 +1,29 @@
+# docs/security/2fa-attestation.yaml
+# Manual attestation for accounts where GitHub API cannot verify 2FA programmatically.
+# Update this file whenever 2FA status is confirmed. Renewal required within 90 days.
+#
+# OSSF-014 reads this file. It is committed with PLACEHOLDER values and is
+# expected to FAIL until the owner performs the verification below.
+accounts:
+  - account: williaby
+    type: user
+    platform: github
+    # TODO(owner): verify 2FA on the williaby account in GitHub Settings >
+    # Password and authentication, then set true and fill confirmed_date +
+    # renewal_deadline (confirmed_date + 90 days). Record the method used
+    # (TOTP app, security key, or SMS) in notes. Do NOT set this true without
+    # logging into the williaby account and confirming 2FA is active.
+    two_factor_enabled: false
+    # confirmed_by: GitHub username (not an email) of the person who verified 2FA.
+    confirmed_by: williaby
+    # TODO(owner): set to the date 2FA was confirmed, ISO-8601 (e.g. 2026-05-28).
+    confirmed_date: null
+    # TODO(owner): set to confirmed_date + 90 days, ISO-8601.
+    renewal_deadline: null
+    # Do not record the specific vault or item name here; this file is public.
+    recovery_codes_stored: "stored in password manager"
+    notes: >-
+      GitHub user accounts do not expose 2FA status via public API.
+      This attestation is the only verifiable record. Values are placeholders
+      until the owner verifies 2FA on the williaby account; OSSF-014 will FAIL
+      against this placeholder by design until then.
