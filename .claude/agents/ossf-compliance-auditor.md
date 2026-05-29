@@ -108,6 +108,35 @@ gh api "repos/${REPO_SLUG}" --jq '.security_and_analysis'
 ```
 If `secret_scanning.status != "enabled"`: emit OSSF-008 FINDING. If OSSF-008 passes but `secret_scanning_push_protection.status != "enabled"`: emit OSSF-009 FINDING. If `exempt_check_ids` contains `OSSF-008` or `OSSF-009`, log `EXEMPT` and skip the corresponding check. If the API returns a 403 or the `security_and_analysis` field is absent (org lacks GHAS), log a note that GHAS is not available at the org level and record in `docs/known-vulnerabilities.md` rather than raising a FINDING.
 
+**Secret-scan CI job is a required merge gate (OSSF-015):**
+
+First detect whether the repo runs a secret-scan CI job:
+```bash
+grep -rilE "gitleaks|trufflehog" .github/workflows/ 2>/dev/null
+```
+If no workflow file matches, OSSF-015 is **N/A** (`not_applicable_when: repo has no gitleaks or trufflehog CI job`); log `N/A (no secret-scan CI job)` and skip. Otherwise, read the matching job's name (the `jobs.<key>.name`, or the job key if `name:` is unset), then retrieve the default-branch required status checks:
+```bash
+gh api "repos/${REPO_SLUG}/rulesets" --jq '.[] | select(.target=="branch")' 2>/dev/null
+# or, classic protection:
+gh api "repos/${REPO_SLUG}/branches/${DEFAULT_BRANCH:-main}/protection/required_status_checks" 2>/dev/null
+```
+Emit OSSF-015 FINDING if the secret-scan job name is **absent** from `required_status_checks`, OR if the matching entry's `integration_id` is absent or `!= 15368` (the GitHub Actions app). A context-string match without the integration_id pin is spoofable, mirroring CI-028. PASS only when the job name is present AND `integration_id == 15368`. OSSF-015 is `override_eligible: true`: if `exempt_check_ids` contains `OSSF-015`, log `EXEMPT` and skip. Evaluate regardless of repo visibility (the check inspects the CI job wiring, not the GHAS platform scan).
+
+```text
+FINDING:
+id: OSSF-015
+severity: important
+description: secret-scan CI job is not registered as a required status check (or lacks the GitHub Actions integration_id pin) on the default branch
+status: configuration_gap
+current_value: <job name found in workflows>; required_status_checks entry <absent | integration_id missing/!=15368>
+remediation: |
+  Add the secret-scan job (gitleaks or trufflehog) to the default-branch
+  ruleset's required_status_checks with integration_id 15368. The context
+  string must exactly match the job name (jobs.<key>.name, or the job key if
+  name: is unset). Without the integration_id pin, a same-named check from a
+  different app silently satisfies the gate while providing no protection.
+```
+
 ### CI-022/023/024: Required Checks Cross-Validation
 
 These three checks are validated by a single Python script. Invoke it once per audit:
@@ -409,6 +438,68 @@ remediation: |
     exposure in hook scripts, agent prompt injection, etc.]. Mitigations: [signed commits,
     required-status-check rulesets, secret scanning, trufflehog pre-commit hook].
   The gleif SECURITY.md "Scope" section is the reference implementation.
+```
+
+**OSSF-014: williaby user-account 2FA attestation freshness**
+
+This check is **fleet-scoped against the standards authority**: the attestation file lives only in `ByronWilliamsCPA/.claude`, not in each fleet repo. Evaluate it **only** when auditing that repo (or wherever `docs/security/2fa-attestation.yaml` exists); for any other repo, log `N/A (attestation maintained in the standards-authority repo)` and skip, so a fleet sweep reports at most one OSSF-014 finding, not 44.
+
+```bash
+python3 - <<'PY'
+import sys, datetime, pathlib
+try:
+    import yaml
+except ImportError:
+    print("OSSF-014: PyYAML unavailable; cannot evaluate attestation"); sys.exit(0)
+p = pathlib.Path("docs/security/2fa-attestation.yaml")
+if not p.exists():
+    print("OSSF-014: N/A (no attestation file in this repo)"); sys.exit(0)
+data = yaml.safe_load(p.read_text()) or {}
+entry = next((a for a in data.get("accounts", []) if a.get("account") == "williaby"), None)
+today = datetime.date.today()
+fails = []
+if entry is None:
+    fails.append("no entry for account: williaby")
+else:
+    if entry.get("two_factor_enabled") is not True:
+        fails.append("two_factor_enabled is not true")
+    cd = entry.get("confirmed_date")
+    if not cd:
+        fails.append("confirmed_date absent")
+    else:
+        try:
+            if (today - datetime.date.fromisoformat(str(cd))).days > 90:
+                fails.append(f"confirmed_date {cd} is older than 90 days")
+        except ValueError:
+            fails.append(f"confirmed_date {cd} is not ISO-8601")
+    rd = entry.get("renewal_deadline")
+    if not rd:
+        fails.append("renewal_deadline absent")
+    else:
+        try:
+            if datetime.date.fromisoformat(str(rd)) < today:
+                fails.append(f"renewal_deadline {rd} is in the past")
+        except ValueError:
+            fails.append(f"renewal_deadline {rd} is not ISO-8601")
+print("OSSF-014 PASS" if not fails else "OSSF-014 FAIL: " + "; ".join(fails))
+PY
+```
+Emit OSSF-014 FINDING when the script prints `FAIL`. OSSF-014 is `override_eligible: false`; it is not suppressible via `exempt_check_ids`. The initial committed attestation uses placeholder values and is **expected to FAIL by design** until the owner verifies 2FA on the williaby account and fills `confirmed_date` + `renewal_deadline`; report it as a standing finding rather than treating the placeholder as an error in this check.
+
+```text
+FINDING:
+id: OSSF-014
+severity: important
+description: williaby user-account 2FA attestation is missing, stale (>90 days), or past its renewal_deadline
+status: attestation_gap
+current_value: <script FAIL reasons>
+remediation: |
+  Log into github.com as the williaby account, confirm 2FA under Settings >
+  Password and authentication, then in docs/security/2fa-attestation.yaml set
+  two_factor_enabled: true, confirmed_date to today (ISO-8601), and
+  renewal_deadline to confirmed_date + 90 days. Re-run the sweep to clear.
+  GitHub does not expose user-account 2FA via any public API, so this manual
+  attestation is the sole verifiable record (see OSSF-007 notes).
 ```
 
 ## FINDING Block Format
