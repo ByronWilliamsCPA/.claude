@@ -276,7 +276,7 @@ checks:
     description: ".qlty/qlty.toml configuration file present"
     verify: "file_exists: .qlty/qlty.toml"
     override_eligible: true
-    not_applicable_when: "repo does not contain Python source files"
+    not_applicable_when: "repo contains no source files (documentation-only repo)"
 
   - id: TOOL-010
     domain: toolchain
@@ -296,10 +296,10 @@ checks:
 
   - id: TOOL-012
     domain: toolchain
-    severity: important
+    severity: critical
     description: "[tool.basedpyright] block present with typeCheckingMode = strict"
     verify: "content_present: pyproject.toml, typeCheckingMode"
-    override_eligible: true
+    override_eligible: false
     not_applicable_when: "repo does not contain Python source files"
 
   # ── Pre-commit ───────────────────────────────────────────────────────────────
@@ -320,10 +320,10 @@ checks:
 
   - id: PC-003
     domain: pre_commit
-    severity: important
+    severity: critical
     description: "basedpyright hook present in .pre-commit-config.yaml"
     verify: "hook_present: .pre-commit-config.yaml, basedpyright"
-    override_eligible: true
+    override_eligible: false
     not_applicable_when: "repo does not contain Python source files"
 
   - id: PC-004
@@ -1716,6 +1716,35 @@ checks:
       them. Branch coverage floor (70%) is set lower than line coverage (80%)
       because branch instrumentation is not always complete in integration-test
       suites. Standards source: CLAUDE.md "Testing" row (80% line, 70% branch).
+
+
+  - id: CI-072
+    domain: ci
+    severity: important
+    override_eligible: true
+    description: >-
+      Codecov patch coverage target is >= 90% in .codecov.yml (the AI-generated
+      diff coverage gate declared in CLAUDE.md).
+    verify: >-
+      content_present: .codecov.yml OR codecov.yaml, patch: 90.
+      Check that the patch: target field under any coverage flag or the
+      default coverage block is set to 90 or above. A missing patch: key
+      is a FINDING (target not declared).
+      PASS if patch target >= 90 in any coverage block that governs PR diffs.
+    not_applicable_when: >-
+      repo does not contain Python source files OR .codecov.yml and
+      codecov.yaml are both absent (Codecov not configured for this repo).
+    source_frameworks:
+      - manifest-internal
+    notes: >-
+      CLAUDE.md states "90% patch" as a coverage target alongside 80% line
+      and 70% branch. CI-054 enforces the line/branch floors against actual
+      Codecov data. CI-072 enforces the patch target declaration in the
+      config file (analogous to CI-010 for the overall threshold). A
+      separate runtime check against live Codecov patch data would complement
+      this config-presence gate; add it as a separate follow-on check (claim
+      the next free CI-* ID at implementation time) if Codecov API provides
+      patch coverage per-PR.
 
   - id: CI-055
     domain: ci
