@@ -58,6 +58,18 @@
   repos and repos without a Codecov config file are exempt.
 
 
+* feat(compliance): add CI-071 to `docs/standards-manifest.yaml`. CI-071
+  (severity suggested, override-eligible) audits job-level permission escalation:
+  when a workflow declares a narrow top-level permissions block and a job then
+  grants broader write or admin permissions at the job level, the top-level
+  restriction is defeated. The check flags (does not auto-fail) any job-level
+  block that grants scopes not required by that job's steps. Release jobs
+  (contents: write), SLSA/attestation jobs (id-token: write), and GHCR publish
+  (packages: write) are documented as known-required grants; all other elevated
+  grants require a comment-justification above the permissions block. Introduced
+  as suggested per the policy-execution-gap rollout pattern; complementary to
+  CI-033 (top-level block presence), not a replacement.
+
 * feat(compliance): add CI-070 to `docs/standards-manifest.yaml`. CI-070
   (severity suggested, override-eligible) flags any GitHub Actions workflow
   that interpolates attacker-controllable context values directly into a run:
@@ -164,6 +176,22 @@
   `scripts/check-repo-compliance.py` and the LLM audit agents with no warning.
 
 ### Fixed
+
+* fix(compliance): tighten verify directives for CI-006, CI-031, and CI-019
+  in `docs/standards-manifest.yaml`. All three checks were passing cases their
+  descriptions explicitly prohibited.
+  CI-006 previously used content_present: harden-runner (fires on any
+  occurrence anywhere in the file); updated to a per-job position assertion
+  that FAILs when harden-runner is not the first step in a job's steps: list,
+  and skips reusable-workflow callee jobs.
+  CI-031 previously accepted any deferral comment with a target date regardless
+  of whether that date had lapsed; updated to also FAIL when the deferral
+  target date is in the past (expired deferral). Deferral format anchored to
+  "# deferral: YYYY-MM-DD" or "# until: YYYY-MM-DD".
+  CI-019 previously checked only that attestations: true was present; updated
+  to also verify that the publish job carries id-token: write in its
+  permissions block and does not pass a PYPI_TOKEN or password: fallback,
+  which would route the publish through the API token path instead of OIDC.
 
 * fix(compliance): clear the inert `override_eligible: false` flag on PC-016 and
   CI-064 in `docs/standards-manifest.yaml`, setting both to `true`. Both are

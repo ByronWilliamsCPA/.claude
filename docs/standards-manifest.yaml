@@ -616,7 +616,14 @@ checks:
     domain: ci
     severity: important
     description: "harden-runner present as first step in all workflow jobs"
-    verify: "content_present: .github/workflows/*.yml, harden-runner"
+    verify: |
+      For each .github/workflows/*.yml:
+        For each job (not a reusable-workflow call, i.e., no "uses:" key at the job level):
+          FAIL if no step in the job uses: step-security/harden-runner.
+          FAIL if the step using step-security/harden-runner is not the first step
+               in the job's "steps:" list (position index 0).
+      Exempt: reusable-workflow callee jobs where harden-runner is controlled by the
+      callee template.
     override_eligible: false
 
   - id: CI-007
@@ -860,12 +867,18 @@ checks:
     verify: |
       In each of .github/workflows/ci.yml, pr-validation.yml, reuse.yml:
         PASS if egress-policy: block is present.
-        PASS if file contains a deferral comment with a target date.
+        PASS if file contains a deferral comment with a target date AND that target date
+             is in the future (compare against audit execution date).
         FAIL if egress-policy: audit with no deferral comment.
+        FAIL if egress-policy: audit with a deferral comment whose target date is in
+             the past (expired deferral).
     override_eligible: true
     notes: >
       Current posture is audit mode pending onboarding stabilization. Flip to block
       after confirming all required outbound domains are captured in the audit log.
+      Deferral comment format: "# deferral: YYYY-MM-DD" or "# until: YYYY-MM-DD".
+      Expired deferrals must be renewed or converted to block mode. An expired
+      deferral is not a valid override.
 
   - id: CI-032
     domain: ci
@@ -904,7 +917,15 @@ checks:
       integrity). Only applies to repos that actively upload to PyPI; repos that
       use semantic-release for tag/GitHub-Release-only versioning without a dist
       upload step are exempt. The predicate is publish-to-PyPI, not has-Python-source.
-    verify: "content_present: .github/workflows/release.yml, attestations: true"
+    verify: |  # pragma: allowlist secret
+      In .github/workflows/release.yml (or the file containing pypa/gh-action-pypi-publish):
+        FAIL if attestations: true is present but id-token: write is absent from the
+             job-level permissions block of the job containing the publish step.
+        FAIL if attestations: true is present and id-token: write is present, but
+             the publish step also sets a PYPI_TOKEN (or password:) environment variable  # pragma: allowlist secret
+             directly (indicates fallback to API token instead of OIDC flow).
+        PASS if attestations: true is present, id-token: write is in the job permissions,
+             and no long-lived PYPI_TOKEN/password: is passed to the publish step.  # pragma: allowlist secret
     override_eligible: true
     not_applicable_when: "repo does not publish artifacts to PyPI (no pypa/gh-action-pypi-publish step in release.yml)"
 
@@ -2186,6 +2207,32 @@ checks:
       This repo (ByronWilliamsCPA/.claude) was confirmed clean on 2026-05-28:
       all github.event.* usage is in env: assignments, if: conditions, or
       concurrency.group (integer context only).
+
+  - id: CI-071
+    domain: ci
+    severity: suggested
+    description: >-
+      No job in any workflow may grant a broader permission set at the job level than
+      is required for that job's steps. A narrow top-level permissions block paired
+      with a permissive job-level override (e.g., contents: write, id-token: write,
+      packages: write on a job that only reads) defeats the top-level restriction.
+    verify: |
+      For each .github/workflows/*.yml that has a top-level permissions block:
+        For each job that declares its own permissions: block:
+          FLAG (do not auto-fail) if the job-level block grants any scope set to
+          "write" or "admin" for scopes not explicitly required by the steps in
+          that job (heuristic: step uses: or run: does not reference an action
+          or command requiring that scope).
+      Known-required grants: release jobs need contents: write; SLSA/attestation
+      jobs need id-token: write; GHCR publish needs packages: write. Document
+      per-job justification in a comment above the permissions block.
+    override_eligible: true
+    notes: >-
+      Added 2026-05-28. Suggested severity on first pass; escalate to important
+      after fleet audit establishes which job-level grants are justified. This
+      check is complementary to CI-033 (top-level block presence), not a replacement.
+      A workflow that passes CI-033 can still fail CI-071 if its job-level block
+      over-grants.
 
   - id: FOUND-015
     domain: foundations
