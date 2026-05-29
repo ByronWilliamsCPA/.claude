@@ -119,11 +119,11 @@ def test_supersede_handles_multiple_active_priors(
     The atomic supersede+append path must surface this invariant for
     any future regression that reintroduces multi-active divergence.
     """
-    from scripts.compliance_log_append import append_entry
-    from scripts.compliance_log_common import (
+    from claude_config.compliance.log_common import (
         load_entries,
         resolve_canonical_per_key,
     )
+    from scripts.compliance_log_append import append_entry
 
     fake_central = tmp_path / "master-log.jsonl"
 
@@ -181,11 +181,11 @@ def test_supersede_skips_corrupted_jsonl_lines(
     will report two active entries; this test pins that the active
     prior is correctly superseded and the corrupted line is preserved.
     """
-    from scripts.compliance_log_append import append_entry
-    from scripts.compliance_log_common import (
+    from claude_config.compliance.log_common import (
         load_entries,
         resolve_canonical_per_key,
     )
+    from scripts.compliance_log_append import append_entry
 
     fake_central = tmp_path / "master-log.jsonl"
 
