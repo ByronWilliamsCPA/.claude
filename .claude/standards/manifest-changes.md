@@ -1,6 +1,6 @@
 # Standards Manifest Change Policy
 
-> **Status**: ✅ Active | Reference Standard | **Version**: 1.0.0 | **Last Updated**: 2026-05-18
+> **Status**: Active | Reference Standard | **Version**: 1.1.0 | **Last Updated**: 2026-05-28
 >
 > Conventional-commits classification, CHANGELOG conventions, and PR-splitting guidance
 > for changes to `docs/standards-manifest.yaml`. Load on demand when modifying the manifest.
@@ -36,69 +36,18 @@ This standard fixes the rule so the debate happens once.
 
 ## Classification rule
 
-The decision tree:
-
-```text
-                    Modifying docs/standards-manifest.yaml?
-                                   │
-                ┌──────────────────┼──────────────────┐
-                │                  │                  │
-        Adding new check ID    Modifying existing    Removing check ID
-        with no preceding    check's verify/         (deprecation)
-        documented gap       severity/scope                │
-                │                  │                       │
-              feat:        ┌───────┴────────┐         feat!:
-            (compliance)   │                │
-                       Closing a       Expanding to
-                       documented      a new dimension
-                       gap?            of enforcement?
-                           │                │
-                          fix:            feat:
-                       (compliance)    (compliance)
-                           │                │
-                       (was the              │
-                        scope a bug          │
-                        in the original      │
-                        check?)              │
-                           │                 │
-                       If override_eligible inverts on a
-                       previously-overridable check:
-                                  │
-                                feat!:
-```
-
-In words:
-
-1. **Adding a new check ID** because a previously-uncovered area now needs enforcement
-   (no preceding incident, no missed audit, just expanding the manifest's reach):
-   `feat(compliance):`
-
-2. **Adding a new check ID** because an existing check's scope had a gap that let a
-   real vulnerability through (the new check closes a documented incident or audit
-   failure): `fix(compliance):`. The new ID is the patch.
-
-3. **Modifying an existing check's `verify`** to correct under-coverage (the check was
-   supposed to catch X all along; the scope was wrong): `fix(compliance):`.
-
-4. **Modifying an existing check's `verify`** to expand coverage to a new dimension
-   (the check now catches Y in addition to X, where Y is a different category):
-   `feat(compliance):`.
-
-5. **Inverting `override_eligible`** on a previously-overridable check (consumers can
-   no longer suppress the finding): `feat!(compliance):`. This is a behavior change
-   for downstream audit consumers.
-
-6. **Increasing severity** (e.g., `suggested` -> `important` -> `critical`) when the
-   higher severity is enforced as a merge gate: `feat!(compliance):` if the change
-   converts a non-blocking advisory into a blocking finding. Otherwise `fix(compliance):`
-   if the severity bump corrects a misclassification.
-
-7. **Removing a check ID** (deprecating an obsolete rule): `feat!(compliance):` because
-   consumers who relied on the check no longer see findings. Pair with a deprecation
-   note in the manifest body and the CHANGELOG.
-
-8. **Editorial changes** (wording, formatting, examples, rationale notes) with no
-   change to detection or remediation behavior: `docs(compliance):`. No version impact.
+| Change | Type | Rationale |
+| --- | --- | --- |
+| Add CI-014 for a previously-unchecked enforcement area | `feat(compliance):` | No preceding gap; new capability |
+| Add CI-007b to close a documented XXE-escape path | `fix(compliance):` | New ID, but closes incident; PR #116 precedent. NOTE: PR #116 also broadened CI-007's scope in the same commits; the combined PR took `fix:` per the inseparability exception below. A hypothetical standalone CI-007b addition that closes the same incident is still `fix:` because the dominant motivation is incident closure, not new capability. |
+| Broaden CI-007 verify from one file to all workflows | `fix(compliance):` | Scope was a bug in the original check |
+| Add a new `severity:` tier to the schema | `feat(compliance):` | New capability dimension |
+| Invert `override_eligible` on CI-005 from true to false | `feat!(compliance):` | Consumers who overrode can no longer do so |
+| Fix a typo in CI-003's `description:` | `docs(compliance):` | Editorial; no detection change |
+| Remove CI-099 (obsolete after tool deprecation) | `feat!(compliance):` | Consumers lose the finding stream |
+| Add a `notes:` field to CI-001 explaining historical context | `docs(compliance):` | Editorial annotation |
+| Add `pattern_absent` semantics to support a new check shape | `feat(compliance):` | New capability for the verify DSL |
+| Tighten a regex in CI-007b to reduce false positives | `fix(compliance):` | Detection was imprecise |
 
 ## Regression fixtures for critical checks
 
@@ -155,41 +104,11 @@ When a combined PR (per the inseparability exception above) is classified `fix:`
 the CHANGELOG entry should still describe both halves in the body so consumers
 can see the full scope of what changed.
 
-## Examples
-
-Concrete examples mapped to types:
-
-| Change | Type | Rationale |
-| --- | --- | --- |
-| Add CI-014 for a previously-unchecked enforcement area | `feat(compliance):` | No preceding gap; new capability |
-| Add CI-007b to close a documented XXE-escape path | `fix(compliance):` | New ID, but closes incident; PR #116 precedent. NOTE: PR #116 also broadened CI-007's scope in the same commits; the combined PR took `fix:` per the inseparability exception below. A hypothetical standalone CI-007b addition that closes the same incident is still `fix:` because the dominant motivation is incident closure, not new capability. |
-| Broaden CI-007 verify from one file to all workflows | `fix(compliance):` | Scope was a bug in the original check |
-| Add a new `severity:` tier to the schema | `feat(compliance):` | New capability dimension |
-| Invert `override_eligible` on CI-005 from true to false | `feat!(compliance):` | Consumers who overrode can no longer do so |
-| Fix a typo in CI-003's `description:` | `docs(compliance):` | Editorial; no detection change |
-| Remove CI-099 (obsolete after tool deprecation) | `feat!(compliance):` | Consumers lose the finding stream |
-| Add a `notes:` field to CI-001 explaining historical context | `docs(compliance):` | Editorial annotation |
-| Add `pattern_absent` semantics to support a new check shape | `feat(compliance):` | New capability for the verify DSL |
-| Tighten a regex in CI-007b to reduce false positives | `fix(compliance):` | Detection was imprecise |
-
-## SemVer impact
-
-For repos that consume this manifest via semantic-release or release-please:
-
-- `fix:` -> patch bump (e.g., 1.0.4 -> 1.0.5)
-- `feat:` -> minor bump (1.0.5 -> 1.1.0)
-- `feat!:` or any commit with `BREAKING CHANGE:` -> major bump (1.1.0 -> 2.0.0)
-- `docs:` -> no bump
-
-This repo does not currently publish the manifest as a versioned artifact, but the
-prefix discipline costs nothing today and unlocks downstream automation when needed.
-
 ## Decision authority
 
-If a manifest change doesn't fit any of the cases above, the contributor proposes a
-type in the PR description with reasoning. The reviewer accepts or proposes an
-alternative before merge. Either outcome adds a new row to the Examples table in
-this file so the precedent applies to future cases.
+If a manifest change does not fit any case in the table, the contributor proposes a
+type in the PR description with reasoning. Add a new row to the examples table so the
+precedent applies to future cases.
 
 ## References
 

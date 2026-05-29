@@ -21,6 +21,15 @@
   longer accepted.
   BREAKING CHANGE: TOOL-012 override suppression no longer accepted; repos must
   have [tool.basedpyright] with typeCheckingMode = strict in pyproject.toml.
+* feat!(compliance): retire FOUND-011 (GEMINI.md presence check) from
+  `docs/standards-manifest.yaml`. FOUND-011 required GEMINI.md at the project
+  root, but GEMINI.md has no OpenSSF criterion and no org-satisfaction path.
+  The substantive guidance (create a GEMINI.md with equivalent steering if you
+  use Gemini CLI) is now folded into `AGENTS.md` under a new
+  "## Gemini / Other AI Assistants" section. GEMINI.md is treated as OPTIONAL
+  fleet-wide; no repo is required to create it.
+  BREAKING CHANGE: FOUND-011 finding stream removed. Consumers who relied on
+  FOUND-011 audit output will no longer see findings for missing GEMINI.md files.
 
 * feat!(compliance): make TOOL-005 (basedpyright present in dev dependencies)
   non-overridable in `docs/standards-manifest.yaml`. TOOL-005 was the only
@@ -192,6 +201,24 @@
   to also verify that the publish job carries id-token: write in its
   permissions block and does not pass a PYPI_TOKEN or password: fallback,
   which would route the publish through the API token path instead of OIDC.
+* fix(compliance): mechanize CI-050 security-regression verify and promote
+  severity from suggested to important in `docs/standards-manifest.yaml`. The
+  previous verify field required manual review with no automated actor in a
+  solo-dev no-reviewer model. Replaced with a scriptable
+  `git_commit_association` assertion: CHANGELOG entries matching /CVE-|security
+  fix/i must have at least one `tests/` file in the same commit (inspectable
+  with `git log --name-only --grep`). Severity promoted to important because an
+  automated check carries real enforcement weight.
+
+* fix(compliance): scope OSSF-006 Silver badge check to flagship public repos
+  in `docs/standards-manifest.yaml`. Added a `not_applicable_when` clause that
+  exempts repos not designated flagship in the org catalog
+  (docs/reference/github-repos.md). A flagship repo has external_contributors
+  > 0 in the past 12 months OR is explicitly tagged `flagship: true` in the
+  catalog. The check already exempted private repos via `visibility_required:
+  public`; this narrows the remaining scope to repos where badge-application
+  effort yields external signal. Updated the description to reflect the scoped
+  applicability.
 
 * fix(compliance): clear the inert `override_eligible: false` flag on PC-016 and
   CI-064 in `docs/standards-manifest.yaml`, setting both to `true`. Both are
