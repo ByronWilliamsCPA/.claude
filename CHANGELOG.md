@@ -157,6 +157,21 @@
   gate. The attestation file records `confirmed_by` as a GitHub username and
   omits any password-manager vault or item name, since the file is public.
 
+* feat(compliance): add steering-file integrity checks CLAUDE-011 through
+  CLAUDE-014 to the `claude_docs` domain in `docs/standards-manifest.yaml`.
+  CLAUDE-011 (important) verifies that file paths and commands referenced in
+  CLAUDE.md and AGENTS.md resolve against the repository tree, catching stale
+  references left by a rename or deletion. CLAUDE-012 (important) enforces
+  parity of a sentinel-delimited core directive block (`<!-- core-directives:v1 -->`)
+  across AGENTS.md, CLAUDE.md, and GEMINI.md, skipping any steering file that
+  is absent so an optional GEMINI.md does not force a failure. CLAUDE-013
+  (suggested) requires an OWASP LLM01 prompt-injection directive instructing
+  agents to treat issue, PR, and external content as untrusted data. CLAUDE-014
+  (suggested) scans the four config-surface files for embedded credentials as a
+  defense-in-depth complement to the pre-commit secret hooks. Adds the three
+  verifier scripts `scripts/check-steering-refs.sh`,
+  `scripts/check-steering-parity.sh`, and `scripts/check-steering-secrets.sh`,
+  and the shared core directive block to the three steering files.
 * feat(manifest): add CI-062 and promote CI-040 in `docs/standards-manifest.yaml`.
   CI-062 (severity important, override-eligible) gates repos with auto-merging
   dependency updates: when Renovate or Dependabot auto-merge is signaled, the
