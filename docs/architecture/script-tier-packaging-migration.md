@@ -70,6 +70,41 @@ the same `python3`.
 ruff `INP` exemption ("Scripts are not packages"). Only `src/claude_config` subpackages get
 `__init__.py`.
 
+### 3.1 Raising relocated code to the strict ruleset (no suppression)
+
+`pyproject.toml:310-324` relaxes a large rule set for `scripts/**` (`ANN`, `D`, `T20`,
+`TRY`, `PTH`, `PLR`, `EM`, `BLE`, `C901`, `S603`, `S607`, and more). Code under `src/` gets
+the full strict ruleset with no such relaxation. Relocation therefore raises every moved
+file to library grade. This is the chosen approach: bring the code up, do not add a
+per-file ignore for the moved subtree. Suppression is barred by the repo code-quality rule.
+
+Measured gap (logging cluster of 4 files, linted under the effective `src/` ruleset): 24
+errors, of which 10 are `T201` (`print`), 5 are complexity (`C901`, `PLR0912`, `PLR0915`),
+3 are `EM102`, 2 are `S603`, plus `PTH`/`ANN`. Repo-wide there are 139 `print()` calls
+across 16 of 18 scripts, so the print conversion and the complexity refactors, not the file
+move, are the dominant work.
+
+Conventions for the raise:
+
+- Output. Replace `print()` per its role. Diagnostic and progress messages go through the
+  structlog logger in `src/claude_config/utils/logging.py` (stderr). Genuine stdout payloads
+  (rendered Markdown, JSON results) use a `rich.console.Console` writer (`rich>=13.5.0` is
+  already a dependency); `Console.print` is not the builtin and does not trip `T201`. Tools
+  that already write their product to a file keep doing so.
+- Complexity. Functions over `C901` (10), `PLR0912` (12 branches), or `PLR0915` (50
+  statements) are decomposed into named helpers. This is real refactoring, reviewed per
+  function, not a mechanical move.
+- Exceptions. `EM102`/`TRY` fixes assign the message to a variable before `raise`; `BLE`
+  blind excepts are narrowed to typed exceptions (see `.claude/rules/python.md`).
+- Subprocess. `S603`/`S607` calls (the `gh` and `python` invocations) are not exempt under
+  `src/`. Centralize them in `common/gh.py` and `common/proc.py` with one reviewed
+  `# noqa: S603` carrying a justification at the single call site, rather than scattering
+  the call (and the suppression) across modules. This is the documented-suppression
+  exception in the code-quality rule, not a blanket dodge.
+- Docstrings and types. Full `ANN` signatures and Google-style `D` docstrings; `darglint`
+  validates that `Args`/`Returns`/`Raises` match the signature; `interrogate` holds `src/`
+  at 80%.
+
 ## 4. Target layout
 
 ```
@@ -77,8 +112,10 @@ src/claude_config/
   common/            # NEW shared layer (folds in ARCH-02, ARCH-05, ARCH-06)
     __init__.py
     gh.py            # one gh-subprocess + JSON client, replaces 6+ copies
+    proc.py          # single justified S603 subprocess wrapper
     yaml_io.py       # one YAML load/dump path (standardize on ruamel)
     orgs.py          # single ORGS constant
+    output.py        # rich.Console writer for stdout payloads (replaces print)
   compliance/
     __init__.py
     log_common.py    repo_check.py     required_checks.py
@@ -185,24 +222,34 @@ divergent literals at `check-repo-compliance.py:34` (list) and `populate-github-
 
 ## 9. Phased PR plan
 
-Each PR leaves the tree green and stays near the repo p90 (498 lines changed).
+Because the move raises each file to strict (section 3.1), per-PR size is set by the print
+conversion and complexity refactors, not the file move. Clusters are sized to keep each PR
+reviewable; the two largest check scripts get their own PR. Each PR leaves the tree green.
 
-1. PR 1, foundation plus pilot. Add `common/` (gh, yaml_io, orgs) and migrate the
-   compliance cluster (repo_check, required_checks, log_common, log_append, log_render,
-   rollup_reconcile) with shims. Route the cluster through `common/gh.py`. Prove coverage
-   rises and the 3 allowlist shims still run by path.
-2. PR 2, rulesets. setup_org, setup_repo, sync_org_pins through `common/gh.py`.
-3. PR 3, catalog and checks. populate_repos, python_tier_repos, workflow_registry,
-   quality_gate, type_hints, fips_compatibility, assuredoss.
-4. PR 4, docs and cleanup. doc_audit, pr_review; delete all `importlib` loaders; add
+1. PR 1a, foundation plus logging pilot. Add `common/` scaffolding (`gh.py`, `proc.py`,
+   `yaml_io.py`, `orgs.py`, `output.py`) and migrate the compliance logging cluster
+   (`log_common`, `log_render`, `log_append`, `rollup_reconcile`) to strict, with shims.
+   These are the 3 allowlisted scripts plus the helper, the truest cascade test. Measured
+   gap: 24 ruff errors to clear.
+2. PR 1b, compliance checks. `repo_check` (745 LOC) and `required_checks` (872 LOC) through
+   `common/gh.py`. Largest complexity-refactor load; isolated so its diff is reviewable.
+3. PR 2, rulesets. `setup_org`, `setup_repo`, `sync_org_pins` through `common/gh.py`.
+4. PR 3, catalog and checks. `populate_repos`, `python_tier_repos`, `workflow_registry`,
+   `quality_gate`, `type_hints`, `fips_compatibility`, `assuredoss`.
+5. PR 4, docs and cleanup. `doc_audit`, `pr_review`; delete all `importlib` loaders; add
    `[project.scripts]`; switch `noxfile.py` to entry points.
 
 ## 10. Verification per PR
 
-- `uv run pytest` green; coverage number reported for the migrated modules (expected to rise
-  from the src-only baseline of 132 LOC).
+- `uv run ruff check src/claude_config/<pkg>` clean under strict (zero errors, no added
+  per-file ignore for the subtree); `uv run basedpyright src/claude_config/<pkg>` clean.
+- `uv run pytest` green; coverage reported for the migrated modules (expected to rise from
+  the src-only baseline of 132 LOC).
 - `pre-commit run --all-files` green (ruff, basedpyright, interrogate at 85% on `scripts/`
-  and 80% on `src/`, darglint).
+  and 80% on `src/`, darglint on `src/`).
+- Output behavior preserved: capture stdout of the old script and the new entrypoint on a
+  representative input and diff them, so the print-to-Console/logger conversion did not move
+  a payload from stdout to stderr or vice versa.
 - Downstream smoke test: for each migrated shim, run `python3 scripts/<name>.py --help`
   (bare interpreter, by path, not via entry point) and confirm imports resolve and exit code
   is 0 or the script's own usage code. This is the test that guarantees the cascade still
@@ -218,6 +265,12 @@ Each PR leaves the tree green and stays near the repo p90 (498 lines changed).
   migration and repoint to a resolved repo root or a passed argument.
 - Downstream `python3` lacking the third-party deps is a pre-existing condition, not new.
   Document the required interpreter in `docs/getting-started/` if not already stated.
+- The print conversion can silently relocate output between stdout and stderr, breaking any
+  caller that parses a script's stdout. Mitigation: the output-diff check in section 10, and
+  routing only diagnostics (not payloads) to the logger.
+- Complexity refactors change internal structure of large functions (`repo_check`,
+  `required_checks`). Mitigation: these land in their own PR (1b) with the existing tests as
+  the behavioral contract; no refactor merges without the prior test suite green.
 
 ## 12. Out of scope
 
