@@ -90,7 +90,14 @@
   form the full secret-scanning gate stack and applies regardless of repo
   visibility because it checks the CI job, not the GHAS platform scan. Also
   updates the OSSF-007 notes to reference OSSF-014 and explain the user-account
-  API limitation (description and verify unchanged).
+  API limitation (description and verify unchanged). Both checks are wired into
+  `.claude/agents/ossf-compliance-auditor.md` (OSSF-015 in the Stage 4 GitHub-API
+  checks, OSSF-014 in the Stage 5 local-file checks) so `/repo-audit` evaluates
+  them rather than leaving them documentation-only. OSSF-015's verify also pins
+  the required-status-check `integration_id` to 15368 (the GitHub Actions app),
+  mirroring CI-028, so a same-named check from a different app cannot spoof the
+  gate. The attestation file records `confirmed_by` as a GitHub username and
+  omits any password-manager vault or item name, since the file is public.
 
 * feat(manifest): add CI-062 and promote CI-040 in `docs/standards-manifest.yaml`.
   CI-062 (severity important, override-eligible) gates repos with auto-merging
