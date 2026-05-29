@@ -1,4 +1,13 @@
-# 06 - CI/CD and Tooling
+---
+title: "Audit: CI/CD and Tooling"
+schema_type: common
+status: draft
+owner: core-maintainer
+purpose: "Audit of GitHub Actions, static-analysis config, and gate coverage."
+tags:
+  - ci_cd
+  - analysis
+---
 
 CI hygiene is strong: 22 workflows, all third-party action `uses:` SHA-pinned, no deprecated action APIs (`set-output`, `save-state`, `::set-env`), no node12/16 runtimes, and the three stated pre-commit invariants (PC-YAMLLINT-FILE-REF, PC-MARKDOWNLINT-MD040, PC-HOOK-STAGED-SCOPE) all hold. The two High findings are a matched pair: the repo enables Renovate automerge but has neither the `merge_group` workflow trigger nor the merge-queue ruleset that its own rules require to make automerge safe. Note: actionlint and yamllint were not installed in this environment, so workflow linting relied on grep plus the in-repo `check-github-workflows` jsonschema hook.
 

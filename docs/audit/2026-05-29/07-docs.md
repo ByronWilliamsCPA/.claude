@@ -1,4 +1,13 @@
-# 07 - Documentation and Developer Experience
+---
+title: "Audit: Documentation and Developer Experience"
+schema_type: common
+status: draft
+owner: core-maintainer
+purpose: "Audit of README accuracy, link health, and count-claim drift."
+tags:
+  - documentation
+  - analysis
+---
 
 The primary entry docs (README, CLAUDE.md) have zero broken internal links and `docs/getting-started/install.md` is accurate and complete. The problems cluster in three places: the README Quick Start omits the submodule and setup steps that the install guide documents (so a copy-paste Quick Start leaves a broken checkout), `AGENTS-AND-SKILLS.md` uses 83 root-absolute links that 404 on GitHub, and the MkDocs strict build has 85-plus pages that are neither in nav nor excluded. Several count claims (submodules, permissions, agents) have drifted from reality.
 

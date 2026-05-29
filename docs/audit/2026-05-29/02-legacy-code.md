@@ -1,4 +1,13 @@
-# 02 - Legacy Code Patterns
+---
+title: "Audit: Legacy Code Patterns"
+schema_type: common
+status: draft
+owner: core-maintainer
+purpose: "Audit of deprecated idioms, dead code, and committed run artifacts."
+tags:
+  - code_quality
+  - analysis
+---
 
 The Python surface is modern. Zero old `typing` generics (`List`/`Dict`/`Optional`), zero `.format()` or `%` formatting, zero `os.path` (pathlib in 47 files, matching the PTH house standard), zero deprecated stdlib APIs, zero commented-out code blocks, and all 20 lint suppressions carry rule codes. `ruff check --statistics` exited 0 with no output. The only legacy debt is two committed run artifacts and eight stale config toggles. Git history is shallow (50 commits since 2026-05-24), which bounds any age claim.
 

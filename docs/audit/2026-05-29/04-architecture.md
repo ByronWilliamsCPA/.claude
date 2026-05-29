@@ -1,4 +1,13 @@
-# 04 - Architecture and Structure
+---
+title: "Audit: Architecture and Structure"
+schema_type: common
+status: draft
+owner: core-maintainer
+purpose: "Audit of module boundaries, coupling, and convention drift."
+tags:
+  - architecture
+  - analysis
+---
 
 The dominant structural problem is an inverted package boundary: the only importable module (`src/claude_config`, 132 LOC) is imported by nothing, while the 6,490 LOC of real compliance, ruleset, and audit logic in `scripts/` is unpackaged and reachable only via `pythonpath` plus per-file `sys.path.insert` hacks. With no shared package, core helpers are re-implemented per script (a `gh` client appears six-plus times). No circular imports were found; the local import graph is a clean DAG and `compliance_log_common.py` is one correctly-extracted shared helper. The subagent reported two additional Low-severity items whose detail did not survive transit; they are omitted here rather than recorded without evidence.
 

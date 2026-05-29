@@ -1,4 +1,13 @@
-# Script-Tier Packaging Migration (ARCH-01)
+---
+title: "Script-Tier Packaging Migration (ARCH-01)"
+schema_type: common
+status: draft
+owner: core-maintainer
+purpose: "Design for relocating the scripts tier into the claude_config package."
+tags:
+  - architecture
+  - packaging
+---
 
 > Status: Proposed | Design doc | Author: audit remediation | Date: 2026-05-29
 > Tracks finding ARCH-01 from `docs/audit/2026-05-29/`. Resolves ARCH-01, ARCH-02,

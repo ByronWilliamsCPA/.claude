@@ -1,4 +1,14 @@
-# 00 - Holistic Legacy and Architecture Audit: Final Report
+---
+title: "Holistic Legacy and Architecture Audit: Final Report"
+schema_type: common
+status: draft
+owner: core-maintainer
+purpose: "Synthesis of the 2026-05-29 repo-wide audit with a prioritized remediation backlog."
+tags:
+  - analysis
+  - architecture
+  - code_quality
+---
 
 - Repository: `ByronWilliamsCPA/.claude`
 - Commit audited: `bf912e1`

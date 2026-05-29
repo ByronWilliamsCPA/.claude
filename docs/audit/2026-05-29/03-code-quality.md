@@ -1,4 +1,13 @@
-# 03 - Code Quality and Maintainability
+---
+title: "Audit: Code Quality and Maintainability"
+schema_type: common
+status: draft
+owner: core-maintainer
+purpose: "Audit of complexity, duplication, typing gaps, and test quality."
+tags:
+  - code_quality
+  - analysis
+---
 
 The repo holds against its own house standard. `ruff check` passes fully, including C901 complexity (<=10), PLR0912 branches (<=12), PLR0915 statements (<=50), and PLR0913 args (<=5). Zero real TODO/FIXME/HACK/XXX markers (the lone grep hit is a regex literal). All 11 `# type: ignore`, 9 `# noqa`, and 29 `cast` occurrences carry inline justifications. Two test skips exist, both legitimate platform `skipif` guards; no xfail, no `assert True` anti-patterns. The one High finding is a coverage-measurement gap, not a code defect. Git history is shallow (50 commits since 2026-05-24), so blame-age is uninformative, and immaterial given near-zero debt markers.
 

@@ -1,4 +1,13 @@
-# 05 - Security and Secrets
+---
+title: "Audit: Security and Secrets"
+schema_type: common
+status: draft
+owner: core-maintainer
+purpose: "Audit of secrets exposure, dependency CVEs, and workflow posture."
+tags:
+  - security
+  - analysis
+---
 
 Two committed HTML session-report files expose real usernames, hostnames, and filesystem paths. All third-party GitHub Actions are SHA-pinned. No live secrets found in code. One unsafe `yaml.load` call is a false positive (ruamel YAML with `typ="safe"`). One workflow (`release.yml`) lacks a top-level `permissions: {}` deny-all, leaving job defaults to GitHub platform behavior rather than explicit least-privilege.
 

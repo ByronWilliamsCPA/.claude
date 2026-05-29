@@ -1,4 +1,13 @@
-# 01 - Dependencies and Supply Chain
+---
+title: "Audit: Dependencies and Supply Chain"
+schema_type: common
+status: draft
+owner: core-maintainer
+purpose: "Audit of dependency currency, lockfile health, and supply-chain posture."
+tags:
+  - dependencies
+  - analysis
+---
 
 Supply chain is healthy. `uv lock --locked` resolved 200 packages with zero drift, every row carries SHA-256 hashes, and all direct dependencies sit on current 2025-2026 releases. No migration residue, no Dockerfiles, no stale base images. Four low-severity items remain: a Python floor that reaches EOL in five months, one stale dev-only transitive (already ignored with a documented reason), unverifiable submodule pins, and a Renovate grouping rule that never matches.
 
