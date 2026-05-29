@@ -134,7 +134,9 @@
         "sourceTemplate": null,
         "driftScore": 0,
         "_note": "null sourceTemplate means repo was not generated from a cookiecutter template. driftScore 0 = in sync."
-      }
+      },
+      "publishesDocs": false,
+      "_publishesDocsNote": "Top-level boolean flag (default false). Set to true for repos that deploy a public documentation site (GitHub Pages or equivalent). When true, the MkDocs compliance domain (MKDOCS-001 through MKDOCS-011, MKDOCS-013, MKDOCS-014) is evaluated for that repo. Mirrors the api.servesApi flag pattern. Owner must explicitly set to true; do not infer from mkdocs.yml presence alone."
     },
     "typeProfiles": {
       "python-package": {
@@ -296,7 +298,8 @@
     "_notes": {
       "requiredConversationResolution": "Intentionally false; conversation resolution is not enforced as a branch protection gate. Code review discussions are handled by workflow, not enforced by GitHub.",
       "homelab-agent-configs-exempt": "williaby/homelab-agent-configs is permanently exempt from branch protection requirements due to structural nuances in that repo (non-standard default branch: agent/hermes). Do not flag its unprotected state as a finding in compliance audits.",
-      "migrationPhase": "tracks ruleset migration state per repo. Values: pending (classic only), dual (classic + ruleset, both active), complete (rulesets only, classic stripped). N/A for branchProtectionExempt repos."
+      "migrationPhase": "tracks ruleset migration state per repo. Values: pending (classic only), dual (classic + ruleset, both active), complete (rulesets only, classic stripped). N/A for branchProtectionExempt repos.",
+      "publishesDocs-default": "publishesDocs defaults to false when absent from a repo entry. The compliance runner skips all MkDocs domain checks (MKDOCS-001 through MKDOCS-011, MKDOCS-013, MKDOCS-014) for repos without publishesDocs: true. Repo owners must explicitly set publishesDocs: true for repos that deploy to GitHub Pages or another public documentation host. Do not infer from mkdocs.yml presence alone."
     }
   },
   "repos": [
@@ -431,7 +434,9 @@
         }
       },
       "usesDocker": false,
-      "migrationPhase": "complete"
+      "migrationPhase": "complete",
+      "publishesDocs": false,
+      "_publishesDocsNote": "Has docs.yml workflow but site is not confirmed as publicly deployed. Owner should set publishesDocs: true if GitHub Pages is active for this repo."
     },
     {
       "org": "ByronWilliamsCPA",

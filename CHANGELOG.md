@@ -30,6 +30,43 @@
   fleet-wide; no repo is required to create it.
   BREAKING CHANGE: FOUND-011 finding stream removed. Consumers who relied on
   FOUND-011 audit output will no longer see findings for missing GEMINI.md files.
+* feat!(compliance): recalibrate MkDocs compliance domain in
+  `docs/standards-manifest.yaml`. Three breaking changes land in this PR:
+
+  1. **MKDOCS-001 and MKDOCS-006 down-tiered.** Both checks were `severity:
+     critical` with `override_eligible: false`. MKDOCS-001 (site_url set) and
+     MKDOCS-006 (site_name set) are documentation quality failures, not security
+     or data-integrity failures. Both are changed to `severity: important` and
+     `override_eligible: true`. Consumers who treat critical findings as
+     non-bypassable will now see these checks as suppressible via
+     `compliance-overrides.md`. No override entries were in use fleet-wide; no
+     coordinated cleanup is required.
+     BREAKING CHANGE: MKDOCS-001 and MKDOCS-006 are no longer critical/non-
+     overridable. Audit dashboards that alert on critical-severity MkDocs findings
+     must be updated to reflect the new important severity.
+
+  2. **MKDOCS-002, MKDOCS-003, MKDOCS-004, MKDOCS-005, MKDOCS-007, and
+     MKDOCS-008 retired.** These six field-presence checks (repo_url, repo_name,
+     edit_uri, copyright, site_description, site_author) are replaced by two
+     consolidated checks: MKDOCS-013 (source-linking fields: repo_url, repo_name,
+     copyright) and MKDOCS-014 (cosmetic metadata fields: edit_uri,
+     site_description, site_author). The retired IDs remain in the manifest as
+     deprecated stubs (field `deprecated_by` points to the replacement ID) and
+     must not be reused.
+     BREAKING CHANGE: consumers tracking MKDOCS-002 through MKDOCS-008 as
+     individual finding streams will no longer receive those IDs. Migrate to
+     MKDOCS-013 (replaces MKDOCS-002, MKDOCS-003, MKDOCS-005) and MKDOCS-014
+     (replaces MKDOCS-004, MKDOCS-007, MKDOCS-008).
+
+  3. **MkDocs domain gated on publishesDocs flag.** MKDOCS-001 through
+     MKDOCS-011, MKDOCS-013, and MKDOCS-014 now carry `applies_to: docs_repos`,
+     which maps to `publishesDocs: true` in the repo catalog. Repos that contain
+     an `mkdocs.yml` but do not publish a public documentation site will no longer
+     receive MkDocs findings. MKDOCS-012 (CI includes mkdocs build step) is
+     intentionally excluded from this gate pending its migration to the CI domain.
+     The `publishesDocs` field defaults to false when absent from a catalog entry;
+     repo owners must explicitly set `publishesDocs: true` for repos that deploy
+     to GitHub Pages or another public host.
 
 * feat!(compliance): make TOOL-005 (basedpyright present in dev dependencies)
   non-overridable in `docs/standards-manifest.yaml`. TOOL-005 was the only
