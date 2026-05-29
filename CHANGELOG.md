@@ -172,6 +172,23 @@
   verifier scripts `scripts/check-steering-refs.sh`,
   `scripts/check-steering-parity.sh`, and `scripts/check-steering-secrets.sh`,
   and the shared core directive block to the three steering files.
+* feat(compliance): add CI-067, CI-068, and CI-069 to `docs/standards-manifest.yaml`,
+  three coupled dependency-intake defenses that close the largest AI-era gap in the
+  baseline: an AI agent or Renovate bot auto-merging a zero-day-old malicious,
+  hallucinated, or typosquatted package before any human review. CI-067 (fleet
+  dependency cooldown) requires repos with auto-merge enabled to enforce
+  `minimumReleaseAge >= "3 days"`, satisfiable via the org-level Renovate config or a
+  per-repo `renovate.json` packageRules entry; it generalizes the homelab-only
+  CI-061/CI-064 cooldown to all 44 repos. CI-068 (lockfile integrity) requires uv
+  repos to commit `uv.lock` and install with `uv sync --frozen`, closing the drift
+  window that would let a new release bypass CI-067. CI-069 (dependency existence
+  gate) defends against hallucinated and typosquatted package names via a PyPI
+  registry-age check (Option A) or a maintained allowlist (Option B). All three are
+  introduced at `severity: suggested` per the policy-execution-gap pattern
+  (`feedback_policy_execution_gap.md`); promotion targets are critical (CI-067) and
+  important (CI-068, CI-069) after a fleet sweep confirms 100% reach. Refs
+  `docs/handoffs/standards-review-2026-05-28/04-dependency-intake-defenses.md`.
+
 * feat(manifest): add CI-062 and promote CI-040 in `docs/standards-manifest.yaml`.
   CI-062 (severity important, override-eligible) gates repos with auto-merging
   dependency updates: when Renovate or Dependabot auto-merge is signaled, the
