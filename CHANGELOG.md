@@ -21,6 +21,19 @@
 
 ### Added
 
+* feat(compliance): add CI-070 to `docs/standards-manifest.yaml`. CI-070
+  (severity suggested, override-eligible) flags any GitHub Actions workflow
+  that interpolates attacker-controllable context values directly into a run:
+  shell block. Direct interpolation of fields such as
+  `${{ github.event.issue.title }}` or `${{ github.head_ref }}` substitutes
+  raw attacker-supplied text before the shell parser sees it, enabling shell
+  command injection (OWASP CI/CD-SEC-04, OpenSSF Scorecard Dangerous-Workflow).
+  The check is orthogonal to CI-043: CI-043 covers pull_request_target +
+  checkout; CI-070 covers direct-interpolation on any trigger. Introduced as
+  suggested per the policy-execution-gap rollout pattern; promotion target is
+  critical + non-overridable after a fleet sweep confirms 100% clean across
+  all 44 repos. This repo was confirmed clean on 2026-05-28.
+
 * feat(manifest): add CI-062 and promote CI-040 in `docs/standards-manifest.yaml`.
   CI-062 (severity important, override-eligible) gates repos with auto-merging
   dependency updates: when Renovate or Dependabot auto-merge is signaled, the

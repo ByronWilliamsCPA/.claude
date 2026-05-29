@@ -2082,6 +2082,77 @@ checks:
       zen-mcp-server, and xero-practice-management, but coverage data is
       required to confirm they meet the 80% threshold.
 
+  - id: CI-070
+    domain: ci
+    severity: suggested
+    override_eligible: true
+    description: >-
+      No GitHub Actions workflow may interpolate attacker-controllable context
+      values directly into a run: shell block. Direct interpolation
+      (${{ github.event.*.title }}, ${{ github.head_ref }},
+      ${{ github.event.*.body }}, ${{ github.event.*.name }},
+      ${{ github.event.comment.body }}, ${{ github.event.discussion.body }},
+      ${{ github.event.issue.title }}, ${{ github.event.issue.body }},
+      ${{ github.event.pull_request.title }},
+      ${{ github.event.pull_request.body }},
+      ${{ github.event.pull_request.head.ref }},
+      ${{ github.event.pull_request.head.label }},
+      ${{ github.event.review.body }},
+      ${{ github.event.review_comment.body }})
+      substitutes raw attacker-supplied text before the shell parser sees it,
+      enabling shell command injection. The safe pattern routes the value
+      through an env: assignment and references it as a quoted shell variable.
+      This is the canonical GitHub Actions script-injection vector
+      (OWASP CI/CD-SEC-04, OpenSSF Scorecard Dangerous-Workflow). Doubly
+      critical in AI-assisted workflows: injected text in a PR title or branch
+      name can steer agent shell commands executing inside CI.
+    verify: |
+      For each .yml file under .github/workflows/:
+        Extract all run: block contents (single-line and multi-line | blocks).
+        Search extracted text for patterns matching:
+          \$\{\{\s*github\.event\.(issue|pull_request|comment|discussion|review|review_comment)\.(title|body|name)\s*\}\}
+          \$\{\{\s*github\.head_ref\s*\}\}
+          \$\{\{\s*github\.base_ref\s*\}\}
+          \$\{\{\s*github\.event\.pull_request\.head\.(ref|label)\s*\}\}
+        FAIL if any match is found inside a run: block body.
+        The following patterns are NOT a FAIL (safe, non-shell contexts):
+          - The same expression appears in env: key assignments (not inside run:)
+          - The same expression appears in with: key assignments
+          - The same expression appears in if: conditions
+          - github.event.pull_request.number in concurrency.group (integer)
+        Run: grep -rn "\${{ github\.event\." .github/workflows/ | grep -v "env:" |
+          grep -v "with:" | grep -v "if:" | grep -v "concurrency:"
+        Any remaining hits require manual inspection to confirm they are not
+        inside a run: block. FAIL if any are.
+    source_frameworks:
+      - OWASP Top 10 CI/CD-SEC-04 Poisoned Pipeline Execution
+      - OpenSSF Scorecard Dangerous-Workflow
+      - GitHub Security Hardening for GitHub Actions (script injection section)
+      - NIST SSDF PW.4.1
+    notes: >-
+      Added 2026-05-28. CI-043 covers the pull_request_target + checkout
+      pattern; this check covers the orthogonal direct-interpolation pattern.
+      Both are required: a workflow on pull_request (not pull_request_target)
+      that directly interpolates github.head_ref into run: is not caught by
+      CI-043 but is caught by CI-070.
+      Safe remediation for any flagged workflow: move the expression to an
+      env: assignment and reference it as a quoted variable in the run: block.
+      Example bad pattern:
+        run: git checkout "${{ github.head_ref }}"
+      Example safe pattern:
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+        run: git checkout "$HEAD_REF"
+      Per the policy-execution-gap pattern (feedback_policy_execution_gap.md):
+      introduced as severity: suggested with override_eligible: true for the
+      initial rollout. Promotion target: critical + override_eligible: false
+      after a fleet sweep confirms 100% clean across all 44 repos. Do not
+      promote before the sweep; a repo with a pre-existing violation would
+      immediately gate compliance with no remediation path documented.
+      This repo (ByronWilliamsCPA/.claude) was confirmed clean on 2026-05-28:
+      all github.event.* usage is in env: assignments, if: conditions, or
+      concurrency.group (integer context only).
+
   - id: FOUND-015
     domain: foundations
     severity: suggested
