@@ -117,6 +117,8 @@ checks:
     verify: "file_exists: AGENTS.md"
     override_eligible: true
 
+  # RETIRED 2026-05-28: FOUND-011 was removed from the live manifest; this
+  # entry is a historical snapshot from 2026-04-20. Do NOT re-add FOUND-011.
   - id: FOUND-011
     domain: foundations
     severity: suggested

@@ -4,7 +4,71 @@
 
 ### Breaking
 
-* feat!(compliance): make TOOL-005 (basedpyright present in dev dependencies)
+* feat(compliance)!: elevate PC-003 (basedpyright pre-commit hook) from
+  severity important to critical, and invert override_eligible to false in
+  `docs/standards-manifest.yaml`. The hook that runs basedpyright before
+  every commit cannot logically be graded lower than the presence check that
+  confirms the tool is installed. Repos that previously suppressed PC-003 via
+  a compliance-overrides.md entry can no longer do so; they must wire
+  basedpyright into .pre-commit-config.yaml.
+  BREAKING CHANGE: PC-003 override suppression no longer accepted; repos that
+  previously overrode PC-003 must wire basedpyright into pre-commit.
+
+* feat(compliance)!: elevate TOOL-012 (basedpyright strict-mode config) from
+  severity important to critical, and invert override_eligible to false in
+  `docs/standards-manifest.yaml`. Repos must have a [tool.basedpyright] block
+  with typeCheckingMode = strict in pyproject.toml; per-repo suppression is no
+  longer accepted.
+  BREAKING CHANGE: TOOL-012 override suppression no longer accepted; repos must
+  have [tool.basedpyright] with typeCheckingMode = strict in pyproject.toml.
+* feat(compliance)!: retire FOUND-011 (GEMINI.md presence check) from
+  `docs/standards-manifest.yaml`. FOUND-011 required GEMINI.md at the project
+  root, but GEMINI.md has no OpenSSF criterion and no org-satisfaction path.
+  The substantive guidance (create a GEMINI.md with equivalent steering if you
+  use Gemini CLI) is now folded into `AGENTS.md` under a new
+  "## Gemini / Other AI Assistants" section. GEMINI.md is treated as OPTIONAL
+  fleet-wide; no repo is required to create it.
+  BREAKING CHANGE: FOUND-011 finding stream removed. Consumers who relied on
+  FOUND-011 audit output will no longer see findings for missing GEMINI.md files.
+* feat(compliance)!: recalibrate MkDocs compliance domain in
+  `docs/standards-manifest.yaml`. Three breaking changes land in this PR:
+
+  1. **MKDOCS-001 and MKDOCS-006 down-tiered.** Both checks were `severity:
+     critical` with `override_eligible: false`. MKDOCS-001 (site_url set) and
+     MKDOCS-006 (site_name set) are documentation quality failures, not security
+     or data-integrity failures. Both are changed to `severity: important` and
+     `override_eligible: true`. Consumers who treat critical findings as
+     non-bypassable will now see these checks as suppressible via
+     `compliance-overrides.md`. No override entries were in use fleet-wide; no
+     coordinated cleanup is required.
+     BREAKING CHANGE: MKDOCS-001 and MKDOCS-006 are no longer critical/non-
+     overridable. Audit dashboards that alert on critical-severity MkDocs findings
+     must be updated to reflect the new important severity.
+
+  2. **MKDOCS-002, MKDOCS-003, MKDOCS-004, MKDOCS-005, MKDOCS-007, and
+     MKDOCS-008 retired.** These six field-presence checks (repo_url, repo_name,
+     edit_uri, copyright, site_description, site_author) are replaced by two
+     consolidated checks: MKDOCS-013 (source-linking fields: repo_url, repo_name,
+     copyright) and MKDOCS-014 (cosmetic metadata fields: edit_uri,
+     site_description, site_author). The retired IDs remain in the manifest as
+     deprecated stubs (field `deprecated_by` points to the replacement ID) and
+     must not be reused.
+     BREAKING CHANGE: consumers tracking MKDOCS-002 through MKDOCS-008 as
+     individual finding streams will no longer receive those IDs. Migrate to
+     MKDOCS-013 (replaces MKDOCS-002, MKDOCS-003, MKDOCS-005) and MKDOCS-014
+     (replaces MKDOCS-004, MKDOCS-007, MKDOCS-008).
+
+  3. **MkDocs domain gated on publishesDocs flag.** MKDOCS-001 through
+     MKDOCS-011, MKDOCS-013, and MKDOCS-014 now carry `applies_to: docs_repos`,
+     which maps to `publishesDocs: true` in the repo catalog. Repos that contain
+     an `mkdocs.yml` but do not publish a public documentation site will no longer
+     receive MkDocs findings. MKDOCS-012 (CI includes mkdocs build step) is
+     intentionally excluded from this gate pending its migration to the CI domain.
+     The `publishesDocs` field defaults to false when absent from a catalog entry;
+     repo owners must explicitly set `publishesDocs: true` for repos that deploy
+     to GitHub Pages or another public host.
+
+* feat(compliance)!: make TOOL-005 (basedpyright present in dev dependencies)
   non-overridable in `docs/standards-manifest.yaml`. TOOL-005 was the only
   `critical` check carrying `override_eligible: true`; every other critical
   check is a non-bypassable security or supply-chain control. Inverting the
@@ -19,7 +83,111 @@
   to dev dependencies, or rely on the `not_applicable_when` no-Python-source
   scope.
 
+### Fixed
+
+* fix(compliance): replace incorrect Python-only exemption in TOOL-009 (.qlty/qlty.toml
+  presence) with a documentation-only exemption in `docs/standards-manifest.yaml`.
+  Qlty is a language-agnostic meta-linter wrapping ESLint, ShellCheck, Actionlint,
+  and others; restricting its applicability to Python repos was a drafting error that
+  silently exempt JS/TS, shell-script, and GitHub Actions config repos. The new
+  not_applicable_when clause reads: "repo contains no source files (documentation-only
+  repo)", matching repos that genuinely have no lintable source of any kind.
+
 ### Added
+* feat(compliance): add CI-072 (Codecov patch coverage target gate) to
+  `docs/standards-manifest.yaml`. CI-072 (severity important, override-eligible)
+  asserts that the .codecov.yml or codecov.yaml config declares patch: >= 90,
+  enforcing the 90% patch coverage target stated in CLAUDE.md alongside the
+  existing 80% line and 70% branch floors. CI-054 gates actual Codecov data;
+  CI-072 gates the config declaration (analogous to CI-010 for the overall
+  threshold). The not_applicable_when scope matches CI-054 exactly: non-Python
+  repos and repos without a Codecov config file are exempt.
+
+
+* feat(compliance): add CI-071 to `docs/standards-manifest.yaml`. CI-071
+  (severity suggested, override-eligible) audits job-level permission escalation:
+  when a workflow declares a narrow top-level permissions block and a job then
+  grants broader write or admin permissions at the job level, the top-level
+  restriction is defeated. The check flags (does not auto-fail) any job-level
+  block that grants scopes not required by that job's steps. Release jobs
+  (contents: write), SLSA/attestation jobs (id-token: write), and GHCR publish
+  (packages: write) are documented as known-required grants; all other elevated
+  grants require a comment-justification above the permissions block. Introduced
+  as suggested per the policy-execution-gap rollout pattern; complementary to
+  CI-033 (top-level block presence), not a replacement.
+
+* feat(compliance): add CI-070 to `docs/standards-manifest.yaml`. CI-070
+  (severity suggested, override-eligible) flags any GitHub Actions workflow
+  that interpolates attacker-controllable context values directly into a run:
+  shell block. Direct interpolation of fields such as
+  `${{ github.event.issue.title }}` or `${{ github.head_ref }}` substitutes
+  raw attacker-supplied text before the shell parser sees it, enabling shell
+  command injection (OWASP CI/CD-SEC-04, OpenSSF Scorecard Dangerous-Workflow).
+  The check is orthogonal to CI-043: CI-043 covers pull_request_target +
+  checkout; CI-070 covers direct-interpolation on any trigger. Introduced as
+  suggested per the policy-execution-gap rollout pattern; promotion target is
+  critical + non-overridable after a fleet sweep confirms 100% clean across
+  all 44 repos. This repo was confirmed clean on 2026-05-28.
+
+* feat(compliance): add OSSF-014 and OSSF-015 in `docs/standards-manifest.yaml`
+  to close two account-posture gaps from the 2026-05-28 standards review.
+  OSSF-014 (severity important, not override-eligible) verifies a manual 2FA
+  attestation for the williaby GitHub user account at `docs/security/2fa-attestation.yaml`:
+  the entry must be present, two_factor_enabled true, confirmed_date within 90
+  days, and renewal_deadline in the future. GitHub does not expose user-account
+  2FA via the org-2FA API that OSSF-007 uses, and the williaby account holds 26
+  of the 44 fleet repos, so a dated attestation file is the sole verifiable
+  record. The attestation file is committed with placeholder values
+  (two_factor_enabled: false) and OSSF-014 is expected to FAIL by design until
+  the owner verifies 2FA on the williaby account and fills the real
+  confirmed_date and renewal_deadline. OSSF-015 (severity important,
+  override-eligible, not_applicable_when no gitleaks/trufflehog CI job) verifies
+  that a secret-scan CI job is registered as a required status check on the
+  default branch ruleset, closing the gap between push-protection coverage and
+  merge-gate coverage; it complements OSSF-008, OSSF-009, CI-029, and CI-007 to
+  form the full secret-scanning gate stack and applies regardless of repo
+  visibility because it checks the CI job, not the GHAS platform scan. Also
+  updates the OSSF-007 notes to reference OSSF-014 and explain the user-account
+  API limitation (description and verify unchanged). Both checks are wired into
+  `.claude/agents/ossf-compliance-auditor.md` (OSSF-015 in the Stage 4 GitHub-API
+  checks, OSSF-014 in the Stage 5 local-file checks) so `/repo-audit` evaluates
+  them rather than leaving them documentation-only. OSSF-015's verify also pins
+  the required-status-check `integration_id` to 15368 (the GitHub Actions app),
+  mirroring CI-028, so a same-named check from a different app cannot spoof the
+  gate. The attestation file records `confirmed_by` as a GitHub username and
+  omits any password-manager vault or item name, since the file is public.
+
+* feat(compliance): add steering-file integrity checks CLAUDE-011 through
+  CLAUDE-014 to the `claude_docs` domain in `docs/standards-manifest.yaml`.
+  CLAUDE-011 (important) verifies that file paths and commands referenced in
+  CLAUDE.md and AGENTS.md resolve against the repository tree, catching stale
+  references left by a rename or deletion. CLAUDE-012 (important) enforces
+  parity of a sentinel-delimited core directive block (`<!-- core-directives:v1 -->`)
+  across AGENTS.md, CLAUDE.md, and GEMINI.md, skipping any steering file that
+  is absent so an optional GEMINI.md does not force a failure. CLAUDE-013
+  (suggested) requires an OWASP LLM01 prompt-injection directive instructing
+  agents to treat issue, PR, and external content as untrusted data. CLAUDE-014
+  (suggested) scans the four config-surface files for embedded credentials as a
+  defense-in-depth complement to the pre-commit secret hooks. Adds the three
+  verifier scripts `scripts/check-steering-refs.sh`,
+  `scripts/check-steering-parity.sh`, and `scripts/check-steering-secrets.sh`,
+  and the shared core directive block to the three steering files.
+* feat(compliance): add CI-067, CI-068, and CI-069 to `docs/standards-manifest.yaml`,
+  three coupled dependency-intake defenses that close the largest AI-era gap in the
+  baseline: an AI agent or Renovate bot auto-merging a zero-day-old malicious,
+  hallucinated, or typosquatted package before any human review. CI-067 (fleet
+  dependency cooldown) requires repos with auto-merge enabled to enforce
+  `minimumReleaseAge >= "3 days"`, satisfiable via the org-level Renovate config or a
+  per-repo `renovate.json` packageRules entry; it generalizes the homelab-only
+  CI-061/CI-064 cooldown to all 44 repos. CI-068 (lockfile integrity) requires uv
+  repos to commit `uv.lock` and install with `uv sync --frozen`, closing the drift
+  window that would let a new release bypass CI-067. CI-069 (dependency existence
+  gate) defends against hallucinated and typosquatted package names via a PyPI
+  registry-age check (Option A) or a maintained allowlist (Option B). All three are
+  introduced at `severity: suggested` per the policy-execution-gap pattern
+  (`feedback_policy_execution_gap.md`); promotion targets are critical (CI-067) and
+  important (CI-068, CI-069) after a fleet sweep confirms 100% reach. Refs
+  `docs/handoffs/standards-review-2026-05-28/04-dependency-intake-defenses.md`.
 
 * feat(manifest): add CI-062 and promote CI-040 in `docs/standards-manifest.yaml`.
   CI-062 (severity important, override-eligible) gates repos with auto-merging
@@ -87,6 +255,40 @@
 
 ### Fixed
 
+* fix(compliance): tighten verify directives for CI-006, CI-031, and CI-019
+  in `docs/standards-manifest.yaml`. All three checks were passing cases their
+  descriptions explicitly prohibited.
+  CI-006 previously used content_present: harden-runner (fires on any
+  occurrence anywhere in the file); updated to a per-job position assertion
+  that FAILs when harden-runner is not the first step in a job's steps: list,
+  and skips reusable-workflow callee jobs.
+  CI-031 previously accepted any deferral comment with a target date regardless
+  of whether that date had lapsed; updated to also FAIL when the deferral
+  target date is in the past (expired deferral). Deferral format anchored to
+  "# deferral: YYYY-MM-DD" or "# until: YYYY-MM-DD".
+  CI-019 previously checked only that attestations: true was present; updated
+  to also verify that the publish job carries id-token: write in its
+  permissions block and does not pass a PYPI_TOKEN or password: fallback,
+  which would route the publish through the API token path instead of OIDC.
+* fix(compliance): mechanize CI-050 security-regression verify and promote
+  severity from suggested to important in `docs/standards-manifest.yaml`. The
+  previous verify field required manual review with no automated actor in a
+  solo-dev no-reviewer model. Replaced with a scriptable
+  `git_commit_association` assertion: CHANGELOG entries matching /CVE-|security
+  fix/i must have at least one `tests/` file in the same commit (inspectable
+  with `git log --name-only --grep`). Severity promoted to important because an
+  automated check carries real enforcement weight.
+
+* fix(compliance): scope OSSF-006 Silver badge check to flagship public repos
+  in `docs/standards-manifest.yaml`. Added a `not_applicable_when` clause that
+  exempts repos not designated flagship in the org catalog
+  (docs/reference/github-repos.md). A flagship repo has external_contributors
+  > 0 in the past 12 months OR is explicitly tagged `flagship: true` in the
+  catalog. The check already exempted private repos via `visibility_required:
+  public`; this narrows the remaining scope to repos where badge-application
+  effort yields external signal. Updated the description to reflect the scoped
+  applicability.
+
 * fix(compliance): clear the inert `override_eligible: false` flag on PC-016 and
   CI-064 in `docs/standards-manifest.yaml`, setting both to `true`. Both are
   `suggested` (advisory, non-blocking) checks, so marking them non-overridable was
@@ -95,6 +297,16 @@
   remain scoped to the homelab-infra repo through their `not_applicable_when`
   clauses; only their suppressibility changed, not their applicability. These were
   two of the three violations the new manifest self-consistency gate now prevents.
+
+* fix(compliance): harden the manifest self-consistency gate and refresh its
+  metadata following PR #162 review. `test_verify_non_empty` now rejects
+  non-string `verify` values (`null`, `{}`) that `str()` coercion let pass;
+  `_load_checks` raises explicit, path-bearing errors instead of an opaque
+  collection failure when the manifest is missing or malformed; `description`
+  is now a required field; and `test_ids_unique` no longer raises a bare
+  `KeyError` on a missing `id`. Also corrects the malformed breaking-change
+  token (`feat!(compliance):`) to `feat(compliance)!:` across all five
+  `### Breaking` entries in this changelog.
 
 * fix(ci): pin `step-security/harden-runner` to v2.19.3 in block-mode workflows
   and add defensive `include-hidden-files: true` to v7 `upload-artifact` steps.
