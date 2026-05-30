@@ -9,9 +9,10 @@ class Settings(BaseModel):
     """Application configuration settings.
 
     Attributes:
-        log_level: Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL).
-        json_logs: Whether to output logs in JSON format.
-        include_timestamp: Whether to include timestamps in log output.
+        log_level (Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]):
+            Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL).
+        json_logs (bool): Whether to output logs in JSON format.
+        include_timestamp (bool): Whether to include timestamps in log output.
     """
 
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO"

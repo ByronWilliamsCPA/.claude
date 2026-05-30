@@ -100,10 +100,11 @@ def render(jsonl_path: Path | None = None, md_path: Path | None = None) -> None:
     """Read JSONL at jsonl_path and write a Markdown view to md_path.
 
     Args:
-        jsonl_path: Optional path to the source JSONL log. Defaults to
-            the production master log under docs/compliance-reports/.
-        md_path: Optional path to the output Markdown view. Defaults to
-            the production master-log.md alongside the JSONL.
+        jsonl_path (Path | None): Optional path to the source JSONL log.
+            Defaults to the production master log under
+            docs/compliance-reports/.
+        md_path (Path | None): Optional path to the output Markdown view.
+            Defaults to the production master-log.md alongside the JSONL.
 
     The output is idempotent except for the rendered-at timestamp in
     the footer; rendering the same input twice produces identical

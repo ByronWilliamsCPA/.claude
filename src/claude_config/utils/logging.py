@@ -14,9 +14,9 @@ def setup_logging(
     """Configure structlog for the application.
 
     Args:
-        level: Logging level string (DEBUG, INFO, WARNING, ERROR, CRITICAL).
-        json_logs: If True, use JSON renderer; otherwise use console renderer.
-        include_timestamp: If True, include ISO timestamp in log records.
+        level (str): Logging level string (DEBUG, INFO, WARNING, ERROR, CRITICAL).
+        json_logs (bool): If True, use JSON renderer; otherwise use console renderer.
+        include_timestamp (bool): If True, include ISO timestamp in log records.
     """
     logging.basicConfig(level=getattr(logging, level, logging.INFO))
 
@@ -48,10 +48,10 @@ def get_logger(name: str) -> Any:
     """Return a structlog logger bound to the given name.
 
     Args:
-        name: Logger name, typically the module name.
+        name (str): Logger name, typically the module name.
 
     Returns:
-        A structlog BoundLogger instance.
+        Any: A structlog BoundLogger instance.
     """
     return structlog.get_logger(name)
 
@@ -66,11 +66,11 @@ def log_performance(
     """Log a performance metric.
 
     Args:
-        logger: Logger instance to write to.
-        operation: Name of the operation being measured.
-        duration_ms: Duration in milliseconds (rounded to 2 decimal places).
-        success: Whether the operation succeeded.
-        **kwargs: Additional key-value pairs to include in the log entry.
+        logger (Any): Logger instance to write to.
+        operation (str): Name of the operation being measured.
+        duration_ms (float): Duration in milliseconds (rounded to 2 decimal places).
+        success (bool): Whether the operation succeeded.
+        **kwargs (Any): Additional key-value pairs to include in the log entry.
     """
     logger.info(
         "performance",

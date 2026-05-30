@@ -49,10 +49,10 @@ def __getattr__(name: str) -> Any:
     """Resolve a public export lazily on first access.
 
     Args:
-        name: Attribute requested from the ``claude_config`` package.
+        name (str): Attribute requested from the ``claude_config`` package.
 
     Returns:
-        The named object imported from its defining module.
+        Any: The named object imported from its defining module.
 
     Raises:
         AttributeError: If ``name`` is not a known public export.
@@ -68,8 +68,8 @@ def __dir__() -> list[str]:
     """Return public attribute names so lazy exports stay discoverable.
 
     Returns:
-        Sorted module globals combined with the lazily exported public
-        names, so :pep:`562` exports appear in ``dir()`` and REPL
-        tab-completion despite not being eagerly bound.
+        list[str]: Sorted module globals combined with the lazily exported
+            public names, so :pep:`562` exports appear in ``dir()`` and REPL
+            tab-completion despite not being eagerly bound.
     """
     return sorted({*globals(), *__all__})

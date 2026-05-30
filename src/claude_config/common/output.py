@@ -15,7 +15,7 @@ def out(message: str = "") -> None:
     """Write ``message`` and a trailing newline to standard output.
 
     Args:
-        message: Payload line to emit to stdout.
+        message (str): Payload line to emit to stdout.
     """
     sys.stdout.write(f"{message}\n")
 
@@ -24,6 +24,6 @@ def err(message: str = "") -> None:
     """Write ``message`` and a trailing newline to standard error.
 
     Args:
-        message: Diagnostic line to emit to stderr.
+        message (str): Diagnostic line to emit to stderr.
     """
     sys.stderr.write(f"{message}\n")
