@@ -9,18 +9,16 @@ from __future__ import annotations
 
 import argparse
 from collections import defaultdict
+from collections.abc import Mapping
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, cast
+from typing import Any
 
 from claude_config.compliance.log_common import (
     load_entries,
     repo_root_from,
     resolve_canonical_per_key,
 )
-
-if TYPE_CHECKING:
-    from collections.abc import Mapping
 
 _REPO_ROOT = repo_root_from(Path(__file__))
 DEFAULT_JSONL = _REPO_ROOT / "docs" / "compliance-reports" / "master-log.jsonl"
@@ -81,7 +79,10 @@ def _format_month_section(month: str, entries: list[dict[str, Any]]) -> str:
     )
 
     for e in by_date_then_repo:
-        totals = cast("Mapping[str, int]", e.get("totals") or {})
+        raw_totals = e.get("totals")
+        totals: Mapping[str, int] = (
+            raw_totals if isinstance(raw_totals, Mapping) else {}
+        )
         flag = "yes" if e.get("reconciled") else ""
         link = e.get("links", {}).get("lessons_learned", "")
         report = f"[report]({link})" if link else ""
