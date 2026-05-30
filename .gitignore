@@ -341,3 +341,6 @@ docs/reference/repo-cleanup-tracking.csv
 
 # Branch-protection backup snapshots (created by Track 5 backup loop)
 backups/
+
+# Session usage reports (contain local /home paths and verbatim session text)
+session-report-*.html
