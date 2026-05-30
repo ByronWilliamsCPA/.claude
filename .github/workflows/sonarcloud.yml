@@ -39,6 +39,23 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: uv sync --frozen --extra dev
+
+      - name: Generate coverage report for SonarCloud
+        # pytest addopts emit coverage.xml at the repo root; SonarCloud ingests
+        # it via sonar.python.coverage.reportPaths in sonar-project.properties.
+        # Without this step Sonar has no coverage and reports 0% on new code.
+        run: uv run pytest --cov-report=xml
+
       - name: SonarCloud Scan
         if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         uses: SonarSource/sonarcloud-github-action@ffc3010689be73b8e5ae0c57ce35968afd7909e8 # v5.0.0
