@@ -111,7 +111,21 @@ def test_resolve_canonical_treats_empty_string_supersede_as_superseded(
     assert resolve_canonical_per_key([superseded_with_empty]) == []
 
 
-def test_repo_root_from_resolves_two_levels_up(tmp_path: Path) -> None:
+def test_repo_root_from_finds_pyproject_marker(tmp_path: Path) -> None:
+    from claude_config.compliance.log_common import repo_root_from
+
+    (tmp_path / "pyproject.toml").write_text("[project]\nname = 'x'\n")
+    nested = tmp_path / "src" / "claude_config" / "compliance"
+    nested.mkdir(parents=True)
+    module = nested / "log_common.py"
+    module.write_text("# placeholder")
+
+    assert repo_root_from(module) == tmp_path
+
+
+def test_repo_root_from_raises_when_no_marker(tmp_path: Path) -> None:
+    import pytest
+
     from claude_config.compliance.log_common import repo_root_from
 
     scripts_dir = tmp_path / "scripts"
@@ -119,4 +133,5 @@ def test_repo_root_from_resolves_two_levels_up(tmp_path: Path) -> None:
     fake_script = scripts_dir / "fake_script.py"
     fake_script.write_text("# placeholder")
 
-    assert repo_root_from(fake_script) == tmp_path
+    with pytest.raises(FileNotFoundError, match="pyproject.toml"):
+        repo_root_from(fake_script)

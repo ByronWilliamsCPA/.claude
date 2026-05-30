@@ -38,19 +38,35 @@ def repo_root_from(script_path: Path) -> Path:
 
     Returns:
         The nearest ancestor directory that contains ``pyproject.toml``.
-        When no marker is found, falls back to ``resolved.parent.parent``,
-        which preserves the historical behavior for callers under
-        ``scripts/``.
+
+    Raises:
+        FileNotFoundError: If no ``pyproject.toml`` marker exists in any
+            ancestor. Every real caller (the renderer under
+            ``src/claude_config/compliance/`` and the shims under
+            ``scripts/``) resolves inside the repo, whose root carries
+            ``pyproject.toml``, so a missing marker signals a broken
+            deployment. Failing loudly is preferred to silently rendering
+            into a guessed directory.
     """
     resolved = script_path.resolve()
     for parent in resolved.parents:
         if (parent / "pyproject.toml").is_file():
             return parent
-    return resolved.parent.parent
+    msg = f"repo root (pyproject.toml) not found above {resolved}"
+    raise FileNotFoundError(msg)
 
 
 def make_dedupe_key(entry: dict[str, Any]) -> DedupeKey:
-    """Return ``(session_date, repo)`` for use as a dedupe key."""
+    """Return ``(session_date, repo)`` for use as a dedupe key.
+
+    Args:
+        entry: Parsed session entry; must carry ``session_date`` and
+            ``repo`` keys.
+
+    Returns:
+        The ``(session_date, repo)`` tuple identifying the entry's dedupe
+        group.
+    """
     return (entry["session_date"], entry["repo"])
 
 
