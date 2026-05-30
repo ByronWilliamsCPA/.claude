@@ -82,8 +82,10 @@ def _format_month_section(month: str, entries: list[dict[str, Any]]) -> str:
         flag = "yes" if e.get("reconciled") else ""
         link = e.get("links", {}).get("lessons_learned", "")
         report = f"[report]({link})" if link else ""
-        crit, imp = t.get("critical", 0), t.get("important", 0)
-        sugg, cand = t.get("suggested", 0), t.get("unclassified_candidates", 0)
+        crit = int(t.get("critical", 0))
+        imp = int(t.get("important", 0))
+        sugg = int(t.get("suggested", 0))
+        cand = int(t.get("unclassified_candidates", 0))
         row = f"| {e['session_date']} | {e['repo']} | {e['audit_mode']} | {crit} | {imp} | {sugg} | {cand} | {flag} | {report} |"
         lines.append(row)
 

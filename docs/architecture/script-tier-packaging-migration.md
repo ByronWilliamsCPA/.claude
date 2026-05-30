@@ -177,8 +177,9 @@ helper-only (no `main()`), so it has no shim and no entry point.
 | pr-review-reminder.py | 174 | reminders/pr_review.py | yes | claude-pr-review-reminder |
 
 All 17 runnable scripts already expose `def main(` plus a `__main__` guard (verified
-2026-05-29), so the shim contract `raise SystemExit(main())` requires no signature change to
-the logic. `main()` keeps reading `sys.argv` as it does today.
+2026-05-29), so the shim contract (`raise SystemExit(main())` for int-returning mains, or a
+direct `main()` call for those returning `None`, as the render shim does) requires no
+signature change to the logic. `main()` keeps reading `sys.argv` as it does today.
 
 ## 6. Shared layer API (folds in ARCH-02, ARCH-05, ARCH-06)
 

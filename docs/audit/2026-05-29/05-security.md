@@ -147,9 +147,9 @@ Grep across all non-venv `.py` files found no usage of `pickle.load`, `os.system
 
 ---
 
-### SEC-09 - Dependency scan: no CVEs found in locked versions
+### SEC-09 - Dependency scan: one advisory, dev-only and already accepted
 
-Versions from `uv.lock` checked against knowledge base (cutoff August 2025):
+`uv run pip-audit` (pip-audit 2.9.0) was executed against the locked tree. It found one known vulnerability: `py` 1.11.0, `PYSEC-2022-42969`, pulled dev-only via `interrogate`. This is the disputed, unreachable-in-this-usage advisory already documented and accepted in DEP-02 (dependencies report); no fix version is adopted upstream. No other package was flagged, and `claude-config` itself is skipped (not published to PyPI). The manually cross-checked runtime packages below are confirmed clean by the same scan:
 
 | Package | Locked version | Status |
 |---------|---------------|--------|
@@ -162,7 +162,7 @@ Versions from `uv.lock` checked against knowledge base (cutoff August 2025):
 | jinja2 | 3.1.6 | No known CVE |
 | tornado | 6.5.5 | No known CVE |
 
-`pip-audit` binary was not available in the environment; no automated scan was run. Manual cross-check found no confirmed CVEs for the locked versions above.
+Action: none required. The single advisory (`py` 1.11.0) is dev-only and accepted under DEP-02; re-run `uv run pip-audit` on any dependency change.
 
 ---
 
@@ -275,7 +275,7 @@ Versions from `uv.lock` checked against knowledge base (cutoff August 2025):
   },
   {
     "id": "SEC-09",
-    "title": "Dependency scan: no CVEs confirmed in locked versions",
+    "title": "Dependency scan: one dev-only advisory (py 1.11.0), accepted",
     "domain": "security",
     "severity": "low",
     "effort": "S",
@@ -283,8 +283,8 @@ Versions from `uv.lock` checked against knowledge base (cutoff August 2025):
       "uv.lock",
       "pyproject.toml"
     ],
-    "evidence": "Versions from uv.lock for cryptography 46.0.7, certifi 2026.2.25, urllib3 2.7.0, requests 2.33.1, pydantic 2.12.5, setuptools 82.0.1, jinja2 3.1.6, tornado 6.5.5 cross-checked against knowledge base. No confirmed CVEs. pip-audit binary unavailable; automated scan not run.",
-    "recommendation": "Restore pip-audit to the pre-commit environment so automated scanning runs on every dependency change. See the comment in pyproject.toml about the 2.10 skip-editable workaround.",
+    "evidence": "uv run pip-audit (2.9.0) found 1 known vulnerability: py 1.11.0 PYSEC-2022-42969, dev-only via interrogate, the disputed/unreachable advisory already accepted in DEP-02. No other package flagged; claude-config skipped (not on PyPI). Runtime packages cryptography 46.0.7, certifi 2026.2.25, urllib3 2.7.0, requests 2.33.1, pydantic 2.12.5, setuptools 82.0.1, jinja2 3.1.6, tornado 6.5.5 confirmed clean.",
+    "recommendation": "No action; py 1.11.0 is dev-only and accepted under DEP-02. Re-run uv run pip-audit on any dependency change.",
     "cve": ""
   }
 ]

@@ -9,7 +9,7 @@ tags:
   - analysis
 ---
 
-The primary entry docs (README, CLAUDE.md) have zero broken internal links and `docs/getting-started/install.md` is accurate and complete. The problems cluster in three places: the README Quick Start omits the submodule and setup steps that the install guide documents (so a copy-paste Quick Start leaves a broken checkout), `AGENTS-AND-SKILLS.md` uses 83 root-absolute links that 404 on GitHub, and the MkDocs strict build has 85-plus pages that are neither in nav nor excluded. Several count claims (submodules, permissions, agents) have drifted from reality.
+The primary entry docs (README, CLAUDE.md) have zero broken internal links, and `docs/getting-started/install.md` carries the one correct full setup sequence (though its submodule count is stale; see DOC-05). The problems cluster in three places: the README Quick Start omits the submodule and setup steps that the install guide documents (so a copy-paste Quick Start leaves a broken checkout), `AGENTS-AND-SKILLS.md` uses 83 root-absolute links that 404 on GitHub, and the MkDocs strict build has 85-plus pages that are neither in nav nor excluded. Several count claims (submodules, permissions, agents) have drifted from reality.
 
 ## DOC-01 - README Quick Start omits submodule init and setup.sh
 
@@ -70,7 +70,7 @@ The primary entry docs (README, CLAUDE.md) have zero broken internal links and `
 ## Clean areas
 
 - README and CLAUDE.md internal links: 0 broken. All 39 MkDocs nav targets that are listed resolve.
-- Frontmatter present on all non-vendored docs. `docs/getting-started/install.md` is accurate and complete; all referenced scripts and paths exist.
+- Frontmatter present on all non-vendored docs. `docs/getting-started/install.md` has the correct setup sequence and all referenced scripts and paths exist, apart from the stale submodule count flagged in DOC-05.
 
 ## Machine-readable findings
 
