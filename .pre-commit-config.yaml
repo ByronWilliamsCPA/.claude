@@ -229,7 +229,7 @@ repos:
 
       - id: manifest-consistency
         name: Manifest self-consistency check
-        entry: uv run pytest tests/unit/test_manifest_consistency.py -q
+        entry: uv run pytest tests/unit/test_manifest_consistency.py -q --no-cov
         language: system
         files: ^docs/standards-manifest\.yaml$
         pass_filenames: false
