@@ -51,7 +51,11 @@ jobs:
         run: uv sync --frozen --extra dev
 
       - name: Structural fixture assertions
-        run: uv run pytest tests/integration/test_auditor_regression.py -v
+        # --no-cov: this job runs a single integration test file, so the repo-wide
+        # --cov-fail-under in pyproject addopts would measure src/ coverage (near zero
+        # here) and fail the gate even though all fixture assertions pass. Coverage of
+        # src/ is enforced by the main test jobs, not this targeted fixture run.
+        run: uv run pytest tests/integration/test_auditor_regression.py -v --no-cov
 
       - name: Auditor regression against fixtures
         run: bash scripts/run-auditor-regression.sh
