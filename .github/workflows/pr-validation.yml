@@ -150,7 +150,9 @@ jobs:
 
       - name: Run qlty check
         run: |
-          mapfile -t CHANGED < <(git diff --name-only "origin/$GITHUB_BASE_REF")
+          # --diff-filter=ACMR excludes Deleted paths; qlty check errors on a
+          # path that no longer exists in the working tree (deletion-only PRs).
+          mapfile -t CHANGED < <(git diff --name-only --diff-filter=ACMR "origin/$GITHUB_BASE_REF")
           if [ "${#CHANGED[@]}" -eq 0 ]; then
             echo "No changed files to check"
             exit 0
