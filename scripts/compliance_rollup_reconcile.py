@@ -23,9 +23,9 @@ from typing import Any
 import yaml
 
 if __name__ == "__main__" and __package__ is None:
-    sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
-from scripts.compliance_log_common import (
+from claude_config.compliance.log_common import (
     SCHEMA_VERSION,
     load_entries,
     make_dedupe_key,
