@@ -11,13 +11,16 @@ import argparse
 from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any, cast
 
 from claude_config.compliance.log_common import (
     load_entries,
     repo_root_from,
     resolve_canonical_per_key,
 )
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
 
 _REPO_ROOT = repo_root_from(Path(__file__))
 DEFAULT_JSONL = _REPO_ROOT / "docs" / "compliance-reports" / "master-log.jsonl"
@@ -78,14 +81,14 @@ def _format_month_section(month: str, entries: list[dict[str, Any]]) -> str:
     )
 
     for e in by_date_then_repo:
-        t = e.get("totals", {})
+        totals = cast("Mapping[str, int]", e.get("totals") or {})
         flag = "yes" if e.get("reconciled") else ""
         link = e.get("links", {}).get("lessons_learned", "")
         report = f"[report]({link})" if link else ""
-        crit = int(t.get("critical", 0))
-        imp = int(t.get("important", 0))
-        sugg = int(t.get("suggested", 0))
-        cand = int(t.get("unclassified_candidates", 0))
+        crit = totals.get("critical", 0)
+        imp = totals.get("important", 0)
+        sugg = totals.get("suggested", 0)
+        cand = totals.get("unclassified_candidates", 0)
         row = f"| {e['session_date']} | {e['repo']} | {e['audit_mode']} | {crit} | {imp} | {sugg} | {cand} | {flag} | {report} |"
         lines.append(row)
 
