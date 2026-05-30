@@ -36,11 +36,12 @@ __all__ = [
 ]
 
 # Public name -> module that defines it. Imported on first attribute access.
+_LOGGING_MODULE = "claude_config.utils.logging"
 _LAZY_EXPORTS: dict[str, str] = {
     "Settings": "claude_config.core.config",
-    "get_logger": "claude_config.utils.logging",
-    "log_performance": "claude_config.utils.logging",
-    "setup_logging": "claude_config.utils.logging",
+    "get_logger": _LOGGING_MODULE,
+    "log_performance": _LOGGING_MODULE,
+    "setup_logging": _LOGGING_MODULE,
 }
 
 
@@ -61,3 +62,14 @@ def __getattr__(name: str) -> Any:
         msg = f"module 'claude_config' has no attribute '{name}'"
         raise AttributeError(msg)
     return getattr(importlib.import_module(module_path), name)
+
+
+def __dir__() -> list[str]:
+    """Return public attribute names so lazy exports stay discoverable.
+
+    Returns:
+        Sorted module globals combined with the lazily exported public
+        names, so :pep:`562` exports appear in ``dir()`` and REPL
+        tab-completion despite not being eagerly bound.
+    """
+    return sorted({*globals(), *__all__})
