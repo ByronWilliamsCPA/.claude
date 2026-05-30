@@ -347,3 +347,6 @@ backups/
 # here (relocated 2026-05-29 per standards-review item 12).
 /ledgerbase/
 /maester-tests/
+
+# Local-only audit snapshots and backlogs (planning artifacts, not committed)
+docs/audit/
