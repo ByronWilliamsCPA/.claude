@@ -65,12 +65,10 @@ def _format_month_section(month: str, entries: list[dict[str, Any]]) -> str:
     """
     lines = [f"\n## {month}\n", ""]
     lines.append(
-        "| Date | Repo | Mode | Critical | Important | Suggested | "
-        "Candidates | Reconciled | Report |"
+        "| Date | Repo | Mode | Critical | Important | Suggested | Candidates | Reconciled | Report |"
     )
     lines.append(
-        "|------|------|------|---------:|----------:|----------:|"
-        "-----------:|:----------:|--------|"
+        "|------|------|------|---------:|----------:|----------:|-----------:|:----------:|--------|"
     )
 
     by_date_then_repo = sorted(
@@ -84,13 +82,10 @@ def _format_month_section(month: str, entries: list[dict[str, Any]]) -> str:
         flag = "yes" if e.get("reconciled") else ""
         link = e.get("links", {}).get("lessons_learned", "")
         report = f"[report]({link})" if link else ""
-        lines.append(
-            f"| {e['session_date']} | {e['repo']} | "
-            f"{e['audit_mode']} | "
-            f"{t.get('critical', 0)} | {t.get('important', 0)} | "
-            f"{t.get('suggested', 0)} | "
-            f"{t.get('unclassified_candidates', 0)} | {flag} | {report} |"
-        )
+        crit, imp = t.get("critical", 0), t.get("important", 0)
+        sugg, cand = t.get("suggested", 0), t.get("unclassified_candidates", 0)
+        row = f"| {e['session_date']} | {e['repo']} | {e['audit_mode']} | {crit} | {imp} | {sugg} | {cand} | {flag} | {report} |"
+        lines.append(row)
 
     return "\n".join(lines) + "\n"
 
@@ -142,8 +137,7 @@ def render(jsonl_path: Path | None = None, md_path: Path | None = None) -> None:
 
     rendered_at = datetime.now(tz=timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
     parts.append(
-        f"\n---\n*Rendered {rendered_at} "
-        f"from {jsonl_path.name} by compliance_log_render.py.*\n"
+        f"\n---\n*Rendered {rendered_at} from {jsonl_path.name} by compliance_log_render.py.*\n"
     )
 
     md_path.parent.mkdir(parents=True, exist_ok=True)

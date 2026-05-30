@@ -116,7 +116,7 @@ Conventions for the raise:
 
 ## 4. Target layout
 
-```
+```text
 src/claude_config/
   common/            # NEW shared layer (folds in ARCH-02, ARCH-05, ARCH-06)
     __init__.py

@@ -20,7 +20,7 @@ Two committed HTML session-report files expose real usernames, hostnames, and fi
 
 **Evidence:**
 
-```
+```bash
 git ls-files session-report-20260521-2145.html session-report-20260521-2204.html
 # both files returned: confirmed tracked
 
