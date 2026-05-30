@@ -538,6 +538,7 @@ arg-type-hints-in-docstring = true
 arg-type-hints-in-signature = true
 skip-checking-raises = false
 require-return-section-when-returning-nothing = false
+require-return-section-when-returning-values = false  # lenient: do not require a Returns section on value-returning functions (matches darglint DAR201-ignored)
 require-yield-section-when-yielding-values = false  # lenient: do not require a Yields section; DOC403 (extra Yields) still fires regardless
 
 # Mutation Testing Configuration (mutmut)
