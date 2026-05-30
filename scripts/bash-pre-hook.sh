@@ -382,8 +382,22 @@ done < <(printf '%s' "$PRE_SCAN" | split_segments)
 #     Fixed by extracting only the "git push ..." segment before any analysis.
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# Bypass 4: git global options between `git` and the subcommand.
+# `git -C <dir> push --force main`, `git -c k=v push -f main`, and
+# `git --git-dir=… push` all defeated the adjacency-based `git push` detection
+# below, skipping the guard entirely (verified live 2026-05-30). Normalize by
+# collapsing `git <globals> push` -> `git push` before any analysis. The
+# arg-taking globals -C and -c consume the following token; the long options
+# take an attached =value. The loop removes multiple stacked globals. The
+# pattern only strips a global when it sits immediately after `git`, so the
+# commit-level `-C` in `git commit -C HEAD` (reuse message) is left untouched.
+FP_CMD=$(printf '%s' "$CMD" | sed -E ':loop
+s/(^|[^[:alnum:]_])git[[:space:]]+(-C[[:space:]]+[^[:space:]]+|-c[[:space:]]+[^[:space:]]+|--git-dir=[^[:space:]]+|--work-tree=[^[:space:]]+|--namespace=[^[:space:]]+|--exec-path=[^[:space:]]+|--bare|-p|-P|--paginate|--no-pager|--no-replace-objects|--literal-pathspecs|--no-optional-locks)[[:space:]]+/\1git /
+tloop')
+
 # Only check force-push for git push commands
-if ! echo "$CMD" | grep -qE 'git\s+push'; then
+if ! echo "$FP_CMD" | grep -qE 'git\s+push'; then
     write_start_marker
     exit 0
 fi
@@ -394,7 +408,7 @@ fi
 # commands (ls; git push, git status && git push, etc.) do not pollute the
 # argument list used for branch extraction below.
 # ---------------------------------------------------------------------------
-PUSH_SEGMENT=$(echo "$CMD" | grep -oE 'git\s+push.*' | tail -1)
+PUSH_SEGMENT=$(echo "$FP_CMD" | grep -oE 'git\s+push.*' | tail -1)
 
 if [[ -z "$PUSH_SEGMENT" ]]; then
     # grep -oE found nothing; fall through to allow
