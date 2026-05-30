@@ -344,3 +344,9 @@ backups/
 
 # Session usage reports (contain local /home paths and verbatim session text)
 session-report-*.html
+
+# Guard against foreign repos accidentally cloned inside this repo.
+# These are full clones of other projects and must live under ~/dev/, not nested
+# here (relocated 2026-05-29 per standards-review item 12).
+/ledgerbase/
+/maester-tests/
