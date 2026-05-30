@@ -181,15 +181,15 @@ coverage rate and catches gradual drift. The lower 80% threshold on `src/` accom
 internal helpers while still catching trend regressions; `scripts/` sits at 85% because utility
 scripts have a flatter call surface and benefit from tighter documentation pressure.
 
-**Docstring argument validation**: `darglint` runs at pre-commit and validates that
-documented `Args`, `Returns`, and `Raises` sections match the actual function signature.
-Strictness: `long` (validates `Args`/`Returns`/`Raises` when a full multi-line docstring is
-present; single-line docstrings are not checked); all parameters must be documented. Excluded:
-`tests/`, `scripts/`, `benchmarks/`, `tools/`, `noxfile.py`, `.claude/skills/`. The `scripts/`
-exclusion is intentional: utility scripts often use `*args`/`**kwargs` patterns where darglint
-produces false positives.
-
-When darglint flags a mismatch, fix the docstring. Do not add a `# noqa` suppression.
+**Docstring argument validation**: `pydoclint` runs at pre-commit and validates that
+documented `Args`, `Returns`, `Yields`, and `Raises` sections match the actual function
+signature. Posture: lenient on missing sections (consistency/excess checks for args, returns,
+and yields) but raises checking is on, so a documented exception that is not raised fails, and
+a raised exception that is not documented fails (DOC501/DOC502). Type hints in documented args
+are required (arg-type-hints-in-docstring). Configured in `[tool.pydoclint]` via option flags
+rather than a per-code ignore list. Excluded: `tests/`, `scripts/`, `benchmarks/`, `tools/`,
+`noxfile.py`, `.claude/skills/`. The `scripts/` exclusion is intentional: utility scripts often
+use `*args`/`**kwargs` patterns where the validator produces false positives.
 
 ### CI / Compatibility
 
