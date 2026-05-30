@@ -51,10 +51,13 @@ jobs:
         run: uv sync --frozen --extra dev
 
       - name: Generate coverage report for SonarCloud
-        # pytest addopts emit coverage.xml at the repo root; SonarCloud ingests
-        # it via sonar.python.coverage.reportPaths in sonar-project.properties.
-        # Without this step Sonar has no coverage and reports 0% on new code.
-        run: uv run pytest --cov-report=xml
+        # Guarded to match the SonarCloud Scan step below: on fork PRs the scan
+        # is skipped (no SONAR_TOKEN), so running the full suite here would only
+        # burn CI minutes. pytest addopts emit coverage.xml at the repo root,
+        # which SonarCloud ingests via sonar.python.coverage.reportPaths; without
+        # this step Sonar has no coverage and reports 0% on new code.
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        run: uv run pytest
 
       - name: SonarCloud Scan
         if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
