@@ -51,7 +51,7 @@ def sample_entry() -> dict:
 
 
 def test_renders_empty_for_header_only_file(tmp_path: Path) -> None:
-    from scripts.compliance_log_render import render
+    from claude_config.compliance.log_render import render
 
     jsonl = tmp_path / "master-log.jsonl"
     md = tmp_path / "master-log.md"
@@ -69,7 +69,7 @@ def test_renders_empty_for_header_only_file(tmp_path: Path) -> None:
 def test_renders_single_entry_with_summary_header(
     tmp_path: Path, sample_entry: dict
 ) -> None:
-    from scripts.compliance_log_render import render
+    from claude_config.compliance.log_render import render
 
     jsonl = tmp_path / "master-log.jsonl"
     md = tmp_path / "master-log.md"
@@ -87,7 +87,7 @@ def test_renders_single_entry_with_summary_header(
 def test_renders_reverse_chronological_months(
     tmp_path: Path, sample_entry: dict
 ) -> None:
-    from scripts.compliance_log_render import render
+    from claude_config.compliance.log_render import render
 
     older = {
         **sample_entry,
@@ -116,7 +116,7 @@ def test_renders_reverse_chronological_months(
 def test_renders_only_canonical_entry_when_superseded(
     tmp_path: Path, sample_entry: dict
 ) -> None:
-    from scripts.compliance_log_render import render
+    from claude_config.compliance.log_render import render
 
     old = {**sample_entry, "session_id": "old", "superseded_by": "new"}
     new = {**sample_entry, "session_id": "new"}
@@ -135,7 +135,7 @@ def test_renders_only_canonical_entry_when_superseded(
 def test_renders_reconciled_marker_when_present(
     tmp_path: Path, sample_entry: dict
 ) -> None:
-    from scripts.compliance_log_render import render
+    from claude_config.compliance.log_render import render
 
     reconciled = {**sample_entry, "reconciled": True}
     jsonl = tmp_path / "master-log.jsonl"
@@ -159,7 +159,7 @@ def test_renders_reconciled_marker_when_present(
 def test_does_not_render_reconciled_marker_when_absent(
     tmp_path: Path, sample_entry: dict
 ) -> None:
-    from scripts.compliance_log_render import render
+    from claude_config.compliance.log_render import render
 
     plain = {**sample_entry, "reconciled": False}
     jsonl = tmp_path / "master-log.jsonl"
@@ -197,7 +197,7 @@ def test_render_is_deterministic_modulo_timestamp_footer(
     the only non-deterministic line (the ``*Rendered ...*`` footer)
     from each output, and asserts byte-for-byte equality.
     """
-    from scripts.compliance_log_render import render
+    from claude_config.compliance.log_render import render
 
     jsonl = tmp_path / "master-log.jsonl"
     md1 = tmp_path / "first.md"

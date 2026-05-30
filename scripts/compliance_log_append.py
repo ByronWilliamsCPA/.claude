@@ -33,9 +33,9 @@ from pathlib import Path
 from typing import Any
 
 if __name__ == "__main__" and __package__ is None:
-    sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
-from scripts.compliance_log_common import (
+from claude_config.compliance.log_common import (
     ensure_header,
     load_entries,
     make_dedupe_key,

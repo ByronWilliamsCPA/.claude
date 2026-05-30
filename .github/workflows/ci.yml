@@ -59,7 +59,11 @@ jobs:
       - name: Install dependencies
         run: uv sync --frozen --extra dev
       - name: Validate manifest consistency
-        run: uv run pytest tests/unit/test_manifest_consistency.py -v
+        # --no-cov: this job runs a single validation file, so the repo-wide
+        # --cov-fail-under in pyproject addopts would measure src/ coverage
+        # against one test file and fail. Coverage is enforced by the full
+        # suite in the ci job and the coverage workflow, not here.
+        run: uv run pytest tests/unit/test_manifest_consistency.py -v --no-cov
 
   # ==========================================================================
   # CI Gate: aggregates the CI result; must pass for branch protection
