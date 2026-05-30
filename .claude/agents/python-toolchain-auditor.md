@@ -1,6 +1,6 @@
 ---
 name: python-toolchain-auditor
-description: Python toolchain compliance auditor and remediator. Checks dev dependency presence/absence (ruff, basedpyright, pip-audit, darglint, interrogate), Ruff rule set completeness against PyStrict-aligned codes, BasedPyright config block, qlty config, and target-version setting against TOOL-* checks in the standards manifest.
+description: Python toolchain compliance auditor and remediator. Checks dev dependency presence/absence (ruff, basedpyright, pip-audit, pydoclint, interrogate), Ruff rule set completeness against PyStrict-aligned codes, BasedPyright config block, qlty config, and target-version setting against TOOL-* checks in the standards manifest.
 model: sonnet
 tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
 ---
@@ -28,8 +28,8 @@ Receive the coordinator prompt with: target repo path, list of TOOL-* checks, an
 For `ruff_rules_include`, the required PyStrict-aligned codes are:
 `BLE, EM, SLF, INP, ISC, PGH, RSE, TID, YTT, FA, T10, G, ANN, TCH, FBT, TRY, ERA, FURB, LOG, ASYNC`
 
-- `interrogate_config` checks: when `darglint` or `interrogate` appears in any dev dependency section or in the pre-commit hook IDs (check `.pre-commit-config.yaml` if present), Read `pyproject.toml` and check for a `[tool.interrogate]` section containing a `fail-under` key. If absent, report:
-  - id: `TOOL-NEW-002`, severity: `suggested`, description: `[tool.interrogate] section absent from pyproject.toml despite darglint/interrogate present in dev dependencies or pre-commit hook IDs`, status: `configuration_gap`, current_value: `[tool.interrogate] section not found in pyproject.toml`
+- `interrogate_config` checks: when `pydoclint` or `interrogate` appears in any dev dependency section or in the pre-commit hook IDs (check `.pre-commit-config.yaml` if present), Read `pyproject.toml` and check for a `[tool.interrogate]` section containing a `fail-under` key. If absent, report:
+  - id: `TOOL-NEW-002`, severity: `suggested`, description: `[tool.interrogate] section absent from pyproject.toml despite pydoclint/interrogate present in dev dependencies or pre-commit hook IDs`, status: `configuration_gap`, current_value: `[tool.interrogate] section not found in pyproject.toml`
 
 Return findings with: id, severity, description, status, current_value (list of missing codes for ruff checks, package name for dep checks).
 
