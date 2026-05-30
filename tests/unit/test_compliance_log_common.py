@@ -133,5 +133,5 @@ def test_repo_root_from_raises_when_no_marker(tmp_path: Path) -> None:
     fake_script = scripts_dir / "fake_script.py"
     fake_script.write_text("# placeholder")
 
-    with pytest.raises(FileNotFoundError, match="pyproject.toml"):
+    with pytest.raises(FileNotFoundError, match=r"pyproject\.toml"):
         repo_root_from(fake_script)
