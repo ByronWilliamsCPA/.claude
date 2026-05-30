@@ -169,7 +169,7 @@ def compliance_entry() -> dict[str, Any]:
 
     Includes all fields written by the compliance audit tool. Required fields
     (schema_version, session_date, session_id, repo) are validated by
-    scripts.compliance_log_common.validate_entry.
+    claude_config.compliance.log_common.validate_entry.
 
     Tests that need a different repo, date, or totals should override specific
     keys via spread rather than duplicating this fixture. Nested dicts like

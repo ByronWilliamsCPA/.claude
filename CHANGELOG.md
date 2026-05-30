@@ -93,6 +93,24 @@
   not_applicable_when clause reads: "repo contains no source files (documentation-only
   repo)", matching repos that genuinely have no lintable source of any kind.
 
+* fix(ci): add `--no-cov` to the manifest-consistency validation step in
+  `ci.yml`. The repo-wide `--cov-fail-under` in pyproject addopts was measuring
+  src coverage against a single test file and failing the job.
+
+### Changed
+
+* refactor(compliance): relocate the compliance master-log tooling into the
+  `claude_config` package (ARCH-01 PR1a). `compliance_log_common` and
+  `compliance_log_render` now live under `src/claude_config/compliance/` on the
+  strict ruleset; `scripts/compliance_log_render.py` becomes a path-invoked shim
+  that preserves the `settings.json` allowlist and `RENDERER_SCRIPT` references.
+  Adds `src/claude_config/common/output.py` (byte-stable stdout/stderr writers
+  replacing banned `print`) and makes `claude_config/__init__.py` lazy via
+  PEP 562 so importing a CLI submodule no longer pulls pydantic or structlog.
+* ci(sonar): generate and ingest `coverage.xml` in the SonarCloud workflow so
+  new-code coverage is measured; the coverage step is guarded to skip on fork
+  PRs, matching the scan step.
+
 ### Added
 * feat(compliance): add CI-072 (Codecov patch coverage target gate) to
   `docs/standards-manifest.yaml`. CI-072 (severity important, override-eligible)

@@ -1,12 +1,12 @@
-# scripts/compliance_log_common.py
 """Shared helpers for the compliance master log."""
 
 from __future__ import annotations
 
 import json
-import sys
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Any
+
+from claude_config.common.output import err
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -28,17 +28,45 @@ class SchemaError(ValueError):
 
 
 def repo_root_from(script_path: Path) -> Path:
-    """Resolve the repo root from a script's __file__ path.
+    """Resolve the repo root by searching upward for ``pyproject.toml``.
 
-    Scripts live at <repo>/scripts/*.py. Symlinks under ~/.claude/scripts/
-    resolve to the same physical files, so .resolve().parent.parent
-    yields the repo root in both invocation modes.
+    Args:
+        script_path: A path inside the repository, typically a module's
+            ``__file__``. It is resolved through symlinks first so the
+            search works whether the caller runs from ``~/.claude/`` or a
+            direct clone.
+
+    Returns:
+        The nearest ancestor directory that contains ``pyproject.toml``.
+
+    Raises:
+        FileNotFoundError: If no ``pyproject.toml`` marker exists in any
+            ancestor. Every real caller (the renderer under
+            ``src/claude_config/compliance/`` and the shims under
+            ``scripts/``) resolves inside the repo, whose root carries
+            ``pyproject.toml``, so a missing marker signals a broken
+            deployment. Failing loudly is preferred to silently rendering
+            into a guessed directory.
     """
-    return script_path.resolve().parent.parent
+    resolved = script_path.resolve()
+    for parent in resolved.parents:
+        if (parent / "pyproject.toml").is_file():
+            return parent
+    msg = f"repo root (pyproject.toml) not found above {resolved}"
+    raise FileNotFoundError(msg)
 
 
 def make_dedupe_key(entry: dict[str, Any]) -> DedupeKey:
-    """Return (session_date, repo) for use as a dedupe key."""
+    """Return ``(session_date, repo)`` for use as a dedupe key.
+
+    Args:
+        entry: Parsed session entry; must carry ``session_date`` and
+            ``repo`` keys.
+
+    Returns:
+        The ``(session_date, repo)`` tuple identifying the entry's dedupe
+        group.
+    """
     return (entry["session_date"], entry["repo"])
 
 
@@ -119,7 +147,7 @@ def load_entries(
             msg = f"{jsonl_path}:{line_num}: malformed JSON: {exc}"
             if strict:
                 raise ValueError(msg) from exc
-            print(f"WARNING: {msg}", file=sys.stderr)
+            err(f"WARNING: {msg}")
             continue
         if obj.get("type") == "header":
             continue
@@ -130,13 +158,17 @@ def load_entries(
 def resolve_canonical_per_key(
     entries: list[dict[str, Any]],
 ) -> list[dict[str, Any]]:
-    """Select the canonical entry per (date, repo) key.
+    """Select the canonical entry per ``(session_date, repo)`` key.
 
-    Rules:
-    1. Discard entries whose ``superseded_by`` is non-null.
-    2. Group remaining entries by (session_date, repo).
-    3. Within each group, the canonical entry is the one with the
-       lexicographically greatest ``session_id``.
+    Args:
+        entries: All loaded entries, including any that have been
+            superseded.
+
+    Returns:
+        One canonical entry per ``(session_date, repo)`` group. Entries
+        whose ``superseded_by`` is non-null are discarded first; within
+        each remaining group the entry with the lexicographically
+        greatest ``session_id`` is chosen.
     """
     active = [e for e in entries if e.get("superseded_by") is None]
 
