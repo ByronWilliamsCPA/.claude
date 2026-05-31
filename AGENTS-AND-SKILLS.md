@@ -155,13 +155,13 @@ mode; creates or patches files in remediation mode.
 
 **[python-toolchain-auditor](/.claude/agents/python-toolchain-auditor.md)**
 Compliance auditor and remediator for Python project toolchain configuration. Checks dev dependency
-presence and absence (ruff, basedpyright, pip-audit, darglint, interrogate), Ruff rule set
+presence and absence (ruff, basedpyright, pip-audit, pydoclint, interrogate), Ruff rule set
 completeness against PyStrict-aligned codes, BasedPyright config, qlty setup, and pyproject.toml
 settings against the standards manifest.
 
 **[pre-commit-auditor](/.claude/agents/pre-commit-auditor.md)**
 Compliance auditor and remediator for `.pre-commit-config.yaml`. Checks hook presence against the
-required list (ruff, basedpyright, bandit, detect-secrets, darglint, interrogate, commitizen,
+required list (ruff, basedpyright, bandit, detect-secrets, pydoclint, interrogate, commitizen,
 yamllint, markdownlint, no-em-dash) and validates all rev fields are SHA-pinned.
 
 **[claude-docs-auditor](/.claude/agents/claude-docs-auditor.md)**

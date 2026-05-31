@@ -1,6 +1,6 @@
 ---
 name: pre-commit-auditor
-description: Pre-commit configuration compliance auditor and remediator. Checks .pre-commit-config.yaml presence, required hook inventory (ruff, basedpyright, bandit, detect-secrets or trufflehog, darglint, interrogate, commitizen, yamllint, markdownlint, no-em-dash), and SHA pinning of all rev fields against PC-* checks in the standards manifest.
+description: Pre-commit configuration compliance auditor and remediator. Checks .pre-commit-config.yaml presence, required hook inventory (ruff, basedpyright, bandit, detect-secrets or trufflehog, pydoclint, interrogate, commitizen, yamllint, markdownlint, no-em-dash), and SHA pinning of all rev fields against PC-* checks in the standards manifest.
 model: sonnet
 tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
 ---
@@ -92,7 +92,7 @@ The required hook repositories and their hook IDs are:
 - `https://github.com/PyCQA/bandit`: `bandit`
 - `https://github.com/trufflesecurity/trufflehog`: `trufflehog` (primary secret scanner; PC-005)
 - `https://github.com/Yelp/detect-secrets`: `detect-secrets` with `args: ['--baseline', '.secrets.baseline']` (baseline regression; PC-005 and PC-013)
-- `https://github.com/terrencepreilly/darglint`: `darglint`
+- `https://github.com/jsh9/pydoclint`: `pydoclint`
 - `https://github.com/econchick/interrogate`: `interrogate`
 - `https://github.com/commitizen-tools/commitizen`: `commitizen`
 - `https://github.com/adrienverge/yamllint`: `yamllint`

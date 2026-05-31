@@ -110,8 +110,21 @@
 * ci(sonar): generate and ingest `coverage.xml` in the SonarCloud workflow so
   new-code coverage is measured; the coverage step is guarded to skip on fork
   PRs, matching the scan step.
+* build(deps): replace archived darglint with pydoclint 0.8.4 for docstring
+  argument validation. Swaps the dev dependency and the pre-commit hook (now a
+  SHA-pinned remote hook at `88d83c94`, enforced on pre-commit.ci) and migrates
+  `[tool.darglint]` to `[tool.pydoclint]` (google style, raises checking on for
+  DOC501/DOC502, lenient returns/yields sections, arg type hints required).
+  Retargets the enforcement layer in the same PR so the repo stays compliant
+  with its own standards manifest: the auditor agents, rules, skill, catalog,
+  and repo-compliance reference all move to pydoclint.
 
 ### Added
+* feat(manifest): add TOOL-013 (darglint absent from dependencies) to
+  `docs/standards-manifest.yaml`. Severity important, override-ineligible;
+  mirrors the existing black/mypy/safety absence checks now that pydoclint
+  replaces archived darglint. Skipped for repos without Python source. TOOL-007
+  and PC-006 are retargeted from darglint to pydoclint in the same change.
 * feat(compliance): add CI-072 (Codecov patch coverage target gate) to
   `docs/standards-manifest.yaml`. CI-072 (severity important, override-eligible)
   asserts that the .codecov.yml or codecov.yaml config declares patch: >= 90,

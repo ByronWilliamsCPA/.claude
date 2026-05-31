@@ -96,9 +96,9 @@ The general compliance auditor operates after domain agents complete. It receive
 
 **FOUND (Foundations, 16 checks):** OpenSSF required files (SECURITY.md, CONTRIBUTING.md, CHANGELOG.md), CODEOWNERS, .gitignore entries, pyproject.toml metadata, docs structure, known-vulnerabilities.md, AGENTS.md, GEMINI.md. Recent additions: FOUND-015 (ADR "Security Considerations" section presence under docs/ADRs/ or docs/architecture/, satisfying NIST SSDF PW.2.1) and FOUND-016 (LICENSES/ files contain no unfilled OSI-template placeholders such as `<year>` or `<copyright holders>`, which automated scanners treat as unlicensed).
 
-**TOOL (Toolchain, 12 checks):** Dev dependency presence (ruff, basedpyright, pip-audit, darglint, interrogate), absence of replaced tools (black, mypy, safety), Ruff PyStrict-aligned rule set, BasedPyright strict config, qlty config, target-version.
+**TOOL (Toolchain, 13 checks):** Dev dependency presence (ruff, basedpyright, pip-audit, pydoclint, interrogate), absence of replaced tools (black, mypy, safety, darglint), Ruff PyStrict-aligned rule set, BasedPyright strict config, qlty config, target-version.
 
-**PC (Pre-commit, 16 checks):** Hook presence (ruff, basedpyright, bandit, detect-secrets, darglint, interrogate, commitizen, yamllint, markdownlint, no-em-dash), hook SHA pinning on all rev fields. The manifest now also includes PC-007b (interrogate hook scoped to `src/` at 80% fail-under, complementing PC-007 which scopes to `scripts/` at 85%) and PC-016 (global Renovate config validator, suggested). PC-015 (v42-era renovate-config-validator pin lockstep) was never landed; CI-059 is its structural successor (see manifest header comment).
+**PC (Pre-commit, 16 checks):** Hook presence (ruff, basedpyright, bandit, detect-secrets, pydoclint, interrogate, commitizen, yamllint, markdownlint, no-em-dash), hook SHA pinning on all rev fields. The manifest now also includes PC-007b (interrogate hook scoped to `src/` at 80% fail-under, complementing PC-007 which scopes to `scripts/` at 85%) and PC-016 (global Renovate config validator, suggested). PC-015 (v42-era renovate-config-validator pin lockstep) was never landed; CI-059 is its structural successor (see manifest header comment).
 
 **CI (CI/CD, 64 checks as of 2026-05-26):** Reusable workflow adoption, SHA pinning on all `uses:` references, harden-runner in every job, security scan hardening, required status checks, integration ID pinning, trust-boundary file path restrictions, tag protection rulesets, max file size cap, workflow permissions hygiene, timeout-minutes on all jobs, concurrency groups, dependency review, PR title enforcement, SBOM generation, Python matrix coverage, merge queue trigger, named environments, test result annotations. Recent additions: CI-052 (CodeRabbit gating), CI-053 (mutation testing schedule), CI-054 (live Codecov coverage), CI-055/056/057 (org workflow SHA-pin registry), CI-058/059/060/061 (SBOM caller SHA-pin, Renovate semantic enabledManagers lint, third-party Action SHA pins, Renovate Docker image digest pin), CI-003c (no inline SonarCloud actions in ci.yml), CI-062 (merge_queue rule on main-branch ruleset for auto-merging repos, important; landed via merge-queue rollout PR), and CI-063/064 (per-repo `renovate.json` is a thin overlay rather than a redundant duplicate of global rules; global Renovate config explicit `platformAutomerge`).
 
@@ -128,7 +128,7 @@ Override file format:
 | Check ID | Reason | Approved By | Date |
 |----------|--------|-------------|------|
 | CI-039   | Non-Python repo; matrix CI not applicable | Byron Williams | 2026-05-14 |
-| TOOL-007 | darglint conflicts with NumPy docstring style in this project | Byron Williams | 2026-04-20 |
+| TOOL-009 | Documentation-only repo; qlty config not applicable | Byron Williams | 2026-05-30 |
 ```
 
 The auditing coordinator reads this file before presenting findings and excludes listed check IDs from the output. Overridden checks are reported separately as a suppressed count, not silently dropped.

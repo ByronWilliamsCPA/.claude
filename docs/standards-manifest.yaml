@@ -1,6 +1,6 @@
 # docs/standards-manifest.yaml
 version: "1.0"
-last_updated: "2026-05-28"
+last_updated: "2026-05-30"
 # 2026-05-28: Dependency intake defenses. Added CI-067 (fleet dependency
 # cooldown -- minimum release age >= 3 days on auto-merging repos, suggested),
 # CI-068 (uv.lock committed and installed with --frozen, suggested), and CI-069
@@ -247,6 +247,14 @@ checks:
     override_eligible: false
     not_applicable_when: "repo does not contain Python source files"
 
+  - id: TOOL-013
+    domain: toolchain
+    severity: important
+    description: "darglint absent from dependencies (replaced by pydoclint)"
+    verify: "dep_absent: darglint"
+    override_eligible: false
+    not_applicable_when: "repo does not contain Python source files"
+
   - id: TOOL-005
     domain: toolchain
     severity: critical
@@ -266,8 +274,8 @@ checks:
   - id: TOOL-007
     domain: toolchain
     severity: important
-    description: "darglint present in dev dependencies"
-    verify: "dep_present: darglint"
+    description: "pydoclint present in dev dependencies (replaces archived darglint)"
+    verify: "dep_present: pydoclint"
     override_eligible: true
     not_applicable_when: "repo does not contain Python source files"
 
@@ -368,8 +376,8 @@ checks:
   - id: PC-006
     domain: pre_commit
     severity: important
-    description: "darglint hook present in .pre-commit-config.yaml"
-    verify: "hook_present: .pre-commit-config.yaml, darglint"
+    description: "pydoclint hook present in .pre-commit-config.yaml"
+    verify: "hook_present: .pre-commit-config.yaml, pydoclint"
     override_eligible: true
     not_applicable_when: "repo does not contain Python source files"
 

@@ -17,7 +17,7 @@ user-invocable: true
 Reference for designing, adding, and auditing entries in
 `.pre-commit-config.yaml`. Internal skill: assumes the user's existing
 toolchain (ruff, basedpyright, yamllint, markdownlint, TruffleHog,
-detect-secrets, interrogate, darglint, qlty, pip-audit). The principles
+detect-secrets, interrogate, pydoclint, qlty, pip-audit). The principles
 generalize; the specific hook examples reference this fleet's standards.
 
 ## Authoring decision tree
@@ -78,7 +78,7 @@ Group hooks into tiers so commits stay fast:
   (strict), yamllint, markdownlint, detect-private-key, no-em-dash. Scope
   to staged files only.
 - **Slower checks (pre-commit if budget allows, else pre-push):**
-  TruffleHog (staged form), interrogate, darglint, bandit on changed
+  TruffleHog (staged form), interrogate, pydoclint, bandit on changed
   files, qlty check.
 - **Pre-push only (full sweeps):** `pip-audit` on dependency files,
   `pre-commit run --all-files`, `pytest -x`, full-history secret scans
