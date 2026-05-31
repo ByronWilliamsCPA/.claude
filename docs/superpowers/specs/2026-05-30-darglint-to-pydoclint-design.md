@@ -124,7 +124,7 @@ real per-repo override files.
 The change has no runtime/application component; it is a toolchain and
 enforcement-config migration. The "data flow" is the enforcement topology:
 
-```
+```text
 developer commit ──► pre-commit (local pydoclint hook) ──► blocks on excess-drift
                           │
                           ├─► pre-commit.ci (now runs pydoclint; Decision 2)
