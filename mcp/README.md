@@ -29,6 +29,22 @@ This directory contains Model Context Protocol (MCP) server configuration templa
 - `serena-auto-server.json` - Automated Serena configuration
 - `zapier-server.json` - Workflow automation
 
+### Disabled Servers (`mcp/disabled/`)
+
+The `mcp/disabled/` subdirectory holds server configs that are parked but kept
+for reference. Nothing loads them; each is inert until moved back into `mcp/`
+with the `.disabled` suffix removed.
+
+- `context7-http.json.disabled` - Context7 HTTP transport; superseded by the active stdio Context7 entry, kept as a fallback
+- `context7-sse.json.disabled` - Context7 SSE transport; SSE deprecated upstream
+- `serena-server.json.disabled` / `serena-auto-server.json.disabled` - Serena (manual and auto-start); not in the active loadout, retained for evaluation
+- `dev-tools-servers.json.disabled` - sequential-thinking, git, time bundle; parked pending per-tool review
+- `common-servers.json.2.disabled` - alternate common-servers bundle (perplexity, tavily, context7, sentry); kept while the primary set is active
+- `zapier-server.json.disabled` - Zapier bridge; parked to avoid an idle remote dependency
+
+To re-enable any of these, move the file up to `mcp/`, drop the `.disabled`
+suffix, and restart Claude Code.
+
 ## Required Environment Variables
 
 Many MCP servers require environment variables to function. Ensure these are set in your shell or `.env` files:
