@@ -12,31 +12,27 @@
         <meta name="author" content="Byron Williams">
       
       
-        <link rel="canonical" href="https://claude-config.readthedocs.io/api-reference/">
+        <link rel="canonical" href="https://claude-config.readthedocs.io/superpowers/specs/2026-05-30-darglint-to-pydoclint-design/">
       
       
-        <link rel="prev" href="../reference/mcp/">
-      
-      
-        <link rel="next" href="../contributing/">
       
       
         
       
       
-      <link rel="icon" href="../assets/images/favicon.png">
+      <link rel="icon" href="../../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
-        <title>API Reference - Claude Code Configuration</title>
+        <title>Replace darglint with pydoclint - Claude Code Configuration</title>
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -55,9 +51,9 @@
       
     
     
-      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
     
-    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
   
@@ -92,7 +88,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#core-module" class="md-skip">
+        <a href="#context" class="md-skip">
           Skip to content
         </a>
       
@@ -106,7 +102,7 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href=".." title="Claude Code Configuration" class="md-header__button md-logo" aria-label="Claude Code Configuration" data-md-component="logo">
+    <a href="../../.." title="Claude Code Configuration" class="md-header__button md-logo" aria-label="Claude Code Configuration" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -126,7 +122,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              API Reference
+              Replace darglint with pydoclint
             
           </span>
         </div>
@@ -239,7 +235,7 @@
   
   
     <li class="md-tabs__item">
-      <a href=".." class="md-tabs__link">
+      <a href="../../.." class="md-tabs__link">
         
   
   
@@ -260,7 +256,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../getting-started/" class="md-tabs__link">
+        <a href="../../../getting-started/" class="md-tabs__link">
           
   
   
@@ -282,7 +278,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../architecture/" class="md-tabs__link">
+        <a href="../../../architecture/" class="md-tabs__link">
           
   
   
@@ -300,13 +296,11 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="../reference/" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../../../reference/" class="md-tabs__link">
           
   
   
@@ -328,7 +322,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../contributing/" class="md-tabs__link">
+        <a href="../../../contributing/" class="md-tabs__link">
           
   
   
@@ -350,7 +344,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../project/roadmap/" class="md-tabs__link">
+        <a href="../../../project/roadmap/" class="md-tabs__link">
           
   
   
@@ -386,7 +380,7 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href=".." title="Claude Code Configuration" class="md-nav__button md-logo" aria-label="Claude Code Configuration" data-md-component="logo">
+    <a href="../../.." title="Claude Code Configuration" class="md-nav__button md-logo" aria-label="Claude Code Configuration" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -416,7 +410,7 @@
   
   
     <li class="md-nav__item">
-      <a href=".." class="md-nav__link">
+      <a href="../../.." class="md-nav__link">
         
   
   
@@ -485,7 +479,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../getting-started/" class="md-nav__link ">
+            <a href="../../../getting-started/" class="md-nav__link ">
               
   
   
@@ -536,7 +530,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../getting-started/install/" class="md-nav__link">
+      <a href="../../../getting-started/install/" class="md-nav__link">
         
   
   
@@ -571,7 +565,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../getting-started/first-agent/" class="md-nav__link">
+      <a href="../../../getting-started/first-agent/" class="md-nav__link">
         
   
   
@@ -606,7 +600,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../getting-started/first-skill/" class="md-nav__link">
+      <a href="../../../getting-started/first-skill/" class="md-nav__link">
         
   
   
@@ -641,7 +635,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../getting-started/picking/" class="md-nav__link">
+      <a href="../../../getting-started/picking/" class="md-nav__link">
         
   
   
@@ -676,7 +670,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../getting-started/troubleshooting/" class="md-nav__link">
+      <a href="../../../getting-started/troubleshooting/" class="md-nav__link">
         
   
   
@@ -759,7 +753,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../architecture/" class="md-nav__link ">
+            <a href="../../../architecture/" class="md-nav__link ">
               
   
   
@@ -810,7 +804,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/install-model/" class="md-nav__link">
+      <a href="../../../architecture/install-model/" class="md-nav__link">
         
   
   
@@ -845,7 +839,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/hook-pipeline/" class="md-nav__link">
+      <a href="../../../architecture/hook-pipeline/" class="md-nav__link">
         
   
   
@@ -880,7 +874,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/agent-dispatch/" class="md-nav__link">
+      <a href="../../../architecture/agent-dispatch/" class="md-nav__link">
         
   
   
@@ -915,7 +909,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/mcp-tiered-loading/" class="md-nav__link">
+      <a href="../../../architecture/mcp-tiered-loading/" class="md-nav__link">
         
   
   
@@ -950,7 +944,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/submodule-strategy/" class="md-nav__link">
+      <a href="../../../architecture/submodule-strategy/" class="md-nav__link">
         
   
   
@@ -985,7 +979,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/rules-vs-standards/" class="md-nav__link">
+      <a href="../../../architecture/rules-vs-standards/" class="md-nav__link">
         
   
   
@@ -1020,7 +1014,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/diagrams/" class="md-nav__link">
+      <a href="../../../architecture/diagrams/" class="md-nav__link">
         
   
   
@@ -1094,7 +1088,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../architecture/adr/" class="md-nav__link ">
+            <a href="../../../architecture/adr/" class="md-nav__link ">
               
   
   
@@ -1145,7 +1139,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/adr/ADR-001-two-layer-symlink-install/" class="md-nav__link">
+      <a href="../../../architecture/adr/ADR-001-two-layer-symlink-install/" class="md-nav__link">
         
   
   
@@ -1180,7 +1174,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/adr/ADR-002-hook-composition/" class="md-nav__link">
+      <a href="../../../architecture/adr/ADR-002-hook-composition/" class="md-nav__link">
         
   
   
@@ -1215,7 +1209,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/adr/ADR-003-tiered-mcp-loading/" class="md-nav__link">
+      <a href="../../../architecture/adr/ADR-003-tiered-mcp-loading/" class="md-nav__link">
         
   
   
@@ -1250,7 +1244,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/adr/ADR-004-skill-vs-agent-boundary/" class="md-nav__link">
+      <a href="../../../architecture/adr/ADR-004-skill-vs-agent-boundary/" class="md-nav__link">
         
   
   
@@ -1285,7 +1279,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/adr/ADR-005-submodule-extension-model/" class="md-nav__link">
+      <a href="../../../architecture/adr/ADR-005-submodule-extension-model/" class="md-nav__link">
         
   
   
@@ -1320,7 +1314,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/adr/ADR-006-rules-vs-standards/" class="md-nav__link">
+      <a href="../../../architecture/adr/ADR-006-rules-vs-standards/" class="md-nav__link">
         
   
   
@@ -1355,7 +1349,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/adr/ADR-007-dual-audience-docs/" class="md-nav__link">
+      <a href="../../../architecture/adr/ADR-007-dual-audience-docs/" class="md-nav__link">
         
   
   
@@ -1402,8 +1396,6 @@
       
   
   
-    
-  
   
   
     
@@ -1427,23 +1419,22 @@
     
     
       
-        
-        
-      
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../reference/" class="md-nav__link ">
+            <a href="../../../reference/" class="md-nav__link ">
               
   
   
@@ -1468,13 +1459,13 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1494,7 +1485,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../reference/agents/" class="md-nav__link">
+      <a href="../../../reference/agents/" class="md-nav__link">
         
   
   
@@ -1529,7 +1520,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../reference/skills/" class="md-nav__link">
+      <a href="../../../reference/skills/" class="md-nav__link">
         
   
   
@@ -1564,7 +1555,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../reference/hooks/" class="md-nav__link">
+      <a href="../../../reference/hooks/" class="md-nav__link">
         
   
   
@@ -1599,7 +1590,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../reference/mcp/" class="md-nav__link">
+      <a href="../../../reference/mcp/" class="md-nav__link">
         
   
   
@@ -1631,42 +1622,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    API
-  
-
-    
-  </span>
-  
-  
-    
-  
-  
-    <span class="md-status md-status--published"></span>
-  
-
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../../api-reference/" class="md-nav__link">
         
   
   
@@ -1689,119 +1648,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#core-module" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Core Module
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#claude_config.core.config" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-module"></code>&nbsp;config
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label=" config">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#claude_config.core.config-classes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Classes
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#utils-module" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Utils Module
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Utils Module">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#logging" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Logging
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#claude_config.utils.logging" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-module"></code>&nbsp;logging
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label=" logging">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#claude_config.utils.logging-functions" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Functions
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1858,7 +1704,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../contributing/" class="md-nav__link ">
+            <a href="../../../contributing/" class="md-nav__link ">
               
   
   
@@ -1909,7 +1755,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../contributing/adding-agents/" class="md-nav__link">
+      <a href="../../../contributing/adding-agents/" class="md-nav__link">
         
   
   
@@ -1944,7 +1790,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../contributing/adding-skills/" class="md-nav__link">
+      <a href="../../../contributing/adding-skills/" class="md-nav__link">
         
   
   
@@ -1979,7 +1825,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../contributing/adding-hooks/" class="md-nav__link">
+      <a href="../../../contributing/adding-hooks/" class="md-nav__link">
         
   
   
@@ -2014,7 +1860,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../contributing/writing-adrs/" class="md-nav__link">
+      <a href="../../../contributing/writing-adrs/" class="md-nav__link">
         
   
   
@@ -2049,7 +1895,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../contributing/writing-diagrams/" class="md-nav__link">
+      <a href="../../../contributing/writing-diagrams/" class="md-nav__link">
         
   
   
@@ -2084,7 +1930,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../frontmatter-standard/" class="md-nav__link">
+      <a href="../../../frontmatter-standard/" class="md-nav__link">
         
   
   
@@ -2188,7 +2034,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../project/roadmap/" class="md-nav__link">
+      <a href="../../../project/roadmap/" class="md-nav__link">
         
   
   
@@ -2223,7 +2069,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../project/changelog/" class="md-nav__link">
+      <a href="../../../project/changelog/" class="md-nav__link">
         
   
   
@@ -2258,7 +2104,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../project/license/" class="md-nav__link">
+      <a href="../../../project/license/" class="md-nav__link">
         
   
   
@@ -2318,33 +2164,33 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#core-module" class="md-nav__link">
+  <a href="#context" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Core Module
+        Context
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Context">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#why-pydoclint-not-ruff-doc-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why pydoclint, not Ruff DOC rules
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#claude_config.core.config" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-module"></code>&nbsp;config
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label=" config">
-      <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#claude_config.core.config-classes" class="md-nav__link">
+  <a href="#the-actually-enforced-darglint-profile" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Classes
+        The actually-enforced darglint profile
       
     </span>
   </a>
@@ -2357,22 +2203,55 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#utils-module" class="md-nav__link">
+  <a href="#key-decisions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Utils Module
+        Key decisions
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Utils Module">
+    <nav class="md-nav" aria-label="Key decisions">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#logging" class="md-nav__link">
+  <a href="#decision-1-config-posture-lenient-plus-keep-raises" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Logging
+        Decision 1: config posture = "lenient plus keep raises"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#decision-2-drop-the-hook-from-the-pre-commitci-skip-list" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision 2: drop the hook from the pre-commit.ci skip list
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#decision-3-retire-the-tool-007-numpy-override-after-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision 3: retire the TOOL-007 NumPy override after validation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#decision-4-pr-packaging-approach-b" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision 4: PR packaging = Approach B
       
     </span>
   </a>
@@ -2385,22 +2264,33 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#claude_config.utils.logging" class="md-nav__link">
+  <a href="#scope-the-14-surfaces" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-module"></code>&nbsp;logging
+        Scope: the 14 surfaces
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label=" logging">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architecture-and-data-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Architecture and data flow
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Architecture and data flow">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#claude_config.utils.logging-functions" class="md-nav__link">
+  <a href="#pydoclint-config-translation-phase-1-crux" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Functions
+        pydoclint config translation (Phase 1 crux)
       
     </span>
   </a>
@@ -2409,6 +2299,50 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#validation-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Validation strategy
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-3-propagation-and-fleet-rollout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 3: propagation and fleet rollout
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#risks-and-rollback" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Risks and rollback
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#out-of-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Out of scope
+      
+    </span>
+  </a>
   
 </li>
       
@@ -2432,471 +2366,276 @@
   
 
 
-  <h1>API</h1>
-
-<p>Complete API documentation for Claude Code Configuration.</p>
-<h2 id="core-module">Core Module<a class="headerlink" href="#core-module" title="Permanent link">&para;</a></h2>
-
-
-<div class="doc doc-object doc-module">
-
-
-
-<h2 id="claude_config.core.config" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-module"></code>            <code>claude_config.core.config</code>
-
-
-<a href="#claude_config.core.config" class="headerlink" title="Permanent link">&para;</a></h2>
-
-    <div class="doc doc-contents first">
-
-        <p>Configuration settings for Claude Code projects.</p>
-
-
-
-
-
-
-
-
-
-
-<div class="doc doc-children">
-
-
-
-
-
-
-
-<h3 id="claude_config.core.config-classes">Classes<a href="#claude_config.core.config-classes" class="headerlink" title="Permanent link">&para;</a></h3>
-
-<div class="doc doc-object doc-class">
-
-
-
-<h4 id="claude_config.core.config.Settings" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>Settings</code>
-
-
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-pydantic-model"><code>pydantic-model</code></small>
-  </span>
-
-<a href="#claude_config.core.config.Settings" class="headerlink" title="Permanent link">&para;</a></h4>
-
-
-    <div class="doc doc-contents ">
-            <p class="doc doc-class-bases">
-              Bases: <code><span title="pydantic.BaseModel">BaseModel</span></code></p>
-
-        <p>Application configuration settings.</p>
-
-
-<p><span class="doc-section-title">Attributes:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td><code><span title="claude_config.core.config.Settings.log_level">log_level</span></code></td>
-            <td>
-                  <code><span title="typing.Literal">Literal</span>[&#39;DEBUG&#39;, &#39;INFO&#39;, &#39;WARNING&#39;, &#39;ERROR&#39;, &#39;CRITICAL&#39;]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL).</p>
-              </div>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td><code><span title="claude_config.core.config.Settings.json_logs">json_logs</span></code></td>
-            <td>
-                  <code><span title="bool">bool</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Whether to output logs in JSON format.</p>
-              </div>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td><code><span title="claude_config.core.config.Settings.include_timestamp">include_timestamp</span></code></td>
-            <td>
-                  <code><span title="bool">bool</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Whether to include timestamps in log output.</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-    
-
-        <p>Fields:</p>
-        <ul>
-            <li>
-              <code><span title="claude_config.core.config.Settings.log_level">log_level</span></code>
-                (<code><span title="typing.Literal">Literal</span>[&#39;DEBUG&#39;, &#39;INFO&#39;, &#39;WARNING&#39;, &#39;ERROR&#39;, &#39;CRITICAL&#39;]</code>)
-            </li>
-            <li>
-              <code><span title="claude_config.core.config.Settings.json_logs">json_logs</span></code>
-                (<code><span title="bool">bool</span></code>)
-            </li>
-            <li>
-              <code><span title="claude_config.core.config.Settings.include_timestamp">include_timestamp</span></code>
-                (<code><span title="bool">bool</span></code>)
-            </li>
-        </ul>
-
-
-
-
-<div class="doc doc-children">
-
-
-
-
-
-
-
-
-
-
-
-
-  </div>
-
-    </div>
-
-</div>
-
-
-
-
-  </div>
-
-    </div>
-
-</div><h2 id="utils-module">Utils Module<a class="headerlink" href="#utils-module" title="Permanent link">&para;</a></h2>
-<h3 id="logging">Logging<a class="headerlink" href="#logging" title="Permanent link">&para;</a></h3>
-
-
-<div class="doc doc-object doc-module">
-
-
-
-<h2 id="claude_config.utils.logging" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-module"></code>            <code>claude_config.utils.logging</code>
-
-
-<a href="#claude_config.utils.logging" class="headerlink" title="Permanent link">&para;</a></h2>
-
-    <div class="doc doc-contents first">
-
-        <p>Structured logging utilities using structlog.</p>
-
-
-
-
-
-
-
-
-
-
-<div class="doc doc-children">
-
-
-
-
-
-
-
-
-<h3 id="claude_config.utils.logging-functions">Functions<a href="#claude_config.utils.logging-functions" class="headerlink" title="Permanent link">&para;</a></h3>
-
-<div class="doc doc-object doc-function">
-
-
-<h4 id="claude_config.utils.logging.setup_logging" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <code class="highlight language-python"><span class="n">setup_logging</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="s1">&#39;INFO&#39;</span><span class="p">,</span> <span class="n">json_logs</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">include_timestamp</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></code>
-
-<a href="#claude_config.utils.logging.setup_logging" class="headerlink" title="Permanent link">&para;</a></h4>
-
-
-    <div class="doc doc-contents ">
-
-        <p>Configure structlog for the application.</p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>level</code>
-            </td>
-            <td>
-                  <code><span title="str">str</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Logging level string (DEBUG, INFO, WARNING, ERROR, CRITICAL).</p>
-              </div>
-            </td>
-            <td>
-                  <code>&#39;INFO&#39;</code>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>json_logs</code>
-            </td>
-            <td>
-                  <code><span title="bool">bool</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>If True, use JSON renderer; otherwise use console renderer.</p>
-              </div>
-            </td>
-            <td>
-                  <code>False</code>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>include_timestamp</code>
-            </td>
-            <td>
-                  <code><span title="bool">bool</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>If True, include ISO timestamp in log records.</p>
-              </div>
-            </td>
-            <td>
-                  <code>True</code>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-<h4 id="claude_config.utils.logging.get_logger" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <code class="highlight language-python"><span class="n">get_logger</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></code>
-
-<a href="#claude_config.utils.logging.get_logger" class="headerlink" title="Permanent link">&para;</a></h4>
-
-
-    <div class="doc doc-contents ">
-
-        <p>Return a structlog logger bound to the given name.</p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>name</code>
-            </td>
-            <td>
-                  <code><span title="str">str</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Logger name, typically the module name.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-    <p><span class="doc-section-title">Returns:</span></p>
-    <table>
-      <thead>
-        <tr>
-<th>Name</th>          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-<td><code>Any</code></td>            <td>
-                  <code><span title="typing.Any">Any</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>A structlog BoundLogger instance.</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-<h4 id="claude_config.utils.logging.log_performance" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <code class="highlight language-python"><span class="n">log_performance</span><span class="p">(</span><span class="n">logger</span><span class="p">,</span> <span class="n">operation</span><span class="p">,</span> <span class="n">duration_ms</span><span class="p">,</span> <span class="n">success</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
-
-<a href="#claude_config.utils.logging.log_performance" class="headerlink" title="Permanent link">&para;</a></h4>
-
-
-    <div class="doc doc-contents ">
-
-        <p>Log a performance metric.</p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>logger</code>
-            </td>
-            <td>
-                  <code><span title="typing.Any">Any</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Logger instance to write to.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>operation</code>
-            </td>
-            <td>
-                  <code><span title="str">str</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Name of the operation being measured.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>duration_ms</code>
-            </td>
-            <td>
-                  <code><span title="float">float</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Duration in milliseconds (rounded to 2 decimal places).</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>success</code>
-            </td>
-            <td>
-                  <code><span title="bool">bool</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Whether the operation succeeded.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>**kwargs</code>
-            </td>
-            <td>
-                  <code><span title="typing.Any">Any</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Additional key-value pairs to include in the log entry.</p>
-              </div>
-            </td>
-            <td>
-                  <code>{}</code>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-    </div>
-
-</div>
-
-
-
-  </div>
-
-    </div>
-
-</div>
+  <h1>Replace darglint with pydoclint</h1>
+
+<h2 id="context">Context<a class="headerlink" href="#context" title="Permanent link">&para;</a></h2>
+<p><code>darglint</code> has been archived and unmaintained since 2022. It validates that
+docstring arguments match function signatures (the consistency dimension),
+distinct from <code>interrogate</code>, which measures docstring coverage (the percentage
+of functions documented). <code>interrogate</code> stays; only <code>darglint</code> is the
+replacement target.</p>
+<p>A prior investigation session (handoff at
+<code>docs/handoffs/darglint-to-pydoclint/README.md</code>) mapped darglint's complete
+functional footprint to 14 active surfaces, confirmed the replacement decision
+(pydoclint over Ruff DOC rules), and left three decisions open. This design
+resolves those decisions and specifies the rollout.</p>
+<h3 id="why-pydoclint-not-ruff-doc-rules">Why pydoclint, not Ruff DOC rules<a class="headerlink" href="#why-pydoclint-not-ruff-doc-rules" title="Permanent link">&para;</a></h3>
+<p>Ruff's pydoclint port implements only the DOC2xx/4xx/5xx family
+(returns/yields/raises) and they are preview-only. The DOC1xx argument family
+is unimplemented (Ruff issue #12434), so Ruff cannot replace <strong>DAR102</strong>
+("documented a parameter not in the signature"), one of the actively enforced
+checks and a common real-world drift case. pydoclint covers it (DOC102). This
+trade-off was evaluated and rejected in the handoff; it is not reopened here.</p>
+<h3 id="the-actually-enforced-darglint-profile">The actually-enforced darglint profile<a class="headerlink" href="#the-actually-enforced-darglint-profile" title="Permanent link">&para;</a></h3>
+<p>The behaviour that must be reproduced is what the <em>config</em> enforces, not
+darglint's nominal feature set. With <code>strictness = "long"</code> and
+<code>ignore = [DAR101, DAR201, DAR301, DAR401]</code>, the <code>.claude</code> repo enforces only
+the <strong>excess/mismatch direction</strong>: it flags docstrings that describe a
+parameter, return, yield, or raised exception the function no longer has. It
+does <strong>not</strong> require missing sections to be added.</p>
+<p>Active checks: DAR102 (doc param not in signature), DAR103 (param type
+mismatch), DAR202 (extra Returns), DAR203 (return type mismatch), DAR302 (extra
+Yields), DAR402 (exception documented but not raised).</p>
+<h2 id="key-decisions">Key decisions<a class="headerlink" href="#key-decisions" title="Permanent link">&para;</a></h2>
+<h3 id="decision-1-config-posture-lenient-plus-keep-raises">Decision 1: config posture = "lenient plus keep raises"<a class="headerlink" href="#decision-1-config-posture-lenient-plus-keep-raises" title="Permanent link">&para;</a></h3>
+<p>The profile reproduces darglint's excess-only behaviour for the
+args/returns/yields families, but <strong>keeps raises checking enabled</strong>.</p>
+<p>The config models differ in a way that makes exact replication impossible for
+the raises family. darglint suppresses <em>per code</em> (<code>ignore = [DAR401]</code> turns off
+missing-raises while leaving DAR402 excess-raises active). pydoclint's
+<code>skip-checking-raises</code> is a <strong>single binary</strong> that toggles DOC501 (missing) and
+DOC502 (excess) together; there is no per-direction switch. The two reachable
+options were therefore:</p>
+<ul>
+<li>Disable raises checking (<code>skip-checking-raises = true</code>): zero new failures,
+  but <strong>loses DAR402</strong> (excess raises), a check darglint currently enforces.</li>
+<li>Enable raises checking (<code>skip-checking-raises = false</code>): <strong>preserves DAR402</strong>
+  via DOC502, but <strong>gains DOC501</strong> (missing-raises), a check darglint did not
+  enforce here, which may surface new failures in existing docstrings.</li>
+</ul>
+<p>Decision: enable raises checking (<code>skip-checking-raises = false</code>). Rationale:
+losing a real consistency check (DAR402) is a regression; gaining DOC501 is a
+slight tightening that improves docstring quality. New DOC501 failures are
+treated as genuine drift and fixed in the docstrings, not suppressed (per the
+global "fix the actual issue" standard).</p>
+<h3 id="decision-2-drop-the-hook-from-the-pre-commitci-skip-list">Decision 2: drop the hook from the pre-commit.ci skip list<a class="headerlink" href="#decision-2-drop-the-hook-from-the-pre-commitci-skip-list" title="Permanent link">&para;</a></h3>
+<p>darglint is in the pre-commit.ci <code>skip:</code> list (<code>.pre-commit-config.yaml:21</code>)
+because it was a <code>repo: local</code> / <code>language: system</code> hook that pre-commit.ci
+cannot run. A pinned pydoclint pre-commit repo hook <strong>can</strong> run on
+pre-commit.ci. Decision: remove <code>darglint</code> from the skip list so pre-commit.ci
+enforces pydoclint directly, adding a second enforcement point alongside the
+org <code>python-precommit.yml</code> CI workflow.</p>
+<h3 id="decision-3-retire-the-tool-007-numpy-override-after-validation">Decision 3: retire the TOOL-007 NumPy override after validation<a class="headerlink" href="#decision-3-retire-the-tool-007-numpy-override-after-validation" title="Permanent link">&para;</a></h3>
+<p>The TOOL-007 override (documented in <code>repo-compliance.md:131</code> and present in
+some repos' <code>.claude/compliance-overrides.md</code>) exists specifically because
+darglint conflicted with NumPy-style docstrings. pydoclint supports NumPy style
+natively (<code>style = "numpy"</code>). Decision: retire the override, but <strong>only after</strong>
+confirming pydoclint with <code>style = "numpy"</code> passes clean on a repo that
+currently carries the override. Retirement touches both the doc example and the
+real per-repo override files.</p>
+<h3 id="decision-4-pr-packaging-approach-b">Decision 4: PR packaging = Approach B<a class="headerlink" href="#decision-4-pr-packaging-approach-b" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>PR1</strong> (<code>chore/replace-darglint-with-pydoclint</code>): Phases 1+2 together. The
+  <code>.claude</code> repo is audited by its own <code>standards-manifest.yaml</code>. Changing the
+  tool without changing the check (or vice versa) creates a window where the
+  repo violates its own standard. The tool swap and the enforcement-layer
+  retarget must therefore land together.</li>
+<li><strong>PR2</strong>: Phase 3 (cookiecutter template + fleet rollout). No coupling to the
+  <code>.claude</code> repo self-audit, different blast radius, so it is isolated.</li>
+</ul>
+<h2 id="scope-the-14-surfaces">Scope: the 14 surfaces<a class="headerlink" href="#scope-the-14-surfaces" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Location</th>
+<th>Change</th>
+<th>Phase / PR</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>.pre-commit-config.yaml:267-275</code></td>
+<td>Replace <code>repo: local</code> darglint hook with pinned pydoclint repo hook</td>
+<td>P1 / PR1</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>.pre-commit-config.yaml:21</code></td>
+<td>Remove <code>darglint</code> from <code>ci.skip</code> (Decision 2)</td>
+<td>P1 / PR1</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>pyproject.toml:97</code></td>
+<td>Swap dev dep <code>darglint&gt;=1.8.1</code> → <code>pydoclint&gt;=0.8.4</code></td>
+<td>P1 / PR1</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>pyproject.toml:531-547</code></td>
+<td>Replace <code>[tool.darglint]</code> with <code>[tool.pydoclint]</code> (Decision 1)</td>
+<td>P1 / PR1</td>
+</tr>
+<tr>
+<td>5</td>
+<td>org <code>python-precommit.yml:132</code></td>
+<td>No file change; verify pydoclint resolves in the <code>uv sync --frozen</code> CI env</td>
+<td>P1 / PR1</td>
+</tr>
+<tr>
+<td>6</td>
+<td><code>standards-manifest.yaml:266-272</code></td>
+<td>Retarget TOOL-007 to pydoclint</td>
+<td>P2 / PR1</td>
+</tr>
+<tr>
+<td>7</td>
+<td><code>standards-manifest.yaml:368-374</code></td>
+<td>Retarget PC-006 to pydoclint</td>
+<td>P2 / PR1</td>
+</tr>
+<tr>
+<td>-</td>
+<td><code>standards-manifest.yaml</code> (new)</td>
+<td>Add darglint-absence check (replaced-tools pattern)</td>
+<td>P2 / PR1</td>
+</tr>
+<tr>
+<td>8</td>
+<td><code>.claude/agents/pre-commit-auditor.md:95</code></td>
+<td>Swap hook URL/id to pydoclint</td>
+<td>P2 / PR1</td>
+</tr>
+<tr>
+<td>9</td>
+<td><code>.claude/agents/python-toolchain-auditor.md:31-32</code></td>
+<td>Swap dep name; keep interrogate coupling</td>
+<td>P2 / PR1</td>
+</tr>
+<tr>
+<td>10</td>
+<td><code>.claude/rules/pre-commit.md:24</code></td>
+<td>Reword checklist line to pydoclint</td>
+<td>P2 / PR1</td>
+</tr>
+<tr>
+<td>11</td>
+<td><code>.claude/rules/python.md:184-192</code></td>
+<td>Reword behaviour spec; update strictness wording</td>
+<td>P2 / PR1</td>
+</tr>
+<tr>
+<td>12</td>
+<td><code>.claude/skills/pre-commit-authoring/SKILL.md:20,81</code></td>
+<td>Swap name in toolchain list + tier placement</td>
+<td>P2 / PR1</td>
+</tr>
+<tr>
+<td>13</td>
+<td><code>docs/reference/repo-compliance.md:99,101,131</code></td>
+<td>Update TOOL/PC summaries; retire NumPy override (Decision 3)</td>
+<td>P2 / PR1</td>
+</tr>
+<tr>
+<td>14</td>
+<td><code>~/dev/cookiecutter-python-template/</code></td>
+<td>Swap files; delete <code>{{cookiecutter.project_slug}}/.darglint</code></td>
+<td>P3 / PR2</td>
+</tr>
+<tr>
+<td>-</td>
+<td>Python fleet</td>
+<td>Roll out via repo-compliance coordinator</td>
+<td>P3 / PR2</td>
+</tr>
+</tbody>
+</table>
+<h2 id="architecture-and-data-flow">Architecture and data flow<a class="headerlink" href="#architecture-and-data-flow" title="Permanent link">&para;</a></h2>
+<p>The change has no runtime/application component; it is a toolchain and
+enforcement-config migration. The "data flow" is the enforcement topology:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>developer commit ──► pre-commit (local pydoclint hook) ──► blocks on excess-drift
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>                          │
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>                          ├─► pre-commit.ci (now runs pydoclint; Decision 2)
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>                          │
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>push / PR ────────────► org python-precommit.yml ──► `pre-commit run --all-files`
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>                                                          (runs pydoclint in uv env)
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>/repo-audit ──► standards-manifest.yaml ──► TOOL-007 + PC-006 check pydoclint
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>                                            + darglint-absence check
+</span></code></pre></div>
+<p>The enforcement layer (manifest + agents) is what makes the fleet audit check
+for the right tool. The self-audit invariant (PR1 couples surfaces 1-4 with
+6-13) exists because the <code>.claude</code> repo is itself a target of that audit.</p>
+<h3 id="pydoclint-config-translation-phase-1-crux">pydoclint config translation (Phase 1 crux)<a class="headerlink" href="#pydoclint-config-translation-phase-1-crux" title="Permanent link">&para;</a></h3>
+<p>The exact <code>[tool.pydoclint]</code> flag set is <strong>pinned empirically in Phase 1</strong>, not
+guessed from docs, because the args/returns/yields direction toggles are not a
+clean 1:1 with darglint's per-code ignore list. The intended starting point:</p>
+<div class="language-toml highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">[tool.pydoclint]</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">style</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;google&quot;</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">arg-type-hints-in-docstring</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w">      </span><span class="c1"># preserve DAR103-equivalent type checks</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">skip-checking-raises</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w">            </span><span class="c1"># Decision 1: keep DAR402, accept DOC501</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="c1"># Suppress the missing-direction equivalents (DAR101/201/301) per the lenient</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="c1"># posture; the exact flags are confirmed by reading actual emitted DOC codes</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="c1"># during validation.</span>
+</span></code></pre></div>
+<p>Validation procedure: <code>uv run pydoclint src/</code>, read the emitted DOC codes,
+adjust flags until only the intended excess checks (plus raises) fire, fix any
+genuine new DOC501 drift in docstrings, then lock the config. This validation
+is the proof that the translation is correct, replacing the unreliable
+"reproduce from the docs" approach.</p>
+<h2 id="validation-strategy">Validation strategy<a class="headerlink" href="#validation-strategy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Phase 1 gate</strong>: <code>uv lock &amp;&amp; uv sync --all-extras</code> → <code>uv run pydoclint src/</code>
+  (achieve parity with the darglint baseline; fix real new drift, never
+  suppress) → <code>pre-commit run pydoclint --all-files</code>.</li>
+<li><strong>Phase 2 gate</strong>: <code>/repo-audit</code> on <code>.claude</code> confirms the manifest now checks
+  for pydoclint and flags darglint's absence, with zero new findings introduced
+  by the migration.</li>
+<li><strong>SHA-pinning</strong>: the new pydoclint hook introduces a <code>rev:</code> field. The PC
+  SHA-pinning checks require it to be a full commit SHA, not a tag. Resolve the
+  SHA for the chosen pydoclint release at implementation time and pin it.</li>
+<li><strong>CI path</strong>: confirm pydoclint resolves under <code>uv sync --frozen</code> in the org
+  <code>python-precommit.yml</code> env. Note the <code>.claude</code> repo's own <code>ci.yml</code> calls
+  <code>python-ci.yml</code>, not <code>python-precommit.yml</code>, so verify which reusable
+  workflow each target repo wires before assuming CI coverage.</li>
+</ul>
+<h2 id="phase-3-propagation-and-fleet-rollout">Phase 3: propagation and fleet rollout<a class="headerlink" href="#phase-3-propagation-and-fleet-rollout" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Cookiecutter</strong> (<code>~/dev/cookiecutter-python-template</code>): swap <code>pyproject.toml</code>,
+  <code>.pre-commit-config.yaml</code>, <code>.standards/pyproject.toml.baseline</code>, and <code>uv.lock</code>
+  in the <code>{{cookiecutter.project_slug}}/</code> rendered tree, plus the template-root
+  copies; <strong>delete <code>{{cookiecutter.project_slug}}/.darglint</code></strong> (pydoclint config
+  lives in pyproject <code>[tool.pydoclint]</code>).</li>
+<li><strong>NumPy override retirement</strong> (Decision 3): validate <code>style = "numpy"</code> passes
+  clean on a NumPy-style repo that carries the override, then sweep real
+  <code>.claude/compliance-overrides.md</code> files for TOOL-007 entries and remove them.</li>
+<li><strong>Fleet scope</strong> = manifest applicability (any repo with Python source)
+  cross-referenced with <code>docs/reference/github-repos.json</code>, <strong>not</strong> the local
+  clone count (clones are inflated by <code>.worktrees/</code>, branch-named checkouts, and
+  dash/underscore duplicate clones). Drive via <code>/repo-audit</code> once PR1's manifest
+  is live; each fleet repo gets its own PR so a bad rollout is contained.</li>
+</ul>
+<h2 id="risks-and-rollback">Risks and rollback<a class="headerlink" href="#risks-and-rollback" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>New DOC501 failures</strong> (from Decision 1) may be larger than expected. Mitigated
+  by the Phase 1 validation gate, which surfaces the count before commit; fix is
+  bounded to docstring edits.</li>
+<li><strong>SHA-pin churn</strong>: the new <code>rev:</code> field must be a commit SHA; a tag would fail
+  the PC checks. Mitigated by resolving the SHA at implementation.</li>
+<li><strong>Rollback</strong>: PR1 is a single revertable change set. Phase 3 repos each get an
+  isolated PR, so a bad fleet rollout is contained per-repo, not global.</li>
+</ul>
+<h2 id="out-of-scope">Out of scope<a class="headerlink" href="#out-of-scope" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Historical docs under <code>docs/superpowers/</code> and <code>compliance-retrospectives/</code>
+  that mention darglint are archival narrative, not active enforcement, and stay
+  untouched.</li>
+<li>Tightening the docstring bar beyond "lenient plus keep raises" (requiring
+  missing sections) is explicitly deferred; it is a separate future decision.</li>
+<li>Migrating to Ruff DOC rules (rejected; see Context).</li>
+</ul>
 
 
 
@@ -2919,7 +2658,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="November 24, 2025 09:05:05 UTC">November 24, 2025</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="May 31, 2026 04:14:29 UTC">May 31, 2026</span>
   </span>
 
     
@@ -2929,7 +2668,7 @@
     <span class="md-icon" title="Created">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="November 24, 2025 03:08:03 UTC">November 24, 2025</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="May 31, 2026 04:14:29 UTC">May 31, 2026</span>
   </span>
 
     
@@ -3006,10 +2745,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
     
   </body>
