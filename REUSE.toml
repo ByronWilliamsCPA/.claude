@@ -152,7 +152,6 @@ path = [
     ".gitmodules",
     ".markdownlint.json",
     ".mcp.json",
-    ".mutmut_config",
     ".prettierrc",
     ".shellcheckrc",
     ".trivyignore",
