@@ -183,13 +183,15 @@ scripts have a flatter call surface and benefit from tighter documentation press
 
 **Docstring argument validation**: `pydoclint` runs at pre-commit and validates that
 documented `Args`, `Returns`, `Yields`, and `Raises` sections match the actual function
-signature. Posture: lenient on missing sections (consistency/excess checks for args, returns,
-and yields) but raises checking is on, so a documented exception that is not raised fails, and
-a raised exception that is not documented fails (DOC501/DOC502). Type hints in documented args
-are required (arg-type-hints-in-docstring). Configured in `[tool.pydoclint]` via option flags
-rather than a per-code ignore list. Excluded: `tests/`, `scripts/`, `benchmarks/`, `tools/`,
-`noxfile.py`, `.claude/skills/`. The `scripts/` exclusion is intentional: utility scripts often
-use `*args`/`**kwargs` patterns where the validator produces false positives.
+signature. pydoclint requires a `Returns` section for value-returning functions and a `Yields`
+section for generators; only the implicit-None return case is lenient
+(`require-return-section-when-returning-nothing=false`). Raises checking is on: a documented
+exception that is not raised fails, and a raised exception that is not documented fails
+(DOC501/DOC502). Type hints in documented args are required (arg-type-hints-in-docstring).
+Configured in `[tool.pydoclint]` via option flags rather than a per-code ignore list.
+Excluded: `tests/`, `scripts/`, `benchmarks/`, `tools/`, `noxfile.py`, `.claude/skills/`.
+The `scripts/` exclusion is intentional: utility scripts often use `*args`/`**kwargs`
+patterns where the validator produces false positives.
 
 ### CI / Compatibility
 

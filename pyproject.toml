@@ -528,7 +528,7 @@ color = true
 # Pydoclint Configuration (Docstring Argument Validation)
 # Validates that docstring arguments match function signatures.
 # Replaces archived darglint. Reference: https://jsh9.github.io/pydoclint/config_options.html
-# Posture: lenient (excess/mismatch only for args/returns/yields) plus raises checking on.
+# Posture: raises checking on; requires Returns for value-returning functions and Yields for generators; only the implicit-None return case is lenient (require-return-section-when-returning-nothing=false).
 # File scoping is handled by the pre-commit hook `exclude:` regex; the `exclude`
 # below applies when pydoclint is run directly (e.g. `uv run pydoclint src/`).
 [tool.pydoclint]
@@ -538,8 +538,6 @@ arg-type-hints-in-docstring = true
 arg-type-hints-in-signature = true
 skip-checking-raises = false
 require-return-section-when-returning-nothing = false
-require-return-section-when-returning-values = false  # lenient: do not require a Returns section on value-returning functions (matches darglint DAR201-ignored)
-require-yield-section-when-yielding-values = false  # lenient: do not require a Yields section; DOC403 (extra Yields) still fires regardless
 
 # Mutation Testing Configuration (mutmut)
 [tool.mutmut]
