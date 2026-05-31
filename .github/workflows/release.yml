@@ -50,6 +50,10 @@ concurrency:
   group: release-${{ github.event.workflow_run.head_branch || github.ref_name }}
   cancel-in-progress: false
 
+# Deny all platform-default permissions at the workflow level; each job
+# re-grants only the scopes it needs (least privilege).
+permissions: {}
+
 jobs:
   release:
     name: Semantic Release
