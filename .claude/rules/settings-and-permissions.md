@@ -37,7 +37,7 @@ directory tree, and network calls go through a filtering proxy.
 
 - `sandbox.enabled: false` in `~/.claude/settings.json` -- appropriate for trusted
   local development.
-- `permissions.ask` contains 22 entries covering destructive bash commands.
+- `permissions.ask` contains 30 entries covering destructive bash commands.
   See `~/.claude/settings.json` for the full list.
 
 ## Authorization failure modes

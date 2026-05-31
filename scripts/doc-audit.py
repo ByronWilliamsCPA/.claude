@@ -409,7 +409,12 @@ def _actual_counts(repo_root: str) -> dict[str, int]:
     root = Path(repo_root)
 
     agents_dir = root / _CLAUDE_SUBDIR / "agents"
-    agents_count = len(list(agents_dir.glob("*.md"))) if agents_dir.exists() else 0
+    # CLAUDE.md in agents/ holds authoring conventions, not an agent definition.
+    agents_count = (
+        len([p for p in agents_dir.glob("*.md") if p.name != "CLAUDE.md"])
+        if agents_dir.exists()
+        else 0
+    )
 
     skills_dir = root / _CLAUDE_SUBDIR / "skills"
     skills_count = (

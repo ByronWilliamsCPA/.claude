@@ -196,6 +196,23 @@ Post-run retrospective agent. Synthesizes findings across all repos in a session
 in unclassified candidates, and writes a lessons-learned document with ready-to-paste manifest
 improvement proposals and agent scope expansion candidates.
 
+**[compliance-synthesis](/.claude/agents/compliance-synthesis.md)**
+Cross-session compliance retrospective synthesis. Reads the central master log, computes trending
+recurrence, stuck manifest candidates, fleet-action follow-through, coverage gaps, and override
+hotspots. Writes a weekly synthesis report to `docs/compliance-reports/synthesis/YYYY-MM-DD.md`.
+
+**[cleanup-backlog-scout](/.claude/agents/cleanup-backlog-scout.md)**
+Scouts target repositories for mechanical cleanup work a local model can perform autonomously. Reads
+a repo (or the fleet catalog), identifies safe candidates (doc fixes, missing OpenSSF baseline files,
+frontmatter additions, dependency bumps, ruff-flagged dead code, link fixes), classifies each by
+difficulty against the worker contract's five gates, and writes scoped task entries to the cleanup
+backlog. Conservative by default: marks candidates claude-required when classification is uncertain.
+
+**[ossf-criteria-reference](/.claude/agents/ossf-criteria-reference.md)**
+Reference knowledge file (not an executable agent). Catalogs every OpenSSF Best Practices Badge
+criterion slug, N/A eligibility, and automation URL field name across the passing, silver, and gold
+levels. Consumed by `ossf-badge-evaluator` when generating form-submission automation URLs.
+
 ### Frontend
 
 **[frontend-designer](/.claude/agents/frontend-designer.md)**
