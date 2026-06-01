@@ -30,9 +30,10 @@ from pathlib import Path
 from typing import Any
 
 import frontmatter
+import yaml
 from frontmatter_contract.models import DiscriminatedFM
 from pydantic import TypeAdapter, ValidationError
-from ruamel.yaml import YAML
+from ruamel.yaml import YAML, YAMLError
 
 # Regular expression to detect body H1 headings
 H1_RE = re.compile(r"^[ \t]*#[ \t]+(\S[^\r\n]*)", re.MULTILINE)
@@ -89,7 +90,8 @@ def parse_front_matter(path: Path) -> tuple[dict[str, Any] | None, str]:
         post = frontmatter.load(path)
         meta = post.metadata if isinstance(post.metadata, dict) else {}
         return meta, post.content or ""
-    except Exception:
+    except (OSError, UnicodeDecodeError, yaml.YAMLError) as exc:
+        print(f"front-matter parse failed for {path}: {exc}", file=sys.stderr)
         return None, ""
 
 
@@ -161,7 +163,11 @@ def autofix_front_matter(path: Path) -> bool:
         return False
     safe_path = cwd / resolved_path.relative_to(cwd)
 
-    text = safe_path.read_text(encoding="utf-8")
+    try:
+        text = safe_path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError) as exc:
+        print(f"front-matter read failed for {path}: {exc}", file=sys.stderr)
+        return False
 
     match = re.search(r"^---\n.*?\n---\n", text, flags=re.DOTALL | re.MULTILINE)
     if not match:
@@ -174,7 +180,8 @@ def autofix_front_matter(path: Path) -> bool:
     yaml_text = text[match.start() + 4 : match.end() - 4]
     try:
         data = yrt.load(yaml_text)
-    except Exception:
+    except YAMLError as exc:
+        print(f"front-matter YAML parse failed for {path}: {exc}", file=sys.stderr)
         return False
 
     if not isinstance(data, dict):

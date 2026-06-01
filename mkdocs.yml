@@ -181,6 +181,7 @@ nav:
           - ADR-005 Submodule Extension Model: architecture/adr/ADR-005-submodule-extension-model.md
           - ADR-006 Rules vs Standards: architecture/adr/ADR-006-rules-vs-standards.md
           - ADR-007 Dual-Audience Docs: architecture/adr/ADR-007-dual-audience-docs.md
+          - ADR-008 Scanner Allowlist Tiers: architecture/adr/ADR-008-scanner-allowlist-tiers.md
 
   - Reference:
       - Overview: reference/index.md
