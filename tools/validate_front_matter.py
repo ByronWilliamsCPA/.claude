@@ -90,7 +90,7 @@ def parse_front_matter(path: Path) -> tuple[dict[str, Any] | None, str]:
         post = frontmatter.load(path)
         meta = post.metadata if isinstance(post.metadata, dict) else {}
         return meta, post.content or ""
-    except (OSError, yaml.YAMLError) as exc:
+    except (OSError, UnicodeDecodeError, yaml.YAMLError) as exc:
         print(f"front-matter parse failed for {path}: {exc}", file=sys.stderr)
         return None, ""
 
@@ -163,7 +163,11 @@ def autofix_front_matter(path: Path) -> bool:
         return False
     safe_path = cwd / resolved_path.relative_to(cwd)
 
-    text = safe_path.read_text(encoding="utf-8")
+    try:
+        text = safe_path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError) as exc:
+        print(f"front-matter read failed for {path}: {exc}", file=sys.stderr)
+        return False
 
     match = re.search(r"^---\n.*?\n---\n", text, flags=re.DOTALL | re.MULTILINE)
     if not match:
