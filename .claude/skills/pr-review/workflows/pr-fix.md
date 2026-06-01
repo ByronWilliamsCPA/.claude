@@ -55,11 +55,11 @@ owner: OWNER, repo: REPO, pullNumber: PR_NUMBER
 
 Store `HEAD_BRANCH`, `BASE_BRANCH`, `PR_TITLE`, `PR_BODY`.
 
-Also fetch `mergeable` and `mergeStateStatus`:
+Also fetch `mergeable`, `mergeStateStatus`, and `autoMergeRequest`:
 
 ```bash
 gh pr view "$PR_NUMBER" --repo "$OWNER/$REPO" \
-  --json mergeable,mergeStateStatus
+  --json mergeable,mergeStateStatus,autoMergeRequest
 ```
 
 **Abort if: PR is closed, or metadata fetch fails.**
@@ -95,7 +95,33 @@ to the same `--no-verify` prohibition documented in Step 6. Run pre-commit
 on the merge commit and fix anything it flags; do not skip hooks even when
 the resolution kept HEAD's tree unchanged for the conflicting files.
 
+**Rebase preference for conflict resolution:** When both rebase and merge are
+options, prefer rebase. A rebase simultaneously resolves conflicts AND picks up
+lockfile updates from base (resolving CVEs and dependency drift), whereas a merge
+commit only resolves conflicts. The lockfile CVE and merge conflict often share the
+same root cause (stale dependencies).
+
 If the user picks 3, exit cleanly without modifying the PR.
+
+**Auto-merge detection:** If `autoMergeRequest` is non-null, or if the repo
+allows auto-merge (`gh api repos/{OWNER}/{REPO} --jq '.allow_auto_merge'`
+returns `true`), set `AUTO_MERGE=true` and warn the user before entering the
+Step 9 watch-and-refix loop:
+
+```text
+This PR is configured for auto-merge. The first all-green CI pass will merge it
+immediately. New review findings that arrive after merge require a follow-up PR.
+
+Proceed with the watch loop? (yes / disable auto-merge for this session)
+```
+
+If the user chooses "disable auto-merge":
+
+```bash
+gh pr merge --disable-auto "$PR_NUMBER" --repo "$OWNER/$REPO"
+```
+
+Set `AUTO_MERGE=false` and proceed normally.
 
 ---
 
@@ -110,8 +136,30 @@ Use GitHub MCP `pull_request_read` method `get_check_runs`.
 For each check with `conclusion` not `success` and not `neutral`, do the following:
 
 - Record: check name, conclusion, run URL
-- Fetch failed job logs: `gh run view {RUN_ID} --repo {OWNER}/{REPO} --log-failed`
-  (truncate to last 100 lines per job)
+- **Identify failing step name first (reduces log noise):**
+
+  ```bash
+  gh run view {RUN_ID} --repo {OWNER}/{REPO} \
+    --json jobs \
+    --jq '.jobs[] | select(.conclusion=="failure") | {job:.name, steps:[.steps[]|select(.conclusion=="failure")|.name]}'
+  ```
+
+  The failing step name alone often identifies the fix (e.g., "Verify committed
+  OpenAPI spec is current" => regenerate and commit spec; "Validate PR title" => retitle).
+  Use the step name to target the log grep rather than scanning the full log.
+
+- Fetch failed job log, filtering known audit noise:
+
+  ```bash
+  gh run view {RUN_ID} --repo {OWNER}/{REPO} --log \
+    | grep -A30 "{failing_step_name}" \
+    | grep -viE "harden|stepsecurity|systemd|sudo|node\.js|deprecat"
+  ```
+
+  Repos using `step-security/harden-runner` with `egress-policy: audit` produce
+  extensive audit output (systemd/DNS/sudo lines) that buries the actual failure.
+  Targeting the failing step name avoids scanning 100 lines of infrastructure noise.
+
 - Classify by check name pattern:
 
 | Pattern in check name | Type | Fix approach |
@@ -176,6 +224,14 @@ Same detection as pr-review Step 4:
 4. Fetch: `search_sonar_issues_in_projects(projects: [KEY], pullRequest: PR_NUMBER)`
 5. Fall back to branch issues if PR not analyzed
 
+**Token discovery (safe form):** When checking for a SonarCloud token, check
+specific known variable names by existence only -- never `env | grep`:
+
+```bash
+[ -n "$SONARQUBE_TOKEN" ] && echo "found SONARQUBE_TOKEN" \
+  || ([ -n "$SONAR_TOKEN" ] && echo "found SONAR_TOKEN" || echo "not found")
+```
+
 If `SONAR_FINDINGS` already in context from pr-review, skip this step.
 
 For each finding, record: file, line, rule key, message, severity.
@@ -194,6 +250,22 @@ If `FINDINGS` from the calling pr-review workflow exists in context,
 incorporate directly (already scored and tiered).
 If standalone invocation, this source is empty.
 
+### 1f. Conversation comments (bot signals)
+
+Fetch PR conversation-level comments for known bot patterns:
+
+```bash
+gh api repos/{OWNER}/{REPO}/issues/{PR_NUMBER}/comments \
+  --jq '[.[] | select(.user.login | test("dependabot|renovate|coderabbitai")) | {author:.user.login, body:.body, created:.created_at}]'
+```
+
+Scan for actionable patterns:
+- Dependabot/Renovate "A newer version of X exists": record as a Step 1a-class finding
+- SonarCloud quality gate summary links: defer to Step 1c
+- CodeRabbit rate-limit messages: note "CodeRabbit review pending; will surface in Step 8"
+
+Record found signals as Step 1f findings, tagged by source.
+
 ---
 
 ## Step 2: Classify and present
@@ -211,6 +283,7 @@ Issues found:
   SonarQube:          {N} findings
   Coverage:           {status or "not configured"}
   Agent Findings:     {N} from pr-review (if available)
+  Bot Signals:        {N} from Step 1f (if any)
 
 Tier coverage (from pr-review findings):
   Critical:           {N} (all addressed)
@@ -244,8 +317,32 @@ All file edits happen inside `WORKTREE_PATH`. Never touch the main working tree.
 
 **Error handling:**
 
+- **Branch already in main working tree:** Before attempting `git worktree add`,
+  check `git rev-parse --abbrev-ref HEAD`. If it equals `{HEAD_BRANCH}` AND the
+  working tree is clean AND HEAD matches the PR head SHA: skip worktree creation
+  and set `WORKTREE_PATH=.` (in-place mode). Log: "Branch already checked out in
+  main tree; working in-place (isolation goal already met)."
 - If `.worktrees/fix-pr{PR_NUMBER}` exists: `git worktree remove --force` first
 - If branch not found: check that the branch exists on origin with `git fetch origin`
+- If `fatal: '{HEAD_BRANCH}' is already used by worktree`: report the existing path
+  (from `git worktree list --porcelain`) and offer: (1) use that worktree, (2)
+  create a detached worktree at the head SHA (`git worktree add --detach`), or (3) abort.
+
+**Lock file stabilisation (prevent hook false-failures):** After creating the worktree,
+if both `pyproject.toml` and `uv.lock` are present, run `uv sync` in the worktree before
+any pre-commit invocations:
+
+```bash
+if [ -f "{WORKTREE_PATH}/pyproject.toml" ] && [ -f "{WORKTREE_PATH}/uv.lock" ]; then
+    (cd {WORKTREE_PATH} && uv sync --frozen 2>/dev/null || uv sync)
+fi
+```
+
+A worktree created from a committed branch inherits a committed `uv.lock` that may lag
+behind `pyproject.toml`. Pre-commit hooks using `entry: uv run <tool>` will regenerate
+the lock file as a side effect and report "files were modified by this hook" -- a false
+failure unrelated to the PR's changes. This one-time sync stabilises the lock before any
+hooks fire.
 
 ---
 
@@ -301,6 +398,19 @@ feat/fix/perf/breaking changes on this branch" and skip.
 `datetime.timezone.utc`), `tomllib` without fallback, `match/case` syntax,
 `ExceptionGroup` without backport. Apply 3.10-compatible equivalent.
 
+**File move / path-boundary fixes:** When CHANGED_FILES includes a file rename
+across a path-boundary (e.g., `scripts/` to `src/`), run the destination-path
+linters against the FULL moved file (not just changed lines):
+
+```bash
+uv tool run ruff check {new_path}
+# If darglint/pydoclint applies to dst path:
+uv tool run --from pydoclint pydoclint {new_path}
+```
+
+Pre-commit's changed-files scoping hides violations the move newly exposed;
+a full-file scan is required to surface them before commit.
+
 ### Priority 2: SonarQube findings
 
 **Auto-fix** (no user prompt needed): mechanical, low-risk changes:
@@ -316,6 +426,23 @@ feat/fix/perf/breaking changes on this branch" and skip.
 | Positional parameter not named (shelldre:S7679) | Assign positional parameters to named local variables at function start |
 | Constant boolean expression in test (python:S5914) | Remove the trivially-true assertion or replace with a meaningful assertion for what the test actually verifies; use `assertIsNotNone` only when the test intent is specifically a non-None check |
 | Float equality check (python:S1244) | Replace float equality check with `math.isclose()` in production code, or `pytest.approx()` in test code |
+
+**Trivy / container-security `.trivyignore` fix pattern:**
+When remediating container scan failures by editing `.trivyignore`, verify
+the workflow's `paths:` filter includes `.trivyignore`:
+
+```bash
+grep -l "trivyignore\|trivy" .github/workflows/*.yml \
+  | xargs grep -l "paths:" \
+  | xargs grep "trivyignore" 2>/dev/null || echo "trivyignore NOT in paths filter"
+```
+
+If `.trivyignore` is absent from the `paths:` filter, add it (and the workflow
+file itself) to both trigger paths, so the fix self-verifies when pushed.
+
+Also, before investing in Trivy remediation, verify the check is actually a
+merge blocker. A red Trivy check with `mergeStateStatus: UNSTABLE` (not
+`BLOCKED`) means it is advisory; scope effort accordingly.
 
 **Propose and confirm** (show the proposed change, wait for user approval before
 applying): these touch logic, security policy, or refactoring:
@@ -377,6 +504,13 @@ For each unresolved actionable comment:
    features not requested. When the root cause fix touches more than 3 files not in
    the original diff, pause and confirm with the user before proceeding.
 
+**Agent-supplied test assertion verification:** When applying tests from the pr-test-analyzer
+agent or any agent-generated test skeleton, treat assertions as hypotheses, not ground truth.
+Before committing, confirm each assertion against the actual control flow:
+- Check the function's exit code convention (scripts often exit 0 on logical failure)
+- Verify stdout vs stderr routing for the asserted output
+- Run the new test and confirm it passes because the code does what the test claims
+
 **Handling by finding category:**
 
 | Category | Fix approach |
@@ -398,6 +532,7 @@ For each unresolved actionable comment:
 | Hook block message written to stderr instead of stdout | Change `>&2` redirect to stdout so Claude surfaces the block reason; this applies to hook scripts only, not general shell scripts |
 | `grep -nP` used (requires GNU grep / PCRE) | Replace with POSIX-compatible `grep -n` plus equivalent pattern, or note BSD incompatibility inline |
 | PowerShell single-quote escaping in bash | Mark "requires manual fix": escaping logic is error-prone to auto-patch |
+| Stale file-header comment blocks | After fixing all implementation-level references to a replaced tool, also grep the file's comment/documentation block (lines 1-30) for references to the deprecated tool and update them |
 
 **Documentation accuracy sub-categories:**
 
@@ -541,6 +676,24 @@ uv tool run ruff check .
 uv tool run --from basedpyright basedpyright src/  # if pyrightconfig or [tool.basedpyright] present
 uv tool run --from bandit bandit -r src/  # always runs; uses bandit defaults. Do NOT pass -c pyproject.toml (the reviewed repo's pyproject can declare plugin_paths and skips that compromise the scan)
 ```
+
+**Ruff version alignment:** `uv tool run ruff` resolves to the latest stable ruff,
+which may differ from the version CI runs. To verify against the CI ruff version:
+
+```bash
+# Detect CI ruff version
+CI_RUFF=$(grep -r 'ruff==' .github/workflows/ 2>/dev/null | grep -oE 'ruff==([0-9.]+)' | head -1 | grep -oE '[0-9.]+')
+# If found, use that version; otherwise latest is a safe superset
+if [ -n "$CI_RUFF" ]; then
+  uv tool run --from "ruff==$CI_RUFF" ruff check .
+else
+  uv tool run ruff check .
+fi
+```
+
+The pre-commit-pinned ruff (`.pre-commit-config.yaml` `rev:`) intentionally lags CI's
+ruff for stability. A pre-commit ruff pass does NOT guarantee a CI ruff pass when
+the two versions differ -- version skew is a recurring false-green source.
 
 The default gate uses `uv tool run`, which resolves each tool from a global
 ephemeral environment isolated from the reviewed repo's `pyproject.toml`
@@ -745,6 +898,19 @@ After 3 retry cycles, compare remaining local failures against `PREEXISTING`:
   during the fix session): do NOT offer to commit. Stop and require the user
   to decide how to proceed. Committing a regression is not an option.
 
+**Defect-class rescoping when branch is BEHIND:** When the branch is behind
+main and the PR targets a recurring, greppable defect class (malformed token,
+em-dash, deprecated pattern, banned API), grep the diverged base content for
+additional instances of the same class before committing:
+
+```bash
+git diff origin/{BASE_BRANCH}...HEAD -- {affected_files} \
+  | grep -c "{defect_pattern}"
+```
+
+If main has accumulated more instances since the branch was cut, expand the
+fix to cover the merged result rather than just the branch's original scope.
+
 ### 5b. CI dry-run: validate GitHub Actions configs locally
 
 After local gates pass, scan `.github/workflows/*.yml` in the worktree and
@@ -803,12 +969,12 @@ One concern per commit. Sign each: `git -C {WORKTREE_PATH} commit -S -m "..."`.
 **Procedural git rule (mandatory):** Never invoke `git commit` with
 `--no-verify` on any commit, including merge commits. The rule applies even
 when the agent reasons that pre-commit "would have passed anyway" or that
-the merge resolution kept HEAD's tree unchanged. If pre-commit fails, fix
-the underlying issue or ask the user before proceeding; do not bypass.
-Merge commits with auto-merged content from the base branch DO trigger
-hooks on the incoming changes, so skipping is rarely a no-op even when it
-appears to be one. The only time `--no-verify` is permitted is when the
-user has explicitly requested it for the current commit.
+the merge resolution kept HEAD's tree unchanged for the conflicting files.
+If pre-commit fails, fix the underlying issue or ask the user before
+proceeding; do not bypass. Merge commits with auto-merged content from the
+base branch DO trigger hooks on the incoming changes, so skipping is rarely
+a no-op even when it appears to be one. The only time `--no-verify` is
+permitted is when the user has explicitly requested it for the current commit.
 
 | Group | Type | Example message |
 | --- | --- | --- |
@@ -868,7 +1034,25 @@ Which option?
 
 If the user selects rebase: run `git -C {WORKTREE_PATH} rebase origin/{BASE_BRANCH}`.
 If conflicts occur, report them and offer Option 3 (keep worktree).
-If rebase succeeds, continue with the selected push option below.
+
+**CI workflow identity conflict guard:** When resolving conflicts in
+`.github/workflows/` files, classify each conflict. A conflict where BOTH sides
+rewrote the `uses:` reusable-workflow reference or job `name:` field is a DESIGN
+CONFLICT, not a mechanical merge. Both sides represent different CI designs, and
+the correct resolution depends on which job names are listed as required-status-check
+contexts in branch-protection. Neither side is automatically "more correct."
+
+Stop and escalate:
+
+```text
+Conflict in {file}: both sides independently restructured the same CI gate.
+Job names in workflow files define required status-check contexts -- auto-resolving
+this could silently break or bypass a gate.
+
+Which CI structure should apply? (show branch side / show main side / abort)
+```
+
+If rebase succeeds (no identity conflicts), continue with the selected push option.
 
 ---
 
@@ -881,6 +1065,16 @@ If rebase succeeds, continue with the selected push option below.
 ```bash
 git -C {WORKTREE_PATH} push origin {HEAD_BRANCH}
 ```
+
+**After push, check PR state when AUTO_MERGE=true:**
+
+```bash
+gh pr view "$PR_NUMBER" --repo "$OWNER/$REPO" --json state --jq '.state'
+```
+
+If `state == "MERGED"`: the PR auto-merged before new findings could be addressed.
+Do NOT push again (a post-merge push re-creates the deleted branch as a dangling
+branch). Surface any in-flight or staged fixes as a follow-up PR and stop.
 
 **Reply to all threads:**
 
@@ -926,6 +1120,8 @@ Pre-commit passing locally. CI re-run triggered by push.
 git -C {WORKTREE_PATH} push origin {HEAD_BRANCH}
 ```
 
+**After push, check PR state when AUTO_MERGE=true** (same check as Option 1 above).
+
 **Continue to Step 9 (watch-and-refix loop).**
 
 ### Option 3: Keep worktree
@@ -965,26 +1161,60 @@ Poll in parallel every 60 seconds:
    - Track: all checks reach a terminal state (`completed`, `cancelled`, `skipped`)
 2. **Review comments:** `gh api repos/{OWNER}/{REPO}/pulls/{PR_NUMBER}/comments --jq 'length'`
    - Track: comment count stabilizes (same count for 2 consecutive polls)
+3. **PR state (when AUTO_MERGE=true):** `gh pr view --json state --jq '.state'`
+   - If `state == "MERGED"`: stop immediately. The PR merged between cycles.
+     Any staged fixes must go to a follow-up PR.
 
-Exit the wait when both conditions are met, or after 10 minutes (whichever
+Exit the wait when all conditions are met, or after 10 minutes (whichever
 comes first).
 
 ### Phase B: Assess results
 
+**Stale comment filter:** Before classifying new comments as work items, filter
+out comments where `commit_id` predates the push SHA. For each comment, compare
+`commit_id` to the HEAD SHA after this push. If older, verify the cited file
+still contains the flagged pattern at the cited line:
+
+```bash
+gh api repos/{OWNER}/{REPO}/pulls/{PR_NUMBER}/comments \
+  --jq '[.[] | select(.commit_id != "{PUSH_SHA}") | {id:.id, path:.path, line:.line, commit:.commit_id}]'
+```
+
+Mark comments with an older `commit_id` AND whose cited content is absent from
+current HEAD as `STALE`. Include them in the Phase C summary as "Reply-only
+({N} stale comments already addressed in {PUSH_SHA})" rather than as new
+findings requiring a code-change cycle.
+
+**SARIF / code-scanning orphan checks:** When "Code scanning results / *" checks remain
+in `queued` state indefinitely after a push, check whether the upstream analysis job was
+path-filtered or skipped. Security analysis workflows on config-only or docs-only PRs are
+commonly path-filtered, leaving their SARIF upload result checks permanently pending with
+no source to resolve them.
+
+```bash
+gh pr view "$PR_NUMBER" --repo "$OWNER/$REPO" --json mergeable,mergeStateStatus \
+  --jq '{mergeable:.mergeable, state:.mergeStateStatus}'
+```
+
+If `mergeable: MERGEABLE` (button is active), these orphaned SARIF checks are non-blocking
+advisory checks, not CI failures. Classify them as "advisory pending (path-filtered upstream
+job)" and do NOT trigger a re-fix cycle. The PR is safe to merge.
+
 Classify the outcome:
 
-| CI status | New comments | Action |
+| CI status | New (non-stale) comments | Action |
 | --- | --- | --- |
 | All green | None | Report success, clean up worktree, done |
 | All green | New comments arrived | Enter Phase C (re-fix pass) |
 | Failures | Any | Enter Phase C (re-fix pass) |
+| SARIF checks queued + `mergeable: MERGEABLE` | Any | Classify as advisory pending; proceed to merge or Phase C for comments only |
 | Timed out | Any | Report current state, offer manual options |
 
 ### Phase C: Automatic re-fix pass (up to 2 cycles)
 
 **Completion conditions (exit the loop immediately when any are met):**
 
-- Phase A returns all-green with no new comments: report success, clean up worktree, done.
+- Phase A returns all-green with no new non-stale comments: report success, clean up worktree, done.
 - User declines a re-fix pass: report remaining items, keep worktree, done.
 - User selects "stop" in the delta prompt: same as decline above.
 - Cycle count reaches 2 and issues remain: run stuck-loop diagnosis, present final options, done.
@@ -1013,6 +1243,7 @@ Delta summary format:
 Post-push findings (cycle {N}/2):
   CI failures:     {list}
   New comments:    {N} ({authors})
+  Stale comments:  {N} (reply-only, already addressed in {PUSH_SHA})
 
 Auto-fix these? (yes / review details / stop)
 ```
@@ -1050,12 +1281,7 @@ mcp__pal__tiered_consensus(
                \"root_cause\": \"<one paragraph>\",
                \"blocker\": \"<specific reason automation cannot resolve this; required when can_retry is false>\",
                \"proposed_fix\": \"<specific targeted fix to attempt; required when can_retry is true>\"
-             }
-
-           Example can_retry=true response:
-             {\"can_retry\": true, \"root_cause\": \"flaky network call\", \"blocker\": \"\", \"proposed_fix\": \"add retry with backoff\"}
-           Example can_retry=false response:
-             {\"can_retry\": false, \"root_cause\": \"test asserts business rule now intentionally changed\", \"blocker\": \"requires product decision\", \"proposed_fix\": \"\"}"
+             }"
 )
 ```
 
@@ -1102,3 +1328,5 @@ git worktree remove {WORKTREE_PATH}
 | SonarQube MCP unreachable | Log "SonarQube: MCP offline", continue without. |
 | No Codecov configured | Log "Coverage: not configured", continue. |
 | GitGuardian secret detected | Alert user immediately, never auto-fix. |
+| PR merged by auto-merge between push and Phase A check | Surface staged fixes as a follow-up PR; do not push to merged branch. |
+| `gh pr create` denied by permission gate | Fallback: `gh api repos/{OWNER}/{REPO}/pulls -X POST --field title=... --field head=... --field base=...` |

@@ -203,6 +203,29 @@ non-docs-only and restores Agents C and D.
 - Medium: 100–500 lines changed
 - Large: > 500 lines changed (see large-PR handling strategy at the top of Step 5)
 
+**File rename / path-boundary detection:**
+
+After size classification, scan `CHANGED_FILES` for renames or moves. Use the files JSON:
+
+```bash
+gh pr view "$PR_NUMBER" --repo "$OWNER/$REPO" --json files \
+  --jq '[.[] | select(.status=="renamed") | {old:.previousFilename, new:.filename}]'
+```
+
+For any rename where the source and destination top-level path segments differ (e.g.,
+`scripts/` to `src/`, `utils/` to `lib/`), emit an Important finding immediately
+-- before spawning agents:
+
+```text
+[Important] PathBoundary: {old_path} moved to {new_path}. Destination-path quality
+gates (darglint, interrogate, ruff per-file-ignores in pyproject) now apply to the
+WHOLE file, not just the diff lines. Pre-commit's changed-files scoping will NOT
+surface violations the move newly exposed until the next unrelated edit to that file.
+```
+
+Include the moved file path in the CHANGED_FILES list for agents B, F, G, and I so
+they read full file context, not just the diff hunk.
+
 ---
 
 ## Step 4: Fetch SonarQube Findings (parallel with Step 5)
@@ -399,6 +422,18 @@ Also check: if the commit history contains any `feat:`, `fix:`, `perf:`, or `!`
 and scan the commit messages), verify that `CHANGELOG.md` appears in CHANGED_FILES.
 If it is absent, report:
 `[Important] CLAUDE.md: CHANGELOG.md not updated for feat/fix/perf/breaking change`
+
+Also check: if `.claude/settings.json` appears in CHANGED_FILES, verify all `Bash()`
+permission patterns use space syntax (e.g., `Bash(git *)`) not colon syntax (e.g.,
+`Bash(git:*)`). Colon syntax is the MCP tool format and does not match shell commands;
+it makes allow entries silently inert.
+  [Important] CLAUDE.md: Bash permission in settings.json uses colon syntax; use space syntax.
+
+Also check commit types: if commit history is available (from the CHANGELOG check),
+cross-check each commit type against the project's conventional-commits allowed-type
+table (look for `.claude/standards/conventional-commits.md` or a similar reference).
+Any commit type not in that table (e.g., `security:`, `ops:`, `claude:`) should be flagged:
+  [Suggested] CLAUDE.md: Commit type "{type}" is not in the allowed-type table.
 ```
 
 ### Agent B: Bug Scan (Sonnet)
@@ -612,6 +647,20 @@ Checks:
 4. If the PR title or labels indicate a bug fix, check whether PR_BODY references
    an issue number (Fixes #N, Closes #N, or Relates to #N).
    Report [Suggested] PRDesc: Bug fix PR does not reference an issue number.
+
+5. When fetching file contents to verify diff claims, always use
+   `gh api repos/{OWNER}/{REPO}/contents/{path}?ref={HEAD_SHA}`, not the
+   default branch. Reading main-branch files produces false positives because
+   it returns the pre-change state.
+
+6. For every quantitative claim in your findings (file counts, line counts,
+   symbol names, test counts, function names): verify against
+   `gh pr view --json files,title` or the PR diff before including the
+   finding. Quantitative claims that cannot be verified against actual PR
+   data must be dropped, not downgraded. Fabricated file counts or symbol
+   names that appear plausible but are absent from the actual diff are a
+   common hallucination pattern for architecture-review agents receiving
+   truncated context.
 ```
 
 ### Agent K: Performance Review (Sonnet)
@@ -793,6 +842,14 @@ mcp__pal__tiered_consensus(
 )
 ```
 
+**PAL incomplete-response fallback:** If `mcp__pal__tiered_consensus` returns only a
+configuration/setup message (e.g., "Level: 1, Models: 3...Step 2 will begin model
+consultations...") without `finding_id`/`verdict` JSON objects, note
+"PAL validation: incomplete (setup message only); proceeding on independent evidence
+quality" and continue. Do not retry; a second call to a rate-limited or overloaded
+service typically returns the same partial response. Downgrade no findings based on
+an incomplete response.
+
 Apply the verdicts: move any finding marked `false_positive` from Critical to
 Informational, appending "(PAL: false positive: {reason})" to its rationale.
 
@@ -869,6 +926,27 @@ done
    - agent source: "Copilot" or "CodeRabbit"
 4. Run each through the same confidence scoring as Step 6
 5. Merge into the existing `FINDINGS` list and deduplicate (Step 7)
+
+**Stale PR description detector:**
+
+After processing bot review comments, compute the set difference between each bot
+comment's `path` field and `CHANGED_FILES`. For any comment whose `path` is NOT in
+`CHANGED_FILES`, emit:
+
+```text
+[Important] PRNarrowed: Reviewer {bot} commented on {path}, which is not in the
+current diff. The PR was likely narrowed since that review. Verify the PR
+description still matches the current diff scope.
+```
+
+Additionally, scan the branch commit subjects (already fetched for the CHANGELOG
+check) for removal verbs: "remove", "drop", "revert", "strip ... from PR". When
+found alongside PR body claims of those artifacts, emit:
+
+```text
+[Important] PRDesc: Branch commit history shows "{verb} {artifact} from PR"; PR
+description may overstate current deliverables.
+```
 
 **Timeout behavior:**
 
