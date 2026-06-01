@@ -904,11 +904,13 @@ em-dash, deprecated pattern, banned API), grep the diverged base content for
 additional instances of the same class before committing:
 
 ```bash
-git diff origin/{BASE_BRANCH}...HEAD -- {affected_files} \
-  | grep -c "{defect_pattern}"
+# Count instances on base branch for each affected file
+for f in {affected_files}; do
+  git show origin/{BASE_BRANCH}:"$f" 2>/dev/null | grep -c "{defect_pattern}" || true
+done
 ```
 
-If main has accumulated more instances since the branch was cut, expand the
+If the base branch total exceeds the branch's original scope, expand the
 fix to cover the merged result rather than just the branch's original scope.
 
 ### 5b. CI dry-run: validate GitHub Actions configs locally

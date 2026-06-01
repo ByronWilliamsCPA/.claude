@@ -162,5 +162,4 @@ or assertions against a data structure, run a schema probe of the actual data fi
 import yaml; data = yaml.safe_load(open("manifest.yaml")); print(list(data['checks'][0].keys()))
 ```
 
-Assertions against fields that do not exist will silently pass (KeyError in Python
-on dict access returns None, not an error) or fail for the wrong reason.
+Assertions against fields that do not exist will raise `KeyError` (dict key access) or fail for the wrong reason (if `dict.get()` returns `None` and the assertion happens to pass on that).

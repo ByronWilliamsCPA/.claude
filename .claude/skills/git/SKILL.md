@@ -69,10 +69,11 @@ Real-world failure patterns collected from production sessions.
 gh pr list --head <branch> --state all
 
 # Authoritative supersession test (three-dot diff)
-git diff main...origin/<branch>
+git fetch origin
+git diff origin/main...origin/<branch>
 ```
 
-Three-dot diff `git diff main...origin/<branch>` is the authoritative test for branch supersession. If the diff is empty, the branch content is already on main regardless of ancestry.
+Three-dot diff `git diff origin/main...origin/<branch>` is the authoritative test for branch supersession. If the diff is empty, the branch content is already on main regardless of ancestry. Always use `origin/main` rather than bare `main` -- local `main` is routinely stale (see Obs 141 below).
 
 ### git stash is global, not per-branch (Obs 128)
 
@@ -81,9 +82,6 @@ Three-dot diff `git diff main...origin/<branch>` is the authoritative test for b
 For "is this failure pre-existing?" comparisons, use `git show ref:path | <tool>` or a throwaway worktree instead of stash-and-restore:
 
 ```bash
-# Safe: read a file at a specific ref without touching working tree
-git show origin/main:path/to/file.py | python3 -m pytest --collect-only -q -
-
 # Safe: throwaway worktree for baseline comparison
 git worktree add .worktrees/baseline-check origin/main
 ```

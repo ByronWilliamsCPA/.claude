@@ -169,7 +169,7 @@ When reviewing a branch created by an autonomous AI session, apply two additiona
 
 **2. AI resolves inconsistencies toward file-state, not git history (Obs 140):** When an AI session finds two config sources that disagree (e.g., `requirements.txt` and `pyproject.toml` pin the same package to different versions), it tends to edit toward consistency with whichever file it read first -- without checking which value reflects the more recent human decision. Before accepting a "consistency fix," run `git log --oneline -5 -- <both_files>` and confirm the surviving value is the newer deliberate human commit. If the AI's fix silently reverts a merged PR's change, the review should flag it and propose the correct resolution direction.
 
-**3. Verify the branch contents match the stated premise (Obs 138):** Instructions about a branch's artifacts presuppose those artifacts exist. Before applying artifact-handling rules (e.g., "gitignore the manifest.json", "strip the analysis report"), run `git diff --name-status <merge-base>...<branch>` and confirm each named artifact is actually present. If a named artifact is absent, surface the discrepancy rather than silently skipping the instruction.
+**3. Verify the branch contents match the stated premise (Obs 138):** Instructions about a branch's artifacts presuppose those artifacts exist. Before applying artifact-handling rules (e.g., "gitignore the manifest.json", "strip the analysis report"), run `git diff --name-status $(git merge-base origin/{default_branch} {branch_name})...{branch_name}` and confirm each named artifact is actually present. If a named artifact is absent, surface the discrepancy rather than silently skipping the instruction.
 
 ## Common Mistakes
 

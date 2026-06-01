@@ -99,6 +99,14 @@
 
 ### Changed
 
+* feat(skills): weekly skill review 2026-06-01 -- 68 observations applied across
+  13 skill files. Updated pr-fix, pr-review, writing-plans, dispatching-parallel-agents,
+  handoff, git, testing, ci-fix, using-git-worktrees, receiving-code-review, quality,
+  test-coverage, and test-driven-development. Five skills promoted from submodule
+  symlinks to local copies (dispatching-parallel-agents, receiving-code-review,
+  test-driven-development, using-git-worktrees, writing-plans) to allow local
+  improvements without upstream submodule commits.
+
 * refactor(compliance): relocate the compliance master-log tooling into the
   `claude_config` package (ARCH-01 PR1a). `compliance_log_common` and
   `compliance_log_render` now live under `src/claude_config/compliance/` on the

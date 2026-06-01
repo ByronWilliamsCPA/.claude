@@ -177,15 +177,14 @@ FAKE_COMMIT_SHA = "a" * 40  # pragma: allowlist secret
 
 ### SPDX tokens in REUSE-gated repos (Obs 130)
 
-A test that asserts on license-header content (e.g., `grep "SPDX-License-Identifier: MIT"`) will fail REUSE compliance because REUSE parses license tags from anywhere in a file and treats the literal token as the file's own declaration.
+A test that asserts on license-header content (e.g., grepping for SPDX license tag literals) will fail REUSE compliance because REUSE parses license tags from anywhere in a file -- including inside fenced code blocks and string literals -- and treats the token as the file's own declaration.
 
-Fence such lines with `REUSE-IgnoreStart` / `REUSE-IgnoreEnd` comment markers, or build the token via string concatenation so the contiguous tag never appears in source:
+Build the token via string concatenation so the contiguous SPDX license-identifier tag sequence never appears in source:
 
 ```python
-# Bad: REUSE will treat this file as MIT-licensed
-assert "SPDX-License-Identifier: MIT" in header
-
-# Good: concatenate to avoid the contiguous tag
+# Good: concatenate to avoid a contiguous SPDX tag literal
 SPDX_MIT = "SPDX-License-Identifier" + ": MIT"
 assert SPDX_MIT in header
 ```
+
+Note: wrapping code with `REUSE-IgnoreStart` / `REUSE-IgnoreEnd` HTML comment markers is the other documented approach, but support varies by REUSE tool version. String concatenation is more reliable across versions.

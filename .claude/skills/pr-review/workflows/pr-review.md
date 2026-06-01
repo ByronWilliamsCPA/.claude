@@ -208,9 +208,22 @@ non-docs-only and restores Agents C and D.
 After size classification, scan `CHANGED_FILES` for renames or moves. Use the files JSON:
 
 ```bash
-gh pr view "$PR_NUMBER" --repo "$OWNER/$REPO" --json files \
-  --jq '[.[] | select(.status=="renamed") | {old:.previousFilename, new:.filename}]'
+gh api graphql -f query='
+  query($owner: String!, $name: String!, $number: Int!) {
+    repository(owner: $owner, name: $name) {
+      pullRequest(number: $number) {
+        files(first: 100) {
+          nodes { path changeType previousFilename }
+        }
+      }
+    }
+  }' -F owner="$OWNER" -F name="$REPO" -F number="$PR_NUMBER" \
+  --jq '[.data.repository.pullRequest.files.nodes[]
+        | select(.changeType=="RENAMED")
+        | {old:.previousFilename, new:.path}]'
 ```
+
+Note: `gh pr view --json files` does not expose `previousFilename`; the GraphQL query above is required.
 
 For any rename where the source and destination top-level path segments differ (e.g.,
 `scripts/` to `src/`, `utils/` to `lib/`), emit an Important finding immediately
@@ -218,7 +231,7 @@ For any rename where the source and destination top-level path segments differ (
 
 ```text
 [Important] PathBoundary: {old_path} moved to {new_path}. Destination-path quality
-gates (darglint, interrogate, ruff per-file-ignores in pyproject) now apply to the
+gates (darglint/pydoclint, interrogate, ruff per-file-ignores in pyproject) now apply to the
 WHOLE file, not just the diff lines. Pre-commit's changed-files scoping will NOT
 surface violations the move newly exposed until the next unrelated edit to that file.
 ```
@@ -431,7 +444,8 @@ it makes allow entries silently inert.
 
 Also check commit types: if commit history is available (from the CHANGELOG check),
 cross-check each commit type against the project's conventional-commits allowed-type
-table (look for `.claude/standards/conventional-commits.md` or a similar reference).
+table (fetch `.claude/standards/conventional-commits.md` via `gh api repos/{OWNER}/{REPO}/contents/.claude/standards/conventional-commits.md`;
+if absent, use the default set: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert).
 Any commit type not in that table (e.g., `security:`, `ops:`, `claude:`) should be flagged:
   [Suggested] CLAUDE.md: Commit type "{type}" is not in the allowed-type table.
 ```
