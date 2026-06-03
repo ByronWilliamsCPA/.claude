@@ -253,6 +253,7 @@ uv run python -m memory_profiler script.py
 - **Minimum**: Python 3.10
 - **Recommended**: Python 3.12 (Ruff target version)
 - **Maximum**: Python 3.14 (`requires-python = ">=3.10,<3.15"`)
+- **Tool targets**: `[tool.ruff] target-version` and `[tool.mypy] python_version` must be `py310`/`3.10` or higher and must never lag behind `requires-python` (manifest check TOOL-011). Raising the target activates PEP 604/585 lint rules across the codebase; apply the modernization in a dedicated PR.
 - **Virtual Environment**: Always use `uv`
 
 ### IDE Configuration
