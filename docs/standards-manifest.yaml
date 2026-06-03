@@ -1,12 +1,26 @@
 # docs/standards-manifest.yaml
 version: "1.0"
 last_updated: "2026-06-02"
+# 2026-06-02: Renovate-health enforcement suite. Added CI-073 (orphan legacy
+# manifest, suggested), CI-074 (Dependabot alerts enabled, suggested), CI-075
+# (lockFileMaintenance automerge, suggested), CI-076 (vuln-fix PR automerge,
+# ladder-aware, suggested), CI-077 (multi-ecosystem CI, suggested). Promoted
+# CI-058/059/060 from suggested to important (report-and-escalate; held below
+# critical until the enabledManagers sweep lands per
+# feedback_policy_execution_gap.md). Widened CI-021 verify to accept the
+# detection-only Dependabot configuration (open-pull-requests-limit: 0 on every
+# ecosystem). Tagged 17 checks with check_family: renovate-health for the
+# [RENOVATE-HEALTH] aggregation rollup in the repo-compliance skill. Routed the
+# repo_settings domain (REPO-001/002) to repo-foundations-auditor.
+# Cross-reference: docs/reference/dependency-tooling-comparison.md
+#
 # 2026-06-02: TOOL-011 upgraded from a presence check to a value check
 # (verify ruff_target_min: py310). Enforces a ruff target-version floor of
 # py310 matching the >=3.10 support floor, instead of merely checking the key
 # is present. Adds the ruff_target_min verify semantic to the
 # python-toolchain-auditor agent. Stays severity: suggested pending 100% fleet
 # reach per feedback_policy_execution_gap.md.
+#
 # 2026-05-28: Dependency intake defenses. Added CI-067 (fleet dependency
 # cooldown -- minimum release age >= 3 days on auto-merging repos, suggested),
 # CI-068 (uv.lock committed and installed with --frozen, suggested), and CI-069
@@ -503,6 +517,7 @@ checks:
 
   - id: PC-016
     domain: pre_commit
+    check_family: renovate-health
     severity: suggested
     description: >-
       The Renovate global config at homelab-infra/services/renovate/config/config.json
@@ -954,6 +969,7 @@ checks:
 
   - id: CI-020
     domain: ci
+    check_family: renovate-health
     severity: important
     description: >-
       renovate.json present at repo root (Renovate is the org-standard dependency manager;
@@ -968,15 +984,34 @@ checks:
 
   - id: CI-021
     domain: ci
+    check_family: renovate-health
     severity: important
     description: >-
-      dependabot.yml absent when renovate.json is present (running both creates duplicate
-      update PRs and conflicts with Renovate's CVE automerge rules)
+      dependabot.yml does not open PRs when renovate.json is present. Running
+      both as PR-openers creates duplicate update PRs and conflicts with
+      Renovate's CVE automerge rules. The compliant end-state is Renovate as the
+      sole PR-opener with Dependabot kept as a detection-only alert ledger
+      (alerts on, PRs suppressed), so dependabot.yml may remain ONLY if every
+      ecosystem entry sets open-pull-requests-limit: 0.
     verify: |
-      If renovate.json exists at repo root: FAIL if .github/dependabot.yml also exists.
-      If renovate.json does not exist: skip this check (use CI-020 for the renovate.json gap).
-      Exceptions: dart-frog-paludarium and homelab-agent-configs (Renovate ignored; may keep dependabot.yml).
+      If renovate.json does not exist at repo root: skip (use CI-020 for the gap).
+      If renovate.json exists:
+        PASS if .github/dependabot.yml is absent.
+        PASS if .github/dependabot.yml exists AND every entry under updates:
+             sets open-pull-requests-limit: 0 (Renovate is sole PR-opener;
+             Dependabot is detection-only).
+        FAIL if .github/dependabot.yml exists with any ecosystem entry whose
+             open-pull-requests-limit is unset or > 0 (dual PR-opener).
+      Exceptions: dart-frog-paludarium and homelab-agent-configs (Renovate
+      ignored; may keep a PR-opening dependabot.yml).
     override_eligible: false
+    notes: >-
+      Amended 2026-06-02 to accept the detection-only configuration documented
+      in docs/reference/dependency-tooling-comparison.md (Recommendation step 7,
+      "Make Dependabot detection-only the canonical way"). PR-opening
+      dependabot.yml files in the fleet (e.g. AMC, Unify) should either be
+      deleted or have open-pull-requests-limit: 0 set per ecosystem.
+      Cross-reference: dependency-tooling-comparison.md, validated config change 3.
 
   - id: CI-033
     domain: ci
@@ -2039,7 +2074,8 @@ checks:
 
   - id: CI-058
     domain: ci
-    severity: suggested
+    check_family: renovate-health
+    severity: important
     override_eligible: true
     not_applicable_when: >-
       Repo is not a Python project (no [project] table in pyproject.toml).
@@ -2059,14 +2095,18 @@ checks:
     source_frameworks:
       - manifest-internal
     notes: >-
-      Added 2026-05-25 as severity: suggested. Will be promoted to important after
-      rollout PR sweep deploys callers to the 4 missing repos and fixes the 6 @main
-      pins. Cross-reference: docs/audits/dependency-management-improvement-plan-2026-05-24.md
-      S-9, feedback_policy_execution_gap.md.
+      Added 2026-05-25 as severity: suggested. Promoted to important 2026-06-02
+      per manifest-elevation-proposal.md: the SHA-pin half overlaps CI-005's
+      critical SHA-pin mandate (CVE-2025-30066 class), so important does not
+      outrun enforcement. override_eligible carries the dated deferral for the 4
+      missing-caller repos until callers are onboarded. Cross-reference:
+      docs/audits/dependency-management-improvement-plan-2026-05-24.md S-9,
+      feedback_policy_execution_gap.md.
 
   - id: CI-059
     domain: ci
-    severity: suggested
+    check_family: renovate-health
+    severity: important
     override_eligible: true
     not_applicable_when: "renovate.json does not exist at repo root"
     description: >-
@@ -2090,9 +2130,14 @@ checks:
     source_frameworks:
       - manifest-internal
     notes: >-
-      Added 2026-05-25 as severity: suggested. Will be promoted to important after
-      the lint script is built and deployed as a local pre-commit hook and/or
-      fleet-wide CI check. This is the structural successor to the v42-era PC-015
+      Added 2026-05-25 as severity: suggested. Promoted to important 2026-06-02
+      per manifest-elevation-proposal.md: 9 of 24 repos misconfigured holding
+      570 of 786 alerts (73%) is the single largest remediation lever in the
+      fleet, and important is report-and-escalate (not auto-blocking), so the
+      finding can drive remediation now without the lint script. Held below
+      critical until (a) the 9-repo enabledManagers sweep lands and (b) the lint
+      script is deployed, so the fleet is not gated with 9 known failures. This
+      is the structural successor to the v42-era PC-015
       schema-validation check (now retired post-v43 cutover); CI-059 catches a
       strictly larger class of misconfiguration (semantic coverage gaps that PC-015
       never caught even in principle). Likely accounts for most of the 47%
@@ -2102,7 +2147,8 @@ checks:
 
   - id: CI-060
     domain: ci
-    severity: suggested
+    check_family: renovate-health
+    severity: important
     override_eligible: true
     not_applicable_when: ".github/workflows/ directory does not exist"
     description: >-
@@ -2122,14 +2168,19 @@ checks:
     source_frameworks:
       - manifest-internal
     notes: >-
-      Added 2026-05-25 as severity: suggested. Will be promoted to important after
-      fleet-wide SHA-pinning PR sweep completes. Renovate's pinDigests: true
-      packageRule automates ongoing maintenance; deploy that rule to the org template
-      alongside this check. Cross-reference:
+      Added 2026-05-25 as severity: suggested. Promoted to important 2026-06-02
+      per manifest-elevation-proposal.md: CI-005 already enforces the same
+      SHA-pinning at critical for first-class workflows, so the sweep
+      precondition is effectively met by CI-005's existing coverage and the
+      fleet largely passes already; important aligns the two checks and removes
+      the "optional" signal. Renovate's pinDigests: true packageRule automates
+      ongoing maintenance; deploy that rule to the org template alongside this
+      check. Cross-reference:
       dependency-management-improvement-plan-2026-05-24.md S-4.
 
   - id: CI-061
     domain: ci
+    check_family: renovate-health
     severity: critical
     override_eligible: false
     not_applicable_when: >-
@@ -2167,6 +2218,7 @@ checks:
 
   - id: CI-062
     domain: ci
+    check_family: renovate-health
     severity: important
     description: >-
       Repos that accept auto-merging dependency updates (Renovate or Dependabot
@@ -2216,6 +2268,7 @@ checks:
 
   - id: CI-063
     domain: ci
+    check_family: renovate-health
     severity: suggested
     override_eligible: true
     not_applicable_when: "renovate.json does not exist at repo root"
@@ -2248,6 +2301,7 @@ checks:
 
   - id: CI-064
     domain: ci
+    check_family: renovate-health
     severity: suggested
     override_eligible: true
     not_applicable_when: >-
@@ -2274,6 +2328,209 @@ checks:
       Originally introduced as CI-062 in PR #154; renumbered to CI-064 when
       the merge queue rollout PR (ByronWilliamsCPA/.github#154) landed CI-062
       on main first with a different semantic.
+
+  - id: CI-073
+    domain: ci
+    check_family: renovate-health
+    severity: suggested
+    override_eligible: true
+    not_applicable_when: >-
+      Repo has no uv.lock at repo root (uv migration not performed), or repo is
+      documentation/config only (no Python source).
+    description: >-
+      A uv-migrated Python repo (uv.lock present at root) must not retain orphan
+      legacy dependency manifests (requirements*.txt, requirements/ directory,
+      poetry.lock, Pipfile, Pipfile.lock, setup.py with install_requires) unless
+      that manifest is a verified synced export of uv.lock. Orphan manifests are
+      a dual-source-of-truth hazard: Dependabot and Renovate alert on and try to
+      patch a stale second manifest that no longer reflects the installed
+      dependency set. image-preprocessing-detector carries 8 redundant
+      requirements*.txt files holding 289 of its 389 open alerts; those alerts
+      live in manifests the project no longer installs from.
+    verify: |
+      1. Confirm uv.lock exists at repo root. If absent: skip (not_applicable_when).
+      2. Enumerate legacy manifests at any depth:
+         requirements*.txt, requirements/*.txt, poetry.lock, Pipfile, Pipfile.lock.
+         git ls-files | grep -E '(^|/)(requirements.*\.txt|poetry\.lock|Pipfile(\.lock)?)$'
+      3. For each found:
+         PASS for that file if it carries a header comment marking it a generated
+              export (e.g., "# generated by uv export" / "# DO NOT EDIT") AND a CI
+              step or pre-commit hook regenerates it from uv.lock.
+         FAIL (WARN) for that file otherwise: orphan legacy manifest.
+      4. PASS if no legacy manifests found, or all found are verified exports.
+    source_frameworks:
+      - manifest-internal
+      - OWASP Top 10 CI/CD A08 Ungoverned Usage of Third-Party Services
+    notes: >-
+      Added 2026-06-02 at severity: suggested per feedback_policy_execution_gap.md;
+      promote to important after the orphan-manifest cleanup sweep lands (priority:
+      image-preprocessing-detector first, 289 alerts). Companion to CI-059: CI-059
+      catches Renovate being told to ignore a real manifest; CI-073 catches a real
+      manifest that should no longer exist. Both surfaced as the dual-manifest
+      failure mode in docs/reference/dependency-tooling-comparison.md (Cluster C,
+      "Remove orphan legacy manifests", Recommendation step 4).
+
+  - id: CI-074
+    domain: ci
+    check_family: renovate-health
+    severity: suggested
+    override_eligible: true
+    not_applicable_when: >-
+      Repo is archived, has no dependency manifest, or is a Renovate-ignored
+      backstop repo with a PR-opening dependabot.yml.
+    description: >-
+      GitHub Dependabot alerts (vulnerability detection, not version PRs) must
+      remain enabled on every live repo with a dependency manifest. Alerts are the
+      multi-ecosystem detection ledger Renovate's vulnerabilityAlerts engine reads,
+      and a backstop for ecosystems the Python SBOM gate does not scan. Alerts open
+      no PRs. Forward-looking regression guard: as of 2026-06-02 every live repo
+      already has alerts on, so this protects against future disablement.
+    verify: >-
+      gh api repos/<org>/<repo>/vulnerability-alerts -i. PASS on HTTP 204; FAIL on
+      404. Skip archived repos and repos with no dependency manifest.
+    source_frameworks:
+      - manifest-internal
+      - OpenSSF Scorecard Vulnerabilities
+    notes: >-
+      Added 2026-06-02 at suggested; reach already ~100%, so a guard not a lever.
+      Earlier draft cited cookiecutter-template-sample as disabled; that is a 404
+      local-only orphan and the example was removed. Remediation:
+      gh api -X PUT repos/<org>/<repo>/vulnerability-alerts.
+
+  - id: CI-075
+    domain: ci
+    check_family: renovate-health
+    severity: suggested
+    override_eligible: true
+    not_applicable_when: >-
+      Audit target is not the homelab-infra repo. This check evaluates the
+      Renovate global config at
+      homelab-infra/services/renovate/config/config.json, which governs the
+      whole fleet; per-repo evaluation is unnecessary because the global config
+      is authoritative for lockFileMaintenance unless a per-repo renovate.json
+      overrides it (in which case the per-repo override is checked too).
+    description: >-
+      The Renovate configuration must enable lockFileMaintenance AND automerge it
+      on green CI. For Python (uv/poetry), lockFileMaintenance is the ONLY
+      mechanism that remediates transitive vulnerabilities: transitiveRemediation
+      is npm-only (overrides) and Yarn-only (resolutions); Renovate's Python
+      managers see only direct dependencies in pyproject.toml, never locked
+      transitives. 75% of the fleet's vulnerable packages are transitive, so a
+      lockFileMaintenance rule that generates PRs but never merges (automerge:
+      false) leaves the majority of the vulnerability surface permanently
+      unpatched: the PRs generate weekly and sit. The global config currently has
+      lockFileMaintenance.enabled: true with automerge: false, which is the
+      observed failure mode.
+    verify: |
+      Read homelab-infra/services/renovate/config/config.json (and any per-repo
+      renovate.json that redeclares lockFileMaintenance).
+      PASS only when BOTH hold in the effective config:
+        - lockFileMaintenance.enabled is true, AND
+        - a rule applies automerge: true to lockFileMaintenance updates, via
+          either lockFileMaintenance.automerge: true OR a packageRules entry with
+          matchUpdateTypes: ["lockFileMaintenance"] and automerge: true
+          (platformAutomerge: true strongly recommended for atomic GitHub merge).
+      FAIL if lockFileMaintenance is disabled, or enabled with automerge false
+      or unset (generates-but-never-merges).
+    source_frameworks:
+      - manifest-internal
+      - OpenSSF Scorecard Vulnerabilities
+      - NIST SSDF RV.1.1
+    notes: >-
+      Added 2026-06-02 at severity: suggested per feedback_policy_execution_gap.md;
+      promote to important after the global config sets lockFileMaintenance
+      automerge: true and a fleet re-scan confirms transitive backlogs falling on
+      the ready cohort (rag-processor, maester-tests, python-libs). The npm-only
+      nature of transitiveRemediation is confirmed upstream
+      (renovatebot/renovate discussion #28776). platformAutomerge requires at
+      least one required status check in branch protection or GitHub may merge on
+      a pending check; REPO-001 (allow_auto_merge) and CI-023 (required checks)
+      are prerequisites. Cross-reference: dependency-tooling-comparison.md
+      ("Correction: transitiveRemediation does not help Python";
+      Recommendation step 6).
+
+  - id: CI-076
+    domain: ci
+    check_family: renovate-health
+    severity: suggested
+    override_eligible: true
+    not_applicable_when: >-
+      Audit target is not homelab-infra (global config authoritative); a per-repo
+      renovate.json redeclaring the vulnerability rules is checked too.
+    description: >-
+      Renovate vulnerability-fix PRs must auto-merge to land: the effective config
+      must apply automerge: true AND platformAutomerge: true to isVulnerabilityAlert
+      updates. The fleet config expresses vulnerability handling as a base
+      isVulnerabilityAlert rule plus a per-severity minimumReleaseAge ladder
+      (LOW/UNKNOWN 7d, MEDIUM 2d, CRITICAL/HIGH 0d); that ladder is intentional and
+      must be preserved.
+    verify: |
+      Resolve the effective config for an isVulnerabilityAlert update from
+      homelab-infra/services/renovate/config/config.json (+ any per-repo override).
+      PASS when automerge: true AND platformAutomerge: true effectively apply to
+      vulnerability updates (base rule, inherited root setting, or each severity
+      tier). Do NOT require minimumReleaseAge: null; the per-severity ladder is
+      compliant. FAIL if no isVulnerabilityAlert handling exists or automerge/
+      platformAutomerge is not effectively true.
+    source_frameworks:
+      - manifest-internal
+      - OpenSSF Scorecard Vulnerabilities
+    notes: >-
+      Added 2026-06-02 at suggested; promote to important after the config wires
+      platformAutomerge on the vuln rules and the gleif canary confirms vuln PRs
+      auto-merging over one weekly cycle. Corrected 2026-06-02: earlier draft
+      assumed a single rule and required minimumReleaseAge null, which would flatten
+      the intentional 5-entry ladder at config.json lines 229-253. Prerequisites:
+      REPO-001, a required status check, merge_queue (CI-062).
+
+  - id: CI-077
+    domain: ci
+    check_family: renovate-health
+    severity: suggested
+    override_eligible: true
+    not_applicable_when: >-
+      Repo is single-ecosystem Python (no package.json / package-lock.json and
+      no Dockerfile / docker-compose*.yml). Pure Python repos are covered by the
+      Python SBOM gate (CI-058) and need no additional ecosystem scanner.
+    description: >-
+      A polyglot repo (carries an npm lockfile and/or a Dockerfile in addition to
+      Python) must have CI vulnerability scanning that covers those ecosystems,
+      not the Python-only SBOM gate. The org python-sbom workflow scans only the
+      Python surface; rag-processor is uv-migrated and Python-clean yet carries
+      17 to 18 live npm vulnerabilities in frontend/package-lock.json that a
+      Python-only scan reports as 0. A naive "osv-scanner on uv.lock" gate gives
+      false comfort on exactly these repos. The fix: add the OSV-Scanner PR-diff
+      reusable workflow for npm lockfiles and aquasecurity/trivy-action with
+      scan-type: image for Dockerfile repos, both uploading SARIF to the Security
+      tab.
+    verify: |
+      1. Detect extra ecosystems:
+         npm: any package-lock.json, npm-shrinkwrap.json, or yarn.lock tracked.
+         container: any Dockerfile, *.Dockerfile, or docker-compose*.yml tracked.
+         If neither present: skip (not_applicable_when).
+      2. If npm present: a workflow under .github/workflows/ must invoke
+         google/osv-scanner (or osv-scanner-action / the OSV reusable workflow)
+         in a way that scans the npm lockfile, OR Dependabot alerts must be
+         enabled (CI-074) as the npm detection fallback.
+      3. If container present: a workflow must invoke aquasecurity/trivy-action
+         with scan-type: image (or equivalent grype/trivy image scan).
+      4. WARN for each detected ecosystem with no corresponding scanner and no
+         CI-074 alert fallback.
+    source_frameworks:
+      - manifest-internal
+      - OpenSSF Scorecard Vulnerabilities
+      - NIST SSDF RV.1.1
+    notes: >-
+      Added 2026-06-02 at severity: suggested per feedback_policy_execution_gap.md;
+      promote to important after at least one reference implementation of the
+      npm OSV-diff and Trivy image scan lands in a fleet repo (rag-processor is
+      the natural pilot: it has both ecosystems and a known 17-vuln npm gap).
+      Until then, CI-074 (Dependabot alerts on) is the multi-ecosystem detection
+      floor; CI-077 raises it to an in-CI gate. Affected repos (Dockerfile
+      and/or npm): rag-processor, cookiecutter-python-template, audio-processor,
+      llc-manager, image-preprocessing-detector. Cross-reference:
+      dependency-tooling-comparison.md ("Multi-scanner validation on the ready
+      cohort"; validated config change 5).
 
   - id: CI-065
     domain: ci
@@ -2834,6 +3091,7 @@ checks:
 
   - id: REPO-001
     domain: repo_settings
+    check_family: renovate-health
     severity: critical
     description: >-
       Repository setting allow_auto_merge is true. Without this toggle GitHub
@@ -2854,6 +3112,7 @@ checks:
 
   - id: REPO-002
     domain: repo_settings
+    check_family: renovate-health
     severity: important
     description: >-
       Repository setting delete_branch_on_merge is true. When false, merged

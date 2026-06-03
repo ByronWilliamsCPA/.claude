@@ -43,7 +43,7 @@ must match the `review` object schema in `docs/reference/github-repos.json`
 exactly: `branchProtection`, `codecov`, `codeql`, `foundations`, `ossfBadge`,
 `preCommit`, `releaseHealth`, `renovate`, `reuse`, `scorecard`,
 `secretScanning`, `sonarcloud`, `templateDrift`, `toolchain`, `workflows`.
-- `repo-foundations-auditor`: `foundations`
+- `repo-foundations-auditor`: `foundations` (also evaluates REPO-* repo_settings checks live via `gh api repos/<org>/<repo>`; no cachedReview key)
 - `python-toolchain-auditor`: `toolchain`, `renovate`
 - `pre-commit-auditor`: `preCommit`
 - `devops-deployment-agent`: `workflows`, `reuse`
@@ -53,7 +53,7 @@ exactly: `branchProtection`, `codecov`, `codeql`, `foundations`, `ossfBadge`,
 - `general-compliance-auditor`: full cachedReview (freeform review needs full context)
 
 Agents to dispatch simultaneously (skip any whose domain is in SKIP_DOMAINS):
-- `repo-foundations-auditor` (FOUND-* checks) -- domain: `foundations`
+- `repo-foundations-auditor` (FOUND-* checks, plus REPO-* repo_settings checks via `gh api repos/<org>/<repo>`) -- domain: `foundations`
 - `python-toolchain-auditor` (TOOL-* checks) -- domain: `toolchain`
 - `pre-commit-auditor` (PC-* checks) -- domain: `pre_commit`
 - `devops-deployment-agent` in CI audit mode (CI-* checks) -- domain: `ci`
@@ -65,6 +65,17 @@ Agents to dispatch simultaneously (skip any whose domain is in SKIP_DOMAINS):
 ### 3. Merge and Present Findings
 
 Collect all FINDING blocks. Filter out any finding whose ID is in the override list. Sort by severity: Critical first, then Important, then Suggested. Present unclassified candidates in a separate section.
+
+**Renovate-health aggregation:** After sorting, identify findings whose manifest check carries `check_family: renovate-health`. Read that tag from `docs/standards-manifest.yaml` as the single source of truth; do not hardcode an ID list (the family membership is maintained in the manifest). If 2 or more renovate-health findings are present for this repo, regardless of their individual severities, prepend this callout at the top of the Important section:
+
+```text
+[RENOVATE-HEALTH] 2+ Renovate-structure checks failed: Renovate process is not
+ideally structured for this repo. Findings below include all renovate-health
+checks surfaced to the Important section for this run. Individual severities
+retained for manifest fidelity.
+```
+
+Move any renovate-health findings that are currently Suggested to the top of the Suggested section with an `[elevated: renovate-health aggregate]` tag so they are visible without changing their manifest-recorded severity. The tag is a display annotation only: it must not alter the finding's `severity` field or its ID, because downstream domain agents and the retrospective read the FINDING block's severity directly. The callout surfaces the cluster; approval options A/B/C/D remain unchanged so the user retains control over remediation.
 
 Present findings in this format:
 

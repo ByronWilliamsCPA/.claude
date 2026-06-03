@@ -35,6 +35,8 @@ For remote-only repos: clone to a temp directory under `/tmp/compliance-<date>/`
 
 Run steps 2-4 from interactive-mode.md (parallel audit dispatch, merge findings, sort by severity). Skip the approval loop, remediation dispatch, and PR creation.
 
+Apply the renovate-health aggregation from interactive-mode.md Step 3: if 2 or more findings whose manifest check carries `check_family: renovate-health` are present (read the tag from `docs/standards-manifest.yaml`; do not hardcode the ID list), prepend the `[RENOVATE-HEALTH]` callout to the repo report and tag the Suggested-severity renovate-health findings as `[elevated: renovate-health aggregate]`. In scheduled mode the callout also increments a `renovate_health_repos` counter in the session totals so the retrospective can report how many repos triggered the aggregate.
+
 Write one report file per repo using the template at `templates/compliance-report.md`.
 Path: `~/.claude/docs/compliance-reports/<YYYY-MM-DD>-<repo-slug>.md`
 

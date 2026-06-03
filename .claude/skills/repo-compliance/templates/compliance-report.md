@@ -14,6 +14,9 @@
 | Suggested | {{suggested_found}} | {{suggested_overridden}} | {{suggested_net}} |
 | Unclassified | {{unclassified_count}} | 0 | {{unclassified_count}} |
 
+**Renovate-health aggregate:** {{renovate_health_triggered}}
+(yes = 2+ checks tagged `check_family: renovate-health` failed; Suggested-severity renovate-health findings elevated to the visible top of their section)
+
 ## Critical Findings
 
 {{critical_findings_list}}

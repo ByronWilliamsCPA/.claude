@@ -138,6 +138,26 @@
   and repo-compliance reference all move to pydoclint.
 
 ### Added
+* feat(compliance): add the renovate-health enforcement suite to
+  `docs/standards-manifest.yaml` and the repo-compliance skill. Adds five new CI
+  checks (all severity suggested, override-eligible): CI-073 (orphan legacy
+  manifest after uv migration), CI-074 (Dependabot alerts kept enabled as the
+  multi-ecosystem detection ledger), CI-075 (lockFileMaintenance enabled and
+  automerged, the only Python transitive-remediation path), CI-076
+  (vulnerability-fix PR automerge, ladder-aware: preserves the per-severity
+  minimumReleaseAge ladder rather than requiring minimumReleaseAge null), and
+  CI-077 (multi-ecosystem CI scanning for polyglot npm/container repos).
+  Promotes CI-058, CI-059, and CI-060 from suggested to important
+  (report-and-escalate; held below critical until the 9-repo enabledManagers
+  sweep lands and enforcement reaches 100% per `feedback_policy_execution_gap.md`).
+  Widens CI-021 verify to accept the detection-only Dependabot configuration
+  (dependabot.yml may remain when every ecosystem sets open-pull-requests-limit:
+  0). Tags 17 checks with `check_family: renovate-health` and wires a
+  `[RENOVATE-HEALTH]` aggregation rollup into the repo-compliance skill
+  (interactive and scheduled modes) that surfaces any repo failing 2 or more
+  renovate-family checks. Routes the repo_settings domain (REPO-001, REPO-002)
+  to repo-foundations-auditor. Refs
+  `docs/reference/dependency-tooling-comparison.md`.
 * feat(manifest): add TOOL-013 (darglint absent from dependencies) to
   `docs/standards-manifest.yaml`. Severity important, override-ineligible;
   mirrors the existing black/mypy/safety absence checks now that pydoclint
