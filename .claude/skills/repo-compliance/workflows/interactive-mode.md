@@ -43,7 +43,7 @@ must match the `review` object schema in `docs/reference/github-repos.json`
 exactly: `branchProtection`, `codecov`, `codeql`, `foundations`, `ossfBadge`,
 `preCommit`, `releaseHealth`, `renovate`, `reuse`, `scorecard`,
 `secretScanning`, `sonarcloud`, `templateDrift`, `toolchain`, `workflows`.
-- `repo-foundations-auditor`: `foundations` (also evaluates REPO-* repo_settings checks live via `gh api repos/<org>/<repo>`; no cachedReview key)
+- `repo-foundations-auditor`: `foundations` (the `foundations` key applies to FOUND-* checks; REPO-* repo_settings checks are evaluated live via `gh api repos/<org>/<repo>` with no cachedReview key)
 - `python-toolchain-auditor`: `toolchain`, `renovate`
 - `pre-commit-auditor`: `preCommit`
 - `devops-deployment-agent`: `workflows`, `reuse`
@@ -62,6 +62,8 @@ Agents to dispatch simultaneously (skip any whose domain is in SKIP_DOMAINS):
 - `general-compliance-auditor` (all checks as negative filter, freeform review) -- never skipped
 - `mkdocs-auditor` in audit mode (MKDOCS-* checks; skipped automatically when no mkdocs.yml is present in the project root) -- domain: `mkdocs`
 
+> Note: REPO-* checks carry `domain: repo_settings` in the manifest but are produced by `repo-foundations-auditor`, which is dispatched under `domain: foundations`. A `SKIP_DOMAINS` entry of either `foundations` or `repo_settings` therefore skips the REPO-* checks, and any retrospective grouping should treat `repo_settings` findings as belonging to the foundations agent.
+
 ### 3. Merge and Present Findings
 
 Collect all FINDING blocks. Filter out any finding whose ID is in the override list. Sort by severity: Critical first, then Important, then Suggested. Present unclassified candidates in a separate section.
@@ -76,6 +78,8 @@ retained for manifest fidelity.
 ```
 
 Move any renovate-health findings that are currently Suggested to the top of the Suggested section with an `[elevated: renovate-health aggregate]` tag so they are visible without changing their manifest-recorded severity. The tag is a display annotation only: it must not alter the finding's `severity` field or its ID, because downstream domain agents and the retrospective read the FINDING block's severity directly. The callout surfaces the cluster; approval options A/B/C/D remain unchanged so the user retains control over remediation.
+
+When rendering the report template (`templates/compliance-report.md`), set `renovate_health_triggered` to `yes` when this 2-or-more aggregation fired and `no` otherwise, so the template's Renovate-health aggregate line is populated rather than shipping the raw placeholder.
 
 Present findings in this format:
 

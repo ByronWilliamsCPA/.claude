@@ -35,14 +35,14 @@ For remote-only repos: clone to a temp directory under `/tmp/compliance-<date>/`
 
 Run steps 2-4 from interactive-mode.md (parallel audit dispatch, merge findings, sort by severity). Skip the approval loop, remediation dispatch, and PR creation.
 
-Apply the renovate-health aggregation from interactive-mode.md Step 3: if 2 or more findings whose manifest check carries `check_family: renovate-health` are present (read the tag from `docs/standards-manifest.yaml`; do not hardcode the ID list), prepend the `[RENOVATE-HEALTH]` callout to the repo report and tag the Suggested-severity renovate-health findings as `[elevated: renovate-health aggregate]`. In scheduled mode the callout also increments a `renovate_health_repos` counter in the session totals so the retrospective can report how many repos triggered the aggregate.
+Apply the renovate-health aggregation from interactive-mode.md Step 3: if 2 or more findings whose manifest check carries `check_family: renovate-health` are present (read the tag from `docs/standards-manifest.yaml`; do not hardcode the ID list), prepend the `[RENOVATE-HEALTH]` callout to the repo report and tag the Suggested-severity renovate-health findings as `[elevated: renovate-health aggregate]`. The `[elevated: renovate-health aggregate]` tag is a display annotation only; it must not change the finding's `severity` field or its ID, because the retrospective reads the FINDING block's severity directly. Set the per-report `renovate_health_triggered` template field to `yes` when the aggregate fired for that repo, otherwise `no`. In scheduled mode the callout also increments a `renovate_health_repos` counter in the session totals so the retrospective can report how many repos triggered the aggregate; initialize that counter to 0 at the start of the run, before processing the first repo.
 
 Write one report file per repo using the template at `templates/compliance-report.md`.
 Path: `~/.claude/docs/compliance-reports/<YYYY-MM-DD>-<repo-slug>.md`
 
 ### 3. Retrospective
 
-After all repos are processed, dispatch `compliance-retrospective` with all findings from the full session.
+After all repos are processed, dispatch `compliance-retrospective` with all findings from the full session. Include the final `renovate_health_repos` count in the dispatch context, and report it in the lessons-learned output as the number of repos that triggered the `[RENOVATE-HEALTH]` aggregate this run.
 
 Output path: `~/.claude/docs/compliance-reports/lessons-learned/<YYYY-MM-DD>.md`
 

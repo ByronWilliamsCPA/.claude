@@ -226,8 +226,9 @@ Cached review data (domain-scoped):
  exactly (branchProtection, codecov, codeql, foundations, ossfBadge,
  preCommit, releaseHealth, renovate, reuse, scorecard, secretScanning,
  sonarcloud, templateDrift, toolchain, workflows):
-  repo-foundations-auditor: foundations (also evaluates REPO-* repo_settings
-    checks live via gh api repos/<org>/<repo>; no cachedReview key)
+  repo-foundations-auditor: foundations (the foundations key applies to FOUND-*
+    checks; REPO-* repo_settings checks are evaluated live via
+    gh api repos/<org>/<repo> with no cachedReview key)
   python-toolchain-auditor: toolchain, renovate
   pre-commit-auditor: preCommit
   devops-deployment-agent: workflows, reuse
