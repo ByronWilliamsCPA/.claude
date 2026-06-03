@@ -66,7 +66,7 @@ They answer different questions, and the SBOM scan is the neutral ground truth u
 | **Renovate** (self-hosted) | Update delivery | PRs that move direct deps (and lockfiles) forward on a schedule | Transitive vulns by default; effectiveness gated by whether PRs merge |
 | **Dependabot alerts** | Vulnerability detection | Per-(advisory x manifest) alerts against the GitHub Advisory DB; covers transitive | Inflated, non-deduplicated counts; no fix unless security updates are enabled |
 | **Dependabot security updates** | Targeted security fixes | PRs that rewrite the lockfile to patch a vulnerable dep, including transitive | A per-repo setting (on at least `llc-manager`), mostly off; security-only, not general currency |
-| **Snyk** | Detection + reachability + fix | Proprietary DB (often earlier than GHSA), reachability to cut false positives, license checks, fix PRs | Commercial; free tier caps tests/month; cost scales with 44-repo fleet |
+| **Snyk** | Detection + reachability + fix | Proprietary DB (often earlier than GHSA), reachability to cut false positives, license checks, fix PRs | Commercial; free tier caps tests/month; cost scales with the full 44-repo fleet (24 carry `renovate.json`) |
 | **SBOM scan** (`osv-scanner`/Trivy) | Neutral enumeration + gate | Deduplicated per-package vuln view across all components, CI gate, free | Reports, does not remediate |
 
 ## Fleet totals
@@ -132,7 +132,8 @@ GitHub-side conclusions.
 
 Yes, and it already does. The global config (`homelab-infra/services/renovate/config/config.json`) has the full
 remediation stack enabled fleet-wide: `vulnerabilityAlerts.enabled: true`, `osvVulnerabilityAlerts: true`,
-`transitiveRemediation: true`, and `lockFileMaintenance.enabled: true`, with no `enabledManagers` restriction
+`transitiveRemediation: true` (npm-only; a no-op for this mostly-Python fleet, see the Correction below), and
+`lockFileMaintenance.enabled: true`, with no `enabledManagers` restriction
 (so npm and other ecosystems are in scope by default). `vulnerabilityAlerts` is the feature that reads GitHub's
 vulnerability-alert graph, the same data source Dependabot surfaces as alerts, and raises `fix(deps):` PRs at any
 time, bypassing the normal schedule and grouping.
@@ -191,7 +192,7 @@ Two further items to verify so the loop closes on GitHub-detected (not just OSV-
    duplicated `requirements/` subdirectory). Once uv is authoritative, delete them; this removes the manifests
    Dependabot is alerting on rather than trying to keep eight stale exports patched.
 
-### Leveraging the existing SBOM step
+### Building on the existing SBOM step
 
 The standards manifest already mandates an SBOM workflow (`sbom.yml`, manifest check; reusable
 `ByronWilliamsCPA/.github/.github/workflows/python-sbom.yml`, plus `sbom-nightly.yml`). It is more than
@@ -211,7 +212,8 @@ Two limits shape how it fits the fix loop:
 
 **Target wiring (most of it already in place):** detection = Dependabot alerts (multi-ecosystem, free) plus the
 SBOM SARIF gate (deep Python); remediation = Renovate (`vulnerabilityAlerts` + `osvVulnerabilityAlerts` +
-`transitiveRemediation` + `lockFileMaintenance`); verification = the SBOM gate confirming the fix and blocking
+`lockFileMaintenance`; `transitiveRemediation` is npm-only and does not apply to Python, see Correction);
+verification = the SBOM gate confirming the fix and blocking
 regressions. Going "Renovate-only for PRs" does not mean dropping Dependabot alerts; it means Dependabot opens no
 PRs (already true) while its alert feed remains the multi-ecosystem detection ledger Renovate acts on. To cover
 npm in CI as well, either extend the SBOM workflow to the npm ecosystem or rely on Dependabot alerts for it.
@@ -241,13 +243,14 @@ The single strongest signal is main CI health, independent of migration:
 
 Red main is a 23x alert multiplier. The mechanism is direct: Renovate PRs inherit a red base, fail CI, and
 cannot merge. Across the not-ready repos, open Renovate PRs are almost uniformly red (PromptCraft 8 of 8,
-data_ingestor 10 of 10, xero-crypto 11 of 11). Merge rate alone is a poor discriminator (it is ~57% even in the
+data_ingestor 10 of 10, xero-crypto 11 of 11). Merge rate alone is a poor cross-cohort discriminator at the high end (it is ~57% even in the
 ready cohort, because Renovate routinely supersedes and closes its own PRs); what tracks the alert backlog is
 whether the *security* PRs can land, which is gated by CI health and migration, not by Renovate.
 
 **Conclusion:** Where Renovate is fully deployed, it holds repos at near-zero alerts. The backlog is a rollout
 artifact, not a tooling inadequacy. The lone ready-cohort outlier is `rag-processor` (uv, green, but 17 alerts),
-which needs its open Renovate PRs merged and `lockFileMaintenance` for transitive residue.
+which needs its open Renovate PRs merged and the `npm` manager enabled to cover its `frontend/` (its alerts are
+npm, not Python transitive residue).
 
 \* dual-manifest average is skewed by `image-preprocessing-detector` (389); `homelab-infra` is 0.
 
@@ -263,7 +266,7 @@ its delta is characterized below rather than measured.
 | williaby/image-generation | 0 | 0 | 0 | 0 | n/a | Truly clean (unanimous, single ecosystem) |
 | ByronWilliamsCPA/audio-processor | 0 | 0 | 0 | 0 | n/a | Clean app deps; carries Dockerfiles (image surface unscanned) |
 | ByronWilliamsCPA/llc-manager | 0 | 0 | 0 | 0 | n/a | Clean app deps; carries a Dockerfile |
-| ByronWilliamsCPA/gleif | 0 | 0 | **1** | 0 | n/a | 1 unfixable PYSEC ReDoS in `py` (no patch exists) |
+| ByronWilliamsCPA/gleif | 0 | 0 | **1** | 0 | n/a | 1 disputed PYSEC ReDoS in `py` (GHSA withdrawn 2025; not actionable) |
 | ByronWilliamsCPA/rag-processor | 17 | 0 | 0 | 0 | **18** | 17-18 real npm vulns in `frontend/`, missed by the Python-only scan |
 
 Three findings, each load-bearing for the tooling decision:
@@ -271,10 +274,13 @@ Three findings, each load-bearing for the tooling decision:
 1. **For the Python surface, the scanners agree with Dependabot.** Three repos are unanimously 0; the others'
    Python lockfiles are 0. An SBOM-plus-osv pipeline reproduces Dependabot's verdict on Python deps. Renovate
    plus Dependabot alerts is not under-detecting fixable Python vulnerabilities on ready repos.
-2. **The only "extra" finding beyond Dependabot is unfixable.** pip-audit alone flags `py==1.11.0`
-   (PYSEC-2022-42969, a ReDoS) in `gleif`, sourced from PyPI's advisory feed that GHSA/OSV/Trivy do not carry.
-   It has `fix_versions=[]`: no patch exists, so no tool, including Snyk, could remediate it via a bump. It is a
-   database-curation difference, not a coverage gap, and not actionable.
+2. **The only "extra" finding beyond Dependabot is a withdrawn, disputed advisory.** pip-audit alone flags
+   `py==1.11.0` (PYSEC-2022-42969 / CVE-2022-42969, a ReDoS) in `gleif`. pip-audit surfaces it because OSV's
+   record carries no `fixed` field (so `fix_versions=[]`), but the advisory is disputed: its GitHub equivalent
+   GHSA-w596-4wvx-j9j6 was withdrawn in August 2025 as not reproducible, and a fixed `py` 1.11.1 was in fact
+   released. OSV and GHSA do carry the advisory (as aliases of the CVE); Renovate and Dependabot do not raise it
+   because of the withdrawn status and the missing OSV `fixed` field, not because it is absent from those
+   databases. It is a database-curation artifact, not a coverage gap, and not actionable.
 3. **The real gap is ecosystem coverage, and it is the most important result.** `rag-processor` is uv-migrated
    and Python-clean, but has an unmanaged React frontend whose `frontend/package-lock.json` carries 17 to 18
    live npm vulnerabilities (handlebars, tar, esbuild, vite, vitest, ws). The Python-only SBOM reported 0;
@@ -302,8 +308,9 @@ The repos cluster into three patterns. The cluster a repo falls into dictates th
 ### Cluster A: Renovate merges, repo stays clean (the target state)
 
 `homelab-infra`, `family-office-portal`, `image-generation`, `llc-manager`, `gleif`, `fragrance-rater`,
-`reference-library`, `rag-processor`, `.github`, `MTG_AI`. High merge ratios, 0 to 2 alerts. This proves the
-architecture works when PRs land. Note these still carry non-security currency lag (`audio-processor` 25.5
+`reference-library`, `.github`, `MTG_AI` (0 to 2 Dependabot alerts), plus `rag-processor` on its Python
+surface (Python-clean, but 17 npm alerts in its unmanaged `frontend/`; see the multi-scanner section). High
+merge ratios. This proves the architecture works when PRs land. Note these still carry non-security currency lag (`audio-processor` 25.5
 libyears, `rag-processor` 21.6) because closed-unmerged minor/patch PRs leave packages behind even when no CVE
 is open. Renovate keeps them *safe*, not necessarily *current*.
 
@@ -335,10 +342,10 @@ This is the finding that most directly answers "what would Dependabot or a deepe
   vulnerability surface sits outside that job.
 - **Dependabot security updates** specifically rewrite the lockfile to patch the vulnerable dependency,
   transitive included. That capability is the precise complement to Renovate's gap, and it is free and native.
-  It is currently enabled on 2 of 24 repos.
+  It is currently enabled on 2 of 24 repos (one being `llc-manager`).
 - An **SBOM scan** (`osv-scanner`) enumerates every component and attributes each vuln to a package once,
   giving a deduplicated, transitive-aware count. For `image-preprocessing-detector`, osv reports 36 vulnerable
-  packages where Dependabot reports 389 alerts: the same reality, counted differently (Dependabot multiplies by
+  packages (17 direct + 19 transitive) where Dependabot reports 389 alerts: the same reality, counted differently (Dependabot multiplies by
   advisory and by manifest path; this repo carries both `uv.lock` and `requirements.txt`). For triage, the
   deduplicated SBOM count is the actionable one; for completeness, Dependabot's manifest-aware count flags that
   the second manifest is also exposed.
@@ -351,7 +358,7 @@ Sequence matters: each step is a precondition for the next being measurable.
 
 **Finish the rollout (closes the backlog, no new tooling):**
 
-1. **Fix `enabledManagers` to match the migrated manifests (73% of all alerts).** This is the highest-leverage
+1. **Fix `enabledManagers` to match the migrated manifests (73% of all alerts).** This is the highest-impact
    action and a prerequisite for everything else: until Renovate is scoped to the right managers, it does not
    even propose the fixes, so making main green has nothing to merge. Update the nine gapped repos (or simply
    remove the `enabledManagers` restriction so Renovate autodiscovers all managers, matching the global config).
@@ -361,8 +368,10 @@ Sequence matters: each step is a precondition for the next being measurable.
 2. **Make main green.** Red main on 16 of 24 repos is the next blocker (23x alert multiplier); once Renovate is
    proposing the right fixes, they still cannot merge onto a broken base. Prioritise the high-alert red-main
    repos.
-3. **Finish uv migration on the 3 unmigrated repos** (`data_ingestor`, `PromptCraft`, `xero-crypto`: 201 alerts
-   at an 18% merge rate). On poetry/requirements manifests Renovate cannot run proper lockfile maintenance, so
+3. **Finish uv migration on the 3 genuinely-unmigrated repos** (`data_ingestor`, `PromptCraft`, `xero-crypto`:
+   still on poetry/requirements on main, 201 alerts at an 18% merge rate; distinct from the stale-poetry repos in
+   the `enabledManagers` table above, which already carry `uv.lock` and only need their config corrected). On
+   poetry/requirements manifests Renovate cannot run proper lockfile maintenance, so
    both its detection-driven action and its remediation are degraded.
 4. **Remove orphan legacy manifests.** Delete the 8 leftover `requirements*.txt` files from
    `image-preprocessing-detector` once uv is authoritative; verify `homelab-infra`'s `requirements.txt` is a
@@ -374,7 +383,8 @@ Sequence matters: each step is a precondition for the next being measurable.
 
 6. **Enable `lockFileMaintenance` fleet-wide** with automerge-on-green. This is the in-Renovate mechanism that
    refreshes transitive dependencies (the 75% of vulnerable packages direct-dep PRs never touch), which is the
-   residue left even on fully-migrated repos like `rag-processor`, `maester-tests`, and `python-libs`. Keep
+   residue left even on fully-migrated repos like `maester-tests` (21 transitive vulns) and `python-libs` (20
+   transitive). Keep
    `vulnerabilityAlerts` and `osvVulnerabilityAlerts` on for vulnerability-triggered PRs. This removes the need
    for Dependabot to open PRs at all.
 
@@ -426,7 +436,8 @@ corrects one assumption. Each item below is tagged and sourced.
 
 ### Correction: `transitiveRemediation` does not help Python
 
-`transitiveRemediation: true` works **only for npm** (via `overrides`) and Yarn (`resolutions`). For Python
+`transitiveRemediation: true` is documented as applying **only to the npm manager** (via `overrides`), and the
+option is deprecated in current Renovate. For Python
 (uv/poetry) it is confirmed unsupported: Renovate's Python managers only see direct dependencies in
 `pyproject.toml`, not locked transitives. Since roughly 75% of this fleet's vulnerabilities are transitive and
 the fleet is mostly Python, **`lockFileMaintenance` is the only mechanism that remediates Python transitive
