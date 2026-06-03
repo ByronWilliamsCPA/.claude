@@ -99,6 +99,16 @@
 
 ### Changed
 
+* feat(standards): upgrade TOOL-011 in `docs/standards-manifest.yaml` from a
+  presence check to a value check. Ruff `target-version` must now be `py310` or
+  higher (verify `ruff_target_min: py310`) rather than merely present, matching
+  the documented `>=3.10` support floor. Adds the `ruff_target_min` audit
+  handler and remediation guidance to the python-toolchain-auditor agent (derive
+  the floor from `requires-python`; keep `[tool.basedpyright] pythonVersion`
+  aligned; run the PEP 604/585 modernization as a dedicated PR) and documents the
+  tool-target floor in `.claude/standards/python.md`. Severity stays `suggested`
+  until fleet rollout reaches 100% per feedback_policy_execution_gap.md.
+
 * feat(skills): weekly skill review 2026-06-01 -- 68 observations applied across
   13 skill files. Updated pr-fix, pr-review, writing-plans, dispatching-parallel-agents,
   handoff, git, testing, ci-fix, using-git-worktrees, receiving-code-review, quality,

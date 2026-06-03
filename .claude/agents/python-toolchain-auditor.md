@@ -24,7 +24,7 @@ Receive the coordinator prompt with: target repo path, list of TOOL-* checks, an
 - `ruff_rules_include` checks: Read the `[tool.ruff.lint]` select list; diff it against the required codes listed in the verify field; report which codes are missing
 - `content_present` checks on pyproject.toml: Grep for the string in pyproject.toml
 - `file_exists` checks: use Glob
-- `ruff_target_min` checks: Read the `[tool.ruff]` `target-version` value from pyproject.toml; parse the `pyXY` form (`py39` -> 3.9, `py310` -> 3.10, and so on); fail if the key is absent or the parsed version is below the floor named in the verify field (for example `py39` is below `py310`); report the current value
+- `ruff_target_min` checks: Read the `[tool.ruff]` `target-version` value from pyproject.toml; parse the `pyXY` form into a `(major, minor)` integer tuple (`py39` -> `(3, 9)`, `py310` -> `(3, 10)`, and so on); fail if the key is absent or the parsed tuple is below the floor named in the verify field. Compare as integer tuples, never as floats or strings, so `py39` correctly sorts below `py310`; report the current value
 
 For `ruff_rules_include`, the required PyStrict-aligned codes are:
 `BLE, EM, SLF, INP, ISC, PGH, RSE, TID, YTT, FA, T10, G, ANN, TCH, FBT, TRY, ERA, FURB, LOG, ASYNC`
@@ -41,7 +41,7 @@ For approved findings:
 - `dep_absent` (remove forbidden dep): Remove the dep line from pyproject.toml using Edit
 - `dep_present` (add missing dep): Add the dep to the appropriate dev section using Edit
 - Missing Ruff codes: Append the missing codes to the `select` list in `[tool.ruff.lint]`
-- `ruff_target_min` (target-version absent or below floor): Read `requires-python` from pyproject.toml and set `[tool.ruff] target-version` to that floor as `pyXY` (for example `>=3.10` -> `py310`), never below `py310`. Flag in the finding that `[tool.mypy] python_version` and `[tool.black] target-version` should match. Warn that raising the target activates PEP 604/585 rules across the whole codebase (Optional[X] -> X | None, Dict/List -> dict/list); run `ruff check --fix` and resolve residual findings in a dedicated modernization PR, not mixed into unrelated work
+- `ruff_target_min` (target-version absent or below floor): Read `requires-python` from pyproject.toml and set `[tool.ruff] target-version` to that floor as `pyXY` (for example `>=3.10` -> `py310`), never below `py310`. Flag in the finding that `[tool.basedpyright] pythonVersion` should stay aligned with the same floor. Do not introduce `[tool.mypy]` or `[tool.black]` settings: this repo replaces mypy with basedpyright and black with `ruff format` (TOOL-002/TOOL-003 require both to be absent). Warn that raising the target activates PEP 604/585 rules across the whole codebase (Optional[X] -> X | None, Dict/List -> dict/list); run `ruff check --fix` and resolve residual findings in a dedicated modernization PR, not mixed into unrelated work
 - Missing `[tool.basedpyright]` block: Read `requires-python` from pyproject.toml to determine the project's minimum Python version (e.g. `>=3.12` → `"3.12"`), then append:
 
 ```toml
