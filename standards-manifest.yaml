@@ -1,6 +1,12 @@
 # docs/standards-manifest.yaml
 version: "1.0"
-last_updated: "2026-05-30"
+last_updated: "2026-06-02"
+# 2026-06-02: TOOL-011 upgraded from a presence check to a value check
+# (verify ruff_target_min: py310). Enforces a ruff target-version floor of
+# py310 matching the >=3.10 support floor, instead of merely checking the key
+# is present. Adds the ruff_target_min verify semantic to the
+# python-toolchain-auditor agent. Stays severity: suggested pending 100% fleet
+# reach per feedback_policy_execution_gap.md.
 # 2026-05-28: Dependency intake defenses. Added CI-067 (fleet dependency
 # cooldown -- minimum release age >= 3 days on auto-merging repos, suggested),
 # CI-068 (uv.lock committed and installed with --frozen, suggested), and CI-069
@@ -306,8 +312,8 @@ checks:
   - id: TOOL-011
     domain: toolchain
     severity: suggested
-    description: "Ruff target-version set in pyproject.toml"
-    verify: "content_present: pyproject.toml, target-version"
+    description: "Ruff target-version set to py310 or higher in pyproject.toml (matches the >=3.10 support floor)"
+    verify: "ruff_target_min: py310"
     override_eligible: true
     not_applicable_when: "repo does not contain Python source files"
 
