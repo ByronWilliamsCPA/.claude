@@ -1,0 +1,3489 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Global Claude Code development standards, commands, and configuration for all projects">
+      
+      
+        <meta name="author" content="Byron Williams">
+      
+      
+        <link rel="canonical" href="https://claude-config.readthedocs.io/reference/dependency-tooling-comparison/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Dependency Tooling Effectiveness: Renovate vs Dependabot vs Snyk vs SBOM - Claude Code Configuration</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+  
+
+
+  
+  
+
+<script id="__analytics">function __md_analytics(){function e(){dataLayer.push(arguments)}window.dataLayer=window.dataLayer||[],e("js",new Date),e("config",""),document.addEventListener("DOMContentLoaded",(function(){document.forms.search&&document.forms.search.query.addEventListener("blur",(function(){this.value&&e("event","search",{search_term:this.value})}));document$.subscribe((function(){var t=document.forms.feedback;if(void 0!==t)for(var a of t.querySelectorAll("[type=submit]"))a.addEventListener("click",(function(a){a.preventDefault();var n=document.location.pathname,d=this.getAttribute("data-md-value");e("event","feedback",{page:n,data:d}),t.firstElementChild.disabled=!0;var r=t.querySelector(".md-feedback__note [data-md-value='"+d+"']");r&&(r.hidden=!1)})),t.hidden=!1})),location$.subscribe((function(t){e("config","",{page_path:t.pathname})}))}));var t=document.createElement("script");t.async=!0,t.src="https://www.googletagmanager.com/gtag/js?id=",document.getElementById("__analytics").insertAdjacentElement("afterEnd",t)}</script>
+  
+    <script>"undefined"!=typeof __md_analytics&&__md_analytics()</script>
+  
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#the-decision-this-answers" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Claude Code Configuration" class="md-header__button md-logo" aria-label="Claude Code Configuration" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Claude Code Configuration
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Dependency Tooling Effectiveness: Renovate vs Dependabot vs Snyk vs SBOM
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/ByronWilliamsCPA/.claude" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    ByronWilliamsCPA/.claude
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../getting-started/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../architecture/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../contributing/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Contributing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../project/roadmap/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Project
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Claude Code Configuration" class="md-nav__button md-logo" aria-label="Claude Code Configuration" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Claude Code Configuration
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/ByronWilliamsCPA/.claude" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    ByronWilliamsCPA/.claude
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--published"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../getting-started/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1. Install
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/first-agent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2. Your First Agent
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/first-skill/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3. Your First Skill
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/picking/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Picking Agents vs Skills
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../architecture/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/install-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Install Model
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/hook-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hook Pipeline
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/agent-dispatch/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent Dispatch
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/mcp-tiered-loading/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MCP Tiered Loading
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/submodule-strategy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Submodule Strategy
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/rules-vs-standards/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rules vs Standards
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/diagrams/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Diagrams
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_9" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../architecture/adr/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Decisions (ADRs)
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3_9" id="__nav_3_9_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Decisions (ADRs)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/adr/ADR-001-two-layer-symlink-install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-001 Two-Layer Symlink Install
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/adr/ADR-002-hook-composition/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-002 Hook Composition
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/adr/ADR-003-tiered-mcp-loading/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-003 Tiered MCP Loading
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/adr/ADR-004-skill-vs-agent-boundary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-004 Skill vs Agent Boundary
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/adr/ADR-005-submodule-extension-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-005 Submodule Extension Model
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/adr/ADR-006-rules-vs-standards/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-006 Rules vs Standards
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/adr/ADR-007-dual-audience-docs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-007 Dual-Audience Docs
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/adr/ADR-008-scanner-allowlist-tiers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-008 Scanner Allowlist Tiers
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../agents/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agents Catalog
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../skills/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Skills Catalog
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hooks
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mcp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MCP Strategy
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--published"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../contributing/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contributing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/adding-agents/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding an Agent
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/adding-skills/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding a Skill
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/adding-hooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding a Hook
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/writing-adrs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writing ADRs
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/writing-diagrams/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writing Diagrams
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../frontmatter-standard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontmatter Standard
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--published"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Project
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../project/roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--published"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../project/changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--published"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../project/license/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    License
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--published"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-decision-this-answers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The decision this answers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tldr-verdict" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TL;DR verdict
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-each-tool-actually-answers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What each tool actually answers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fleet-totals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fleet totals
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#per-repo-scorecard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Per-repo scorecard
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#detection-to-remediation-wiring-can-renovate-fix-what-dependabot-detects" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Detection-to-remediation wiring: can Renovate fix what Dependabot detects?
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Detection-to-remediation wiring: can Renovate fix what Dependabot detects?">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-dominant-root-cause-enabledmanagers-does-not-match-the-migrated-manifests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The dominant root cause: enabledManagers does not match the migrated manifests
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#building-on-the-existing-sbom-step" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Building on the existing SBOM step
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#readiness-segmentation-the-fair-test" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Readiness segmentation (the fair test)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#multi-scanner-validation-on-the-ready-cohort" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multi-scanner validation on the ready cohort
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#three-failure-modes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Three failure modes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Three failure modes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cluster-a-renovate-merges-repo-stays-clean-the-target-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cluster A: Renovate merges, repo stays clean (the target state)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cluster-b-renovate-proposes-prs-do-not-merge-alerts-pile-up" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cluster B: Renovate proposes, PRs do not merge, alerts pile up
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cluster-c-renovate-barely-runs-transitive-debt-dominates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cluster C: Renovate barely runs, transitive debt dominates
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-transitive-dependency-crux" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The transitive-dependency crux
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommendation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommendation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#answering-the-decision-directly" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Answering the decision directly
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#limitations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Limitations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#external-validation-and-concrete-config-changes-sourced" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        External validation and concrete config changes (sourced)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="External validation and concrete config changes (sourced)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#correction-transitiveremediation-does-not-help-python" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Correction: transitiveRemediation does not help Python
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#validated-config-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Validated config changes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>Dependency Tooling Effectiveness: Renovate vs Dependabot vs Snyk vs SBOM</h1>
+
+<p>This is the empirical companion to <a href="../renovate-architecture/">renovate-architecture.md</a>. That document
+is the architecture source of truth (the self-hosted Docker stack, layered config, manifest enforcement).
+This document measures the <strong>outcome</strong>: given that architecture, how current are the packages and how many
+vulnerabilities are actually closing?</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Date</td>
+<td>2026-06-02</td>
+</tr>
+<tr>
+<td>Scope</td>
+<td>24 unique GitHub repos carrying <code>renovate.json</code> (28 local clones, deduplicated)</td>
+</tr>
+<tr>
+<td>Data sources</td>
+<td>GitHub Dependabot alerts API (paginated), GitHub PR/issue API, <code>osv-scanner</code> on lockfiles, PyPI release-date drift (libyear)</td>
+</tr>
+<tr>
+<td>Excluded</td>
+<td><code>dataset_dev</code> (local-only orphan, 404 on GitHub); docs-only/config repos without <code>pyproject.toml</code> are PR-only</td>
+</tr>
+<tr>
+<td>Raw data</td>
+<td><code>/tmp/dep-analysis/{github_combined,local_combined,merged_rows}.json</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="the-decision-this-answers">The decision this answers<a class="headerlink" href="#the-decision-this-answers" title="Permanent link">&para;</a></h2>
+<p>The operative question is not "which tool wins." It is: <strong>is the current Renovate-only structure adequate,
+and if not, what changes to it or in parallel get us there?</strong> The fleet is mid-migration to uv (the structure
+Renovate needs to operate fully), and the prior state had both Dependabot and Renovate opening PRs. The goal is
+Renovate as the sole PR-opener. This document tests whether that is adequate for both remediation and detection.</p>
+<h2 id="tldr-verdict">TL;DR verdict<a class="headerlink" href="#tldr-verdict" title="Permanent link">&para;</a></h2>
+<ol>
+<li><strong>You are already Renovate-only for PRs.</strong> Dependabot opens 0 PRs fleet-wide today; only <code>AMC</code> and <code>Unify</code>
+   still carry a <code>dependabot.yml</code> (both with 0 open PRs). The dual-PR friction is effectively gone.</li>
+<li><strong>Incomplete uv migration is the dominant constraint, confirmed by the data.</strong> Unmigrated (poetry or
+   requirements) repos carry <strong>4 to 6x the alerts per repo at roughly a quarter of the merge rate</strong> of migrated
+   uv repos. Migration degrades both axes: Renovate detects-and-acts only through a manifest it can parse, so a
+   legacy manifest suppresses both detection-driven action and remediation.</li>
+<li><strong>Migration is necessary but not sufficient.</strong> Two refinements: dual-manifest debt (a leftover
+   <code>requirements.txt</code> after adding <code>uv.lock</code>) is the single biggest alert source (389 on one repo), and even
+   fully-migrated repos keep a transitive backlog that only <code>lockFileMaintenance</code> closes.</li>
+<li><strong>For remediation, Renovate-only is adequate by design, and proven where it is fully deployed.</strong> The
+   ready cohort (uv on main + green CI) averages 3.4 alerts per repo, 4 of 5 at zero. The 786-alert backlog is
+   concentrated in not-ready repos. The dominant blocker is red main CI (16 of 24 repos; red-main repos average
+   48.1 alerts vs 2.1 for green, a 23x gap): Renovate cannot land a fix onto a broken base. Close the gap by
+   finishing the rollout, not by adding tools.</li>
+<li><strong>For detection, Renovate as the sole detector is not adequate, but the fix is free: keep Dependabot
+   alerts on.</strong> They open no PRs (no dual-PR regression) and give a queryable ledger Renovate lacks. A single
+   detector can be blind to a whole ecosystem: a Python-only SBOM scan reported 0 for <code>rag-processor</code>
+   while its npm frontend carried 17 live vulnerabilities that Dependabot's multi-ecosystem alerts caught.</li>
+<li><strong>Adequate end-state = Renovate (sole PR-opener) + Dependabot alerts (free detection ledger).</strong> Both already
+   in place. <code>osv-scanner</code> in CI is an optional gate or second detector; <strong>Snyk is not justified</strong> at this scale
+   unless reachability or license compliance become hard requirements.</li>
+</ol>
+<h2 id="what-each-tool-actually-answers">What each tool actually answers<a class="headerlink" href="#what-each-tool-actually-answers" title="Permanent link">&para;</a></h2>
+<p>The comparison is muddled if "Renovate vs Dependabot vs Snyk" is read as three interchangeable products.
+They answer different questions, and the SBOM scan is the neutral ground truth underneath all three.</p>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Primary job</th>
+<th>What it delivers</th>
+<th>Blind spot in this fleet</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Renovate</strong> (self-hosted)</td>
+<td>Update delivery</td>
+<td>PRs that move direct deps (and lockfiles) forward on a schedule</td>
+<td>Transitive vulns by default; effectiveness gated by whether PRs merge</td>
+</tr>
+<tr>
+<td><strong>Dependabot alerts</strong></td>
+<td>Vulnerability detection</td>
+<td>Per-(advisory x manifest) alerts against the GitHub Advisory DB; covers transitive</td>
+<td>Inflated, non-deduplicated counts; no fix unless security updates are enabled</td>
+</tr>
+<tr>
+<td><strong>Dependabot security updates</strong></td>
+<td>Targeted security fixes</td>
+<td>PRs that rewrite the lockfile to patch a vulnerable dep, including transitive</td>
+<td>A per-repo setting (on at least <code>llc-manager</code>), mostly off; security-only, not general currency</td>
+</tr>
+<tr>
+<td><strong>Snyk</strong></td>
+<td>Detection + reachability + fix</td>
+<td>Proprietary DB (often earlier than GHSA), reachability to cut false positives, license checks, fix PRs</td>
+<td>Commercial; free tier caps tests/month; cost scales with the full 44-repo fleet (24 carry <code>renovate.json</code>)</td>
+</tr>
+<tr>
+<td><strong>SBOM scan</strong> (<code>osv-scanner</code>/Trivy)</td>
+<td>Neutral enumeration + gate</td>
+<td>Deduplicated per-package vuln view across all components, CI gate, free</td>
+<td>Reports, does not remediate</td>
+</tr>
+</tbody>
+</table>
+<h2 id="fleet-totals">Fleet totals<a class="headerlink" href="#fleet-totals" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Open Dependabot alerts</td>
+<td><strong>786</strong> (21 critical, 343 high, 310 medium, 112 low)</td>
+</tr>
+<tr>
+<td>Alerts with a fix available</td>
+<td>757 (<strong>96%</strong>)</td>
+</tr>
+<tr>
+<td>Renovate PRs opened (all time)</td>
+<td>476</td>
+</tr>
+<tr>
+<td>Renovate PRs merged</td>
+<td>204 (<strong>43%</strong>)</td>
+</tr>
+<tr>
+<td>Renovate PRs closed unmerged</td>
+<td>213 (<strong>45%</strong>)</td>
+</tr>
+<tr>
+<td>Renovate PRs open now</td>
+<td>59</td>
+</tr>
+<tr>
+<td>Repos with <code>renovate.json</code> but 0 Renovate PRs ever</td>
+<td>3 (<code>AMC</code>, <code>MTG_AI</code>, <code>Unify</code>)</td>
+</tr>
+<tr>
+<td>Repos with <code>dependabot.yml</code> (version/security updates)</td>
+<td><strong>2/24</strong></td>
+</tr>
+<tr>
+<td>Vulnerable packages: direct vs transitive (osv)</td>
+<td>51 direct / <strong>153 transitive (75%)</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Two numbers carry the whole argument: <strong>45% of Renovate PRs are closed without merging</strong>, and <strong>75% of
+vulnerable packages are transitive</strong>. The first is a delivery failure; the second is a coverage gap in
+Renovate's default behaviour. Neither is fixed by replacing Renovate.</p>
+<h2 id="per-repo-scorecard">Per-repo scorecard<a class="headerlink" href="#per-repo-scorecard" title="Permanent link">&para;</a></h2>
+<p>Sorted by open Dependabot alerts. <code>ren e/m/o/c</code> = Renovate PRs ever / merged / open / closed-unmerged.
+<code>osv d/t</code> = vulnerable packages direct / transitive. <code>libyr</code> = summed libyears of direct-dep release-date lag
+(uv.lock repos only; poetry/requirements repos show 0.0 because those lockfiles carry no upload timestamps).</p>
+<table>
+<thead>
+<tr>
+<th>Repo</th>
+<th style="text-align: right;">DB alerts</th>
+<th>C/H/M/L</th>
+<th>ren e/m/o/c</th>
+<th>osv d/t</th>
+<th style="text-align: right;">libyr</th>
+<th>last ren</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>williaby/image-preprocessing-detector</td>
+<td style="text-align: right;">389</td>
+<td>6/157/155/71</td>
+<td>6/&#8531;/2</td>
+<td>17/19</td>
+<td style="text-align: right;">38.3</td>
+<td>2026-06-01</td>
+</tr>
+<tr>
+<td>williaby/data_ingestor</td>
+<td style="text-align: right;">99</td>
+<td>3/38/40/18</td>
+<td>29/4/10/15</td>
+<td>12/28</td>
+<td style="text-align: right;">n/a</td>
+<td>2026-05-30</td>
+</tr>
+<tr>
+<td>ByronWilliamsCPA/maester-tests</td>
+<td style="text-align: right;">58</td>
+<td>2/31/22/3</td>
+<td>6/2/2/2</td>
+<td>2/21</td>
+<td style="text-align: right;">14.8</td>
+<td>2026-05-28</td>
+</tr>
+<tr>
+<td>williaby/PromptCraft</td>
+<td style="text-align: right;">56</td>
+<td>0/20/23/13</td>
+<td>164/25/8/131</td>
+<td>10/20</td>
+<td style="text-align: right;">n/a</td>
+<td>2026-05-28</td>
+</tr>
+<tr>
+<td>ByronWilliamsCPA/python-libs</td>
+<td style="text-align: right;">54</td>
+<td>2/31/18/3</td>
+<td>7/2/&#8532;</td>
+<td>5/20</td>
+<td style="text-align: right;">19.8</td>
+<td>2026-05-28</td>
+</tr>
+<tr>
+<td>ByronWilliamsCPA/xero-crypto</td>
+<td style="text-align: right;">46</td>
+<td>1/20/24/1</td>
+<td>41/12/11/18</td>
+<td>0/1*</td>
+<td style="text-align: right;">n/a</td>
+<td>2026-06-01</td>
+</tr>
+<tr>
+<td>williaby/dna</td>
+<td style="text-align: right;">29</td>
+<td>0/17/12/0</td>
+<td>3/0/2/1</td>
+<td>0/11</td>
+<td style="text-align: right;">8.0</td>
+<td>2026-05-28</td>
+</tr>
+<tr>
+<td>ByronWilliamsCPA/cookiecutter-python-template</td>
+<td style="text-align: right;">18</td>
+<td>1/9/7/1</td>
+<td>14/10/&#8531;</td>
+<td>0/9</td>
+<td style="text-align: right;">6.5</td>
+<td>2026-06-01</td>
+</tr>
+<tr>
+<td>ByronWilliamsCPA/rag-processor</td>
+<td style="text-align: right;">17</td>
+<td>3/9/4/1</td>
+<td>17/12/&#8532;</td>
+<td>2/0</td>
+<td style="text-align: right;">21.6</td>
+<td>2026-06-01</td>
+</tr>
+<tr>
+<td>ByronWilliamsCPA/AMC</td>
+<td style="text-align: right;">14</td>
+<td>2/9/2/1</td>
+<td>0/0/0/0</td>
+<td>0/0</td>
+<td style="text-align: right;">0.1</td>
+<td>never</td>
+</tr>
+<tr>
+<td>ByronWilliamsCPA/Unify</td>
+<td style="text-align: right;">4</td>
+<td>0/2/2/0</td>
+<td>0/0/0/0</td>
+<td>0/0</td>
+<td style="text-align: right;">5.7</td>
+<td>never</td>
+</tr>
+<tr>
+<td>ByronWilliamsCPA/fragrance-rater</td>
+<td style="text-align: right;">1</td>
+<td>1/0/0/0</td>
+<td>11/7/&#8531;</td>
+<td>0/0</td>
+<td style="text-align: right;">0.9</td>
+<td>2026-06-02</td>
+</tr>
+<tr>
+<td>ByronWilliamsCPA/reference-library</td>
+<td style="text-align: right;">1</td>
+<td>0/0/1/0</td>
+<td>20/13/&frac34;</td>
+<td>1/0</td>
+<td style="text-align: right;">1.1</td>
+<td>2026-06-02</td>
+</tr>
+<tr>
+<td>ByronWilliamsCPA/MTG_AI</td>
+<td style="text-align: right;">0</td>
+<td>-</td>
+<td>0/0/0/0</td>
+<td>0/0</td>
+<td style="text-align: right;">0.1</td>
+<td>never</td>
+</tr>
+<tr>
+<td>ByronWilliamsCPA/audio-processor</td>
+<td style="text-align: right;">0</td>
+<td>-</td>
+<td>9/3/2/4</td>
+<td>0/0</td>
+<td style="text-align: right;">25.5</td>
+<td>2026-06-01</td>
+</tr>
+<tr>
+<td>williaby/backpacking</td>
+<td style="text-align: right;">0</td>
+<td>-</td>
+<td>3/0/&frac12;</td>
+<td>docs</td>
+<td style="text-align: right;">-</td>
+<td>2026-05-28</td>
+</tr>
+<tr>
+<td>ByronWilliamsCPA/.github</td>
+<td style="text-align: right;">0</td>
+<td>-</td>
+<td>15/11/0/4</td>
+<td>config</td>
+<td style="text-align: right;">-</td>
+<td>2026-05-28</td>
+</tr>
+<tr>
+<td>ByronWilliamsCPA/cookiecutter-template-sample**</td>
+<td style="text-align: right;">n/a</td>
+<td>-</td>
+<td>n/a</td>
+<td>2/21</td>
+<td style="text-align: right;">17.7</td>
+<td>n/a</td>
+</tr>
+<tr>
+<td>ByronWilliamsCPA/family-office-portal</td>
+<td style="text-align: right;">0</td>
+<td>-</td>
+<td>9/8/0/1</td>
+<td>0/1</td>
+<td style="text-align: right;">0.0</td>
+<td>2026-06-01</td>
+</tr>
+<tr>
+<td>ByronWilliamsCPA/gleif</td>
+<td style="text-align: right;">0</td>
+<td>-</td>
+<td>13/7/2/4</td>
+<td>0/1</td>
+<td style="text-align: right;">0.9</td>
+<td>2026-06-01</td>
+</tr>
+<tr>
+<td>ByronWilliamsCPA/homelab-infra</td>
+<td style="text-align: right;">0</td>
+<td>-</td>
+<td>83/73/5/5</td>
+<td>0/1</td>
+<td style="text-align: right;">13.1</td>
+<td>2026-06-02</td>
+</tr>
+<tr>
+<td>williaby/image-generation</td>
+<td style="text-align: right;">0</td>
+<td>-</td>
+<td>12/8/&#8531;</td>
+<td>0/0</td>
+<td style="text-align: right;">0.0</td>
+<td>2026-06-02</td>
+</tr>
+<tr>
+<td>ByronWilliamsCPA/llc-manager</td>
+<td style="text-align: right;">0</td>
+<td>-</td>
+<td>10/5/&#8532;</td>
+<td>0/0</td>
+<td style="text-align: right;">0.9</td>
+<td>2026-06-01</td>
+</tr>
+<tr>
+<td>williaby/.claude</td>
+<td style="text-align: right;">0</td>
+<td>-</td>
+<td>4/1/&frac12;</td>
+<td>docs</td>
+<td style="text-align: right;">-</td>
+<td>2026-05-08</td>
+</tr>
+</tbody>
+</table>
+<p>* <code>xero-crypto</code> is partly a Node project; its <code>requirements.txt</code> is not <code>==</code>-pinned, so the Python osv scan
+under-counts it. Dependabot's 46 alerts (mostly npm) are the authoritative figure there.
+** Correction (2026-06-02, post independent review): <code>cookiecutter-template-sample</code> returns 404 on GitHub.
+It is a local-only orphan (like <code>dataset_dev</code>), not a live fleet repo; its earlier "0 Dependabot alerts" was a
+404 artifact, not a coverage gap. Its GitHub-side columns are invalid and excluded; the local osv result is
+shown only to note the orphan clone itself carries vulnerable components. It must not be counted in fleet
+GitHub-side conclusions.</p>
+<h2 id="detection-to-remediation-wiring-can-renovate-fix-what-dependabot-detects">Detection-to-remediation wiring: can Renovate fix what Dependabot detects?<a class="headerlink" href="#detection-to-remediation-wiring-can-renovate-fix-what-dependabot-detects" title="Permanent link">&para;</a></h2>
+<p>Yes, and it already does. The global config (<code>homelab-infra/services/renovate/config/config.json</code>) has the full
+remediation stack enabled fleet-wide: <code>vulnerabilityAlerts.enabled: true</code>, <code>osvVulnerabilityAlerts: true</code>,
+<code>transitiveRemediation: true</code> (npm-only; a no-op for this mostly-Python fleet, see the Correction below), and
+<code>lockFileMaintenance.enabled: true</code>, with no <code>enabledManagers</code> restriction
+(so npm and other ecosystems are in scope by default). <code>vulnerabilityAlerts</code> is the feature that reads GitHub's
+vulnerability-alert graph, the same data source Dependabot surfaces as alerts, and raises <code>fix(deps):</code> PRs at any
+time, bypassing the normal schedule and grouping.</p>
+<p>This is not theoretical. Renovate is actively opening vulnerability-remediation PRs across ecosystems:
+<code>renovate/pypi-gradio-vulnerability</code>, <code>renovate/pypi-pyjwt-vulnerability</code> (PromptCraft),
+<code>renovate/npm-vitest-vulnerability</code> (xero-crypto), <code>renovate/pypi-pymupdf-vulnerability</code> (data_ingestor). Where
+CI is healthy these merge (xero-crypto's <code>renovate/pypi-pytest-vulnerability</code> and <code>renovate/pypi-black-vulnerability</code>
+merged 2026-05-05). Where main is red or the repo is unmigrated, they sit OPEN (PromptCraft and data_ingestor each
+carry 4 open vulnerability PRs) and the corresponding Dependabot alerts persist. The fix engine works; the merge
+step is the bottleneck, exactly as the readiness analysis shows.</p>
+<h3 id="the-dominant-root-cause-enabledmanagers-does-not-match-the-migrated-manifests">The dominant root cause: <code>enabledManagers</code> does not match the migrated manifests<a class="headerlink" href="#the-dominant-root-cause-enabledmanagers-does-not-match-the-migrated-manifests" title="Permanent link">&para;</a></h3>
+<p>The biggest reason Renovate is not fixing detected vulnerabilities is not the engine, the token, or the
+database. It is that on most of the high-alert repos, Renovate's per-repo <code>enabledManagers</code> allow-list points at
+a package manager the repo no longer uses, so Renovate never looks at the vulnerable manifests at all. A
+fleet-wide audit of <code>enabledManagers</code> against the manifests actually present on the default branch:</p>
+<table>
+<thead>
+<tr>
+<th>Repo</th>
+<th>enabledManagers</th>
+<th>Manifests present</th>
+<th style="text-align: right;">Gap</th>
+<th style="text-align: right;">Alerts</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>image-preprocessing-detector</td>
+<td>pep621, github-actions</td>
+<td>uv.lock + 8 requirements*.txt</td>
+<td style="text-align: right;"><strong>pip_requirements excluded</strong> (289 of 389 alerts)</td>
+<td style="text-align: right;">389</td>
+</tr>
+<tr>
+<td>maester-tests</td>
+<td>poetry, github-actions</td>
+<td>uv.lock (no poetry)</td>
+<td style="text-align: right;"><strong>stale poetry; pep621 missing</strong> (manages nothing)</td>
+<td style="text-align: right;">58</td>
+</tr>
+<tr>
+<td>python-libs</td>
+<td>poetry, github-actions</td>
+<td>uv.lock (no poetry)</td>
+<td style="text-align: right;"><strong>stale poetry; pep621 missing</strong></td>
+<td style="text-align: right;">54</td>
+</tr>
+<tr>
+<td>dna</td>
+<td>poetry, github-actions</td>
+<td>uv.lock (no poetry)</td>
+<td style="text-align: right;"><strong>stale poetry; pep621 missing</strong></td>
+<td style="text-align: right;">29</td>
+</tr>
+<tr>
+<td>cookiecutter-python-template</td>
+<td>pep621, github-actions</td>
+<td>+ package-lock.json</td>
+<td style="text-align: right;"><strong>npm excluded</strong></td>
+<td style="text-align: right;">18</td>
+</tr>
+<tr>
+<td>rag-processor</td>
+<td>pep621, github-actions</td>
+<td>+ frontend/package-lock.json</td>
+<td style="text-align: right;"><strong>npm excluded</strong> (the 17 npm vulns)</td>
+<td style="text-align: right;">17</td>
+</tr>
+<tr>
+<td>Unify</td>
+<td>poetry, github-actions</td>
+<td>uv.lock (no poetry)</td>
+<td style="text-align: right;"><strong>stale poetry; pep621 missing</strong></td>
+<td style="text-align: right;">4</td>
+</tr>
+<tr>
+<td>fragrance-rater</td>
+<td>pep621, github-actions</td>
+<td>+ package.json, requirements</td>
+<td style="text-align: right;">npm + pip_requirements excluded</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr>
+<td>MTG_AI</td>
+<td>pep621, github-actions</td>
+<td>+ package.json</td>
+<td style="text-align: right;">npm excluded</td>
+<td style="text-align: right;">0</td>
+</tr>
+</tbody>
+</table>
+<p><strong>9 of 24 repos have a manager gap, and they hold 570 of 786 alerts (73% of the fleet).</strong> The pattern is a
+single migration-completeness bug repeated nine times: the manifests were migrated to uv (or an npm frontend was
+added) but the per-repo <code>renovate.json</code> <code>enabledManagers</code> was never updated. The clearest cases are the
+stale-poetry repos (<code>python-libs</code>, <code>maester-tests</code>, <code>dna</code>, <code>Unify</code>): their only open Renovate PRs are "Update
+GitHub Actions," and every Dependabot alert sits in the <code>uv.lock</code> that the <code>poetry</code> manager cannot see.
+<code>image-preprocessing-detector</code> compounds this with 8 redundant <code>requirements*.txt</code> files left behind by the
+migration, 289 of its 389 alerts living in manifests the <code>pip_requirements</code> manager (excluded) would own.</p>
+<p>This is the literal answer to "can Renovate fix what Dependabot detects": yes, but first stop telling it to
+ignore the manifests. Fixing <code>enabledManagers</code> to match each repo's reality (or removing the restriction so
+Renovate autodiscovers all managers, as the global config already does) puts 570 alerts back into Renovate's
+remediation scope.</p>
+<p>Two further items to verify so the loop closes on GitHub-detected (not just OSV-detected) vulnerabilities:</p>
+<ol>
+<li><strong>Token scope.</strong> Renovate's <code>vulnerabilityAlerts</code> only fires if its GitHub token can read the repo's
+   vulnerability alerts. The deployed token is injected at runtime (<code>RENOVATE_ORG_GITHUB_TOKEN</code>, not in the
+   readable env files) and PRs author as a user, so it is a PAT; a <code>repo</code>-scoped classic PAT can read
+   vulnerability alerts (confirmed: the GraphQL <code>vulnerabilityAlerts</code> query returns 389 for
+   image-preprocessing-detector under <code>repo</code> scope). Because <code>osvVulnerabilityAlerts</code> is independently enabled
+   and OSV mirrors the GitHub Advisory DB, detection does not critically depend on this read, but verify the
+   token carries <code>repo</code> (or fine-grained "Dependabot alerts: read") and check the Renovate run logs for a
+   vulnerability-alert count to be certain.</li>
+<li><strong>Redundant manifests.</strong> <code>image-preprocessing-detector</code> carries 8 <code>requirements*.txt</code> files (including a
+   duplicated <code>requirements/</code> subdirectory). Once uv is authoritative, delete them; this removes the manifests
+   Dependabot is alerting on rather than trying to keep eight stale exports patched.</li>
+</ol>
+<h3 id="building-on-the-existing-sbom-step">Building on the existing SBOM step<a class="headerlink" href="#building-on-the-existing-sbom-step" title="Permanent link">&para;</a></h3>
+<p>The standards manifest already mandates an SBOM workflow (<code>sbom.yml</code>, manifest check; reusable
+<code>ByronWilliamsCPA/.github/.github/workflows/python-sbom.yml</code>, plus <code>sbom-nightly.yml</code>). It is more than
+generation: it produces a CycloneDX SBOM and scans it with Trivy (gating), Grype (advisory), and OSV-Scanner
+(keyless gate, transitive-aware), uploading SARIF to the Security tab. That is a strong detection-and-gate layer.</p>
+<p>Two limits shape how it fits the fix loop:</p>
+<ul>
+<li><strong>It is uv/Python-only by org policy.</strong> The reusable workflow errors out on poetry repos and skips repos
+  without a root <code>pyproject.toml</code>; it does not scan npm, container, or other ecosystems. So it has the same
+  coverage gap that hid <code>rag-processor</code>'s 17 npm vulnerabilities, and the same uv-migration precondition. It
+  cannot be the sole detector for polyglot repos.</li>
+<li><strong>It gates and verifies; it does not trigger Renovate.</strong> Renovate detects independently via GitHub alerts and
+  OSV; it does not read the SBOM or the SARIF. The SBOM step's role in the loop is to (a) gate merges so a
+  Renovate fix PR is verified to actually clear the CVE, (b) provide the audit artifact, and &copy; push a deep
+  Python transitive ledger to the Security tab. It complements Renovate; it does not feed it.</li>
+</ul>
+<p><strong>Target wiring (most of it already in place):</strong> detection = Dependabot alerts (multi-ecosystem, free) plus the
+SBOM SARIF gate (deep Python); remediation = Renovate (<code>vulnerabilityAlerts</code> + <code>osvVulnerabilityAlerts</code> +
+<code>lockFileMaintenance</code>; <code>transitiveRemediation</code> is npm-only and does not apply to Python, see Correction);
+verification = the SBOM gate confirming the fix and blocking
+regressions. Going "Renovate-only for PRs" does not mean dropping Dependabot alerts; it means Dependabot opens no
+PRs (already true) while its alert feed remains the multi-ecosystem detection ledger Renovate acts on. To cover
+npm in CI as well, either extend the SBOM workflow to the npm ecosystem or rely on Dependabot alerts for it.</p>
+<h2 id="readiness-segmentation-the-fair-test">Readiness segmentation (the fair test)<a class="headerlink" href="#readiness-segmentation-the-fair-test" title="Permanent link">&para;</a></h2>
+<p>A fleet average over a half-finished rollout measures the rollout, not the tool. Renovate operates through a
+manifest it can parse, on a branch its config is merged into, against a base its PRs can pass CI on. Scoring its
+effectiveness requires filtering on three readiness gates, measured against the <strong>default branch</strong> (not a local
+feature-branch checkout): (1) migrated to uv on main, (2) structural/enable PRs merged so main carries the
+working config, (3) main CI green so PRs rebase onto a clean base.</p>
+<table>
+<thead>
+<tr>
+<th>Cohort</th>
+<th style="text-align: right;">Repos</th>
+<th style="text-align: right;">Alerts/repo</th>
+<th style="text-align: right;">Renovate merge rate</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Ready: uv-only on main + green CI</strong></td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;"><strong>3.4</strong></td>
+<td style="text-align: right;">57%</td>
+</tr>
+<tr>
+<td>Migrated (uv-only) but main CI red</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">17.9</td>
+<td style="text-align: right;">60%</td>
+</tr>
+<tr>
+<td>Dual-manifest (uv + leftover legacy)</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">194.5*</td>
+<td style="text-align: right;">83%</td>
+</tr>
+<tr>
+<td>Unmigrated (poetry / requirements)</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">67.0</td>
+<td style="text-align: right;">18%</td>
+</tr>
+<tr>
+<td>Docs/config (no Python lockfile)</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">0.0</td>
+<td style="text-align: right;">n/a</td>
+</tr>
+</tbody>
+</table>
+<p>The single strongest signal is main CI health, independent of migration:</p>
+<table>
+<thead>
+<tr>
+<th>Main CI</th>
+<th style="text-align: right;">Repos</th>
+<th style="text-align: right;">Alerts/repo</th>
+<th style="text-align: right;">Merge rate</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>green</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;"><strong>2.1</strong></td>
+<td style="text-align: right;">58%</td>
+</tr>
+<tr>
+<td>red</td>
+<td style="text-align: right;">16</td>
+<td style="text-align: right;"><strong>48.1</strong></td>
+<td style="text-align: right;">40%</td>
+</tr>
+</tbody>
+</table>
+<p>Red main is a 23x alert multiplier. The mechanism is direct: Renovate PRs inherit a red base, fail CI, and
+cannot merge. Across the not-ready repos, open Renovate PRs are almost uniformly red (PromptCraft 8 of 8,
+data_ingestor 10 of 10, xero-crypto 11 of 11). Merge rate alone is a poor cross-cohort discriminator at the high end (it is ~57% even in the
+ready cohort, because Renovate routinely supersedes and closes its own PRs); what tracks the alert backlog is
+whether the <em>security</em> PRs can land, which is gated by CI health and migration, not by Renovate.</p>
+<p><strong>Conclusion:</strong> Where Renovate is fully deployed, it holds repos at near-zero alerts. The backlog is a rollout
+artifact, not a tooling inadequacy. The lone ready-cohort outlier is <code>rag-processor</code> (uv, green, but 17 alerts),
+which needs its open Renovate PRs merged and the <code>npm</code> manager enabled to cover its <code>frontend/</code> (its alerts are
+npm, not Python transitive residue).</p>
+<p>* dual-manifest average is skewed by <code>image-preprocessing-detector</code> (389); <code>homelab-infra</code> is 0.</p>
+<h2 id="multi-scanner-validation-on-the-ready-cohort">Multi-scanner validation on the ready cohort<a class="headerlink" href="#multi-scanner-validation-on-the-ready-cohort" title="Permanent link">&para;</a></h2>
+<p>To test whether "ready" repos are genuinely clean or whether Dependabot's count hides or inflates issues, all
+five ready repos were scanned against their <strong>main-branch</strong> lockfiles with four independent sources: Dependabot
+(live), osv-scanner, pip-audit, and Trivy (via a generated CycloneDX SBOM). Snyk was not run (no account token);
+its delta is characterized below rather than measured.</p>
+<table>
+<thead>
+<tr>
+<th>Repo</th>
+<th style="text-align: right;">Dependabot</th>
+<th style="text-align: right;">osv (py)</th>
+<th style="text-align: right;">pip-audit</th>
+<th style="text-align: right;">Trivy</th>
+<th style="text-align: right;">osv (npm)</th>
+<th>Verdict</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>williaby/image-generation</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">n/a</td>
+<td>Truly clean (unanimous, single ecosystem)</td>
+</tr>
+<tr>
+<td>ByronWilliamsCPA/audio-processor</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">n/a</td>
+<td>Clean app deps; carries Dockerfiles (image surface unscanned)</td>
+</tr>
+<tr>
+<td>ByronWilliamsCPA/llc-manager</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">n/a</td>
+<td>Clean app deps; carries a Dockerfile</td>
+</tr>
+<tr>
+<td>ByronWilliamsCPA/gleif</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;"><strong>1</strong></td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">n/a</td>
+<td>1 disputed PYSEC ReDoS in <code>py</code> (GHSA withdrawn 2025; not actionable)</td>
+</tr>
+<tr>
+<td>ByronWilliamsCPA/rag-processor</td>
+<td style="text-align: right;">17</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;"><strong>18</strong></td>
+<td>17-18 real npm vulns in <code>frontend/</code>, missed by the Python-only scan</td>
+</tr>
+</tbody>
+</table>
+<p>Three findings, each load-bearing for the tooling decision:</p>
+<ol>
+<li><strong>For the Python surface, the scanners agree with Dependabot.</strong> Three repos are unanimously 0; the others'
+   Python lockfiles are 0. An SBOM-plus-osv pipeline reproduces Dependabot's verdict on Python deps. Renovate
+   plus Dependabot alerts is not under-detecting fixable Python vulnerabilities on ready repos.</li>
+<li><strong>The only "extra" finding beyond Dependabot is a withdrawn, disputed advisory.</strong> pip-audit alone flags
+   <code>py==1.11.0</code> (PYSEC-2022-42969 / CVE-2022-42969, a ReDoS) in <code>gleif</code>. pip-audit surfaces it because OSV's
+   record carries no <code>fixed</code> field (so <code>fix_versions=[]</code>), but the advisory is disputed: its GitHub equivalent
+   GHSA-w596-4wvx-j9j6 was withdrawn in August 2025 as not reproducible, and a fixed <code>py</code> 1.11.1 was in fact
+   released. OSV and GHSA do carry the advisory (as aliases of the CVE); Renovate and Dependabot do not raise it
+   because of the withdrawn status and the missing OSV <code>fixed</code> field, not because it is absent from those
+   databases. It is a database-curation artifact, not a coverage gap, and not actionable.</li>
+<li><strong>The real gap is ecosystem coverage, and it is the most important result.</strong> <code>rag-processor</code> is uv-migrated
+   and Python-clean, but has an unmanaged React frontend whose <code>frontend/package-lock.json</code> carries 17 to 18
+   live npm vulnerabilities (handlebars, tar, esbuild, vite, vitest, ws). The Python-only SBOM reported 0;
+   Dependabot caught them because it scans every manifest; osv-scanner reproduces them when pointed at the npm
+   lockfile. A naive "osv-scanner on uv.lock in CI" gate would have given false comfort here.</li>
+</ol>
+<p><strong>Answer to "would they still come up with 0":</strong> Not uniformly. One repo is genuinely 0 everywhere; two are 0 on
+app deps but carry an unscanned container base-image surface; one has a single unfixable PYSEC finding; and one
+has 17 to 18 real npm vulnerabilities that a Python-centric view misses entirely. The deviations are not caused
+by Renovate being weak or by needing Snyk. They are caused by <strong>ecosystem coverage</strong>: "ready" was defined on the
+uv/Python axis, but a polyglot repo has npm and container surfaces that uv migration and a uv-only SBOM never
+touch. This is the strongest argument in the entire analysis for keeping Dependabot alerts (multi-ecosystem by
+default) and, if an SBOM CI gate is added, for making it enumerate every ecosystem rather than just Python.</p>
+<p><strong>What Snyk would add here:</strong> it would catch the npm vulnerabilities (multi-ecosystem, like Dependabot) and, via
+reachability, could tell you which of the 17 npm alerts are actually reachable in the shipped frontend bundle
+(several, like <code>vitest</code> and <code>esbuild</code>, are build-time dev dependencies that may never ship). That triage value is
+real but narrow, and it does not change the conclusion that the ready repos' Python surface is adequately
+covered by the free stack.</p>
+<h2 id="three-failure-modes">Three failure modes<a class="headerlink" href="#three-failure-modes" title="Permanent link">&para;</a></h2>
+<p>The repos cluster into three patterns. The cluster a repo falls into dictates the fix.</p>
+<h3 id="cluster-a-renovate-merges-repo-stays-clean-the-target-state">Cluster A: Renovate merges, repo stays clean (the target state)<a class="headerlink" href="#cluster-a-renovate-merges-repo-stays-clean-the-target-state" title="Permanent link">&para;</a></h3>
+<p><code>homelab-infra</code>, <code>family-office-portal</code>, <code>image-generation</code>, <code>llc-manager</code>, <code>gleif</code>, <code>fragrance-rater</code>,
+<code>reference-library</code>, <code>.github</code>, <code>MTG_AI</code> (0 to 2 Dependabot alerts), plus <code>rag-processor</code> on its Python
+surface (Python-clean, but 17 npm alerts in its unmanaged <code>frontend/</code>; see the multi-scanner section). High
+merge ratios. This proves the architecture works when PRs land. Note these still carry non-security currency lag (<code>audio-processor</code> 25.5
+libyears, <code>rag-processor</code> 21.6) because closed-unmerged minor/patch PRs leave packages behind even when no CVE
+is open. Renovate keeps them <em>safe</em>, not necessarily <em>current</em>.</p>
+<h3 id="cluster-b-renovate-proposes-prs-do-not-merge-alerts-pile-up">Cluster B: Renovate proposes, PRs do not merge, alerts pile up<a class="headerlink" href="#cluster-b-renovate-proposes-prs-do-not-merge-alerts-pile-up" title="Permanent link">&para;</a></h3>
+<p><code>PromptCraft</code> (164 opened, 131 closed unmerged, 56 alerts), <code>data_ingestor</code> (29 opened, 4 merged, 99 alerts),
+<code>xero-crypto</code> (41 opened, 18 closed, 46 alerts). The bottleneck is the merge step. PromptCraft's
+<code>renovate-auto-merge.yml</code> workflow shows its last several runs as <code>failure</code>, which is the literal mechanism by
+which proposed fixes fail to land. <strong>This is where the largest, most fixable alert backlog lives.</strong></p>
+<h3 id="cluster-c-renovate-barely-runs-transitive-debt-dominates">Cluster C: Renovate barely runs, transitive debt dominates<a class="headerlink" href="#cluster-c-renovate-barely-runs-transitive-debt-dominates" title="Permanent link">&para;</a></h3>
+<p><code>image-preprocessing-detector</code> (6 PRs ever, 389 alerts, 38 libyears, 19 transitive vulns), <code>maester-tests</code>
+(6 PRs, 58 alerts, 21 of 23 vulns transitive), <code>python-libs</code> (7 PRs, 54 alerts, 20 transitive), plus the 4
+config-only repos that have never produced a Renovate PR. Here the direct-dependency PR model is structurally
+insufficient: 21 of 23 vulnerabilities in <code>maester-tests</code> are transitive and will never be addressed by a
+direct-dep bump. These repos need lockfile-rewriting remediation (Renovate <code>lockFileMaintenance</code> plus
+vulnerability-driven lockfile updates, or Dependabot security updates).</p>
+<h2 id="the-transitive-dependency-crux">The transitive-dependency crux<a class="headerlink" href="#the-transitive-dependency-crux" title="Permanent link">&para;</a></h2>
+<p>This is the finding that most directly answers "what would Dependabot or a deeper SBOM analysis add."</p>
+<ul>
+<li>Renovate's default config opens PRs for <strong>direct</strong> dependencies declared in <code>pyproject.toml</code>. It will not
+  open a PR to patch a vulnerable package that only appears transitively unless <code>lockFileMaintenance</code> is
+  enabled and merging, or a vulnerability alert specifically triggers a lockfile rewrite.</li>
+<li><strong>75% of the fleet's vulnerable packages are transitive.</strong> That is the structural reason 786 alerts coexist
+  with active Renovate: the tool is doing its declared job (direct-dep currency) while the majority of the
+  vulnerability surface sits outside that job.</li>
+<li><strong>Dependabot security updates</strong> specifically rewrite the lockfile to patch the vulnerable dependency,
+  transitive included. That capability is the precise complement to Renovate's gap, and it is free and native.
+  It is currently enabled on 2 of 24 repos (one being <code>llc-manager</code>).</li>
+<li>An <strong>SBOM scan</strong> (<code>osv-scanner</code>) enumerates every component and attributes each vuln to a package once,
+  giving a deduplicated, transitive-aware count. For <code>image-preprocessing-detector</code>, osv reports 36 vulnerable
+  packages (17 direct + 19 transitive) where Dependabot reports 389 alerts: the same reality, counted differently (Dependabot multiplies by
+  advisory and by manifest path; this repo carries both <code>uv.lock</code> and <code>requirements.txt</code>). For triage, the
+  deduplicated SBOM count is the actionable one; for completeness, Dependabot's manifest-aware count flags that
+  the second manifest is also exposed.</li>
+</ul>
+<h2 id="recommendation">Recommendation<a class="headerlink" href="#recommendation" title="Permanent link">&para;</a></h2>
+<p>The current Renovate-only structure is adequate as an architecture; it is not yet adequate in outcome because
+the rollout is unfinished. The fix is to complete the rollout in dependency order, not to add or swap tools.
+Sequence matters: each step is a precondition for the next being measurable.</p>
+<p><strong>Finish the rollout (closes the backlog, no new tooling):</strong></p>
+<ol>
+<li><strong>Fix <code>enabledManagers</code> to match the migrated manifests (73% of all alerts).</strong> This is the highest-impact
+   action and a prerequisite for everything else: until Renovate is scoped to the right managers, it does not
+   even propose the fixes, so making main green has nothing to merge. Update the nine gapped repos (or simply
+   remove the <code>enabledManagers</code> restriction so Renovate autodiscovers all managers, matching the global config).
+   Priority order by impact: <code>image-preprocessing-detector</code> (add <code>pip_requirements</code> or delete the 8 legacy
+   files), the stale-poetry repos <code>maester-tests</code>/<code>python-libs</code>/<code>dna</code>/<code>Unify</code> (change <code>poetry</code> to <code>pep621</code>), and
+   the npm-excluded repos <code>cookiecutter-python-template</code>/<code>rag-processor</code> (add <code>npm</code>).</li>
+<li><strong>Make main green.</strong> Red main on 16 of 24 repos is the next blocker (23x alert multiplier); once Renovate is
+   proposing the right fixes, they still cannot merge onto a broken base. Prioritise the high-alert red-main
+   repos.</li>
+<li><strong>Finish uv migration on the 3 genuinely-unmigrated repos</strong> (<code>data_ingestor</code>, <code>PromptCraft</code>, <code>xero-crypto</code>:
+   still on poetry/requirements on main, 201 alerts at an 18% merge rate; distinct from the stale-poetry repos in
+   the <code>enabledManagers</code> table above, which already carry <code>uv.lock</code> and only need their config corrected). On
+   poetry/requirements manifests Renovate cannot run proper lockfile maintenance, so
+   both its detection-driven action and its remediation are degraded.</li>
+<li><strong>Remove orphan legacy manifests.</strong> Delete the 8 leftover <code>requirements*.txt</code> files from
+   <code>image-preprocessing-detector</code> once uv is authoritative; verify <code>homelab-infra</code>'s <code>requirements.txt</code> is a
+   synced export, not an unmaintained second manifest.</li>
+<li><strong>Merge the structural backlog.</strong> Repos with large piles of unmerged non-Renovate PRs (<code>PromptCraft</code> 22,
+   <code>Unify</code> 22, <code>data_ingestor</code> 16) are mid-restructure; the enabling config is not on main. Land it.</li>
+</ol>
+<p><strong>Tune Renovate (closes the residual transitive gap on ready repos):</strong></p>
+<ol>
+<li><strong>Enable <code>lockFileMaintenance</code> fleet-wide</strong> with automerge-on-green. This is the in-Renovate mechanism that
+   refreshes transitive dependencies (the 75% of vulnerable packages direct-dep PRs never touch), which is the
+   residue left even on fully-migrated repos like <code>maester-tests</code> (21 transitive vulns) and <code>python-libs</code> (20
+   transitive). Keep
+   <code>vulnerabilityAlerts</code> and <code>osvVulnerabilityAlerts</code> on for vulnerability-triggered PRs. This removes the need
+   for Dependabot to open PRs at all.</li>
+</ol>
+<p><strong>Keep a detection ledger (do not regress to blind):</strong></p>
+<ol>
+<li><strong>Keep Dependabot alerts on (effectively all live repos already have them on).</strong> The only two that read
+   "disabled" in the raw scan were a 404 orphan and an archived repo, so live coverage is ~100%, not a gap.
+   Alerts open no PRs, so they do not reintroduce the
+   dual-PR friction, and they are the queryable, SLA-trackable ledger Renovate has no equivalent for. Renovate
+   surfaces only what it can patch; the Python-only scan that reported 0 for <code>rag-processor</code> while its npm
+   frontend held 17 live vulnerabilities shows a single-ecosystem detector can be blind. Remove the two remaining <code>dependabot.yml</code> files (<code>AMC</code>, <code>Unify</code>) to make
+   Renovate the sole PR-opener while leaving Dependabot alerts as detection-only.</li>
+</ol>
+<p><strong>Optional, by need (not required for adequacy):</strong></p>
+<ol>
+<li><strong><code>osv-scanner</code> SBOM gate in CI</strong> (the reusable <code>python-sbom.yml</code> already exists). Add it for a hard release
+   gate, a deduplicated count, and a second independent detector that would have caught the template-sample
+   blind spot. This is the path if you later want to drop Dependabot alerts entirely and stay single-vendor.</li>
+<li><strong>Snyk only if</strong> reachability analysis (to triage the backlog down to exploitable-and-reachable) or license
+   compliance becomes a hard requirement. At a 44-repo solo-maintained fleet the free stack covers the
+   detection and transitive-remediation value; price Snyk against its per-project commercial tier before adopting.</li>
+</ol>
+<h2 id="answering-the-decision-directly">Answering the decision directly<a class="headerlink" href="#answering-the-decision-directly" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p>Is the current Renovate-only structure adequate? If not, what changes to it or in parallel get us there?</p>
+</blockquote>
+<p><strong>Adequate as architecture, not yet in outcome, and the gap is rollout completion rather than tooling.</strong> Proof:
+the ready cohort (uv on main + green CI) runs at 3.4 alerts per repo with most at zero. The path to fleet-wide
+adequacy is steps 1 to 5 above (green main, finish migration, remove legacy manifests, merge structural PRs,
+enable <code>lockFileMaintenance</code>), all within Renovate and CI. The only thing that should run in parallel is a
+<strong>detection ledger</strong>, and you already have the free one (Dependabot alerts); keep it. Snyk and an osv CI gate
+are optional enhancements, not prerequisites for "Renovate-only is enough."</p>
+<h2 id="limitations">Limitations<a class="headerlink" href="#limitations" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>libyear</strong> is computed only for <code>uv.lock</code> repos (poetry.lock and requirements.txt carry no upload
+  timestamps); poetry/requirements repos show drift class counts but 0.0 libyears.</li>
+<li><strong>Node coverage is partial.</strong> The local SBOM scan is Python-focused; <code>xero-crypto</code>'s npm surface is
+  represented by Dependabot's count, not osv.</li>
+<li><strong>Counts are a 2026-06-02 snapshot.</strong> Renovate runs on a schedule and Dependabot alerts move; re-run the
+  collectors in <code>/tmp/dep-analysis/</code> to refresh.</li>
+<li><strong>osv vs Dependabot vs Snyk use different advisory databases.</strong> Absolute vulnerability counts are not
+  directly comparable across tools; the direction and the direct/transitive split are the durable signals.</li>
+</ul>
+<h2 id="external-validation-and-concrete-config-changes-sourced">External validation and concrete config changes (sourced)<a class="headerlink" href="#external-validation-and-concrete-config-changes-sourced" title="Permanent link">&para;</a></h2>
+<p>A review of primary documentation (Renovate, GitHub, Trivy, OSV-Scanner) confirms the diagnosis above and
+corrects one assumption. Each item below is tagged and sourced.</p>
+<h3 id="correction-transitiveremediation-does-not-help-python">Correction: <code>transitiveRemediation</code> does not help Python<a class="headerlink" href="#correction-transitiveremediation-does-not-help-python" title="Permanent link">&para;</a></h3>
+<p><code>transitiveRemediation: true</code> is documented as applying <strong>only to the npm manager</strong> (via <code>overrides</code>), and the
+option is deprecated in current Renovate. For Python
+(uv/poetry) it is confirmed unsupported: Renovate's Python managers only see direct dependencies in
+<code>pyproject.toml</code>, not locked transitives. Since roughly 75% of this fleet's vulnerabilities are transitive and
+the fleet is mostly Python, <strong><code>lockFileMaintenance</code> is the only mechanism that remediates Python transitive
+vulnerabilities</strong>, by regenerating the lockfile to the latest versions the direct constraints allow. The global
+config enables it but with <code>automerge: false</code> on a weekly schedule, so those PRs are generated and then sit. To
+actually close Python transitive vulns, <code>lockFileMaintenance</code> PRs must automerge on green.
+Source: https://github.com/renovatebot/renovate/discussions/28776</p>
+<h3 id="validated-config-changes">Validated config changes<a class="headerlink" href="#validated-config-changes" title="Permanent link">&para;</a></h3>
+<ol>
+<li>
+<p><strong>[permission] Confirm the Renovate token has vulnerability-alert read.</strong> Classic PAT needs the
+   <code>security_events</code> scope; fine-grained PAT or App needs "Dependabot alerts: read". Documented failure mode: a
+   token lacking it makes GitHub return 403 and Renovate logs "Cannot access vulnerability alerts" and silently
+   skips all vulnerability PRs (falling back to OSV only). Note a known false-positive of that same warning
+   caused by a schema error on <code>actions</code>-ecosystem alerts, relevant since these repos carry many Actions alerts;
+   confirm via logs, not the warning alone. Source: https://docs.renovatebot.com/security-and-permissions/</p>
+</li>
+<li>
+<p><strong>[config] Make vulnerability and lockfile PRs automerge so fixes land.</strong> Add packageRules:
+   <code>matchManagers</code>/<code>isVulnerabilityAlert: true</code> with <code>automerge: true</code>, <code>platformAutomerge: true</code>,
+   <code>minimumReleaseAge: null</code>; and a <code>lockFileMaintenance</code> rule with <code>automerge: true</code>. <code>platformAutomerge</code> lets
+   GitHub merge after required checks pass (safer than Renovate self-merge) but requires at least one required
+   status check in branch protection, or it can merge on a pending check. Vulnerability PRs already bypass
+   <code>minimumReleaseAge</code>; setting it null is explicit and future-proof.
+   Source: https://docs.renovatebot.com/key-concepts/automerge/</p>
+</li>
+<li>
+<p><strong>[config] Make Dependabot detection-only the canonical way.</strong> Keep "Dependabot alerts" on; disable
+   "Dependabot security updates" in repo settings; set <code>open-pull-requests-limit: 0</code> per ecosystem in any
+   <code>dependabot.yml</code> (the two remaining: <code>AMC</code>, <code>Unify</code>). This keeps the multi-ecosystem alert ledger while
+   guaranteeing Renovate is the sole PR-opener.
+   Source: https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file</p>
+</li>
+<li>
+<p><strong>[config] Drop the per-repo <code>enabledManagers</code> restrictions</strong> (the 73%-of-alerts root cause) so Renovate
+   autodiscovers all managers as the global config intends, or correct each to match the actual manifests.
+   Renovate's own <code>config:best-practices</code> base preset plus <code>osvVulnerabilityAlerts: true</code> and
+   <code>dependencyDashboardOSVVulnerabilitySummary: "all"</code> is the recommended baseline.
+   Source: https://docs.renovatebot.com/presets-config/</p>
+</li>
+<li>
+<p><strong>[CI] Close the ecosystem-coverage gaps in the SBOM step.</strong> Add <code>aquasecurity/trivy-action</code> with
+   <code>scan-type: image</code> for the Dockerfile repos (<code>audio-processor</code>, <code>llc-manager</code>, <code>image-preprocessing-detector</code>,
+   <code>rag-processor</code>) and the OSV-Scanner PR-diff reusable workflow for npm-frontend repos (<code>rag-processor</code>,
+   <code>cookiecutter-python-template</code>), both uploading SARIF. This is what makes the in-CI detector multi-ecosystem
+   rather than Python-only. Sources: https://github.com/aquasecurity/trivy-action ,
+   https://google.github.io/osv-scanner/github-action/</p>
+</li>
+<li>
+<p><strong>[process] Harden autodiscovery and verify prerequisites.</strong> Consider scoping Renovate autodiscovery to an
+   explicit repository list, and confirm "Dependency graph" and "Dependabot alerts" are enabled on all 24 repos
+   (<code>gh api /repos/{owner}/{repo}/vulnerability-alerts</code> returns 204 when enabled; this audit found every live
+   repo enabled, the only two non-204 results being a 404 orphan and an archived repo).</p>
+</li>
+</ol>
+
+
+
+
+
+
+
+  
+    
+  
+  
+    
+  
+
+
+  <aside class="md-source-file">
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Last update">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 3, 2026 13:02:17 UTC">June 3, 2026</span>
+  </span>
+
+    
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Created">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 3, 2026 13:02:17 UTC">June 3, 2026</span>
+  </span>
+
+    
+    
+    
+  </aside>
+
+
+  
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2025-2026 Byron Williams
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/ByronWilliamsCPA" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
