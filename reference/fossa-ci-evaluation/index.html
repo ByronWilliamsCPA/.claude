@@ -1,0 +1,2767 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Global Claude Code development standards, commands, and configuration for all projects">
+      
+      
+        <meta name="author" content="Byron Williams">
+      
+      
+        <link rel="canonical" href="https://claude-config.readthedocs.io/reference/fossa-ci-evaluation/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>FOSSA CI Integration: License Compliance Evaluation and Decision - Claude Code Configuration</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+  
+
+
+  
+  
+
+<script id="__analytics">function __md_analytics(){function e(){dataLayer.push(arguments)}window.dataLayer=window.dataLayer||[],e("js",new Date),e("config",""),document.addEventListener("DOMContentLoaded",(function(){document.forms.search&&document.forms.search.query.addEventListener("blur",(function(){this.value&&e("event","search",{search_term:this.value})}));document$.subscribe((function(){var t=document.forms.feedback;if(void 0!==t)for(var a of t.querySelectorAll("[type=submit]"))a.addEventListener("click",(function(a){a.preventDefault();var n=document.location.pathname,d=this.getAttribute("data-md-value");e("event","feedback",{page:n,data:d}),t.firstElementChild.disabled=!0;var r=t.querySelector(".md-feedback__note [data-md-value='"+d+"']");r&&(r.hidden=!1)})),t.hidden=!1})),location$.subscribe((function(t){e("config","",{page_path:t.pathname})}))}));var t=document.createElement("script");t.async=!0,t.src="https://www.googletagmanager.com/gtag/js?id=",document.getElementById("__analytics").insertAdjacentElement("afterEnd",t)}</script>
+  
+    <script>"undefined"!=typeof __md_analytics&&__md_analytics()</script>
+  
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#overall-recommendation-defer" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Claude Code Configuration" class="md-header__button md-logo" aria-label="Claude Code Configuration" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Claude Code Configuration
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              FOSSA CI Integration: License Compliance Evaluation and Decision
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/ByronWilliamsCPA/.claude" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    ByronWilliamsCPA/.claude
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../getting-started/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../architecture/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../contributing/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Contributing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../project/roadmap/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Project
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Claude Code Configuration" class="md-nav__button md-logo" aria-label="Claude Code Configuration" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Claude Code Configuration
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/ByronWilliamsCPA/.claude" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    ByronWilliamsCPA/.claude
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--published"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../getting-started/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1. Install
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/first-agent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2. Your First Agent
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/first-skill/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3. Your First Skill
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/picking/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Picking Agents vs Skills
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../architecture/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/install-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Install Model
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/hook-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hook Pipeline
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/agent-dispatch/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent Dispatch
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/mcp-tiered-loading/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MCP Tiered Loading
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/submodule-strategy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Submodule Strategy
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/rules-vs-standards/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rules vs Standards
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/diagrams/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Diagrams
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_9" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../architecture/adr/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Decisions (ADRs)
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3_9" id="__nav_3_9_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Decisions (ADRs)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/adr/ADR-001-two-layer-symlink-install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-001 Two-Layer Symlink Install
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/adr/ADR-002-hook-composition/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-002 Hook Composition
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/adr/ADR-003-tiered-mcp-loading/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-003 Tiered MCP Loading
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/adr/ADR-004-skill-vs-agent-boundary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-004 Skill vs Agent Boundary
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/adr/ADR-005-submodule-extension-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-005 Submodule Extension Model
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/adr/ADR-006-rules-vs-standards/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-006 Rules vs Standards
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/adr/ADR-007-dual-audience-docs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-007 Dual-Audience Docs
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/adr/ADR-008-scanner-allowlist-tiers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-008 Scanner Allowlist Tiers
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../agents/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agents Catalog
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../skills/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Skills Catalog
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hooks
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mcp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MCP Strategy
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--published"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../contributing/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contributing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/adding-agents/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding an Agent
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/adding-skills/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding a Skill
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/adding-hooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding a Hook
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/writing-adrs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writing ADRs
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/writing-diagrams/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writing Diagrams
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../frontmatter-standard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontmatter Standard
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--published"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Project
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../project/roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--published"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../project/changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--published"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../project/license/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    License
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--published"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overall-recommendation-defer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overall recommendation: DEFER
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Overall recommendation: DEFER">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#resolving-the-central-tension-explicitly" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resolving the central tension explicitly
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-fossa-would-return-for-the-current-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What FOSSA would return for the current dependencies
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#findings-by-dimension" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Findings by dimension
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Findings by dimension">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-fleet-wide-license-exposure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Fleet-wide license exposure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-ci-integration-mechanics-and-cost" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. CI integration mechanics and cost
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-overlap-and-redundancy-versus-the-4-existing-layers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Overlap and redundancy versus the 4 existing layers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-fossa-policy-design-if-ever-adopted" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. FOSSA policy design (if ever adopted)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-standards-manifest-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Standards-manifest integration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-supply-chain-and-secret-management-risk" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Supply-chain and secret-management risk
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision-matrix-fossa-versus-the-4-existing-layers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision matrix: FOSSA versus the 4 existing layers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-cheaper-in-house-alternative-the-defer-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The cheaper in-house alternative (the DEFER path)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#standards-manifest-entries-applied" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Standards-manifest entries (applied)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>FOSSA CI Integration: License Compliance Evaluation and Decision</h1>
+
+<p>This report evaluates whether to add FOSSA (a third-party license-compliance SaaS) to the 44-repo <code>claude-config</code> fleet's CI. Six dimension analyses converge on a single conclusion: the fleet is overwhelmingly permissive (253 of 263 distributions in the active <code>claude-config</code> venv are permissive; the remaining 10 are 8 MPL-2.0 plus 2 LGPL, none of which create obligations for an MIT app that dynamically imports unmodified source), and zero GPL or AGPL packages exist in any managed <code>uv.lock</code> fleet-wide. FOSSA's deep-scan value is real but does not match the actual risk profile: its license-gating feature is paid-tier only, its free tier caps at 5 projects against 34 Python repos, it cannot read the org's REUSE 3.0 own-source layout, and every capability it would add over the current stack is already achievable by repairing the dormant in-house license gate that ships in <code>python-sbom.yml</code>. This is the same structural conclusion the companion <code>dependency-tooling-comparison.md</code> reached for Snyk: a third-party SaaS is not justified at this fleet size unless license compliance becomes a hard contractual requirement.</p>
+<h2 id="overall-recommendation-defer">Overall recommendation: DEFER<a class="headerlink" href="#overall-recommendation-defer" title="Permanent link">&para;</a></h2>
+<p>Do not adopt FOSSA at this time. Instead, repair and arm the existing in-house license gate. Revisit FOSSA only if one of these conditions becomes true:</p>
+<ol>
+<li>A legal team, audit, or enterprise customer contractually requires a FOSSA-branded SBOM or attestation report.</li>
+<li>Dependency packages with custom or proprietary license texts require source-level (snippet) scanning, which is a FOSSA Enterprise feature.</li>
+<li>Automated NOTICE / THIRD-PARTY-LICENSES file generation becomes a release-gate requirement and <code>pip-licenses</code> output proves insufficient.</li>
+</ol>
+<p>None of these hold today. The DEFER is unanimous across all six analysts at high confidence.</p>
+<h3 id="resolving-the-central-tension-explicitly">Resolving the central tension explicitly<a class="headerlink" href="#resolving-the-central-tension-explicitly" title="Permanent link">&para;</a></h3>
+<p>The tension is deep-scan value versus adding a third-party SaaS to CI when the fleet is overwhelmingly permissive and already owns a dormant in-house gate. It resolves cleanly because the two halves of FOSSA's value proposition fail independently:</p>
+<ul>
+<li>The detection half (find copyleft in the dependency graph) is matched by the in-house stack once three known defects are fixed, at zero marginal cost and zero new egress.</li>
+<li>The gating half (block a PR on a license-policy violation) is a FOSSA paid-tier feature, so the free tier adds nothing the existing <code>python-sbom.yml</code> job cannot already do.</li>
+</ul>
+<p>There is no quadrant where FOSSA is both differentiated and free. The only genuinely FOSSA-exclusive capabilities (a license-compatibility graph and automated NOTICE generation) are not required at a 44-repo solo-maintained fleet that redistributes no copyleft library files. Adopting FOSSA now would also reintroduce a recurring SaaS cost (roughly $680/month at $20/project for 34 Python repos, or roughly $399/month Team tier just to cover the 4 private repos), a new external dependency in the PR critical path, and a documented incompatibility with the org's REUSE layout.</p>
+<h2 id="what-fossa-would-return-for-the-current-dependencies">What FOSSA would return for the current dependencies<a class="headerlink" href="#what-fossa-would-return-for-the-current-dependencies" title="Permanent link">&para;</a></h2>
+<p>The local, PEP-639-aware license inventory for the <code>claude-config</code> resolved closure (263 distinct distributions in the active venv, roughly 201 in <code>uv.lock</code>):</p>
+<table>
+<thead>
+<tr>
+<th>License class</th>
+<th style="text-align: right;">Count</th>
+<th>Packages of note</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Permissive (MIT 123, BSD 73, Apache-2.0 45, ISC 9, Python 2, PSF 1)</td>
+<td style="text-align: right;">253</td>
+<td>The overwhelming majority; no obligations</td>
+</tr>
+<tr>
+<td>MPL-2.0 (file-level copyleft)</td>
+<td style="text-align: right;">8</td>
+<td>certifi, fqdn, hypothesis, pathspec, pytest-html, pytest-metadata, pytest-rerunfailures, tqdm</td>
+</tr>
+<tr>
+<td>LGPL (weak copyleft)</td>
+<td style="text-align: right;">2</td>
+<td>psycopg2-binary, python-gitlab</td>
+</tr>
+<tr>
+<td>GPL / AGPL</td>
+<td style="text-align: right;">0</td>
+<td>none in <code>claude-config</code></td>
+</tr>
+<tr>
+<td>Undetermined</td>
+<td style="text-align: right;">0</td>
+<td>none</td>
+</tr>
+</tbody>
+</table>
+<p>For an MIT application that imports (does not modify or statically link) these packages, none of the 10 non-permissive packages create an obligation. MPL-2.0 file-copyleft triggers only on modifying and redistributing the covered source files; LGPL explicitly permits dynamic import. FOSSA would flag all 10 for review, requiring 10 per-package ignores with justification, while delivering no new actionable finding versus a correctly configured in-house denylist.</p>
+<p>Three caveats sharpen this picture and are the reason the in-house gate must be repaired rather than merely armed:</p>
+<ul>
+<li><code>tqdm</code>, <code>psycopg2-binary</code>, and <code>python-gitlab</code> are NOT in any managed <code>uv.lock</code> or <code>pyproject.toml</code>; they are spurious manual pip installs polluting the <code>claude-config</code> venv. They should be removed from the venv, not gated. FOSSA scanning the full venv SBOM would flag them as managed risk when they are not.</li>
+<li><code>hypothesis</code> declares MPL-2.0 via the PEP-639 <code>License-Expression</code> field. The pinned <code>cyclonedx-bom==7.3.0</code> emits NO license entry for it without the <code>--PEP-639</code> flag, and that flag crashes on <code>structlog</code>. So <code>hypothesis</code> is invisible to the current SBOM regardless of denylist content.</li>
+<li>The single unavoidable runtime MPL-2.0 package fleet-wide is <code>certifi</code> (pulled transitively via <code>requests</code>), present in every Python app lock file. Any future hard-fail gate must allowlist it or every Python repo's CI breaks.</li>
+</ul>
+<h2 id="findings-by-dimension">Findings by dimension<a class="headerlink" href="#findings-by-dimension" title="Permanent link">&para;</a></h2>
+<h3 id="1-fleet-wide-license-exposure">1. Fleet-wide license exposure<a class="headerlink" href="#1-fleet-wide-license-exposure" title="Permanent link">&para;</a></h3>
+<p>True exposure concentrates almost entirely in one repo. Four of five sampled repos with lockfiles carry only MPL-2.0 and occasional LGPL, already covered by the <code>claude-config</code> baseline. The sole outlier is <code>image_detection</code> (its <code>pyproject.toml</code>): <code>PyMuPDF&gt;=1.27.1</code> is AGPL-3.0 in the base graph; the <code>[ml]</code>/<code>[ood]</code> extras add <code>ultralytics</code>, <code>doclayout-yolo</code>, and <code>internetarchive</code> (all AGPL-3.0); <code>[dev]</code> pulls <code>dvc</code> which drags in GPL-2.0 transitives (grandalf, asyncssh, pygit2). The repo's own declared license is CC-BY-SA-4.0, inconsistent with the MIT fleet standard. Critically, PyMuPDF's CycloneDX entry uses a free-text <code>name</code> ("Dual Licensed - GNU AFFERO GPL 3.0 or Artifex Commercial License"), not the SPDX <code>id</code>, so the existing AGPL denylist's exact-<code>id</code> match silently misses it. The fleet gate is <code>fail-on-forbidden-licenses: false</code> everywhere, so nothing fails regardless.</p>
+<ul>
+<li>Risks: AGPL-3.0 in <code>image_detection</code> base graph is HIGH if that repo is ever exposed as a network service; the gate is universally advisory-only and blind to the free-text <code>name</code> field; <code>ledgerbase</code> carries <code>semgrep</code> (LGPL-2.1) in its main (non-dev) dependency group, inflating its production closure unnecessarily.</li>
+<li>Recommendation: this is a real, repo-specific finding that does NOT require FOSSA. Replace PyMuPDF with <code>pypdfium2</code> (BSD/Apache, already in the venv) or document an Artifex commercial-license decision; move <code>semgrep</code> to <code>ledgerbase</code>'s dev group; arm the in-house gate with LGPL/MPL plus free-text <code>name</code> matching.</li>
+</ul>
+<h3 id="2-ci-integration-mechanics-and-cost">2. CI integration mechanics and cost<a class="headerlink" href="#2-ci-integration-mechanics-and-cost" title="Permanent link">&para;</a></h3>
+<p>Integration is mechanically feasible but has four hard blockers: the free tier caps at 5 projects (34 Python repos need a paid plan, roughly $680/month at $20/project); the license-gating feature (<code>fossa test</code> non-zero exit) is paid-tier only, making FOSSA free-tier functionally equal to the existing job; the <code>FOSSA_API_KEY</code> must be a push-only org secret, and the <code>williaby</code> user account (26 repos) has no org so each repo needs the secret set individually or via a machine user; and <code>fossa test</code> adds a network call to FOSSA SaaS in the PR critical path that Trivy/OSV/Grype (which run fully on-runner) do not have. The correct integration slot, if ever adopted, is a new reusable <code>python-license.yml</code> in <code>ByronWilliamsCPA/.github</code> mirroring the <code>python-sbom.yml</code> caller pattern, NOT a job inside <code>python-ci.yml</code> (which would hit GitHub's 4-level nesting ceiling via the <code>python-standard-stack.yml</code> chain).</p>
+<ul>
+<li>Risks: partial 5-repo rollout violates the policy-execution-gap lesson; <code>fossa-cli</code> binary is downloaded at runtime (not cached, no pinned SHA) which is below the reliability bar of the SHA-pinned Trivy action; a FOSSA SaaS outage blocks or times out the gate.</li>
+<li>Recommendation: do not adopt now; if revisited post-paid-decision, use a separate <code>python-license.yml</code>, push-only org secret, <code>continue-on-error: true</code> with <code>--timeout 120</code> for the first 60 days, and pre-declare the three egress endpoints for future harden-runner block-mode.</li>
+</ul>
+<h3 id="3-overlap-and-redundancy-versus-the-4-existing-layers">3. Overlap and redundancy versus the 4 existing layers<a class="headerlink" href="#3-overlap-and-redundancy-versus-the-4-existing-layers" title="Permanent link">&para;</a></h3>
+<p>The fleet already has four overlapping layers: (1) the <code>python-sbom.yml</code> <code>license-compliance</code> job (non-gating, GPL/AGPL <code>id</code>-only); (2) <code>dependency-review-action</code> (PR-diff only, inconsistently configured, 6 repos have no license gate at all); (3) REUSE/fsfe-action (own-source SPDX headers only, orthogonal to dependency licenses, irreplaceable by FOSSA); (4) Trivy + Grype + OSV-Scanner (vulnerability-only, zero license capability). The current in-house script evaluates only 43% of license entries (126 of 295) because it reads only the SPDX <code>id</code> field; the 56% name-only and 3 expression entries are silently skipped, and it catches zero of the 8 copyleft packages. The three-step in-house fix (expand denylist to LGPL/MPL, also match <code>name</code> and <code>expression</code> fields, add a <code>pip-licenses</code> step for PEP-639 packages) closes the entire gap in one PR.</p>
+<ul>
+<li>Risks: enabling <code>fail-on-forbidden-licenses: true</code> without also fixing the <code>id</code>-only matching produces the same false-clean result; policy drift is accelerating across 17 config variations; the <code>cyclonedx-bom==7.3.0</code> PEP-639 bug is unresolved and hides <code>hypothesis</code> regardless of denylist quality.</li>
+<li>Recommendation: pursue the in-house upgrade now; FOSSA's only no-in-house-equivalent capabilities are license-compatibility-graph reasoning and automated NOTICE generation. Add FOSSA only when those are required, not merely convenient.</li>
+</ul>
+<h3 id="4-fossa-policy-design-if-ever-adopted">4. FOSSA policy design (if ever adopted)<a class="headerlink" href="#4-fossa-policy-design-if-ever-adopted" title="Permanent link">&para;</a></h3>
+<p>If FOSSA is adopted, the policy must target the runtime shipping surface, not the full venv. <code>certifi</code> is the ONLY MPL-2.0 package in the runtime graph; all other copyleft packages are dev-group or unmanaged venv pollution. The design is five layers: (1) scope isolation via <code>uv export --no-dev</code> so dev deps never reach the scan (eliminates roughly 90% of false positives); (2) a three-tier ALLOW / FLAG-FOR-REVIEW / DENY decision table (DENY = GPL-2.0/3.0, AGPL-3.0, SSPL-1.0, Proprietary); (3) per-package ignores with justification for the known 10; (4) attribution/NOTICE generation for <code>certifi</code> only; (5) integration with the existing gates rather than replacement.</p>
+<ul>
+<li>Risks: full-venv SBOM scope inflation creates false positives; spurious venv installs flagged as managed; dual-license <code>tqdm</code> (MPL-2.0 AND MIT) requires a documented per-package ignore noting the MIT grant covers usage.</li>
+<li>Recommendation: this is the blueprint to apply IF condition 1, 2, or 3 above is ever met. It is not a reason to adopt now.</li>
+</ul>
+<h3 id="5-standards-manifest-integration">5. Standards-manifest integration<a class="headerlink" href="#5-standards-manifest-integration" title="Permanent link">&para;</a></h3>
+<p>Two new checks should be added to <code>docs/standards-manifest.yaml</code> to drive the in-house repair. They were originally drafted as CI-078 and CI-079, but PR #188 landed CI-078 (the qlty-gate check) and reserved CI-079 for its ruleset companion first, so the checks were renumbered to CI-080 and CI-081. CI-080 gates the <code>sbom.yml</code> caller's denylist content to include LGPL/MPL; CI-081 gates <code>dependency-review.yml</code> presence of a <code>deny-licenses</code> or <code>allow-licenses</code> input. Both start at <code>severity: suggested</code> per the policy-execution-gap lesson and are promoted to <code>important</code> only after their prerequisite sweeps (CI-058 for <code>sbom.yml</code> callers, CI-036 for <code>dependency-review.yml</code>) reach 100% of applicable repos. Current <code>sbom.yml</code> reach is 15 of 30 Python repos (50%), so <code>suggested</code> is correct, not <code>important</code>.</p>
+<ul>
+<li>Risks: promoting CI-080 before CI-058 reaches 100% generates correct-but-unactionable findings; the free-text <code>name</code> blind spot is a workflow-code fix, not just a manifest entry; Wave 3 <code>fail-on-forbidden-licenses: true</code> requires a <code>certifi</code> allowlist mechanism first or every Python repo breaks.</li>
+<li>Recommendation: paste both entries (see the ready-to-paste YAML below) and do not enable hard-fail until the allowlist mechanism and 100% CI-058 reach are confirmed.</li>
+</ul>
+<h3 id="6-supply-chain-and-secret-management-risk">6. Supply-chain and secret-management risk<a class="headerlink" href="#6-supply-chain-and-secret-management-risk" title="Permanent link">&para;</a></h3>
+<p>FOSSA's OSS mode transmits dependency-graph metadata (package names, versions, resolved closure, git remote, branch, commit SHA) to FOSSA's US cloud, but not source code in standard mode. For the finance repos <code>llc-manager</code> and <code>family-office-portal</code>, their <code>uv.lock</code> files are already public on GitHub, so FOSSA adds no new exposure there; but the 4 private BWCPA repos (<code>xero-crypto</code>, <code>maester-tests</code>, <code>homelab-infra</code>, <code>taxdome</code>) would see net-new egress and require the paid Team tier. The <code>FOSSA_API_KEY</code> blast radius is bounded because no workflow uses <code>pull_request_target</code> (fork PRs do not receive secrets). The decisive finding: the reusable workflows use <code>egress-policy: audit</code>, so FOSSA's egress is unblocked today but becomes a migration blocker if the fleet moves to block mode. A further finding, not currently documented in the standards manifest: FOSSA does not natively recognize the org's REUSE 3.0 layout (LICENSES/ + REUSE.toml), so it would misreport every repo as having no detected own-source license. Record this as a blocker in any future FOSSA evaluation.</p>
+<ul>
+<li>Risks: private-repo egress (medium); REUSE layout incompatibility makes FOSSA's own-source reporting inaccurate (high for self-compliance); org-wide secret scope wider than needed; egress block-mode migration blocker; recurring paid-plan dependency for a free-tier-equivalent capability; policy logic stored in FOSSA UI contradicts the org's policy-as-code pattern.</li>
+<li>Recommendation: do not add FOSSA SaaS. Close the three blind spots in-house using <code>pip-licenses</code> plus <code>Trivy --scanners license</code> (both already in the Anchore/Trivy stack), zero new secrets, zero new egress. If a policy-as-code engine is later needed, adopt Syft plus grant before FOSSA. Record the REUSE incompatibility as a blocker in any future evaluation.</li>
+</ul>
+<h2 id="decision-matrix-fossa-versus-the-4-existing-layers">Decision matrix: FOSSA versus the 4 existing layers<a class="headerlink" href="#decision-matrix-fossa-versus-the-4-existing-layers" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Capability</th>
+<th style="text-align: center;">FOSSA (free)</th>
+<th style="text-align: center;">FOSSA (paid)</th>
+<th style="text-align: center;">python-sbom license job (current)</th>
+<th style="text-align: center;">python-sbom license job (repaired)</th>
+<th style="text-align: center;">dependency-review-action</th>
+<th style="text-align: center;">REUSE / fsfe-action</th>
+<th style="text-align: center;">Trivy+Grype+OSV</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Dependency license detection</td>
+<td style="text-align: center;">Yes</td>
+<td style="text-align: center;">Yes</td>
+<td style="text-align: center;">Partial (id-only, 43%)</td>
+<td style="text-align: center;">Yes (id+name+expr)</td>
+<td style="text-align: center;">PR-diff only</td>
+<td style="text-align: center;">No</td>
+<td style="text-align: center;">No</td>
+</tr>
+<tr>
+<td>Copyleft denylist (GPL/AGPL)</td>
+<td style="text-align: center;">Yes</td>
+<td style="text-align: center;">Yes</td>
+<td style="text-align: center;">Yes (advisory)</td>
+<td style="text-align: center;">Yes (gating)</td>
+<td style="text-align: center;">Configurable, unused</td>
+<td style="text-align: center;">No</td>
+<td style="text-align: center;">No</td>
+</tr>
+<tr>
+<td>LGPL/MPL coverage</td>
+<td style="text-align: center;">Yes</td>
+<td style="text-align: center;">Yes</td>
+<td style="text-align: center;">No</td>
+<td style="text-align: center;">Yes</td>
+<td style="text-align: center;">Configurable, unused</td>
+<td style="text-align: center;">No</td>
+<td style="text-align: center;">No</td>
+</tr>
+<tr>
+<td>PEP-639 / free-text license fields</td>
+<td style="text-align: center;">Yes</td>
+<td style="text-align: center;">Yes</td>
+<td style="text-align: center;">No</td>
+<td style="text-align: center;">Yes (+pip-licenses)</td>
+<td style="text-align: center;">Partial</td>
+<td style="text-align: center;">No</td>
+<td style="text-align: center;">No</td>
+</tr>
+<tr>
+<td>PR-time gating</td>
+<td style="text-align: center;">No</td>
+<td style="text-align: center;">Yes</td>
+<td style="text-align: center;">Advisory (false everywhere)</td>
+<td style="text-align: center;">Yes</td>
+<td style="text-align: center;">Yes</td>
+<td style="text-align: center;">Yes</td>
+<td style="text-align: center;">Yes</td>
+</tr>
+<tr>
+<td>Full-closure scan (not just PR diff)</td>
+<td style="text-align: center;">Yes</td>
+<td style="text-align: center;">Yes</td>
+<td style="text-align: center;">Yes</td>
+<td style="text-align: center;">Yes</td>
+<td style="text-align: center;">No</td>
+<td style="text-align: center;">No</td>
+<td style="text-align: center;">Yes (vuln)</td>
+</tr>
+<tr>
+<td>License-compatibility graph reasoning</td>
+<td style="text-align: center;">No</td>
+<td style="text-align: center;">Yes</td>
+<td style="text-align: center;">No</td>
+<td style="text-align: center;">No</td>
+<td style="text-align: center;">No</td>
+<td style="text-align: center;">No</td>
+<td style="text-align: center;">No</td>
+</tr>
+<tr>
+<td>Automated NOTICE/attribution file</td>
+<td style="text-align: center;">No</td>
+<td style="text-align: center;">Yes</td>
+<td style="text-align: center;">No</td>
+<td style="text-align: center;">Partial (pip-licenses)</td>
+<td style="text-align: center;">No</td>
+<td style="text-align: center;">No</td>
+<td style="text-align: center;">No</td>
+</tr>
+<tr>
+<td>Own-source SPDX header compliance</td>
+<td style="text-align: center;">No (REUSE-blind)</td>
+<td style="text-align: center;">No (REUSE-blind)</td>
+<td style="text-align: center;">No</td>
+<td style="text-align: center;">No</td>
+<td style="text-align: center;">No</td>
+<td style="text-align: center;">Yes (irreplaceable)</td>
+<td style="text-align: center;">No</td>
+</tr>
+<tr>
+<td>Vulnerability scanning</td>
+<td style="text-align: center;">Single DB</td>
+<td style="text-align: center;">Single DB</td>
+<td style="text-align: center;">No</td>
+<td style="text-align: center;">No</td>
+<td style="text-align: center;">Severity gate</td>
+<td style="text-align: center;">No</td>
+<td style="text-align: center;">Yes (3 DBs)</td>
+</tr>
+<tr>
+<td>Policy as version-controlled code</td>
+<td style="text-align: center;">No (UI)</td>
+<td style="text-align: center;">No (UI)</td>
+<td style="text-align: center;">Yes (YAML)</td>
+<td style="text-align: center;">Yes (YAML)</td>
+<td style="text-align: center;">Yes (YAML)</td>
+<td style="text-align: center;">Yes (TOML)</td>
+<td style="text-align: center;">Yes (YAML)</td>
+</tr>
+<tr>
+<td>New external SaaS in PR critical path</td>
+<td style="text-align: center;">Yes</td>
+<td style="text-align: center;">Yes</td>
+<td style="text-align: center;">No</td>
+<td style="text-align: center;">No</td>
+<td style="text-align: center;">No (GitHub-native)</td>
+<td style="text-align: center;">No</td>
+<td style="text-align: center;">No</td>
+</tr>
+<tr>
+<td>Marginal cost</td>
+<td style="text-align: center;">Free (5-repo cap)</td>
+<td style="text-align: center;">~$680/mo</td>
+<td style="text-align: center;">$0</td>
+<td style="text-align: center;">$0</td>
+<td style="text-align: center;">$0</td>
+<td style="text-align: center;">$0</td>
+<td style="text-align: center;">$0</td>
+</tr>
+</tbody>
+</table>
+<p>The repaired in-house column matches or beats FOSSA-free on every row that matters to this fleet, and matches FOSSA-paid on everything except the two capabilities (compatibility graph, automated NOTICE) that the fleet does not currently need.</p>
+<h2 id="the-cheaper-in-house-alternative-the-defer-path">The cheaper in-house alternative (the DEFER path)<a class="headerlink" href="#the-cheaper-in-house-alternative-the-defer-path" title="Permanent link">&para;</a></h2>
+<p>Execute these in order. The whole detection-and-gating gap closes in approximately one PR to <code>python-sbom.yml</code> plus two manifest entries, with zero new secrets, zero new egress, and zero recurring cost.</p>
+<ol>
+<li>Repair the <code>license-compliance</code> script in <code>ByronWilliamsCPA/.github</code> at <code>.github/workflows/python-sbom.yml</code>: (a) expand the default <code>forbidden-licenses</code> to add <code>LGPL-2.0-only</code>, <code>LGPL-2.0-or-later</code>, <code>LGPL-2.1-only</code>, <code>LGPL-2.1-or-later</code>, <code>LGPL-3.0-only</code>, <code>LGPL-3.0-or-later</code>, <code>MPL-2.0</code>; (b) match the CycloneDX <code>name</code> and <code>expression</code> fields by substring, not only the SPDX <code>id</code>; &copy; add a <code>pip-licenses --format=json</code> step (or <code>Trivy --scanners license</code>) to catch PEP-639 packages like <code>hypothesis</code> that <code>cyclonedx-bom==7.3.0</code> misses entirely.</li>
+<li>Add a per-package allowlist mechanism (YAML in the caller or in the reusable workflow) seeded with <code>certifi</code> (MPL-2.0, transitive via <code>requests</code>, present in every Python repo). This is the precondition for any hard-fail gate.</li>
+<li>Add <code>deny-licenses</code> (GPL-2.0/3.0, AGPL-3.0 minimum) to <code>dependency-review.yml</code> for an early PR-time signal complementing the post-merge SBOM gate.</li>
+<li>Repo-specific remediation independent of tooling: in <code>image_detection</code>, replace PyMuPDF with <code>pypdfium2</code> or document the Artifex commercial-license decision; in <code>ledgerbase</code>, move <code>semgrep</code> from the main to the dev dependency group.</li>
+<li>Clean the <code>claude-config</code> venv: remove the spurious unmanaged installs <code>tqdm</code>, <code>psycopg2-binary</code>, <code>python-gitlab</code> so they stop appearing in the SBOM.</li>
+<li>Roll out via the staged plan: Wave 1 (now) suggested/advisory, no CI failures; Wave 2 promote to <code>important</code> after CI-058 reaches 100% of the 30 Python repos; Wave 3 enable <code>fail-on-forbidden-licenses: true</code> only after the <code>certifi</code> allowlist is confirmed deployed.</li>
+</ol>
+<p>Defer FOSSA, Syft+grant, and any SaaS until a hard attribution or custom-license-scanning requirement actually emerges. If a policy-as-code engine is later needed, prefer Syft plus grant (already in the Anchore OSS stack) over FOSSA.</p>
+<h2 id="standards-manifest-entries-applied">Standards-manifest entries (applied)<a class="headerlink" href="#standards-manifest-entries-applied" title="Permanent link">&para;</a></h2>
+<p>These checks were added to <code>docs/standards-manifest.yaml</code> as <strong>CI-080</strong> (the
+<code>sbom.yml</code> caller's <code>forbidden-licenses</code> denylist must include LGPL and MPL,
+not GPL/AGPL only) and <strong>CI-081</strong> (the <code>dependency-review.yml</code> caller must
+declare <code>deny-licenses</code> or <code>allow-licenses</code>). They were renumbered from the
+originally proposed CI-078/CI-079 after PR #188 took CI-078 (the qlty-gate
+check) and reserved CI-079 for its ruleset companion. See the live definitions
+in <code>docs/standards-manifest.yaml</code> for the authoritative <code>verify</code> logic; the
+canonical entries are the single source of truth and supersede any earlier
+draft. Both start at <code>severity: suggested</code> and promote to <code>important</code> only
+after their prerequisite sweeps (CI-058 for CI-080, CI-036 for CI-081) reach
+100% of applicable repos. CI-080's required LGPL/MPL set covers the LGPL-2.1
+variants so that <code>semgrep</code> (the one concrete LGPL-2.1 package observed in the
+fleet) is not missed.</p>
+
+
+
+
+
+
+
+  
+    
+  
+  
+    
+  
+
+
+  <aside class="md-source-file">
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Last update">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 4, 2026 15:51:47 UTC">June 4, 2026</span>
+  </span>
+
+    
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Created">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 4, 2026 15:51:47 UTC">June 4, 2026</span>
+  </span>
+
+    
+    
+    
+  </aside>
+
+
+  
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2025-2026 Byron Williams
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/ByronWilliamsCPA" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
