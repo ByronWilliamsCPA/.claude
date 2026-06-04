@@ -202,6 +202,79 @@ regression it confirms. This step is non-blocking: if the compare call fails, se
 
 ---
 
+## Step 2e: PR-overlap targeting (parallel with Step 2c)
+
+Compare the current PR against recent and in-flight PRs along two dimensions:
+file-path overlap and symbol overlap. The path dimension catches two PRs editing the
+same file; the symbol dimension catches two PRs adding the same definition in
+different files (the duplicate-provider smell). Path overlap alone is insufficient;
+see the rag-processor acceptance fixture in the design spec.
+
+Comparison set: the last `PREMISE_MERGED_PR_LOOKBACK` merged PRs plus all open PRs
+except the current one.
+
+```bash
+gh pr list --repo "$OWNER/$REPO" --state merged --limit "$PREMISE_MERGED_PR_LOOKBACK" \
+  --json number,title,mergedAt,files \
+  --jq '[.[] | {number, title, mergedAt, files: [.files[].path]}]'
+
+gh pr list --repo "$OWNER/$REPO" --state open \
+  --json number,title,files \
+  --jq "[.[] | select(.number != $PR_NUMBER) | {number, title, files: [.files[].path]}]"
+```
+
+### Dimension 1: file-path overlap
+
+Intersect each comparison PR's file list with `CHANGED_FILES`. Produce
+`CONTESTED_FILES`: records of `{file, overlapping_pr, pr_state, merged_at}`.
+
+- Overlap with a merged PR whose `mergedAt` postdates the current branch's merge-base
+  is a staleness / silent-revert risk: the current branch never saw that merged
+  change.
+- Overlap with an open PR is a collision / duplicate-work risk. Emit directly:
+
+```text
+[Important] Collision: file {f} is also modified by open PR #{n} ("{title}").
+Verify the two changes do not conflict or duplicate effort before either merges.
+```
+
+Caveat: `gh pr list --json files` caps at ~100 files per PR. Acceptable for overlap
+detection; note in the report if any scanned PR hit the cap.
+
+### Dimension 2: symbol overlap
+
+File-path overlap returns nothing when two PRs add the same symbol in different
+files. Extract newly-added top-level definitions from a diff and intersect their
+names across PRs, regardless of file path:
+
+```bash
+gh pr diff "$N" --repo "$OWNER/$REPO" 2>/dev/null | awk '
+  /^\+\+\+ / { file=$2 }
+  /^\+(async def|def|class) / {
+    line=$0; sub(/^\+/,"",line);
+    match(line, /^(async def|def|class)[ \t]+[A-Za-z_][A-Za-z0-9_]*/);
+    print file "\t" substr(line, RSTART, RLENGTH)
+  }'
+```
+
+Build `ADDED_SYMBOLS_CURRENT` for the PR under review, then run the same extraction
+on the comparison set (bound cost to open PRs plus merged PRs newer than the current
+branch's merge-base). A collision fires when a non-dunder, non-`test_` symbol name
+added by the current PR is also added by a comparison PR in a different file:
+
+```text
+[Important] DuplicateSymbol: {symbol} is newly defined by both this PR ({file_a})
+and PR #{n} ({file_b}). These are likely duplicate definitions that will need
+deduplication after both merge. Confirm only one should define it.
+```
+
+Exclusions to limit false positives: dunder names (`__init__`, `__call__`), `test_*`
+functions, and conventional hooks (`setUp`, `main`). Symbol collisions are
+QUESTION-tier, not HOLD, because choosing the canonical definition needs human
+judgment. Store all collisions as `SYMBOL_COLLISIONS` and pass to Agent M.
+
+---
+
 ## Step 3: Classify Changes (Haiku agent)
 
 Analyze `CHANGED_FILES` and the first 50 lines of `PR_DIFF` to classify:
