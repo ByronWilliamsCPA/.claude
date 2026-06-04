@@ -295,6 +295,7 @@ Analyze `CHANGED_FILES` and the first 50 lines of `PR_DIFF` to classify:
 - `code-reviewer` (CLAUDE.md compliance + bugs)
 - `git-history-agent` (blame + history context on modified files) -- **skip for docs-only PRs**
 - `prior-pr-agent` (past review comments on same files) -- **skip for docs-only PRs**
+- `premise-gate` (Agent M: change appropriateness + regression + collision)
 
 Docs-only definition: every changed file has a `.md`, `.rst`, or `.txt` extension. A single
 non-doc file in the diff (e.g., a config change alongside a README update) makes the PR
@@ -849,6 +850,71 @@ If no concerns found, report:
 
 Collect the consensus synthesis as Agent L findings. Route through Step 6
 confidence scoring and Step 7 deduplication with `agent source: L`.
+
+### Agent M: Premise & Regression Gate (Opus)
+
+Always active. Runs in this parallel batch so it adds no wall-clock. Opus, because
+every check is a judgment call. Receives: `PR_DIFF`, `PR_TITLE`, `PR_BODY`,
+`CHANGED_FILES`, `CONTEXT_FILES`, `MERGE_STATE`, `STALENESS`, `CONTESTED_FILES`,
+`SYMBOL_COLLISIONS`.
+
+```text
+You are assessing whether a pull request SHOULD exist and is an improvement, not
+whether it is internally correct (other agents cover correctness). Most changes in
+this repo are AI-authored, so do not assume the change was intentional or ideal.
+
+PR title: {PR_TITLE}
+PR body:  {PR_BODY}
+Changed files: {CHANGED_FILES}
+Branch staleness: {STALENESS}
+Contested files (also touched by recent/open PRs): {CONTESTED_FILES}
+Pre-computed symbol collisions: {SYMBOL_COLLISIONS}
+PR diff: {PR_DIFF}
+
+Run these four checks. HARD RULE: every finding MUST cite concrete evidence. If you
+cannot cite evidence, DROP the finding; do not downgrade it.
+
+1. Regression / reverted code: does the diff re-add code, config, or patterns that a
+   prior commit deliberately removed or reverted? Evidence required: a specific prior
+   commit SHA whose removed lines the PR re-adds. Run the forensic scan ONLY on
+   CONTESTED_FILES (fetch recent commits via
+   `gh api repos/{OWNER}/{REPO}/commits?path={file}&per_page=30`, inspect
+   removal/revert commits, compare removed lines to PR additions). Scan deeper when
+   STALENESS is high.
+2. Contradicts a recorded decision: does the change reverse something fixed in an ADR
+   (docs/architecture/**, docs/ADRs/**), a CHANGELOG entry, or a prior PR review
+   comment? Evidence required: the ADR path + section, the CHANGELOG line, or the PR
+   comment.
+3. Unjustified churn / scope creep: does each change trace to the PR's stated goal in
+   PR_BODY? Evidence required: the stated-goal text plus the specific change that does
+   not trace to it.
+4. Better-alternative: given the change's goal, is the chosen approach clearly worse
+   than a pattern THIS REPO ALREADY USES elsewhere? Evidence required: a path to the
+   existing in-repo pattern. You may NEVER propose a hypothetical design.
+
+For docs-only PRs (every changed file is .md/.rst/.txt), run only checks 1 and 2.
+
+Also surface the pre-computed SYMBOL_COLLISIONS and any open-PR file collisions as
+findings.
+
+Emit each finding as:
+  [Critical|Important|Suggested] Premise/{check}: {finding}. Evidence: {citation}.
+
+Then emit a single verdict line as a JSON object on its own:
+  { "verdict": "OK" | "QUESTION" | "HOLD", "headline": "one-line reason" }
+
+Verdict rules:
+- HOLD: hard evidence the change should not merge as-is (reintroduces code a cited
+  commit removed, or reverses a cited ADR). Staleness biases borderline regressions
+  toward HOLD.
+- QUESTION: appropriateness concerns worth a human look but non-blocking (churn, a
+  weak/inferred contradiction, a symbol or open-PR collision).
+- OK: no premise concern survives the evidence rule.
+```
+
+Route Agent M's individual findings through Step 6 confidence scoring and Step 7
+deduplication with `agent source: M`. Capture its verdict object as
+`PREMISE_VERDICT = {verdict, headline}` for the Step 9 header and the Step 11 handoff.
 
 ---
 
