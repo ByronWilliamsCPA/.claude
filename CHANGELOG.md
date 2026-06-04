@@ -138,6 +138,16 @@
   and repo-compliance reference all move to pydoclint.
 
 ### Added
+* feat(compliance): close the dormant in-house license gate in
+  `docs/standards-manifest.yaml`. Adds CI-080 (the `sbom.yml` caller's
+  `forbidden-licenses` denylist must include LGPL and MPL, not GPL/AGPL only)
+  and CI-081 (the `dependency-review.yml` caller must declare `deny-licenses`
+  or `allow-licenses`), both severity suggested and override-eligible. Adds a
+  `deny-licenses` denylist for GPL/AGPL to `dependency-review.yml` as an early
+  PR-time signal, and `docs/reference/fossa-ci-evaluation.md` documenting the
+  six-dimension evaluation and DEFER decision on the FOSSA SaaS alternative.
+  The two checks were renumbered from the originally proposed CI-078/CI-079
+  after PR #188 took CI-078 and reserved CI-079.
 * feat(compliance): add the renovate-health enforcement suite to
   `docs/standards-manifest.yaml` and the repo-compliance skill. Adds five new CI
   checks (all severity suggested, override-eligible): CI-073 (orphan legacy

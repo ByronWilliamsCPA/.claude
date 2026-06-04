@@ -1,6 +1,16 @@
 # docs/standards-manifest.yaml
 version: "1.0"
-last_updated: "2026-06-02"
+last_updated: "2026-06-04"
+# 2026-06-04: License compliance coverage. Added CI-080 (sbom.yml caller
+# forbidden-licenses denylist includes LGPL and MPL, not GPL/AGPL only,
+# suggested) and CI-081 (dependency-review.yml caller declares deny-licenses
+# or allow-licenses, suggested). Both close the dormant in-house license gate
+# documented in docs/reference/fossa-ci-evaluation.md (the FOSSA SaaS
+# alternative was evaluated and deferred). Renumbered from CI-078/CI-079 after
+# PR #188 took CI-078 (qlty gate) and reserved CI-079 for its ruleset
+# companion. CI-080 promotes to important after the CI-058 sbom.yml-caller
+# sweep reaches 100%; CI-081 after CI-036. Start at suggested per the
+# policy-execution-gap lesson (define before reach).
 # 2026-06-02: Renovate-health enforcement suite. Added CI-073 (orphan legacy
 # manifest, suggested), CI-074 (Dependabot alerts enabled, suggested), CI-075
 # (lockFileMaintenance automerge, suggested), CI-076 (vuln-fix PR automerge,
@@ -2072,6 +2082,135 @@ checks:
       qlty-gate / Qlty Gate is in required_status_checks) is a future
       CI-079 once the gate name is confirmed from a live run (CI-073 through
       CI-077 are the renovate-health suite from PR #189).
+
+  # 2026-06-04: License compliance coverage checks. Added CI-080 (SBOM
+  # license-compliance job denylist includes LGPL and MPL, not GPL/AGPL only,
+  # suggested) and CI-081 (dependency-review-action deny-licenses or
+  # allow-licenses input present, suggested). Renumbered from the originally
+  # proposed CI-078/CI-079, which collided with the qlty-gate check (CI-078)
+  # and its reserved CI-079 ruleset companion from PR #188. Both start at
+  # severity: suggested per the policy-execution-gap lesson: start a check at
+  # suggested and promote to important only after the prerequisite sweep
+  # reaches 100%. CI-080 promotion requires the CI-058 sweep at 100% (sbom.yml
+  # callers on all 30 Python repos); CI-081 promotion requires CI-036 confirmed
+  # on all applicable public repos. Current fleet posture:
+  # fail-on-forbidden-licenses=false with a GPL/AGPL-only denylist. 10
+  # non-permissive packages confirmed in the claude-config venv: 8 MPL-2.0, 2
+  # LGPL; none create obligations for an MIT importer but none are caught by
+  # the current denylist. FOSSA SaaS was evaluated and deferred (see
+  # docs/reference/fossa-ci-evaluation.md): the in-house gate repair closes the
+  # same gap at zero cost and zero new egress.
+
+  - id: CI-080
+    domain: ci
+    severity: suggested
+    override_eligible: true
+    not_applicable_when: >-
+      Repo does not contain Python source files (no pyproject.toml with a
+      [project] table), OR sbom.yml is absent from .github/workflows/ (CI-058
+      prerequisite unmet: sbom.yml caller must exist before a license denylist
+      can be evaluated), OR repositoryType is config, docs-only, or
+      infrastructure.
+    description: >-
+      The sbom.yml caller's with: block must pass a forbidden-licenses JSON
+      array to the python-sbom.yml reusable workflow that includes LGPL and
+      MPL entries in addition to the default GPL/AGPL set. The reusable
+      workflow default lists only GPL-2.0-only, GPL-2.0-or-later, GPL-3.0-only,
+      GPL-3.0-or-later, AGPL-3.0-only, AGPL-3.0-or-later. LGPL-2.0-only,
+      LGPL-2.0-or-later, LGPL-2.1-only, LGPL-2.1-or-later, LGPL-3.0-only,
+      LGPL-3.0-or-later, and MPL-2.0 are absent, so the 10 non-permissive
+      packages confirmed in the claude-config venv (certifi, fqdn, hypothesis,
+      pathspec, pytest-html, pytest-metadata, pytest-rerunfailures, tqdm:
+      MPL-2.0; psycopg2-binary, python-gitlab: LGPL) are never flagged.
+      Secondary gap: the matching logic reads only the SPDX id field; free-text
+      name values like 'MPL 2.0' and 'LGPL with exceptions' slip through even
+      when those licenses are in the denylist. This check gates the denylist
+      content; the matching-logic gap is fixed in the reusable workflow
+      separately.
+    verify: |
+      Read .github/workflows/sbom.yml (or whichever file calls
+      uses: ByronWilliamsCPA/.github/.github/workflows/python-sbom.yml).
+      Locate the with: block.
+      Step 1, denylist content:
+        Parse the forbidden-licenses value as JSON.
+        FAIL if the array does not include ALL of:
+          LGPL-2.0-only, LGPL-2.0-or-later, LGPL-2.1-only,
+          LGPL-2.1-or-later, LGPL-3.0-only, LGPL-3.0-or-later, MPL-2.0.
+        PASS if all seven are present (GPL/AGPL entries may also be present).
+        If forbidden-licenses is absent: the reusable workflow uses its default
+        (GPL/AGPL only); FAIL because LGPL/MPL are missing from the default.
+      Step 2, fail mode (advisory):
+        Check fail-on-forbidden-licenses. WARN (do not FAIL) if false or
+        absent: the check runs advisory only. This is the expected Wave 1
+        state. Promote to FAIL after Wave 3 (allowlist mechanism confirmed and
+        fail-on-forbidden-licenses: true deployed).
+    source_frameworks:
+      - manifest-internal
+      - REUSE Specification 3.3 (license obligation disclosure)
+      - OpenSSF Scorecard License (license field present)
+    notes: >-
+      Added 2026-06-04 at severity: suggested. Renumbered from the originally
+      proposed CI-078, which PR #188 took for the qlty-gate check. Promotion to
+      important after the CI-058 sweep confirms 100% of 30 Python repos have
+      sbom.yml callers. Wave 3 (fail-on-forbidden-licenses: true) requires a
+      per-package allowlist to avoid false-positive CI breakage from certifi
+      (MPL-2.0, transitive via requests in virtually every Python project). Do
+      not promote CI-080 before CI-058 reach is 100%; the not_applicable_when
+      gate keeps repos without sbom.yml out of scope until their callers land.
+      The seven-entry LGPL/MPL required set matches the reference repair in
+      ByronWilliamsCPA/.github (the LGPL-2.1 variants cover semgrep, the one
+      concrete LGPL-2.1 package observed in the fleet).
+
+  - id: CI-081
+    domain: ci
+    severity: suggested
+    override_eligible: true
+    not_applicable_when: >-
+      Repo is private (actions/dependency-review-action license endpoint
+      requires GitHub Advanced Security or a public repo), OR
+      dependency-review.yml is absent from .github/workflows/ (CI-036
+      prerequisite unmet), OR repositoryType is config, docs-only, or
+      infrastructure.
+    description: >-
+      The dependency-review.yml caller must include a deny-licenses or
+      allow-licenses input in its with: block. The actions/dependency-review-
+      action supports both natively (v4+). Omitting both means the action only
+      gates on vulnerability severity and applies no license policy to
+      PR-introduced packages, so a PR adding a GPL-3.0 or LGPL-3.0 library
+      passes silently until the post-merge SBOM scan runs. deny-licenses
+      provides an early PR-time signal complementing CI-080's full-lockfile
+      post-merge gate. deny-licenses operates only on PR-diff packages; CI-080
+      covers the full lockfile via the SBOM. Both are needed: CI-081 catches
+      new introductions early; CI-080 catches pre-existing packages that
+      predate CI-081 enforcement. Note: the deny-licenses input is deprecated
+      by actions/dependency-review-action (issue 997) and may be removed in a
+      future major release; allow-licenses also satisfies this check and is the
+      forward-compatible alternative.
+    verify: |
+      Read .github/workflows/dependency-review.yml.
+      Locate the step using actions/dependency-review-action and its with:
+      block.
+      FAIL if neither deny-licenses nor allow-licenses is present.
+      PASS if at least one is present.
+      Advisory: if deny-licenses is present, warn if it omits GPL-3.0-only,
+      GPL-3.0-or-later, AGPL-3.0-only, AGPL-3.0-or-later. Content review is
+      manual; this check enforces presence of the key, not its exact value.
+    source_frameworks:
+      - manifest-internal
+      - GitHub dependency-review-action documentation (deny-licenses input)
+      - OWASP Top 10 CI/CD A08 Ungoverned Usage of Third-Party Services
+    notes: >-
+      Added 2026-06-04 at severity: suggested. Renumbered from the originally
+      proposed CI-079, which is reserved by the CI-078 qlty-gate ruleset
+      companion check from PR #188. Promotion to important after CI-036
+      (dependency-review.yml presence) is confirmed at 100% across applicable
+      public repos and at least one reference implementation of deny-licenses
+      or allow-licenses is deployed (recommended deny starting set:
+      GPL-2.0-only, GPL-2.0-or-later, GPL-3.0-only, GPL-3.0-or-later,
+      AGPL-3.0-only, AGPL-3.0-or-later, matching the SBOM denylist). The two
+      lists are separate and must be kept in sync. Reference implementation
+      target: .github/workflows/dependency-review.yml under the
+      actions/dependency-review-action with: block.
 
   - id: CI-055
     domain: ci
