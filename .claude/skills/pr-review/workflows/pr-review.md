@@ -853,7 +853,7 @@ confidence scoring and Step 7 deduplication with `agent source: L`.
 
 ### Agent M: Premise & Regression Gate (Opus)
 
-Always active. Runs in this parallel batch so it adds no wall-clock. Opus, because
+Always active. Runs in the Step 5 parallel batch so it adds no wall-clock. Opus, because
 every check is a judgment call. Receives: `PR_DIFF`, `PR_TITLE`, `PR_BODY`,
 `CHANGED_FILES`, `CONTEXT_FILES`, `MERGE_STATE`, `STALENESS`, `CONTESTED_FILES`,
 `SYMBOL_COLLISIONS`.
@@ -878,7 +878,8 @@ cannot cite evidence, DROP the finding; do not downgrade it.
    prior commit deliberately removed or reverted? Evidence required: a specific prior
    commit SHA whose removed lines the PR re-adds. Run the forensic scan ONLY on
    CONTESTED_FILES (fetch recent commits via
-   `gh api repos/{OWNER}/{REPO}/commits?path={file}&per_page=30`, inspect
+   `gh api "repos/{OWNER}/{REPO}/commits?path={file}&per_page=30"` (quote the URL so
+   the shell does not treat `&` as a background operator), inspect
    removal/revert commits, compare removed lines to PR additions). Scan deeper when
    STALENESS is high.
 2. Contradicts a recorded decision: does the change reverse something fixed in an ADR
@@ -897,18 +898,21 @@ For docs-only PRs (every changed file is .md/.rst/.txt), run only checks 1 and 2
 Also surface the pre-computed SYMBOL_COLLISIONS and any open-PR file collisions as
 findings.
 
-Emit each finding as:
+Emit each finding as (use the check NAME for {check}, not its number: one of
+Regression, Contradicts, Churn, BetterAlternative, Collision):
   [Critical|Important|Suggested] Premise/{check}: {finding}. Evidence: {citation}.
 
 Then emit a single verdict line as a JSON object on its own:
   { "verdict": "OK" | "QUESTION" | "HOLD", "headline": "one-line reason" }
 
-Verdict rules:
-- HOLD: hard evidence the change should not merge as-is (reintroduces code a cited
-  commit removed, or reverses a cited ADR). Staleness biases borderline regressions
-  toward HOLD.
-- QUESTION: appropriateness concerns worth a human look but non-blocking (churn, a
-  weak/inferred contradiction, a symbol or open-PR collision).
+Verdict rules (each finding maps to exactly one verdict; when a contradiction could
+be either, the explicit-prohibition test decides):
+- HOLD: hard evidence the change should not merge as-is: it reintroduces code a cited
+  commit removed, or it reverses an ADR whose cited section explicitly prohibits the
+  pattern. Staleness biases borderline regressions toward HOLD.
+- QUESTION: appropriateness concerns worth a human look but non-blocking: churn, a
+  contradiction that is inferred or where the cited ADR does not explicitly prohibit
+  the pattern, or a symbol or open-PR collision.
 - OK: no premise concern survives the evidence rule.
 ```
 
