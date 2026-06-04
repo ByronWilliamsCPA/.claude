@@ -925,14 +925,14 @@ deduplication with `agent source: M`. Capture its verdict object as
 
 ## Step 6: Confidence Scoring (parallel Haiku agents)
 
-For each finding returned by Agents A–H, launch a parallel Haiku agent with:
+For each finding returned by Agents A–M, launch a parallel Haiku agent with:
 
 ```text
 Score this code review finding on a scale of 0–100.
 
 Finding: {finding description}
 File: {file}
-Agent source: {A|B|C|D|E|F|G|H|I|J|K|L}
+Agent source: {A|B|C|D|E|F|G|H|I|J|K|L|M}
 PR diff context: {10 lines of diff around the finding}
 
 Scoring rubric:
@@ -948,7 +948,11 @@ Additional constraint: If the agent source is C (Git History) or D (Prior PR
 Comments) AND the finding does not point to a specific, fixable line in the
 diff (it describes historical context, file churn, or past review patterns
 rather than an issue in the changed code): cap the score at 20 regardless of
-the rubric above.
+the rubric above, UNLESS the finding is a regression-reintroduction that cites a
+specific prior commit SHA where the now-reappearing lines were removed or reverted.
+Such evidence-backed regression findings (from any agent source, including M) are
+scored on the normal rubric and may reach Critical. It is the cited SHA, not the
+agent identity, that lifts the cap; vague history churn stays capped.
 
 Return ONLY a JSON object:
 {"score": <number>, "rationale": "<one sentence>"}
