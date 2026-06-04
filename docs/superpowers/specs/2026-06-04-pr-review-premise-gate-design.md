@@ -182,8 +182,11 @@ downgrade an unsourced finding; remove it.**
 
 **Forensic scan scope:** the deep commit/line history scan (fetch recent commits per
 file via `gh api repos/.../commits?path={file}`, inspect removal/revert commits,
-compare removed lines to PR additions) runs **only on `CONTESTED_FILES`**, not on
-every changed file. Scan depth scales with `STALENESS`.
+compare removed lines to PR additions) runs on **every file in `CHANGED_FILES`**. A
+stale-branch regression can live in a file no other PR touched, so the regression
+check is deliberately NOT limited to `CONTESTED_FILES`. `STALENESS` modulates scan
+depth (how far back in history to look), not which files are scanned. `CONTESTED_FILES`
+still drives the cross-PR collision findings in Step 2e.
 
 **Better-alternative discipline:** this check may only fire by pointing to a concrete
 pattern the repo already uses in another file. It may never propose a hypothetical
