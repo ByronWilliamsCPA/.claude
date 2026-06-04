@@ -178,6 +178,30 @@ If any finding is tagged `[Critical - pre-existing, rebase needed]`, also add to
 
 ---
 
+## Step 2d: Branch staleness (parallel with Step 2c)
+
+Compute two objective staleness signals; Agent M (Step 5) uses them as a
+scan-intensity dial and a HOLD bias on confirmed regressions.
+
+```bash
+CMP=$(gh api "repos/$OWNER/$REPO/compare/$BASE_BRANCH...$HEAD_BRANCH")
+COMMITS_BEHIND=$(echo "$CMP" | jq '.behind_by')
+FIRST_DIVERGENT_DATE=$(echo "$CMP" | jq -r '.commits[0].commit.committer.date // empty')
+if [ -n "$FIRST_DIVERGENT_DATE" ]; then
+  AGE_DAYS=$(( ( $(date +%s) - $(date -d "$FIRST_DIVERGENT_DATE" +%s) ) / 86400 ))
+else
+  AGE_DAYS=0
+fi
+```
+
+Store as `STALENESS = {commits_behind: COMMITS_BEHIND, age_days: AGE_DAYS}`. When
+`AGE_DAYS` exceeds `PREMISE_STALENESS_HOLD_DAYS`, or `COMMITS_BEHIND` is large, Agent
+M scans contested files more deeply and biases its verdict toward HOLD on any
+regression it confirms. This step is non-blocking: if the compare call fails, set
+`STALENESS = {commits_behind: 0, age_days: 0}` and note "staleness: unavailable".
+
+---
+
 ## Step 3: Classify Changes (Haiku agent)
 
 Analyze `CHANGED_FILES` and the first 50 lines of `PR_DIFF` to classify:
