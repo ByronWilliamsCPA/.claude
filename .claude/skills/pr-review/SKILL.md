@@ -42,6 +42,11 @@ review completion menu), or standalone on any PR.
   MCP tools. The user's working tree is never touched during review.
 - **Isolated worktree for fixes.** `/pr-fix` creates a worktree at
   `.worktrees/fix-pr{N}` so fixes never contaminate the main working tree.
+- **Premise before polish.** A premise gate (Agent M) asks whether the change should
+  exist and is an improvement, not just whether it is correct. It checks for
+  regression-reintroduction, contradicted decisions, unjustified churn, and cross-PR
+  collisions, surfaces an OK/QUESTION/HOLD verdict at the report top, and a HOLD
+  interposes a confirmation before /pr-fix.
 
 ## Routing
 
