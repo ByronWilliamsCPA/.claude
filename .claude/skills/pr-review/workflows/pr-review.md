@@ -23,6 +23,8 @@ PAL_CHAT_MODEL:        google/gemini-2.5-pro-preview
 PAL_CONSENSUS_MODELS:  ["google/gemini-2.5-pro-preview", "openai/gpt-4o"]
 PAL_TIERED_LEVEL:      1
 PAL_TIERED_THINKING:   auto
+PREMISE_MERGED_PR_LOOKBACK:   10
+PREMISE_STALENESS_HOLD_DAYS:  14
 ```
 
 - `PAL_CHAT_MODEL`: model passed to `mcp__pal__chat` for targeted validations
@@ -32,6 +34,10 @@ PAL_TIERED_THINKING:   auto
   comprehensive (~$5)
 - `PAL_TIERED_THINKING`: thinking depth for tiered_consensus (`auto`, `low`,
   `high`)
+- `PREMISE_MERGED_PR_LOOKBACK`: number of recently merged PRs scanned for file and
+  symbol overlap in Step 2e
+- `PREMISE_STALENESS_HOLD_DAYS`: branch age in days above which staleness biases
+  Agent M toward a HOLD verdict on a confirmed regression
 
 ---
 
