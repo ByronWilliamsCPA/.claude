@@ -188,7 +188,9 @@ CMP=$(gh api "repos/$OWNER/$REPO/compare/$BASE_BRANCH...$HEAD_BRANCH")
 COMMITS_BEHIND=$(echo "$CMP" | jq '.behind_by')
 FIRST_DIVERGENT_DATE=$(echo "$CMP" | jq -r '.commits[0].commit.committer.date // empty')
 if [ -n "$FIRST_DIVERGENT_DATE" ]; then
-  AGE_DAYS=$(( ( $(date +%s) - $(date -d "$FIRST_DIVERGENT_DATE" +%s) ) / 86400 ))
+  # date -d is GNU coreutils; on BSD/macOS the parse fails and falls back to age 0
+  DIV_EPOCH=$(date -d "$FIRST_DIVERGENT_DATE" +%s 2>/dev/null || echo "$(date +%s)")
+  AGE_DAYS=$(( ( $(date +%s) - DIV_EPOCH ) / 86400 ))
 else
   AGE_DAYS=0
 fi
@@ -231,10 +233,14 @@ Intersect each comparison PR's file list with `CHANGED_FILES`. Produce
 - Overlap with a merged PR whose `mergedAt` postdates the current branch's merge-base
   is a staleness / silent-revert risk: the current branch never saw that merged
   change.
-- Overlap with an open PR is a collision / duplicate-work risk. Emit directly:
+- Overlap with an open PR is a collision / duplicate-work risk. Record it in
+  `CONTESTED_FILES` (with `pr_state: open`); Agent M (Step 5) is the sole emitter of
+  the finding, so it flows through Step 6 scoring like any other finding. Do NOT emit
+  it here; emitting both here and from Agent M would double-count it. Agent M formats
+  it as:
 
 ```text
-[Important] Collision: file {f} is also modified by open PR #{n} ("{title}").
+[Important] Premise/Collision: file {f} is also modified by open PR #{n} ("{title}").
 Verify the two changes do not conflict or duplicate effort before either merges.
 ```
 
@@ -950,9 +956,11 @@ diff (it describes historical context, file churn, or past review patterns
 rather than an issue in the changed code): cap the score at 20 regardless of
 the rubric above, UNLESS the finding is a regression-reintroduction that cites a
 specific prior commit SHA where the now-reappearing lines were removed or reverted.
-Such evidence-backed regression findings (from any agent source, including M) are
-scored on the normal rubric and may reach Critical. It is the cited SHA, not the
-agent identity, that lifts the cap; vague history churn stays capped.
+Such evidence-backed regression findings are scored on the normal rubric and may
+reach Critical. This exception matters for a C or D finding that cites a removal SHA;
+Agent M (source M) findings are never subject to the C/D cap in the first place. It
+is the cited SHA, not the agent identity, that lifts the cap; vague history churn
+stays capped.
 
 Return ONLY a JSON object:
 {"score": <number>, "rationale": "<one sentence>"}

@@ -300,6 +300,8 @@ implementation.
   gating, Step 11 handoff to pr-fix.
 - `.claude/skills/pr-review/workflows/pr-fix.md`: accept and surface the forwarded
   premise verdict.
+- `.claude/skills/pr-review/SKILL.md`: one Design Principles bullet naming the
+  premise gate.
 
 ## Open questions / future enhancements
 

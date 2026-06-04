@@ -12,7 +12,7 @@ method `get`, or `gh pr view --json url`.
 **From pr-review**: `FINDINGS`, `SONAR_FINDINGS`, `OWNER`, `REPO`,
 `PR_NUMBER`, `HEAD_BRANCH`, and `PREMISE_VERDICT` (if present) are already in
 context from the review. When `PREMISE_VERDICT.verdict` is `HOLD`, prepend a line to
-the fix summary: "Premise gate flagged HOLD: {headline}. This fix proceeds at the
+the fix summary: "Premise gate flagged HOLD: {PREMISE_VERDICT.headline}. This fix proceeds at the
 user's explicit direction." Standalone /pr-fix runs (not invoked via /pr-review) have
 no `PREMISE_VERDICT`; omit the line in that case.
 
