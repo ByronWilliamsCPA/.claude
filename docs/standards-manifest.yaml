@@ -14,6 +14,19 @@ last_updated: "2026-06-02"
 # repo_settings domain (REPO-001/002) to repo-foundations-auditor.
 # Cross-reference: docs/reference/dependency-tooling-comparison.md
 #
+# 2026-06-02: Qlty gate enforcement. Added CI-078 (qlty.yml contains a
+# qlty-gate job calling python-qlty-gate.yml, suggested). The qlty check
+# StatusContext posted by the qlty.sh GitHub App always reports SUCCESS
+# regardless of blocking issue count and cannot enforce quality gates. A
+# real GitHub Actions CheckRun produced by the qlty-gate job is required
+# for enforcement. Starts at suggested per feedback_policy_execution_gap.md;
+# promote to important once the gate is confirmed in all 21 qlty-configured
+# repos. Gate rollout in progress (2026-06-02): the gate job is wired in
+# 1 repo (.github); of the remaining batch, 4 repos have qlty coverage only
+# and 2 are not yet configured. Allocated CI-078 (not CI-073) to avoid an ID
+# collision with the renovate-health suite's CI-073..077 in PR #189.
+# Cross-reference: ByronWilliamsCPA/.github#188, skill-observations log #184.
+#
 # 2026-06-02: TOOL-011 upgraded from a presence check to a value check
 # (verify ruff_target_min: py310). Enforces a ruff target-version floor of
 # py310 matching the >=3.10 support floor, instead of merely checking the key
@@ -2031,6 +2044,34 @@ checks:
       this config-presence gate; add it as a separate follow-on check (claim
       the next free CI-* ID at implementation time) if Codecov API provides
       patch coverage per-PR.
+
+  - id: CI-078
+    domain: ci
+    severity: suggested
+    override_eligible: true
+    description: >-
+      .github/workflows/qlty.yml contains a qlty-gate job that calls
+      python-qlty-gate.yml from the org reusable workflow library. The
+      qlty check StatusContext posted by the qlty.sh GitHub App always
+      reports SUCCESS regardless of blocking issue count and cannot block
+      merges. A GitHub Actions CheckRun from this job is required for
+      enforcement. Applies to all repos with .qlty/qlty.toml configured.
+    verify: "content_present: .github/workflows/qlty.yml, python-qlty-gate.yml"
+    not_applicable_when: >-
+      Repo does not have .qlty/qlty.toml (mirrors TOOL-009 scope).
+    source_frameworks:
+      - manifest-internal
+    notes: >-
+      Promote severity from suggested to important once the qlty-gate job
+      is confirmed present in all 21 qlty-configured repos. Gate rollout
+      began 2026-06-02; the gate job is wired in 1 repo (.github) so far,
+      with the remaining batch staged (4 repos have qlty coverage only, 2
+      are not yet configured). The content_present verify on
+      python-qlty-gate.yml is sufficient because only the gate reusable
+      workflow uses that filename. The companion ruleset check (whether
+      qlty-gate / Qlty Gate is in required_status_checks) is a future
+      CI-079 once the gate name is confirmed from a live run (CI-073 through
+      CI-077 are the renovate-health suite from PR #189).
 
   - id: CI-055
     domain: ci
