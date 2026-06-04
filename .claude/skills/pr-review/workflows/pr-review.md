@@ -1164,6 +1164,7 @@ automatically; the user can decide whether to post.
 # PR Review: {PR_TITLE}
 {OWNER}/{REPO}#{PR_NUMBER} | {BASE_BRANCH} ← {HEAD_BRANCH}
 {DRAFT WARNING if isDraft}
+**PREMISE {PREMISE_VERDICT.verdict}: {PREMISE_VERDICT.headline}**
 
 ## Review Status
 - **GitHub Copilot**: {Received N comments / Pending (timed out) / Failed}
@@ -1214,6 +1215,12 @@ To post this review as a PR comment, run:
   /pr-review post
 Or confirm now and I will post it immediately.
 ```
+
+---
+
+Render a `HOLD` premise verdict with the same prominence as `BUILD FAILING`. An `OK`
+verdict may render as a single quiet line. Individual premise findings from Agent M
+appear in their scored tiers above, like any other agent's findings.
 
 ---
 
@@ -1276,6 +1283,17 @@ If `NEXT_ACTION` is 1, stop here.
 
 ### Option 2 or 3: Run /pr-fix
 
+If `PREMISE_VERDICT.verdict` is `HOLD`, interpose one confirmation before loading the
+fix workflow:
+
+```text
+Premise gate flagged HOLD: {PREMISE_VERDICT.headline}.
+/pr-fix would polish a change whose existence is in question.
+Proceed with the fix anyway? (y/N)
+```
+
+Do not proceed to pr-fix unless the user confirms. If they decline, stop here.
+
 Load `workflows/pr-fix.md` and execute it. Pass forward:
 
 - `OWNER`, `REPO`, `PR_NUMBER`
@@ -1283,6 +1301,7 @@ Load `workflows/pr-fix.md` and execute it. Pass forward:
 - `FINDINGS`: the full deduplicated, scored findings list from Step 7
 - `SONAR_FINDINGS`: SonarQube findings from Step 4 (if any)
 - `SONAR_HOTSPOTS`: security hotspots from Step 4f (if any)
+- `PREMISE_VERDICT`: the Agent M verdict object `{verdict, headline}` from Step 5
 
 The pr-fix workflow runs its own gather step for CI check failures,
 review comments, and Codecov status (data that pr-review did not collect),
