@@ -24,8 +24,10 @@ git worktree list
 
 Also list any in-progress TodoWrite items from this session. From the current
 branch name, decide whether this is a feature branch, defined as any branch
-other than `main` or `master`. Report the branch and state whether Step 3 will
-run.
+other than `main` or `master`. A detached HEAD (empty `git branch
+--show-current` output) is not a feature branch: treat it as non-feature and
+skip Step 3, so the branch decision never runs on a detached checkout. Report
+the branch and state whether Step 3 will run.
 
 ### 2. Complete the task-observer process
 

@@ -21,12 +21,20 @@ the branch if on a feature branch. Complete all of it before cleaning.
 Remove the following gitignored, always-regenerable paths from the current repo
 without prompting, then report a one-line summary of what was removed. This
 prunes `.git`, `.venv`, `.submodules`, and `.worktrees` so it never descends
-into other checkouts or expensive-to-rebuild environments:
+into other checkouts or expensive-to-rebuild environments. Every candidate is
+gated through `git check-ignore` so only paths Git actually ignores are deleted:
+a tracked file that happens to match a cache name (a committed `coverage.xml`, a
+checked-in `.nox/`) is never removed. Stderr is not suppressed on the deletion,
+so any failure (permission denied, read-only mount) surfaces in the summary
+rather than being silently swallowed:
 
 ```bash
 find . \( -path ./.git -o -path ./.venv -o -path ./.submodules -o -path ./.worktrees \) -prune \
-  -o -type d \( -name __pycache__ -o -name .pytest_cache -o -name .ruff_cache -o -name .nox -o -name .hypothesis \) -print -exec rm -rf {} + 2>/dev/null
-rm -f .coverage coverage.xml coverage-*.xml 2>/dev/null
+  -o -type d \( -name __pycache__ -o -name .pytest_cache -o -name .ruff_cache -o -name .nox -o -name .hypothesis \) -print0 2>/dev/null \
+  | git check-ignore -z --stdin | xargs -0 -r rm -rf
+for f in .coverage coverage.xml coverage-*.xml; do
+  [ -e "$f" ] && git check-ignore -q "$f" && rm -f "$f"
+done
 ```
 
 `.venv` is intentionally preserved: it is gitignored but costly to rebuild and
@@ -47,7 +55,7 @@ is reliably excluded:
 ```bash
 newest_handoff=$(find . tmp_cleanup -maxdepth 1 -name '.tmp-handoff-*' -type f -printf '%T@ %p\n' 2>/dev/null | sort -rn | head -1 | cut -d' ' -f2-)
 find . tmp_cleanup -maxdepth 1 -name '.tmp-*' -type f -mtime +14 2>/dev/null \
-  | grep -vF "${newest_handoff:-/no/such/path}"
+  | grep -vxF "${newest_handoff:-/no/such/path}"
 ```
 
 **Finished worktrees:** from `git worktree list`, a worktree qualifies for
