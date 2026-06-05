@@ -45,6 +45,7 @@ When invoked with `generate` or `generate <file_path>`:
    `pytest --cov=<source_module> --cov-report=annotate:cov_annotate --cov-branch`
    Lines prefixed with `!` in the annotated output are uncovered.
 3. For each target file (or specified file):
+   **Pre-analysis read step:** Before identifying gaps, read (1) the production code to understand all branches and edge cases, and (2) the test file in full to understand what is already covered. Do not infer coverage from the requester's description -- build the gap list from direct observation of both files. This prevents flagging gaps that are already covered and missing gaps that are genuinely present.
    a. Read the source file and any existing test file
    b. Spawn the test-writer subagent with source, uncovered lines, and
       existing test patterns as context
@@ -106,7 +107,7 @@ When invoked with `codecov` or `audit-codecov`:
    c. For each flag, check that `coverage.status.project.<flag>` exists
       with a target matching §16.2 thresholds
    d. Check CI workflow files (`.github/workflows/*.yml`) for `-F <flag>`
-      upload arguments — each flag must have a matching CI upload
+      upload arguments -- each flag must have a matching CI upload
 
    **Component Validation:**
    e. List all directories under `src/`
@@ -179,5 +180,13 @@ Coverage reports use this structure:
 - Uncovered functions: name, file, line range, current coverage %
 - Recommendations: prioritized list of what to test next
 - Before/after comparison (when generating)
+
+## Coverage Scope Disclaimers
+
+When analyzing or reporting coverage for a PR or task:
+
+- Always qualify coverage claims with the measurement scope. "100% coverage" means 100% of the configured `coverage.run.source` directories. Scripts, migrations, fixtures, and other directories outside that scope are excluded from measurement by design.
+- When a PR moves code from an excluded directory (e.g., `scripts/`) into the measured scope (e.g., `src/`), flag that the moved code may have zero coverage under the new path even if the PR claims full coverage. The coverage tool's changed-files scoping does not automatically add the moved file to the measured set.
+- For refactoring PRs that extract helpers into new files, verify whether the new file path falls within the configured coverage source. A helper extracted to `scripts/helpers.py` has no coverage measurement even if it has 0% coverage. State this explicitly: "Coverage: N% of src/ package; scripts/ excluded from measurement by configuration."
 
 $ARGUMENTS

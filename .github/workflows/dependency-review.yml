@@ -39,5 +39,13 @@ jobs:
           # MODERATE and LOW findings appear in the PR comment as warnings.
           fail-on-severity: high
           warn-only: false
+          # License policy (standards-manifest CI-079): block PRs that introduce
+          # strong-copyleft licenses (GPL/AGPL) into the dependency graph. This
+          # mirrors the GPL/AGPL core of the python-sbom.yml forbidden-licenses
+          # denylist; the two lists are kept in sync. LGPL and MPL are not denied
+          # at PR time because certifi (MPL-2.0) is a near-universal transitive
+          # dependency and denying MPL here would break unrelated PRs. The full
+          # LGPL/MPL advisory sweep runs post-merge via the SBOM gate (CI-078).
+          deny-licenses: GPL-2.0-only, GPL-2.0-or-later, GPL-3.0-only, GPL-3.0-or-later, AGPL-3.0-only, AGPL-3.0-or-later
           # Comment on the PR with a summary of findings (requires pull-requests: write).
           comment-summary-in-pr: always

@@ -76,3 +76,11 @@ uv run ruff check --fix .
 
 ### Per-File Ignores
 Tests and scripts have relaxed rules for pragmatic development.
+
+## Quality Tool Behavior Notes
+
+**qlty nesting-level and loop constructs (Obs 80):** qlty's nesting-level counter includes `for` and `while` loops in the count, not just `if`/`else` branching. A function with three nested `for` loops puts any statement in the innermost body at nesting level 4, which triggers the "Deeply nested control flow (level=4)" smell regardless of how many conditionals are present.
+
+To resolve a nesting-4 smell on a triple loop, extract the body of the innermost loop to a helper function -- not just the innermost `if`. A minimal `if` at the innermost level is still at level 4 and will still be flagged.
+
+**qlty runs its own ruff independently of pyproject.toml (Obs 103):** qlty has its own tool-runner layer that invokes ruff with its own configuration, independent of project-level config files (`pyproject.toml`, `.ruff.toml`). Exclusions defined in `pyproject.toml` ruff `exclude` do NOT carry over to qlty. When adding service directories or generated-code directories to `pyproject.toml` ruff exclusions, always check whether `.qlty/qlty.toml` also needs a matching `[[exclude]]` entry.

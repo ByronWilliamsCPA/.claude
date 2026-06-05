@@ -74,7 +74,7 @@ potentially stale.
 
 | Domain | Agent | Checks |
 |--------|-------|--------|
-| foundations | `repo-foundations-auditor` | FOUND-* |
+| foundations | `repo-foundations-auditor` | FOUND-*, REPO-* (repo_settings: REPO-001 allow_auto_merge, REPO-002 delete_branch_on_merge; verified via `gh api repos/<org>/<repo>`) |
 | toolchain | `python-toolchain-auditor` | TOOL-* |
 | pre_commit | `pre-commit-auditor` | PC-* |
 | ci | `devops-deployment-agent` (CI audit mode) | CI-* |
@@ -226,7 +226,9 @@ Cached review data (domain-scoped):
  exactly (branchProtection, codecov, codeql, foundations, ossfBadge,
  preCommit, releaseHealth, renovate, reuse, scorecard, secretScanning,
  sonarcloud, templateDrift, toolchain, workflows):
-  repo-foundations-auditor: foundations
+  repo-foundations-auditor: foundations (the foundations key applies to FOUND-*
+    checks; REPO-* repo_settings checks are evaluated live via
+    gh api repos/<org>/<repo> with no cachedReview key)
   python-toolchain-auditor: toolchain, renovate
   pre-commit-auditor: preCommit
   devops-deployment-agent: workflows, reuse

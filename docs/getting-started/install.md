@@ -29,7 +29,7 @@ For the design rationale behind this two-layer approach, see [Architecture → I
 git clone --recurse-submodules https://github.com/ByronWilliamsCPA/.claude.git ~/dev/.claude
 ```
 
-The `--recurse-submodules` flag initializes all five submodules in a single step. Without it, you will need to run `git submodule update --init --recursive` afterward (see below).
+The `--recurse-submodules` flag initializes all seven submodules in a single step. Without it, you will need to run `git submodule update --init --recursive` afterward (see below).
 
 If you cloned without `--recurse-submodules`:
 

@@ -40,12 +40,12 @@ def test_accepts_zero_review_count():
             }
         ]
     }
-    validate_solo_dev_safe(body)  # no exception
+    assert validate_solo_dev_safe(body) is None
 
 
 def test_accepts_no_pull_request_rule():
     body = {"rules": [{"type": "required_signatures"}]}
-    validate_solo_dev_safe(body)
+    assert validate_solo_dev_safe(body) is None
 
 
 def test_accepts_pull_request_without_count_param():
@@ -57,7 +57,7 @@ def test_accepts_pull_request_without_count_param():
             }
         ]
     }
-    validate_solo_dev_safe(body)
+    assert validate_solo_dev_safe(body) is None
 
 
 def test_rejects_count_of_5():
@@ -221,7 +221,7 @@ def test_target_rule_compat_accepts_push_only_rules_in_push_body():
             {"type": "max_file_size", "parameters": {"max_file_size": 100}},
         ],
     }
-    validate_target_rule_compatibility(body)  # no exception
+    assert validate_target_rule_compatibility(body) is None
 
 
 def test_target_rule_compat_accepts_branch_rules_in_branch_body():
@@ -235,7 +235,7 @@ def test_target_rule_compat_accepts_branch_rules_in_branch_body():
             {"type": "required_status_checks", "parameters": {}},
         ],
     }
-    validate_target_rule_compatibility(body)  # no exception
+    assert validate_target_rule_compatibility(body) is None
 
 
 def test_target_rule_compat_defaults_target_to_branch():

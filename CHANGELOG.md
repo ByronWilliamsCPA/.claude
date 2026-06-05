@@ -99,6 +99,24 @@
 
 ### Changed
 
+* feat(standards): upgrade TOOL-011 in `docs/standards-manifest.yaml` from a
+  presence check to a value check. Ruff `target-version` must now be `py310` or
+  higher (verify `ruff_target_min: py310`) rather than merely present, matching
+  the documented `>=3.10` support floor. Adds the `ruff_target_min` audit
+  handler and remediation guidance to the python-toolchain-auditor agent (derive
+  the floor from `requires-python`; keep `[tool.basedpyright] pythonVersion`
+  aligned; run the PEP 604/585 modernization as a dedicated PR) and documents the
+  tool-target floor in `.claude/standards/python.md`. Severity stays `suggested`
+  until fleet rollout reaches 100% per feedback_policy_execution_gap.md.
+
+* feat(skills): weekly skill review 2026-06-01 -- 68 observations applied across
+  13 skill files. Updated pr-fix, pr-review, writing-plans, dispatching-parallel-agents,
+  handoff, git, testing, ci-fix, using-git-worktrees, receiving-code-review, quality,
+  test-coverage, and test-driven-development. Five skills promoted from submodule
+  symlinks to local copies (dispatching-parallel-agents, receiving-code-review,
+  test-driven-development, using-git-worktrees, writing-plans) to allow local
+  improvements without upstream submodule commits.
+
 * refactor(compliance): relocate the compliance master-log tooling into the
   `claude_config` package (ARCH-01 PR1a). `compliance_log_common` and
   `compliance_log_render` now live under `src/claude_config/compliance/` on the
@@ -120,6 +138,36 @@
   and repo-compliance reference all move to pydoclint.
 
 ### Added
+* feat(compliance): close the dormant in-house license gate in
+  `docs/standards-manifest.yaml`. Adds CI-080 (the `sbom.yml` caller's
+  `forbidden-licenses` denylist must include LGPL and MPL, not GPL/AGPL only)
+  and CI-081 (the `dependency-review.yml` caller must declare `deny-licenses`
+  or `allow-licenses`), both severity suggested and override-eligible. Adds a
+  `deny-licenses` denylist for GPL/AGPL to `dependency-review.yml` as an early
+  PR-time signal, and `docs/reference/fossa-ci-evaluation.md` documenting the
+  six-dimension evaluation and DEFER decision on the FOSSA SaaS alternative.
+  The two checks were renumbered from the originally proposed CI-078/CI-079
+  after PR #188 took CI-078 and reserved CI-079.
+* feat(compliance): add the renovate-health enforcement suite to
+  `docs/standards-manifest.yaml` and the repo-compliance skill. Adds five new CI
+  checks (all severity suggested, override-eligible): CI-073 (orphan legacy
+  manifest after uv migration), CI-074 (Dependabot alerts kept enabled as the
+  multi-ecosystem detection ledger), CI-075 (lockFileMaintenance enabled and
+  automerged, the only Python transitive-remediation path), CI-076
+  (vulnerability-fix PR automerge, ladder-aware: preserves the per-severity
+  minimumReleaseAge ladder rather than requiring minimumReleaseAge null), and
+  CI-077 (multi-ecosystem CI scanning for polyglot npm/container repos).
+  Promotes CI-058, CI-059, and CI-060 from suggested to important
+  (report-and-escalate; held below critical until the 9-repo enabledManagers
+  sweep lands and enforcement reaches 100% per `feedback_policy_execution_gap.md`).
+  Widens CI-021 verify to accept the detection-only Dependabot configuration
+  (dependabot.yml may remain when every ecosystem sets open-pull-requests-limit:
+  0). Tags 17 checks with `check_family: renovate-health` and wires a
+  `[RENOVATE-HEALTH]` aggregation rollup into the repo-compliance skill
+  (interactive and scheduled modes) that surfaces any repo failing 2 or more
+  renovate-family checks. Routes the repo_settings domain (REPO-001, REPO-002)
+  to repo-foundations-auditor. Refs
+  `docs/reference/dependency-tooling-comparison.md`.
 * feat(manifest): add TOOL-013 (darglint absent from dependencies) to
   `docs/standards-manifest.yaml`. Severity important, override-ineligible;
   mirrors the existing black/mypy/safety absence checks now that pydoclint

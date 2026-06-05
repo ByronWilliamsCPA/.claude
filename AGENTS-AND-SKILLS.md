@@ -196,6 +196,23 @@ Post-run retrospective agent. Synthesizes findings across all repos in a session
 in unclassified candidates, and writes a lessons-learned document with ready-to-paste manifest
 improvement proposals and agent scope expansion candidates.
 
+**[compliance-synthesis](/.claude/agents/compliance-synthesis.md)**
+Cross-session compliance retrospective synthesis. Reads the central master log, computes trending
+recurrence, stuck manifest candidates, fleet-action follow-through, coverage gaps, and override
+hotspots. Writes a weekly synthesis report to `docs/compliance-reports/synthesis/YYYY-MM-DD.md`.
+
+**[cleanup-backlog-scout](/.claude/agents/cleanup-backlog-scout.md)**
+Scouts target repositories for mechanical cleanup work a local model can perform autonomously. Reads
+a repo (or the fleet catalog), identifies safe candidates (doc fixes, missing OpenSSF baseline files,
+frontmatter additions, dependency bumps, ruff-flagged dead code, link fixes), classifies each by
+difficulty against the worker contract's five gates, and writes scoped task entries to the cleanup
+backlog. Conservative by default: marks candidates claude-required when classification is uncertain.
+
+**[ossf-criteria-reference](/.claude/agents/ossf-criteria-reference.md)**
+Reference knowledge file (not an executable agent). Catalogs every OpenSSF Best Practices Badge
+criterion slug, N/A eligibility, and automation URL field name across the passing, silver, and gold
+levels. Consumed by `ossf-badge-evaluator` when generating form-submission automation URLs.
+
 ### Frontend
 
 **[frontend-designer](/.claude/agents/frontend-designer.md)**
@@ -420,7 +437,7 @@ Socratic pre-implementation design workflow. Explores context, asks one clarifyi
 time, proposes 2-3 architectural approaches, generates a spec document, and chains to
 `writing-plans`. Hard rule: no code until design is approved.
 
-**[writing-plans](/.submodules/superpowers/skills/writing-plans/SKILL.md)**
+**[writing-plans](.claude/skills/writing-plans/SKILL.md)**
 Creates granular task-by-task implementation plans. Each task targets 2-5 minutes, follows TDD,
 includes exact file paths and complete code blocks. Plan is saved to
 `docs/superpowers/plans/` and committed before implementation begins.
@@ -436,7 +453,7 @@ Three-subagent review pattern per task: (1) Implementer executes and self-review
 reviewer independently verifies against spec with adversarial skepticism, (3) Code-quality reviewer
 validates cleanliness. Never skips review loops.
 
-**[dispatching-parallel-agents](/.submodules/superpowers/skills/dispatching-parallel-agents/SKILL.md)**
+**[dispatching-parallel-agents](.claude/skills/dispatching-parallel-agents/SKILL.md)**
 Assigns independent tasks to parallel subagents when 3+ independent problems exist simultaneously.
 One agent per independent problem domain.
 
@@ -446,14 +463,14 @@ One agent per independent problem domain.
 Dispatches the `code-reviewer` subagent with structured context: what was implemented, plan
 reference, base SHA, head SHA. Mandates addressing Critical issues immediately.
 
-**[receiving-code-review](/.submodules/superpowers/skills/receiving-code-review/SKILL.md)**
+**[receiving-code-review](.claude/skills/receiving-code-review/SKILL.md)**
 Enforces technical verification before acting on any review feedback. Five verification checks per
 suggestion. Explicitly prohibits performative agreement. Permits pushback when reviewer is incorrect
 or has insufficient context.
 
 ### Testing & Quality
 
-**[test-driven-development](/.submodules/superpowers/skills/test-driven-development/SKILL.md)**
+**[test-driven-development](.claude/skills/test-driven-development/SKILL.md)**
 Enforces red-green-refactor discipline. Iron Law: no production code without a failing test first.
 Any pre-existing production code must be deleted and re-implemented test-first.
 
@@ -470,7 +487,7 @@ fixes.
 
 ### Git Workflow
 
-**[using-git-worktrees](/.submodules/superpowers/skills/using-git-worktrees/SKILL.md)**
+**[using-git-worktrees](.claude/skills/using-git-worktrees/SKILL.md)**
 Safe worktree setup: detects correct directory, verifies worktree is git-ignored, installs
 dependencies, and runs baseline tests before any work begins.
 

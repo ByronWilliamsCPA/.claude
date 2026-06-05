@@ -134,3 +134,57 @@ def sample_data():
 def test_with_fixture(sample_data):
     assert sample_data["key"] == "value"
 ```
+
+## Pitfalls and Edge Cases
+
+Real-world failure patterns collected from production sessions.
+
+### Grep full test corpus for changed message strings (Obs 29)
+
+When a function is renamed or its output message format changes, grep ALL test files (not just co-located unit tests) for the old message string or function name before declaring tests green. Integration and e2e test files that encode the old string fail at the run-all stage, not during targeted runs.
+
+```bash
+grep -r "old_message_string" tests/
+```
+
+Run this before declaring a rename complete.
+
+### HTTP library and mock library must be matched (Obs 30)
+
+`responses` only mocks the `requests` library; `respx` mocks `httpx`; `aioresponses` mocks `aiohttp`. A mismatch (e.g., `httpx` implementation + `@responses.activate` mock) causes tests to appear to test something while making real network calls or raising connection errors.
+
+Always verify the mocking library supports the HTTP library in the implementation before writing tests.
+
+Canonical pairings:
+
+| HTTP library | Mock library |
+|---|---|
+| `requests` | `responses` |
+| `httpx` | `respx` |
+| `aiohttp` | `aioresponses` |
+
+### Dead parameters signal incomplete refactor (Obs 83)
+
+When refactoring inlines a parameter from a concrete caller into a generic helper, verify every parameter in the new helper's signature is actually used in the body. Write a test that passes two different values for each parameter and asserts the parameter has a detectable effect on output. A parameter that accepts a value but never references it is a refactoring smell.
+
+### Fake SHA constants need pragma allowlist (Obs 89)
+
+40-character hex strings used as test fixture SHAs (e.g., fake GitHub Action commit SHAs) are flagged as "Hex High Entropy String" false positives by entropy-based secret scanners. Add `# pragma: allowlist secret` to every line where a 40-char hex constant is assigned as a test fixture:
+
+```python
+FAKE_COMMIT_SHA = "a" * 40  # pragma: allowlist secret
+```
+
+### SPDX tokens in REUSE-gated repos (Obs 130)
+
+A test that asserts on license-header content (e.g., grepping for SPDX license tag literals) will fail REUSE compliance because REUSE parses license tags from anywhere in a file -- including inside fenced code blocks and string literals -- and treats the token as the file's own declaration.
+
+Build the token via string concatenation so the contiguous SPDX license-identifier tag sequence never appears in source:
+
+```python
+# Good: concatenate to avoid a contiguous SPDX tag literal
+SPDX_MIT = "SPDX-License-Identifier" + ": MIT"
+assert SPDX_MIT in header
+```
+
+Note: wrapping code with `REUSE-IgnoreStart` / `REUSE-IgnoreEnd` HTML comment markers is the other documented approach, but support varies by REUSE tool version. String concatenation is more reliable across versions.
