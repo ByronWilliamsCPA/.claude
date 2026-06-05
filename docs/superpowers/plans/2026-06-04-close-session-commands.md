@@ -15,6 +15,17 @@ tags:
 ---
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+>
+> **Superseded code blocks:** This plan is a point-in-time implementation
+> record. The command files were hardened after the embedded blocks below were
+> written: commit `5c10f6b` fixed default-branch resolution, the skill-workspace
+> prune set, the admin-merge guard, and mtime-based handoff selection, and a
+> later PR-fix pass added a `git check-ignore` gate to Tier A, the `grep -vxF`
+> whole-line exclusion, and a detached-HEAD guard in `close.md`. The shipped
+> files in `.claude/commands/close.md` and `.claude/commands/close-clean.md` are
+> authoritative. Do NOT regenerate the command files from the Task 1 / Task 2
+> embedded blocks or the Task 3 verification snippets below, which preserve the
+> original drafts for history.
 
 **Goal:** Add two global slash commands, `/close` (full session wind-down) and `/close-clean` (wind-down plus two-tier cleanup), as natural-language command files under `.claude/commands/`.
 
@@ -363,9 +374,9 @@ Expected: signed commit. `SKIP` skips only the front-matter hook (not `--no-veri
 
 **Spec coverage:** `/close` three-step wind-down (Task 1) -> spec "`/close` behavior"; task-observer surfacing with "log, don't act" (Task 1 Step 2) -> spec Step 2; conditional branch finish (Task 1 Step 3) -> spec Step 3; Tier A silent (Task 2 Step 2) -> spec "Tier A"; Tier B preview+confirm with three categories (Task 2 Step 3) -> spec "Tier B"; hard safety invariants (both files' Hard rules) -> spec "Hard safety invariants"; generic-across-repos (find-based discovery, empty categories omitted) -> spec Goals. Worktree-complementarity (Step 3 finishes current branch's worktree; Tier B sweeps others) is preserved per the approved spec. All spec sections map to a task.
 
-**Placeholder scan:** No TBD/TODO/"handle appropriately". Both command files are given in full; all bash is concrete; expected outputs are stated.
+**Placeholder scan:** No TBD/TODO/"handle appropriately". Both command files were given in full as original drafts; all bash is concrete; expected outputs are stated. The shipped files were subsequently hardened (see the "Superseded code blocks" note at the top); the embedded blocks here are the pre-hardening drafts.
 
-**Type/name consistency:** File names `close.md` / `close-clean.md` and the `$WT`/`$BR`/`$SHA` shell variables are used consistently across Tasks 2 and 3. The Tier A prune set is identical in Task 2 Step 2 and Task 3 Step 2.
+**Type/name consistency:** File names `close.md` / `close-clean.md` and the `$WT`/`$BR`/`$SHA` shell variables are used consistently across Tasks 2 and 3. The Tier A prune set was identical in Task 2 Step 2 and Task 3 Step 2 at authoring time; the shipped Tier A later gained a `git check-ignore` gate (see the supersession note), so the shipped file, not these drafts, is authoritative.
 
 **Shell command environment:** All commands prefix `cd /home/byron/dev/.claude`; no script imports its own package, so no `PYTHONPATH` is needed. `git -C "$WT"` is used for worktree-scoped checks rather than relying on cwd.
 
