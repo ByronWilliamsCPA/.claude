@@ -1,7 +1,7 @@
 {
   "_meta": {
     "linkedDoc": "docs/reference/repo-type-taxonomy.md",
-    "lastUpdated": "2026-05-26",
+    "lastUpdated": "2026-06-01",
     "refreshCommands": {
       "repoList": "gh repo list <org> --limit 100 --json name,url,defaultBranchRef,description,isPrivate,isArchived",
       "branchProtection": "gh api repos/<org>/<repo>/branches/<branch>/protection",
@@ -1233,89 +1233,109 @@
           }
         },
         "codeql": {
-          "workflowPresent": false
+          "workflowPresent": true
         },
         "scorecard": {
-          "workflowPresent": false,
+          "workflowPresent": true,
           "score": null,
           "lastChecked": null
         },
         "sonarcloud": {
-          "configPresent": false,
-          "workflowPresent": false
+          "configPresent": true,
+          "workflowPresent": true
         },
         "codecov": {
-          "configPresent": false,
-          "workflowPresent": false
+          "configPresent": true,
+          "workflowPresent": true
         },
         "reuse": {
-          "workflowPresent": false
+          "workflowPresent": true
         },
         "renovate": {
-          "configured": false,
-          "shaAutoPinning": false
+          "configured": true,
+          "shaAutoPinning": true
         },
         "secretScanning": {
-          "enabled": false,
-          "pushProtection": false
+          "enabled": true,
+          "pushProtection": true
         },
         "ossfBadge": {
           "badgeId": null,
           "percentagePassing": null
         },
         "workflows": {
-          "files": [],
-          "presentFromExpected": [],
-          "missingFromExpected": [
+          "files": [
+            "_security-gate.yml",
             "ci.yml",
-            "codeql.yml",
+            "coverage.yml",
+            "dependency-review.yml",
+            "docs.yml",
+            "postman-api-tests.yml",
+            "pr-validation.yml",
+            "python-compatibility.yml",
+            "reuse.yml",
+            "scorecard.yml",
+            "security-analysis.yml",
+            "security.yml",
+            "sonarcloud.yml"
+          ],
+          "presentFromExpected": [
+            "ci.yml",
             "coverage.yml",
             "docs.yml",
             "pr-validation.yml",
             "python-compatibility.yml",
-            "release-sign.yml",
-            "release.yml",
             "reuse.yml",
-            "sbom.yml",
             "scorecard.yml",
             "security-analysis.yml",
             "sonarcloud.yml"
           ],
-          "extras": []
+          "missingFromExpected": [
+            "codeql.yml",
+            "release-sign.yml",
+            "release.yml",
+            "sbom.yml"
+          ],
+          "extras": [
+            "_security-gate.yml",
+            "dependency-review.yml",
+            "postman-api-tests.yml",
+            "security.yml"
+          ]
         },
         "foundations": {
-          "securityMd": false,
-          "contributingMd": false,
-          "changelogMd": false,
-          "codeOfConduct": false,
+          "securityMd": true,
+          "contributingMd": true,
+          "changelogMd": true,
+          "codeOfConduct": true,
           "governanceMd": false,
-          "agentsMd": false,
-          "geminiMd": false,
-          "claudeMd": false,
-          "knownVulnerabilities": false,
+          "agentsMd": true,
+          "geminiMd": true,
+          "claudeMd": true,
+          "knownVulnerabilities": true,
           "codeowners": false
         },
         "preCommit": {
-          "configPresent": false,
+          "configPresent": true,
           "hooks": {
-            "ruff": false,
-            "basedpyright": false,
-            "bandit": false,
-            "detectSecrets": false,
-            "darglint": false,
-            "interrogate": false,
-            "commitizen": false,
-            "yamllint": false,
-            "markdownlint": false,
-            "noEmDash": false
+            "ruff": true,
+            "basedpyright": true,
+            "bandit": true,
+            "detectSecrets": true,
+            "darglint": true,
+            "interrogate": true,
+            "commitizen": true,
+            "yamllint": true,
+            "markdownlint": true,
+            "noEmDash": true
           }
         },
         "toolchain": {
-          "pyprojectToml": false,
-          "qltyConfig": false
+          "pyprojectToml": true,
+          "qltyConfig": true
         },
         "releaseHealth": {
-          "hasRelease": null,
+          "hasRelease": false,
           "daysSinceRelease": null
         },
         "templateDrift": {
