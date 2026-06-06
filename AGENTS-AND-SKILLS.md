@@ -399,6 +399,13 @@ Generates project planning documents: Product Vision Statement (PVS), Architectu
 (ADRs), Technical Specification, and Roadmap. Activates on: "project plan", "generate plan",
 "new project".
 
+**[/tool-eval](/.claude/skills/tool-eval/SKILL.md)**
+Evaluates an external tool or repo against our `~/.claude` setup and produces a decision: SUBMODULE,
+PORT PATTERNS, RUN STANDALONE ALONGSIDE, or IGNORE. Walks eight gates (characterize, LOC map,
+coupling boundary, licence carve-outs, relationship classification, gap mapping, delivery-model fit,
+convergent validation) and writes a decision doc to `docs/tool-evals/<tool-slug>.md`. Activates on:
+"compare X to our setup", "should we adopt/vendor/submodule X", "cherry-pick from X".
+
 ### Frontend
 
 **[/frontend-design](/.claude/skills/frontend-design/SKILL.md)**
