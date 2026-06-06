@@ -9,6 +9,42 @@ MCP tools use a tiered strategy to reduce context consumption by 85-95%:
 - **Before**: ~55K tokens consumed by 80+ tools at session start
 - **After**: ~3K tokens (Tier 1) + context-specific loading
 
+## The zen server: fork identity and cost lanes
+
+`zen` in the tables below is our maintained fork, `williaby/zen-mcp-server`, kept
+in sync with upstream `BeehiveInnovations/pal-mcp-server` (the rebrand of the
+original zen-mcp-server) so we can pull their updates. We keep the `zen` name
+because our config and tool identifiers point at the fork; do not rename these
+references to `pal`. The fork's local addition over upstream is the
+`tiered_consensus` tool (upstream ships a single-tier `consensus`). When syncing
+from upstream, preserve `tiered_consensus`.
+
+### Three cost lanes
+
+Multi-agent and multi-model work draws on three separate quotas. Route each task
+to the cheapest lane that can do the job.
+
+| Lane | Marginal cost | What runs here |
+|------|---------------|----------------|
+| Interactive subscription | None (flat Max plan) | Interactive `claude` sessions and Claude Code Task/Agent subagents (they run inside the interactive session) |
+| `claude -p` headless bucket | Rationed, separate quota | `claude -p` / `--print` scripts, and zen/pal `clink` (its Claude agent runs `claude --print --output-format json`, verified in `clink/constants.py`) |
+| Provider API | Metered, real money | zen/pal `chat`, `consensus`, `tiered_consensus`, `thinkdeep`, and similar calling Gemini/GPT/Grok/etc., plus any Claude-over-API usage |
+
+Selection heuristic:
+
+- For parallel *Claude* work, prefer in-session subagents (Task/Agent tool):
+  they ride the flat subscription at no marginal cost.
+- Reserve zen/pal API tools (`tiered_consensus`, `chat`) for what only they
+  provide, a different model's judgment on a high-value decision. You pay per
+  call, so use them deliberately, not for volume.
+- `clink` lands in the `-p` bucket, not the interactive subscription. Use it for
+  bridging to other CLIs (gemini, codex) or occasional structured headless
+  calls, not high-volume Claude fan-out. When `clink` drives a non-Claude CLI it
+  uses that provider's own auth and billing.
+- Spawning many interactive `claude` processes directly (the munder-difflin
+  technique) is the only spawn path that rides the full interactive
+  subscription; our subagents reach the same cost profile inside one session.
+
 ## Tier 1: Always Loaded
 
 | Server | Tools | Purpose |
