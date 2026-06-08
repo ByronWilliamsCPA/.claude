@@ -26,9 +26,9 @@ to the cheapest lane that can do the job.
 
 | Lane | Marginal cost | What runs here |
 |------|---------------|----------------|
-| Interactive subscription | None (flat Max plan) | Interactive `claude` sessions and Claude Code Task/Agent subagents (they run inside the interactive session) |
-| `claude -p` headless bucket | Rationed, separate quota | `claude -p` / `--print` scripts, and zen/pal `clink` (its Claude agent runs `claude --print --output-format json`, verified in `clink/constants.py`) |
-| Provider API | Metered, real money | zen/pal `chat`, `consensus`, `tiered_consensus`, `thinkdeep`, and similar calling Gemini/GPT/Grok/etc., plus any Claude-over-API usage |
+| Interactive subscription | None (flat Max plan) | Interactive `claude` sessions, Claude Code Task/Agent subagents, and Claude Code agent teams (all run inside the interactive session); web/mobile conversations and Cowork |
+| Agent SDK credit | Separate monthly credit from 2026-06-15 (Pro $20, Max 5x $100, Max 20x $200); overage at API rates only if usage credits enabled | `claude -p` / `--print` scripts, the Python/TypeScript Agent SDK, and zen/pal `clink` (its Claude agent runs `claude --print --output-format json`, verified in `clink/constants.py`) |
+| Provider API | Metered, real money | zen/pal `chat`, `consensus`, `tiered_consensus`, `thinkdeep`, and similar calling Gemini/GPT/Grok/etc., plus any direct Claude-over-API usage |
 
 Selection heuristic:
 
@@ -44,6 +44,34 @@ Selection heuristic:
 - Spawning many interactive `claude` processes directly (the munder-difflin
   technique) is the only spawn path that rides the full interactive
   subscription; our subagents reach the same cost profile inside one session.
+
+### Staying on the subscription lane
+
+Two policy facts make the lane boundary sharper than a cost preference:
+
+- **2026-04 third-party-framework block.** Anthropic blocks Pro/Max
+  subscriptions from authenticating third-party agent frameworks (CrewAI,
+  AutoGen, LangGraph, claude-flow/Ruflo, claude-swarm, and similar). Those
+  tools are forced onto an `ANTHROPIC_API_KEY`, which is the metered Provider
+  API lane. A tool keeps the subscription lane only when it drives interactive
+  `claude` sessions (PTY/tmux-spawned or manually launched), not the SDK.
+- **2026-06-15 dual-bucket split.** Agent SDK and `claude -p` usage move off
+  the flat subscription into the separate Agent SDK credit (see the table).
+  Interactive Claude Code, including subagents and agent teams, stays on the
+  subscription. Source: Anthropic support, "Use the Claude Agent SDK with your
+  Claude plan."
+
+**Guardrail: unset `ANTHROPIC_API_KEY` for subscription work.** If the key is
+present in the environment when subagents or child `claude` processes spawn,
+they can silently route through the metered Provider API even though the parent
+session is on Max (anthropics/claude-code#39903, #37686). Keep the key out of
+the environment for interactive and subagent workflows.
+
+**Collaborative analysis on the subscription = agent teams.** For peer
+collaboration (agents messaging each other and sharing a task list) rather than
+hub-and-spoke dispatch, use Claude Code agent teams
+(`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`), which run on the interactive
+subscription. See `docs/development/agent-teams-pilot.md`.
 
 ## Tier 1: Always Loaded
 
