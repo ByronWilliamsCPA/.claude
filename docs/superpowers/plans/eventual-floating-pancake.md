@@ -3,7 +3,7 @@ schema_type: planning
 title: "Merge-queue readiness + py310/TOOL-011 across the green-repo cohort"
 status: draft
 owner: engineering
-purpose: "Extend Renovate automerge rollout (Stage 2) by adding GitHub merge queues (CI-062) and verifying py310 floor + TOOL-011 compliance across the six green-main repos. Prerequisite for widening lockFileMaintenance automerge beyond the gleif canary."
+purpose: "Extend Renovate automerge rollout (Stage 2) by adding GitHub merge queues (CI-062) and verifying py310 floor + TOOL-011 compliance across the six green-main repos. Prerequisite for widening lockFileMaintenance automerge beyond the gleif canary. gleif canary verified green 2026-06-08; five repos remain."
 component: Development-Tools
 source: "docs/reference/renovate-architecture.md"
 tags:
@@ -54,6 +54,34 @@ Per CI-040, "workflows must emit on `merge_group` or the queue waits forever." S
 is: add `merge_group` to every required-check caller workflow (CI-040), confirm those jobs pass in
 the `merge_group` context, THEN enable the queue rule (CI-062).
 
+## Current state (verified live via `gh api`, 2026-06-08)
+
+gleif is **done and verified**: all four required-check callers emit on `merge_group`, the
+`merge_queue` rule is present, and a real queue cycle has gone green. This also **empirically retires
+the upstream unknown** (execution-order step 1): the shared `.github/.github/workflows/python-ci.yml`
+gate job demonstrably runs on `merge_group`, otherwise gleif's queue could not have passed. No
+upstream risk remains for the other five.
+
+| Repo | `merge_group` callers | queue rule | Step-1 work left | Open PRs / greenness |
+| --- | --- | --- | --- | --- |
+| gleif | 4 of 4 | present | DONE + verified | n/a (canary) |
+| .github (org) | 0 of 3 (`ci.yml` absent, correct) | absent | 3 workflows | **0 open PRs (cleanest)** |
+| rag-processor | 0 of 4 | absent | 4 workflows | 3 PRs, 0 failures (all UNSTABLE) |
+| audio-processor | 1 of 4 (`ci.yml`) | absent | 3 workflows | 2 PRs, 0 failures |
+| williaby/image-generation | 0 of 4 | absent | 4 workflows | 4 PRs, 2 with FAILURE |
+| llc-manager | 0 of 4 | absent | 4 workflows | **8 PRs, 6 with FAILURE, #15 DIRTY (conflict)** |
+
+No `merge_group`/merge-queue remediation PRs are in flight on any of the five; every open PR is
+Renovate/Dependabot/qlty/compliance traffic. (The recurring `PENDING:3` rollup on most PRs is the
+three required checks that do not yet emit on `merge_group` sitting unreported; it is not a failure
+signal and clears once step 1 lands.)
+
+**Greenness gate before enabling a queue:** a merge queue serializes and re-tests entries, so feeding
+it a red or conflicted backlog is wasteful and slow. rag-processor, audio-processor, and .github are
+green/empty and ready. **llc-manager is not**: 8 open PRs with failures on six and a merge conflict on
+\#15. Its backlog must be triaged to green (merge/close stale PRs, resolve #15) BEFORE enabling its
+queue; otherwise defer llc-manager entirely.
+
 ## Scope of this plan
 
 In scope: piece 3 only (pieces 1+2 verified done). Repos: audio-processor, llc-manager,
@@ -65,7 +93,7 @@ rollout stages.
 
 ## The canonical merge_queue parameters (from gleif's live ruleset)
 
-```
+```text
 check_response_timeout_minutes: 60
 grouping_strategy: ALLGREEN
 max_entries_to_build: 5
@@ -111,7 +139,7 @@ Only once the workflow PR is merged to `main` (so the required checks actually e
 `merge_group`), add the merge_queue rule to the main ruleset. Find the main ruleset id and PATCH its
 rules to append a `merge_queue` rule with the canonical parameters above:
 
-```
+```bash
 gh api repos/<org>/<repo>/rulesets --jq '.[] | select(.target=="branch") | {id,name}'
 gh api repos/<org>/<repo>/rulesets/<id>            # read current rules
 gh api repos/<org>/<repo>/rulesets/<id> -X PUT ...  # add merge_queue rule, preserve all others
@@ -122,7 +150,7 @@ gleif, step 1 is the actual fix.
 
 ### Sequencing (mandatory)
 
-```
+```text
 For each repo:  workflow PR (merge_group) -> MERGE -> enable merge_queue rule -> observe one queue cycle
 ```
 
@@ -155,14 +183,24 @@ steps as an ordered pair per repo; do not batch all ruleset enables before the w
 
 ## Recommended execution order and breakpoints
 
-```
-1. .github reusable check (does python-ci.yml gate-job run on merge_group?)  -- upstream gate
-2. gleif: step 1 (merge_group PR) -> merge -> verify its existing queue now passes  -- fix the canary
-   >>> breakpoint: watch one gleif queue cycle before widening <<<
-3. audio-processor, llc-manager, rag-processor, image-generation: step 1 PR -> merge -> step 2 enable
-4. .github: step 1 PR (3 checks, no CI Gate) -> merge -> step 2 enable
+Steps 1-2 below are COMPLETE as of 2026-06-08 (gleif verified green; upstream reusable proven on
+`merge_group`). Remaining order is **resequenced by live greenness** rather than the original
+arbitrary order, easiest/cleanest first:
+
+```text
+1. [DONE] .github reusable check -- python-ci.yml gate-job runs on merge_group (proven by gleif)
+2. [DONE] gleif: step 1 + step 2 + one verified queue cycle  -- canary green
+   >>> breakpoint CLEARED: gleif queue confirmed working <<<
+3. .github:        step 1 PR (3 checks, no CI Gate) -> merge -> step 2 enable   -- 0 open PRs, safest
+4. rag-processor:  step 1 PR (4 workflows) -> merge -> step 2 enable            -- 3 PRs, 0 failures
+5. audio-processor: step 1 PR (3 workflows) -> merge -> step 2 enable           -- 2 PRs, 0 failures
+6. image-generation: step 1 PR (4 workflows) -> merge -> step 2 enable          -- confirm check name
+   `Security Gate Validation` (no `Security Analysis /` prefix); 2 PRs have failures, watch
+7. llc-manager: DEFERRED (decision 2026-06-08). 8-PR backlog with 6 failures + #15 DIRTY conflict;
+   excluded from this rollout. Revisit only after the backlog is triaged to green; until then it
+   stays on PR-only checks with no merge queue.
 ```
 
-This is roughly 5-6 workflow PRs + 5 ruleset enables + gleif verification, sequenced and
-outward-facing. It is a focused multi-PR effort, not a single mechanical sweep; given the canary
-verification spans a real merge cycle, it cannot fully "complete" in one sitting.
+Remaining work: 5 step-1 workflow PRs + 5 ruleset enables. It is a focused multi-PR effort, not a
+single mechanical sweep; do the two steps as an ordered pair per repo (workflow PR -> merge -> enable
+-> observe one cycle), never batch all ruleset enables before the workflow PRs land.
