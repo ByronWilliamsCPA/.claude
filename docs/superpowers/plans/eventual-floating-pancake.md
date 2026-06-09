@@ -135,18 +135,38 @@ of every caller).
 
 ### Step 2 - enable the merge queue (CI-062), AFTER step 1 merges
 
-Only once the workflow PR is merged to `main` (so the required checks actually emit on
-`merge_group`), add the merge_queue rule to the main ruleset. Find the main ruleset id and PATCH its
-rules to append a `merge_queue` rule with the canonical parameters above:
+**CORRECTED MECHANISM (2026-06-09, learned on .github).** Do NOT PATCH the "main ruleset" to add the
+rule. The default-branch baseline ruleset (`ByronWilliamsCPA-default-branch-baseline`, id 16183607)
+is an **organization-level ruleset** (`source_type=Organization`); editing it would enable merge
+queue on EVERY repo in the org at once, the opposite of a sequenced rollout. gleif itself does not
+touch the org baseline: it carries a **separate repo-level ruleset** (`gleif-merge-queue-pilot`,
+`source_type=Repository`) holding only the `merge_queue` rule. Repo-level rulesets layer additively
+on top of the org baseline, enabling the queue on exactly one repo with zero blast radius.
+
+So Step 2 is: once the workflow PR is on `main`, POST a new **repo-level** ruleset containing only the
+merge_queue rule, scoped to `~DEFAULT_BRANCH`, with the canonical parameters above:
 
 ```bash
-gh api repos/<org>/<repo>/rulesets --jq '.[] | select(.target=="branch") | {id,name}'
-gh api repos/<org>/<repo>/rulesets/<id>            # read current rules
-gh api repos/<org>/<repo>/rulesets/<id> -X PUT ...  # add merge_queue rule, preserve all others
+cat > /tmp/<repo>-mq.json <<'JSON'
+{
+  "name": "<repo>-merge-queue",
+  "target": "branch",
+  "enforcement": "active",
+  "bypass_actors": [],
+  "conditions": {"ref_name": {"exclude": [], "include": ["~DEFAULT_BRANCH"]}},
+  "rules": [{"type": "merge_queue", "parameters": {
+    "check_response_timeout_minutes": 60, "grouping_strategy": "ALLGREEN",
+    "max_entries_to_build": 5, "max_entries_to_merge": 5, "merge_method": "SQUASH",
+    "min_entries_to_merge": 1, "min_entries_to_merge_wait_minutes": 5}}]
+}
+JSON
+gh api repos/<org>/<repo>/rulesets -X POST --input /tmp/<repo>-mq.json   # creates repo-level ruleset
+gh api repos/<org>/<repo>/rules/branches/main --jq '[.[].type]'         # verify merge_queue present
 ```
 
-gleif already has the rule; for gleif, step 2 is verify-only (its parameters already match). For
-gleif, step 1 is the actual fix.
+gleif already has its repo-level pilot ruleset; for gleif, step 1 was the actual fix. **.github DONE
+2026-06-09**: repo-level ruleset `dotgithub-merge-queue` (id 17456620) created; merge_queue live on
+main, params match gleif, no org spillover (audio/rag/llc still show none).
 
 ### Sequencing (mandatory)
 
@@ -159,7 +179,12 @@ steps as an ordered pair per repo; do not batch all ruleset enables before the w
 
 ## Risks and guardrails
 
-- **Hung queue (primary):** never enable the rule on a repo whose required checks do not yet emit on
+- **Org-ruleset blast radius (primary, learned 2026-06-09):** the default-branch baseline ruleset is
+  org-level (`source_type=Organization`, shared id 16183607 across all repos). NEVER add the
+  merge_queue rule by editing it; that enables the queue org-wide in one shot. Always POST a new
+  repo-level ruleset (`<repo>-merge-queue`) as gleif does. Verify `source_type=Repository` on the
+  ruleset you create.
+- **Hung queue:** never enable the rule on a repo whose required checks do not yet emit on
   `merge_group`. This is why gleif is re-mediated, not skipped.
 - **merge_group event context:** gate jobs must pass without PR context; validate per workflow.
 - **Shared reusable:** if `.github/.github/workflows/python-ci.yml` skips gate jobs on non-PR events,
@@ -191,7 +216,8 @@ arbitrary order, easiest/cleanest first:
 1. [DONE] .github reusable check -- python-ci.yml gate-job runs on merge_group (proven by gleif)
 2. [DONE] gleif: step 1 + step 2 + one verified queue cycle  -- canary green
    >>> breakpoint CLEARED: gleif queue confirmed working <<<
-3. .github:        step 1 PR (3 checks, no CI Gate) -> merge -> step 2 enable   -- 0 open PRs, safest
+3. [DONE 2026-06-09] .github: PR #197 merged (3 callers emit merge_group); repo-level ruleset
+   `dotgithub-merge-queue` (17456620) enabled. Pending: watch one queue cycle (no open PRs yet).
 4. rag-processor:  step 1 PR (4 workflows) -> merge -> step 2 enable            -- 3 PRs, 0 failures
 5. audio-processor: step 1 PR (3 workflows) -> merge -> step 2 enable           -- 2 PRs, 0 failures
 6. image-generation: step 1 PR (4 workflows) -> merge -> step 2 enable          -- confirm check name
