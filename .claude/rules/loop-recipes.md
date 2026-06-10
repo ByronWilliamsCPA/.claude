@@ -26,11 +26,14 @@ Polls SonarQube for new issues every 30 minutes during active development.
 
 Before running any loop unattended:
 
-1. **Cost circuit breaker:** Set a hard-stop timer. Do not leave a loop running
-   for more than 4 hours without checking the API cost. Claude Code currently has
-   no built-in cost cap for `/loop`.
-2. **Token budget:** Monitor `~/.claude/logs/` for context-window growth. A
-   malformed loop prompt can inflate context without useful work.
+1. **Cost circuit breaker:** Run `/usage-report blocks` (ccusage's five-hour
+   block view) before starting the loop and at least every 4 hours while it
+   runs; stop the loop on a STOP verdict. Claude Code has no built-in cost cap
+   for `/loop`, so this check is the cap. A hard-stop timer remains the
+   fallback when ccusage is unavailable.
+2. **Token budget:** Check `/usage-report session` for context-window growth
+   across loop iterations. A malformed loop prompt can inflate context without
+   useful work.
 3. **Self-termination:** The `/loop` 7-day auto-expiry is the backstop, not the
    primary cost control.
 

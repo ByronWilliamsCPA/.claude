@@ -138,6 +138,18 @@
   and repo-compliance reference all move to pydoclint.
 
 ### Added
+* feat(skills): implement Layers 1 and 2 of the usage-monitoring survey.
+  Adds the `statusLine` block to `settings.json` (ccstatusline 2.2.19,
+  pinned, via npx) for live model, cost, context, and rate-limit visibility;
+  adds the `/usage-report` skill wrapping ccusage 20.0.9 for per-project,
+  per-model, per-session, and five-hour-block reporting from local JSONL
+  transcripts; rewires the loop-recipes cost circuit breaker to
+  `/usage-report blocks`; and extends `/close` Step 1 to capture the active
+  block's tokens, estimated cost, and per-model split into
+  `~/.claude/logs/session-usage.log` at session wind-down. Both tools were
+  verified to work on a Max subscription: ccusage reads only local files and
+  never contacts Anthropic, and ccstatusline's usage widgets authenticate as
+  the signed-in subscription account, not an API key.
 * docs(reference): add `docs/reference/usage-monitoring-survey.md`, a survey
   of model and token usage visibility. Documents what the repo tracks today
   (MCP call counts only, via `track-mcp-usage.sh`), the four data sources

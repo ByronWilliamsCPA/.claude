@@ -162,6 +162,10 @@
   "sandbox": {
     "enabled": false
   },
+  "statusLine": {
+    "type": "command",
+    "command": "npx -y ccstatusline@2.2.19"
+  },
   "env": {
     "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "80"
   },

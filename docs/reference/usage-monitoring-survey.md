@@ -65,7 +65,7 @@ per-project, per-session accounting is derivable from files already on disk.
 Claude Code pipes a JSON blob to it on every assistant message containing
 `model.id`, `cost.total_cost_usd`, `context_window.used_percentage`, and
 `rate_limits.five_hour` / `rate_limits.seven_day` percentages with reset
-times. Nothing is configured today.
+times. ccstatusline 2.2.19 is now configured as the consumer (Layer 1 below).
 
 **Built-in OpenTelemetry.** `CLAUDE_CODE_ENABLE_TELEMETRY=1` plus
 `OTEL_METRICS_EXPORTER` / `OTEL_LOGS_EXPORTER` emits `claude_code.token.usage`
@@ -114,40 +114,60 @@ Notes on the two strongest candidates:
   git status in the status bar. Configured once globally, it applies to every
   project repo with zero ongoing maintenance.
 
+### Subscription compatibility (verified 2026-06-10)
+
+Both candidates work on a Max subscription; neither depends on API-key
+billing. Verified empirically against a live transcript set:
+
+- ccusage 20.0.9 produced per-model daily breakdowns and an active five-hour
+  block report (burn rate, projected tokens and cost) from local JSONL files
+  alone. It never contacts Anthropic; auth method is irrelevant to it.
+- ccstatusline 2.2.19 rendered a status line from a sample statusLine JSON
+  payload on stdin with no credentials. Its optional usage-limit widgets
+  (weekly usage, extra usage) call Anthropic's usage endpoint as the signed-in
+  account read from `~/.claude.json`, which is the subscription OAuth
+  identity, the same data `/usage` shows; no API key is involved.
+
+The one caveat stands for both: dollar figures are estimates against API list
+pricing, a relative spend signal for a subscriber, not a bill.
+
 ## 4. Recommendation: layered adoption
 
 The recommendation is to build nothing custom for token accounting; the
 ecosystem already parses the transcript format well. Adopt in layers, each
 independent of the next.
 
-**Layer 1 (do now, zero maintenance): statusline.** Add to `settings.json`:
+**Layer 1 (implemented): statusline.** `settings.json` now sets:
 
 ```json
 {
   "statusLine": {
     "type": "command",
-    "command": "bunx -y ccstatusline@latest"
+    "command": "npx -y ccstatusline@2.2.19"
   }
 }
 ```
 
-Pin the version in line with this repo's SHA-pinning posture, or vendor a
-small wrapper script under `scripts/`. ccusage's `statusline` subcommand is
-the alternative if its formatting is preferred; choose one. This closes Gap
-16 with live model, cost, context, and rate-limit visibility in every
-session, and directly supports the CLAUDE.md "Session length" self-assessment
-with data instead of guesswork.
+The version is pinned in line with this repo's pinning posture; `npx` matches
+the existing MCP server entries. This closes Gap 16 with live model, cost,
+context, and rate-limit visibility in every session, and directly supports
+the CLAUDE.md "Session length" self-assessment with data instead of
+guesswork.
 
-**Layer 2 (do now, zero install): ccusage as the reporting CLI.**
-`bunx ccusage daily --instances` for per-project daily review,
-`ccusage monthly` for trends, `ccusage blocks` for the five-hour window. Two
-follow-ups make it repo-native:
+**Layer 2 (implemented): ccusage as the reporting CLI.** The
+`/usage-report` skill (`.claude/skills/usage-report/SKILL.md`) wraps
+ccusage 20.0.9: `daily --instances` for per-project review, `monthly` for
+trends, `blocks --active` for the five-hour window. Three integrations make
+it repo-native:
 
-- A thin `/usage-report` skill that shells out to ccusage and summarizes,
-  so reporting is invocable from any session.
-- Wire `ccusage blocks` (or its MCP server mode) into the `/loop` safeguards
-  as the cost circuit breaker that `loop-recipes.md` requires and currently
-  lacks.
+- `loop-recipes.md` now names `/usage-report blocks` as the required cost
+  circuit breaker for unattended `/loop` runs.
+- `/close` Step 1 captures the active block's tokens, estimated cost, and
+  per-model split at session wind-down and appends a summary line to
+  `~/.claude/logs/session-usage.log`, building a per-session longitudinal
+  record with no daemon.
+- The skill flags per-model spend that contradicts the CLAUDE.md Model
+  Selection policy, a lightweight stand-in for the Layer 4 policy audit.
 
 **Layer 3 (when subagent attribution matters): agents-observe plugin.** The
 only surveyed tool showing the full agent delegation hierarchy with token

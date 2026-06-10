@@ -22,6 +22,15 @@ git log --oneline -5
 git worktree list
 ```
 
+Also capture session usage via the `usage-report` skill (or directly:
+`npx -y ccusage@20.0.9 blocks --active --json`). Include in the summary the
+active five-hour block's tokens, estimated cost, and per-model split, then
+append one line to `~/.claude/logs/session-usage.log` in the form
+`timestamp|branch|tokens|est_cost_usd|models`. The log is a gitignored runtime
+file (the same pattern as `track-mcp-usage.sh`), so this does not mutate the
+repo. If ccusage is unavailable (for example, offline), note that and
+continue; usage capture never blocks the wind-down.
+
 Also list any in-progress TodoWrite items from this session. From the current
 branch name, decide whether this is a feature branch, defined as any branch
 other than `main` or `master`. A detached HEAD (empty `git branch
