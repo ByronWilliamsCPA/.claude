@@ -31,9 +31,10 @@ Before running any loop unattended:
    runs; stop the loop on a STOP verdict. Claude Code has no built-in cost cap
    for `/loop`, so this check is the cap. A hard-stop timer remains the
    fallback when ccusage is unavailable.
-2. **Token budget:** Check `/usage-report session` for context-window growth
-   across loop iterations. A malformed loop prompt can inflate context without
-   useful work.
+2. **Token budget:** Watch the statusLine context bar (or run `/context`) for
+   live context-window fill; that is the direct signal. Use
+   `/usage-report session` to compare token totals across loop iterations. A
+   malformed loop prompt can inflate context without useful work.
 3. **Self-termination:** The `/loop` 7-day auto-expiry is the backstop, not the
    primary cost control.
 

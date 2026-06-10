@@ -11,7 +11,7 @@ and it runs only on a feature branch and only on your choice.
 
 ## Steps
 
-### 1. Snapshot session state (read-only)
+### 1. Snapshot session state (read-only, plus one local usage-log line)
 
 Run and present a compact summary:
 

@@ -42,7 +42,12 @@ by project.
    On a `date -d` failure (BSD/macOS date), fall back to
    `date -v-7d +%Y%m%d`.
 
-2. Run the command with Bash. Pass through any extra flags the user supplied.
+2. Run the command with Bash. Append extra user-supplied flags only when they
+   match documented ccusage options: long-form `--flag` or `--flag value`
+   where the value is alphanumeric, a date, or a simple path. Never
+   interpolate free text into the command line; reject any argument
+   containing shell metacharacters (`;`, `|`, `&`, `$`, backticks, newlines)
+   and say why.
 
 3. Summarize the JSON. Lead with totals, then the top contributors:
    - Total tokens (input, output, cache read, cache creation) and estimated
