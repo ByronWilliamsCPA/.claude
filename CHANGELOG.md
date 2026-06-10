@@ -138,6 +138,17 @@
   and repo-compliance reference all move to pydoclint.
 
 ### Added
+* docs(reference): add `docs/reference/usage-monitoring-survey.md`, a survey
+  of model and token usage visibility. Documents what the repo tracks today
+  (MCP call counts only, via `track-mcp-usage.sh`), the four data sources
+  Claude Code already emits (JSONL transcripts with per-message model and
+  cache-tier token usage, the statusLine JSON blob with rate-limit
+  percentages, `/usage` and `/context` built-ins, and OTEL metrics labeled by
+  model, query_source, agent, and skill), an eleven-tool ecosystem comparison
+  (ccusage, ccstatusline, agents-observe, claude-code-otel, and others), and
+  a four-layer ADOPT recommendation. Identifies `ccusage blocks` as the
+  implementation path for the loop-recipes cost circuit breaker and OTEL
+  agent/skill labels as the path for tips-harvest Recommendation 7.
 * feat(compliance): close the dormant in-house license gate in
   `docs/standards-manifest.yaml`. Adds CI-080 (the `sbom.yml` caller's
   `forbidden-licenses` denylist must include LGPL and MPL, not GPL/AGPL only)
