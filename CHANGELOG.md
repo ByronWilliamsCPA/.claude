@@ -138,6 +138,12 @@
   and repo-compliance reference all move to pydoclint.
 
 ### Added
+* feat(skills): add `/tool-eval` skill for incorporate-vs-vendor decisions on
+  external tools and repos. Eight-phase workflow: characterize, LOC map,
+  coupling gate, licence gate, relationship classification, gap mapping,
+  delivery-model weighting, and convergent validation. Produces one of four
+  verdicts: SUBMODULE, PORT PATTERNS, RUN STANDALONE ALONGSIDE, or IGNORE.
+  Registered in `AGENTS-AND-SKILLS.md` under the Planning section.
 * feat(consensus): add the `consensus` umbrella skill, a multi-model
   consensus engine over OpenRouter that replaces the zen/pal MCP consensus
   suite. Ships a PEP 723 `uv run` CLI (`consensus_cli.py`) with
