@@ -259,11 +259,17 @@ def enforce_cost_cap(total: float, level: int | None, max_cost: float | None) ->
 
 
 def _read_cache(cache: Path) -> set[str] | None:
-    """Read cached model ids; None when missing, corrupted, or unreadable."""
+    """Read cached model ids; None when missing, corrupted, or wrong-shaped."""
     try:
-        return set(json.loads(cache.read_text()))
-    except (OSError, json.JSONDecodeError, TypeError):
+        data = json.loads(cache.read_text())
+    except (OSError, json.JSONDecodeError):
         return None
+    # The cache is a JSON list of model-id strings. Any other shape (a bare
+    # string would otherwise become a set of characters, a dict a set of keys)
+    # is treated as corruption so validation never runs against garbage.
+    if not isinstance(data, list) or not all(isinstance(item, str) for item in data):
+        return None
+    return set(data)
 
 
 def fetch_live_model_ids(
@@ -291,7 +297,11 @@ def fetch_live_model_ids(
         resp = http.get(f"{OPENROUTER_BASE}/models")
         resp.raise_for_status()
         ids = {entry["id"] for entry in resp.json()["data"]}
-    except (httpx.HTTPError, KeyError, ValueError):
+    # #EDGE: a network error OR a malformed 200 body (missing "data", non-iterable
+    # data, non-dict entries -> TypeError) must fall back to a readable stale
+    # cache; only re-raise when no usable cache exists. #VERIFY:
+    # test_malformed_200_body_uses_stale_cache covers the parse-failure path.
+    except (httpx.HTTPError, KeyError, TypeError, ValueError):
         cached = _read_cache(cache)
         if cached is not None:
             return cached
@@ -301,9 +311,16 @@ def fetch_live_model_ids(
             http.close()
 
     cache.parent.mkdir(parents=True, exist_ok=True)
-    tmp = cache.with_suffix(".tmp")
-    tmp.write_text(json.dumps(sorted(ids)))
-    tmp.replace(cache)
+    # #EDGE: a per-process temp name keeps concurrent refreshes from clobbering a
+    # shared ".tmp" before the atomic rename; the live fetch already succeeded, so
+    # a write failure is non-fatal and must not mask the result. #VERIFY:
+    # test_concurrent_cache_writes_do_not_collide.
+    tmp = cache.with_suffix(f".{os.getpid()}.tmp")
+    try:
+        tmp.write_text(json.dumps(sorted(ids)))
+        tmp.replace(cache)
+    except OSError:
+        tmp.unlink(missing_ok=True)
     return ids
 
 
@@ -435,7 +452,6 @@ async def call_model(
         "error": None,
     }
 
-    # every branch above returns or continues; the loop never exits normally
     for attempt in range(MAX_RETRIES + 1):
         try:
             resp = await client.post(
@@ -447,8 +463,17 @@ async def call_model(
                 try:
                     data = resp.json()
                     usage = data.get("usage", {})
-                    record["response"] = data["choices"][0]["message"]["content"]
+                    content = data["choices"][0]["message"]["content"]
                     record["tokens"] = usage
+                    # #EDGE: a 200 with null content (refusals, function-call
+                    # stubs, some upstream errors) is a per-model failure, not a
+                    # success; recording it as a response would feed null into
+                    # synthesis and count toward succeeded. #VERIFY: substitution
+                    # treats it as a failed entry and tries a fallback.
+                    if content is None:
+                        record["error"] = "model returned null content"
+                        return record
+                    record["response"] = content
                     row = catalog.get(entry["model"])
                     if row is not None:
                         record["cost_usd"] = round(
@@ -520,9 +545,27 @@ async def run_consensus(
     async with httpx.AsyncClient(
         timeout=REQUEST_TIMEOUT_SECONDS, transport=transport
     ) as client:
-        results = await asyncio.gather(
-            *[call_model(client, e, prompt, api_key, catalog) for e in entries]
+        # return_exceptions keeps one model's unexpected failure from cancelling
+        # the whole panel; any escaped exception is normalised into that model's
+        # error record so per-model isolation holds even outside call_model's
+        # own try/except surface.
+        raw = await asyncio.gather(
+            *[call_model(client, e, prompt, api_key, catalog) for e in entries],
+            return_exceptions=True,
         )
+    results = [
+        res
+        if not isinstance(res, BaseException)
+        else {
+            "model": entry["model"],
+            "role": entry.get("role"),
+            "response": None,
+            "tokens": None,
+            "cost_usd": None,
+            "error": f"{type(res).__name__}: {res}",
+        }
+        for entry, res in zip(entries, raw, strict=True)
+    ]
     succeeded = [r for r in results if r["error"] is None]
     return {
         "results": results,
@@ -556,14 +599,20 @@ def build_parser() -> argparse.ArgumentParser:
 
     p_run = sub.add_parser("run", help="Fan a prompt out to models in parallel")
     p_run.add_argument("--prompt-file", required=True)
-    p_run.add_argument("--roster-file", help="Roster JSON produced by select")
-    p_run.add_argument("--models", help="Comma-separated model ids (flexible mode)")
+    # A run draws its panel from exactly one source; allowing both let the roster
+    # file silently win over --models with no warning.
+    source = p_run.add_mutually_exclusive_group()
+    source.add_argument("--roster-file", help="Roster JSON produced by select")
+    source.add_argument("--models", help="Comma-separated model ids (flexible mode)")
     p_run.add_argument(
         "--roles-file",
         help="JSON object mapping model id to a role name or literal system prompt",
     )
     p_run.add_argument(
-        "--level", type=int, choices=[1, 2, 3], help="Cap context for run"
+        "--level",
+        type=int,
+        choices=[1, 2, 3],
+        help="Apply the per-level cost cap (1, 2, or 3)",
     )
     p_run.add_argument("--max-cost", type=float, help="Override the cost cap in USD")
 
@@ -585,14 +634,30 @@ def build_entries(args: argparse.Namespace, roles_data: dict) -> list[dict]:
     entries: list[dict] = []
     if args.roster_file:
         roster = _read_json_file(args.roster_file, "roster file")
-        items = roster["roster"] if isinstance(roster, dict) else roster
+        if isinstance(roster, dict):
+            items = roster.get("roster")
+        elif isinstance(roster, list):
+            items = roster
+        else:
+            items = None
+        if not isinstance(items, list):
+            emit(
+                {
+                    "error": (
+                        f"roster file {args.roster_file} must be a list of entries "
+                        "or an object with a 'roster' list"
+                    )
+                },
+                stream=sys.stderr,
+            )
+            raise SystemExit(2)
         for item in items:
-            if "model" not in item:
+            if not isinstance(item, dict) or "model" not in item:
                 emit(
                     {
                         "error": (
-                            f"roster file {args.roster_file} has an entry "
-                            "without a 'model' key"
+                            f"roster file {args.roster_file} has an entry that is "
+                            "not an object with a 'model' key"
                         )
                     },
                     stream=sys.stderr,
@@ -612,6 +677,12 @@ def build_entries(args: argparse.Namespace, roles_data: dict) -> list[dict]:
         roles_map = (
             _read_json_file(args.roles_file, "roles file") if args.roles_file else {}
         )
+        if not isinstance(roles_map, dict):
+            emit(
+                {"error": f"roles file {args.roles_file} must be a JSON object"},
+                stream=sys.stderr,
+            )
+            raise SystemExit(2)
         for name in args.models.split(","):
             name = name.strip()
             role = roles_map.get(name)
@@ -723,7 +794,7 @@ def _cmd_run(
         return 1
     try:
         prompt = Path(args.prompt_file).read_text()
-    except OSError as exc:
+    except (OSError, UnicodeDecodeError) as exc:
         emit(
             {"error": f"cannot read prompt file {args.prompt_file}: {exc}"},
             stream=sys.stderr,
@@ -769,7 +840,13 @@ def _cmd_run(
             ),
             6,
         )
-        enforce_cost_cap(estimate + sub_estimate, args.level, args.max_cost)
+        # #CRITICAL: base the substitution cap on the cost actually incurred so
+        # far (outcome["total_cost_usd"]), not the pre-flight estimate; a
+        # high-token first round plus substitution could otherwise breach the
+        # level cap. #VERIFY: test_substitution_cap_uses_actual_incurred_cost.
+        enforce_cost_cap(
+            outcome["total_cost_usd"] + sub_estimate, args.level, args.max_cost
+        )
         outcome = _substitute_failures(
             outcome, fallbacks, roles, prompt, api_key, catalog
         )
@@ -788,9 +865,13 @@ def _cmd_run(
 def main(argv: list[str] | None = None) -> int:
     """CLI entry point; returns a process exit code."""
     args = build_parser().parse_args(argv)
-    models = load_models()
-    bands = load_bands()
-    roles = load_roles()
+    try:
+        models = load_models()
+        bands = load_bands()
+        roles = load_roles()
+    except (OSError, json.JSONDecodeError, UnicodeDecodeError) as exc:
+        emit({"error": f"cannot load consensus data files: {exc}"}, stream=sys.stderr)
+        return 2
 
     if args.command in ("select", "estimate"):
         return _cmd_select(args, models, bands, roles)
