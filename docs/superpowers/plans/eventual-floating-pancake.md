@@ -66,9 +66,9 @@ upstream risk remains for the other five.
 | --- | --- | --- | --- | --- |
 | gleif | 4 of 4 | present | DONE + verified | n/a (canary) |
 | .github (org) | 0 of 3 (`ci.yml` absent, correct) | absent | 3 workflows | **0 open PRs (cleanest)** |
-| rag-processor | 0 of 4 | absent | 4 workflows | 3 PRs, 0 failures (all UNSTABLE) |
-| audio-processor | 1 of 4 (`ci.yml`) | absent | 3 workflows | 2 PRs, 0 failures |
-| williaby/image-generation | 0 of 4 | absent | 4 workflows | 4 PRs, 2 with FAILURE |
+| rag-processor | 4 of 4 | present | DONE + verified 2026-06-09 | n/a (queue cycle green) |
+| audio-processor | 4 of 4 | present | DONE + verified 2026-06-09 | n/a (queue cycle green) |
+| williaby/image-generation | 4 of 4 (inert) | **BLOCKED (platform)** | n/a | merge queue is org-only; williaby is a User account |
 | llc-manager | 0 of 4 | absent | 4 workflows | **8 PRs, 6 with FAILURE, #15 DIRTY (conflict)** |
 
 No `merge_group`/merge-queue remediation PRs are in flight on any of the five; every open PR is
@@ -206,6 +206,14 @@ steps as an ordered pair per repo; do not batch all ruleset enables before the w
 3. Watch one real merge-queue cycle end-to-end (gleif first, as the now-properly-covered canary)
    before relying on automerge widening.
 
+**Enqueue mechanics (learned on rag-processor 2026-06-09):** `gh pr merge <n> --squash` on a
+queue-enabled repo prints `! The merge strategy for main is set by the merge queue` and exits 0; do
+NOT read that as a failure or pass a strategy flag. Confirm the PR actually entered the queue via
+GraphQL `pullRequest(number:N){ isInMergeQueue }` and `mergeQueue{ entries }`, not the gh message or
+mergeStateStatus (which stays UNSTABLE while queued). GitHub then creates a
+`gh-readonly-queue/main/pr-<n>-<sha>` ref; `gh run list --event merge_group` shows the four caller
+workflows running on it. A clean cycle merges in 2-3 min.
+
 ## Recommended execution order and breakpoints
 
 Steps 1-2 below are COMPLETE as of 2026-06-08 (gleif verified green; upstream reusable proven on
@@ -218,15 +226,32 @@ arbitrary order, easiest/cleanest first:
    >>> breakpoint CLEARED: gleif queue confirmed working <<<
 3. [DONE 2026-06-09] .github: PR #197 merged (3 callers emit merge_group); repo-level ruleset
    `dotgithub-merge-queue` (17456620) enabled. Pending: watch one queue cycle (no open PRs yet).
-4. rag-processor:  step 1 PR (4 workflows) -> merge -> step 2 enable            -- 3 PRs, 0 failures
-5. audio-processor: step 1 PR (3 workflows) -> merge -> step 2 enable           -- 2 PRs, 0 failures
-6. image-generation: step 1 PR (4 workflows) -> merge -> step 2 enable          -- confirm check name
-   `Security Gate Validation` (no `Security Analysis /` prefix); 2 PRs have failures, watch
+4. [DONE 2026-06-09] rag-processor: PR #81 merged (4 callers emit merge_group); repo-level
+   ruleset `rag-processor-merge-queue` (17462423) enabled; queue cycle VERIFIED GREEN by merging
+   PR #80 (uv.lock) end-to-end (all 4 required checks ran+passed on the merge_group ref; merged in
+   <3 min). No org spillover (audio/llc/fragrance still show none).
+5. [DONE 2026-06-09] audio-processor: PR #68 merged (3 callers; ci.yml already had merge_group);
+   repo-level ruleset `audio-processor-merge-queue` (17468286) enabled; queue cycle VERIFIED GREEN
+   by merging PR #67 (uv.lock) end-to-end (all 4 required checks ran+passed on merge_group ref;
+   merged in ~3.5 min). No org spillover.
+6. [BLOCKED - PLATFORM 2026-06-09] williaby/image-generation: step 1 PR #66 merged (4 callers emit
+   merge_group), BUT step 2 is impossible: GitHub merge queue is available only on
+   ORGANIZATION-owned repos (public org repos, or private org repos on Enterprise Cloud); williaby
+   is a personal User account, so `POST /rulesets` with a merge_queue rule returns
+   `422 Invalid rule 'merge_queue'`. The merge_group triggers now on main are inert and harmless
+   (merge_group events never fire without a queue) and are forward-compatible if the repo ever moves
+   to an org. No ruleset was created. Cannot be completed without transferring the repo to an org.
+   (Docs: merge queue "available in any public repository owned by an organization, or in private
+   repositories owned by organizations using GitHub Enterprise Cloud".)
 7. llc-manager: DEFERRED (decision 2026-06-08). 8-PR backlog with 6 failures + #15 DIRTY conflict;
    excluded from this rollout. Revisit only after the backlog is triaged to green; until then it
    stays on PR-only checks with no merge queue.
 ```
 
-Remaining work: 5 step-1 workflow PRs + 5 ruleset enables. It is a focused multi-PR effort, not a
-single mechanical sweep; do the two steps as an ordered pair per repo (workflow PR -> merge -> enable
--> observe one cycle), never batch all ruleset enables before the workflow PRs land.
+Remaining work: NONE achievable. Active-scope rollout COMPLETE 2026-06-09 (gleif, .github,
+rag-processor, audio-processor all DONE + verified). williaby/image-generation is BLOCKED by a
+GitHub platform limitation (merge queue is org-only; williaby is a User account), not deferrable
+without an org transfer. llc-manager remains deferred (red backlog). The two excluded repos are
+excluded for unrelated reasons: image-generation = platform-impossible, llc-manager = dirty backlog. It is a focused multi-PR
+effort, not a single mechanical sweep; do the two steps as an ordered pair per repo (workflow PR ->
+merge -> enable -> observe one cycle), never batch all ruleset enables before the workflow PRs land.
