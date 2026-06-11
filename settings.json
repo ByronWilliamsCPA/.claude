@@ -4,6 +4,7 @@
   "permissions": {
     "allow": [
       "Bash(poetry run ruff:*)",
+      "Bash(npx -y ccusage@20.0.9:*)",
       "Bash(gh api -X POST repos/*/pulls/*/comments*)",
       "Bash(gh api -X POST repos/*/pulls/*/reviews*)",
       "WebSearch",
@@ -161,6 +162,10 @@
   },
   "sandbox": {
     "enabled": false
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "npx -y ccstatusline@2.2.19"
   },
   "env": {
     "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "80"

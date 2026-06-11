@@ -327,6 +327,12 @@ synthesizes cross-cutting insights, and logs observations for autonomous schedul
 Surfaces relevant past observations when loading other skills. Invoke at the start of any
 task-oriented session (any session where you will use tools and produce deliverables).
 
+**[/usage-report](/.claude/skills/usage-report/SKILL.md)**
+Summarizes model and token usage from local Claude Code transcripts via ccusage: per-project
+daily review, monthly trends, per-session detail, and the active five-hour block with burn
+rate (the `/loop` cost circuit breaker). Works on a Max subscription; costs are API-list-price
+estimates. Activates on: "usage report", "token usage", "model spend", "five-hour block".
+
 **[/aggregate-observations](/.claude/commands/aggregate-observations.md)** _(recovery utility)_
 Scans all repositories under `~/dev/` for stray `skill-observations/log.md` files and walks
 the user through importing OPEN observations into the canonical global log at
