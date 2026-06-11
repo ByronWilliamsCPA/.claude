@@ -16,6 +16,7 @@ OPENROUTER_API_KEY must be set in the environment for the run subcommand.
 
 from __future__ import annotations
 
+import asyncio
 import csv
 import json
 import sys
@@ -366,3 +367,115 @@ def select_roster(
         }
         for m, role in zip(picked, roles, strict=False)
     ]
+
+
+async def call_model(
+    client: httpx.AsyncClient,
+    entry: dict,
+    prompt: str,
+    api_key: str,
+    catalog: dict[str, Model],
+) -> dict:
+    """Send one chat completion and return a result record; never raises.
+
+    Retries 429 and 5xx responses with backoff; other HTTP errors are
+    terminal for this model only.
+
+    Args:
+        client: Shared async HTTP client for the fan-out batch.
+        entry: Roster entry dict with keys model, role, system_prompt.
+        prompt: User prompt text sent to every model.
+        api_key: OpenRouter bearer token.
+        catalog: Model objects keyed by model id for cost calculation.
+
+    Returns:
+        Result dict with keys: model, role, response, tokens, cost_usd, error.
+    """
+    messages = []
+    if entry.get("system_prompt"):
+        messages.append({"role": "system", "content": entry["system_prompt"]})
+    messages.append({"role": "user", "content": prompt})
+    record: dict = {
+        "model": entry["model"],
+        "role": entry.get("role"),
+        "response": None,
+        "tokens": None,
+        "cost_usd": None,
+        "error": None,
+    }
+
+    for attempt in range(MAX_RETRIES + 1):
+        try:
+            resp = await client.post(
+                f"{OPENROUTER_BASE}/chat/completions",
+                json={"model": entry["model"], "messages": messages},
+                headers={"Authorization": f"Bearer {api_key}"},
+            )
+            if resp.status_code == 200:
+                try:
+                    data = resp.json()
+                    usage = data.get("usage", {})
+                    record["response"] = data["choices"][0]["message"]["content"]
+                    record["tokens"] = usage
+                    row = catalog.get(entry["model"])
+                    if row is not None:
+                        record["cost_usd"] = round(
+                            (
+                                row.input_cost * usage.get("prompt_tokens", 0)
+                                + row.output_cost * usage.get("completion_tokens", 0)
+                            )
+                            / 1_000_000,
+                            6,
+                        )
+                except (KeyError, IndexError, TypeError, ValueError) as exc:
+                    record["error"] = f"malformed response: {exc!r}"
+                return record
+            if (
+                resp.status_code == 429 or resp.status_code >= 500
+            ) and attempt < MAX_RETRIES:
+                await asyncio.sleep(RETRY_BACKOFF_SECONDS * (2**attempt))
+                continue
+            record["error"] = f"HTTP {resp.status_code}: {resp.text[:200]}"
+            return record
+        except httpx.HTTPError as exc:
+            if attempt < MAX_RETRIES:
+                await asyncio.sleep(RETRY_BACKOFF_SECONDS * (2**attempt))
+                continue
+            record["error"] = f"{type(exc).__name__}: {exc}"
+            return record
+    record["error"] = "retries exhausted"
+    return record
+
+
+async def run_consensus(
+    entries: list[dict],
+    prompt: str,
+    api_key: str,
+    catalog: dict[str, Model],
+    transport: httpx.AsyncBaseTransport | None = None,
+) -> dict:
+    """Fan the prompt out to all entries in parallel and aggregate results.
+
+    Args:
+        entries: Roster entries, each with keys model, role, system_prompt.
+        prompt: User question sent to every model.
+        api_key: OpenRouter bearer token.
+        catalog: Model objects keyed by model id for per-model cost calculation.
+        transport: Optional async transport override for testing.
+
+    Returns:
+        Aggregation dict with keys: results, succeeded, failed, total_cost_usd.
+    """
+    async with httpx.AsyncClient(
+        timeout=REQUEST_TIMEOUT_SECONDS, transport=transport
+    ) as client:
+        results = await asyncio.gather(
+            *[call_model(client, e, prompt, api_key, catalog) for e in entries]
+        )
+    succeeded = [r for r in results if r["error"] is None]
+    return {
+        "results": list(results),
+        "succeeded": len(succeeded),
+        "failed": len(results) - len(succeeded),
+        "total_cost_usd": round(sum(r["cost_usd"] or 0 for r in succeeded), 6),
+    }

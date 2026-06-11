@@ -7,6 +7,7 @@ tests/integration/test_scripts.py.
 
 from __future__ import annotations
 
+import asyncio
 import importlib.util
 import json
 import os
@@ -387,3 +388,123 @@ class TestRosterSelection:
         """An unrecognised domain name raises ValueError."""
         with pytest.raises(ValueError, match="Invalid domain"):
             cli.select_roster(fake_dataset(), self.bands, self.roles, 1, "nonsense")
+
+
+def _ok_response(model_name):
+    return httpx.Response(
+        200,
+        json={
+            "choices": [{"message": {"content": f"answer from {model_name}"}}],
+            "usage": {"prompt_tokens": 100, "completion_tokens": 50},
+        },
+    )
+
+
+class TestRunConsensus:
+    """Tests for the run_consensus async fan-out function."""
+
+    def test_partial_failure_returns_successes_and_errors(self, monkeypatch):
+        """Partial failure: successes and errors are both captured in results."""
+        monkeypatch.setattr(cli, "RETRY_BACKOFF_SECONDS", 0.0)
+
+        def handler(request):
+            body = json.loads(request.content)
+            if body["model"] == "bad/model":
+                return httpx.Response(404, json={"error": "not found"})
+            return _ok_response(body["model"])
+
+        entries = [
+            {"model": "good/model", "role": None, "system_prompt": None},
+            {"model": "bad/model", "role": None, "system_prompt": None},
+        ]
+        out = asyncio.run(
+            cli.run_consensus(
+                entries,
+                "question?",
+                "test-key",
+                catalog={},
+                transport=httpx.MockTransport(handler),
+            )
+        )
+        assert out["succeeded"] == 1
+        assert out["failed"] == 1
+        good = next(r for r in out["results"] if r["model"] == "good/model")
+        assert good["response"] == "answer from good/model"
+        bad = next(r for r in out["results"] if r["model"] == "bad/model")
+        assert "404" in bad["error"]
+
+    def test_system_prompt_is_sent(self):
+        """A non-None system_prompt is included as the first message."""
+        seen = {}
+
+        def handler(request):
+            body = json.loads(request.content)
+            seen["messages"] = body["messages"]
+            return _ok_response(body["model"])
+
+        entries = [
+            {"model": "m/x", "role": "skeptic", "system_prompt": "Be skeptical."}
+        ]
+        asyncio.run(
+            cli.run_consensus(
+                entries, "q?", "k", catalog={}, transport=httpx.MockTransport(handler)
+            )
+        )
+        assert seen["messages"][0] == {"role": "system", "content": "Be skeptical."}
+        assert seen["messages"][1] == {"role": "user", "content": "q?"}
+
+    def test_retry_on_429_then_success(self, monkeypatch):
+        """A 429 on the first attempt is retried and succeeds on the second."""
+        monkeypatch.setattr(cli, "RETRY_BACKOFF_SECONDS", 0.0)
+        attempts = {"n": 0}
+
+        def handler(request):
+            attempts["n"] += 1
+            if attempts["n"] == 1:
+                return httpx.Response(429, json={"error": "rate limited"})
+            return _ok_response("m/x")
+
+        entries = [{"model": "m/x", "role": None, "system_prompt": None}]
+        out = asyncio.run(
+            cli.run_consensus(
+                entries, "q?", "k", catalog={}, transport=httpx.MockTransport(handler)
+            )
+        )
+        assert out["succeeded"] == 1
+        assert attempts["n"] == 2
+
+    def test_cost_computed_from_catalog(self):
+        """Per-model cost is computed from the catalog and summed into total_cost_usd."""
+
+        def handler(request):
+            return _ok_response("m/x")
+
+        catalog = {"m/x": make_model("m/x", 1.0, 2.0)}
+        entries = [{"model": "m/x", "role": None, "system_prompt": None}]
+        out = asyncio.run(
+            cli.run_consensus(
+                entries,
+                "q?",
+                "k",
+                catalog=catalog,
+                transport=httpx.MockTransport(handler),
+            )
+        )
+        expected = round((1.0 * 100 + 2.0 * 50) / 1_000_000, 6)
+        assert out["results"][0]["cost_usd"] == expected
+        assert out["total_cost_usd"] == expected
+
+    def test_malformed_200_body_is_isolated_error(self):
+        """A 200 response with an unexpected body shape is an isolated per-model error."""
+
+        def handler(request):
+            return httpx.Response(200, json={"surprise": True})
+
+        entries = [{"model": "m/x", "role": None, "system_prompt": None}]
+        out = asyncio.run(
+            cli.run_consensus(
+                entries, "q?", "k", catalog={}, transport=httpx.MockTransport(handler)
+            )
+        )
+        assert out["failed"] == 1
+        assert "malformed" in out["results"][0]["error"]
