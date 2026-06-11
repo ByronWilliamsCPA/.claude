@@ -5,6 +5,7 @@
     "allow": [
       "Bash(poetry run ruff:*)",
       "Bash(npx -y ccusage@20.0.9:*)",
+      "Bash(curl -s http://127.0.0.1:4981/api/*)",
       "Bash(gh api -X POST repos/*/pulls/*/comments*)",
       "Bash(gh api -X POST repos/*/pulls/*/reviews*)",
       "WebSearch",
