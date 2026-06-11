@@ -2551,10 +2551,111 @@ it repo-native:</p>
 <li>The skill flags per-model spend that contradicts the CLAUDE.md Model
   Selection policy, a lightweight stand-in for the Layer 4 policy audit.</li>
 </ul>
-<p><strong>Layer 3 (when subagent attribution matters): agents-observe plugin.</strong> The
-only surveyed tool showing the full agent delegation hierarchy with token
-data in real time. Installs as a plugin onto the hooks system this repo
-already manages. Relevant given the 45-agent catalog and supervisor pattern.</p>
+<p><strong>Layer 3 (implemented 2026-06-11): agents-observe plugin.</strong> The only
+surveyed tool showing the full agent delegation hierarchy with token data
+in real time. Installs as a plugin onto the hooks system this repo already
+manages. Relevant given the 45-agent catalog and supervisor pattern.</p>
+<p><em>Pin and install.</em> The submodule <code>.submodules/agents-observe</code> is pinned at
+tag v0.9.11 (SHA e15b7f6) and registered as a directory-source marketplace
+plugin named <code>agents-observe</code> in <code>settings.json</code>. The local Claude Code
+plugins registry (<code>~/.claude/plugins/installed_plugins.json</code>, a machine-local
+file, not a repo artifact) records version 0.9.11 with a matching
+<code>gitCommitSha</code>. Do not run <code>claude plugin update</code> for this plugin without
+re-running the security review: the directory-source marketplace loads
+whatever is checked out in the submodule working tree, not the pinned
+gitlink SHA, so a plugin update or a manual checkout inside the submodule
+silently floats the reviewed version.
+<code>#ASSUME</code> the submodule working tree matches the pinned SHA.
+<code>#VERIFY</code> after any submodule operation:
+<code>git -C .submodules/agents-observe rev-parse HEAD</code> must print
+<code>e15b7f6d06fecda44eb903f9de503ee04973bcaa</code>.</p>
+<p>The marketplace path in <code>settings.json</code> is absolute
+(<code>/home/byron/dev/.claude/.submodules/agents-observe</code>); this is the first
+marketplace entry committed to that file, so there is no prior pattern, and
+env-var expansion support for this field is unverified.
+<code>#ASSUME</code> the repo lives at <code>/home/byron/dev/.claude</code>; the plugin silently
+fails to load from any other clone location.
+<code>#VERIFY</code> when porting this config to another machine: update the path to
+the new clone location, or confirm <code>$HOME</code> expansion works for
+<code>extraKnownMarketplaces.source.path</code> before relying on it.</p>
+<p>The committed <code>settings.json</code> also enables the plugin
+(<code>enabledPlugins."agents-observe@agents-observe": true</code>), an opt-out
+posture for every clone of this public repo. This default is deliberate
+for this repo: it is a single-user personal config whose maintainer has
+accepted the exposure documented below, and it is not a recommendation
+for any other environment.
+<code>#ASSUME</code> single-user personal config repo; this machine is the only
+consumer of the committed settings.
+<code>#VERIFY</code> when adopting this repo as your own Claude config on another
+machine: before your first session, edit your copy to set the
+<code>enabledPlugins</code> entry to <code>false</code>, re-grade the security caveats below
+for your network, and only then opt back in deliberately.</p>
+<p><em>Data storage.</em> The SQLite database lives at
+<code>~/.claude/plugins/data/agents-observe-agents-observe/data/observe.db</code>,
+outside the repo tree. <code>*.db</code>, <code>*.db-wal</code>, and <code>*.db-shm</code> are gitignored as
+defense in depth. The database is root-owned (written by the plugin's Docker
+container); host queries go through the local REST API, not <code>sqlite3</code> directly.</p>
+<p><em>Hook composition.</em> The plugin contributes 28 hook registrations including
+SubagentStart, SubagentStop, PreToolUse, and PostToolUse via fire-and-forget
+wrappers; see <a href="../hooks/">docs/reference/hooks.md</a> for the composition details.</p>
+<p><em>Security caveats (review result: PASS with required guardrails).</em></p>
+<ul>
+<li>Full tool inputs are persisted unredacted: every Bash command string and
+  every Write/Edit file body lands in <code>observe.db</code> (only large base64 image
+  blobs are stripped). Any secret that appears in a shell command or written
+  config file is stored in plaintext. Treat <code>observe.db</code> as secret-bearing;
+  use <code>/observe stop</code> and <code>db-reset</code> when handling sensitive credentials.</li>
+<li>The Docker container publishes port 4981 on <code>0.0.0.0</code> (not <code>127.0.0.1</code>)
+  with no authentication on any route and fully open CORS. The bind
+  interface is hard-coded with no env var override in v0.9.11
+  (<code>docker.mjs:214</code> bare <code>port:port</code> mapping); <code>AGENTS_OBSERVE_SERVER_PORT</code>
+  changes only the host port number, not the interface. On an untrusted
+  LAN, any host on the network can read all captured prompts, commands,
+  and file bodies. In this install, WSL2 NAT keeps the port off the
+  physical LAN; the 30-second idle shutdown also limits the exposure
+  window.
+  <code>#ASSUME</code> WSL2 NAT isolation holds: no portproxy rule forwards 4981 and
+  the WSL adapter is not bridged.
+  <code>#VERIFY</code> before trusting this boundary, and again after any Windows
+  networking change: <code>netsh interface portproxy show all</code> on the Windows
+  host must not list 4981.
+  Operational rule: enable only on a single-user trusted machine on a
+  trusted network. v0.9.11 has no loopback bind option, so the only
+  mitigations on an untrusted network are stopping the container
+  (<code>/observe stop</code>), a host firewall rule blocking 4981, or leaving the
+  plugin disabled. An upstream feature request for a <code>127.0.0.1:</code> publish
+  prefix is recommended (not yet filed as of 2026-06-11).</li>
+<li>Do not raise the log level to <code>trace</code>; that writes a second plaintext copy
+  of all payloads to <code>cli.log</code>/<code>mcp.log</code> and the server console. The
+  enabling config sets <code>warn</code>.</li>
+<li>One outbound GET to <code>https://models.dev/api.json</code> (model pricing table, no
+  captured data sent); fails closed in air-gapped environments.</li>
+<li>The SessionStart hook runs <code>node</code> in the foreground; a hung node process
+  delays session start until the hook timeout (default 30s). The plugin's
+  <code>hooks/hooks.json</code> sets no <code>timeout</code> field and plugin hooks cannot be
+  overridden from this repo's settings, so the repo convention of
+  <code>timeout: 10</code> on repo-managed SessionStart hooks does not reach it. An
+  upstream request for a configurable SessionStart hook timeout is
+  recommended (not yet filed as of 2026-06-11).</li>
+<li>Fire-and-forget design drops events silently when the spool is unwritable;
+  this is a completeness concern, not a safety concern.</li>
+</ul>
+<p><em>Validation (session 6238e84c-acf1-4ebe-9ba0-e136bf751311, 2026-06-11 test
+run).</em> A
+supervisor-pattern session with a Fable 5 root agent delegating to three
+parallel Explore subagents (Haiku) confirmed the full delegation tree is
+visible via <code>GET /api/sessions/:id/transcript-stats</code>: all three Explore
+subagents showed nonzero per-subagent <code>inputTokens</code>, <code>outputTokens</code>,
+<code>cacheReadTokens</code>, <code>model</code>, and <code>costCents</code>. Hook regression probes
+confirmed the force-push guard still blocks (exit 2) and the
+fire-and-forget path passes through cleanly (exit 0).</p>
+<p><em><code>/usage-report</code> agents mode (implemented, commit 78dd523).</em> The
+<code>/usage-report</code> skill gained an <code>agents</code> mode that queries the local API
+(health check, sessions/recent, transcript-stats) for per-subagent token
+attribution. One caveat: <code>transcript-stats</code> requires the session JSONL to
+still be on disk; queries after JSONL cleanup return <code>{"error":
+"file_not_found"}</code>. The agents mode is therefore most reliable when run
+during or immediately after a session.</p>
 <p><strong>Layer 4 (optional, when trends matter): OTEL to a local Grafana stack.</strong>
 Add the telemetry env block to <code>settings.json</code> and run the ColeMurray
 collector + Prometheus + Loki + Grafana stack, extending its dashboards to
@@ -2613,7 +2714,7 @@ signal feeding the Tier &frac12;/3 loading strategy, so keep it.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 11, 2026 04:30:55 UTC">June 11, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 11, 2026 15:48:58 UTC">June 11, 2026</span>
   </span>
 
     
