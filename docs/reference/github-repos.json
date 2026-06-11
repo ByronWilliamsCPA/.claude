@@ -633,7 +633,23 @@
       "isPrivate": false,
       "isArchived": false,
       "review": {
-        "_status": "not yet audited; stub added 2026-06-04 during roster reconcile -- run repo-compliance to populate"
+        "_status": "not yet audited; stub added 2026-06-04 during roster reconcile -- renovate/secret-scanning/release fields populated from live API 2026-06-10; run repo-compliance for full audit",
+        "renovate": {
+          "configured": true,
+          "shaAutoPinning": null
+        },
+        "secretScanning": {
+          "enabled": true,
+          "pushProtection": true
+        },
+        "releaseHealth": {
+          "hasRelease": false,
+          "daysSinceRelease": null
+        },
+        "templateDrift": {
+          "sourceTemplate": null,
+          "driftScore": null
+        }
       }
     },
     {
@@ -2051,7 +2067,23 @@
       "isPrivate": false,
       "isArchived": false,
       "review": {
-        "_status": "not yet audited; stub added 2026-06-04 during roster reconcile -- run repo-compliance to populate"
+        "_status": "not yet audited; stub added 2026-06-04 during roster reconcile -- renovate/secret-scanning/release fields populated from live API 2026-06-10; run repo-compliance for full audit",
+        "renovate": {
+          "configured": true,
+          "shaAutoPinning": null
+        },
+        "secretScanning": {
+          "enabled": true,
+          "pushProtection": true
+        },
+        "releaseHealth": {
+          "hasRelease": false,
+          "daysSinceRelease": null
+        },
+        "templateDrift": {
+          "sourceTemplate": null,
+          "driftScore": null
+        }
       }
     },
     {
