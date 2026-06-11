@@ -1,7 +1,7 @@
 {
   "_meta": {
     "linkedDoc": "docs/reference/repo-type-taxonomy.md",
-    "lastUpdated": "2026-06-01",
+    "lastUpdated": "2026-06-04",
     "refreshCommands": {
       "repoList": "gh repo list <org> --limit 100 --json name,url,defaultBranchRef,description,isPrivate,isArchived",
       "branchProtection": "gh api repos/<org>/<repo>/branches/<branch>/protection",
@@ -625,6 +625,19 @@
     },
     {
       "org": "ByronWilliamsCPA",
+      "repositoryType": "python-app",
+      "name": "AMC",
+      "url": "https://github.com/ByronWilliamsCPA/AMC",
+      "defaultBranch": "main",
+      "description": "Web app for practice math tests (AMC 8/10/12 + AoPS placement diagnostics)",
+      "isPrivate": false,
+      "isArchived": false,
+      "review": {
+        "_status": "not yet audited; stub added 2026-06-04 during roster reconcile -- run repo-compliance to populate"
+      }
+    },
+    {
+      "org": "ByronWilliamsCPA",
       "repositoryType": "python-package",
       "name": "audio-processor",
       "url": "https://github.com/ByronWilliamsCPA/audio-processor",
@@ -921,147 +934,6 @@
         },
         "templateDrift": {
           "sourceTemplate": null,
-          "driftScore": null
-        }
-      },
-      "usesDocker": false,
-      "migrationPhase": "complete"
-    },
-    {
-      "org": "ByronWilliamsCPA",
-      "repositoryType": "python-template",
-      "name": "cookiecutter-template-sample",
-      "url": "https://github.com/ByronWilliamsCPA/cookiecutter-template-sample",
-      "defaultBranch": "main",
-      "description": "Sample project generated from cookiecutter-python-template for validation",
-      "isPrivate": false,
-      "isArchived": false,
-      "review": {
-        "branchProtection": {
-          "enabled": true,
-          "enforceAdmins": true,
-          "requiredSignatures": true,
-          "requiredLinearHistory": true,
-          "allowForcePushes": false,
-          "allowDeletions": false,
-          "blockCreations": false,
-          "requiredConversationResolution": false,
-          "lockBranch": false,
-          "requiredStatusChecks": {
-            "strict": true,
-            "contexts": [
-              "CI Gate",
-              "Security Gate Validation",
-              "Dependency & Standards Validation",
-              "Check REUSE Compliance"
-            ]
-          },
-          "requiredPullRequestReviews": {
-            "requiredApprovingReviewCount": 0,
-            "dismissStaleReviews": false,
-            "requireCodeOwnerReviews": false,
-            "requireLastPushApproval": false
-          }
-        },
-        "codeql": {
-          "workflowPresent": false
-        },
-        "scorecard": {
-          "workflowPresent": true,
-          "score": 5.2,
-          "lastChecked": "2026-02-03T21:34:31Z"
-        },
-        "sonarcloud": {
-          "configPresent": false,
-          "workflowPresent": false
-        },
-        "codecov": {
-          "configPresent": true,
-          "workflowPresent": false
-        },
-        "reuse": {
-          "workflowPresent": false
-        },
-        "renovate": {
-          "configured": true,
-          "shaAutoPinning": true
-        },
-        "secretScanning": {
-          "enabled": false,
-          "pushProtection": false
-        },
-        "ossfBadge": {
-          "badgeId": null,
-          "percentagePassing": null
-        },
-        "workflows": {
-          "files": [
-            "ci.yml",
-            "docs.yml",
-            "publish-pypi.yml",
-            "release.yml",
-            "sbom.yml",
-            "scorecard.yml",
-            "security-analysis.yml"
-          ],
-          "presentFromExpected": [
-            "ci.yml",
-            "docs.yml",
-            "release.yml",
-            "sbom.yml",
-            "scorecard.yml",
-            "security-analysis.yml"
-          ],
-          "missingFromExpected": [
-            "codeql.yml",
-            "coverage.yml",
-            "pr-validation.yml",
-            "python-compatibility.yml",
-            "release-sign.yml",
-            "reuse.yml",
-            "sonarcloud.yml"
-          ],
-          "extras": [
-            "publish-pypi.yml"
-          ]
-        },
-        "foundations": {
-          "securityMd": false,
-          "contributingMd": true,
-          "changelogMd": true,
-          "codeOfConduct": true,
-          "governanceMd": true,
-          "agentsMd": false,
-          "geminiMd": false,
-          "claudeMd": false,
-          "knownVulnerabilities": false,
-          "codeowners": true
-        },
-        "preCommit": {
-          "configPresent": true,
-          "hooks": {
-            "ruff": true,
-            "basedpyright": false,
-            "bandit": false,
-            "detectSecrets": false,
-            "darglint": false,
-            "interrogate": true,
-            "commitizen": false,
-            "yamllint": false,
-            "markdownlint": false,
-            "noEmDash": false
-          }
-        },
-        "toolchain": {
-          "pyprojectToml": true,
-          "qltyConfig": true
-        },
-        "releaseHealth": {
-          "hasRelease": null,
-          "daysSinceRelease": null
-        },
-        "templateDrift": {
-          "sourceTemplate": "ByronWilliamsCPA/cookiecutter-python-template",
           "driftScore": null
         }
       },
@@ -2168,6 +2040,19 @@
       },
       "usesDocker": false,
       "migrationPhase": "complete"
+    },
+    {
+      "org": "ByronWilliamsCPA",
+      "repositoryType": "python-app",
+      "name": "MTG_AI",
+      "url": "https://github.com/ByronWilliamsCPA/MTG_AI",
+      "defaultBranch": "main",
+      "description": "Self-hosted competitive Commander (cEDH) deck-critique assistant: RAG over Scryfall/MTGJSON/meta data with a deterministic rules engine and a swappable generation backend.",
+      "isPrivate": false,
+      "isArchived": false,
+      "review": {
+        "_status": "not yet audited; stub added 2026-06-04 during roster reconcile -- run repo-compliance to populate"
+      }
     },
     {
       "org": "ByronWilliamsCPA",

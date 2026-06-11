@@ -3,7 +3,7 @@ schema_type: planning
 title: "Merge-queue readiness + py310/TOOL-011 across the green-repo cohort"
 status: draft
 owner: engineering
-purpose: "Extend Renovate automerge rollout (Stage 2) by adding GitHub merge queues (CI-062) and verifying py310 floor + TOOL-011 compliance across the six green-main repos. Prerequisite for widening lockFileMaintenance automerge beyond the gleif canary."
+purpose: "Extend Renovate automerge rollout (Stage 2) by adding GitHub merge queues (CI-062) and verifying py310 floor + TOOL-011 compliance across the six green-main repos. Prerequisite for widening lockFileMaintenance automerge beyond the gleif canary. gleif canary verified green 2026-06-08; five repos remain."
 component: Development-Tools
 source: "docs/reference/renovate-architecture.md"
 tags:
@@ -54,6 +54,34 @@ Per CI-040, "workflows must emit on `merge_group` or the queue waits forever." S
 is: add `merge_group` to every required-check caller workflow (CI-040), confirm those jobs pass in
 the `merge_group` context, THEN enable the queue rule (CI-062).
 
+## Current state (verified live via `gh api`, 2026-06-08)
+
+gleif is **done and verified**: all four required-check callers emit on `merge_group`, the
+`merge_queue` rule is present, and a real queue cycle has gone green. This also **empirically retires
+the upstream unknown** (execution-order step 1): the shared `.github/.github/workflows/python-ci.yml`
+gate job demonstrably runs on `merge_group`, otherwise gleif's queue could not have passed. No
+upstream risk remains for the other five.
+
+| Repo | `merge_group` callers | queue rule | Step-1 work left | Open PRs / greenness |
+| --- | --- | --- | --- | --- |
+| gleif | 4 of 4 | present | DONE + verified | n/a (canary) |
+| .github (org) | 0 of 3 (`ci.yml` absent, correct) | absent | 3 workflows | **0 open PRs (cleanest)** |
+| rag-processor | 4 of 4 | present | DONE + verified 2026-06-09 | n/a (queue cycle green) |
+| audio-processor | 4 of 4 | present | DONE + verified 2026-06-09 | n/a (queue cycle green) |
+| williaby/image-generation | 4 of 4 (inert) | **BLOCKED (platform)** | n/a | merge queue is org-only; williaby is a User account |
+| llc-manager | 0 of 4 | absent | 4 workflows | **8 PRs, 6 with FAILURE, #15 DIRTY (conflict)** |
+
+No `merge_group`/merge-queue remediation PRs are in flight on any of the five; every open PR is
+Renovate/Dependabot/qlty/compliance traffic. (The recurring `PENDING:3` rollup on most PRs is the
+three required checks that do not yet emit on `merge_group` sitting unreported; it is not a failure
+signal and clears once step 1 lands.)
+
+**Greenness gate before enabling a queue:** a merge queue serializes and re-tests entries, so feeding
+it a red or conflicted backlog is wasteful and slow. rag-processor, audio-processor, and .github are
+green/empty and ready. **llc-manager is not**: 8 open PRs with failures on six and a merge conflict on
+\#15. Its backlog must be triaged to green (merge/close stale PRs, resolve #15) BEFORE enabling its
+queue; otherwise defer llc-manager entirely.
+
 ## Scope of this plan
 
 In scope: piece 3 only (pieces 1+2 verified done). Repos: audio-processor, llc-manager,
@@ -65,7 +93,7 @@ rollout stages.
 
 ## The canonical merge_queue parameters (from gleif's live ruleset)
 
-```
+```text
 check_response_timeout_minutes: 60
 grouping_strategy: ALLGREEN
 max_entries_to_build: 5
@@ -107,22 +135,42 @@ of every caller).
 
 ### Step 2 - enable the merge queue (CI-062), AFTER step 1 merges
 
-Only once the workflow PR is merged to `main` (so the required checks actually emit on
-`merge_group`), add the merge_queue rule to the main ruleset. Find the main ruleset id and PATCH its
-rules to append a `merge_queue` rule with the canonical parameters above:
+**CORRECTED MECHANISM (2026-06-09, learned on .github).** Do NOT PATCH the "main ruleset" to add the
+rule. The default-branch baseline ruleset (`ByronWilliamsCPA-default-branch-baseline`, id 16183607)
+is an **organization-level ruleset** (`source_type=Organization`); editing it would enable merge
+queue on EVERY repo in the org at once, the opposite of a sequenced rollout. gleif itself does not
+touch the org baseline: it carries a **separate repo-level ruleset** (`gleif-merge-queue-pilot`,
+`source_type=Repository`) holding only the `merge_queue` rule. Repo-level rulesets layer additively
+on top of the org baseline, enabling the queue on exactly one repo with zero blast radius.
 
-```
-gh api repos/<org>/<repo>/rulesets --jq '.[] | select(.target=="branch") | {id,name}'
-gh api repos/<org>/<repo>/rulesets/<id>            # read current rules
-gh api repos/<org>/<repo>/rulesets/<id> -X PUT ...  # add merge_queue rule, preserve all others
+So Step 2 is: once the workflow PR is on `main`, POST a new **repo-level** ruleset containing only the
+merge_queue rule, scoped to `~DEFAULT_BRANCH`, with the canonical parameters above:
+
+```bash
+cat > /tmp/<repo>-mq.json <<'JSON'
+{
+  "name": "<repo>-merge-queue",
+  "target": "branch",
+  "enforcement": "active",
+  "bypass_actors": [],
+  "conditions": {"ref_name": {"exclude": [], "include": ["~DEFAULT_BRANCH"]}},
+  "rules": [{"type": "merge_queue", "parameters": {
+    "check_response_timeout_minutes": 60, "grouping_strategy": "ALLGREEN",
+    "max_entries_to_build": 5, "max_entries_to_merge": 5, "merge_method": "SQUASH",
+    "min_entries_to_merge": 1, "min_entries_to_merge_wait_minutes": 5}}]
+}
+JSON
+gh api repos/<org>/<repo>/rulesets -X POST --input /tmp/<repo>-mq.json   # creates repo-level ruleset
+gh api repos/<org>/<repo>/rules/branches/main --jq '[.[].type]'         # verify merge_queue present
 ```
 
-gleif already has the rule; for gleif, step 2 is verify-only (its parameters already match). For
-gleif, step 1 is the actual fix.
+gleif already has its repo-level pilot ruleset; for gleif, step 1 was the actual fix. **.github DONE
+2026-06-09**: repo-level ruleset `dotgithub-merge-queue` (id 17456620) created; merge_queue live on
+main, params match gleif, no org spillover (audio/rag/llc still show none).
 
 ### Sequencing (mandatory)
 
-```
+```text
 For each repo:  workflow PR (merge_group) -> MERGE -> enable merge_queue rule -> observe one queue cycle
 ```
 
@@ -131,7 +179,12 @@ steps as an ordered pair per repo; do not batch all ruleset enables before the w
 
 ## Risks and guardrails
 
-- **Hung queue (primary):** never enable the rule on a repo whose required checks do not yet emit on
+- **Org-ruleset blast radius (primary, learned 2026-06-09):** the default-branch baseline ruleset is
+  org-level (`source_type=Organization`, shared id 16183607 across all repos). NEVER add the
+  merge_queue rule by editing it; that enables the queue org-wide in one shot. Always POST a new
+  repo-level ruleset (`<repo>-merge-queue`) as gleif does. Verify `source_type=Repository` on the
+  ruleset you create.
+- **Hung queue:** never enable the rule on a repo whose required checks do not yet emit on
   `merge_group`. This is why gleif is re-mediated, not skipped.
 - **merge_group event context:** gate jobs must pass without PR context; validate per workflow.
 - **Shared reusable:** if `.github/.github/workflows/python-ci.yml` skips gate jobs on non-PR events,
@@ -153,16 +206,52 @@ steps as an ordered pair per repo; do not batch all ruleset enables before the w
 3. Watch one real merge-queue cycle end-to-end (gleif first, as the now-properly-covered canary)
    before relying on automerge widening.
 
+**Enqueue mechanics (learned on rag-processor 2026-06-09):** `gh pr merge <n> --squash` on a
+queue-enabled repo prints `! The merge strategy for main is set by the merge queue` and exits 0; do
+NOT read that as a failure or pass a strategy flag. Confirm the PR actually entered the queue via
+GraphQL `pullRequest(number:N){ isInMergeQueue }` and `mergeQueue{ entries }`, not the gh message or
+mergeStateStatus (which stays UNSTABLE while queued). GitHub then creates a
+`gh-readonly-queue/main/pr-<n>-<sha>` ref; `gh run list --event merge_group` shows the four caller
+workflows running on it. A clean cycle merges in 2-3 min.
+
 ## Recommended execution order and breakpoints
 
-```
-1. .github reusable check (does python-ci.yml gate-job run on merge_group?)  -- upstream gate
-2. gleif: step 1 (merge_group PR) -> merge -> verify its existing queue now passes  -- fix the canary
-   >>> breakpoint: watch one gleif queue cycle before widening <<<
-3. audio-processor, llc-manager, rag-processor, image-generation: step 1 PR -> merge -> step 2 enable
-4. .github: step 1 PR (3 checks, no CI Gate) -> merge -> step 2 enable
+Steps 1-2 below are COMPLETE as of 2026-06-08 (gleif verified green; upstream reusable proven on
+`merge_group`). Remaining order is **resequenced by live greenness** rather than the original
+arbitrary order, easiest/cleanest first:
+
+```text
+1. [DONE] .github reusable check -- python-ci.yml gate-job runs on merge_group (proven by gleif)
+2. [DONE] gleif: step 1 + step 2 + one verified queue cycle  -- canary green
+   >>> breakpoint CLEARED: gleif queue confirmed working <<<
+3. [DONE 2026-06-09] .github: PR #197 merged (3 callers emit merge_group); repo-level ruleset
+   `dotgithub-merge-queue` (17456620) enabled. Pending: watch one queue cycle (no open PRs yet).
+4. [DONE 2026-06-09] rag-processor: PR #81 merged (4 callers emit merge_group); repo-level
+   ruleset `rag-processor-merge-queue` (17462423) enabled; queue cycle VERIFIED GREEN by merging
+   PR #80 (uv.lock) end-to-end (all 4 required checks ran+passed on the merge_group ref; merged in
+   <3 min). No org spillover (audio/llc/fragrance still show none).
+5. [DONE 2026-06-09] audio-processor: PR #68 merged (3 callers; ci.yml already had merge_group);
+   repo-level ruleset `audio-processor-merge-queue` (17468286) enabled; queue cycle VERIFIED GREEN
+   by merging PR #67 (uv.lock) end-to-end (all 4 required checks ran+passed on merge_group ref;
+   merged in ~3.5 min). No org spillover.
+6. [BLOCKED - PLATFORM 2026-06-09] williaby/image-generation: step 1 PR #66 merged (4 callers emit
+   merge_group), BUT step 2 is impossible: GitHub merge queue is available only on
+   ORGANIZATION-owned repos (public org repos, or private org repos on Enterprise Cloud); williaby
+   is a personal User account, so `POST /rulesets` with a merge_queue rule returns
+   `422 Invalid rule 'merge_queue'`. The merge_group triggers now on main are inert and harmless
+   (merge_group events never fire without a queue) and are forward-compatible if the repo ever moves
+   to an org. No ruleset was created. Cannot be completed without transferring the repo to an org.
+   (Docs: merge queue "available in any public repository owned by an organization, or in private
+   repositories owned by organizations using GitHub Enterprise Cloud".)
+7. llc-manager: DEFERRED (decision 2026-06-08). 8-PR backlog with 6 failures + #15 DIRTY conflict;
+   excluded from this rollout. Revisit only after the backlog is triaged to green; until then it
+   stays on PR-only checks with no merge queue.
 ```
 
-This is roughly 5-6 workflow PRs + 5 ruleset enables + gleif verification, sequenced and
-outward-facing. It is a focused multi-PR effort, not a single mechanical sweep; given the canary
-verification spans a real merge cycle, it cannot fully "complete" in one sitting.
+Remaining work: NONE achievable. Active-scope rollout COMPLETE 2026-06-09 (gleif, .github,
+rag-processor, audio-processor all DONE + verified). williaby/image-generation is BLOCKED by a
+GitHub platform limitation (merge queue is org-only; williaby is a User account), not deferrable
+without an org transfer. llc-manager remains deferred (red backlog). The two excluded repos are
+excluded for unrelated reasons: image-generation = platform-impossible, llc-manager = dirty backlog. It is a focused multi-PR
+effort, not a single mechanical sweep; do the two steps as an ordered pair per repo (workflow PR ->
+merge -> enable -> observe one cycle), never batch all ruleset enables before the workflow PRs land.

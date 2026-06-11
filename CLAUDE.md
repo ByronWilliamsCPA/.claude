@@ -1,6 +1,6 @@
 # Global Claude Development Standards
 
-> **Status**: Active | Core Standard | **Version**: 1.4.0 | **Last Updated**: 2026-04-19
+> **Status**: Active | Core Standard | **Version**: 1.5.0 | **Last Updated**: 2026-06-09
 >
 > Universal development standards and practices for Claude Code across all projects.
 
@@ -133,7 +133,8 @@ Use the right model for the task to balance quality and cost:
 
 | Task type | Model | When |
 | --- | --- | --- |
-| Complex reasoning, planning, architecture | Opus 4.7 | Multi-step decisions, ADRs, deep code review |
+| Frontier reasoning, hardest problems | Fable 5 | Long-horizon autonomous runs, large migrations, problems where Opus stalls; costs 2x Opus ($10/$50 per MTok) |
+| Complex reasoning, planning, architecture | Opus 4.8 | Multi-step decisions, ADRs, deep code review |
 | Standard development work | Sonnet 4.6 (default) | Most coding, editing, PR descriptions |
 | Read-only exploration | Haiku 4.5 | File scanning, structure mapping, quick lookups |
 
@@ -141,7 +142,14 @@ In subagent configuration, set `model: haiku` for the built-in `Explore` subagen
 (read-only codebase discovery). The built-in `Plan` subagent inherits the caller's
 model automatically; do not set it explicitly. Agents that write code or produce
 deliverables default to `sonnet` unless the task requires deep reasoning, in which
-case specify `model: opus` in the agent prompt.
+case specify `model: opus` in the agent prompt. The Agent tool also accepts
+`model: fable`; reserve it for explicit user request or tasks meeting the
+Fable row above, since each fable subagent runs at 2x Opus cost.
+
+When the interactive session itself runs on Fable 5, agents with
+`model: inherit` also run on Fable. Audit `inherit` agents before long
+sessions if cost matters; pin them to `sonnet` when frontier reasoning adds
+no value to their task.
 
 > Per-agent model defaults and orchestration patterns: see `.claude/rules/supervisor.md`
 

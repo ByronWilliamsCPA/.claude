@@ -9,12 +9,12 @@
 ---
 name: <agent-name>
 description: <one-line description for orchestrator routing>
-model: sonnet          # haiku | sonnet | opus | inherit
+model: sonnet          # haiku | sonnet | opus | fable | inherit
 tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
 ---
 ```
 
-- `model`: default `sonnet`. Use `haiku` for read-only agents. Use `opus` only when deep reasoning is the primary value. Use `inherit` to pass the caller's model through (used by agents that run in subagent pipelines where the orchestrator sets the model).
+- `model`: default `sonnet`. Use `haiku` for read-only agents. Use `opus` only when deep reasoning is the primary value. Use `fable` only when frontier reasoning justifies 2x Opus cost (long-horizon autonomous work, hardest problems); never as a default. Use `inherit` to pass the caller's model through (used by agents that run in subagent pipelines where the orchestrator sets the model); note that `inherit` resolves to Fable when the session runs on Fable, so prefer an explicit tier for agents whose task does not benefit.
 - `tools`: list only what the agent needs. Read-only agents must not include `Write`, `Edit`, or `Bash`.
 - MCP tool bundles go in `mcp/mcp_config.yaml` under `tier_2_agent_bundles`, not here. See `.claude/rules/mcp-strategy.md`.
 
