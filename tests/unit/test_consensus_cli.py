@@ -1,0 +1,115 @@
+"""Unit tests for the consensus skill engine script.
+
+The script lives under .claude/skills/ (a dot-directory), so it is loaded by
+file path rather than imported as a package, matching the pattern in
+tests/integration/test_scripts.py.
+"""
+
+from __future__ import annotations
+
+import importlib.util
+import sys
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+SCRIPT = REPO_ROOT / ".claude" / "skills" / "consensus" / "scripts" / "consensus_cli.py"
+
+_spec = importlib.util.spec_from_file_location("consensus_cli", SCRIPT)
+assert _spec is not None
+assert _spec.loader is not None
+cli = importlib.util.module_from_spec(_spec)
+sys.modules["consensus_cli"] = cli
+_spec.loader.exec_module(cli)
+
+
+def make_model(name, inp, out, he=70.0, swe=60.0, context=131000, spec="general"):
+    """Build a Model row for tests."""
+    return cli.Model(
+        name=name,
+        provider="testprov",
+        input_cost=inp,
+        output_cost=out,
+        humaneval=he,
+        swe_bench=swe,
+        context=context,
+        specialization=spec,
+    )
+
+
+class TestParseContext:
+    """Tests for the parse_context helper function."""
+
+    def test_k_suffix(self):
+        """Parse a context string with K suffix."""
+        assert cli.parse_context("131K") == 131_000
+
+    def test_m_suffix(self):
+        """Parse a context string with M suffix."""
+        assert cli.parse_context("1M") == 1_000_000
+
+    def test_plain_number(self):
+        """Parse a plain numeric string."""
+        assert cli.parse_context("200000") == 200_000
+
+    def test_numeric_passthrough(self):
+        """Pass through an integer directly."""
+        assert cli.parse_context(65000) == 65_000
+
+    def test_garbage_returns_zero(self):
+        """Return zero for unparseable context strings."""
+        assert cli.parse_context("unknown") == 0
+
+
+class TestLoadData:
+    """Tests for the data loading functions."""
+
+    def test_load_models_returns_rows(self):
+        """Load models CSV and verify it contains the expected models."""
+        models = cli.load_models()
+        assert len(models) > 20
+        names = {m.name for m in models}
+        assert "openai/gpt-5.1" in names
+
+    def test_load_bands_has_cost_tiers(self):
+        """Load bands config and verify cost tier names are present."""
+        bands = cli.load_bands()
+        assert set(bands["cost_tier_bands"]) >= {"free", "economy", "value", "premium"}
+
+    def test_load_roles_has_domains(self):
+        """Load roles config and verify domain_roles and role_definitions."""
+        roles = cli.load_roles()
+        assert set(roles["domain_roles"]) == {
+            "code_review",
+            "security",
+            "architecture",
+            "general",
+        }
+        assert len(roles["role_definitions"]) == 19
+
+
+class TestCostTierFilter:
+    """Tests for the models_in_cost_tier filter function."""
+
+    def test_free_requires_zero_input_and_output(self):
+        """Free tier requires both input and output costs to be exactly zero."""
+        bands = cli.load_bands()
+        models = [make_model("a:free", 0.0, 0.0), make_model("b", 0.0, 0.5)]
+        free = cli.models_in_cost_tier(models, "free", bands)
+        assert [m.name for m in free] == ["a:free"]
+
+    def test_sorted_by_humaneval_descending(self):
+        """Results are sorted by humaneval score descending."""
+        bands = cli.load_bands()
+        models = [
+            make_model("low:free", 0, 0, he=70),
+            make_model("high:free", 0, 0, he=90),
+        ]
+        free = cli.models_in_cost_tier(models, "free", bands)
+        assert [m.name for m in free] == ["high:free", "low:free"]
+
+    def test_economy_band_range(self):
+        """Economy tier includes low-cost models but excludes expensive ones."""
+        bands = cli.load_bands()
+        models = [make_model("cheap", 0.5, 0.9), make_model("expensive", 5.0, 20.0)]
+        econ = cli.models_in_cost_tier(models, "economy", bands)
+        assert [m.name for m in econ] == ["cheap"]
