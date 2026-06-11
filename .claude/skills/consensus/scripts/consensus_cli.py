@@ -16,9 +16,11 @@ OPENROUTER_API_KEY must be set in the environment for the run subcommand.
 
 from __future__ import annotations
 
+import argparse
 import asyncio
 import csv
 import json
+import os
 import sys
 import time
 from dataclasses import dataclass
@@ -506,3 +508,154 @@ async def run_consensus(
             6,
         ),
     }
+
+
+DOMAIN_CHOICES = ["code_review", "security", "architecture", "general"]
+
+
+def build_parser() -> argparse.ArgumentParser:
+    """Build the CLI argument parser with the four subcommands."""
+    parser = argparse.ArgumentParser(prog="consensus_cli", description=__doc__)
+    sub = parser.add_subparsers(dest="command", required=True)
+
+    p_select = sub.add_parser("select", help="Build a roster for a level and domain")
+    p_select.add_argument("--level", type=int, required=True, choices=[1, 2, 3])
+    p_select.add_argument("--domain", default="code_review", choices=DOMAIN_CHOICES)
+    p_select.add_argument("--limit", type=int, default=None)
+    p_select.add_argument(
+        "--no-validate", action="store_true", help="Skip live OpenRouter validation"
+    )
+
+    p_estimate = sub.add_parser("estimate", help="Cost preview for a level")
+    p_estimate.add_argument("--level", type=int, required=True, choices=[1, 2, 3])
+    p_estimate.add_argument("--domain", default="code_review", choices=DOMAIN_CHOICES)
+
+    p_run = sub.add_parser("run", help="Fan a prompt out to models in parallel")
+    p_run.add_argument("--prompt-file", required=True)
+    p_run.add_argument("--roster-file", help="Roster JSON produced by select")
+    p_run.add_argument("--models", help="Comma-separated model ids (flexible mode)")
+    p_run.add_argument(
+        "--roles-file",
+        help="JSON object mapping model id to a role name or literal system prompt",
+    )
+    p_run.add_argument(
+        "--level", type=int, choices=[1, 2, 3], help="Cap context for run"
+    )
+    p_run.add_argument("--max-cost", type=float, help="Override the cost cap in USD")
+
+    sub.add_parser("refresh", help="Diff curated dataset against the live catalog")
+    return parser
+
+
+def build_entries(args: argparse.Namespace, roles_data: dict) -> list[dict]:
+    """Resolve run arguments into model entries with system prompts."""
+    entries: list[dict] = []
+    if args.roster_file:
+        roster = json.loads(Path(args.roster_file).read_text())
+        items = roster["roster"] if isinstance(roster, dict) else roster
+        for item in items:
+            role = item.get("role")
+            entries.append(
+                {
+                    "model": item["model"],
+                    "role": role,
+                    "system_prompt": role_system_prompt(role, roles_data)
+                    if role
+                    else None,
+                }
+            )
+    elif args.models:
+        roles_map = (
+            json.loads(Path(args.roles_file).read_text()) if args.roles_file else {}
+        )
+        for name in args.models.split(","):
+            name = name.strip()
+            role = roles_map.get(name)
+            entries.append(
+                {
+                    "model": name,
+                    "role": role,
+                    "system_prompt": role_system_prompt(role, roles_data)
+                    if role
+                    else None,
+                }
+            )
+    else:
+        emit({"error": "run requires --roster-file or --models"}, stream=sys.stderr)
+        raise SystemExit(2)
+    return entries
+
+
+def _cmd_select(
+    args: argparse.Namespace,
+    models: list[Model],
+    bands: dict,
+    roles: dict,
+) -> int:
+    """Handle the select and estimate subcommands; return an exit code."""
+    live = None
+    if args.command == "select" and not args.no_validate:
+        live = fetch_live_model_ids()
+    roster = select_roster(models, bands, roles, args.level, args.domain, live=live)
+    limit = getattr(args, "limit", None)
+    if limit:
+        roster = roster[:limit]
+    emit(
+        {
+            "level": args.level,
+            "domain": args.domain,
+            "roster": roster,
+            "estimated_cost_usd": round(sum(r["est_cost_usd"] for r in roster), 6),
+            "cap_usd": LEVEL_COST_CAPS_USD[args.level],
+        }
+    )
+    return 0
+
+
+def _cmd_run(
+    args: argparse.Namespace,
+    models: list[Model],
+    roles: dict,
+) -> int:
+    """Handle the run subcommand; return an exit code."""
+    api_key = os.environ.get("OPENROUTER_API_KEY")
+    if not api_key:
+        emit({"error": "OPENROUTER_API_KEY is not set"}, stream=sys.stderr)
+        return 1
+    prompt = Path(args.prompt_file).read_text()
+    entries = build_entries(args, roles)
+    catalog = {m.name: m for m in models}
+    estimate = round(
+        sum(
+            estimate_model_cost(catalog[e["model"]])
+            for e in entries
+            if e["model"] in catalog
+        ),
+        6,
+    )
+    enforce_cost_cap(estimate, args.level, args.max_cost)
+    outcome = asyncio.run(run_consensus(entries, prompt, api_key, catalog))
+    emit(outcome)
+    return 0 if outcome["succeeded"] else 3
+
+
+def main(argv: list[str] | None = None) -> int:
+    """CLI entry point; returns a process exit code."""
+    args = build_parser().parse_args(argv)
+    models = load_models()
+    bands = load_bands()
+    roles = load_roles()
+
+    if args.command in ("select", "estimate"):
+        return _cmd_select(args, models, bands, roles)
+
+    if args.command == "run":
+        return _cmd_run(args, models, roles)
+
+    live = fetch_live_model_ids()
+    emit(refresh_report(models, live))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -539,3 +539,34 @@ class TestRefresh:
         assert report["dead_in_curated"] == ["dead/y"]
         assert report["live_free_not_in_curated"] == ["brand/new:free"]
         assert report["curated_count"] == 2
+
+
+class TestCliWiring:
+    def test_select_defaults(self):
+        """Select defaults to code_review domain with validation enabled."""
+        args = cli.build_parser().parse_args(["select", "--level", "2"])
+        assert args.domain == "code_review"
+        assert args.no_validate is False
+
+    def test_run_requires_prompt_file(self):
+        """Run without --prompt-file exits via argparse error."""
+        with pytest.raises(SystemExit):
+            cli.build_parser().parse_args(["run"])
+
+    def test_main_select_no_validate_emits_roster_json(self, capsys):
+        """Select with --no-validate emits a roster from the curated data."""
+        rc = cli.main(["select", "--level", "1", "--no-validate"])
+        assert rc == 0
+        payload = json.loads(capsys.readouterr().out)
+        assert payload["level"] == 1
+        assert len(payload["roster"]) == 3
+        assert payload["cap_usd"] == 0.50
+
+    def test_main_run_without_api_key_fails_fast(self, monkeypatch, tmp_path, capsys):
+        """Run without OPENROUTER_API_KEY returns exit code 1 with a clear error."""
+        monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
+        prompt = tmp_path / "p.txt"
+        prompt.write_text("q?")
+        rc = cli.main(["run", "--prompt-file", str(prompt), "--models", "m/x"])
+        assert rc == 1
+        assert "OPENROUTER_API_KEY" in capsys.readouterr().err
