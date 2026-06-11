@@ -372,6 +372,15 @@ Analyzes coverage gaps, generates missing tests ranked by criticality, and enfor
 thresholds (80% line / 70% branch / 90% critical / 90% patch). Orchestrates test-writer and
 test-reviewer agents iteratively. Activates on: "coverage analysis", "coverage gaps".
 
+**[/consensus](/.claude/skills/consensus/SKILL.md)**
+Multi-model consensus via OpenRouter with two modes: a tiered IT review team
+(levels 1-3, professional roles per domain) and fully flexible model/stance
+selection. Bundles a uv-run engine script for parallel fan-out, band-based
+roster selection with live catalog validation, failover, and per-level cost
+caps; Claude synthesizes the raw responses. Replaces the zen/pal MCP
+consensus tools. Activates on: "consensus", "tiered review", "second
+opinion", "multi-model".
+
 **[/debug-tests](/.claude/skills/debug-tests/SKILL.md)**
 Root-cause-first analysis of failing tests. Investigates fixtures, environment mismatches,
 dependency drift, and test isolation before modifying assertions or application code.
