@@ -19,3 +19,6 @@
 [submodule ".submodules/jeffallan-claude-skills"]
 	path = .submodules/jeffallan-claude-skills
 	url = https://github.com/Jeffallan/claude-skills.git
+[submodule ".submodules/agents-observe"]
+	path = .submodules/agents-observe
+	url = https://github.com/simple10/agents-observe.git

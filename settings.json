@@ -5,6 +5,7 @@
     "allow": [
       "Bash(poetry run ruff:*)",
       "Bash(npx -y ccusage@20.0.9:*)",
+      "Bash(curl -s http://127.0.0.1:4981/api/*)",
       "Bash(gh api -X POST repos/*/pulls/*/comments*)",
       "Bash(gh api -X POST repos/*/pulls/*/reviews*)",
       "WebSearch",
@@ -171,5 +172,16 @@
     "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "80"
   },
   "outputStyle": "explanatory",
-  "plansDirectory": "~/.claude/plans"
+  "plansDirectory": "~/.claude/plans",
+  "extraKnownMarketplaces": {
+    "agents-observe": {
+      "source": {
+        "source": "directory",
+        "path": "/home/byron/dev/.claude/.submodules/agents-observe"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "agents-observe@agents-observe": true
+  }
 }
