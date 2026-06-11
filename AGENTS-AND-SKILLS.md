@@ -93,7 +93,7 @@ actual implementation and reports completion percentages with gap analysis.
 Synthesizes the four initial planning documents (PVS, ADR, Tech Spec, Roadmap) into a comprehensive
 `docs/planning/PROJECT-PLAN.md` with semantic release-aligned phase branches, quality gates per
 phase, and a Phase 0 TodoWrite checklist. Invoke after `/project-planning` generates source docs
-and before Phase 1 development begins. Uses zen-mcp consensus for expert validation.
+and before Phase 1 development begins. Uses the `/consensus` skill for expert validation.
 
 ### API & Backend Development
 
@@ -378,8 +378,9 @@ Multi-model consensus via OpenRouter with two modes: a tiered IT review team
 selection. Bundles a uv-run engine script for parallel fan-out, band-based
 roster selection with live catalog validation, failover, and per-level cost
 caps; Claude synthesizes the raw responses. Replaces the zen/pal MCP
-consensus tools. Activates on: "consensus", "tiered review", "second
-opinion", "multi-model".
+consensus tools. Activates on: "consensus", "tiered consensus", "tiered
+review", "second opinion", "multi-model review", "ask other models",
+"review team", "model roster".
 
 **[/debug-tests](/.claude/skills/debug-tests/SKILL.md)**
 Root-cause-first analysis of failing tests. Investigates fixtures, environment mismatches,

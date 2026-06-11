@@ -1,8 +1,10 @@
 ---
-schema_type: common
+schema_type: planning
 title: Consensus Skill Implementation Plan
 status: draft
 owner: engineering
+component: Development-Tools
+source: "docs/superpowers/specs/2026-06-11-consensus-skill-design.md"
 tags: [skills, tooling, automation]
 purpose: Step-by-step plan to build the consensus umbrella skill that replaces the zen-mcp-server consensus suite. Creates one uv-run engine script (OpenRouter fan-out, band-based roster selection, live catalog validation, failover, cost caps), three data files salvaged from the zen repo, SKILL.md plus three workflow files, unit tests, and registration. Implements the approved spec at docs/superpowers/specs/2026-06-11-consensus-skill-design.md.
 ---
@@ -1251,7 +1253,7 @@ if __name__ == "__main__":
 uv run pytest tests/unit/test_consensus_cli.py -v --no-cov
 ```
 
-Expected: ALL tests PASS (roughly 28).
+Expected: ALL tests PASS (67 as delivered).
 
 - [ ] **Step 5: Manual sanity check with real data (no API key needed)**
 
@@ -1558,7 +1560,7 @@ gh pr create --title "feat(consensus): multi-model consensus skill replacing zen
 - Spec: docs/superpowers/specs/2026-06-11-consensus-skill-design.md
 
 ## Test plan
-- [x] 28 unit tests (band filtering, roster failover, cost caps, fan-out with MockTransport, CLI wiring)
+- [x] 67 unit tests (band filtering, roster failover, cost caps, cache corruption/races, fan-out with MockTransport, null-content handling, gather isolation, run input validation, CLI error paths and exit codes)
 - [ ] Manual level-1 smoke run (3 free models, ~$0) post-merge
 
 Generated with [Claude Code](https://claude.com/claude-code)
