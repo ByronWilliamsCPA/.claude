@@ -801,3 +801,280 @@ class TestRunFailover:
         assert len(new["substitutions"]) == 2
         assert new["succeeded"] == 2
         assert new["failed"] == 3  # three originals still carry errors in results
+
+
+class TestNullContentHandling:
+    """A 200 response with null content is a per-model failure, not a success."""
+
+    def test_null_content_is_per_model_error(self):
+        """choices[0].message.content == null is recorded as an error, not a response."""
+
+        def handler(request):
+            return httpx.Response(
+                200, json={"choices": [{"message": {"content": None}}], "usage": {}}
+            )
+
+        entries = [{"model": "m/x", "role": None, "system_prompt": None}]
+        out = asyncio.run(
+            cli.run_consensus(
+                entries, "q?", "k", catalog={}, transport=httpx.MockTransport(handler)
+            )
+        )
+        assert out["succeeded"] == 0
+        assert out["failed"] == 1
+        assert out["results"][0]["response"] is None
+        assert "null content" in out["results"][0]["error"]
+
+
+class TestGatherIsolation:
+    """An unexpected exception escaping call_model is isolated to that model."""
+
+    def test_unexpected_exception_does_not_cancel_panel(self, monkeypatch):
+        """One model raising an unexpected error becomes its own error record."""
+
+        async def flaky_call(client, entry, prompt, api_key, catalog):
+            if entry["model"] == "boom/x":
+                raise RuntimeError("unexpected boom")
+            return {
+                "model": entry["model"],
+                "role": entry.get("role"),
+                "response": "ok",
+                "tokens": {},
+                "cost_usd": None,
+                "error": None,
+            }
+
+        monkeypatch.setattr(cli, "call_model", flaky_call)
+        entries = [
+            {"model": "boom/x", "role": None, "system_prompt": None},
+            {"model": "good/y", "role": None, "system_prompt": None},
+        ]
+
+        def noop(request):
+            return _ok_response("unused")
+
+        out = asyncio.run(
+            cli.run_consensus(
+                entries, "q?", "k", catalog={}, transport=httpx.MockTransport(noop)
+            )
+        )
+        assert out["succeeded"] == 1
+        assert out["failed"] == 1
+        boom = next(r for r in out["results"] if r["model"] == "boom/x")
+        assert "RuntimeError" in boom["error"]
+        good = next(r for r in out["results"] if r["model"] == "good/y")
+        assert good["error"] is None
+
+
+class TestCacheSchemaValidation:
+    """_read_cache rejects any shape that is not a JSON list of strings."""
+
+    def test_non_list_cache_is_treated_as_corrupt(self, tmp_path):
+        """A bare string or non-string list returns None instead of garbage ids."""
+        cache = tmp_path / "c.json"
+        cache.write_text(json.dumps("a-single-string"))
+        assert cli._read_cache(cache) is None
+        cache.write_text(json.dumps([1, 2, 3]))
+        assert cli._read_cache(cache) is None
+        cache.write_text(json.dumps(["a/x", "b/y"]))
+        assert cli._read_cache(cache) == {"a/x", "b/y"}
+
+    def test_cache_write_uses_unique_tmp_name(self, tmp_path):
+        """The atomic write does not reuse a shared '.tmp' another run may hold."""
+
+        def handler(request):
+            return httpx.Response(200, json={"data": [{"id": "a/x"}]})
+
+        cache = tmp_path / "c.json"
+        shared_tmp = cache.with_suffix(".tmp")
+        shared_tmp.write_text("OTHER-RUN-SENTINEL")
+        ids = cli.fetch_live_model_ids(
+            client=httpx.Client(transport=httpx.MockTransport(handler)),
+            cache_path=cache,
+        )
+        assert ids == {"a/x"}
+        # The shared .tmp is untouched because the write targets a per-pid name.
+        assert shared_tmp.read_text() == "OTHER-RUN-SENTINEL"
+        assert json.loads(cache.read_text()) == ["a/x"]
+
+
+class TestRunInputValidation:
+    """Malformed run inputs exit with code 2 instead of raising a traceback."""
+
+    def _prompt(self, tmp_path):
+        prompt = tmp_path / "p.txt"
+        prompt.write_text("q?")
+        return prompt
+
+    def test_roster_dict_without_roster_key_exits_2(
+        self, monkeypatch, tmp_path, capsys
+    ):
+        """A roster object lacking a 'roster' key exits cleanly with code 2."""
+        monkeypatch.setenv("OPENROUTER_API_KEY", "k")
+        roster = tmp_path / "r.json"
+        roster.write_text(json.dumps({"level": 1}))
+        with pytest.raises(SystemExit) as exc_info:
+            cli.main(
+                [
+                    "run",
+                    "--prompt-file",
+                    str(self._prompt(tmp_path)),
+                    "--roster-file",
+                    str(roster),
+                ]
+            )
+        assert exc_info.value.code == 2
+        assert "must be a list" in capsys.readouterr().err
+
+    def test_roster_non_list_root_exits_2(self, monkeypatch, tmp_path, capsys):
+        """A roster file whose JSON root is a scalar exits with code 2."""
+        monkeypatch.setenv("OPENROUTER_API_KEY", "k")
+        roster = tmp_path / "r.json"
+        roster.write_text(json.dumps(42))
+        with pytest.raises(SystemExit) as exc_info:
+            cli.main(
+                [
+                    "run",
+                    "--prompt-file",
+                    str(self._prompt(tmp_path)),
+                    "--roster-file",
+                    str(roster),
+                ]
+            )
+        assert exc_info.value.code == 2
+
+    def test_roster_entry_not_object_exits_2(self, monkeypatch, tmp_path, capsys):
+        """A roster list whose entries are not objects exits with code 2."""
+        monkeypatch.setenv("OPENROUTER_API_KEY", "k")
+        roster = tmp_path / "r.json"
+        roster.write_text(json.dumps({"roster": ["not-an-object"]}))
+        with pytest.raises(SystemExit) as exc_info:
+            cli.main(
+                [
+                    "run",
+                    "--prompt-file",
+                    str(self._prompt(tmp_path)),
+                    "--roster-file",
+                    str(roster),
+                ]
+            )
+        assert exc_info.value.code == 2
+        assert "model" in capsys.readouterr().err
+
+    def test_roles_file_non_object_exits_2(self, monkeypatch, tmp_path, capsys):
+        """A roles file that is not a JSON object exits with code 2."""
+        monkeypatch.setenv("OPENROUTER_API_KEY", "k")
+        roles = tmp_path / "roles.json"
+        roles.write_text(json.dumps([1, 2]))
+        with pytest.raises(SystemExit) as exc_info:
+            cli.main(
+                [
+                    "run",
+                    "--prompt-file",
+                    str(self._prompt(tmp_path)),
+                    "--models",
+                    "m/x",
+                    "--roles-file",
+                    str(roles),
+                ]
+            )
+        assert exc_info.value.code == 2
+        assert "must be a JSON object" in capsys.readouterr().err
+
+    def test_models_and_roster_file_are_mutually_exclusive(self):
+        """Passing both --models and --roster-file is an argparse error."""
+        with pytest.raises(SystemExit):
+            cli.build_parser().parse_args(
+                [
+                    "run",
+                    "--prompt-file",
+                    "p.txt",
+                    "--models",
+                    "m/x",
+                    "--roster-file",
+                    "r.json",
+                ]
+            )
+
+    def test_binary_prompt_file_exits_2(self, monkeypatch, tmp_path, capsys):
+        """A prompt file that is not valid UTF-8 exits with code 2, not a traceback."""
+        monkeypatch.setenv("OPENROUTER_API_KEY", "k")
+        prompt = tmp_path / "p.bin"
+        prompt.write_bytes(b"\xff\xfe\x00\x80")
+        rc = cli.main(["run", "--prompt-file", str(prompt), "--models", "m/x"])
+        assert rc == 2
+        assert "cannot read prompt file" in capsys.readouterr().err
+
+
+class TestDataLoadFailure:
+    """A corrupt or unreadable data file exits with code 2 instead of a traceback."""
+
+    def test_data_load_oserror_exits_2(self, monkeypatch, capsys):
+        """An OSError from a loader is reported as a clean JSON error and exit 2."""
+
+        def boom(*args, **kwargs):
+            raise OSError("disk gone")
+
+        monkeypatch.setattr(cli, "load_models", boom)
+        rc = cli.main(["select", "--level", "1", "--no-validate"])
+        assert rc == 2
+        assert "cannot load consensus data files" in capsys.readouterr().err
+
+
+class TestSubstitutionCostCap:
+    """The substitution cap is enforced against actual incurred cost."""
+
+    def test_substitution_cap_uses_actual_incurred_cost(
+        self, monkeypatch, tmp_path, capsys
+    ):
+        """Real first-round cost above the cap blocks substitution with exit 2.
+
+        The pre-flight estimate for these uncatalogued models is 0, so the old
+        estimate-based check would have passed; basing the cap on the actual
+        total_cost_usd returned by the run is what trips it.
+        """
+        monkeypatch.setenv("OPENROUTER_API_KEY", "k")
+        prompt = tmp_path / "p.txt"
+        prompt.write_text("q?")
+        roster = tmp_path / "r.json"
+        roster.write_text(
+            json.dumps(
+                {
+                    "roster": [{"model": "dead/x", "role": None}],
+                    "fallbacks": ["sub/y"],
+                }
+            )
+        )
+
+        async def fake_run(entries, prompt_text, api_key, catalog, transport=None):
+            return {
+                "results": [
+                    {
+                        "model": "dead/x",
+                        "role": None,
+                        "response": None,
+                        "tokens": None,
+                        "cost_usd": None,
+                        "error": "HTTP 429: limited",
+                    }
+                ],
+                "succeeded": 0,
+                "failed": 1,
+                "total_cost_usd": 0.50,
+            }
+
+        monkeypatch.setattr(cli, "run_consensus", fake_run)
+        with pytest.raises(SystemExit) as exc_info:
+            cli.main(
+                [
+                    "run",
+                    "--prompt-file",
+                    str(prompt),
+                    "--roster-file",
+                    str(roster),
+                    "--max-cost",
+                    "0.10",
+                ]
+            )
+        assert exc_info.value.code == 2
+        assert "exceeds cap" in capsys.readouterr().err
