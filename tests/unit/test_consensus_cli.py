@@ -167,8 +167,13 @@ class TestCost:
 
     def test_cap_exceeded_raises_system_exit(self):
         """enforce_cost_cap raises SystemExit when estimated cost exceeds the cap."""
-        with pytest.raises(SystemExit):
+        with pytest.raises(SystemExit) as exc_info:
             cli.enforce_cost_cap(0.60, level=1, max_cost=None)
+        assert exc_info.value.code == 2
+
+    def test_cap_at_exact_limit_passes(self):
+        """enforce_cost_cap does not raise when cost equals the cap exactly."""
+        cli.enforce_cost_cap(0.50, level=1, max_cost=None)
 
     def test_under_cap_passes(self):
         """enforce_cost_cap does not raise when cost is within the cap."""

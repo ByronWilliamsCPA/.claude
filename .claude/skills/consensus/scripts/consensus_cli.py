@@ -202,11 +202,12 @@ def role_system_prompt(role: str, roles_data: dict) -> str:
     definition = roles_data["role_definitions"].get(role)
     if definition is None:
         return role
+    # #ASSUME: roles.json definitions carry focus/questions/perspective; .get guards partial entries. #VERIFY: refresh/curation keeps all three fields populated.
     return (
         f"You are acting as a {role.replace('_', ' ')}.\n\n"
-        f"**Your Focus:** {definition['focus']}\n\n"
-        f"**Key Questions to Address:** {definition['questions']}\n\n"
-        f"**Your Perspective:** {definition['perspective']}\n\n"
+        f"**Your Focus:** {definition.get('focus', '')}\n\n"
+        f"**Key Questions to Address:** {definition.get('questions', '')}\n\n"
+        f"**Your Perspective:** {definition.get('perspective', '')}\n\n"
         "Instructions:\n"
         "1. Analyze the question from your professional role's perspective\n"
         "2. Address the key questions relevant to your expertise\n"
@@ -230,7 +231,11 @@ def enforce_cost_cap(total: float, level: int | None, max_cost: float | None) ->
 
     The explicit --max-cost flag overrides the per-level default cap.
     """
-    cap = max_cost if max_cost is not None else LEVEL_COST_CAPS_USD.get(level or 0)
+    cap = (
+        max_cost
+        if max_cost is not None
+        else (LEVEL_COST_CAPS_USD.get(level) if level is not None else None)
+    )
     if cap is not None and total > cap:
         emit(
             {
