@@ -43,6 +43,7 @@ TIER_FALLBACK_ORDER = {
 REQUEST_TIMEOUT_SECONDS = 120
 MAX_RETRIES = 2
 RETRY_BACKOFF_SECONDS = 2.0
+FREE_COST_EPSILON = 1e-9
 
 
 @dataclass
@@ -64,15 +65,17 @@ def emit(payload: dict, stream: TextIO | None = None) -> None:
     (stream or sys.stdout).write(json.dumps(payload, indent=2) + "\n")
 
 
-def parse_context(value: str | int | float) -> int:
+def parse_context(value: str | int | float | None) -> int:
     """Convert context sizes like '131K' or '1M' to a token count.
 
     Args:
-        value: A string like '131K', '1M', '200000', or a numeric value.
+        value: A string like '131K', '1M', '200000', a numeric value, or None.
 
     Returns:
-        Integer token count, or 0 if the value cannot be parsed.
+        Integer token count, or 0 if the value is None or cannot be parsed.
     """
+    if value is None:
+        return 0
     if isinstance(value, (int, float)):
         return int(value)
     text = str(value).strip().upper()
@@ -96,6 +99,8 @@ def _parse_model_row(row: dict) -> Model | None:
     Returns:
         A Model instance, or None if required fields are missing or invalid.
     """
+    if not (row.get("model") or "").strip():
+        return None
     try:
         return Model(
             name=row["model"],
@@ -153,8 +158,9 @@ def load_roles(path: Path | None = None) -> dict:
 def models_in_cost_tier(models: list[Model], tier: str, bands: dict) -> list[Model]:
     """Filter models to a cost tier band, sorted by benchmark scores descending.
 
-    The free tier requires both input and output cost to be exactly zero;
-    other tiers compare input cost against the band's min/max.
+    The free tier requires both input and output cost to be zero (within
+    FREE_COST_EPSILON); other tiers compare input cost against the band's
+    min/max.
 
     Args:
         models: List of Model instances to filter.
@@ -171,7 +177,13 @@ def models_in_cost_tier(models: list[Model], tier: str, bands: dict) -> list[Mod
     for m in models:
         if max_cost is not None:
             if max_cost == 0.0:
-                if m.input_cost != 0.0 or m.output_cost != 0.0:
+                # #ASSUME: curated free models carry costs of exactly 0; epsilon guards
+                # against near-zero float artifacts if live pricing ever enters the CSV.
+                # #VERIFY: refresh workflow flags any free-tier row with nonzero cost.
+                if (
+                    m.input_cost > FREE_COST_EPSILON
+                    or m.output_cost > FREE_COST_EPSILON
+                ):
                     continue
             elif m.input_cost > max_cost:
                 continue

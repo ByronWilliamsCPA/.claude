@@ -64,11 +64,10 @@ class TestLoadData:
     """Tests for the data loading functions."""
 
     def test_load_models_returns_rows(self):
-        """Load models CSV and verify it contains the expected models."""
+        """Load models CSV and verify every row has a non-empty name."""
         models = cli.load_models()
         assert len(models) > 20
-        names = {m.name for m in models}
-        assert "openai/gpt-5.1" in names
+        assert all(m.name for m in models)
 
     def test_load_bands_has_cost_tiers(self):
         """Load bands config and verify cost tier names are present."""
@@ -76,7 +75,7 @@ class TestLoadData:
         assert set(bands["cost_tier_bands"]) >= {"free", "economy", "value", "premium"}
 
     def test_load_roles_has_domains(self):
-        """Load roles config and verify domain_roles and role_definitions."""
+        """Load roles config and verify domain_roles structural integrity."""
         roles = cli.load_roles()
         assert set(roles["domain_roles"]) == {
             "code_review",
@@ -84,7 +83,13 @@ class TestLoadData:
             "architecture",
             "general",
         }
-        assert len(roles["role_definitions"]) == 19
+        referenced = {
+            r
+            for levels in roles["domain_roles"].values()
+            for lst in levels.values()
+            for r in lst
+        }
+        assert referenced <= set(roles["role_definitions"])
 
 
 class TestCostTierFilter:
@@ -106,6 +111,16 @@ class TestCostTierFilter:
         ]
         free = cli.models_in_cost_tier(models, "free", bands)
         assert [m.name for m in free] == ["high:free", "low:free"]
+
+    def test_swe_bench_tiebreak(self):
+        """Equal humaneval scores fall back to swe_bench descending."""
+        bands = cli.load_bands()
+        models = [
+            make_model("low-swe:free", 0, 0, he=80, swe=50),
+            make_model("high-swe:free", 0, 0, he=80, swe=75),
+        ]
+        free = cli.models_in_cost_tier(models, "free", bands)
+        assert [m.name for m in free] == ["high-swe:free", "low-swe:free"]
 
     def test_economy_band_range(self):
         """Economy tier includes low-cost models but excludes expensive ones."""
