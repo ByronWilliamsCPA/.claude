@@ -325,7 +325,7 @@ class TestRosterSelection:
         assert {r["model"] for r in roster[6:]} == {"prem-a", "prem-b"}
 
     def test_live_validation_skips_dead_model(self):
-        """A model absent from the live set is skipped and replaced by the next candidate."""
+        """A model absent from live set is skipped; next candidate fills the slot."""
         live = {m.name for m in fake_dataset()} - {"free-a:free"}
         roster = cli.select_roster(
             fake_dataset(), self.bands, self.roles, 1, "code_review", live=live
@@ -358,6 +358,25 @@ class TestRosterSelection:
             fake_dataset(), self.bands, self.roles, 1, "code_review"
         )
         assert all(r["est_cost_usd"] == 0.0 for r in roster)
+
+    def test_level3_cross_tier_dedup_no_duplicates(self):
+        """Economy models filling free slots must not also occupy economy slots."""
+        live = {
+            "free-a:free",
+            "econ-a",
+            "econ-b",
+            "econ-c",
+            "val-a",
+            "prem-a",
+            "prem-b",
+        }
+        roster = cli.select_roster(
+            fake_dataset(), self.bands, self.roles, 3, "code_review", live=live
+        )
+        names = [r["model"] for r in roster]
+        assert len(names) == len(set(names))
+        assert names.count("econ-a") == 1
+        assert names.count("econ-b") == 1
 
     def test_invalid_level_raises(self):
         """An out-of-range level raises ValueError."""

@@ -327,7 +327,9 @@ def select_roster(
         live: Optional set of live model ids for validation; None skips validation.
 
     Returns:
-        List of dicts with keys: model, role, est_cost_usd.
+        List of dicts with keys: model, role, est_cost_usd.  The list may
+        be shorter than the domain's role count when all fallback candidates
+        are exhausted; zip(picked, roles) truncates to the shorter side.
 
     Raises:
         ValueError: If level is not 1-3 or domain is not in roles_data.
