@@ -60,8 +60,9 @@ case: it can be lifted without dragging the framework.
 ```bash
 head -5 TARGET/LICENSE
 # Hunt carve-outs the LICENSE file alone will not show
-grep -rin "non-commercial\|no commercial\|free version\|attribution required\|cc by-nc" \
-  TARGET/README.md TARGET/**/ATTRIBUTION.md TARGET/**/*LICENSE* 2>/dev/null | head
+find TARGET \( -name 'README.md' -o -name 'ATTRIBUTION.md' -o -name '*LICENSE*' \) 2>/dev/null \
+  | xargs -r grep -in "non-commercial\|no commercial\|free version\|attribution required\|cc by-nc" \
+  2>/dev/null | head
 ```
 
 Flag any asset or sub-dependency carve-out explicitly. A permissive code
