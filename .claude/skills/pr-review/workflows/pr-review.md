@@ -23,6 +23,8 @@ PAL_CHAT_MODEL:        google/gemini-2.5-pro-preview
 PAL_CONSENSUS_MODELS:  ["google/gemini-2.5-pro-preview", "openai/gpt-4o"]
 PAL_TIERED_LEVEL:      1
 PAL_TIERED_THINKING:   auto
+PREMISE_MERGED_PR_LOOKBACK:   10
+PREMISE_STALENESS_HOLD_DAYS:  14
 ```
 
 - `PAL_CHAT_MODEL`: model passed to `mcp__pal__chat` for targeted validations
@@ -32,6 +34,10 @@ PAL_TIERED_THINKING:   auto
   comprehensive (~$5)
 - `PAL_TIERED_THINKING`: thinking depth for tiered_consensus (`auto`, `low`,
   `high`)
+- `PREMISE_MERGED_PR_LOOKBACK`: number of recently merged PRs scanned for file and
+  symbol overlap in Step 2e
+- `PREMISE_STALENESS_HOLD_DAYS`: branch age in days above which staleness biases
+  Agent M toward a HOLD verdict on a confirmed regression
 
 ---
 
@@ -172,6 +178,111 @@ If any finding is tagged `[Critical - pre-existing, rebase needed]`, also add to
 
 ---
 
+## Step 2d: Branch staleness (parallel with Step 2c)
+
+Compute two objective staleness signals; Agent M (Step 5) uses them as a
+scan-intensity dial and a HOLD bias on confirmed regressions.
+
+```bash
+BASE_ENC=$(printf '%s' "$BASE_BRANCH" | jq -sRr @uri)
+HEAD_ENC=$(printf '%s' "$HEAD_BRANCH" | jq -sRr @uri)
+CMP=$(gh api "repos/$OWNER/$REPO/compare/${BASE_ENC}...${HEAD_ENC}" || echo '{}')
+COMMITS_BEHIND=$(echo "$CMP" | jq '.behind_by // 0')
+FIRST_DIVERGENT_DATE=$(echo "$CMP" | jq -r '.commits[0].commit.committer.date // empty')
+if [ -n "$FIRST_DIVERGENT_DATE" ]; then
+  # date -d is GNU coreutils; on BSD/macOS the parse fails and falls back to age 0
+  DIV_EPOCH=$(date -d "$FIRST_DIVERGENT_DATE" +%s 2>/dev/null || echo "$(date +%s)")
+  AGE_DAYS=$(( ( $(date +%s) - DIV_EPOCH ) / 86400 ))
+else
+  AGE_DAYS=0
+fi
+```
+
+Store as `STALENESS = {commits_behind: COMMITS_BEHIND, age_days: AGE_DAYS}`. When
+`AGE_DAYS` exceeds `PREMISE_STALENESS_HOLD_DAYS`, or `COMMITS_BEHIND` is large, Agent
+M scans contested files more deeply and biases its verdict toward HOLD on any
+regression it confirms. This step is non-blocking: if the compare call fails, set
+`STALENESS = {commits_behind: 0, age_days: 0}` and note "staleness: unavailable".
+
+---
+
+## Step 2e: PR-overlap targeting (parallel with Step 2c)
+
+Compare the current PR against recent and in-flight PRs along two dimensions:
+file-path overlap and symbol overlap. The path dimension catches two PRs editing the
+same file; the symbol dimension catches two PRs adding the same definition in
+different files (the duplicate-provider smell). Path overlap alone is insufficient;
+see the rag-processor acceptance fixture in the design spec.
+
+Comparison set: the last `PREMISE_MERGED_PR_LOOKBACK` merged PRs plus all open PRs
+except the current one.
+
+```bash
+gh pr list --repo "$OWNER/$REPO" --state merged --limit "$PREMISE_MERGED_PR_LOOKBACK" \
+  --json number,title,mergedAt,files \
+  --jq '[.[] | {number, title, mergedAt, files: [.files[].path]}]'
+
+gh pr list --repo "$OWNER/$REPO" --state open \
+  --json number,title,files \
+  --jq "[.[] | select(.number != $PR_NUMBER) | {number, title, files: [.files[].path]}]"
+```
+
+### Dimension 1: file-path overlap
+
+Intersect each comparison PR's file list with `CHANGED_FILES`. Produce
+`CONTESTED_FILES`: records of `{file, overlapping_pr, pr_state, merged_at}`.
+
+- Overlap with a merged PR whose `mergedAt` postdates the current branch's merge-base
+  is a staleness / silent-revert risk: the current branch never saw that merged
+  change.
+- Overlap with an open PR is a collision / duplicate-work risk. Record it in
+  `CONTESTED_FILES` (with `pr_state: open`); Agent M (Step 5) is the sole emitter of
+  the finding, so it flows through Step 6 scoring like any other finding. Do NOT emit
+  it here; emitting both here and from Agent M would double-count it. Agent M formats
+  it as:
+
+```text
+[Important] Premise/Collision: file {f} is also modified by open PR #{n} ("{title}").
+Verify the two changes do not conflict or duplicate effort before either merges.
+```
+
+Caveat: `gh pr list --json files` caps at ~100 files per PR. Acceptable for overlap
+detection; note in the report if any scanned PR hit the cap.
+
+### Dimension 2: symbol overlap
+
+File-path overlap returns nothing when two PRs add the same symbol in different
+files. Extract newly-added top-level definitions from a diff and intersect their
+names across PRs, regardless of file path:
+
+```bash
+gh pr diff "$N" --repo "$OWNER/$REPO" 2>/dev/null | awk '
+  /^\+\+\+ / { file=$2 }
+  /^\+(async def|def|class) / {
+    line=$0; sub(/^\+/,"",line);
+    match(line, /^(async def|def|class)[ \t]+[A-Za-z_][A-Za-z0-9_]*/);
+    print file "\t" substr(line, RSTART, RLENGTH)
+  }'
+```
+
+Build `ADDED_SYMBOLS_CURRENT` for the PR under review, then run the same extraction
+on the comparison set (bound cost to open PRs plus merged PRs newer than the current
+branch's merge-base). A collision fires when a non-dunder, non-`test_` symbol name
+added by the current PR is also added by a comparison PR in a different file:
+
+```text
+[Important] Premise/DuplicateSymbol: {symbol} is newly defined by both this PR ({file_a})
+and PR #{n} ({file_b}). These are likely duplicate definitions that will need
+deduplication after both merge. Confirm only one should define it.
+```
+
+Exclusions to limit false positives: dunder names (`__init__`, `__call__`), `test_*`
+functions, and conventional hooks (`setUp`, `main`). Symbol collisions are
+QUESTION-tier, not HOLD, because choosing the canonical definition needs human
+judgment. Store all collisions as `SYMBOL_COLLISIONS` and pass to Agent M.
+
+---
+
 ## Step 3: Classify Changes (Haiku agent)
 
 Analyze `CHANGED_FILES` and the first 50 lines of `PR_DIFF` to classify:
@@ -192,6 +303,7 @@ Analyze `CHANGED_FILES` and the first 50 lines of `PR_DIFF` to classify:
 - `code-reviewer` (CLAUDE.md compliance + bugs)
 - `git-history-agent` (blame + history context on modified files) -- **skip for docs-only PRs**
 - `prior-pr-agent` (past review comments on same files) -- **skip for docs-only PRs**
+- `premise-gate` (Agent M: change appropriateness + regression + collision)
 
 Docs-only definition: every changed file has a `.md`, `.rst`, or `.txt` extension. A single
 non-doc file in the diff (e.g., a config change alongside a README update) makes the PR
@@ -747,18 +859,93 @@ If no concerns found, report:
 Collect the consensus synthesis as Agent L findings. Route through Step 6
 confidence scoring and Step 7 deduplication with `agent source: L`.
 
+### Agent M: Premise & Regression Gate (Opus)
+
+Always active. Runs in the Step 5 parallel batch so it adds no wall-clock. Opus, because
+every check is a judgment call. Receives: `PR_DIFF`, `PR_TITLE`, `PR_BODY`,
+`CHANGED_FILES`, `CONTEXT_FILES`, `MERGE_STATE`, `STALENESS`, `CONTESTED_FILES`,
+`SYMBOL_COLLISIONS`.
+
+```text
+You are assessing whether a pull request SHOULD exist and is an improvement, not
+whether it is internally correct (other agents cover correctness). Most changes in
+this repo are AI-authored, so do not assume the change was intentional or ideal.
+
+PR title: {PR_TITLE}
+PR body:  {PR_BODY}
+Changed files: {CHANGED_FILES}
+Branch staleness: {STALENESS}
+Contested files (also touched by recent/open PRs): {CONTESTED_FILES}
+Pre-computed symbol collisions: {SYMBOL_COLLISIONS}
+PR diff: {PR_DIFF}
+
+Run these four checks. HARD RULE: every finding MUST cite concrete evidence. If you
+cannot cite evidence, DROP the finding; do not downgrade it.
+
+1. Regression / reverted code: does the diff re-add code, config, or patterns that a
+   prior commit deliberately removed or reverted? Evidence required: a specific prior
+   commit SHA whose removed lines the PR re-adds. Run the forensic scan on EVERY file
+   in CHANGED_FILES (a stale-branch regression can live in a file no other PR touched,
+   so do NOT limit this check to CONTESTED_FILES). For each file, fetch recent commits
+   via `gh api "repos/{OWNER}/{REPO}/commits?path={file}&per_page=30"` (quote the URL
+   so the shell does not treat `&` as a background operator), inspect removal/revert
+   commits, and compare removed lines to PR additions. STALENESS modulates depth: when
+   the branch is stale, raise per_page and look further back in history.
+2. Contradicts a recorded decision: does the change reverse something fixed in an ADR
+   (docs/architecture/**, docs/ADRs/**), a CHANGELOG entry, or a prior PR review
+   comment? Evidence required: the ADR path + section, the CHANGELOG line, or the PR
+   comment.
+3. Unjustified churn / scope creep: does each change trace to the PR's stated goal in
+   PR_BODY? Evidence required: the stated-goal text plus the specific change that does
+   not trace to it.
+4. Better-alternative: given the change's goal, is the chosen approach clearly worse
+   than a pattern THIS REPO ALREADY USES elsewhere? Evidence required: a path to the
+   existing in-repo pattern. You may NEVER propose a hypothetical design.
+
+For docs-only PRs (every changed file is .md/.rst/.txt), run only checks 1 and 2.
+
+Also surface the pre-computed SYMBOL_COLLISIONS and any open-PR file collisions as
+findings.
+
+Emit each finding as (use the check NAME for {check}, not its number: one of
+Regression, Contradicts, Churn, BetterAlternative, Collision):
+  [Critical|Important|Suggested] Premise/{check}: {finding}. Evidence: {citation}.
+
+Then emit a single verdict line as a JSON object on its own:
+  { "verdict": "OK" | "QUESTION" | "HOLD", "headline": "one-line reason" }
+
+Verdict rules (each finding maps to exactly one verdict; when a contradiction could
+be either, the explicit-prohibition test decides):
+- HOLD: hard evidence the change should not merge as-is: it reintroduces code a cited
+  commit removed, or it reverses an ADR whose cited section explicitly prohibits the
+  pattern. Staleness biases borderline regressions toward HOLD.
+- QUESTION: appropriateness concerns worth a human look but non-blocking: churn, a
+  contradiction that is inferred or where the cited ADR does not explicitly prohibit
+  the pattern, or a symbol or open-PR collision.
+- OK: no premise concern survives the evidence rule.
+```
+
+Route Agent M's individual findings through Step 6 confidence scoring and Step 7
+deduplication with `agent source: M`. Capture its verdict object as
+`PREMISE_VERDICT = {verdict, headline}` for the Step 9 header and the Step 11 handoff.
+
+If Agent M produces no parseable JSON verdict (timeout, agent error, or malformed
+output), set `PREMISE_VERDICT = {verdict: "SKIP", headline: "premise gate did not run"}`.
+A SKIP verdict renders in the Step 9 report header as a single quiet line and does not
+trigger the HOLD confirmation in Step 11.
+
 ---
 
 ## Step 6: Confidence Scoring (parallel Haiku agents)
 
-For each finding returned by Agents A–H, launch a parallel Haiku agent with:
+For each finding returned by Agents A–M, launch a parallel Haiku agent with:
 
 ```text
 Score this code review finding on a scale of 0–100.
 
 Finding: {finding description}
 File: {file}
-Agent source: {A|B|C|D|E|F|G|H|I|J|K|L}
+Agent source: {A|B|C|D|E|F|G|H|I|J|K|L|M}
 PR diff context: {10 lines of diff around the finding}
 
 Scoring rubric:
@@ -771,10 +958,16 @@ Scoring rubric:
 - 100: Certain, frequent impact. Direct evidence in the diff confirms it.
 
 Additional constraint: If the agent source is C (Git History) or D (Prior PR
-Comments) AND the finding does not point to a specific, fixable line in the
-diff (it describes historical context, file churn, or past review patterns
-rather than an issue in the changed code): cap the score at 20 regardless of
-the rubric above.
+Comments) AND the finding describes historical context, file churn, or past review
+patterns rather than a specific, fixable line in the diff: cap the score at 20
+regardless of the rubric above. Two exceptions lift the cap:
+
+1. A C or D finding that cites a specific prior commit SHA where the now-reappearing
+   lines were removed or reverted. It is the SHA citation, not the agent source, that
+   lifts the cap; vague history churn stays capped regardless.
+2. Agent M (source M) findings. Agent M is never a C or D source; its checks are
+   evidence-grounded appropriateness judgments that do not fit the "historical context"
+   profile the cap targets. The cap does not apply to M.
 
 Return ONLY a JSON object:
 {"score": <number>, "rationale": "<one sentence>"}
@@ -986,6 +1179,7 @@ automatically; the user can decide whether to post.
 # PR Review: {PR_TITLE}
 {OWNER}/{REPO}#{PR_NUMBER} | {BASE_BRANCH} ← {HEAD_BRANCH}
 {DRAFT WARNING if isDraft}
+**PREMISE {PREMISE_VERDICT.verdict}: {PREMISE_VERDICT.headline}**
 
 ## Review Status
 - **GitHub Copilot**: {Received N comments / Pending (timed out) / Failed}
@@ -1036,6 +1230,13 @@ To post this review as a PR comment, run:
   /pr-review post
 Or confirm now and I will post it immediately.
 ```
+
+---
+
+Render a `HOLD` premise verdict with the same prominence as `BUILD FAILING`. An `OK`
+verdict may render as a single quiet line. A `SKIP` verdict renders as a single quiet
+line: "PREMISE SKIP: premise gate did not run." Individual premise findings from Agent M
+appear in their scored tiers above, like any other agent's findings.
 
 ---
 
@@ -1098,6 +1299,17 @@ If `NEXT_ACTION` is 1, stop here.
 
 ### Option 2 or 3: Run /pr-fix
 
+If `PREMISE_VERDICT.verdict` is `HOLD`, interpose one confirmation before loading the
+fix workflow:
+
+```text
+Premise gate flagged HOLD: {PREMISE_VERDICT.headline}.
+/pr-fix would polish a change whose existence is in question.
+Proceed with the fix anyway? (y/N)
+```
+
+Do not proceed to pr-fix unless the user confirms. If they decline, stop here.
+
 Load `workflows/pr-fix.md` and execute it. Pass forward:
 
 - `OWNER`, `REPO`, `PR_NUMBER`
@@ -1105,6 +1317,7 @@ Load `workflows/pr-fix.md` and execute it. Pass forward:
 - `FINDINGS`: the full deduplicated, scored findings list from Step 7
 - `SONAR_FINDINGS`: SonarQube findings from Step 4 (if any)
 - `SONAR_HOTSPOTS`: security hotspots from Step 4f (if any)
+- `PREMISE_VERDICT`: the Agent M verdict object `{verdict, headline}` from Step 5
 
 The pr-fix workflow runs its own gather step for CI check failures,
 review comments, and Codecov status (data that pr-review did not collect),
