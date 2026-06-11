@@ -191,3 +191,26 @@ def models_in_cost_tier(models: list[Model], tier: str, bands: dict) -> list[Mod
             continue
         kept.append(m)
     return sorted(kept, key=lambda m: (-m.humaneval, -m.swe_bench))
+
+
+def role_system_prompt(role: str, roles_data: dict) -> str:
+    """Build the system prompt for a professional role.
+
+    Unknown role names are treated as literal system prompts, which is how
+    flexible-mode stances ("argue for", "argue against") are passed in.
+    """
+    definition = roles_data["role_definitions"].get(role)
+    if definition is None:
+        return role
+    return (
+        f"You are acting as a {role.replace('_', ' ')}.\n\n"
+        f"**Your Focus:** {definition['focus']}\n\n"
+        f"**Key Questions to Address:** {definition['questions']}\n\n"
+        f"**Your Perspective:** {definition['perspective']}\n\n"
+        "Instructions:\n"
+        "1. Analyze the question from your professional role's perspective\n"
+        "2. Address the key questions relevant to your expertise\n"
+        "3. Identify risks, concerns, or opportunities within your domain\n"
+        "4. Provide specific, actionable insights\n"
+        "5. Be concise but thorough; focus on what matters most from your perspective"
+    )

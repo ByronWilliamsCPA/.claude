@@ -128,3 +128,21 @@ class TestCostTierFilter:
         models = [make_model("cheap", 0.5, 0.9), make_model("expensive", 5.0, 20.0)]
         econ = cli.models_in_cost_tier(models, "economy", bands)
         assert [m.name for m in econ] == ["cheap"]
+
+
+class TestRolePrompts:
+    """Tests for the role_system_prompt function."""
+
+    def test_known_role_renders_definition(self):
+        """A known role key expands into a structured system prompt."""
+        roles = cli.load_roles()
+        prompt = cli.role_system_prompt("code_reviewer", roles)
+        assert "code reviewer" in prompt
+        assert "Code quality, standards, maintainability" in prompt
+        assert "Security vulnerabilities?" in prompt
+
+    def test_unknown_role_passes_through_as_literal_prompt(self):
+        """An unrecognised role string is returned verbatim as a literal prompt."""
+        roles = cli.load_roles()
+        literal = "Argue against this proposal as a skeptic."
+        assert cli.role_system_prompt(literal, roles) == literal
