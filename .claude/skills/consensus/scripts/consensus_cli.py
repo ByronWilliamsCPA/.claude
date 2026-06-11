@@ -205,7 +205,8 @@ def role_system_prompt(role: str, roles_data: dict) -> str:
     definition = roles_data["role_definitions"].get(role)
     if definition is None:
         return role
-    # #ASSUME: roles.json definitions carry focus/questions/perspective; .get guards partial entries. #VERIFY: refresh/curation keeps all three fields populated.
+    # #ASSUME: roles.json definitions carry focus/questions/perspective; .get
+    # guards partial entries. #VERIFY: refresh/curation keeps all three populated.
     return (
         f"You are acting as a {role.replace('_', ' ')}.\n\n"
         f"**Your Focus:** {definition.get('focus', '')}\n\n"
@@ -253,6 +254,14 @@ def enforce_cost_cap(total: float, level: int | None, max_cost: float | None) ->
         raise SystemExit(2)
 
 
+def _read_cache(cache: Path) -> set[str] | None:
+    """Read cached model ids; None when missing, corrupted, or unreadable."""
+    try:
+        return set(json.loads(cache.read_text()))
+    except (OSError, json.JSONDecodeError, TypeError):
+        return None
+
+
 def fetch_live_model_ids(
     client: httpx.Client | None = None,
     cache_path: Path | None = None,
@@ -260,13 +269,17 @@ def fetch_live_model_ids(
 ) -> set[str]:
     """Return the set of live OpenRouter model ids, using a disk cache.
 
-    A fresh cache (younger than ttl) is served without a network call. On
-    network failure a stale cache is used as fallback; with no cache at all
-    the httpx error propagates.
+    A fresh, readable cache (younger than ttl) is served without a network
+    call; a corrupted fresh cache falls through to a refetch. On fetch or
+    parse failure a readable stale cache is used as fallback; with no usable
+    cache the original error propagates. The cache write is atomic
+    (temp file plus rename) so concurrent runs cannot tear it.
     """
     cache = cache_path or CACHE_PATH
     if cache.exists() and time.time() - cache.stat().st_mtime < ttl:
-        return set(json.loads(cache.read_text()))
+        cached = _read_cache(cache)
+        if cached is not None:
+            return cached
 
     owns_client = client is None
     http = client or httpx.Client(timeout=30)
@@ -274,14 +287,17 @@ def fetch_live_model_ids(
         resp = http.get(f"{OPENROUTER_BASE}/models")
         resp.raise_for_status()
         ids = {entry["id"] for entry in resp.json()["data"]}
-    except httpx.HTTPError:
-        if cache.exists():
-            return set(json.loads(cache.read_text()))
+    except (httpx.HTTPError, KeyError, ValueError):
+        cached = _read_cache(cache)
+        if cached is not None:
+            return cached
         raise
     finally:
         if owns_client:
             http.close()
 
     cache.parent.mkdir(parents=True, exist_ok=True)
-    cache.write_text(json.dumps(sorted(ids)))
+    tmp = cache.with_suffix(".tmp")
+    tmp.write_text(json.dumps(sorted(ids)))
+    tmp.replace(cache)
     return ids

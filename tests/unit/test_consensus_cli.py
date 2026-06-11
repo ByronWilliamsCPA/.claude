@@ -208,6 +208,7 @@ class TestLiveCatalog:
         cache = tmp_path / "cache.json"
         ids = cli.fetch_live_model_ids(client=self._client(handler), cache_path=cache)
         assert ids == {"a/x", "b/y:free"}
+        assert json.loads(cache.read_text()) == ["a/x", "b/y:free"]
         ids2 = cli.fetch_live_model_ids(client=self._client(handler), cache_path=cache)
         assert ids2 == ids
         assert calls["n"] == 1  # second call served from cache
@@ -235,3 +236,28 @@ class TestLiveCatalog:
             cli.fetch_live_model_ids(
                 client=self._client(handler), cache_path=tmp_path / "missing.json"
             )
+
+    def test_corrupted_fresh_cache_falls_through_to_fetch(self, tmp_path):
+        """A fresh but unparseable cache file triggers a refetch and rewrite."""
+
+        def handler(request):
+            return httpx.Response(200, json={"data": [{"id": "a/x"}]})
+
+        cache = tmp_path / "cache.json"
+        cache.write_text("{not json")
+        ids = cli.fetch_live_model_ids(client=self._client(handler), cache_path=cache)
+        assert ids == {"a/x"}
+        assert json.loads(cache.read_text()) == ["a/x"]  # rewritten atomically
+
+    def test_malformed_200_body_uses_stale_cache(self, tmp_path):
+        """A 200 response with an unexpected schema falls back to a stale cache."""
+
+        def handler(request):
+            return httpx.Response(200, json={"unexpected": "schema"})
+
+        cache = tmp_path / "cache.json"
+        cache.write_text(json.dumps(["old/model"]))
+        two_days_ago = time.time() - 2 * 86400
+        os.utime(cache, (two_days_ago, two_days_ago))
+        ids = cli.fetch_live_model_ids(client=self._client(handler), cache_path=cache)
+        assert ids == {"old/model"}
