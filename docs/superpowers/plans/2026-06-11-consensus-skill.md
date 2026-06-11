@@ -92,10 +92,12 @@ EOF
 
 Expected: `wrote .../roles.json: 19 roles, 4 domains`
 
-- [ ] **Step 5: Add httpx as a dev dependency (tests import the script, which imports httpx)**
+- [ ] **Step 5: Ensure httpx is available to tests (the test file imports the script, which imports httpx)**
+
+This repo declares dev dependencies in `[project.optional-dependencies]`, not `[dependency-groups]`, so `uv add --dev` is the wrong flag here. httpx may already be present transitively; add it explicitly only if missing:
 
 ```bash
-uv add --dev httpx
+uv run python -c "import httpx; print('httpx available:', httpx.__version__)" || uv add --optional dev httpx
 ```
 
 - [ ] **Step 6: Commit**
