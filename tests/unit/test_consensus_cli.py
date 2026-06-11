@@ -508,3 +508,23 @@ class TestRunConsensus:
         )
         assert out["failed"] == 1
         assert "malformed" in out["results"][0]["error"]
+
+    def test_all_models_failing_aggregates_to_zero(self):
+        """A fully failed run reports zero successes and zero cost."""
+
+        def handler(request):
+            return httpx.Response(404, json={"error": "not found"})
+
+        entries = [
+            {"model": "a/x", "role": None, "system_prompt": None},
+            {"model": "b/y", "role": None, "system_prompt": None},
+        ]
+        out = asyncio.run(
+            cli.run_consensus(
+                entries, "q?", "k", catalog={}, transport=httpx.MockTransport(handler)
+            )
+        )
+        assert out["succeeded"] == 0
+        assert out["failed"] == 2
+        assert out["total_cost_usd"] == 0.0
+        assert all(r["error"] for r in out["results"])

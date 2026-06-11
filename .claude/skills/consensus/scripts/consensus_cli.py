@@ -392,8 +392,10 @@ async def call_model(
         Result dict with keys: model, role, response, tokens, cost_usd, error.
     """
     messages = []
-    if entry.get("system_prompt"):
-        messages.append({"role": "system", "content": entry["system_prompt"]})
+    # empty/None system_prompt both mean: no system message
+    system_prompt = entry.get("system_prompt")
+    if system_prompt:
+        messages.append({"role": "system", "content": system_prompt})
     messages.append({"role": "user", "content": prompt})
     record: dict = {
         "model": entry["model"],
@@ -404,6 +406,7 @@ async def call_model(
         "error": None,
     }
 
+    # every branch above returns or continues; the loop never exits normally
     for attempt in range(MAX_RETRIES + 1):
         try:
             resp = await client.post(
@@ -443,7 +446,8 @@ async def call_model(
                 continue
             record["error"] = f"{type(exc).__name__}: {exc}"
             return record
-    record["error"] = "retries exhausted"
+    # unreachable defensive return: required by ruff RET503; every loop branch
+    # above either returns or continues, so the loop never exits normally
     return record
 
 
@@ -474,8 +478,13 @@ async def run_consensus(
         )
     succeeded = [r for r in results if r["error"] is None]
     return {
-        "results": list(results),
+        "results": results,
         "succeeded": len(succeeded),
         "failed": len(results) - len(succeeded),
-        "total_cost_usd": round(sum(r["cost_usd"] or 0 for r in succeeded), 6),
+        "total_cost_usd": round(
+            sum(
+                (r["cost_usd"] if r["cost_usd"] is not None else 0.0) for r in succeeded
+            ),
+            6,
+        ),
     }
