@@ -85,8 +85,8 @@ not already covered:
 
 ```bash
 # Is there already an agent/skill/rule/standard for this capability?
-grep -rl "<capability keyword>" ~/.claude/.claude/agents ~/.claude/.claude/skills \
-  ~/.claude/.claude/rules ~/.claude/.claude/standards 2>/dev/null
+grep -rl "<capability keyword>" ~/.claude/agents ~/.claude/skills \
+  ~/.claude/rules ~/.claude/standards 2>/dev/null
 ```
 
 If the grep finds an existing owner, the unit is convergent validation
