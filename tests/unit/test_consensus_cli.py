@@ -752,3 +752,52 @@ class TestRunFailover:
             "total_cost_usd": 0.0,
         }
         assert cli._substitute_failures(outcome, [], {}, "q?", "k", {}) is outcome
+
+    def test_partial_substitution_when_pool_exhausted(self, monkeypatch):
+        """With fewer fallbacks than failures, only the available swaps happen."""
+
+        async def fake_run(entries, prompt, api_key, catalog, transport=None):
+            results = [
+                {
+                    "model": e["model"],
+                    "role": e["role"],
+                    "response": "ok",
+                    "tokens": {},
+                    "cost_usd": 0.0,
+                    "error": None,
+                }
+                for e in entries
+            ]
+            return {
+                "results": results,
+                "succeeded": len(results),
+                "failed": 0,
+                "total_cost_usd": 0.0,
+            }
+
+        monkeypatch.setattr(cli, "run_consensus", fake_run)
+        failed_record = {
+            "model": None,
+            "role": None,
+            "response": None,
+            "tokens": None,
+            "cost_usd": None,
+            "error": "HTTP 429",
+        }
+        outcome = {
+            "results": [
+                {**failed_record, "model": "dead/a", "role": "code_reviewer"},
+                {**failed_record, "model": "dead/b", "role": "security_checker"},
+                {**failed_record, "model": "dead/c", "role": "technical_validator"},
+            ],
+            "succeeded": 0,
+            "failed": 3,
+            "total_cost_usd": 0.0,
+        }
+        roles = cli.load_roles()
+        new = cli._substitute_failures(
+            outcome, ["sub/x", "sub/y"], roles, "q?", "k", {}
+        )
+        assert len(new["substitutions"]) == 2
+        assert new["succeeded"] == 2
+        assert new["failed"] == 3  # three originals still carry errors in results

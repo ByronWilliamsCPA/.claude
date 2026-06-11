@@ -63,7 +63,10 @@ catalog cannot be estimated; the run output carries a `warning` key listing
 them, and their cost is NOT capped. Surface that warning to the user.
 When roster models fail at run time, the engine substitutes fallback
 candidates from the roster file once, within the same cost cap; the output's
-`substitutions` map records the swaps.
+`substitutions` map records the swaps. If the combined original plus
+substitution estimate breaches the cap, the run exits with code 2 before
+substituting and no responses are emitted; rerun with `--max-cost` to accept
+the spend.
 
 ## Synthesis requirements
 
