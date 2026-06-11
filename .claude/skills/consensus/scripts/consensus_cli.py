@@ -363,7 +363,9 @@ def select_roster(
     if domain_levels is None:
         valid = ", ".join(roles_data["domain_roles"])
         raise ValueError(f"Invalid domain: {domain}. Valid domains: {valid}")
-    roles = domain_levels[str(level)]
+    roles = domain_levels.get(str(level))
+    if roles is None:
+        raise ValueError(f"Domain {domain} has no roles configured for level {level}.")
 
     picked: list[Model] = []
     for tier, count in LEVEL_TIER_COUNTS[level].items():

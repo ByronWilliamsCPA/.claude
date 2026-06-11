@@ -1078,3 +1078,17 @@ class TestSubstitutionCostCap:
             )
         assert exc_info.value.code == 2
         assert "exceeds cap" in capsys.readouterr().err
+
+
+class TestRosterLevelGuard:
+    """select_roster raises a clear error when a domain lacks the level key."""
+
+    def test_missing_level_key_raises_valueerror(self):
+        """A domain present but missing the requested level raises ValueError."""
+        bands = cli.load_bands()
+        roles = {
+            "domain_roles": {"code_review": {"1": ["reviewer"], "2": ["reviewer"]}},
+            "role_definitions": {},
+        }
+        with pytest.raises(ValueError, match="no roles configured for level 3"):
+            cli.select_roster(fake_dataset(), bands, roles, 3, "code_review")
