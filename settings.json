@@ -171,5 +171,16 @@
     "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "80"
   },
   "outputStyle": "explanatory",
-  "plansDirectory": "~/.claude/plans"
+  "plansDirectory": "~/.claude/plans",
+  "extraKnownMarketplaces": {
+    "agents-observe": {
+      "source": {
+        "source": "directory",
+        "path": "/home/byron/dev/.claude/.submodules/agents-observe"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "agents-observe@agents-observe": true
+  }
 }
