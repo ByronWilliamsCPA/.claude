@@ -28,7 +28,8 @@ Before running any loop unattended:
 
 1. **Cost circuit breaker:** Run `/usage-report blocks` (ccusage's five-hour
    block view) before starting the loop and at least every 4 hours while it
-   runs; stop the loop on a STOP verdict. Claude Code has no built-in cost cap
+   runs; stop the loop on a STOP verdict (the PASS/STOP line the skill's
+   `blocks` mode reports). Claude Code has no built-in cost cap
    for `/loop`, so this check is the cap. A hard-stop timer remains the
    fallback when ccusage is unavailable.
 2. **Token budget:** Watch the statusLine context bar (or run `/context`) for

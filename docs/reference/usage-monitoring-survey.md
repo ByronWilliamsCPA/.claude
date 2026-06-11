@@ -34,7 +34,8 @@ collects:
 1. `.claude/rules/loop-recipes.md` requires a cost circuit breaker before any
    unattended `/loop` run and notes Claude Code has no built-in cost cap. The
    synthesis report deferred `/loop` recipes "until a token/cost circuit
-   breaker exists." No such tooling exists in the repo.
+   breaker exists." No such tooling existed in the repo at the time of
+   this survey; Layer 2 below closes the gap.
 2. `docs/development/best-practice-review/04-tips-harvest.md` Recommendation 7
    proposed skill-usage telemetry via a PreToolUse log to find dead-weight
    skills. Never implemented.
@@ -137,7 +138,7 @@ The recommendation is to build nothing custom for token accounting; the
 ecosystem already parses the transcript format well. Adopt in layers, each
 independent of the next.
 
-**Layer 1 (implemented): statusline.** `settings.json` now sets:
+**Layer 1 (implemented): statusLine.** `settings.json` now sets:
 
 ```json
 {
@@ -149,7 +150,9 @@ independent of the next.
 ```
 
 The version is pinned in line with this repo's pinning posture; `npx` matches
-the existing MCP server entries. This closes Gap 16 with live model, cost,
+the existing MCP server entries. To avoid the per-message npx registry
+lookup, optionally install once with `npm install -g ccstatusline@2.2.19`
+so the command resolves locally. This closes Gap 16 with live model, cost,
 context, and rate-limit visibility in every session, and directly supports
 the CLAUDE.md "Session length" self-assessment with data instead of
 guesswork.
@@ -172,7 +175,7 @@ it repo-native:
 **Layer 3 (when subagent attribution matters): agents-observe plugin.** The
 only surveyed tool showing the full agent delegation hierarchy with token
 data in real time. Installs as a plugin onto the hooks system this repo
-already manages. Relevant given the 46-agent catalog and supervisor pattern.
+already manages. Relevant given the 45-agent catalog and supervisor pattern.
 
 **Layer 4 (optional, when trends matter): OTEL to a local Grafana stack.**
 Add the telemetry env block to `settings.json` and run the ColeMurray

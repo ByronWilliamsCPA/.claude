@@ -158,7 +158,7 @@
   percentages, `/usage` and `/context` built-ins, and OTEL metrics labeled by
   model, query_source, agent, and skill), a ten-tool ecosystem comparison
   (ccusage, ccstatusline, agents-observe, claude-code-otel, and others), and
-  a four-layer ADOPT recommendation. Identifies `ccusage blocks` as the
+  a four-layer adoption recommendation. Identifies `ccusage blocks` as the
   implementation path for the loop-recipes cost circuit breaker and OTEL
   agent/skill labels as the path for tips-harvest Recommendation 7.
 * feat(compliance): close the dormant in-house license gate in
