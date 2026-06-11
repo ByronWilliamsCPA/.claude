@@ -1,7 +1,7 @@
 {
   "_meta": {
     "linkedDoc": "docs/reference/repo-type-taxonomy.md",
-    "lastUpdated": "2026-05-26",
+    "lastUpdated": "2026-06-04",
     "refreshCommands": {
       "repoList": "gh repo list <org> --limit 100 --json name,url,defaultBranchRef,description,isPrivate,isArchived",
       "branchProtection": "gh api repos/<org>/<repo>/branches/<branch>/protection",
@@ -625,6 +625,35 @@
     },
     {
       "org": "ByronWilliamsCPA",
+      "repositoryType": "python-app",
+      "name": "AMC",
+      "url": "https://github.com/ByronWilliamsCPA/AMC",
+      "defaultBranch": "main",
+      "description": "Web app for practice math tests (AMC 8/10/12 + AoPS placement diagnostics)",
+      "isPrivate": false,
+      "isArchived": false,
+      "review": {
+        "_status": "not yet audited; stub added 2026-06-04 during roster reconcile -- renovate/secret-scanning/release fields populated from live API 2026-06-10; run repo-compliance for full audit",
+        "renovate": {
+          "configured": true,
+          "shaAutoPinning": null
+        },
+        "secretScanning": {
+          "enabled": true,
+          "pushProtection": true
+        },
+        "releaseHealth": {
+          "hasRelease": false,
+          "daysSinceRelease": null
+        },
+        "templateDrift": {
+          "sourceTemplate": null,
+          "driftScore": null
+        }
+      }
+    },
+    {
+      "org": "ByronWilliamsCPA",
       "repositoryType": "python-package",
       "name": "audio-processor",
       "url": "https://github.com/ByronWilliamsCPA/audio-processor",
@@ -929,147 +958,6 @@
     },
     {
       "org": "ByronWilliamsCPA",
-      "repositoryType": "python-template",
-      "name": "cookiecutter-template-sample",
-      "url": "https://github.com/ByronWilliamsCPA/cookiecutter-template-sample",
-      "defaultBranch": "main",
-      "description": "Sample project generated from cookiecutter-python-template for validation",
-      "isPrivate": false,
-      "isArchived": false,
-      "review": {
-        "branchProtection": {
-          "enabled": true,
-          "enforceAdmins": true,
-          "requiredSignatures": true,
-          "requiredLinearHistory": true,
-          "allowForcePushes": false,
-          "allowDeletions": false,
-          "blockCreations": false,
-          "requiredConversationResolution": false,
-          "lockBranch": false,
-          "requiredStatusChecks": {
-            "strict": true,
-            "contexts": [
-              "CI Gate",
-              "Security Gate Validation",
-              "Dependency & Standards Validation",
-              "Check REUSE Compliance"
-            ]
-          },
-          "requiredPullRequestReviews": {
-            "requiredApprovingReviewCount": 0,
-            "dismissStaleReviews": false,
-            "requireCodeOwnerReviews": false,
-            "requireLastPushApproval": false
-          }
-        },
-        "codeql": {
-          "workflowPresent": false
-        },
-        "scorecard": {
-          "workflowPresent": true,
-          "score": 5.2,
-          "lastChecked": "2026-02-03T21:34:31Z"
-        },
-        "sonarcloud": {
-          "configPresent": false,
-          "workflowPresent": false
-        },
-        "codecov": {
-          "configPresent": true,
-          "workflowPresent": false
-        },
-        "reuse": {
-          "workflowPresent": false
-        },
-        "renovate": {
-          "configured": true,
-          "shaAutoPinning": true
-        },
-        "secretScanning": {
-          "enabled": false,
-          "pushProtection": false
-        },
-        "ossfBadge": {
-          "badgeId": null,
-          "percentagePassing": null
-        },
-        "workflows": {
-          "files": [
-            "ci.yml",
-            "docs.yml",
-            "publish-pypi.yml",
-            "release.yml",
-            "sbom.yml",
-            "scorecard.yml",
-            "security-analysis.yml"
-          ],
-          "presentFromExpected": [
-            "ci.yml",
-            "docs.yml",
-            "release.yml",
-            "sbom.yml",
-            "scorecard.yml",
-            "security-analysis.yml"
-          ],
-          "missingFromExpected": [
-            "codeql.yml",
-            "coverage.yml",
-            "pr-validation.yml",
-            "python-compatibility.yml",
-            "release-sign.yml",
-            "reuse.yml",
-            "sonarcloud.yml"
-          ],
-          "extras": [
-            "publish-pypi.yml"
-          ]
-        },
-        "foundations": {
-          "securityMd": false,
-          "contributingMd": true,
-          "changelogMd": true,
-          "codeOfConduct": true,
-          "governanceMd": true,
-          "agentsMd": false,
-          "geminiMd": false,
-          "claudeMd": false,
-          "knownVulnerabilities": false,
-          "codeowners": true
-        },
-        "preCommit": {
-          "configPresent": true,
-          "hooks": {
-            "ruff": true,
-            "basedpyright": false,
-            "bandit": false,
-            "detectSecrets": false,
-            "darglint": false,
-            "interrogate": true,
-            "commitizen": false,
-            "yamllint": false,
-            "markdownlint": false,
-            "noEmDash": false
-          }
-        },
-        "toolchain": {
-          "pyprojectToml": true,
-          "qltyConfig": true
-        },
-        "releaseHealth": {
-          "hasRelease": null,
-          "daysSinceRelease": null
-        },
-        "templateDrift": {
-          "sourceTemplate": "ByronWilliamsCPA/cookiecutter-python-template",
-          "driftScore": null
-        }
-      },
-      "usesDocker": false,
-      "migrationPhase": "complete"
-    },
-    {
-      "org": "ByronWilliamsCPA",
       "repositoryType": "docs-only",
       "name": "DeQA-Doc",
       "url": "https://github.com/ByronWilliamsCPA/DeQA-Doc",
@@ -1233,89 +1121,109 @@
           }
         },
         "codeql": {
-          "workflowPresent": false
+          "workflowPresent": true
         },
         "scorecard": {
-          "workflowPresent": false,
+          "workflowPresent": true,
           "score": null,
           "lastChecked": null
         },
         "sonarcloud": {
-          "configPresent": false,
-          "workflowPresent": false
+          "configPresent": true,
+          "workflowPresent": true
         },
         "codecov": {
-          "configPresent": false,
-          "workflowPresent": false
+          "configPresent": true,
+          "workflowPresent": true
         },
         "reuse": {
-          "workflowPresent": false
+          "workflowPresent": true
         },
         "renovate": {
-          "configured": false,
-          "shaAutoPinning": false
+          "configured": true,
+          "shaAutoPinning": true
         },
         "secretScanning": {
-          "enabled": false,
-          "pushProtection": false
+          "enabled": true,
+          "pushProtection": true
         },
         "ossfBadge": {
           "badgeId": null,
           "percentagePassing": null
         },
         "workflows": {
-          "files": [],
-          "presentFromExpected": [],
-          "missingFromExpected": [
+          "files": [
+            "_security-gate.yml",
             "ci.yml",
-            "codeql.yml",
+            "coverage.yml",
+            "dependency-review.yml",
+            "docs.yml",
+            "postman-api-tests.yml",
+            "pr-validation.yml",
+            "python-compatibility.yml",
+            "reuse.yml",
+            "scorecard.yml",
+            "security-analysis.yml",
+            "security.yml",
+            "sonarcloud.yml"
+          ],
+          "presentFromExpected": [
+            "ci.yml",
             "coverage.yml",
             "docs.yml",
             "pr-validation.yml",
             "python-compatibility.yml",
-            "release-sign.yml",
-            "release.yml",
             "reuse.yml",
-            "sbom.yml",
             "scorecard.yml",
             "security-analysis.yml",
             "sonarcloud.yml"
           ],
-          "extras": []
+          "missingFromExpected": [
+            "codeql.yml",
+            "release-sign.yml",
+            "release.yml",
+            "sbom.yml"
+          ],
+          "extras": [
+            "_security-gate.yml",
+            "dependency-review.yml",
+            "postman-api-tests.yml",
+            "security.yml"
+          ]
         },
         "foundations": {
-          "securityMd": false,
-          "contributingMd": false,
-          "changelogMd": false,
-          "codeOfConduct": false,
+          "securityMd": true,
+          "contributingMd": true,
+          "changelogMd": true,
+          "codeOfConduct": true,
           "governanceMd": false,
-          "agentsMd": false,
-          "geminiMd": false,
-          "claudeMd": false,
-          "knownVulnerabilities": false,
+          "agentsMd": true,
+          "geminiMd": true,
+          "claudeMd": true,
+          "knownVulnerabilities": true,
           "codeowners": false
         },
         "preCommit": {
-          "configPresent": false,
+          "configPresent": true,
           "hooks": {
-            "ruff": false,
-            "basedpyright": false,
-            "bandit": false,
-            "detectSecrets": false,
-            "darglint": false,
-            "interrogate": false,
-            "commitizen": false,
-            "yamllint": false,
-            "markdownlint": false,
-            "noEmDash": false
+            "ruff": true,
+            "basedpyright": true,
+            "bandit": true,
+            "detectSecrets": true,
+            "darglint": true,
+            "interrogate": true,
+            "commitizen": true,
+            "yamllint": true,
+            "markdownlint": true,
+            "noEmDash": true
           }
         },
         "toolchain": {
-          "pyprojectToml": false,
-          "qltyConfig": false
+          "pyprojectToml": true,
+          "qltyConfig": true
         },
         "releaseHealth": {
-          "hasRelease": null,
+          "hasRelease": false,
           "daysSinceRelease": null
         },
         "templateDrift": {
@@ -2148,6 +2056,35 @@
       },
       "usesDocker": false,
       "migrationPhase": "complete"
+    },
+    {
+      "org": "ByronWilliamsCPA",
+      "repositoryType": "python-app",
+      "name": "MTG_AI",
+      "url": "https://github.com/ByronWilliamsCPA/MTG_AI",
+      "defaultBranch": "main",
+      "description": "Self-hosted competitive Commander (cEDH) deck-critique assistant: RAG over Scryfall/MTGJSON/meta data with a deterministic rules engine and a swappable generation backend.",
+      "isPrivate": false,
+      "isArchived": false,
+      "review": {
+        "_status": "not yet audited; stub added 2026-06-04 during roster reconcile -- renovate/secret-scanning/release fields populated from live API 2026-06-10; run repo-compliance for full audit",
+        "renovate": {
+          "configured": true,
+          "shaAutoPinning": null
+        },
+        "secretScanning": {
+          "enabled": true,
+          "pushProtection": true
+        },
+        "releaseHealth": {
+          "hasRelease": false,
+          "daysSinceRelease": null
+        },
+        "templateDrift": {
+          "sourceTemplate": null,
+          "driftScore": null
+        }
+      }
     },
     {
       "org": "ByronWilliamsCPA",
