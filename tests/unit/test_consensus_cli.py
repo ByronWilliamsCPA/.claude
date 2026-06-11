@@ -570,3 +570,94 @@ class TestCliWiring:
         rc = cli.main(["run", "--prompt-file", str(prompt), "--models", "m/x"])
         assert rc == 1
         assert "OPENROUTER_API_KEY" in capsys.readouterr().err
+
+    def test_run_with_roster_file_builds_role_prompts(
+        self, monkeypatch, tmp_path, capsys
+    ):
+        """Roster-file entries get role system prompts and reach the fan-out."""
+        monkeypatch.setenv("OPENROUTER_API_KEY", "k")
+        prompt = tmp_path / "p.txt"
+        prompt.write_text("q?")
+        roster = tmp_path / "roster.json"
+        roster.write_text(
+            json.dumps(
+                {
+                    "roster": [
+                        {
+                            "model": "free-x:free",
+                            "role": "code_reviewer",
+                            "est_cost_usd": 0.0,
+                        }
+                    ]
+                }
+            )
+        )
+
+        captured = {}
+
+        async def fake_run_consensus(
+            entries, prompt_text, api_key, catalog, transport=None
+        ):
+            captured["entries"] = entries
+            return {"results": [], "succeeded": 1, "failed": 0, "total_cost_usd": 0.0}
+
+        monkeypatch.setattr(cli, "run_consensus", fake_run_consensus)
+        rc = cli.main(
+            ["run", "--prompt-file", str(prompt), "--roster-file", str(roster)]
+        )
+        assert rc == 0
+        assert captured["entries"][0]["model"] == "free-x:free"
+        assert "code reviewer" in captured["entries"][0]["system_prompt"]
+
+    def test_run_exit_code_3_when_all_fail(self, monkeypatch, tmp_path):
+        """Zero successes from the fan-out maps to exit code 3."""
+        monkeypatch.setenv("OPENROUTER_API_KEY", "k")
+        prompt = tmp_path / "p.txt"
+        prompt.write_text("q?")
+
+        async def fake_run_consensus(
+            entries, prompt_text, api_key, catalog, transport=None
+        ):
+            return {
+                "results": [{"model": "m/x", "error": "boom"}],
+                "succeeded": 0,
+                "failed": 1,
+                "total_cost_usd": 0.0,
+            }
+
+        monkeypatch.setattr(cli, "run_consensus", fake_run_consensus)
+        assert cli.main(["run", "--prompt-file", str(prompt), "--models", "m/x"]) == 3
+
+    def test_run_missing_roster_file_exits_cleanly(self, monkeypatch, tmp_path, capsys):
+        """A nonexistent roster file produces a JSON error, not a traceback."""
+        monkeypatch.setenv("OPENROUTER_API_KEY", "k")
+        prompt = tmp_path / "p.txt"
+        prompt.write_text("q?")
+        with pytest.raises(SystemExit) as exc_info:
+            cli.main(
+                [
+                    "run",
+                    "--prompt-file",
+                    str(prompt),
+                    "--roster-file",
+                    str(tmp_path / "missing.json"),
+                ]
+            )
+        assert exc_info.value.code == 2
+        assert "cannot read" in capsys.readouterr().err
+
+    def test_select_limit_trims_roster(self, capsys):
+        """--limit trims the emitted roster."""
+        rc = cli.main(["select", "--level", "1", "--no-validate", "--limit", "2"])
+        assert rc == 0
+        payload = json.loads(capsys.readouterr().out)
+        assert len(payload["roster"]) == 2
+
+    def test_main_refresh_emits_report(self, monkeypatch, capsys):
+        """Refresh dispatch fetches live ids and emits the report shape."""
+        monkeypatch.setattr(cli, "fetch_live_model_ids", lambda: {"some/model:free"})
+        rc = cli.main(["refresh"])
+        assert rc == 0
+        payload = json.loads(capsys.readouterr().out)
+        assert "dead_in_curated" in payload
+        assert "live_free_not_in_curated" in payload

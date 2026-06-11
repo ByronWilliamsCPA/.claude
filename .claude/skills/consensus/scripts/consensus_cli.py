@@ -36,6 +36,7 @@ OPENROUTER_BASE = "https://openrouter.ai/api/v1"
 EST_INPUT_TOKENS = 2000
 EST_OUTPUT_TOKENS = 1500
 LEVEL_COST_CAPS_USD = {1: 0.50, 2: 1.00, 3: 10.00}
+DOMAIN_CHOICES = ["code_review", "security", "architecture", "general"]
 LEVEL_TIER_COUNTS = {
     1: {"free": 3},
     2: {"free": 3, "economy": 3},
@@ -510,9 +511,6 @@ async def run_consensus(
     }
 
 
-DOMAIN_CHOICES = ["code_review", "security", "architecture", "general"]
-
-
 def build_parser() -> argparse.ArgumentParser:
     """Build the CLI argument parser with the four subcommands."""
     parser = argparse.ArgumentParser(prog="consensus_cli", description=__doc__)
@@ -547,13 +545,33 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _read_json_file(path: str, what: str) -> object:
+    """Read and parse a JSON file, exiting cleanly on missing or invalid input."""
+    try:
+        return json.loads(Path(path).read_text())
+    except (OSError, json.JSONDecodeError) as exc:
+        emit({"error": f"cannot read {what} {path}: {exc}"}, stream=sys.stderr)
+        raise SystemExit(2) from exc
+
+
 def build_entries(args: argparse.Namespace, roles_data: dict) -> list[dict]:
     """Resolve run arguments into model entries with system prompts."""
     entries: list[dict] = []
     if args.roster_file:
-        roster = json.loads(Path(args.roster_file).read_text())
+        roster = _read_json_file(args.roster_file, "roster file")
         items = roster["roster"] if isinstance(roster, dict) else roster
         for item in items:
+            if "model" not in item:
+                emit(
+                    {
+                        "error": (
+                            f"roster file {args.roster_file} has an entry "
+                            "without a 'model' key"
+                        )
+                    },
+                    stream=sys.stderr,
+                )
+                raise SystemExit(2)
             role = item.get("role")
             entries.append(
                 {
@@ -566,7 +584,7 @@ def build_entries(args: argparse.Namespace, roles_data: dict) -> list[dict]:
             )
     elif args.models:
         roles_map = (
-            json.loads(Path(args.roles_file).read_text()) if args.roles_file else {}
+            _read_json_file(args.roles_file, "roles file") if args.roles_file else {}
         )
         for name in args.models.split(","):
             name = name.strip()
@@ -598,7 +616,7 @@ def _cmd_select(
         live = fetch_live_model_ids()
     roster = select_roster(models, bands, roles, args.level, args.domain, live=live)
     limit = getattr(args, "limit", None)
-    if limit:
+    if limit is not None:
         roster = roster[:limit]
     emit(
         {
@@ -622,9 +640,20 @@ def _cmd_run(
     if not api_key:
         emit({"error": "OPENROUTER_API_KEY is not set"}, stream=sys.stderr)
         return 1
-    prompt = Path(args.prompt_file).read_text()
+    try:
+        prompt = Path(args.prompt_file).read_text()
+    except OSError as exc:
+        emit(
+            {"error": f"cannot read prompt file {args.prompt_file}: {exc}"},
+            stream=sys.stderr,
+        )
+        return 2
     entries = build_entries(args, roles)
     catalog = {m.name: m for m in models}
+    unknown = [e["model"] for e in entries if e["model"] not in catalog]
+    # #ASSUME: uncatalogued models cannot be cost-estimated; the cap only covers
+    # catalog rows. #VERIFY: run output carries a warning listing them so the
+    # operator sees the gap.
     estimate = round(
         sum(
             estimate_model_cost(catalog[e["model"]])
@@ -635,6 +664,11 @@ def _cmd_run(
     )
     enforce_cost_cap(estimate, args.level, args.max_cost)
     outcome = asyncio.run(run_consensus(entries, prompt, api_key, catalog))
+    if unknown:
+        outcome["warning"] = (
+            "models not in curated catalog, cost unknown and not capped: "
+            + ", ".join(unknown)
+        )
     emit(outcome)
     return 0 if outcome["succeeded"] else 3
 
