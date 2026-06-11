@@ -133,7 +133,7 @@ def load_models(csv_path: Path | None = None) -> list[Model]:
         List of Model instances parsed from the CSV.
     """
     path = csv_path or DATA_DIR / "models.csv"
-    with open(path, newline="") as f:
+    with open(path, newline="", encoding="utf-8") as f:
         rows = list(csv.DictReader(f))
     return [m for row in rows if (m := _parse_model_row(row)) is not None]
 
@@ -147,7 +147,9 @@ def load_bands(path: Path | None = None) -> dict:
     Returns:
         Parsed bands configuration dictionary.
     """
-    return json.loads((path or DATA_DIR / "bands_config.json").read_text())
+    return json.loads(
+        (path or DATA_DIR / "bands_config.json").read_text(encoding="utf-8")
+    )
 
 
 def load_roles(path: Path | None = None) -> dict:
@@ -159,7 +161,7 @@ def load_roles(path: Path | None = None) -> dict:
     Returns:
         Parsed roles configuration dictionary.
     """
-    return json.loads((path or DATA_DIR / "roles.json").read_text())
+    return json.loads((path or DATA_DIR / "roles.json").read_text(encoding="utf-8"))
 
 
 def models_in_cost_tier(models: list[Model], tier: str, bands: dict) -> list[Model]:
@@ -261,8 +263,8 @@ def enforce_cost_cap(total: float, level: int | None, max_cost: float | None) ->
 def _read_cache(cache: Path) -> set[str] | None:
     """Read cached model ids; None when missing, corrupted, or wrong-shaped."""
     try:
-        data = json.loads(cache.read_text())
-    except (OSError, json.JSONDecodeError):
+        data = json.loads(cache.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError, UnicodeDecodeError):
         return None
     # The cache is a JSON list of model-id strings. Any other shape (a bare
     # string would otherwise become a set of characters, a dict a set of keys)
@@ -317,7 +319,7 @@ def fetch_live_model_ids(
     # test_concurrent_cache_writes_do_not_collide.
     tmp = cache.with_suffix(f".{os.getpid()}.tmp")
     try:
-        tmp.write_text(json.dumps(sorted(ids)))
+        tmp.write_text(json.dumps(sorted(ids)), encoding="utf-8")
         tmp.replace(cache)
     except OSError:
         tmp.unlink(missing_ok=True)
@@ -623,8 +625,8 @@ def build_parser() -> argparse.ArgumentParser:
 def _read_json_file(path: str, what: str) -> object:
     """Read and parse a JSON file, exiting cleanly on missing or invalid input."""
     try:
-        return json.loads(Path(path).read_text())
-    except (OSError, json.JSONDecodeError) as exc:
+        return json.loads(Path(path).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError, UnicodeDecodeError) as exc:
         emit({"error": f"cannot read {what} {path}: {exc}"}, stream=sys.stderr)
         raise SystemExit(2) from exc
 
@@ -793,7 +795,7 @@ def _cmd_run(
         emit({"error": "OPENROUTER_API_KEY is not set"}, stream=sys.stderr)
         return 1
     try:
-        prompt = Path(args.prompt_file).read_text()
+        prompt = Path(args.prompt_file).read_text(encoding="utf-8")
     except (OSError, UnicodeDecodeError) as exc:
         emit(
             {"error": f"cannot read prompt file {args.prompt_file}: {exc}"},
