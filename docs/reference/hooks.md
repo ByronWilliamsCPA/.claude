@@ -72,9 +72,30 @@ The authoritative hook definition is `hooks.json` at repo root. It is merged int
 
 For the full step-by-step workflow, see [Contributing → Adding a Hook](../contributing/adding-hooks.md).
 
+## Plugin Hooks vs Repo-Managed Hooks
+
+Plugins enabled through `enabledPlugins` contribute hooks from their own `hooks/hooks.json`. Claude Code loads them alongside the repo-managed hooks defined in `hooks.json` and the `hooks` block of `settings.json`. The two sources compose additively:
+
+- A plugin cannot modify, remove, or reorder repo-managed hooks. Disabling the plugin removes its hooks without touching repo-managed ones.
+- When both sources register on the same event, every matching hook from both sources runs. Ordering between the sources is unspecified; do not write hooks that depend on cross-source ordering.
+- Blocking semantics apply per hook regardless of source: any PreToolUse hook that exits 2 or returns a deny decision blocks the tool call. Observability hooks must therefore be fire-and-forget (exit 0 on every code path, nothing written to stdout).
+- Latency is cumulative: each matching registration is one process spawn per event, so a plugin adds its own spawns on top of the repo-managed ones.
+
+As of 2026-06, `hooks.json` defines 10 repo-managed commands across PreToolUse (5), PostToolUse (2), Stop (1), and UserPromptSubmit (2), and `settings.json` carries additional entries including four SessionStart commands. The hookify and security-guidance plugins ship under `.submodules/anthropics-plugins` but are wired as command entries in `hooks.json` (legacy wiring), so they count as repo-managed hooks, not plugin-system hooks.
+
+### agents-observe (pinned v0.9.11)
+
+The agents-observe plugin (`.submodules/agents-observe`, pinned at tag v0.9.11) is the first true plugin-system hook contributor. Its `hooks/hooks.json` registers exactly one command on each of 28 events, including SubagentStart and SubagentStop (the events that drive per-subagent token attribution) plus PreToolUse and PostToolUse on every tool call. It overlaps with repo-managed hooks on five events: PreToolUse, PostToolUse, Stop, UserPromptSubmit, and SessionStart. On each overlapping event both sources fire independently, and the plugin adds one process spawn per event.
+
+27 of the 28 registrations run `hooks/scripts/hook.sh`, a 9-line wrapper that reads stdin, backgrounds the node CLI with stdout and stderr discarded to `/dev/null`, and ends in an unconditional `exit 0`. It never writes to stdout, so no code path can block a tool call or emit a permission decision (verified at v0.9.11; re-verify after any submodule bump). Two caveats:
+
+- The SessionStart registration bypasses the wrapper and runs `observe_cli.mjs hook-autostart` as a foreground node process. A missing or hung `node` binary delays session start until the hook timeout; SessionStart is not a tool-gating event, so it still cannot block tool calls.
+- Failures inside the backgrounded process are discarded along with its output. If the event spool or database is unwritable, events drop silently instead of surfacing an error; this is the intended trade-off of fire-and-forget observability.
+
 ## See Also
 
 - `hooks.json` at repo root: the authoritative hook definition
+- `.submodules/agents-observe/hooks/hooks.json`: agents-observe plugin hook registrations
 - [Architecture → Hook Pipeline](../architecture/hook-pipeline.md): turn-level execution diagram and narrative
 - [ADR-002 Hook Composition and Ordering](../architecture/adr/ADR-002-hook-composition.md): design rationale
 - [Contributing → Adding a Hook](../contributing/adding-hooks.md): step-by-step authoring guide
