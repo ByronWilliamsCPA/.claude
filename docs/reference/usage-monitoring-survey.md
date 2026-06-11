@@ -179,9 +179,37 @@ manages. Relevant given the 45-agent catalog and supervisor pattern.
 
 *Pin and install.* The submodule `.submodules/agents-observe` is pinned at
 tag v0.9.11 (SHA e15b7f6) and registered as a directory-source marketplace
-plugin named `agents-observe` in `settings.json`; `installed_plugins.json`
-records version 0.9.11 with a matching `gitCommitSha`. Do not run
-`claude plugin update` for this plugin without re-running the security review.
+plugin named `agents-observe` in `settings.json`. The local Claude Code
+plugins registry (`~/.claude/plugins/installed_plugins.json`, a machine-local
+file, not a repo artifact) records version 0.9.11 with a matching
+`gitCommitSha`. Do not run `claude plugin update` for this plugin without
+re-running the security review: the directory-source marketplace loads
+whatever is checked out in the submodule working tree, not the pinned
+gitlink SHA, so a plugin update or a manual checkout inside the submodule
+silently floats the reviewed version.
+`#ASSUME` the submodule working tree matches the pinned SHA.
+`#VERIFY` after any submodule operation:
+`git -C .submodules/agents-observe rev-parse HEAD` must print
+`e15b7f6d06fecda44eb903f9de503ee04973bcaa`.
+
+The marketplace path in `settings.json` is absolute
+(`/home/byron/dev/.claude/.submodules/agents-observe`); this is the first
+marketplace entry committed to that file, so there is no prior pattern, and
+env-var expansion support for this field is unverified.
+`#ASSUME` the repo lives at `/home/byron/dev/.claude`; the plugin silently
+fails to load from any other clone location.
+`#VERIFY` when porting this config to another machine: update the path to
+the new clone location, or confirm `$HOME` expansion works for
+`extraKnownMarketplaces.source.path` before relying on it.
+
+The committed `settings.json` also enables the plugin
+(`enabledPlugins."agents-observe@agents-observe": true`), an opt-out
+posture for every clone of this public repo.
+`#ASSUME` single-user personal config repo; this machine is the only
+consumer of the committed settings.
+`#VERIFY` before adopting this repo as your own Claude config on another
+machine: set the `enabledPlugins` entry to `false` first, then opt in
+deliberately after re-grading the security caveats below for your network.
 
 *Data storage.* The SQLite database lives at
 `~/.claude/plugins/data/agents-observe-agents-observe/data/observe.db`,
@@ -201,23 +229,37 @@ wrappers; see [docs/reference/hooks.md](hooks.md) for the composition details.
   config file is stored in plaintext. Treat `observe.db` as secret-bearing;
   use `/observe stop` and `db-reset` when handling sensitive credentials.
 - The Docker container publishes port 4981 on `0.0.0.0` (not `127.0.0.1`)
-  with no authentication on any route and fully open CORS. This is not
-  configurable via env var in v0.9.11 (`docker.mjs:214` bare `port:port`
-  mapping). On an untrusted LAN, any host on the network can read all
-  captured prompts, commands, and file bodies. In this install, WSL2 NAT
-  keeps the port off the physical LAN (no `netsh portproxy` configured);
-  the 30-second idle shutdown also limits the exposure window.
-  Operational rule: enable only on a single-user trusted machine; do
-  not run on an untrusted Wi-Fi network without binding to loopback first.
-  An upstream feature request for a `127.0.0.1:` publish prefix is
-  recommended.
+  with no authentication on any route and fully open CORS. The bind
+  interface is hard-coded with no env var override in v0.9.11
+  (`docker.mjs:214` bare `port:port` mapping); `AGENTS_OBSERVE_SERVER_PORT`
+  changes only the host port number, not the interface. On an untrusted
+  LAN, any host on the network can read all captured prompts, commands,
+  and file bodies. In this install, WSL2 NAT keeps the port off the
+  physical LAN; the 30-second idle shutdown also limits the exposure
+  window.
+  `#ASSUME` WSL2 NAT isolation holds: no portproxy rule forwards 4981 and
+  the WSL adapter is not bridged.
+  `#VERIFY` before trusting this boundary, and again after any Windows
+  networking change: `netsh interface portproxy show all` on the Windows
+  host must not list 4981.
+  Operational rule: enable only on a single-user trusted machine on a
+  trusted network. v0.9.11 has no loopback bind option, so the only
+  mitigations on an untrusted network are stopping the container
+  (`/observe stop`), a host firewall rule blocking 4981, or leaving the
+  plugin disabled. An upstream feature request for a `127.0.0.1:` publish
+  prefix is recommended (not yet filed as of 2026-06-11).
 - Do not raise the log level to `trace`; that writes a second plaintext copy
   of all payloads to `cli.log`/`mcp.log` and the server console. The
   enabling config sets `warn`.
 - One outbound GET to `https://models.dev/api.json` (model pricing table, no
   captured data sent); fails closed in air-gapped environments.
 - The SessionStart hook runs `node` in the foreground; a hung node process
-  delays session start until the hook timeout (default 30s).
+  delays session start until the hook timeout (default 30s). The plugin's
+  `hooks/hooks.json` sets no `timeout` field and plugin hooks cannot be
+  overridden from this repo's settings, so the repo convention of
+  `timeout: 10` on repo-managed SessionStart hooks does not reach it. An
+  upstream request for a configurable SessionStart hook timeout is
+  recommended (not yet filed as of 2026-06-11).
 - Fire-and-forget design drops events silently when the spool is unwritable;
   this is a completeness concern, not a safety concern.
 

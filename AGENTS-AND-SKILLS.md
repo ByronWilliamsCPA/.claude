@@ -333,7 +333,8 @@ daily review, monthly trends, per-session detail, and the active five-hour block
 rate (the `/loop` cost circuit breaker). An `agents` mode queries the agents-observe local
 API for per-subagent token attribution via the agents-observe plugin (Layer 3). Works on a
 Max subscription; costs are API-list-price estimates. Activates on: "usage report", "token
-usage", "model spend", "five-hour block".
+usage", "model spend", "five-hour block", "agents mode", "per-agent usage", "subagent
+tokens", "agent attribution".
 
 **[/aggregate-observations](/.claude/commands/aggregate-observations.md)** _(recovery utility)_
 Scans all repositories under `~/dev/` for stray `skill-observations/log.md` files and walks
