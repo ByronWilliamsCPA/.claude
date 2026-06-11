@@ -15,7 +15,7 @@ Summarize Claude Code model and token usage from local JSONL transcripts using
 backend; ccusage parses `~/.claude/projects/**/*.jsonl` on each run.
 
 Background and tool selection rationale:
-`docs/reference/usage-monitoring-survey.md`.
+[usage-monitoring-survey.md](../../../docs/reference/usage-monitoring-survey.md).
 
 ## Invocation
 
@@ -33,21 +33,26 @@ by project.
 
    | Mode | Command |
    | --- | --- |
-   | daily (default) | `npx -y ccusage@20.0.9 daily --instances --since $(date -d '7 days ago' +%Y%m%d) --json` |
+   | daily (default) | `npx -y ccusage@20.0.9 daily --instances --since <YYYYMMDD> --json` |
    | weekly | `npx -y ccusage@20.0.9 weekly --json` |
    | monthly | `npx -y ccusage@20.0.9 monthly --json` |
    | session | `npx -y ccusage@20.0.9 session --json` |
    | blocks | `npx -y ccusage@20.0.9 blocks --active --json` |
 
-   On a `date -d` failure (BSD/macOS date), fall back to
-   `date -v-7d +%Y%m%d`.
+   For daily mode, compute `<YYYYMMDD>` first with a separate command:
+   `date -d '7 days ago' +%Y%m%d` (GNU date); on BSD/macOS use
+   `date -v-7d +%Y%m%d`. Substitute the literal result into `--since`;
+   do not embed the `date` command inside the ccusage invocation.
 
 2. Run the command with Bash. Append extra user-supplied flags only when they
-   match documented ccusage options: long-form `--flag` or `--flag value`
-   where the value is alphanumeric, a date, or a simple path. Never
-   interpolate free text into the command line; reject any argument
-   containing shell metacharacters (`;`, `|`, `&`, `$`, backticks, newlines)
-   and say why.
+   match documented ccusage reporting options: long-form `--flag` or
+   `--flag value` where the value is alphanumeric, a date, or a simple path
+   (a relative path containing no `..` components, or an absolute path under
+   `~/.claude/` or `/tmp/`). Never pass `--config`: it points ccusage at an
+   arbitrary local file and is not a reporting flag. Never interpolate free
+   text into the command line; reject any argument containing shell
+   metacharacters (`;`, `|`, `&`, `$`, `>`, `<`, `(`, `)`, backslashes,
+   single or double quotes, backticks, newlines) and say why.
 
 3. Summarize the JSON. Lead with totals, then the top contributors:
    - Total tokens (input, output, cache read, cache creation) and estimated
