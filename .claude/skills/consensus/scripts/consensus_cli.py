@@ -451,6 +451,24 @@ async def call_model(
     return record
 
 
+def refresh_report(models: list[Model], live: set[str]) -> dict:
+    """Compare the curated dataset against live OpenRouter model ids.
+
+    Reports rows that no longer exist upstream and free models that exist
+    upstream but are not yet curated. Never edits the dataset: the
+    benchmark and specialization fields are hand-rated.
+    """
+    curated = {m.name for m in models}
+    return {
+        "dead_in_curated": sorted(curated - live),
+        "live_free_not_in_curated": sorted(
+            i for i in live if i.endswith(":free") and i not in curated
+        ),
+        "curated_count": len(curated),
+        "live_count": len(live),
+    }
+
+
 async def run_consensus(
     entries: list[dict],
     prompt: str,

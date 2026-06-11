@@ -528,3 +528,14 @@ class TestRunConsensus:
         assert out["failed"] == 2
         assert out["total_cost_usd"] == 0.0
         assert all(r["error"] for r in out["results"])
+
+
+class TestRefresh:
+    def test_reports_dead_and_new_free_models(self):
+        """Refresh report lists curated rows gone upstream and new free models."""
+        curated = [make_model("alive/x", 0, 0), make_model("dead/y", 1.0, 2.0)]
+        live = {"alive/x", "brand/new:free", "paid/other"}
+        report = cli.refresh_report(curated, live)
+        assert report["dead_in_curated"] == ["dead/y"]
+        assert report["live_free_not_in_curated"] == ["brand/new:free"]
+        assert report["curated_count"] == 2
