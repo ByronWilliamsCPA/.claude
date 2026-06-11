@@ -6,7 +6,7 @@ owner: core-maintainer
 purpose: "Pilot pattern for replacing hub-and-spoke subagent dispatch with collaborative Claude Code agent teams for analysis work."
 tags:
   - development
-  - multi-agent
+  - agents
 ---
 
 This document sketches a pilot for using Claude Code **agent teams** to run
