@@ -301,3 +301,66 @@ def fetch_live_model_ids(
     tmp.write_text(json.dumps(sorted(ids)))
     tmp.replace(cache)
     return ids
+
+
+def select_roster(
+    models: list[Model],
+    bands: dict,
+    roles_data: dict,
+    level: int,
+    domain: str,
+    live: set[str] | None = None,
+) -> list[dict]:
+    """Pick models per tier for a level, validate against live ids, assign roles.
+
+    Tier counts are additive (level 2 includes level 1's free picks). When a
+    tier runs out of live candidates, the fallback tier order in
+    TIER_FALLBACK_ORDER supplies substitutes, which is how level 1 can use
+    cheap paid models (within its cost cap) when free models are unavailable.
+
+    Args:
+        models: Curated model dataset to draw candidates from.
+        bands: Loaded bands configuration (from load_bands).
+        roles_data: Loaded roles configuration (from load_roles).
+        level: Consensus level (1, 2, or 3).
+        domain: Domain key (e.g. 'code_review', 'architecture').
+        live: Optional set of live model ids for validation; None skips validation.
+
+    Returns:
+        List of dicts with keys: model, role, est_cost_usd.
+
+    Raises:
+        ValueError: If level is not 1-3 or domain is not in roles_data.
+    """
+    if level not in LEVEL_TIER_COUNTS:
+        raise ValueError(f"Invalid level: {level}. Must be 1, 2, or 3.")
+    domain_levels = roles_data["domain_roles"].get(domain)
+    if domain_levels is None:
+        valid = ", ".join(roles_data["domain_roles"])
+        raise ValueError(f"Invalid domain: {domain}. Valid domains: {valid}")
+    roles = domain_levels[str(level)]
+
+    picked: list[Model] = []
+    for tier, count in LEVEL_TIER_COUNTS[level].items():
+        candidates: list[Model] = []
+        for fallback_tier in TIER_FALLBACK_ORDER[tier]:
+            candidates.extend(models_in_cost_tier(models, fallback_tier, bands))
+        taken = 0
+        for candidate in candidates:
+            if taken >= count:
+                break
+            if any(p.name == candidate.name for p in picked):
+                continue
+            if live is not None and candidate.name not in live:
+                continue
+            picked.append(candidate)
+            taken += 1
+
+    return [
+        {
+            "model": m.name,
+            "role": role,
+            "est_cost_usd": estimate_model_cost(m),
+        }
+        for m, role in zip(picked, roles, strict=False)
+    ]

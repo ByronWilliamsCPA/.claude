@@ -261,3 +261,110 @@ class TestLiveCatalog:
         os.utime(cache, (two_days_ago, two_days_ago))
         ids = cli.fetch_live_model_ids(client=self._client(handler), cache_path=cache)
         assert ids == {"old/model"}
+
+
+def fake_dataset():
+    """Synthetic dataset spanning all cost tiers."""
+    return [
+        make_model("free-a:free", 0, 0, he=90),
+        make_model("free-b:free", 0, 0, he=85),
+        make_model("free-c:free", 0, 0, he=80),
+        make_model("free-d:free", 0, 0, he=75),
+        make_model("econ-a", 0.5, 0.9, he=88),
+        make_model("econ-b", 0.3, 0.8, he=84),
+        make_model("econ-c", 0.2, 0.7, he=82),
+        make_model("val-a", 3.0, 9.0, he=89),
+        make_model("prem-a", 12.0, 30.0, he=92),
+        make_model("prem-b", 11.0, 28.0, he=91),
+    ]
+
+
+class TestRosterSelection:
+    """Tests for the select_roster function."""
+
+    def setup_method(self):
+        """Load shared fixtures before each test."""
+        self.bands = cli.load_bands()
+        self.roles = cli.load_roles()
+
+    def test_level1_is_three_free_models_with_level1_roles(self):
+        """Level 1 roster: three free models in humaneval order with correct roles."""
+        roster = cli.select_roster(
+            fake_dataset(), self.bands, self.roles, 1, "code_review"
+        )
+        assert [r["model"] for r in roster] == [
+            "free-a:free",
+            "free-b:free",
+            "free-c:free",
+        ]
+        assert [r["role"] for r in roster] == [
+            "code_reviewer",
+            "security_checker",
+            "technical_validator",
+        ]
+
+    def test_level2_is_additive_six_models(self):
+        """Level 2 roster: three free plus three economy models, six total."""
+        roster = cli.select_roster(
+            fake_dataset(), self.bands, self.roles, 2, "code_review"
+        )
+        assert len(roster) == 6
+        assert [r["model"] for r in roster][:3] == [
+            "free-a:free",
+            "free-b:free",
+            "free-c:free",
+        ]
+        assert {r["model"] for r in roster[3:]} == {"econ-a", "econ-b", "econ-c"}
+
+    def test_level3_adds_two_premium(self):
+        """Level 3 roster: level 2 plus two premium models, eight total."""
+        roster = cli.select_roster(
+            fake_dataset(), self.bands, self.roles, 3, "architecture"
+        )
+        assert len(roster) == 8
+        assert {r["model"] for r in roster[6:]} == {"prem-a", "prem-b"}
+
+    def test_live_validation_skips_dead_model(self):
+        """A model absent from the live set is skipped and replaced by the next candidate."""
+        live = {m.name for m in fake_dataset()} - {"free-a:free"}
+        roster = cli.select_roster(
+            fake_dataset(), self.bands, self.roles, 1, "code_review", live=live
+        )
+        assert [r["model"] for r in roster] == [
+            "free-b:free",
+            "free-c:free",
+            "free-d:free",
+        ]
+
+    def test_free_exhaustion_fails_over_to_economy(self):
+        """When free tier is exhausted, economy models fill remaining free slots."""
+        live = {
+            "free-a:free",
+            "econ-a",
+            "econ-b",
+            "econ-c",
+            "val-a",
+            "prem-a",
+            "prem-b",
+        }
+        roster = cli.select_roster(
+            fake_dataset(), self.bands, self.roles, 1, "code_review", live=live
+        )
+        assert [r["model"] for r in roster] == ["free-a:free", "econ-a", "econ-b"]
+
+    def test_roster_entries_carry_cost_estimates(self):
+        """Every roster entry includes an est_cost_usd key."""
+        roster = cli.select_roster(
+            fake_dataset(), self.bands, self.roles, 1, "code_review"
+        )
+        assert all(r["est_cost_usd"] == 0.0 for r in roster)
+
+    def test_invalid_level_raises(self):
+        """An out-of-range level raises ValueError."""
+        with pytest.raises(ValueError, match="Invalid level"):
+            cli.select_roster(fake_dataset(), self.bands, self.roles, 4, "code_review")
+
+    def test_invalid_domain_raises(self):
+        """An unrecognised domain name raises ValueError."""
+        with pytest.raises(ValueError, match="Invalid domain"):
+            cli.select_roster(fake_dataset(), self.bands, self.roles, 1, "nonsense")
