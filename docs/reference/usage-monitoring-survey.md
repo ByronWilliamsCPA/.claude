@@ -204,12 +204,16 @@ the new clone location, or confirm `$HOME` expansion works for
 
 The committed `settings.json` also enables the plugin
 (`enabledPlugins."agents-observe@agents-observe": true`), an opt-out
-posture for every clone of this public repo.
+posture for every clone of this public repo. This default is deliberate
+for this repo: it is a single-user personal config whose maintainer has
+accepted the exposure documented below, and it is not a recommendation
+for any other environment.
 `#ASSUME` single-user personal config repo; this machine is the only
 consumer of the committed settings.
-`#VERIFY` before adopting this repo as your own Claude config on another
-machine: set the `enabledPlugins` entry to `false` first, then opt in
-deliberately after re-grading the security caveats below for your network.
+`#VERIFY` when adopting this repo as your own Claude config on another
+machine: before your first session, edit your copy to set the
+`enabledPlugins` entry to `false`, re-grade the security caveats below
+for your network, and only then opt back in deliberately.
 
 *Data storage.* The SQLite database lives at
 `~/.claude/plugins/data/agents-observe-agents-observe/data/observe.db`,
