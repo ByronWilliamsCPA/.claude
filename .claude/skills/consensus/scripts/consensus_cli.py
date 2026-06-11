@@ -19,9 +19,12 @@ from __future__ import annotations
 import csv
 import json
 import sys
+import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TextIO
+
+import httpx
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 CACHE_PATH = Path.home() / ".cache" / "consensus-skill" / "openrouter-models.json"
@@ -231,11 +234,12 @@ def enforce_cost_cap(total: float, level: int | None, max_cost: float | None) ->
 
     The explicit --max-cost flag overrides the per-level default cap.
     """
-    cap = (
-        max_cost
-        if max_cost is not None
-        else (LEVEL_COST_CAPS_USD.get(level) if level is not None else None)
-    )
+    if max_cost is not None:
+        cap = max_cost
+    elif level is not None:
+        cap = LEVEL_COST_CAPS_USD.get(level)
+    else:
+        cap = None
     if cap is not None and total > cap:
         emit(
             {
@@ -247,3 +251,37 @@ def enforce_cost_cap(total: float, level: int | None, max_cost: float | None) ->
             stream=sys.stderr,
         )
         raise SystemExit(2)
+
+
+def fetch_live_model_ids(
+    client: httpx.Client | None = None,
+    cache_path: Path | None = None,
+    ttl: int = CACHE_TTL_SECONDS,
+) -> set[str]:
+    """Return the set of live OpenRouter model ids, using a disk cache.
+
+    A fresh cache (younger than ttl) is served without a network call. On
+    network failure a stale cache is used as fallback; with no cache at all
+    the httpx error propagates.
+    """
+    cache = cache_path or CACHE_PATH
+    if cache.exists() and time.time() - cache.stat().st_mtime < ttl:
+        return set(json.loads(cache.read_text()))
+
+    owns_client = client is None
+    http = client or httpx.Client(timeout=30)
+    try:
+        resp = http.get(f"{OPENROUTER_BASE}/models")
+        resp.raise_for_status()
+        ids = {entry["id"] for entry in resp.json()["data"]}
+    except httpx.HTTPError:
+        if cache.exists():
+            return set(json.loads(cache.read_text()))
+        raise
+    finally:
+        if owns_client:
+            http.close()
+
+    cache.parent.mkdir(parents=True, exist_ok=True)
+    cache.write_text(json.dumps(sorted(ids)))
+    return ids

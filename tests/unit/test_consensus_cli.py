@@ -8,9 +8,13 @@ tests/integration/test_scripts.py.
 from __future__ import annotations
 
 import importlib.util
+import json
+import os
 import sys
+import time
 from pathlib import Path
 
+import httpx
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -182,3 +186,52 @@ class TestCost:
     def test_max_cost_overrides_level_cap(self):
         """An explicit --max-cost flag overrides the per-level default cap."""
         cli.enforce_cost_cap(5.0, level=1, max_cost=10.0)
+
+
+class TestLiveCatalog:
+    """Tests for the fetch_live_model_ids function."""
+
+    def _client(self, handler):
+        """Build an httpx.Client backed by a mock transport."""
+        return httpx.Client(transport=httpx.MockTransport(handler))
+
+    def test_fetch_and_cache(self, tmp_path):
+        """Fetch live model ids, cache them, and serve the second call from cache."""
+        calls = {"n": 0}
+
+        def handler(request):
+            calls["n"] += 1
+            return httpx.Response(
+                200, json={"data": [{"id": "a/x"}, {"id": "b/y:free"}]}
+            )
+
+        cache = tmp_path / "cache.json"
+        ids = cli.fetch_live_model_ids(client=self._client(handler), cache_path=cache)
+        assert ids == {"a/x", "b/y:free"}
+        ids2 = cli.fetch_live_model_ids(client=self._client(handler), cache_path=cache)
+        assert ids2 == ids
+        assert calls["n"] == 1  # second call served from cache
+
+    def test_stale_cache_used_on_network_error(self, tmp_path):
+        """Fall back to a stale cache file when the network call fails."""
+
+        def handler(request):
+            raise httpx.ConnectError("boom")
+
+        cache = tmp_path / "cache.json"
+        cache.write_text(json.dumps(["old/model"]))
+        two_days_ago = time.time() - 2 * 86400
+        os.utime(cache, (two_days_ago, two_days_ago))
+        ids = cli.fetch_live_model_ids(client=self._client(handler), cache_path=cache)
+        assert ids == {"old/model"}
+
+    def test_network_error_without_cache_raises(self, tmp_path):
+        """Propagate the httpx error when the network fails and no cache exists."""
+
+        def handler(request):
+            raise httpx.ConnectError("boom")
+
+        with pytest.raises(httpx.HTTPError):
+            cli.fetch_live_model_ids(
+                client=self._client(handler), cache_path=tmp_path / "missing.json"
+            )
