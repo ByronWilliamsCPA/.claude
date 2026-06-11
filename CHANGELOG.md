@@ -138,6 +138,17 @@
   and repo-compliance reference all move to pydoclint.
 
 ### Added
+* feat(consensus): add the `consensus` umbrella skill, a multi-model
+  consensus engine over OpenRouter that replaces the zen/pal MCP consensus
+  suite. Ships a PEP 723 `uv run` CLI (`consensus_cli.py`) with
+  select/estimate/run/refresh subcommands, band-based roster selection with
+  live catalog validation (24h disk cache and stale fallback), parallel
+  fan-out with per-model retries and run-time failover substitution, and
+  per-level cost caps (L1 $0.50, L2 $1.00, L3 $10.00). Curated model data
+  (`models.csv`, `bands_config.json`, `roles.json`) is salvaged from
+  zen-mcp-server with a documented consumed-fields contract; Claude performs
+  synthesis from the raw JSON responses. Includes SKILL.md plus tiered-review,
+  consensus, and refresh-data workflows, unit tests, and catalog registration.
 * feat(plugins): adopt the agents-observe plugin (submodule pinned at
   v0.9.11, SHA e15b7f6) for Layer 3 per-subagent token attribution.
   Registers a directory-source marketplace and enables the plugin in

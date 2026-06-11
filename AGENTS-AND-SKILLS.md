@@ -93,7 +93,7 @@ actual implementation and reports completion percentages with gap analysis.
 Synthesizes the four initial planning documents (PVS, ADR, Tech Spec, Roadmap) into a comprehensive
 `docs/planning/PROJECT-PLAN.md` with semantic release-aligned phase branches, quality gates per
 phase, and a Phase 0 TodoWrite checklist. Invoke after `/project-planning` generates source docs
-and before Phase 1 development begins. Uses zen-mcp consensus for expert validation.
+and before Phase 1 development begins. Uses the `/consensus` skill for expert validation.
 
 ### API & Backend Development
 
@@ -371,6 +371,16 @@ and performance testing patterns. Activates on: "run tests", "test suite", "writ
 Analyzes coverage gaps, generates missing tests ranked by criticality, and enforces coverage
 thresholds (80% line / 70% branch / 90% critical / 90% patch). Orchestrates test-writer and
 test-reviewer agents iteratively. Activates on: "coverage analysis", "coverage gaps".
+
+**[/consensus](/.claude/skills/consensus/SKILL.md)**
+Multi-model consensus via OpenRouter with two modes: a tiered IT review team
+(levels 1-3, professional roles per domain) and fully flexible model/stance
+selection. Bundles a uv-run engine script for parallel fan-out, band-based
+roster selection with live catalog validation, failover, and per-level cost
+caps; Claude synthesizes the raw responses. Replaces the zen/pal MCP
+consensus tools. Activates on: "consensus", "tiered consensus", "tiered
+review", "second opinion", "multi-model review", "ask other models",
+"review team", "model roster".
 
 **[/debug-tests](/.claude/skills/debug-tests/SKILL.md)**
 Root-cause-first analysis of failing tests. Investigates fixtures, environment mismatches,
