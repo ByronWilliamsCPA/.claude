@@ -138,6 +138,18 @@
   and repo-compliance reference all move to pydoclint.
 
 ### Added
+* feat(plugins): adopt the agents-observe plugin (submodule pinned at
+  v0.9.11, SHA e15b7f6) for Layer 3 per-subagent token attribution.
+  Registers a directory-source marketplace and enables the plugin in
+  `settings.json`, documents plugin hook composition in
+  `docs/reference/hooks.md`, gitignores SQLite WAL/SHM sidecar files, and
+  adds an `agents` mode to `/usage-report` that queries the plugin's local
+  REST API for per-subagent tokens, model, and cost with model-policy
+  contradiction flagging. The security posture (unauthenticated
+  0.0.0.0:4981 API, unredacted payload capture, opt-out enablement in the
+  committed settings) is documented with RAD markers in
+  `docs/reference/usage-monitoring-survey.md`; re-grade before running on
+  an untrusted network.
 * feat(skills): implement Layers 1 and 2 of the usage-monitoring survey.
   Adds the `statusLine` block to `settings.json` (ccstatusline 2.2.19,
   pinned, via npx) for live model, cost, context, and rate-limit visibility;
