@@ -195,10 +195,12 @@ Intersect each comparison PR's file list with `CHANGED_FILES`. Produce
 - Overlap with a merged PR whose `mergedAt` postdates the current branch's merge-base
   is a staleness / silent-revert risk: the current branch never saw that merged
   change.
-- Overlap with an open PR is a collision / duplicate-work risk. Emit directly:
+- Overlap with an open PR is a collision / duplicate-work risk. Record it in
+  `CONTESTED_FILES` with `pr_state: open`. Agent M (Step 5) is the sole emitter;
+  it formats the finding as:
 
 ```text
-[Important] Collision: file {f} is also modified by open PR #{n} ("{title}").
+[Important] Premise/Collision: file {f} is also modified by open PR #{n} ("{title}").
 Verify the two changes do not conflict or duplicate effort before either merges.
 ```
 
@@ -337,11 +339,13 @@ cannot cite evidence, DROP the finding; do not downgrade it.
 
 1. Regression / reverted code: does the diff re-add code, config, or patterns that a
    prior commit deliberately removed or reverted? Evidence required: a specific prior
-   commit SHA whose removed lines the PR re-adds. Run the forensic scan ONLY on
-   CONTESTED_FILES (fetch recent commits via
-   `gh api repos/{OWNER}/{REPO}/commits?path={file}&per_page=30`, inspect
-   removal/revert commits, compare removed lines to PR additions). Scan deeper when
-   STALENESS is high.
+   commit SHA whose removed lines the PR re-adds. Run the forensic scan on EVERY file
+   in CHANGED_FILES (a stale-branch regression can live in a file no other PR touched,
+   so do NOT limit this check to CONTESTED_FILES). Fetch recent commits via
+   `gh api "repos/{OWNER}/{REPO}/commits?path={file}&per_page=30"` (quote the URL
+   so the shell does not treat `&` as a background operator), inspect removal/revert
+   commits, and compare removed lines to PR additions. STALENESS modulates depth: when
+   the branch is stale, raise per_page and look further back in history.
 2. Contradicts a recorded decision: does the change reverse something fixed in an ADR
    (docs/architecture/**, docs/ADRs/**), a CHANGELOG entry, or a prior PR review
    comment? Evidence required: the ADR path + section, the CHANGELOG line, or the PR

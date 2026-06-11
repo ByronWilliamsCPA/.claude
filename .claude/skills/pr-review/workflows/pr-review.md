@@ -184,8 +184,10 @@ Compute two objective staleness signals; Agent M (Step 5) uses them as a
 scan-intensity dial and a HOLD bias on confirmed regressions.
 
 ```bash
-CMP=$(gh api "repos/$OWNER/$REPO/compare/$BASE_BRANCH...$HEAD_BRANCH")
-COMMITS_BEHIND=$(echo "$CMP" | jq '.behind_by')
+BASE_ENC=$(printf '%s' "$BASE_BRANCH" | jq -sRr @uri)
+HEAD_ENC=$(printf '%s' "$HEAD_BRANCH" | jq -sRr @uri)
+CMP=$(gh api "repos/$OWNER/$REPO/compare/${BASE_ENC}...${HEAD_ENC}" || echo '{}')
+COMMITS_BEHIND=$(echo "$CMP" | jq '.behind_by // 0')
 FIRST_DIVERGENT_DATE=$(echo "$CMP" | jq -r '.commits[0].commit.committer.date // empty')
 if [ -n "$FIRST_DIVERGENT_DATE" ]; then
   # date -d is GNU coreutils; on BSD/macOS the parse fails and falls back to age 0
@@ -269,7 +271,7 @@ branch's merge-base). A collision fires when a non-dunder, non-`test_` symbol na
 added by the current PR is also added by a comparison PR in a different file:
 
 ```text
-[Important] DuplicateSymbol: {symbol} is newly defined by both this PR ({file_a})
+[Important] Premise/DuplicateSymbol: {symbol} is newly defined by both this PR ({file_a})
 and PR #{n} ({file_b}). These are likely duplicate definitions that will need
 deduplication after both merge. Confirm only one should define it.
 ```
@@ -927,6 +929,11 @@ Route Agent M's individual findings through Step 6 confidence scoring and Step 7
 deduplication with `agent source: M`. Capture its verdict object as
 `PREMISE_VERDICT = {verdict, headline}` for the Step 9 header and the Step 11 handoff.
 
+If Agent M produces no parseable JSON verdict (timeout, agent error, or malformed
+output), set `PREMISE_VERDICT = {verdict: "SKIP", headline: "premise gate did not run"}`.
+A SKIP verdict renders in the Step 9 report header as a single quiet line and does not
+trigger the HOLD confirmation in Step 11.
+
 ---
 
 ## Step 6: Confidence Scoring (parallel Haiku agents)
@@ -951,16 +958,16 @@ Scoring rubric:
 - 100: Certain, frequent impact. Direct evidence in the diff confirms it.
 
 Additional constraint: If the agent source is C (Git History) or D (Prior PR
-Comments) AND the finding does not point to a specific, fixable line in the
-diff (it describes historical context, file churn, or past review patterns
-rather than an issue in the changed code): cap the score at 20 regardless of
-the rubric above, UNLESS the finding is a regression-reintroduction that cites a
-specific prior commit SHA where the now-reappearing lines were removed or reverted.
-Such evidence-backed regression findings are scored on the normal rubric and may
-reach Critical. This exception matters for a C or D finding that cites a removal SHA;
-Agent M (source M) findings are never subject to the C/D cap in the first place. It
-is the cited SHA, not the agent identity, that lifts the cap; vague history churn
-stays capped.
+Comments) AND the finding describes historical context, file churn, or past review
+patterns rather than a specific, fixable line in the diff: cap the score at 20
+regardless of the rubric above. Two exceptions lift the cap:
+
+1. A C or D finding that cites a specific prior commit SHA where the now-reappearing
+   lines were removed or reverted. It is the SHA citation, not the agent source, that
+   lifts the cap; vague history churn stays capped regardless.
+2. Agent M (source M) findings. Agent M is never a C or D source; its checks are
+   evidence-grounded appropriateness judgments that do not fit the "historical context"
+   profile the cap targets. The cap does not apply to M.
 
 Return ONLY a JSON object:
 {"score": <number>, "rationale": "<one sentence>"}
@@ -1227,7 +1234,8 @@ Or confirm now and I will post it immediately.
 ---
 
 Render a `HOLD` premise verdict with the same prominence as `BUILD FAILING`. An `OK`
-verdict may render as a single quiet line. Individual premise findings from Agent M
+verdict may render as a single quiet line. A `SKIP` verdict renders as a single quiet
+line: "PREMISE SKIP: premise gate did not run." Individual premise findings from Agent M
 appear in their scored tiers above, like any other agent's findings.
 
 ---

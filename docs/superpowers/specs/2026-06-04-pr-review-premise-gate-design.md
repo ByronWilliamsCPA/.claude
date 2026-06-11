@@ -116,9 +116,9 @@ Intersect each comparison PR's file list with `CHANGED_FILES`. Produce
 - **Overlap with merged PRs** whose `mergedAt` postdates the current branch's
   merge-base = staleness / silent-revert risk. The current branch never saw that
   merged change, so it may silently undo it.
-- **Overlap with open PRs** = collision / duplicate-work risk. Emits a finding
-  directly:
-  `[Important] Collision: file {f} is also modified by open PR #{n} ("{title}"). Verify the two changes do not conflict or duplicate effort before either merges.`
+- **Overlap with open PRs** = collision / duplicate-work risk. Records the file in
+  `CONTESTED_FILES` with `pr_state: open`. Agent M (Step 5) is the sole emitter:
+  `[Important] Premise/Collision: file {f} is also modified by open PR #{n} ("{title}"). Verify the two changes do not conflict or duplicate effort before either merges.`
 
 Caveat: `gh pr list --json files` caps at ~100 files per PR. Acceptable for overlap
 detection; note in the report if any scanned PR hit the cap.
