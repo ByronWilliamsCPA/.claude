@@ -661,3 +661,94 @@ class TestCliWiring:
         payload = json.loads(capsys.readouterr().out)
         assert "dead_in_curated" in payload
         assert "live_free_not_in_curated" in payload
+
+
+class TestRunFailover:
+    def test_select_payload_includes_fallbacks(self, capsys):
+        """Select emits an ordered fallback list excluding roster models."""
+        rc = cli.main(["select", "--level", "1", "--no-validate"])
+        assert rc == 0
+        payload = json.loads(capsys.readouterr().out)
+        roster_models = {r["model"] for r in payload["roster"]}
+        assert "fallbacks" in payload
+        assert roster_models.isdisjoint(set(payload["fallbacks"]))
+
+    def test_select_fallbacks_orders_and_excludes(self):
+        """select_fallbacks walks tier chains in order, skipping excluded/dead."""
+        bands = cli.load_bands()
+        fallbacks = cli.select_fallbacks(
+            fake_dataset(), bands, 1, exclude={"free-a:free"}, live=None, limit=3
+        )
+        assert fallbacks == ["free-b:free", "free-c:free", "free-d:free"]
+
+    def test_substitution_replaces_failed_entry_and_carries_role(self, monkeypatch):
+        """A failed entry is re-run on the next fallback with the same role."""
+
+        async def fake_run(entries, prompt, api_key, catalog, transport=None):
+            results = [
+                {
+                    "model": e["model"],
+                    "role": e["role"],
+                    "response": "ok",
+                    "tokens": {},
+                    "cost_usd": 0.0,
+                    "error": None,
+                }
+                for e in entries
+            ]
+            return {
+                "results": results,
+                "succeeded": len(results),
+                "failed": 0,
+                "total_cost_usd": 0.0,
+            }
+
+        monkeypatch.setattr(cli, "run_consensus", fake_run)
+        outcome = {
+            "results": [
+                {
+                    "model": "dead/x",
+                    "role": "code_reviewer",
+                    "response": None,
+                    "tokens": None,
+                    "cost_usd": None,
+                    "error": "HTTP 429: limited",
+                },
+                {
+                    "model": "alive/y",
+                    "role": "security_checker",
+                    "response": "fine",
+                    "tokens": {},
+                    "cost_usd": 0.0,
+                    "error": None,
+                },
+            ],
+            "succeeded": 1,
+            "failed": 1,
+            "total_cost_usd": 0.0,
+        }
+        roles = cli.load_roles()
+        new = cli._substitute_failures(outcome, ["sub/z"], roles, "q?", "k", {})
+        assert new["substitutions"] == {"dead/x": "sub/z"}
+        assert new["succeeded"] == 2
+        sub = next(r for r in new["results"] if r["model"] == "sub/z")
+        assert sub["role"] == "code_reviewer"
+
+    def test_no_substitution_without_fallbacks(self):
+        """Flexible mode (no fallbacks) returns the outcome unchanged."""
+        outcome = {
+            "results": [
+                {
+                    "model": "m/x",
+                    "role": None,
+                    "response": None,
+                    "tokens": None,
+                    "cost_usd": None,
+                    "error": "boom",
+                }
+            ],
+            "succeeded": 0,
+            "failed": 1,
+            "total_cost_usd": 0.0,
+        }
+        assert cli._substitute_failures(outcome, [], {}, "q?", "k", {}) is outcome

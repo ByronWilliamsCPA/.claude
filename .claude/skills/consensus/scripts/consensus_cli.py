@@ -372,6 +372,32 @@ def select_roster(
     ]
 
 
+def select_fallbacks(
+    models: list[Model],
+    bands: dict,
+    level: int,
+    exclude: set[str],
+    live: set[str] | None = None,
+    limit: int = 5,
+) -> list[str]:
+    """Ordered fallback candidates for run-time substitution.
+
+    Walks the level's tiers and their fallback chains in roster order,
+    skipping excluded and dead models, so a failed roster entry can be
+    replaced by the next-best candidate from the same selection rules.
+    """
+    out: list[str] = []
+    for tier in LEVEL_TIER_COUNTS[level]:
+        for fallback_tier in TIER_FALLBACK_ORDER[tier]:
+            for m in models_in_cost_tier(models, fallback_tier, bands):
+                if m.name in exclude or m.name in out:
+                    continue
+                if live is not None and m.name not in live:
+                    continue
+                out.append(m.name)
+    return out[:limit]
+
+
 async def call_model(
     client: httpx.AsyncClient,
     entry: dict,
@@ -618,16 +644,71 @@ def _cmd_select(
     limit = getattr(args, "limit", None)
     if limit is not None:
         roster = roster[:limit]
+    fallbacks = select_fallbacks(
+        models,
+        bands,
+        args.level,
+        exclude={r["model"] for r in roster},
+        live=live,
+    )
     emit(
         {
             "level": args.level,
             "domain": args.domain,
             "roster": roster,
+            "fallbacks": fallbacks,
             "estimated_cost_usd": round(sum(r["est_cost_usd"] for r in roster), 6),
             "cap_usd": LEVEL_COST_CAPS_USD[args.level],
         }
     )
     return 0
+
+
+def _substitute_failures(
+    outcome: dict,
+    fallbacks: list[str],
+    roles_data: dict,
+    prompt: str,
+    api_key: str,
+    catalog: dict[str, Model],
+) -> dict:
+    """One substitution round: re-run failed entries on fallback models.
+
+    Each failed result hands its role to the next unused fallback candidate.
+    Substituted originals stay in the results list so the operator sees both
+    the failure and its replacement; a substitutions map links them.
+    """
+    failed = [r for r in outcome["results"] if r["error"] is not None]
+    if not failed or not fallbacks:
+        return outcome
+    pool = list(fallbacks)
+    substitutions: dict[str, str] = {}
+    retry_entries: list[dict] = []
+    for record in failed:
+        if not pool:
+            break
+        candidate = pool.pop(0)
+        substitutions[record["model"]] = candidate
+        role = record["role"]
+        retry_entries.append(
+            {
+                "model": candidate,
+                "role": role,
+                "system_prompt": role_system_prompt(role, roles_data) if role else None,
+            }
+        )
+    retry_outcome = asyncio.run(run_consensus(retry_entries, prompt, api_key, catalog))
+    merged = outcome["results"] + retry_outcome["results"]
+    succeeded = [r for r in merged if r["error"] is None]
+    return {
+        "results": merged,
+        "succeeded": len(succeeded),
+        "failed": len(merged) - len(succeeded),
+        "total_cost_usd": round(
+            outcome["total_cost_usd"] + retry_outcome["total_cost_usd"], 6
+        ),
+        "substitutions": substitutions,
+    }
 
 
 def _cmd_run(
@@ -650,7 +731,20 @@ def _cmd_run(
         return 2
     entries = build_entries(args, roles)
     catalog = {m.name: m for m in models}
-    unknown = [e["model"] for e in entries if e["model"] not in catalog]
+
+    # Read fallbacks from the roster file (second read; double-read is acceptable per
+    # spec: simplest route over refactoring build_entries to accept a pre-loaded obj).
+    if args.roster_file:
+        roster_payload = _read_json_file(args.roster_file, "roster file")
+        fallbacks: list[str] = (
+            roster_payload.get("fallbacks", [])
+            if isinstance(roster_payload, dict)
+            else []
+        )
+    else:
+        # --models mode: user-named panels are never substituted
+        fallbacks = []
+
     # #ASSUME: uncatalogued models cannot be cost-estimated; the cap only covers
     # catalog rows. #VERIFY: run output carries a warning listing them so the
     # operator sees the gap.
@@ -664,6 +758,24 @@ def _cmd_run(
     )
     enforce_cost_cap(estimate, args.level, args.max_cost)
     outcome = asyncio.run(run_consensus(entries, prompt, api_key, catalog))
+
+    if outcome["failed"] > 0 and fallbacks:
+        # Cap-check substitution cost before proceeding.
+        sub_estimate = round(
+            sum(
+                estimate_model_cost(catalog[name])
+                for name in fallbacks[: outcome["failed"]]
+                if name in catalog
+            ),
+            6,
+        )
+        enforce_cost_cap(estimate + sub_estimate, args.level, args.max_cost)
+        outcome = _substitute_failures(
+            outcome, fallbacks, roles, prompt, api_key, catalog
+        )
+
+    # Recompute unknown across all result models (substitutes may also be uncatalogued).
+    unknown = [r["model"] for r in outcome["results"] if r["model"] not in catalog]
     if unknown:
         outcome["warning"] = (
             "models not in curated catalog, cost unknown and not capped: "

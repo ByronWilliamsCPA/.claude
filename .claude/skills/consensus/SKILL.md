@@ -61,6 +61,9 @@ The script refuses to run past the cap; pass `--max-cost` only after the
 user explicitly approves the higher spend. Models outside the curated
 catalog cannot be estimated; the run output carries a `warning` key listing
 them, and their cost is NOT capped. Surface that warning to the user.
+When roster models fail at run time, the engine substitutes fallback
+candidates from the roster file once, within the same cost cap; the output's
+`substitutions` map records the swaps.
 
 ## Synthesis requirements
 

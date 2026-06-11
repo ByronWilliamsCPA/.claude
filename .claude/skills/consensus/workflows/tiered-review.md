@@ -43,7 +43,10 @@ Structured multi-model review with levels and professional roles.
 
 ## Failure handling
 
-- `failed > 0` but `succeeded >= 2`: synthesize and flag the gap.
+- `failed > 0` but `succeeded >= 2`: synthesize and flag the gap. Note:
+  automatic substitution runs before you see the result; if the output
+  includes a `substitutions` key, report which models were swapped and that
+  the panel reflects the replacements.
 - `succeeded < 2`: do not synthesize a "consensus" from one voice. Report
   the errors and offer to rerun or escalate a level.
 - Roster came back short (fewer models than the level promises): mention it;
