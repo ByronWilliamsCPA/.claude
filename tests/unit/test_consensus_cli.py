@@ -11,6 +11,8 @@ import importlib.util
 import sys
 from pathlib import Path
 
+import pytest
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = REPO_ROOT / ".claude" / "skills" / "consensus" / "scripts" / "consensus_cli.py"
 
@@ -146,3 +148,32 @@ class TestRolePrompts:
         roles = cli.load_roles()
         literal = "Argue against this proposal as a skeptic."
         assert cli.role_system_prompt(literal, roles) == literal
+
+
+class TestCost:
+    """Tests for cost estimation and cap enforcement."""
+
+    def test_estimate_model_cost(self):
+        """Estimate cost using assumed token counts and per-million pricing."""
+        m = make_model("m", 1.0, 10.0)
+        expected = round(
+            (1.0 * cli.EST_INPUT_TOKENS + 10.0 * cli.EST_OUTPUT_TOKENS) / 1_000_000, 6
+        )
+        assert cli.estimate_model_cost(m) == expected
+
+    def test_level1_cap_is_fifty_cents(self):
+        """Level 1 default cost cap is exactly $0.50."""
+        assert cli.LEVEL_COST_CAPS_USD[1] == 0.50
+
+    def test_cap_exceeded_raises_system_exit(self):
+        """enforce_cost_cap raises SystemExit when estimated cost exceeds the cap."""
+        with pytest.raises(SystemExit):
+            cli.enforce_cost_cap(0.60, level=1, max_cost=None)
+
+    def test_under_cap_passes(self):
+        """enforce_cost_cap does not raise when cost is within the cap."""
+        cli.enforce_cost_cap(0.40, level=1, max_cost=None)
+
+    def test_max_cost_overrides_level_cap(self):
+        """An explicit --max-cost flag overrides the per-level default cap."""
+        cli.enforce_cost_cap(5.0, level=1, max_cost=10.0)

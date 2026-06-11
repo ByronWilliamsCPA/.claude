@@ -214,3 +214,31 @@ def role_system_prompt(role: str, roles_data: dict) -> str:
         "4. Provide specific, actionable insights\n"
         "5. Be concise but thorough; focus on what matters most from your perspective"
     )
+
+
+def estimate_model_cost(m: Model) -> float:
+    """Estimate one consultation's cost in USD using assumed token counts."""
+    return round(
+        (m.input_cost * EST_INPUT_TOKENS + m.output_cost * EST_OUTPUT_TOKENS)
+        / 1_000_000,
+        6,
+    )
+
+
+def enforce_cost_cap(total: float, level: int | None, max_cost: float | None) -> None:
+    """Exit with code 2 if the estimated cost exceeds the applicable cap.
+
+    The explicit --max-cost flag overrides the per-level default cap.
+    """
+    cap = max_cost if max_cost is not None else LEVEL_COST_CAPS_USD.get(level or 0)
+    if cap is not None and total > cap:
+        emit(
+            {
+                "error": (
+                    f"Estimated cost ${total:.4f} exceeds cap ${cap:.2f}. "
+                    "Override with --max-cost if intended."
+                )
+            },
+            stream=sys.stderr,
+        )
+        raise SystemExit(2)
