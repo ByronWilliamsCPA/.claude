@@ -29,8 +29,8 @@ PAL_TIERED_LEVEL:    1
 PAL_TIERED_THINKING: auto
 ```
 
-- `PAL_CHAT_MODEL`: model passed to `mcp__pal__chat` for targeted validations
-- `PAL_TIERED_LEVEL`: level (1/2/3) for all `mcp__pal__tiered_consensus` calls;
+- `PAL_CHAT_MODEL`: model passed to `mcp__zen__chat` for targeted validations
+- `PAL_TIERED_LEVEL`: level (1/2/3) for all `mcp__zen__tiered_consensus` calls;
   level 1 uses 3 free models, level 2 adds paid models (~$0.50), level 3 is
   comprehensive (~$5)
 - `PAL_TIERED_THINKING`: thinking depth for tiered_consensus (`auto`, `low`,
@@ -629,10 +629,10 @@ merge blocker. A red Trivy check with `mergeStateStatus: UNSTABLE` (not
 applying): these touch logic, security policy, or refactoring:
 
 For each propose-and-confirm finding, before presenting the proposed fix to
-the user, call `mcp__pal__chat` to validate the fix:
+the user, call `mcp__zen__chat` to validate the fix:
 
 ```text
-mcp__pal__chat(
+mcp__zen__chat(
   model:  PAL_CHAT_MODEL,
   prompt: "A SonarQube finding requires a propose-and-confirm fix before I
            show it to the user. Validate the proposed fix is correct and safe.
@@ -811,7 +811,7 @@ If Codecov is failing:
   tautological:
 
 ```text
-mcp__pal__chat(
+mcp__zen__chat(
   model:  PAL_CHAT_MODEL,
   prompt: "Review these generated tests for tautological failures (tests that
            will pass regardless of whether the code under test is correct).
@@ -1597,7 +1597,7 @@ Auto-fix these? (yes / review details / stop)
 remain, run a stuck-loop diagnosis before stopping:
 
 ```text
-mcp__pal__tiered_consensus(
+mcp__zen__tiered_consensus(
   level:          PAL_TIERED_LEVEL,
   domain:         "code_review",
   thinking_mode:  PAL_TIERED_THINKING,

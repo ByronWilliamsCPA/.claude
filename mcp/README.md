@@ -82,11 +82,14 @@ export SENTRY_PROJECT="your-project"
 
 ## Installation Requirements
 
-### PAL MCP Server
+### Zen MCP Server
 
-The zen MCP server has been replaced by the PAL MCP server. MCP tools are now invoked with the
-`mcp__pal__*` prefix (e.g., `mcp__pal__codereview`, `mcp__pal__chat`). The legacy
-`zen-server.json` has been renamed to `zen-server.json.disabled`.
+The server is our maintained fork (`williaby/zen-mcp-server`), kept in sync with upstream
+`BeehiveInnovations/pal-mcp-server` (the rebrand of the original zen-mcp-server). It is registered
+under the name `zen` in `settings.json`, so its tools are invoked with the `mcp__zen__*` prefix
+(e.g., `mcp__zen__codereview`, `mcp__zen__chat`). We keep the `zen` name because our config and tool
+identifiers point at the fork; do not rename these references to `pal`. See
+`.claude/rules/mcp-strategy.md` for the full naming rationale and cost-lane guidance.
 
 ### Docker-based Servers
 

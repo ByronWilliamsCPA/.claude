@@ -41,7 +41,7 @@ For missing Model Selection section, append:
 
 | Task type | Model | When |
 | --- | --- | --- |
-| Architecture, planning, ADRs | Opus 4.7 | Multi-step decisions, deep code review |
+| Architecture, planning, ADRs | Opus 4.8 | Multi-step decisions, deep code review |
 | Standard development | Sonnet 4.6 | Most coding and editing |
 | Read-only exploration | Haiku 4.5 | File scanning, quick lookups |
 ```

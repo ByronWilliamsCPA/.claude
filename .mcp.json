@@ -13,13 +13,6 @@
       "headers": {
         "Authorization": "Bearer ${SONARQUBE_TOKEN}"
       }
-    },
-    "pal": {
-      "command": "${HOME}/dev/zen-mcp-server/.pal_venv/bin/python",
-      "args": [
-        "${HOME}/dev/zen-mcp-server/server.py"
-      ],
-      "cwd": "${HOME}/dev/zen-mcp-server"
     }
   }
 }

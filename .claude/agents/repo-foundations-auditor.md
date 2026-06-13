@@ -91,7 +91,7 @@ FINDING:
 Remediation mode (emit one line per action):
 
 ```yaml
-ACTION: Created SECURITY.md from template /home/byron/dev/.github/SECURITY.md
+ACTION: Created SECURITY.md from template ~/dev/.github/SECURITY.md
 ACTION: Appended .worktrees/ to .gitignore
 ```
 

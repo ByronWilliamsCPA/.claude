@@ -1,7 +1,39 @@
 # Agents and Skills Reference
 
-Complete catalog of available agents and skills in this org-level Claude Code configuration.
-All resources are available in `.claude/agents/` and `.claude/skills/`.
+Complete catalog of agents and skills in this org-level Claude Code configuration. Most live
+directly in `.claude/agents/` and `.claude/skills/`. A subset is vendored from git submodules and
+reaches those directories through symlinks.
+
+## Local vs. vendored entries
+
+14 agents, 19 skills, and 7 commands are symlinks into `.submodules/` (reference-library,
+superpowers, anthropics-skills, anthropics-plugins, image-generation, jeffallan-claude-skills).
+They include the entire writing pipeline (the seven reference-library agents: document-drafter,
+grammar-composition-editor, document-validator, writing-style-editor, style-analyzer, tone-rewriter,
+audience-reaction-analyzer), the superpowers skill set, the pr-review-toolkit agents, the
+anthropics-skills document tools (docx, pdf, pptx, xlsx), and the hookify commands.
+
+These symlinks dangle in any clone where the submodules have not been initialized, which includes
+every fresh `git clone` and every Claude Code on the web session. In that state the entries below
+are listed but not loadable. To populate them:
+
+```bash
+git submodule update --init --recursive
+~/.claude/scripts/install-vendored-plugins.sh   # registers the plugin-backed entries
+```
+
+To list exactly which entries are vendored in the current checkout (drift-proof; reflects reality
+rather than a hand-maintained tag list):
+
+```bash
+find ~/.claude/agents ~/.claude/skills -maxdepth 1 -type l -printf '%f -> %l\n'
+```
+
+If you need auto-population at session start instead of running the command manually, the
+`session-start-hook` skill scaffolds a SessionStart hook for exactly this. It is left opt-in here
+because submodule fetches can fail under restrictive network policies (a common web-session case),
+and finding 3.4 in `docs/audits/config-quality-analysis-2026-06-12.md` proposes marketplace
+packaging that removes the symlink fragility entirely.
 
 ---
 
@@ -208,10 +240,11 @@ frontmatter additions, dependency bumps, ruff-flagged dead code, link fixes), cl
 difficulty against the worker contract's five gates, and writes scoped task entries to the cleanup
 backlog. Conservative by default: marks candidates claude-required when classification is uncertain.
 
-**[ossf-criteria-reference](/.claude/agents/ossf-criteria-reference.md)**
-Reference knowledge file (not an executable agent). Catalogs every OpenSSF Best Practices Badge
-criterion slug, N/A eligibility, and automation URL field name across the passing, silver, and gold
-levels. Consumed by `ossf-badge-evaluator` when generating form-submission automation URLs.
+**[ossf-criteria-reference](/.claude/standards/ossf-criteria-reference.md)**
+Reference knowledge file (not an executable agent; lives in `.claude/standards/`). Catalogs every
+OpenSSF Best Practices Badge criterion slug, N/A eligibility, and automation URL field name across
+the passing, silver, and gold levels. Consumed by `ossf-badge-evaluator` when generating
+form-submission automation URLs.
 
 ### Frontend
 

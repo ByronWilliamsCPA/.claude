@@ -1,7 +1,7 @@
 ---
 name: rad
 description: Response-Aware Development (RAD) - Systematic verification of code assumptions using multi-model AI analysis. Auto-activates on keywords assumption, verify assumptions, list assumptions, RAD, response-aware, assumption tags, critical assumptions, assumption verification. Routes to verification, listing, and testing workflows.
-allowed-tools: Read, Bash(git:*, find:*, grep:*), Grep, mcp__pal__chat, mcp__pal__dynamic_model_selector, Agent
+allowed-tools: Read, Bash(git:*, find:*, grep:*), Grep, mcp__zen__chat, mcp__zen__dynamic_model_selector, Agent
 ---
 
 # Response-Aware Development (RAD) Skill
