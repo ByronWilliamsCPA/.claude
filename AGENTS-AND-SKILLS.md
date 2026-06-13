@@ -53,6 +53,37 @@ Breaks down monolithic code, configs, and documentation into maintainable compon
 architectural opportunities, generates phased execution plans, and validates that refactored modules
 preserve existing behavior.
 
+### PR Review Toolkit (vendored)
+
+Six specialists from the `pr-review-toolkit` plugin, dispatched by `/pr-review`. They are symlinks
+into `.submodules/anthropics-plugins/`, so they require submodule init to load (see the Local vs.
+vendored note above). The catalog symlink `pr-toolkit-code-reviewer` points at the plugin's
+`code-reviewer.md` to avoid colliding with the local `code-reviewer` agent.
+
+**[pr-toolkit-code-reviewer](/.claude/agents/pr-toolkit-code-reviewer.md)**
+Reviews recently changed code (typically the unstaged `git diff`) for adherence to project guidelines,
+style guides, and CLAUDE.md patterns. Flags style violations and potential issues before commit or PR.
+
+**[code-simplifier](/.claude/agents/code-simplifier.md)**
+Simplifies recently modified code for clarity, consistency, and maintainability while preserving all
+functionality. Follows project best practices and focuses only on the recent change set.
+
+**[comment-analyzer](/.claude/agents/comment-analyzer.md)**
+Analyzes code comments and docstrings for accuracy against the code they describe, completeness, and
+comment-rot risk. Used after generating documentation or before finalizing a PR.
+
+**[pr-test-analyzer](/.claude/agents/pr-test-analyzer.md)**
+Reviews a PR for test coverage quality and completeness, identifying critical gaps in coverage of new
+functionality and edge cases.
+
+**[silent-failure-hunter](/.claude/agents/silent-failure-hunter.md)**
+Hunts for silent failures, inadequate error handling, and inappropriate fallback behavior in catch
+blocks and error paths within a change set.
+
+**[type-design-analyzer](/.claude/agents/type-design-analyzer.md)**
+Reviews type design for encapsulation and invariant expression, giving qualitative feedback plus
+quantitative ratings on encapsulation, invariant expression, usefulness, and enforcement.
+
 ### Testing
 
 **[test-engineer](/.claude/agents/test-engineer.md)**

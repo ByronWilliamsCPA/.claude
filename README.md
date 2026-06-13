@@ -460,7 +460,7 @@ qlty check --plugin osv_scanner
 │   ├── unit/                             # Unit tests
 │   └── integration/                      # Integration tests
 ├── docs/                                 # Documentation
-│   ├── ADRs/                             # Architecture Decision Records
+│   ├── architecture/adr/                # Architecture Decision Records
 │   ├── planning/                         # Project planning docs
 │   └── guides/                           # User guides
 ├── pyproject.toml                        # Dependencies & tool config
@@ -477,7 +477,7 @@ qlty check --plugin osv_scanner
 ## Documentation
 
 - **[CONTRIBUTING.md](CONTRIBUTING.md)**: How to contribute to the project
-- **[docs/ADRs/README.md](docs/ADRs/README.md)**: Architecture Decision Records documentation
+- **[docs/architecture/adr/index.md](docs/architecture/adr/index.md)**: Architecture Decision Records (the numbered ADR log)
 - **[docs/planning/project-plan-template.md](docs/planning/project-plan-template.md)**: Project planning guide
 
 ### Writing Documentation
@@ -485,7 +485,7 @@ qlty check --plugin osv_scanner
 - Use Markdown for all documentation
 - Include code examples for clarity
 - Update README.md when adding major features
-- Maintain architecture documentation (see [docs/ADRs/](docs/ADRs/))
+- Maintain architecture documentation (see [docs/architecture/adr/](docs/architecture/adr/index.md))
 
 ## Testing
 
