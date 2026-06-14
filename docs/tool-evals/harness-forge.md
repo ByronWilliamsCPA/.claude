@@ -3,6 +3,8 @@
 **Date:** 2026-06-14
 **Source:** <https://github.com/001TMF/harness-forge> (main, inspected 2026-06-14)
 **Verdict:** PORT PATTERNS (recommended) | SUBMODULE (acceptable alternative)
+**Value timing:** Port now (cheap); first real use is a staged pilot on MTG_AI,
+not an immediate payoff against current PR backlog (see "Value in our repos").
 
 ## Characterization
 
@@ -104,3 +106,44 @@ add https://github.com/001TMF/harness-forge .claude/skills/_vendor/harness-forge
 then load `skills/meta-harness` from there. Trade-off: the content skips our
 pre-commit normalization and `AGENTS-AND-SKILLS.md` registration, and a fresh
 clone needs `--recursive`.
+
+## Value in our repos (recent-PR grounding, 2026-06-14)
+
+The skill optimizes scaffolding around a frozen model for a repeated task with a
+deterministic offline scorer. Whether that pays off depends on whether our actual
+work is propose-score-Pareto iteration. Assessment after surveying the org's 19
+repos and recent PR streams in the four genuine LLM/RAG/ML candidates.
+
+**Finding: structural fit is real; current timing is not.** The candidate repos
+are architecturally well-suited, but recent PR activity across all of them is
+scaffolding, dependency hygiene, and CI/compliance, not harness iteration.
+Adopting the skill today means it sits unused until a repo enters a tuning phase.
+
+| Repo | Architectural fit | Recent PR themes | Harness-tuning active? |
+| --- | --- | --- | --- |
+| MTG_AI | High: tagline is "deterministic rules engine + swappable generation backend", i.e. harness-forge's scorer + candidate interface | scaffold, schema, auth, migrations, ADRs (#1-#8) | No, pre-implementation |
+| DeQA-Doc | Partial: has a deterministic scorer (image-quality vs human labels) + 4-signal UQ, but it is active-learning / model-training, and harness-forge assumes a FROZEN model | deps bumps, dependabot, CI; one research PR (#36 OCR-IQA) | Minimal |
+| rag-processor | High: retrieval ranker is a named harness-forge candidate example | deps, CI, refactor; one pipeline PR (#61) | Minimal |
+| fragrance-rater | Weak: LLM-judged recommendation quality is the skill's anti-pattern (reintroduces noise) | pure deps/CI | None |
+
+**Recommended trigger (not "now"):**
+
+1. **Pilot on MTG_AI** once its critique-generation loop lands. The architecture
+   already matches: register the swappable backend as the candidate interface and
+   the rules engine as the deterministic scorer, then run the loop on a labeled
+   deck-critique eval set. Near-immediate ROI once the code exists. This repo is
+   also the strongest convergent-validation signal: the author independently
+   arrived at the skill's two core building blocks.
+2. **DeQA-Doc** secondary, scoped to threshold / pseudo-label-selection
+   scaffolding only (not the model training, which is out of the frozen-model
+   scope).
+3. **rag-processor / fragrance-rater:** no value until a deliberate
+   retrieval-tuning or recommendation-quality phase with a deterministic eval set.
+
+**Net:** port now because it is one cheap MIT skill and the fit is genuine, but
+treat it as a capability staged for MTG_AI's next phase, not a tool that pays off
+against this month's backlog.
+
+**Method caveat:** GitHub MCP was scoped to `.claude` this session and the
+`claude-code-remote` repo-add tools were not connected, so other repos' PRs were
+read from public web pages (titles and dates, not diffs).
