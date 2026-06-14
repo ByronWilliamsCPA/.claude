@@ -45,7 +45,9 @@ def pareto_frontier(
     ranked = sorted(eligible, key=lambda p: (-p[quality_key], p[cost_key]))
     frontier, best_cost = [], float("inf")
     for p in ranked:
-        if p[cost_key] <= best_cost:
+        # Strict <: after sorting quality desc / cost asc, an equal-cost later point
+        # has <= quality and is dominated, so it must not be kept.
+        if p[cost_key] < best_cost:
             frontier.append(p)
             best_cost = p[cost_key]
     return frontier

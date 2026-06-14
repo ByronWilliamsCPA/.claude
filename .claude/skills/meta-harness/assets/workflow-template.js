@@ -82,7 +82,7 @@ for (let r = 1; r <= ROUNDS; r++) {
   pool.sort((a, b) => b.quality - a.quality || a.cost - b.cost)
   frontier = []
   let best = Infinity
-  for (const p of pool) { if (p.cost <= best) { frontier.push(p); best = p.cost } }
+  for (const p of pool) { if (p.cost < best) { frontier.push(p); best = p.cost } }  // strict: drop equal-cost dominated points
   log(`round ${r}: frontier = ${frontier.map(p => `${p.agent}@${p.cost}/${p.quality}`).join(', ')}`)
 }
 

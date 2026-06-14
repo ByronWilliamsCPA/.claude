@@ -40,7 +40,9 @@ def load_candidate(module_name: str) -> Candidate:
     found = [
         obj
         for _, obj in inspect.getmembers(module, inspect.isclass)
-        if issubclass(obj, Candidate) and obj is not Candidate
+        if issubclass(obj, Candidate)
+        and obj is not Candidate
+        and obj.__module__ == module.__name__  # exclude imported Candidate subclasses
     ]
     if len(found) != 1:
         raise ValueError(

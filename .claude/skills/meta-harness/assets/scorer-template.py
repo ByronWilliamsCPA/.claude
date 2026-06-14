@@ -75,8 +75,9 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--out", type=Path, default=None)
     args = p.parse_args(argv)
     result = evaluate(args.agent)
-    (args.out or (LOGS / f"{args.agent}.json")).parent.mkdir(parents=True, exist_ok=True)
-    (args.out or (LOGS / f"{args.agent}.json")).write_text(json.dumps(result, indent=2))
+    out_path = args.out or (LOGS / f"{args.agent}.json")
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(json.dumps(result, indent=2))
     print(f"{result['agent']:24} quality={result['quality']:.3f} "
           f"cost={result['cost']:.0f} min_quality={result['min_quality']:.2f}")
     return 0

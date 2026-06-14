@@ -1,18 +1,6 @@
 ---
 name: meta-harness
-description: >-
-  Run a Meta-Harness-style optimization loop NATIVELY, automatically search over the
-  scaffolding around a FIXED base model (memory, retrieval, context construction, prompt
-  templates, summarization, tool-selection logic) by proposing candidate variants, scoring
-  each on a cheap deterministic eval, and keeping a Pareto frontier of quality vs cost, using
-  native Agent / Workflow / loop tools instead of a standalone Python harness. Use this whenever
-  the user wants to optimize, evolve, tune, distill, or search over a harness, scaffold, prompt
-  system, memory or retrieval policy, context-assembly code, or summarizer while keeping the
-  model fixed; whenever they mention Meta-Harness, harness optimization, scaffold evolution,
-  automatic prompt/memory optimization, an evolutionary or Pareto search over candidate
-  implementations, or "make the harness/agent better without retraining"; and whenever the gain
-  must come from the code AROUND the model rather than the model weights. Reproduces the
-  Meta-Harness paper's method natively, with no claude_wrapper.py and no metered solver API.
+description: Run a Meta-Harness-style optimization loop NATIVELY, automatically search over the scaffolding around a FIXED base model (memory, retrieval, context construction, prompt templates, summarization, tool-selection logic) by proposing candidate variants, scoring each on a cheap deterministic eval, and keeping a Pareto frontier of quality vs cost, using native Agent / Workflow / loop tools instead of a standalone Python harness. Use this whenever the user wants to optimize, evolve, tune, distill, or search over a harness, scaffold, prompt system, memory or retrieval policy, context-assembly code, or summarizer while keeping the model fixed; whenever they mention Meta-Harness, harness optimization, scaffold evolution, automatic prompt/memory optimization, an evolutionary or Pareto search over candidate implementations, or "make the harness/agent better without retraining"; and whenever the gain must come from the code AROUND the model rather than the model weights. Reproduces the Meta-Harness paper's method natively, with no claude_wrapper.py and no metered solver API.
 ---
 
 # Meta-Harness (native)
@@ -150,9 +138,11 @@ are in `references/native-execution.md`.
 
 Vendored from [001TMF/harness-forge](https://github.com/001TMF/harness-forge)
 (`skills/meta-harness`, MIT, Copyright (c) 2026 Tristan Farmer). The MIT license
-text is kept alongside this skill in `LICENSE`. Local change on import: em-dashes
-were converted to commas/colons to satisfy our PC-011 no-em-dash rule; content is
-otherwise upstream. The `~/mh-proteus/` worked-example paths and the
+text is kept alongside this skill in `LICENSE`. Local changes on import: em-dashes
+were converted to commas/colons to satisfy our PC-011 no-em-dash rule; the Pareto
+sweep in `scripts/pareto.py` and `assets/workflow-template.js` was tightened from
+`<=` to a strict `<` on cost so equal-cost dominated points are dropped (matches the
+existing docstring and inline comment). Content is otherwise upstream. The `~/mh-proteus/` worked-example paths and the
 `stanford-iris-lab/meta-harness` references are upstream-specific and may not
 exist on this machine; treat them as illustrative. See
 `docs/tool-evals/harness-forge.md` for the adoption rationale and the
