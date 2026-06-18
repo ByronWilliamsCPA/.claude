@@ -110,6 +110,13 @@ def render(jsonl_path: Path | None = None, md_path: Path | None = None) -> None:
     the footer; rendering the same input twice produces identical
     bytes apart from that timestamp.
     """
+    # #CRITICAL security: render() is the real filesystem sink (read_text via
+    # load_entries, mkdir, write_text). It does NOT confine its path arguments;
+    # confinement lives in main()'s _validated_override gate. Direct callers that
+    # forward untrusted path overrides MUST pre-validate them against a trusted
+    # root, or they reopen the S8707 path-injection hole the CLI gate closed.
+    # #VERIFY any new caller of render() passing externally-influenced paths runs
+    # _validated_override (or equivalent containment) first.
     jsonl_path = jsonl_path or DEFAULT_JSONL
     md_path = md_path or DEFAULT_MD
 

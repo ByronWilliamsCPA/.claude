@@ -85,6 +85,15 @@
 
 ### Security
 
+* fix(compliance): validate the master-log renderer CLI `--jsonl`/`--md` overrides
+  against the repository root before any filesystem access, closing three SonarCloud
+  `pythonsecurity:S8707` path-injection findings (`read_text` via `load_entries`,
+  `mkdir`, and `write_text`). A new `_validated_override()` canonicalizes each override
+  with `Path.resolve()` and rejects it via `parser.error()` unless `Path.is_relative_to`
+  confirms it stays within the repo root, so a prompt-injected agent driving the CLI can
+  no longer read or clobber files outside the repository. Legitimate callers (unit tests
+  calling `render()` directly, in-repo reconciler paths) are unaffected.
+
 * fix(deps): bump cryptography (48.0.0 -> 49.0.0), jupyter-server
   (2.19.0 -> 2.20.0), and tornado (6.5.6 -> 6.5.7) in `uv.lock` to clear three
   pip-audit advisories (GHSA-537c-gmf6-5ccf, GHSA-fcw5-x6j4-ccmp,
