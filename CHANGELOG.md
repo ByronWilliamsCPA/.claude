@@ -83,6 +83,15 @@
   to dev dependencies, or rely on the `not_applicable_when` no-Python-source
   scope.
 
+### Security
+
+* fix(deps): bump cryptography (48.0.0 -> 49.0.0), jupyter-server
+  (2.19.0 -> 2.20.0), and tornado (6.5.6 -> 6.5.7) in `uv.lock` to clear three
+  pip-audit advisories (GHSA-537c-gmf6-5ccf, GHSA-fcw5-x6j4-ccmp,
+  GHSA-pw6j-qg29-8w7f). All three had fix versions available, so no
+  `docs/known-vulnerabilities.md` deferral is needed. `pip-audit` reports no known
+  vulnerabilities after the bump.
+
 ### Fixed
 
 * fix(compliance): replace incorrect Python-only exemption in TOOL-009 (.qlty/qlty.toml
