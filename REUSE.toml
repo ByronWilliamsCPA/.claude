@@ -160,3 +160,15 @@ path = [
 ]
 SPDX-License-Identifier = "MIT"
 SPDX-FileCopyrightText = "2025 Byron Williams <byronawilliams@gmail.com>"
+
+# Vendored third-party skill: meta-harness, ported from 001TMF/harness-forge (MIT).
+# Overrides the blanket .claude/** owner annotation so the upstream author is
+# credited, satisfying the MIT notice-retention requirement. License text lives in
+# LICENSES/MIT.txt; provenance is documented in the skill's SKILL.md and LICENSE.
+[[annotations]]
+path = [
+    ".claude/skills/meta-harness/**",
+]
+precedence = "override"
+SPDX-License-Identifier = "MIT"
+SPDX-FileCopyrightText = "2026 Tristan Farmer"

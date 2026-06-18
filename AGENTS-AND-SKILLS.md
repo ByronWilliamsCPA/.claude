@@ -406,6 +406,18 @@ coupling boundary, licence carve-outs, relationship classification, gap mapping,
 convergent validation) and writes a decision doc to `docs/tool-evals/<tool-slug>.md`. Activates on:
 "compare X to our setup", "should we adopt/vendor/submodule X", "cherry-pick from X".
 
+### AI & ML Engineering
+
+**[/meta-harness](/.claude/skills/meta-harness/SKILL.md)**
+Runs a Meta-Harness-style optimization loop natively: searches over the scaffolding around a
+fixed base model (memory, retrieval, context assembly, prompt templates, summarization) by
+proposing candidate variants, scoring each on a cheap deterministic eval, and keeping a Pareto
+frontier of quality vs cost, using native Agent / Workflow / loop tools instead of a standalone
+Python harness. Vendored from 001TMF/harness-forge (MIT); see
+`docs/tool-evals/harness-forge.md` for the adoption rationale and MTG_AI pilot trigger. Activates
+on: "Meta-Harness", "harness optimization", "scaffold evolution", "optimize the harness without
+retraining", "Pareto search over candidates".
+
 ### Frontend
 
 **[/frontend-design](/.claude/skills/frontend-design/SKILL.md)**
