@@ -1,7 +1,7 @@
 ---
 name: code-reviewer
 description: Automated code review specialist focused on code quality, standards compliance, and best practices.
-model: sonnet
+model: opus
 tools: ["Read", "Write", "Bash", "Grep", "Glob"]
 ---
 

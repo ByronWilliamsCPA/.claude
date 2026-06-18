@@ -43,6 +43,48 @@ Claude Code acts as SUPERVISOR for all development tasks.
 > Use Explore before dispatching a general-purpose agent for codebase searches.
 > Use Plan for implementation strategy before any code is written.
 
+## Reviewer Model Policy
+
+Pin every reviewer/verifier agent's model explicitly; never leave it on
+`inherit`. `inherit` makes a checker run the same model as the maker it
+reviews, which destroys error decorrelation on exactly the agents that exist
+to catch what the maker could not see.
+
+Match the model to where the verdict actually comes from:
+
+| Check type | Verdict source | Model |
+| --- | --- | --- |
+| Tool-decided | Exit code / compiler / test runner (the external oracle) | `sonnet` (or `haiku`) |
+| Checklist-decided | Apply a fixed, mostly-objective rubric | `sonnet` |
+| Judgment / adversarial | Find the non-obvious flaw the author missed | `opus` |
+
+Current pins: code-reviewer, security-auditor, and document-validator run
+`opus` (adversarial, first-party or own-library source); phase-reviewer,
+plan-validator, scope-analyzer, test-reviewer, and general-compliance-auditor
+run `sonnet` (tool- or checklist-decided). The three vendor-mirror agents
+below remain on `inherit` by exception.
+
+**In-family decorrelation has a ceiling.** Within the Anthropic family you
+cannot get maximum reasoning *and* strong decorrelation at once, because the
+strongest reasoner (Opus) is also the likely maker. Pins buy reasoning
+adequacy; they do not buy independence when the session maker is itself Opus
+or Fable. For that independent pass, use `/consensus` (tiered-review or
+consensus) to bring a non-Anthropic peer model in. Family-only is the default
+operating mode; `/consensus` is the deliberate cross-vendor escalation for
+high-stakes or irreversible changes.
+
+**Vendored-agent exception.** `silent-failure-hunter`, `type-design-analyzer`,
+and `comment-analyzer` are symlinked from the `anthropics-plugins`
+pr-review-toolkit submodule and ship with `model: inherit`. Per the
+submodule-isolation policy, their model is **not** pinned: editing
+vendor-mirror content would drift from upstream and be clobbered on the next
+sync. They are left on `inherit` deliberately. Because `inherit` gives these
+adversarial checkers zero decorrelation against an Opus/Fable maker, their
+independent pass comes from `/consensus` (cross-vendor), not from the subagent
+itself. When adopting any new agent from a vendored source, decide its pin
+against the table above before wiring it in; if it cannot be pinned at source,
+route its independence through `/consensus` and note the exception here.
+
 ## Temporary Reference Files
 
 Create when:
