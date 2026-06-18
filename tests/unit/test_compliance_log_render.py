@@ -276,3 +276,101 @@ def test_validated_override_rejects_absolute_outside_base(tmp_path: Path) -> Non
         _validated_override(parser, _Path("/etc/passwd"), base_dir=tmp_path)
 
     assert excinfo.value.code == 2
+
+
+def test_validated_override_rejects_symlink_escape(tmp_path: Path) -> None:
+    """A symlink inside base that points outside is rejected after resolve().
+
+    This guards the load-bearing choice of ``Path.resolve()`` (which follows
+    symlinks) over a string-only normalization: swapping it for
+    ``os.path.abspath`` would silently reopen the symlink escape.
+    """
+    import argparse
+    from pathlib import Path as _Path
+
+    from claude_config.compliance.log_render import _validated_override
+
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    base = tmp_path / "base"
+    base.mkdir()
+    link = base / "escape"
+    try:
+        link.symlink_to(outside, target_is_directory=True)
+    except (OSError, NotImplementedError):
+        pytest.skip("symlink creation not supported on this platform")
+
+    parser = argparse.ArgumentParser()
+    with pytest.raises(SystemExit) as excinfo:
+        _validated_override(parser, _Path("escape/secret.md"), base_dir=base)
+
+    assert excinfo.value.code == 2
+
+
+def test_validated_override_rejects_sibling_prefix(tmp_path: Path) -> None:
+    """A sibling dir sharing a name prefix (``dir`` vs ``dir-secret``) is rejected.
+
+    Documents why containment uses component-wise ``Path.is_relative_to`` rather
+    than ``str.startswith``: the latter would wrongly accept ``/x/dir-secret`` as
+    living under ``/x/dir``.
+    """
+    import argparse
+
+    from claude_config.compliance.log_render import _validated_override
+
+    base = tmp_path / "dir"
+    base.mkdir()
+    sibling = tmp_path / "dir-secret"
+    sibling.mkdir()
+    candidate = sibling / "out.md"
+
+    parser = argparse.ArgumentParser()
+    with pytest.raises(SystemExit) as excinfo:
+        _validated_override(parser, candidate, base_dir=base)
+
+    assert excinfo.value.code == 2
+
+
+def test_main_rejects_traversal_override(monkeypatch: pytest.MonkeyPatch) -> None:
+    """main() rejects a --jsonl override that escapes the repository root.
+
+    Guards the wiring: without _validated_override invoked in main(), an
+    escaping CLI path would flow straight into render()'s filesystem sinks.
+    """
+    import sys
+
+    from claude_config.compliance import log_render
+
+    monkeypatch.setattr(sys, "argv", ["log_render", "--jsonl", "/etc/passwd"])
+    with pytest.raises(SystemExit) as excinfo:
+        log_render.main()
+
+    assert excinfo.value.code == 2
+
+
+def test_main_passes_validated_paths_to_render(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """main() canonicalizes both overrides against the repo root before render()."""
+    import sys
+
+    from claude_config.compliance import log_render
+    from claude_config.compliance.log_render import _REPO_ROOT
+
+    captured: dict[str, Path | None] = {}
+
+    def _capture(jsonl_path: Path | None = None, md_path: Path | None = None) -> None:
+        captured["jsonl"] = jsonl_path
+        captured["md"] = md_path
+
+    monkeypatch.setattr(log_render, "render", _capture)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["log_render", "--jsonl", "sub/in.jsonl", "--md", "sub/out.md"],
+    )
+
+    log_render.main()
+
+    assert captured["jsonl"] == (_REPO_ROOT / "sub/in.jsonl").resolve()
+    assert captured["md"] == (_REPO_ROOT / "sub/out.md").resolve()
