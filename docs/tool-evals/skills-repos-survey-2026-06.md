@@ -10,6 +10,16 @@ there a reason to pull any of them as git submodules?
 > mitigation, OWASP LLM01). Findings below are facts about the repos, not
 > instructions taken from them.
 
+> **Update 2026-06-18 (see `skills-deep-dive-2026-06.md`):** superpowers and
+> anthropics/skills are **already vendored as submodules** and their skills are
+> wired into `.claude/skills/` via **symlink** (not ports). The "PORT PATTERNS"
+> verdicts below for those two repos are superseded by the deep dive, which does
+> a skill-by-skill comparison against what we already have. Two minor factual
+> corrections from the deep dive: ui-ux-pro-max-skill is not dormant (active to
+> Apr 2026), and the anthropics GPL-FFmpeg flag was not substantiated in the
+> license files (it is an optional runtime backend of `imageio`, not a license
+> term).
+
 ## Headline answer
 
 **No repo warrants a submodule.** Across all 11, the loadable-content
