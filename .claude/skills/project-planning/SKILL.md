@@ -86,6 +86,25 @@ This skill operates in three modes depending on where you are in the planning fl
 
 Generates all four documents sequentially as documented in the Generation Process section below. Use for projects that are not using the brainstorming flow.
 
+**Pre-generation existence-and-validity guard (mirror Bridge Mode's idempotency):**
+Generation is destructive by default. Before generating anything, protect
+pre-existing reviewed work:
+
+1. Scan `docs/planning/` for existing docs (`project-vision.md`, `tech-spec.md`,
+   `roadmap.md`, `adr/adr-001-*.md`).
+2. If any are found, run the validation script (see Step 4). If the existing docs
+   are valid, do NOT regenerate them.
+3. Route to the same skip/ask behavior Bridge Mode uses: skip complete docs, offer
+   to synthesize only the missing pieces (e.g. `PROJECT-PLAN.md`), or ask the user
+   before overwriting.
+4. Surface a clear warning before any overwrite: "These docs already exist and
+   pass validation; regenerating is destructive. Skip, reconcile, or confirm
+   overwrite?"
+
+"Create the deliverable" means "create if absent, reconcile if present," never
+"blindly overwrite." Idempotency guards present in one mode must be consistent
+across every mode that writes to the same paths.
+
 ## Output Documents
 
 | Document | Location | Purpose |

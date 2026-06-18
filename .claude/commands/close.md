@@ -58,6 +58,13 @@ If Step 1 found a feature branch, invoke the `finishing-a-development-branch`
 skill and follow it: verify tests pass, then present the merge / PR / keep /
 discard options, then clean up that branch's own worktree per the choice.
 
+Do not short-circuit the skill's pre-PR check: before offering the PR or merge
+option it fetches `origin` and diffs the branch against the base to detect work
+that already landed through another channel (Obs 296). A local branch with
+unpushed commits is not proof the work is unlanded. If the branch's changes are
+already present on the base, surface that and offer rescope-or-skip rather than
+defaulting to a duplicate PR.
+
 If the current branch is `main` or `master`, skip this step and say so. Do not
 prompt for a branch decision on the default branch.
 

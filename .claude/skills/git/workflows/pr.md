@@ -190,6 +190,36 @@ the user start a new session to trigger the review.
 
 ---
 
+## Multi-PR merge under strict org rulesets (Obs 269)
+
+Merging a backlog of PRs into a branch governed by `strict_required_status_checks_policy=true`
+(plus required signatures, linear history, Copilot review) is inherently SERIAL: each merge
+invalidates every other PR's up-to-date status, so only one PR can be up-to-date at a time.
+Most "stuck" auto-merges are not CI failures but invisible gates. Run this loop, one PR at a
+time:
+
+1. **Re-sync immediately before merge.** `gh pr merge --auto` plus update-branch is the
+   efficient loop, but the PR must be up-to-date against the latest base at merge time.
+2. **Apply skip/changelog labels BEFORE the synchronize push.** A label only takes effect if
+   present before the push that triggers the workflows. Applying it after requires an empty
+   commit to re-trigger; a bare label event does not re-run `pull_request` workflows.
+3. **Dismiss stale bot reviews.** A `coderabbit`/Copilot review left in CHANGES_REQUESTED
+   blocks merge even with `required_approving_review_count=0`. Dismiss it explicitly.
+4. **Push with an explicit refspec.** `git push` with `push.default=simple` silently refuses
+   when the local branch name differs from upstream; use `git push origin HEAD:<remote-branch>`.
+5. **Re-fetch before every conflict resolution.** Local `origin/main` goes stale across a
+   long session of server-side merges; re-fetch or the PR re-conflicts (BEHIND/DIRTY) after
+   you push.
+6. **Diff the merged file vs base to verify semantic correctness.** A textual auto-merge can
+   be semantically wrong. Conflict-resolution heuristic: for files already changed by merged
+   PRs take the base branch's version (never revert merged work); keep the PR's version only
+   for files unique to it; union additive doc sections (e.g., CHANGELOG).
+
+Verify the actual gate state (`gh pr view <n> --json mergeStateStatus,statusCheckRollup`)
+rather than waiting on a never-reported required context.
+
+---
+
 ## Example Interaction
 
 **User**: "Can you prepare the PR for this branch?"

@@ -1,7 +1,7 @@
 ---
 name: phase-reviewer
-description: Executes quality gates to determine whether a project phase is complete. Internal agent — invoked by phase-gate skill only.
-model: sonnet
+description: Executes quality gates to determine whether a project phase is complete. Internal agent, invoked by phase-gate skill only.
+model: haiku
 tools: ["Read", "Grep", "Glob"]
 user-invocable: false
 ---
@@ -24,7 +24,7 @@ Run the concrete checks that validate a phase is done: tests pass, linting is cl
 
 The caller provides a phase number. The agent:
 
-1. Reads `docs/IMPLEMENTATION_PLAN.md` — the "Verification Plan > Per-Phase Smoke Tests" section for the given phase
+1. Reads `docs/IMPLEMENTATION_PLAN.md`: the "Verification Plan > Per-Phase Smoke Tests" section for the given phase
 2. Runs quality gate checks against the current codebase
 
 ## Process
@@ -36,18 +36,18 @@ Run each check and record pass/fail with output. Detect the project's package ma
 **Backend checks** (always run):
 
 ```bash
-# Linting — use project's configured linter
+# Linting: use project's configured linter
 ruff check .
 ruff format --check .
 
 # Type checking
 basedpyright src
 
-# Tests with coverage — adapt to project's package manager (uv/poetry/pip)
+# Tests with coverage: adapt to project's package manager (uv/poetry/pip)
 pytest -v --cov --cov-report=term-missing
 ```
 
-**Security scan** — delegate to the `owasp-dispatch` agent: "Run security review for this project. Detect applicable OWASP domains and route to specialist agents. Return a unified findings table with severity and gate recommendation (PASS/FAIL)."
+**Security scan**: delegate to the `owasp-dispatch` agent: "Run security review for this project. Detect applicable OWASP domains and route to specialist agents. Return a unified findings table with severity and gate recommendation (PASS/FAIL)."
 
 If `owasp-dispatch` is not available, fall back to:
 
@@ -110,7 +110,7 @@ Read the per-phase smoke test from the implementation plan and assess:
 Return a structured report:
 
 ```markdown
-# Phase Review: Phase {N} — {Phase Name}
+# Phase Review: Phase {N} ({Phase Name})
 
 ## Quality Gates
 
@@ -151,7 +151,7 @@ Return a structured report:
 
 ## Constraints
 
-- This agent runs checks but does not fix issues — it only reports
+- This agent runs checks but does not fix issues; it only reports
 - Use the project's configured commands (check CLAUDE.md and pyproject.toml)
 - If a check cannot be run (missing dependency, no Docker), mark as SKIPPED with explanation
 - The verdict is mechanical: if any gate FAILS, the verdict is NOT READY

@@ -1,7 +1,7 @@
 ---
 description: >
   Full CI gate sequence with auto-fix loop. Runs ruff format, ruff lint, qlty check,
-  pre-commit, pytest, bandit, and pip-audit in order — fixing what it can and reporting
+  pre-commit, pytest, bandit, and pip-audit in order: fixing what it can and reporting
   blockers. Triggers on: ci-fix, fix ci, fix gates, all gates green, pre-commit failing,
   tests failing, ci failing, fix everything, gates failing.
 tools: ["Read", "Bash", "Grep", "Glob", "Edit", "Write"]
@@ -30,11 +30,11 @@ attempts, mark it `❌ BLOCKER` and advance to the next gate.
 |---|------|---------|-------------------|
 | 1 | ruff format | `uv run ruff format --check .` | `uv run ruff format .` (deterministic) |
 | 2 | ruff lint | `uv run ruff check .` | `uv run ruff check --fix .`; remaining unfixable rules: edit manually |
-| 3 | qlty check | `qlty check` | No auto-fix — refactor functions exceeding complexity/nesting thresholds |
+| 3 | qlty check | `qlty check` | No auto-fix: refactor functions exceeding complexity/nesting thresholds |
 | 4 | pre-commit | `pre-commit run --all-files` | Re-run after ruff fixes; remaining failures: fix and re-run |
 | 5 | pytest | `uv run pytest` | Read failure output, fix test or implementation issues, re-run |
 | 6 | bandit | `uv run bandit -r src/ -c pyproject.toml` | Fix code issues; false positives: add `# nosec BXXX -- tracked: <URL or ticket>` with an open tracking reference |
-| 7 | pip-audit | `uv run pip-audit` | Report only — dependency upgrades require user decision |
+| 7 | pip-audit | `uv run pip-audit` | Report only: dependency upgrades require user decision |
 
 > **Bandit source root**: Before running bandit, check `pyproject.toml` for a `[tool.bandit]`
 > `targets` field. If present, use that path. If absent, use `src/` if it exists, otherwise
@@ -61,20 +61,20 @@ pip-audit     ⏳ PENDING
 ```
 
 Status values:
-- `⏳ PENDING` — not yet run
-- `🔧 FIXING` — fix in progress
-- `✅ PASS` — gate green (include note if fixes were applied)
-- `❌ BLOCKER` — failed after fix attempt; manual intervention required
+- `⏳ PENDING`: not yet run
+- `🔧 FIXING`: fix in progress
+- `✅ PASS`: gate green (include note if fixes were applied)
+- `❌ BLOCKER`: failed after fix attempt; manual intervention required
 
 ## Blocker Behavior
 
 When a gate fails and cannot be resolved in one fix attempt:
 - Mark it `❌ BLOCKER` in the table
-- Continue running the remaining gates — report the full picture
+- Continue running the remaining gates: report the full picture
 - Do not stop early
 
 pip-audit findings are always reported but never count as a blocker for the commit offer.
-pip-audit status is always `✅ PASS` or `✅ PASS (advisories found — see notes)` — never `❌ BLOCKER`. List any advisories in the Notes column regardless of exit code.
+pip-audit status is always `✅ PASS` or `✅ PASS (advisories found: see notes)`: never `❌ BLOCKER`. List any advisories in the Notes column regardless of exit code.
 
 ## Completion
 
@@ -85,15 +85,15 @@ All 6 required gates green (pip-audit findings noted above). Commit now? (yes/no
 ```
 
 - **Yes**: invoke the `/git` skill with commit intent. Provide the gate summary (which gates passed, what was fixed) as context so it can generate an accurate conventional commit message.
-- **No**: stop — present the green status table and hand back
+- **No**: stop: present the green status table and hand back
 
 **Any blocker remains:**
 
 ```text
 5/7 gates pass. Blockers:
 
-  ❌ pytest     — 2 tests failing in tests/unit/test_processor.py (see output above)
-  ❌ bandit     — HIGH severity B608 at src/query.py:45 (see output above)
+  ❌ pytest: 2 tests failing in tests/unit/test_processor.py (see output above)
+  ❌ bandit: HIGH severity B608 at src/query.py:45 (see output above)
 
 These require manual investigation before committing.
 ```
@@ -156,3 +156,71 @@ git diff --name-only --diff-filter=ACMR "origin/$BASE"
 ```
 
 Diagnostic tell: a per-file linter job fails fast (13-15s) while the tool's SaaS check passes -- that mismatch indicates a harness/enumeration error, not real lint findings.
+
+### Path-filtered CI jobs hide regressions on main: reproduce-on-main diagnosis (Obs 78)
+
+A CI job with a path filter (only runs on PRs touching `docs/`, only on Python changes, a
+release-only workflow) trades compute for staleness latency: a regression in its domain can
+sit undetected on main until the next path-matching PR inherits the breakage and gets blamed
+for it. Example: a docs-build job only triggered on docs-touching PRs; a transitive plugin
+interaction silently broke `mkdocs build --strict` on main, and the next PR that touched a
+docs file inherited the red build.
+
+Before fixing a failure on a path-filtered job, classify it: did this PR introduce the
+failure, or merely expose an inherited regression already on main? Reproduce against main
+before editing the PR's own changes:
+
+```bash
+# Reproduce the path-filtered job against main, independent of the current PR scope
+git stash || true
+git checkout main && git pull
+# run the exact job command, e.g.:
+uv run mkdocs build --strict
+# or fetch the latest main run for that workflow:
+gh run list --workflow=<docs-job>.yml --branch main --limit 1
+```
+
+If the failure reproduces on clean main, it is an inherited regression, not a defect in the
+PR. Report it as a separate diagnosis class ("reproduces on main, not introduced by your
+changes"), fix it as a real bug fix for main, and do not attribute it to the PR author. The
+same pattern applies to any path-filtered job (release workflows, security-analysis when no
+Python files changed).
+
+### Dependency-review license failures may be pre-existing policy debt (Obs 255)
+
+When the `dependency-review-action` gate fails on a license (not a vulnerability), distinguish "introduced by this PR" from "surfaced by this PR" before fixing. The gate only evaluates packages *changed* in the PR, so a routine Renovate version bump can surface a license-policy gap that already existed in the base branch.
+
+```bash
+# Was the flagged package already in main's lock file at an older version?
+git show origin/main:uv.lock | grep -A2 'name = "<package>"'
+```
+
+If the package already exists on the base branch, the bump did not introduce the problem; it exposed it. Route the fix to the workflow allowlist (`allow-dependencies-licenses` on the dependency-review step) or a documented exemption, not to a revert of the bump. Diff-scoped gates (dependency review, patch coverage) report at the changed line or package, but the root cause may be pre-existing debt in the base branch.
+
+### startup_failure with zero jobs is a caller/callee contract mismatch (Obs 266)
+
+A GitHub Actions run that concludes `startup_failure` with an empty jobs array and no logs gives no error message via API or UI annotations, because the rejection happens at parse/contract time, before any job starts. The error surface is the contract between caller and callee (inputs, secrets, permissions, nesting depth), never the job logs. Do not search for logs that do not exist; diff the two workflow files:
+
+```bash
+# 1. Confirm the referenced workflow resolves
+gh run view <run-id> --json referencedWorkflows
+
+# 2. Diff caller with: block against callee workflow_call inputs (rule out input-name mismatch first)
+# 3. Diff caller permissions block against EVERY job-level permissions block in the callee
+```
+
+Any permission the callee requests (e.g. `actions: read` on a codeql job) but the caller's explicit `permissions:` block omits fails validation before any job runs. (See also systematic-debugging: sample sibling consumers before concluding the reusable workflow itself is broken.)
+
+### Pre-validate every downstream config before each unblocking push (Obs 289)
+
+A pipeline red for weeks hides every defect downstream of the first failing step. A pipeline that has never reached step N gives zero evidence about steps N+1..end, so fixing failures one CI round-trip at a time is the slowest possible loop. Before pushing each fix that unblocks a long-failing pipeline, locally validate every config the now-reachable downstream steps will consume:
+
+```bash
+# semantic-release config
+uvx --from python-semantic-release semantic-release --noop version
+
+# renovate.json
+npx --package renovate renovate-config-validator
+```
+
+Treat every downstream config as unvalidated and run its dry-run or validator locally where one exists, instead of discovering defects one merge cycle at a time. Build the per-tool local-validation checklist as you go.

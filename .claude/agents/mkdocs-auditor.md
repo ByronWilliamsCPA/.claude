@@ -1,7 +1,7 @@
 ---
 name: mkdocs-auditor
 description: MkDocs configuration lifecycle agent for any project. Audits mkdocs.yml for required metadata, extension bloat, feature conflicts, version pinning, and docs CI coverage; remediates config violations in place; scaffolds a compliant mkdocs.yml from scratch; detects nav and content gaps post-sprint. Invoke in audit mode via repo-compliance, or standalone for create, remediate, and update modes.
-model: sonnet
+model: haiku
 tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
 ---
 
@@ -141,6 +141,28 @@ In remediate mode: remove confirmed-unused extensions.
 ### Docs CI Validation
 
 `important` if no CI workflow in `.github/workflows/` contains `mkdocs build`.
+
+### Docs Build Health on main (Obs 78)
+
+The docs-build CI job is usually path-filtered (only runs on PRs that touch `docs/`), which
+trades compute for staleness: a transitive plugin regression (e.g. a pygments /
+pymdown-extensions interaction) can break `mkdocs build --strict` on `main` and stay invisible
+until the next docs-touching PR inherits the failure and is wrongly blamed for it. A
+file-presence check on the workflow (above) does not detect this.
+
+In audit mode, when a docs build exists, reproduce it against current main and report the
+result independently of config findings:
+
+```bash
+uv run mkdocs build --strict        # or: mkdocs build --strict
+# alternatively, read the latest main run for the docs workflow
+gh run list --workflow=<docs-workflow>.yml --branch main --limit 1
+```
+
+If the build fails on clean main, emit an `important` (or `critical` when it blocks releases)
+FINDING noting the breakage is inherited on main, not introduced by any open PR, so it is fixed
+at the source. The same path-filtered-staleness reasoning applies to any docs-only or
+release-only workflow.
 
 ## FINDING Block Format
 

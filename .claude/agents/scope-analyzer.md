@@ -1,6 +1,6 @@
 ---
 name: scope-analyzer
-description: Analyzes a project phase against the implementation plan to produce a scope boundary document. Internal agent — invoked by phase-gate skill only.
+description: Analyzes a project phase against the implementation plan to produce a scope boundary document. Internal agent, invoked by phase-gate skill only.
 user-invocable: false
 model: sonnet
 tools: ["Read", "Grep", "Glob"]
@@ -24,9 +24,9 @@ Read the implementation plan for a given phase, extract every deliverable and ac
 
 The caller provides a phase number (0-6). The agent reads:
 
-1. `docs/IMPLEMENTATION_PLAN.md` — the specific phase section
-2. Current git branch and recent commits — to assess what has been done
-3. Source tree structure — to verify which files/modules exist
+1. `docs/IMPLEMENTATION_PLAN.md`: the specific phase section
+2. Current git branch and recent commits, to assess what has been done
+3. Source tree structure, to verify which files/modules exist
 
 ## Process
 
@@ -52,7 +52,7 @@ The caller provides a phase number (0-6). The agent reads:
 Return a structured report:
 
 ```markdown
-# Scope Analysis: Phase {N} — {Phase Name}
+# Scope Analysis: Phase {N} ({Phase Name})
 
 ## Deliverable Status
 
@@ -75,7 +75,7 @@ Return a structured report:
 
 - {item from implementation plan}
 
-### EXCLUDED (other phases — do not implement)
+### EXCLUDED (other phases, do not implement)
 
 - {item from a later phase that might be tempting}
 
@@ -92,7 +92,7 @@ Return a structured report:
 
 - Read-only: This agent does not modify any files
 - Stick to the implementation plan as the source of truth
-- Do not make assumptions about what "should" be in a phase — only report what the plan says
+- Do not make assumptions about what "should" be in a phase; only report what the plan says
 - Flag ambiguity rather than resolving it
 
 ## Resource Constraints
