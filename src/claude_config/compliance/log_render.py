@@ -151,18 +151,64 @@ def render(jsonl_path: Path | None = None, md_path: Path | None = None) -> None:
     md_path.write_text("".join(parts), encoding="utf-8")
 
 
+def _validated_override(
+    parser: argparse.ArgumentParser,
+    candidate: Path | None,
+    *,
+    base_dir: Path,
+) -> Path | None:
+    """Canonicalize a CLI path override and confirm it stays in ``base_dir``.
+
+    The ``--jsonl`` and ``--md`` overrides are untrusted input when this
+    CLI is driven by an automated agent: a prompt-injected agent could
+    pass ``../../../etc/passwd`` to read or clobber files outside the
+    repository. Following the secure-by-design order (normalize, then
+    validate, then use), the candidate is resolved with
+    :meth:`~pathlib.Path.resolve` (collapsing ``..`` segments and
+    symlinks) and rejected unless the result lands inside the repository
+    root.
+
+    Args:
+        parser (argparse.ArgumentParser): The active parser, used to emit
+            a usage error and exit non-zero when the path escapes
+            ``base_dir``.
+        candidate (Path | None): The raw ``Path`` produced by argparse, or
+            ``None`` to accept the production default downstream.
+        base_dir (Path): The trusted root every override must stay within.
+
+    Returns:
+        Path | None: The canonicalized path, or ``None`` when ``candidate``
+            is ``None``.
+    """
+    if candidate is None:
+        return None
+    base = base_dir.resolve()
+    # ``base / candidate`` resolves a relative override under the repo
+    # root; an absolute candidate is kept as-is by pathlib and still has
+    # to clear the containment check below.
+    resolved = (base / candidate).resolve()
+    if not resolved.is_relative_to(base):
+        parser.error(f"path '{candidate}' escapes repository root {base}")
+    return resolved
+
+
 def main() -> None:
     """Entry point for CLI execution.
 
     Accepts optional ``--jsonl`` and ``--md`` overrides so callers can
     redirect the source and destination away from the production paths
     (used by tests and by the reconciler when ``--jsonl`` was supplied).
+    Both overrides are canonicalized and confined to the repository root
+    before any filesystem access, so a malformed or hostile argument
+    cannot escape into the wider filesystem.
     """
     parser = argparse.ArgumentParser(description="Render compliance master log.")
     parser.add_argument("--jsonl", type=Path, default=None)
     parser.add_argument("--md", type=Path, default=None)
     args = parser.parse_args()
-    render(jsonl_path=args.jsonl, md_path=args.md)
+    jsonl_path = _validated_override(parser, args.jsonl, base_dir=_REPO_ROOT)
+    md_path = _validated_override(parser, args.md, base_dir=_REPO_ROOT)
+    render(jsonl_path=jsonl_path, md_path=md_path)
 
 
 if __name__ == "__main__":

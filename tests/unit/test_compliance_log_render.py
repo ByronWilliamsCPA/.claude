@@ -210,3 +210,69 @@ def test_render_is_deterministic_modulo_timestamp_footer(
     assert _strip_footer(md1.read_text(encoding="utf-8")) == _strip_footer(
         md2.read_text(encoding="utf-8")
     )
+
+
+def test_validated_override_passes_none_through() -> None:
+    """A ``None`` override is preserved so render() falls back to defaults."""
+    import argparse
+    from pathlib import Path as _Path
+
+    from claude_config.compliance.log_render import _validated_override
+
+    parser = argparse.ArgumentParser()
+    assert _validated_override(parser, None, base_dir=_Path.cwd()) is None
+
+
+def test_validated_override_resolves_relative_inside_base(tmp_path: Path) -> None:
+    """A relative override resolves under the trusted base directory."""
+    import argparse
+    from pathlib import Path as _Path
+
+    from claude_config.compliance.log_render import _validated_override
+
+    parser = argparse.ArgumentParser()
+    result = _validated_override(parser, _Path("sub/out.md"), base_dir=tmp_path)
+
+    assert result == (tmp_path / "sub" / "out.md").resolve()
+
+
+def test_validated_override_accepts_absolute_inside_base(tmp_path: Path) -> None:
+    """An absolute override that already lives under the base is accepted."""
+    import argparse
+
+    from claude_config.compliance.log_render import _validated_override
+
+    candidate = tmp_path / "nested" / "log.jsonl"
+    parser = argparse.ArgumentParser()
+
+    assert _validated_override(parser, candidate, base_dir=tmp_path) == (
+        candidate.resolve()
+    )
+
+
+def test_validated_override_rejects_traversal_escape(tmp_path: Path) -> None:
+    """A ``..`` traversal that escapes the base exits non-zero."""
+    import argparse
+    from pathlib import Path as _Path
+
+    from claude_config.compliance.log_render import _validated_override
+
+    parser = argparse.ArgumentParser()
+    with pytest.raises(SystemExit) as excinfo:
+        _validated_override(parser, _Path("../../../etc/passwd"), base_dir=tmp_path)
+
+    assert excinfo.value.code == 2
+
+
+def test_validated_override_rejects_absolute_outside_base(tmp_path: Path) -> None:
+    """An absolute path outside the base is rejected rather than followed."""
+    import argparse
+    from pathlib import Path as _Path
+
+    from claude_config.compliance.log_render import _validated_override
+
+    parser = argparse.ArgumentParser()
+    with pytest.raises(SystemExit) as excinfo:
+        _validated_override(parser, _Path("/etc/passwd"), base_dir=tmp_path)
+
+    assert excinfo.value.code == 2
