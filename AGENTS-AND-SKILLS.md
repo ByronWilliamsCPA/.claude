@@ -418,6 +418,37 @@ Python harness. Vendored from 001TMF/harness-forge (MIT); see
 on: "Meta-Harness", "harness optimization", "scaffold evolution", "optimize the harness without
 retraining", "Pareto search over candidates".
 
+### Production Operations
+
+Ported from [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills) (MIT,
+commit `a5f0b17`) and adapted to our standards. These cover the production-ops lifecycle
+that the superpowers/anthropics skill sets do not.
+
+**[/observability-and-instrumentation](/.claude/skills/observability-and-instrumentation/SKILL.md)**
+Instruments code so production behavior is visible: structured logging, RED/USE metrics,
+correlation IDs, cardinality discipline, distributed tracing, and symptom-based alerting.
+Activates on: "logging", "metrics", "tracing", "alerting", "telemetry", "observability".
+
+**[/deprecation-and-migration](/.claude/skills/deprecation-and-migration/SKILL.md)**
+Removes code that no longer earns its keep and migrates users safely: the deprecation
+decision, strangler/adapter/feature-flag patterns, the Churn Rule, and zombie-code
+handling. Activates on: "deprecate", "migration", "sunset", "remove old system".
+
+**[/performance-optimization](/.claude/skills/performance-optimization/SKILL.md)**
+Measure-first performance work: Core Web Vitals targets, the measure/identify/fix/verify
+loop, N+1 and bundle-size anti-patterns, and enforced performance budgets. Activates on:
+"performance", "optimize", "slow", "Core Web Vitals", "N+1", "bundle size".
+
+**[/shipping-and-launch](/.claude/skills/shipping-and-launch/SKILL.md)**
+Safe production launches: pre-launch checklist, feature-flag lifecycle, staged/canary
+rollout with decision thresholds, post-launch verification loop, and rollback strategy.
+Activates on: "ship", "launch", "deploy", "rollout", "canary", "rollback".
+
+**[/source-driven-development](/.claude/skills/source-driven-development/SKILL.md)**
+Grounds framework-specific code in official documentation (context7 preferred for
+retrieval): detect versions, fetch authoritative docs, implement, and cite sources.
+Activates on: "cite docs", "official documentation", "verify API", "current best practices".
+
 ### Frontend
 
 **[/frontend-design](/.claude/skills/frontend-design/SKILL.md)**
