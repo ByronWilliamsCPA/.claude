@@ -11,7 +11,7 @@ extract the boundary first, or there is nothing to swap.
 
 A good interface is:
 
-- **Small**, one ABC/Protocol with 1–4 methods. The proposer rewrites the *implementation*, not
+- **Small**, one ABC/Protocol with 1-4 methods. The proposer rewrites the *implementation*, not
   the signature.
 - **Pure where possible**, deterministic, no hidden global state, so two candidates are
   comparable.
