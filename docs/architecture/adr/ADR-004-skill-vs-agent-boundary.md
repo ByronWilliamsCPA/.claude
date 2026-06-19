@@ -62,7 +62,7 @@ In plain English:
 
 ### Flat agent directory with domain prefixes
 
-All 43 agents live in a single flat directory: `.claude/agents/`. There is no nesting (`security/`, `testing/`, etc.).
+All agents live in a single flat directory: `.claude/agents/`. There is no nesting (`security/`, `testing/`, etc.).
 
 Reason: `setup.sh` creates a single symlink `~/.claude/agents/ → ~/dev/.claude/.claude/agents/`. Supporting nested directories would require either recursive symlink creation or a different install topology. The flat layout also makes `ls ~/.claude/agents/` a complete inventory at a glance.
 
@@ -98,7 +98,7 @@ Domain grouping is preserved via file name prefixes: `owasp-web.md`, `owasp-api.
 ## References
 
 - `.claude/rules/supervisor.md`: agent assignment patterns for common task types
-- `.claude/agents/`: the 43 agent files
+- `.claude/agents/`: the agent files
 - `.claude/skills/`: the 40+ skill directories
 - `.claude/rules/`: session-injected rules
 - `.claude/standards/`: on-demand reference standards

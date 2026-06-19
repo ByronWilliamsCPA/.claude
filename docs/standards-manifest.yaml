@@ -176,7 +176,7 @@ checks:
     severity: critical
     description: "SECURITY.md present at project root"
     verify: "file_exists: SECURITY.md"
-    source_template: "/home/byron/dev/.github/SECURITY.md"
+    source_template: "~/dev/.github/SECURITY.md"
     override_eligible: false
 
   - id: FOUND-002
@@ -184,7 +184,7 @@ checks:
     severity: critical
     description: "CONTRIBUTING.md present at project root"
     verify: "file_exists: CONTRIBUTING.md"
-    source_template: "/home/byron/dev/.github/CONTRIBUTING.md"
+    source_template: "~/dev/.github/CONTRIBUTING.md"
     override_eligible: false
 
   - id: FOUND-003
@@ -236,7 +236,7 @@ checks:
     severity: important
     description: "docs/known-vulnerabilities.md present"
     verify: "file_exists: docs/known-vulnerabilities.md"
-    source_template: "/home/byron/dev/.claude/docs/known-vulnerabilities-template.md"
+    source_template: "~/dev/.claude/docs/known-vulnerabilities-template.md"
     override_eligible: true
     not_applicable_when: "repo does not contain Python source files"
 
@@ -259,7 +259,7 @@ checks:
       CODE_OF_CONDUCT.md present at project root or satisfied by org-level
       ByronWilliamsCPA/.github/CODE_OF_CONDUCT.md (OpenSSF Silver: code_of_conduct)
     verify: "file_exists: CODE_OF_CONDUCT.md OR org_community_health: CODE_OF_CONDUCT.md"
-    source_template: "/home/byron/dev/.github/CODE_OF_CONDUCT.md"  # local dev .github path; adjust for your machine
+    source_template: "~/dev/.github/CODE_OF_CONDUCT.md"  # local dev .github path; adjust for your machine
     override_eligible: true
 
   - id: FOUND-013
@@ -270,7 +270,7 @@ checks:
       ByronWilliamsCPA/.github/GOVERNANCE.md (OpenSSF Silver: governance +
       roles_responsibilities)
     verify: "file_exists: GOVERNANCE.md OR org_community_health: GOVERNANCE.md"
-    source_template: "/home/byron/dev/.github/GOVERNANCE.md"  # local dev .github path; adjust for your machine
+    source_template: "~/dev/.github/GOVERNANCE.md"  # local dev .github path; adjust for your machine
     override_eligible: true
 
   - id: FOUND-014

@@ -1,13 +1,17 @@
 ---
 schema_type: planning
 title: Consensus Skill Implementation Plan
-status: draft
+status: published
 owner: engineering
 component: Development-Tools
 source: "docs/superpowers/specs/2026-06-11-consensus-skill-design.md"
 tags: [skills, tooling, automation]
 purpose: Step-by-step plan to build the consensus umbrella skill that replaces the zen-mcp-server consensus suite. Creates one uv-run engine script (OpenRouter fan-out, band-based roster selection, live catalog validation, failover, cost caps), three data files salvaged from the zen repo, SKILL.md plus three workflow files, unit tests, and registration. Implements the approved spec at docs/superpowers/specs/2026-06-11-consensus-skill-design.md.
 ---
+
+> **Status: implemented (2026-06-11).** The `consensus` skill is live at
+> `.claude/skills/consensus/` (SKILL.md, three workflows, `consensus_cli.py`, data files,
+> and `tests/unit/test_consensus_cli.py`). This plan is retained as the build record.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 

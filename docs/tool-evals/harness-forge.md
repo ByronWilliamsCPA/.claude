@@ -1,4 +1,14 @@
-# Tool Eval: Harness Forge
+---
+title: "Tool Eval: Harness Forge"
+schema_type: common
+status: published
+owner: core-maintainer
+purpose: "Evaluation of the Harness Forge meta-harness skill against this configuration, with a port-versus-submodule recommendation."
+tags:
+  - tooling
+  - evaluation
+  - skills
+---
 
 **Date:** 2026-06-14
 **Source:** <https://github.com/001TMF/harness-forge> (main, inspected 2026-06-14)

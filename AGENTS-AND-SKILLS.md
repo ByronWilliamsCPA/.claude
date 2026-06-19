@@ -1,7 +1,41 @@
 # Agents and Skills Reference
 
-Complete catalog of available agents and skills in this org-level Claude Code configuration.
-All resources are available in `.claude/agents/` and `.claude/skills/`.
+Complete catalog of agents and skills in this org-level Claude Code configuration. Most live
+directly in `.claude/agents/` and `.claude/skills/`. A subset is vendored from git submodules and
+reaches those directories through symlinks.
+
+## Local vs. vendored entries
+
+14 agents, 19 skills, and 7 commands are symlinks into `.submodules/` (reference-library,
+superpowers, anthropics-skills, anthropics-plugins, image-generation, jeffallan-claude-skills).
+They include the entire writing pipeline (the seven reference-library agents: document-drafter,
+grammar-composition-editor, document-validator, writing-style-editor, style-analyzer, tone-rewriter,
+audience-reaction-analyzer), the superpowers skill set, the pr-review-toolkit agents, the
+anthropics-skills document tools (docx, pdf, pptx, xlsx), and the hookify commands.
+
+These symlinks dangle in any clone where the submodules have not been initialized, which includes
+every fresh `git clone` and every Claude Code on the web session. In that state the entries below
+are listed but not loadable. To populate them:
+
+```bash
+git submodule update --init --recursive
+~/.claude/scripts/install-vendored-plugins.sh   # registers the plugin-backed entries
+```
+
+To list exactly which entries are vendored in the current checkout (drift-proof; reflects reality
+rather than a hand-maintained tag list):
+
+```bash
+# Portable across GNU and BSD/macOS find (avoids the GNU-only -printf):
+find ~/.claude/agents ~/.claude/skills -maxdepth 1 -type l \
+  -exec sh -c 'for l; do printf "%s -> %s\n" "${l##*/}" "$(readlink "$l")"; done' _ {} +
+```
+
+If you need auto-population at session start instead of running the command manually, the
+`session-start-hook` skill scaffolds a SessionStart hook for exactly this. It is left opt-in here
+because submodule fetches can fail under restrictive network policies (a common web-session case),
+and finding 3.4 in `docs/audits/config-quality-analysis-2026-06-12.md` proposes marketplace
+packaging that removes the symlink fragility entirely.
 
 ---
 
@@ -20,6 +54,37 @@ security issues, and adherence to project standards. Returns actionable feedback
 Breaks down monolithic code, configs, and documentation into maintainable components. Analyzes
 architectural opportunities, generates phased execution plans, and validates that refactored modules
 preserve existing behavior.
+
+### PR Review Toolkit (vendored)
+
+Six specialists from the `pr-review-toolkit` plugin, dispatched by `/pr-review`. They are symlinks
+into `.submodules/anthropics-plugins/`, so they require submodule init to load (see the Local vs.
+vendored note above). The catalog symlink `pr-toolkit-code-reviewer` points at the plugin's
+`code-reviewer.md` to avoid colliding with the local `code-reviewer` agent.
+
+**[pr-toolkit-code-reviewer](/.claude/agents/pr-toolkit-code-reviewer.md)**
+Reviews recently changed code (typically the unstaged `git diff`) for adherence to project guidelines,
+style guides, and CLAUDE.md patterns. Flags style violations and potential issues before commit or PR.
+
+**[code-simplifier](/.claude/agents/code-simplifier.md)**
+Simplifies recently modified code for clarity, consistency, and maintainability while preserving all
+functionality. Follows project best practices and focuses only on the recent change set.
+
+**[comment-analyzer](/.claude/agents/comment-analyzer.md)**
+Analyzes code comments and docstrings for accuracy against the code they describe, completeness, and
+comment-rot risk. Used after generating documentation or before finalizing a PR.
+
+**[pr-test-analyzer](/.claude/agents/pr-test-analyzer.md)**
+Reviews a PR for test coverage quality and completeness, identifying critical gaps in coverage of new
+functionality and edge cases.
+
+**[silent-failure-hunter](/.claude/agents/silent-failure-hunter.md)**
+Hunts for silent failures, inadequate error handling, and inappropriate fallback behavior in catch
+blocks and error paths within a change set.
+
+**[type-design-analyzer](/.claude/agents/type-design-analyzer.md)**
+Reviews type design for encapsulation and invariant expression, giving qualitative feedback plus
+quantitative ratings on encapsulation, invariant expression, usefulness, and enforcement.
 
 ### Testing
 
@@ -208,10 +273,11 @@ frontmatter additions, dependency bumps, ruff-flagged dead code, link fixes), cl
 difficulty against the worker contract's five gates, and writes scoped task entries to the cleanup
 backlog. Conservative by default: marks candidates claude-required when classification is uncertain.
 
-**[ossf-criteria-reference](/.claude/agents/ossf-criteria-reference.md)**
-Reference knowledge file (not an executable agent). Catalogs every OpenSSF Best Practices Badge
-criterion slug, N/A eligibility, and automation URL field name across the passing, silver, and gold
-levels. Consumed by `ossf-badge-evaluator` when generating form-submission automation URLs.
+**[ossf-criteria-reference](/.claude/standards/ossf-criteria-reference.md)**
+Reference knowledge file (not an executable agent; lives in `.claude/standards/`). Catalogs every
+OpenSSF Best Practices Badge criterion slug, N/A eligibility, and automation URL field name across
+the passing, silver, and gold levels. Consumed by `ossf-badge-evaluator` when generating
+form-submission automation URLs.
 
 ### Frontend
 

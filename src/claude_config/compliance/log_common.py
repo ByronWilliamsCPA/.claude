@@ -109,48 +109,149 @@ def ensure_header(jsonl_path: Path) -> None:
     jsonl_path.write_text(json.dumps(header) + "\n", encoding="utf-8")
 
 
+def _handle_bad_row(
+    msg: str,
+    *,
+    strict: bool,
+    skipped: list[str] | None,
+    cause: Exception,
+) -> None:
+    """Apply the bad-row policy: raise under strict, else warn and record.
+
+    Args:
+        msg (str): A ``{path}:{line}: ...`` reason describing the bad row.
+        strict (bool): When True the row is fatal and ``msg`` is raised as
+            a ``ValueError``. When False the row is skipped.
+        skipped (list[str] | None): Optional sink that collects ``msg`` for
+            each skipped row when ``strict`` is False.
+        cause (Exception): The originating exception, chained onto the
+            raised ``ValueError`` so the traceback keeps the root cause.
+
+    Raises:
+        ValueError: When ``strict`` is True, carrying ``msg`` and chaining
+            ``cause``.
+    """
+    if strict:
+        raise ValueError(msg) from cause
+    err(f"WARNING: {msg}")
+    if skipped is not None:
+        skipped.append(msg)
+
+
+def _decode_line(
+    raw_bytes: bytes,
+    *,
+    loc: str,
+    strict: bool,
+    skipped: list[str] | None,
+) -> str | None:
+    """Decode one raw log line as UTF-8, applying the bad-row policy on failure.
+
+    Args:
+        raw_bytes (bytes): The raw bytes of a single log line, newline excluded.
+        loc (str): A ``{path}:{line}`` prefix used in any bad-row message.
+        strict (bool): Forwarded to :func:`_handle_bad_row`; a non-UTF-8 row is
+            fatal when True.
+        skipped (list[str] | None): Forwarded sink for recorded skip reasons.
+
+    Returns:
+        str | None: The decoded, non-blank line. None when the bytes are not
+            valid UTF-8 (routed through the bad-row policy and skipped) or the
+            line is blank (skipped silently, like the header sentinel).
+    """
+    try:
+        raw = raw_bytes.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        _handle_bad_row(
+            f"{loc}: invalid UTF-8: {exc}",
+            strict=strict,
+            skipped=skipped,
+            cause=exc,
+        )
+        return None
+    return raw if raw.strip() else None
+
+
 def load_entries(
     jsonl_path: Path,
     *,
     strict: bool = False,
+    validate: bool = False,
+    skipped: list[str] | None = None,
 ) -> list[dict[str, Any]]:
     """Load JSONL entries, skipping the header sentinel line.
 
+    Rows that are not valid UTF-8, not valid JSON, not a JSON object, or
+    (when ``validate`` is True) schema-incomplete are handled by a single
+    policy: under ``strict`` the first bad row raises with file:line context;
+    otherwise the row is skipped with a ``WARNING:`` to stderr and, when
+    ``skipped`` is supplied, its reason is recorded so callers can surface how
+    many rows were dropped.
+
     Args:
         jsonl_path (Path): Path to the JSONL master log.
-        strict (bool): When True, any malformed JSON line raises
-            ``ValueError`` with file:line context. When False (default),
-            malformed lines are skipped with a single ``WARNING:`` to
-            stderr so one bad row does not wedge appends downstream.
+        strict (bool): When True, a malformed JSON line or a
+            schema-incomplete entry (the latter only checked when
+            ``validate`` is True) raises ``ValueError`` with file:line
+            context. When False (default), the offending row is skipped so
+            one bad row does not wedge appends downstream.
+        validate (bool): When True, each parsed entry is checked against
+            :func:`validate_entry`; rows missing a required schema field
+            are treated as bad rows. When False (default), schema is not
+            checked and only JSON parsing guards the row.
+        skipped (list[str] | None): Optional sink. When provided, every
+            skipped row appends a ``{path}:{line}: ...`` reason string. Only
+            populated when ``strict`` is False, since a bad row raises under
+            ``strict`` before it can be recorded.
 
     Returns:
         list[dict[str, Any]]: Entry dicts with the header excluded. Empty
             list if the file does not exist.
 
-    Raises:
-        ValueError: When ``strict=True`` and a JSON line cannot be
-            parsed; the message names the file and the 1-based line
-            number so callers can point operators at the offending row.
+    The bad-row policy (including the ``strict`` raise, delegated to
+    :func:`_handle_bad_row`) carries file:line context so callers can point
+    operators at the offending row.
     """
     if not jsonl_path.exists():
         return []
 
     entries: list[dict[str, Any]] = []
-    for line_num, raw in enumerate(
-        jsonl_path.read_text(encoding="utf-8").splitlines(), start=1
-    ):
-        if not raw.strip():
+    for line_num, raw_bytes in enumerate(jsonl_path.read_bytes().splitlines(), start=1):
+        loc = f"{jsonl_path}:{line_num}"
+        raw = _decode_line(raw_bytes, loc=loc, strict=strict, skipped=skipped)
+        if raw is None:
             continue
         try:
             obj = json.loads(raw)
         except json.JSONDecodeError as exc:
-            msg = f"{jsonl_path}:{line_num}: malformed JSON: {exc}"
-            if strict:
-                raise ValueError(msg) from exc
-            err(f"WARNING: {msg}")
+            _handle_bad_row(
+                f"{loc}: malformed JSON: {exc}",
+                strict=strict,
+                skipped=skipped,
+                cause=exc,
+            )
+            continue
+        if not isinstance(obj, dict):
+            _handle_bad_row(
+                f"{loc}: expected JSON object, got {type(obj).__name__}",
+                strict=strict,
+                skipped=skipped,
+                cause=TypeError("non-object JSON row"),
+            )
             continue
         if obj.get("type") == "header":
             continue
+        if validate:
+            try:
+                validate_entry(obj)
+            except SchemaError as exc:
+                _handle_bad_row(
+                    f"{loc}: {exc}",
+                    strict=strict,
+                    skipped=skipped,
+                    cause=exc,
+                )
+                continue
         entries.append(obj)
     return entries
 

@@ -119,7 +119,7 @@ Two layers of automated gates enforce quality throughout the workflow:
   Configured via `.github/copilot-instructions.md` to focus on business
   logic, error handling, edge cases, concurrency, and security logic
   flaws that automated linters cannot catch. Leaves advisory comments
-  only; not yet a merge blocker (see Phase 3.5 for blocking variant).
+  only; not a merge blocker. Address or dismiss at your discretion.
 - `/pr-review <url>`: **primary review command.** Accepts a GitHub PR URL and
   orchestrates the full pipeline: triggers Copilot review immediately, fetches
   SonarQube PR-specific findings, runs up to 8 parallel Sonnet agents (CLAUDE.md
