@@ -113,6 +113,13 @@ All skill directories live in `.claude/skills/` (symlinked to `~/.claude/skills/
 | `shipping-and-launch` | `/shipping-and-launch` | Pre-launch checklist, staged canary rollout, post-launch verification, rollback |
 | `source-driven-development` | `/source-driven-development` | Version-detect, fetch official docs (context7-first), implement, cite sources |
 
+## Reasoning and Quality
+
+| Skill | Trigger | What it does |
+| --- | --- | --- |
+| `doubt-driven-development` | `/doubt-driven-development` | Fresh-context adversarial review of every non-trivial decision: claim, contract, issues-only reviewer, reconcile, bounded stop |
+| `context-engineering` | `/context-engineering` | Five-tier context hierarchy, file trust levels, confusion management, inline planning; repointed to scoped CLAUDE.md and tiered MCP |
+
 ## See Also
 
 - [Agents Catalog](agents.md): the 43 agents and their domains

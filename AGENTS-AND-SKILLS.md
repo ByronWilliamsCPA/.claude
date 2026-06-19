@@ -449,6 +449,26 @@ Grounds framework-specific code in official documentation (context7 preferred fo
 retrieval): detect versions, fetch authoritative docs, implement, and cite sources.
 Activates on: "cite docs", "official documentation", "verify API", "current best practices".
 
+### Reasoning & Quality
+
+Ported from [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills) (MIT,
+commit `a5f0b17`) and adapted to our standards. Tier 2 reasoning enhancements that
+complement RAD and our review pipeline.
+
+**[/doubt-driven-development](/.claude/skills/doubt-driven-development/SKILL.md)**
+Subjects every non-trivial decision to a fresh-context adversarial review before it
+stands: name the CLAIM, extract artifact + contract, spawn an issues-only reviewer
+(cross-model via the `consensus` skill or `clink` when authorized), reconcile, and stop
+on a bounded condition. The active complement to RAD's assumption tagging. Activates on:
+"adversarial review", "fresh-context review", "disprove this", "doubt-driven".
+
+**[/context-engineering](/.claude/skills/context-engineering/SKILL.md)**
+Curates what the agent sees and when: the five-tier context hierarchy (rules files,
+specs, source, errors, history), trust levels for loaded files, confusion management,
+and the inline-planning pattern. Repointed to our scoped CLAUDE.md and tiered MCP
+loading. Activates on: "context engineering", "new session setup", "output quality
+degrading", "rules file".
+
 ### Frontend
 
 **[/frontend-design](/.claude/skills/frontend-design/SKILL.md)**
