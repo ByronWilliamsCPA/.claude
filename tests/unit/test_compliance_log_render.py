@@ -374,3 +374,97 @@ def test_main_passes_validated_paths_to_render(
 
     assert captured["jsonl"] == (_REPO_ROOT / "sub/in.jsonl").resolve()
     assert captured["md"] == (_REPO_ROOT / "sub/out.md").resolve()
+
+
+_HEADER_LINE = '{"type": "header", "schema_version": 1, "created": "2026-05-16"}'
+
+
+def test_render_skips_malformed_json_line_and_notes_in_footer(
+    tmp_path: Path, sample_entry: dict
+) -> None:
+    """A malformed JSON line is skipped, not silently dropped.
+
+    Regression for issue #178 gap 1: the valid row still renders and the
+    footer records the skip count so the published artifact reflects the
+    omission instead of silently undercounting.
+    """
+    from claude_config.compliance.log_render import render
+
+    jsonl = tmp_path / "master-log.jsonl"
+    md = tmp_path / "master-log.md"
+    jsonl.write_text(
+        _HEADER_LINE + "\n" + json.dumps(sample_entry) + "\n{not valid json}\n",
+        encoding="utf-8",
+    )
+
+    render(jsonl, md)
+
+    text = md.read_text(encoding="utf-8")
+    assert "ByronWilliamsCPA/llc-manager" in text
+    assert "1 log row(s) skipped" in text
+
+
+def test_render_skips_schema_incomplete_entry_and_notes_in_footer(
+    tmp_path: Path, sample_entry: dict
+) -> None:
+    """A valid-JSON row missing a required key is skipped with a footer note.
+
+    Regression for issue #178 gap 2: previously the missing ``session_id``
+    raised a context-free ``KeyError`` (in ``resolve_canonical_per_key``)
+    that aborted the whole render. Now the row is skipped and the valid row
+    renders.
+    """
+    from claude_config.compliance.log_render import render
+
+    incomplete = {
+        "schema_version": 1,
+        "session_date": "2026-05-16",
+        "repo": "ByronWilliamsCPA/incomplete",
+        # session_id intentionally omitted -> fails validate_entry
+    }
+    jsonl = tmp_path / "master-log.jsonl"
+    md = tmp_path / "master-log.md"
+    jsonl.write_text(
+        _HEADER_LINE
+        + "\n"
+        + json.dumps(sample_entry)
+        + "\n"
+        + json.dumps(incomplete)
+        + "\n",
+        encoding="utf-8",
+    )
+
+    render(jsonl, md)
+
+    text = md.read_text(encoding="utf-8")
+    assert "ByronWilliamsCPA/llc-manager" in text
+    assert "ByronWilliamsCPA/incomplete" not in text
+    assert "1 log row(s) skipped" in text
+
+
+def test_render_tolerates_missing_audit_mode(
+    tmp_path: Path, sample_entry: dict
+) -> None:
+    """An entry with all required keys but no ``audit_mode`` renders cleanly.
+
+    ``audit_mode`` is a display field, not a schema-required key, so a row
+    lacking it renders an empty mode cell (like ``totals``/``links``) rather
+    than raising ``KeyError``, and is not counted as a skip.
+    """
+    from claude_config.compliance.log_render import render
+
+    no_mode = {k: v for k, v in sample_entry.items() if k != "audit_mode"}
+    jsonl = tmp_path / "master-log.jsonl"
+    md = tmp_path / "master-log.md"
+    _write_jsonl(jsonl, no_mode)
+
+    render(jsonl, md)
+
+    text = md.read_text(encoding="utf-8")
+    repo_rows = [
+        line
+        for line in text.splitlines()
+        if "ByronWilliamsCPA/llc-manager" in line and line.startswith("|")
+    ]
+    assert len(repo_rows) == 1
+    assert "skipped" not in text

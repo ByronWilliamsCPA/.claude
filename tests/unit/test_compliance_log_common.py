@@ -37,6 +37,71 @@ def test_load_entries_returns_empty_for_missing_file(tmp_path: Path) -> None:
     assert load_entries(tmp_path / "missing.jsonl") == []
 
 
+def test_load_entries_collects_malformed_json_when_skipped_provided(
+    tmp_path: Path,
+) -> None:
+    from claude_config.compliance.log_common import load_entries
+
+    p = tmp_path / "log.jsonl"
+    p.write_text(
+        '{"type": "header", "schema_version": 1, "created": "2026-05-16"}\n'
+        '{"schema_version": 1, "session_date": "2026-05-16", "session_id": "a", '
+        '"repo": "x/y", "superseded_by": null}\n'
+        "{not valid json}\n",
+        encoding="utf-8",
+    )
+
+    skipped: list[str] = []
+    entries = load_entries(p, skipped=skipped)
+
+    assert len(entries) == 1
+    assert len(skipped) == 1
+    assert "malformed JSON" in skipped[0]
+    assert f"{p}:3" in skipped[0]
+
+
+def test_load_entries_validate_skips_schema_incomplete_and_collects(
+    tmp_path: Path,
+) -> None:
+    from claude_config.compliance.log_common import load_entries
+
+    p = tmp_path / "log.jsonl"
+    p.write_text(
+        '{"type": "header", "schema_version": 1, "created": "2026-05-16"}\n'
+        '{"schema_version": 1, "session_date": "2026-05-16", "session_id": "a", '
+        '"repo": "x/y", "superseded_by": null}\n'
+        '{"schema_version": 1, "session_date": "2026-05-16", "repo": "x/z"}\n',
+        encoding="utf-8",
+    )
+
+    skipped: list[str] = []
+    entries = load_entries(p, validate=True, skipped=skipped)
+
+    assert len(entries) == 1
+    assert entries[0]["repo"] == "x/y"
+    assert len(skipped) == 1
+    assert f"{p}:3" in skipped[0]
+    assert "session_id" in skipped[0]
+
+
+def test_load_entries_strict_validate_raises_on_schema_error(
+    tmp_path: Path,
+) -> None:
+    import pytest
+
+    from claude_config.compliance.log_common import load_entries
+
+    p = tmp_path / "log.jsonl"
+    p.write_text(
+        '{"type": "header", "schema_version": 1, "created": "2026-05-16"}\n'
+        '{"schema_version": 1, "session_date": "2026-05-16", "repo": "x/z"}\n',
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match=r"log\.jsonl:2"):
+        load_entries(p, strict=True, validate=True)
+
+
 def test_resolve_canonical_picks_latest_session_id_when_no_supersede(
     compliance_entry: dict,
 ) -> None:

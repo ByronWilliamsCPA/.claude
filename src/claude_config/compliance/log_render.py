@@ -90,7 +90,8 @@ def _format_month_section(month: str, entries: list[dict[str, Any]]) -> str:
         imp = totals.get("important", 0)
         sugg = totals.get("suggested", 0)
         cand = totals.get("unclassified_candidates", 0)
-        row = f"| {e['session_date']} | {e['repo']} | {e['audit_mode']} | {crit} | {imp} | {sugg} | {cand} | {flag} | {report} |"
+        mode = e.get("audit_mode", "")
+        row = f"| {e['session_date']} | {e['repo']} | {mode} | {crit} | {imp} | {sugg} | {cand} | {flag} | {report} |"
         lines.append(row)
 
     return "\n".join(lines) + "\n"
@@ -109,6 +110,14 @@ def render(jsonl_path: Path | None = None, md_path: Path | None = None) -> None:
     The output is idempotent except for the rendered-at timestamp in
     the footer; rendering the same input twice produces identical
     bytes apart from that timestamp.
+
+    Bad-row policy: the load is non-strict and validated, so a malformed
+    JSON line or a schema-incomplete entry never aborts the render. Each
+    such row is skipped, logged to stderr with file:line context, and
+    counted; when any row is dropped a footer note records the count so
+    the published artifact reflects the omission rather than silently
+    undercounting. Optional display fields (``audit_mode``, ``totals``,
+    ``links``, ``reconciled``) fall back to empty when absent.
     """
     # #CRITICAL security: render() is the real filesystem sink (read_text via
     # load_entries, mkdir, write_text). It does NOT confine its path arguments;
@@ -120,7 +129,8 @@ def render(jsonl_path: Path | None = None, md_path: Path | None = None) -> None:
     jsonl_path = jsonl_path or DEFAULT_JSONL
     md_path = md_path or DEFAULT_MD
 
-    all_entries = load_entries(jsonl_path)
+    skipped: list[str] = []
+    all_entries = load_entries(jsonl_path, validate=True, skipped=skipped)
     canonical = resolve_canonical_per_key(all_entries)
 
     by_month: dict[str, list[dict[str, Any]]] = defaultdict(list)
@@ -148,6 +158,12 @@ def render(jsonl_path: Path | None = None, md_path: Path | None = None) -> None:
         _format_month_section(month, by_month[month])
         for month in sorted(by_month.keys(), reverse=True)
     )
+
+    if skipped:
+        parts.append(
+            f"\n> **Note:** {len(skipped)} log row(s) skipped as malformed or "
+            "schema-incomplete; see the render log for line details.\n"
+        )
 
     rendered_at = datetime.now(tz=timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
     parts.append(
