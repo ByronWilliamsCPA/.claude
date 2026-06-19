@@ -1,6 +1,10 @@
 # docs/standards-manifest.yaml
 version: "1.0"
-last_updated: "2026-06-04"
+last_updated: "2026-06-18"
+# 2026-06-18: Weekly skill-review apply pass. Added CI-082..085 (workflow-library
+# checks), CI-086 (CI cost-tier), CLAUDE-015 (model-table drift), and a reserved-ID
+# registry formalizing CI-079 (qlty-gate ruleset companion). All start at suggested
+# per the policy-execution-gap lesson.
 # 2026-06-04: License compliance coverage. Added CI-080 (sbom.yml caller
 # forbidden-licenses denylist includes LGPL and MPL, not GPL/AGPL only,
 # suggested) and CI-081 (dependency-review.yml caller declares deny-licenses

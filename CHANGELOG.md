@@ -156,6 +156,13 @@
   and repo-compliance reference all move to pydoclint.
 
 ### Added
+* feat(skills): weekly skill-review apply pass (2026-06-17 task-observer review).
+  Added 15 skills: 3 standalone (`external-reference-verification`, `pdf-extras`,
+  `chat-app-handoff-to-repo`) and 12 `-extras` companions that layer guidance onto
+  read-only submodule and system skills. Refreshed about 21 existing skills, agents,
+  commands, and rules. Added standards-manifest checks CI-082 through CI-086
+  (workflow-library coverage plus a CI cost-tier check), CLAUDE-015 (model-table
+  drift), and a reserved-ID registry formalizing CI-079 (qlty-gate ruleset companion).
 * feat(skills): add `/tool-eval` skill for incorporate-vs-vendor decisions on
   external tools and repos. Eight-phase workflow: characterize, LOC map,
   coupling gate, licence gate, relationship classification, gap mapping,
