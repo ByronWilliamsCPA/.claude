@@ -150,6 +150,16 @@ gates, and returns a PASS/FAIL with blocking issues and recommendations.
 Reviews implementation plans for completeness, feasibility, and risk. Identifies missing steps,
 incorrect assumptions, and architectural concerns before work begins.
 
+**[plan-ceo-review](/.claude/agents/plan-ceo-review.md)**
+Reviews a plan in founder/CEO mode: challenges whether it solves the right problem, the business
+value, the do-nothing baseline, and whether scope matches value. Complements plan-validator
+(completeness) with problem-framing. Adapted from the gstack concept (MIT).
+
+**[plan-devex-review](/.claude/agents/plan-devex-review.md)**
+Reviews a plan in developer-experience mode: challenges ergonomics, cognitive load, failure-mode
+clarity, and maintainability of the interface it will produce. Complements plan-validator and
+plan-ceo-review. Adapted from the gstack concept (MIT).
+
 **[scope-analyzer](/.claude/agents/scope-analyzer.md)**
 Analyzes how much of a defined scope has been completed. Compares planned deliverables against
 actual implementation and reports completion percentages with gap analysis.
@@ -459,6 +469,25 @@ Security validation including GPG/SSH key checks, bandit static analysis, safety
 scanning, and environment variable validation. Activates on: "security check", "scan", "security".
 
 ### Planning & Documentation
+
+**[/premise-interrogation](/.claude/skills/premise-interrogation/SKILL.md)**
+Pre-spec gate that interrogates demand and scope before any spec or plan is written: challenges
+whether the thing should be built at all, who the user is, the real problem, and the cheapest test
+of the premise, then hands off to brainstorming. Adapted from the gstack `/office-hours`, mattpocock
+`grill-me`, and addyosmani `interview-me` concepts (MIT). Activates on: "challenge the premise",
+"should we build this", "is this the real problem", "grill me".
+
+**[/domain-modeling](/.claude/skills/domain-modeling/SKILL.md)**
+Maintains a living, folder-scoped domain glossary and challenges terminology drift to enforce
+ubiquitous language; surfaces synonym/homonym conflicts instead of silently coining a new term.
+Adapted from the mattpocock concept (MIT). Activates on: "domain modeling", "glossary",
+"ubiquitous language", "terminology drift".
+
+**[/issue-generation](/.claude/skills/issue-generation/SKILL.md)**
+Converts a conversation into a scoped GitHub issue through a capture, redact, confirm, file workflow
+with a mandatory PII/secret redaction gate before anything is created. Adapted from the gstack
+`/spec` and mattpocock `to-issues` concepts (MIT). Activates on: "file an issue", "turn this into an
+issue", "issue from conversation".
 
 **[/project-planning](/.claude/skills/project-planning/SKILL.md)**
 Generates project planning documents: Product Vision Statement (PVS), Architecture Decision Records
