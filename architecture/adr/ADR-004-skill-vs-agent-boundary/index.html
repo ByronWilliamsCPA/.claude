@@ -2602,7 +2602,7 @@
 <li><strong>Standards</strong> are reference libraries. Nothing loads them automatically; they are read when a specific task requires them. Examples: <code>packages.md</code> (canonical package choices), <code>writing-quality.md</code> (quality thresholds).</li>
 </ul>
 <h3 id="flat-agent-directory-with-domain-prefixes">Flat agent directory with domain prefixes<a class="headerlink" href="#flat-agent-directory-with-domain-prefixes" title="Permanent link">&para;</a></h3>
-<p>All 43 agents live in a single flat directory: <code>.claude/agents/</code>. There is no nesting (<code>security/</code>, <code>testing/</code>, etc.).</p>
+<p>All agents live in a single flat directory: <code>.claude/agents/</code>. There is no nesting (<code>security/</code>, <code>testing/</code>, etc.).</p>
 <p>Reason: <code>setup.sh</code> creates a single symlink <code>~/.claude/agents/ → ~/dev/.claude/.claude/agents/</code>. Supporting nested directories would require either recursive symlink creation or a different install topology. The flat layout also makes <code>ls ~/.claude/agents/</code> a complete inventory at a glance.</p>
 <p>Domain grouping is preserved via file name prefixes: <code>owasp-web.md</code>, <code>owasp-api.md</code>, <code>owasp-llm.md</code> cluster together alphabetically. The prefix convention is a social norm, not enforced by tooling: but deviating from it makes the catalog harder to scan.</p>
 <h2 id="alternatives-considered">Alternatives Considered<a class="headerlink" href="#alternatives-considered" title="Permanent link">&para;</a></h2>
@@ -2629,7 +2629,7 @@
 <h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
 <ul>
 <li><code>.claude/rules/supervisor.md</code>: agent assignment patterns for common task types</li>
-<li><code>.claude/agents/</code>: the 43 agent files</li>
+<li><code>.claude/agents/</code>: the agent files</li>
 <li><code>.claude/skills/</code>: the 40+ skill directories</li>
 <li><code>.claude/rules/</code>: session-injected rules</li>
 <li><code>.claude/standards/</code>: on-demand reference standards</li>
@@ -2660,7 +2660,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 27, 2026 22:56:05 UTC">April 27, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 19, 2026 02:46:43 UTC">June 19, 2026</span>
   </span>
 
     

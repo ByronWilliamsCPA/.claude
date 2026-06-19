@@ -12,7 +12,7 @@
         <meta name="author" content="Byron Williams">
       
       
-        <link rel="canonical" href="https://claude-config.readthedocs.io/tool-evals/skills-deep-dive-2026-06/">
+        <link rel="canonical" href="https://claude-config.readthedocs.io/audits/config-quality-analysis-2026-06-12/">
       
       
       
@@ -25,7 +25,7 @@
     
     
       
-        <title>Skills Deep Dive: Non-Ignored Repos vs. What We Already Have - Claude Code Configuration</title>
+        <title>Config Quality Analysis: Capabilities Gap and Improvement Plan - Claude Code Configuration</title>
       
     
     
@@ -88,7 +88,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#the-integration-architecture-verified-on-disk" class="md-skip">
+        <a href="#summary" class="md-skip">
           Skip to content
         </a>
       
@@ -122,7 +122,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Skills Deep Dive: Non-Ignored Repos vs. What We Already Have
+              Config Quality Analysis: Capabilities Gap and Improvement Plan
             
           </span>
         </div>
@@ -2201,22 +2201,44 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#the-integration-architecture-verified-on-disk" class="md-nav__link">
+  <a href="#summary" class="md-nav__link">
     <span class="md-ellipsis">
       
-        The integration architecture (verified on disk)
+        Summary
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="The integration architecture (verified on disk)">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-is-working-well" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What is working well
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#priority-1-broken-or-misfiring-machinery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Priority 1: Broken or misfiring machinery
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Priority 1: Broken or misfiring machinery">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#already-present-via-symlink-do-not-port-they-are-live" class="md-nav__link">
+  <a href="#11-bash-pre-hooksh-registered-twice" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Already present via symlink (DO NOT port; they are live)
+        1.1 bash-pre-hook.sh registered twice
       
     </span>
   </a>
@@ -2224,10 +2246,65 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#deliberate-forks-real-native-copies-intentionally-ahead-of-upstream" class="md-nav__link">
+  <a href="#12-zenpal-mcp-server-registered-under-two-names" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Deliberate forks (real native copies, intentionally ahead of upstream)
+        1.2 zen/pal MCP server registered under two names
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-machine-specific-absolute-paths-in-tracked-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3 Machine-specific absolute paths in tracked files
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#14-enabledmcpjsonservers-lists-six-undefined-servers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4 enabledMcpjsonServers lists six undefined servers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#15-ossf-criteria-referencemd-is-not-an-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5 ossf-criteria-reference.md is not an agent
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#16-cloud-and-fresh-clone-sessions-silently-lose-a-third-of-the-catalog" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.6 Cloud and fresh-clone sessions silently lose a third of the catalog
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#17-sonarqube-mcp-server-has-undocumented-prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.7 sonarqube MCP server has undocumented prerequisites
       
     </span>
   </a>
@@ -2240,22 +2317,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#per-repo-verdicts-corrected" class="md-nav__link">
+  <a href="#priority-2-context-budget-and-enforcement-architecture" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Per-repo verdicts (corrected)
+        Priority 2: Context budget and enforcement architecture
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Per-repo verdicts (corrected)">
+    <nav class="md-nav" aria-label="Priority 2: Context budget and enforcement architecture">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#1-obrasuperpowers-already-a-submodule" class="md-nav__link">
+  <a href="#21-always-on-context-is-about-15200-tokens-target-is-roughly-half-that" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. obra/superpowers (already a submodule)
+        2.1 Always-on context is about 15,200 tokens; target is roughly half that
       
     </span>
   </a>
@@ -2263,10 +2340,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#2-anthropicsskills-already-a-submodule" class="md-nav__link">
+  <a href="#22-task-observer-adds-about-18000-tokens-to-every-task-session" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. anthropics/skills (already a submodule)
+        2.2 task-observer adds about 18,000 tokens to every task session
       
     </span>
   </a>
@@ -2274,10 +2351,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#3-mattpocockskills-not-vendored" class="md-nav__link">
+  <a href="#23-convert-deterministic-alwaysnever-prose-to-hooks" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. mattpocock/skills (not vendored)
+        2.3 Convert deterministic "always/never" prose to hooks
       
     </span>
   </a>
@@ -2285,32 +2362,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#4-garrytangstack-not-vendored" class="md-nav__link">
+  <a href="#24-skill-and-agent-listing-budget" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. garrytan/gstack (not vendored)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#5-nextlevelbuilderui-ux-pro-max-skill-not-vendored" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. nextlevelbuilder/ui-ux-pro-max-skill (not vendored)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#6-egonex-aiunderstand-anything-not-vendored" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. Egonex-AI/Understand-Anything (not vendored)
+        2.4 Skill and agent listing budget
       
     </span>
   </a>
@@ -2323,33 +2378,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#convergence-signals-multiple-independent-repos-arrived-at-the-same-gap" class="md-nav__link">
+  <a href="#priority-3-adopt-current-platform-features" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Convergence signals (multiple independent repos arrived at the same gap)
+        Priority 3: Adopt current platform features
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#consolidated-recommendation-deduplicated-ranked" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Consolidated recommendation (deduplicated, ranked)
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Consolidated recommendation (deduplicated, ranked)">
+    <nav class="md-nav" aria-label="Priority 3: Adopt current platform features">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#tier-1-pure-production-ops-gaps-highest-net-new-addyosmani" class="md-nav__link">
+  <a href="#31-retire-the-homegrown-mcp-tier-loading-design" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Tier 1: pure production-ops gaps (highest net-new, addyosmani)
+        3.1 Retire the homegrown MCP tier-loading design
       
     </span>
   </a>
@@ -2357,10 +2401,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#tier-2-reasoningquality-enhancements-cheap-high-leverage" class="md-nav__link">
+  <a href="#32-migrate-claudecommands-to-skills" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Tier 2: reasoning/quality enhancements (cheap, high-leverage)
+        3.2 Migrate .claude/commands/ to skills
       
     </span>
   </a>
@@ -2368,10 +2412,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#tier-3-planningdiscovery-cluster-convergent-targeted-ports" class="md-nav__link">
+  <a href="#33-execute-or-drop-the-pattern-a-pilot" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Tier 3: planning/discovery cluster (convergent; targeted ports)
+        3.3 Execute or drop the Pattern A pilot
       
     </span>
   </a>
@@ -2379,10 +2423,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#tier-4-workflowanalytics-gstack-mattpocock" class="md-nav__link">
+  <a href="#34-package-the-repo-as-a-plugin-marketplace" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Tier 4: workflow/analytics (gstack + mattpocock)
+        3.4 Package the repo as a plugin marketplace
       
     </span>
   </a>
@@ -2390,10 +2434,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#tier-5-design-data-ui-ux-pro-max" class="md-nav__link">
+  <a href="#35-use-current-subagent-frontmatter-in-the-agent-fleet" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Tier 5: design data (ui-ux-pro-max)
+        3.5 Use current subagent frontmatter in the agent fleet
       
     </span>
   </a>
@@ -2401,21 +2445,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#maintenance-items-not-adoption" class="md-nav__link">
+  <a href="#36-settings-modernization" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Maintenance items (not adoption)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#explicitly-do-not-port-already-covered" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Explicitly do NOT port (already covered)
+        3.6 Settings modernization
       
     </span>
   </a>
@@ -2424,6 +2457,28 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#priority-4-drift-and-contradictions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Priority 4: Drift and contradictions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#priority-5-consolidation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Priority 5: Consolidation
+      
+    </span>
+  </a>
   
 </li>
       
@@ -2432,6 +2487,39 @@
     <span class="md-ellipsis">
       
         Suggested sequencing
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#appendix-a-measured-footprint" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Appendix A: Measured footprint
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#appendix-b-sources" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Appendix B: Sources
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#appendix-c-corrections-made-during-verification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Appendix C: Corrections made during verification
       
     </span>
   </a>
@@ -2458,357 +2546,289 @@
   
 
 
-  <h1>Skills Deep Dive: Non-Ignored Repos vs. What We Already Have</h1>
+  <h1>Config Quality Analysis: Capabilities Gap and Improvement Plan</h1>
 
-<p><strong>Date:</strong> 2026-06-18
-<strong>Companion to:</strong> <code>skills-repos-survey-2026-06.md</code>
-<strong>Method:</strong> one research agent per repo, each reading our actual native
-<code>SKILL.md</code>/agent files on disk and comparing against upstream skill <em>bodies</em>
-content-by-content (not by name). Findings below are corrected by the author for
-the integration architecture (next section), which the agents could not see
-because the submodules are not checked out in this container.</p>
-<blockquote>
-<p>External README/skill text treated as untrusted data (OWASP LLM01).</p>
-</blockquote>
-<h2 id="the-integration-architecture-verified-on-disk">The integration architecture (verified on disk)<a class="headerlink" href="#the-integration-architecture-verified-on-disk" title="Permanent link">&para;</a></h2>
-<p>Our config does <strong>not</strong> copy most external skills. It vendors source repos as
-git submodules under <code>.submodules/</code> and <strong>symlinks</strong> individual skills into
-<code>.claude/skills/&lt;name&gt;</code>:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>.claude/skills/brainstorming -&gt; ../../.submodules/superpowers/skills/brainstorming
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>.claude/skills/docx          -&gt; ../../.submodules/anthropics-skills/skills/docx
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>.claude/skills/skill-creator  -&gt; ../../.submodules/anthropics-skills/skills/skill-creator
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>.claude/skills/writing-rules  -&gt; ../../.submodules/anthropics-plugins/plugins/hookify/skills/writing-rules
-</span></code></pre></div>
-<p>In this ephemeral container the submodules are not <code>git submodule update --init</code>'d,
-so those symlinks dangle and several agents reported the targets as "missing."
-On a real checkout they resolve. This changes the conclusions: <strong>skills already
-symlinked are present, not gaps, and must not be "ported."</strong></p>
-<h3 id="already-present-via-symlink-do-not-port-they-are-live">Already present via symlink (DO NOT port; they are live)<a class="headerlink" href="#already-present-via-symlink-do-not-port-they-are-live" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Source submodule</th>
-<th>Skills symlinked in</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>superpowers</td>
-<td>brainstorming, executing-plans, subagent-driven-development, systematic-debugging, finishing-a-development-branch, requesting-code-review, verification-before-completion, using-superpowers, writing-skills</td>
-</tr>
-<tr>
-<td>anthropics-skills</td>
-<td>docx, pdf, pptx, xlsx (proprietary; symlink is the <em>only</em> licit path), skill-creator</td>
-</tr>
-<tr>
-<td>anthropics-plugins</td>
-<td>claude-automation-recommender, claude-md-improver, session-report, writing-rules (hookify)</td>
-</tr>
-<tr>
-<td>jeffallan-claude-skills</td>
-<td>fastapi-expert</td>
-</tr>
-</tbody>
-</table>
-<h3 id="deliberate-forks-real-native-copies-intentionally-ahead-of-upstream">Deliberate forks (real native copies, intentionally ahead of upstream)<a class="headerlink" href="#deliberate-forks-real-native-copies-intentionally-ahead-of-upstream" title="Permanent link">&para;</a></h3>
-<p><code>writing-plans</code>, <code>test-driven-development</code>, <code>receiving-code-review</code>,
-<code>dispatching-parallel-agents</code>, <code>using-git-worktrees</code>. Each carries
-project-specific additions (RAD tags, our observations, <code>.worktrees/</code> policy,
-AI-branch review notes) that direct symlinking would regress. Keep maintaining
-these as forks.</p>
-<h2 id="per-repo-verdicts-corrected">Per-repo verdicts (corrected)<a class="headerlink" href="#per-repo-verdicts-corrected" title="Permanent link">&para;</a></h2>
-<h3 id="1-obrasuperpowers-already-a-submodule">1. obra/superpowers (already a submodule)<a class="headerlink" href="#1-obrasuperpowers-already-a-submodule" title="Permanent link">&para;</a></h3>
-<p>Nothing to port. 9 skills are live via symlink; 5 are forks we keep. The only
-actionable items are maintenance, not adoption:</p>
+<p><strong>Date:</strong> 2026-06-12
+<strong>Method:</strong> Three parallel analysis tracks: (1) structural inventory of agents, skills, commands, settings, hooks, and MCP config with byte-level measurements; (2) drift and contradiction audit across CLAUDE.md, rules, standards, catalogs, and docs; (3) research against official Claude Code documentation (code.claude.com/docs) and community sources current to June 2026. Subagent claims were spot-verified before inclusion; two inventory claims were corrected during verification (see Appendix C).</p>
+<h2 id="summary">Summary<a class="headerlink" href="#summary" title="Permanent link">&para;</a></h2>
+<p>The repo is in good operational health: 50 commits in 60 days, every pre-commit invariant in <code>.claude/rules/pre-commit.md</code> verified against the actual <code>.pre-commit-config.yaml</code> with zero mismatches, all CLAUDE.md cross-references resolving, and 45 of 46 working agents carrying <code>tools:</code> restrictions (the lone exception is the frontmatter-less <code>ossf-criteria-reference</code> reference file, relocated to <code>.claude/standards/</code> in this change). The improvement opportunities fall into two classes:</p>
+<ol>
+<li><strong>Architecture lag.</strong> Several homegrown mechanisms predate native Claude Code features that now do the same job better: the MCP tier-loading design (never wired to a hook) is superseded by per-subagent <code>mcpServers</code> frontmatter; the commands directory is a legacy mechanism; the symlink-plus-submodule install is what plugin marketplaces now solve; and prose "always/never" rules sit in always-loaded context where hooks would give deterministic enforcement at zero context cost.</li>
+<li><strong>Context budget.</strong> Roughly 33,000 tokens load before any work begins in a typical task session (15,200 from CLAUDE.md plus unscoped rules, about 18,000 from the task-observer skill). Official guidance targets under 200 lines per CLAUDE.md file and warns that bloat reduces instruction adherence. This is the single largest lever on output quality across all repos this config governs.</li>
+</ol>
+<p>Findings are ordered by priority. Each item names the file, the problem, and the recommended action.</p>
+<h2 id="what-is-working-well">What is working well<a class="headerlink" href="#what-is-working-well" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong><code>using-git-worktrees</code> fork is behind upstream.</strong> Upstream added a "Step 0:
-  Detect Existing Isolation" pass (<code>git rev-parse --git-dir/--git-common-dir/
-  --show-superproject-working-tree</code>) that prevents nested-worktree and
-  in-submodule false positives. Our fork lacks it and still lists
-  <code>~/.config/superpowers/worktrees/</code> as a valid path, which contradicts our
-  <code>git-workflow.md</code> <code>.worktrees/&lt;slug&gt;</code>-only rule. <strong>Fix: port Step 0, delete
-  the global-path option.</strong></li>
-<li><strong>Submodule pin is stale vs upstream v6.</strong> The pin predates the June 2026 v6
-  rewrite. Decide whether to <code>git submodule update --remote</code> for the symlinked
-  skills, balanced against re-validating our 5 forks against v6. Pin to a release
-  tag, not <code>main</code> HEAD.</li>
+<li>The pre-commit invariant system (PC-YAMLLINT-FILE-REF, PC-MARKDOWNLINT-MD040, PC-HOOK-STAGED-SCOPE, no-em-dash PC-011, interrogate, pydoclint, commitizen, detect-secrets) is fully consistent between the rule doc and the live config. This audit found zero gaps.</li>
+<li><code>.claude/rules/python.md</code> and <code>.claude/rules/testing.md</code> use <code>paths:</code> frontmatter correctly and load only when matching files are touched.</li>
+<li>The standards manifest (174 checks across 9 domains) plus the domain-auditor agent family is a coherent, testable compliance architecture with regression fixtures under <code>data/test_fixtures/</code>.</li>
+<li>Agent hygiene is above community norms: 45 of 46 working agents restrict <code>tools:</code> (the one exception, <code>ossf-criteria-reference</code>, carries no frontmatter and is a reference file, not an executable agent), and the supervisor output-envelope contract (verdict plus mandatory evidence field) is a pattern Anthropic's own docs now recommend.</li>
+<li>The cost-lane documentation in <code>mcp-strategy.md</code> (subscription vs Agent SDK credit vs metered API) is accurate and ahead of most community guidance.</li>
 </ul>
-<h3 id="2-anthropicsskills-already-a-submodule">2. anthropics/skills (already a submodule)<a class="headerlink" href="#2-anthropicsskills-already-a-submodule" title="Permanent link">&para;</a></h3>
-<p><code>skill-creator</code> and the four document skills are already symlinked. The four
-document skills are <strong>proprietary/source-available</strong> (no redistribution), so the
-symlink-from-submodule is the only permissible access path; never copy them into
-native files. Genuine Apache-2.0 gaps not currently symlinked, worth adding (port
-or symlink the specific skill dir):</p>
-<table>
-<thead>
-<tr>
-<th>Skill</th>
-<th>License</th>
-<th>Status</th>
-<th>Action</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>mcp-builder</code></td>
-<td>Apache-2.0</td>
-<td>No equivalent (we <em>use</em> MCP, no build-a-server guide)</td>
-<td>ADD (symlink or port)</td>
-</tr>
-<tr>
-<td><code>claude-api</code></td>
-<td>Apache-2.0</td>
-<td>Partial (<code>ai-engineer</code> agent lacks current model IDs/SDK/caching)</td>
-<td>PORT into ai-engineer or add skill</td>
-</tr>
-<tr>
-<td><code>algorithmic-art</code></td>
-<td>Apache-2.0</td>
-<td>No generative-art capability</td>
-<td>LOW priority</td>
-</tr>
-<tr>
-<td><code>web-artifacts-builder</code></td>
-<td>Apache-2.0</td>
-<td><code>frontend-design</code> lacks the single-file bundle pipeline</td>
-<td>OPTIONAL</td>
-</tr>
-<tr>
-<td><code>webapp-testing</code> <code>with_server.py</code> pattern</td>
-<td>Apache-2.0</td>
-<td><code>ui-testing-agent</code> lacks server-lifecycle manager</td>
-<td>ADD to <code>testing/workflows/e2e.md</code></td>
-</tr>
-</tbody>
-</table>
-<p>Skip as duplicates (ours are supersets): <code>frontend-design</code>, <code>doc-coauthoring</code>
-(our 7-agent <code>writing</code> pipeline), <code>skill-creator</code> (already symlinked).</p>
-<h3 id="3-mattpocockskills-not-vendored">3. mattpocock/skills (not vendored)<a class="headerlink" href="#3-mattpocockskills-not-vendored" title="Permanent link">&para;</a></h3>
-<p>TypeScript-centric; our config is Python-centric. After removing overlaps with
-our symlinked superpowers skills, the genuine gaps are narrower than the survey
-implied:</p>
-<table>
-<thead>
-<tr>
-<th>Upstream skill</th>
-<th>Status vs ours</th>
-<th>Action</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>domain-modeling</code> (live CONTEXT.md glossary, terminology-drift challenge)</td>
-<td>GAP</td>
-<td><strong>PORT</strong></td>
-</tr>
-<tr>
-<td><code>triage</code> (issue/PR triage state machine)</td>
-<td>GAP</td>
-<td>PORT (strip TS)</td>
-</tr>
-<tr>
-<td><code>prototype</code> (throwaway-to-answer-one-question)</td>
-<td>GAP</td>
-<td>PORT</td>
-</tr>
-<tr>
-<td><code>git-guardrails-claude-code</code> (PreToolUse hook blocking force-push/hard-reset)</td>
-<td>Enforcement gap; but we have hookify + settings.json <code>ask</code></td>
-<td>Implement as a <strong>hookify rule</strong>, not a skill</td>
-</tr>
-<tr>
-<td><code>to-issues</code> / <code>to-prd</code> (conversation -&gt; filed GitHub issue)</td>
-<td>Complementary; converges with gstack <code>/spec</code></td>
-<td>PORT <strong>one</strong> issue-gen skill</td>
-</tr>
-<tr>
-<td><code>diagnosing-bugs</code></td>
-<td>Largely covered by symlinked <code>systematic-debugging</code></td>
-<td>SKIP (borrow hypothesis-first framing only)</td>
-</tr>
-<tr>
-<td><code>grilling</code>/<code>grill-me</code></td>
-<td>Overlaps <code>brainstorming</code> (symlinked)</td>
-<td>SKIP (see convergence cluster)</td>
-</tr>
-<tr>
-<td><code>tdd</code>, <code>handoff</code>, <code>writing-great-skills</code>, <code>ask-matt</code></td>
-<td>Ours equal/better</td>
-<td>SKIP</td>
-</tr>
-<tr>
-<td><code>setup-pre-commit</code>, <code>migrate-to-shoehorn</code>, <code>scaffold-exercises</code>, <code>teach</code></td>
-<td>TS-locked / out of scope</td>
-<td>SKIP</td>
-</tr>
-</tbody>
-</table>
-<h3 id="4-garrytangstack-not-vendored">4. garrytan/gstack (not vendored)<a class="headerlink" href="#4-garrytangstack-not-vendored" title="Permanent link">&para;</a></h3>
-<p>~50 slash-commands; most value is locked behind a Bun browser daemon, GBrain/
-Supabase, compiled binaries, or iOS tunneling (all SKIP-infra-locked). The
-prompt-only role skills are the value:</p>
-<table>
-<thead>
-<tr>
-<th>Skill</th>
-<th>Status vs ours</th>
-<th>Action</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>/retro</code> (engineering analytics from git history; per-author velocity, cross-project)</td>
-<td>No equivalent</td>
-<td><strong>PORT</strong> (unique)</td>
-</tr>
-<tr>
-<td><code>/plan-ceo-review</code>, <code>/plan-devex-review</code> (founder/DX-mode plan challenge)</td>
-<td><code>plan-validator</code> checks completeness, not problem-framing</td>
-<td>PORT as agents</td>
-</tr>
-<tr>
-<td><code>/office-hours</code> (premise interrogation before any spec)</td>
-<td>Partially covers <code>brainstorming</code></td>
-<td>PORT (convergence cluster)</td>
-</tr>
-<tr>
-<td><code>/spec</code> (utterance -&gt; filed GitHub issue + PII/secret redaction gate)</td>
-<td>No equivalent; converges with mattpocock <code>to-issues</code></td>
-<td>PORT one issue-gen skill</td>
-</tr>
-<tr>
-<td><code>/health</code> (weighted dashboard over type/lint/test/dead-code)</td>
-<td>We run <code>quality</code>+<code>test-coverage</code>+<code>sonarcloud</code> separately</td>
-<td>PORT (aggregator)</td>
-</tr>
-<tr>
-<td><code>/freeze</code> (dynamic per-session directory scope-lock)</td>
-<td>settings.json is static/global</td>
-<td>Implement via hook; MEDIUM</td>
-</tr>
-<tr>
-<td><code>/design-review</code> AI-slop rubric (named blacklist + A-F across 10 categories)</td>
-<td>Absent from frontend pipeline</td>
-<td>Inject rubric into <code>frontend-designer</code> agent (cheap)</td>
-</tr>
-<tr>
-<td><code>/document-generate</code> Diataxis partitioning</td>
-<td><code>documentation-writer</code> lacks it</td>
-<td>Add to that agent (cheap)</td>
-</tr>
-<tr>
-<td><code>/investigate</code></td>
-<td>Largely covered by symlinked <code>systematic-debugging</code> (also has 3-strike escalation)</td>
-<td>SKIP / borrow scope-lock idea</td>
-</tr>
-<tr>
-<td><code>/review</code>, <code>/cso</code>, <code>/codex</code>, <code>/careful</code>, <code>/context-save</code>, <code>/ship</code>, <code>/setup-deploy</code></td>
-<td>Duplicate <code>pr-review</code>, owasp suite, <code>consensus</code>, settings.json, <code>handoff</code>, <code>git</code>, <code>devops-deployment-agent</code></td>
-<td>SKIP</td>
-</tr>
-</tbody>
-</table>
-<h3 id="5-nextlevelbuilderui-ux-pro-max-skill-not-vendored">5. nextlevelbuilder/ui-ux-pro-max-skill (not vendored)<a class="headerlink" href="#5-nextlevelbuilderui-ux-pro-max-skill-not-vendored" title="Permanent link">&para;</a></h3>
-<p>Our <code>frontend-design</code> skill <strong>already credits this repo as a source</strong> and inlines
-its 99 UX guidelines. So the skill itself is a SKIP (already absorbed). The
-net-new asset is the curated CSV knowledge our skill does not carry:</p>
+<h2 id="priority-1-broken-or-misfiring-machinery">Priority 1: Broken or misfiring machinery<a class="headerlink" href="#priority-1-broken-or-misfiring-machinery" title="Permanent link">&para;</a></h2>
+<p>These are defects in the current setup, independent of any best-practice judgment.</p>
+<h3 id="11-bash-pre-hooksh-registered-twice">1.1 <code>bash-pre-hook.sh</code> registered twice<a class="headerlink" href="#11-bash-pre-hooksh-registered-twice" title="Permanent link">&para;</a></h3>
+<p>Both <code>/settings.json</code> (user scope, repo root) and <code>.claude/settings.json</code> (project scope) register <code>bash-pre-hook.sh</code> on <code>PreToolUse/Bash</code>. When working inside this repo, the hook fires twice per Bash call: doubled latency and double-block risk. Remove the project-scope duplicate.</p>
+<h3 id="12-zenpal-mcp-server-registered-under-two-names">1.2 zen/pal MCP server registered under two names<a class="headerlink" href="#12-zenpal-mcp-server-registered-under-two-names" title="Permanent link">&para;</a></h3>
+<p><code>settings.json</code> registers the server as <code>zen</code>; <code>.mcp.json</code> registers the same binary as <code>pal</code>. Both load, creating two instances. Tool references are split across the codebase: the <code>rad</code> skill and <code>project-planning</code> skill reference <code>mcp__pal__*</code>, while <code>project-plan-synthesizer</code> references <code>mcp__zen__consensus</code>. Whichever single name is kept (CLAUDE.md's own guidance in <code>mcp-strategy.md</code> says keep <code>zen</code>), one registration must be deleted and all <code>mcp__pal__*</code> references renamed.</p>
+<h3 id="13-machine-specific-absolute-paths-in-tracked-files">1.3 Machine-specific absolute paths in tracked files<a class="headerlink" href="#13-machine-specific-absolute-paths-in-tracked-files" title="Permanent link">&para;</a></h3>
+<p><code>/home/byron/...</code> paths appear in files consumed at runtime on other machines:</p>
 <ul>
-<li><strong>EXTRACT-DATA</strong> into <code>.claude/skills/frontend-design/context/</code>: <code>styles.csv</code>
-  (67 styles x21 cols), <code>colors.csv</code> (161 product-type palettes), <code>typography.csv</code>
-  (57 font pairings), <code>products.csv</code> + <code>ui-reasoning.csv</code> (161 product-type
-  patterns), <code>charts.csv</code> (25 chart types w/ a11y grades). Drop the <code>search.py</code>
-  BM25 runtime; static files are referenceable directly by the model.</li>
-<li>Optional new design sub-skills (<code>brand</code>, <code>design-system</code>, <code>slides</code>,
-  <code>banner-design</code>) are genuine gaps but LOW priority for a dev-centric config.</li>
+<li><code>settings.json</code>: <code>extraKnownMarketplaces</code> and <code>enabledPlugins</code> point at <code>/home/byron/dev/.claude/.submodules/agents-observe</code>, so the agents-observe plugin fails everywhere except the original machine.</li>
+<li><code>docs/standards-manifest.yaml</code>: three <code>source_template:</code> entries use <code>/home/byron/dev/...</code>; the repo-foundations-auditor emits these paths in its remediation output (<code>.claude/agents/repo-foundations-auditor.md:94</code>).</li>
 </ul>
-<h3 id="6-egonex-aiunderstand-anything-not-vendored">6. Egonex-AI/Understand-Anything (not vendored)<a class="headerlink" href="#6-egonex-aiunderstand-anything-not-vendored" title="Permanent link">&para;</a></h3>
-<p>No skills to compare; it is a compiled TS/WASM plugin. Unchanged verdict: <strong>RUN
-STANDALONE</strong> via the plugin marketplace per-project if codebase-onboarding
-knowledge graphs are ever needed. Nothing to port.</p>
-<h2 id="convergence-signals-multiple-independent-repos-arrived-at-the-same-gap">Convergence signals (multiple independent repos arrived at the same gap)<a class="headerlink" href="#convergence-signals-multiple-independent-repos-arrived-at-the-same-gap" title="Permanent link">&para;</a></h2>
-<p>These are the highest-confidence gaps because 2-3 repos built the same thing and
-we lack it:</p>
-<ol>
-<li><strong>Premise interrogation before spec</strong>: gstack <code>/office-hours</code>, mattpocock
-   <code>grilling</code>/<code>grill-me</code>, addyosmani <code>interview-me</code>/<code>idea-refine</code>. Our symlinked
-   <code>brainstorming</code> only partially covers (it moves toward a spec; these hold the
-   pen back and interrogate demand/scope first). Port <strong>one</strong> interrogation skill
-   or strengthen brainstorming with a pre-spec gate.</li>
-<li><strong>Conversation -&gt; filed GitHub issue</strong>: gstack <code>/spec</code>, mattpocock
-   <code>to-issues</code>/<code>to-prd</code>. We write plan docs to disk, never to the issue tracker.
-   Port <strong>one</strong> issue-generation skill (with the PII/secret redaction gate from
-   <code>/spec</code>).</li>
-<li><strong>Anti-rationalization tables</strong>: addyosmani uses excuse/rebuttal tables in 4
-   skills; our <code>test-driven-development</code> already uses one. Adopt cross-cutting.</li>
-</ol>
-<h2 id="consolidated-recommendation-deduplicated-ranked">Consolidated recommendation (deduplicated, ranked)<a class="headerlink" href="#consolidated-recommendation-deduplicated-ranked" title="Permanent link">&para;</a></h2>
-<h3 id="tier-1-pure-production-ops-gaps-highest-net-new-addyosmani">Tier 1: pure production-ops gaps (highest net-new, addyosmani)<a class="headerlink" href="#tier-1-pure-production-ops-gaps-highest-net-new-addyosmani" title="Permanent link">&para;</a></h3>
-<p>Nothing in superpowers/anthropics/native covers these:</p>
-<ol>
-<li><code>observability-and-instrumentation</code> (structured logs, RED/USE metrics,
-   correlation IDs, cardinality discipline, percentile alerting)</li>
-<li><code>deprecation-and-migration</code> (strangler/adapter/feature-flag, churn rule)</li>
-<li><code>performance-optimization</code> (measure-first, N+1, profiling-before-change)</li>
-<li><code>shipping-and-launch</code> (canary %, rollback triggers, flag lifecycle) +
-   gstack <code>/land-and-deploy</code> post-deploy verification loop</li>
-<li><code>source-driven-development</code> (version-detect + cite official docs; note
-   context7 MCP already does the retrieval step)</li>
-</ol>
-<h3 id="tier-2-reasoningquality-enhancements-cheap-high-leverage">Tier 2: reasoning/quality enhancements (cheap, high-leverage)<a class="headerlink" href="#tier-2-reasoningquality-enhancements-cheap-high-leverage" title="Permanent link">&para;</a></h3>
-<ol>
-<li><code>doubt-driven-development</code> (addyosmani): adversarial fresh-context review
-   layer that complements RAD; cross-reference from <code>rad/SKILL.md</code></li>
-<li><code>context-engineering</code> (addyosmani): five-tier context hierarchy + trust
-   levels + confusion-management; upgrades every multi-file session</li>
-<li>Anti-rationalization tables: add to <code>rad</code>, <code>debug-tests</code>, <code>security</code></li>
-<li>gstack <code>/design-review</code> AI-slop rubric -&gt; into <code>frontend-designer</code> agent</li>
-<li>gstack Diataxis discipline -&gt; into <code>documentation-writer</code> agent</li>
-</ol>
-<h3 id="tier-3-planningdiscovery-cluster-convergent-targeted-ports">Tier 3: planning/discovery cluster (convergent; targeted ports)<a class="headerlink" href="#tier-3-planningdiscovery-cluster-convergent-targeted-ports" title="Permanent link">&para;</a></h3>
-<ol>
-<li>One <strong>premise-interrogation</strong> skill (merge office-hours + grilling +
-    interview-me)</li>
-<li><code>plan-ceo-review</code> + <code>plan-devex-review</code> strategic review agents (gstack)</li>
-<li><code>domain-modeling</code> CONTEXT.md glossary (mattpocock)</li>
-<li>One <strong>issue-generation</strong> skill (gstack <code>/spec</code> ~ mattpocock <code>to-issues</code>)</li>
-</ol>
-<h3 id="tier-4-workflowanalytics-gstack-mattpocock">Tier 4: workflow/analytics (gstack + mattpocock)<a class="headerlink" href="#tier-4-workflowanalytics-gstack-mattpocock" title="Permanent link">&para;</a></h3>
-<ol>
-<li><code>/retro</code> git-history engineering analytics (unique)</li>
-<li><code>/health</code> quality dashboard aggregator</li>
-<li><code>triage</code> issue triage (mattpocock); <code>prototype</code> (mattpocock); <code>/freeze</code>
-    directory scope-lock (gstack, via hook)</li>
-<li><code>git-guardrails</code> PreToolUse hook -&gt; implement as a <strong>hookify rule</strong></li>
-</ol>
-<h3 id="tier-5-design-data-ui-ux-pro-max">Tier 5: design data (ui-ux-pro-max)<a class="headerlink" href="#tier-5-design-data-ui-ux-pro-max" title="Permanent link">&para;</a></h3>
-<ol>
-<li>Extract the 6 CSV catalogs into <code>frontend-design/context/</code></li>
-<li>Optional <code>brand</code>/<code>slides</code>/<code>banner</code>/<code>design-system</code> sub-skills (low priority)</li>
-</ol>
-<h3 id="maintenance-items-not-adoption">Maintenance items (not adoption)<a class="headerlink" href="#maintenance-items-not-adoption" title="Permanent link">&para;</a></h3>
+<p>Replace with <code>~</code>-relative or repo-relative paths resolved at runtime.</p>
+<h3 id="14-enabledmcpjsonservers-lists-six-undefined-servers">1.4 <code>enabledMcpjsonServers</code> lists six undefined servers<a class="headerlink" href="#14-enabledmcpjsonservers-lists-six-undefined-servers" title="Permanent link">&para;</a></h3>
+<p><code>settings.json</code> enables <code>playwright</code>, <code>postgres</code>, <code>sentry</code>, <code>mermaid</code>, <code>docker</code>, and <code>uml-mcp-server</code>, but no loaded config defines them (they exist only in the design file <code>mcp/mcp_config.yaml</code>). Either define them in <code>.mcp.json</code> or remove the entries; see also finding 3.1.</p>
+<h3 id="15-ossf-criteria-referencemd-is-not-an-agent">1.5 <code>ossf-criteria-reference.md</code> is not an agent<a class="headerlink" href="#15-ossf-criteria-referencemd-is-not-an-agent" title="Permanent link">&para;</a></h3>
+<p>A 266-line reference table sits in <code>.claude/agents/</code> with no frontmatter at all. It is the one file failing the repo's own <code>validate-frontmatter.sh</code> contract, and per ADR-004 it belongs in <code>.claude/standards/</code>. Move it and update the two OSSF agents that reference it.</p>
+<h3 id="16-cloud-and-fresh-clone-sessions-silently-lose-a-third-of-the-catalog">1.6 Cloud and fresh-clone sessions silently lose a third of the catalog<a class="headerlink" href="#16-cloud-and-fresh-clone-sessions-silently-lose-a-third-of-the-catalog" title="Permanent link">&para;</a></h3>
+<p>14 agent, 19 skill, and 7 command symlinks resolve into submodules that are empty in any clone where <code>install-vendored-plugins.sh</code> has not run, which includes every Claude Code on the web session (this one included). The writing pipeline (all seven reference-library agents), the entire superpowers skill set, the pr-review-toolkit agents, and the hookify commands are all unavailable here, while AGENTS-AND-SKILLS.md and CLAUDE.md present them as live. Actions:</p>
 <ul>
-<li>Port superpowers <code>using-git-worktrees</code> Step 0 into our fork; remove the global
-  <code>~/.config/superpowers/</code> path option.</li>
-<li>Decide on bumping the superpowers/anthropics submodule pins to current upstream
-  (v6), then re-validate our 5 forks against the new upstream.</li>
-<li>For anthropics document skills: confirm they stay symlink-only (license).</li>
+<li>Add a repo SessionStart hook (the <code>session-start-hook</code> skill exists for exactly this) that runs <code>git submodule update --init</code> plus <code>install-vendored-plugins.sh</code>, or document the limitation.</li>
+<li>Mark submodule-backed entries in AGENTS-AND-SKILLS.md so a session can tell local from vendored.</li>
+<li>Longer term, finding 3.4 (marketplace packaging) removes the symlink fragility entirely.</li>
 </ul>
-<h3 id="explicitly-do-not-port-already-covered">Explicitly do NOT port (already covered)<a class="headerlink" href="#explicitly-do-not-port-already-covered" title="Permanent link">&para;</a></h3>
-<p><code>/review</code>, <code>/cso</code>, <code>/codex</code>, <code>/careful</code>, <code>/context-save</code>, <code>/ship</code>,
-<code>/setup-deploy</code> (gstack); <code>tdd</code>, <code>handoff</code>, <code>setup-pre-commit</code>, <code>ask-matt</code>
-(mattpocock); <code>security-and-hardening</code>, <code>code-review-and-quality</code>,
-<code>ci-cd-and-automation</code>, <code>git-workflow-and-versioning</code>, <code>frontend-ui-engineering</code>,
-<code>planning-and-task-breakdown</code>, <code>test-driven-development</code>, <code>using-agent-skills</code>
-(addyosmani); <code>frontend-design</code>, <code>doc-coauthoring</code> (anthropics); the entire
-gstack browser-daemon / GBrain / iOS / compiled-binary surface.</p>
+<h3 id="17-sonarqube-mcp-server-has-undocumented-prerequisites">1.7 <code>sonarqube</code> MCP server has undocumented prerequisites<a class="headerlink" href="#17-sonarqube-mcp-server-has-undocumented-prerequisites" title="Permanent link">&para;</a></h3>
+<p><code>.mcp.json</code> defines <code>sonarqube</code> against <code>http://localhost:8090/mcp</code> with <code>SONARQUBE_TOKEN</code>, but neither appears in <code>.env.mcp.example</code>. Add both, or the sonarcloud skill fails opaquely on new machines.</p>
+<h2 id="priority-2-context-budget-and-enforcement-architecture">Priority 2: Context budget and enforcement architecture<a class="headerlink" href="#priority-2-context-budget-and-enforcement-architecture" title="Permanent link">&para;</a></h2>
+<p>This is where the config most directly affects the quality of code produced everywhere else. Official guidance: target under 200 lines per CLAUDE.md file; "bloated CLAUDE.md files cause Claude to ignore your actual instructions" (code.claude.com/docs/en/memory, /best-practices). Community measurements put the effective high-adherence budget at 80 to 120 lines of high-signal content.</p>
+<h3 id="21-always-on-context-is-about-15200-tokens-target-is-roughly-half-that">2.1 Always-on context is about 15,200 tokens; target is roughly half that<a class="headerlink" href="#21-always-on-context-is-about-15200-tokens-target-is-roughly-half-that" title="Permanent link">&para;</a></h3>
+<p>Measured bytes loaded into every session regardless of task:</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Bytes</th>
+<th>Path-scoped?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CLAUDE.md</code></td>
+<td>12,977</td>
+<td>no (by design)</td>
+</tr>
+<tr>
+<td><code>.claude/rules/git-workflow.md</code></td>
+<td>14,449</td>
+<td>no</td>
+</tr>
+<tr>
+<td><code>.claude/rules/supervisor.md</code></td>
+<td>9,998</td>
+<td>no</td>
+</tr>
+<tr>
+<td><code>.claude/rules/mcp-strategy.md</code></td>
+<td>7,506</td>
+<td>no</td>
+</tr>
+<tr>
+<td><code>.claude/rules/pre-commit.md</code></td>
+<td>7,447</td>
+<td>no</td>
+</tr>
+<tr>
+<td><code>.claude/rules/writing.md</code></td>
+<td>4,087</td>
+<td>no</td>
+</tr>
+<tr>
+<td><code>.claude/rules/settings-and-permissions.md</code></td>
+<td>2,640</td>
+<td>no</td>
+</tr>
+<tr>
+<td><code>.claude/rules/loop-recipes.md</code></td>
+<td>1,683</td>
+<td>no</td>
+</tr>
+<tr>
+<td>Total</td>
+<td>60,787 (~15,200 tokens)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>(<code>python.md</code> at 10.2 KB and <code>testing.md</code> at 3.6 KB are correctly path-scoped and excluded.)</p>
+<p>Recommended dispositions, in descending size order:</p>
+<ul>
+<li><strong>git-workflow.md (14.4 KB):</strong> keep the branch strategy table, force-push prohibition, and remote verification (about 3 KB). Move merge-queue guidance, PR-size calibration, session forking, gate-system catalog, and worktree detail into the <code>/git</code> skill's context files, which already exist (<code>.claude/skills/git/context/</code>). These are needed at git-operation time, and the <code>/git</code> skill fires then.</li>
+<li><strong>supervisor.md (10.0 KB):</strong> the agent-assignment table duplicates information Claude already receives from agent descriptions in its listing; the output-envelope spec is needed only when composing agent prompts. Keep the core requirements and scope-tracing rule (about 2 KB); move the envelope spec and two-pattern architecture to <code>.claude/standards/</code>.</li>
+<li><strong>mcp-strategy.md (7.5 KB):</strong> the cost-lane table is the load-bearing part. Keep it (about 2 KB); move tier tables and fork-history narrative to <code>.claude/standards/mcp-minimal-bloat.md</code>, which already covers adjacent ground.</li>
+<li><strong>pre-commit.md (7.4 KB):</strong> a checklist consulted at commit time is the textbook case for skill-time loading. Move into the <code>/git</code> skill (commit-prep workflow) and keep a three-line pointer. The three PC-* invariants belong in <code>.claude/standards/</code> next to <code>manifest-changes.md</code>.</li>
+<li><strong>settings-and-permissions.md (2.6 KB) and loop-recipes.md (1.7 KB):</strong> pure reference; move to <code>.claude/standards/</code>. The <code>/loop</code> skill can cite the recipes file.</li>
+<li><strong>CLAUDE.md (13.0 KB, ~340 lines):</strong> apply the official pruning test ("would removing this line cause mistakes?"). Candidates for relocation: the repository-structure tree (Claude can read the tree), the compact-instructions section (keep, it is load-bearing), the project-context grep ritual (fold into a doc-writing skill), and the model-selection table (move detail to supervisor standard, keep the four-row summary).</li>
+</ul>
+<p>Net effect: always-on context drops from about 15,200 to roughly 6,000 to 7,000 tokens, with no rule deleted, only relocated to load at the moment it applies. Use the <code>InstructionsLoaded</code> hook (new; reports <code>file_path</code>, <code>memory_type</code>, <code>load_reason</code>) to verify post-change what actually loads per session.</p>
+<h3 id="22-task-observer-adds-about-18000-tokens-to-every-task-session">2.2 task-observer adds about 18,000 tokens to every task session<a class="headerlink" href="#22-task-observer-adds-about-18000-tokens-to-every-task-session" title="Permanent link">&para;</a></h3>
+<p><code>task-observer/SKILL.md</code> is 72,230 bytes (1,496 lines), the largest file in the config, and CLAUDE.md mandates invoking it at the start of every task-oriented session. The official skill guidance caps SKILL.md at 500 lines and says to move detail to reference files loaded on demand. Restructure:</p>
+<ul>
+<li>Keep in SKILL.md: the observation format, logging protocol with collision checks, and surfacing rules (roughly 300 lines).</li>
+<li>Move to reference files read only when triggered: the comprehensive-review procedure, the five confidentiality layers, delivery and archival mechanics, environment-compatibility notes, and the licensing catalog (roughly 1,200 lines).</li>
+<li>The upstream skill is vendored from <code>one-skill-to-rule-them-all</code>; carry the restructure as a local overlay or upstream PR rather than a fork drift.</li>
+</ul>
+<p>This one change recovers about 14,000 tokens per session. Combined with 2.1, a typical session starts near 10,000 tokens of config instead of 33,000.</p>
+<h3 id="23-convert-deterministic-alwaysnever-prose-to-hooks">2.3 Convert deterministic "always/never" prose to hooks<a class="headerlink" href="#23-convert-deterministic-alwaysnever-prose-to-hooks" title="Permanent link">&para;</a></h3>
+<p>Official position: prose rules are probabilistic; hooks execute regardless of what the model decides. Every rule moved to a hook can then be shortened or cut from always-on context. The repo already does this well in places (stop-pre-commit-hook, tdd-enforcement, py310-compat, security-guidance). Remaining candidates:</p>
+<table>
+<thead>
+<tr>
+<th>Prose rule (location)</th>
+<th>Hook replacement</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Never commit to main/master/develop (git-workflow.md)</td>
+<td><code>PreToolUse</code> on <code>Bash(git commit*)</code>: exit 2 if <code>git branch --show-current</code> is protected</td>
+</tr>
+<tr>
+<td>Never force-push protected branches (git-workflow.md)</td>
+<td><code>PreToolUse</code> on <code>Bash(git push*)</code>: exit 2 on <code>--force*</code> to protected refs (currently only an <code>ask</code> permission)</td>
+</tr>
+<tr>
+<td>Sign every commit (CLAUDE.md)</td>
+<td><code>PreToolUse</code> on <code>Bash(git commit*)</code>: exit 2 if <code>commit.gpgsign</code> unset</td>
+</tr>
+<tr>
+<td>Worktrees only at <code>.worktrees/</code> (CLAUDE.md)</td>
+<td><code>PreToolUse</code> on <code>Bash(git worktree add*)</code>: exit 2 on paths outside project</td>
+</tr>
+<tr>
+<td>No em-dash in any output (writing.md)</td>
+<td>Already enforced at commit (PC-011); add <code>PostToolUse</code> on Write/Edit to catch non-committed artifacts</td>
+</tr>
+</tbody>
+</table>
+<p>Use the hook <code>if</code> field for surgical matching so the catch-all cost stays near zero.</p>
+<h3 id="24-skill-and-agent-listing-budget">2.4 Skill and agent listing budget<a class="headerlink" href="#24-skill-and-agent-listing-budget" title="Permanent link">&para;</a></h3>
+<p>Skill descriptions share a listing budget (default 1 percent of context; per-skill cap 1,536 characters combined with <code>when_to_use</code>; least-used descriptions truncate first). With 30 skill directories and 46 agents:</p>
+<ul>
+<li>The <code>task-observer</code> and <code>writing</code> descriptions are far past the point of diminishing returns; tighten to trigger conditions only.</li>
+<li>Ten agent descriptions exceed 320 characters (worst: <code>cleanup-backlog-scout</code> at 728). Long descriptions crowd the routing budget and dilute auto-delegation for everything else.</li>
+<li>Mark side-effect workflow skills (<code>close</code>, <code>close-clean</code>, <code>compliance-rollup</code>, <code>compliance-synthesis</code> once migrated per 3.2) with <code>disable-model-invocation: true</code> so they cannot auto-fire and stop consuming description budget.</li>
+<li>Run <code>/doctor</code> to check current overflow status; consider <code>skillListingBudgetFraction</code> only if trimming is insufficient.</li>
+</ul>
+<h2 id="priority-3-adopt-current-platform-features">Priority 3: Adopt current platform features<a class="headerlink" href="#priority-3-adopt-current-platform-features" title="Permanent link">&para;</a></h2>
+<h3 id="31-retire-the-homegrown-mcp-tier-loading-design">3.1 Retire the homegrown MCP tier-loading design<a class="headerlink" href="#31-retire-the-homegrown-mcp-tier-loading-design" title="Permanent link">&para;</a></h3>
+<p>The Tier &#8532; architecture in <code>mcp/mcp_config.yaml</code> and ADR-003 was never wired up: <code>mcp-tool-loader.sh</code> is called by no hook, and <code>keyword-tool-trigger.sh</code> only logs suggestions because servers cannot be hot-loaded mid-session. The platform now provides the real mechanism:</p>
+<ul>
+<li><strong>Per-subagent <code>mcpServers</code> frontmatter</strong>: each agent declares exactly the servers it needs (inline or by reference). This implements "Tier 2 agent bundles" natively. Apply to security-auditor (sentry, github), database-operations-agent (postgres), devops-deployment-agent (docker, sentry), test-engineer (playwright), documentation-writer (mermaid).</li>
+<li><strong>Skill <code>allowed-tools</code></strong>: already used by four skills; extend to the skill bundles described in mcp-strategy.md.</li>
+</ul>
+<p>Then delete the dead loader scripts, mark ADR-003 superseded, and resolve finding 1.4 by defining servers where agents actually reference them.</p>
+<h3 id="32-migrate-claudecommands-to-skills">3.2 Migrate <code>.claude/commands/</code> to skills<a class="headerlink" href="#32-migrate-claudecommands-to-skills" title="Permanent link">&para;</a></h3>
+<p>Commands are a legacy mechanism ("custom commands have been merged into skills", code.claude.com/docs/en/skills). The five local commands (<code>close</code>, <code>close-clean</code>, <code>aggregate-observations</code>, <code>compliance-rollup</code>, <code>compliance-synthesis</code>) should become skills to gain <code>context: fork</code> (run wind-down work in an isolated context), <code>disable-model-invocation</code>, and skill-scoped hooks. The command-invokes-agent pattern (compliance-synthesis) maps cleanly to a skill with <code>context: fork</code> and <code>agent: compliance-synthesis</code>.</p>
+<h3 id="33-execute-or-drop-the-pattern-a-pilot">3.3 Execute or drop the Pattern A pilot<a class="headerlink" href="#33-execute-or-drop-the-pattern-a-pilot" title="Permanent link">&para;</a></h3>
+<p>supervisor.md approved preloading skills into security-auditor and owasp-dispatch via <code>skills:</code> frontmatter on 2026-04-11; two months later nothing uses it. The field is now stable and also accepts agent <code>memory:</code>. Either run the pilot (the owasp rule sets are the ideal preload payload) or remove the section from supervisor.md.</p>
+<h3 id="34-package-the-repo-as-a-plugin-marketplace">3.4 Package the repo as a plugin marketplace<a class="headerlink" href="#34-package-the-repo-as-a-plugin-marketplace" title="Permanent link">&para;</a></h3>
+<p>The symlink install (<code>setup.sh</code>) plus eight submodules is the pre-plugin-era solution to distribution. A <code>.claude-plugin/marketplace.json</code> in this repo would give: versioned installs pinned to SHAs, one-command machine setup (<code>/plugin marketplace add</code>), namespaced skills, native bundling of hooks and MCP config, and elimination of the machine-specific paths in finding 1.3. Suggested split: a <code>core</code> plugin (rules-as-skills, hooks, key agents), a <code>compliance</code> plugin (auditor family plus manifest), and a <code>writing</code> plugin (pipeline agents, replacing the reference-library symlinks). The submodules that are pure upstream consumption (anthropics-skills, superpowers) can be installed from their own marketplaces instead of vendored. This is the largest structural change recommended here; stage it after Priorities 1 and 2.</p>
+<h3 id="35-use-current-subagent-frontmatter-in-the-agent-fleet">3.5 Use current subagent frontmatter in the agent fleet<a class="headerlink" href="#35-use-current-subagent-frontmatter-in-the-agent-fleet" title="Permanent link">&para;</a></h3>
+<p>45 of 46 agents are <code>model: sonnet</code>, 1 is opus, 0 are haiku, despite CLAUDE.md's own table routing read-only exploration to Haiku. Fleet-wide pass:</p>
+<ul>
+<li><code>model: haiku</code> for read-only scanners and reference-heavy auditors where reasoning depth is low (cleanup-backlog-scout, ossf-criteria lookups, parts of the compliance family). Measure with <code>/usage-report agents</code> before and after.</li>
+<li><code>maxTurns</code> caps on auditors that occasionally wander.</li>
+<li><code>isolation: worktree</code> in frontmatter for remediation agents (openapi-code-enricher already gets a worktree from its orchestrator; the frontmatter form is self-serve).</li>
+<li><code>memory: project</code> for compliance agents that currently re-derive fleet state each run (compliance-synthesis reads the master log every time; persistent agent memory is the native fit).</li>
+<li><code>background: true</code> for long-running audit agents dispatched from interactive sessions.</li>
+</ul>
+<h3 id="36-settings-modernization">3.6 Settings modernization<a class="headerlink" href="#36-settings-modernization" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>CLAUDE_AUTOCOMPACT_PCT_OVERRIDE: "80"</code> is the old percentage knob. The current recommendation is an absolute window (<code>CLAUDE_CODE_AUTO_COMPACT_WINDOW</code>, commonly 400000) because context rot is a function of absolute tokens, not percentage. Verify the variable name against the current settings schema before switching.</li>
+<li>Consider <code>effortLevel</code> defaults: <code>xhigh</code> for architecture and security review agents via per-agent <code>effort:</code> frontmatter, low effort for Explore-pattern work.</li>
+<li><code>sandbox.enabled: false</code> is documented as deliberate for trusted local work, but unattended <code>/loop</code> runs are exactly where sandbox plus auto-allow is the right posture. Add a sandbox-on requirement to loop-recipes safeguards.</li>
+<li>Evaluate <code>/schedule</code> (cloud-persistent recurring jobs) as a replacement for the <code>/loop 6h /doc-audit</code> recipe; unverified against official docs as of this audit, so confirm it exists before documenting.</li>
+<li>Add LSP plugins (official marketplace) for Python and TypeScript to the setup path; diagnostics-aware editing measurably reduces lint round-trips.</li>
+</ul>
+<h2 id="priority-4-drift-and-contradictions">Priority 4: Drift and contradictions<a class="headerlink" href="#priority-4-drift-and-contradictions" title="Permanent link">&para;</a></h2>
+<p>Doc-only fixes, cheap and mechanical:</p>
+<ol>
+<li><strong>zen/pal consensus replacement not propagated.</strong> The <code>/consensus</code> skill (merged 2026-06-11, PR #204) replaces the zen consensus tools, but <code>mcp-strategy.md</code> (Tier 1 table, line ~37 guidance, <code>/git</code> and <code>/project-planning</code> bundles), <code>supervisor.md</code> (auto-loaded tool annotations), and <code>docs/development/agent-teams-pilot.md</code> (decision table) still route to <code>zen.tiered_consensus</code> and friends. One sweep, about six files.</li>
+<li><strong>Copilot review: advisory or blocking?</strong> <code>pre-commit.md</code> production checklist says "address comments before merging"; <code>git-workflow.md</code> says "advisory comments only; not yet a merge blocker (see Phase 3.5)". Phase 3.5 was a two-week evaluation that ended in May. Decide, then make both files say the same thing.</li>
+<li><strong>Model version drift.</strong> <code>claude-docs-auditor.md:44</code> says Opus 4.7; CLAUDE.md says Opus 4.8. The auditor checks CLAUDE.md for a living, so this one is self-undermining. Consider making the CLAUDE.md table the single source and having the auditor reference it by path.</li>
+<li><strong>Catalog gaps.</strong> Six pr-review-toolkit agents used by <code>/pr-review</code> are absent from AGENTS-AND-SKILLS.md; ADR-004 says "43 agents" twice (actual: 46); submodule-backed entries are not distinguishable from local ones. The <code>catalog-refresh.yml</code> workflow exists; extend it to count agents and diff the catalog so this class of drift fails CI instead of accumulating.</li>
+<li><strong>README points to <code>docs/ADRs/</code> (templates only) as the ADR home</strong> while real ADRs live in <code>docs/architecture/adr/</code>; <code>docs/planning/adr/</code> is a third, empty location. Collapse to one.</li>
+<li><strong>X/Twitter posts as canonical sources</strong> for active rules (PR-size thresholds, forking guidance, skills adoption). Archive the content of each cited post into <code>docs/reference/</code> and cite the archive; keep the URL as provenance.</li>
+<li><strong>Stale plans.</strong> The Renovate v43 plan remains <code>status: draft</code> four months past the v42 EOL it cites; agent-teams-pilot.md cites a billing change dated 2026-06-15 as future, which is now three days out. Sweep <code>docs/superpowers/plans/</code> for plans that completed or expired.</li>
+</ol>
+<h2 id="priority-5-consolidation">Priority 5: Consolidation<a class="headerlink" href="#priority-5-consolidation" title="Permanent link">&para;</a></h2>
+<p>Lower urgency; bundle with adjacent work.</p>
+<ul>
+<li><strong>OSSF pair:</strong> <code>ossf-compliance-auditor.md</code> (838 lines) and <code>ossf-badge-evaluator.md</code> (406 lines) overlap heavily. Extract the shared criterion logic into one standard (alongside the relocated <code>ossf-criteria-reference</code>) and slim both agents to their distinct verbs (audit-and-remediate vs evaluate-and-prefill).</li>
+<li><strong>Testing triad routing:</strong> supervisor.md lists both test-engineer and test-writer for generation with no dispatch rule. Add one line: test-writer for coverage-driven generation loops, test-engineer for strategy and infrastructure, test-reviewer for validation.</li>
+<li><strong><code>owasp-agent</code> naming:</strong> it covers Agentic-Applications AG01-AG10 but reads as the family generic; rename to <code>owasp-agentic</code> to prevent misdispatch against <code>owasp-dispatch</code>.</li>
+<li><strong>Parallel filenames in rules/ and standards/:</strong> <code>git-workflow.md</code>, <code>python.md</code>, <code>testing.md</code> exist in both directories at different detail levels. The split is intentional (rule vs specification) but unlabeled; add a one-line header to each rules file naming its standards counterpart, and vice versa.</li>
+<li><strong>Six agents over 300 lines</strong> (worst: ossf-compliance-auditor at 838, visual-content-generator at 435, diagram-maintenance-agent at 407): move procedural reference into standards files the agent reads on demand. Long agent bodies pay their cost on every invocation.</li>
+<li><strong><code>pipeline-coordinator-reference</code></strong> (442 lines, <code>user-invocable: false</code>, no executable workflow) belongs in <code>.claude/standards/</code> per ADR-004's own rubric.</li>
+</ul>
 <h2 id="suggested-sequencing">Suggested sequencing<a class="headerlink" href="#suggested-sequencing" title="Permanent link">&para;</a></h2>
-<p>Open <code>feat/skills-gap-port</code> and land in three small PRs to stay under the p90
-size line: (1) Tier 1 production-ops skills, (2) Tier 2 reasoning enhancements +
-the two cheap agent-rubric injections, (3) the convergence-cluster ports (one
-interrogation skill, one issue-gen skill, domain-modeling, retro). Record source
-URL + commit SHA + MIT/Apache attribution in each ported file. Do the
-<code>using-git-worktrees</code> Step 0 fix and the submodule-pin decision as a separate
-maintenance PR.</p>
+<table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>Scope</th>
+<th>Items</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Defect fixes</td>
+<td>1.1 to 1.7, 4.3</td>
+<td>Hours; no design decisions</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Drift sweep</td>
+<td>4.1, 4.2, 4.4 to 4.7</td>
+<td>Hours; one decision (Copilot blocking)</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Context diet</td>
+<td>2.1, 2.2, 2.4, plus 2.3 hooks</td>
+<td>One focused session; measure with InstructionsLoaded before and after</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Platform adoption</td>
+<td>3.1, 3.2, 3.3, 3.5, 3.6, Priority 5</td>
+<td>Incremental over weeks</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Marketplace packaging</td>
+<td>3.4</td>
+<td>Separate project; design doc first</td>
+</tr>
+</tbody>
+</table>
+<p>Phases 1 to 3 are where code-quality impact concentrates: deterministic enforcement replaces probabilistic prose, and the instruction set shrinks to a size the model reliably follows.</p>
+<h2 id="appendix-a-measured-footprint">Appendix A: Measured footprint<a class="headerlink" href="#appendix-a-measured-footprint" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Always-on rule load: 60,787 bytes (~15,200 tokens) across CLAUDE.md plus 7 unscoped rules.</li>
+<li>task-observer skill: 72,230 bytes (~18,000 tokens), invoked per task session by CLAUDE.md mandate.</li>
+<li>Largest files under <code>.claude/</code>: task-observer SKILL.md (72.2 KB), pr-fix workflow (59.6 KB), standards/testing.md (52.5 KB), pr-review workflow (51.1 KB), ossf-compliance-auditor (44.7 KB).</li>
+<li>Agent fleet: 46 working agents (45 sonnet, 1 opus, 0 haiku, 1 missing frontmatter), 14 broken symlinks in fresh clones.</li>
+<li>Skills: 11 working local skills with SKILL.md, 19 submodule symlinks; frontmatter conventions vary (three different tool-field spellings; 5 of 30 use <code>user-invocable</code>; 4 use <code>version</code>).</li>
+<li>Hook scripts: roughly 30 scripts in <code>scripts/</code> are not referenced by any hook (most are manual utilities; <code>mcp-tool-loader.sh</code> is the one that was designed as a hook and never wired).</li>
+</ul>
+<h2 id="appendix-b-sources">Appendix B: Sources<a class="headerlink" href="#appendix-b-sources" title="Permanent link">&para;</a></h2>
+<ul>
+<li>code.claude.com/docs/en/memory, /skills, /sub-agents, /hooks, /plugins, /plugin-marketplaces, /settings, /sandboxing, /agent-teams, /best-practices (fetched 2026-06-12)</li>
+<li>howborisusesclaudecode.com (Boris Cherny patterns; dynamic workflows, context minimalism, auto-compact window)</li>
+<li>HumanLayer "Writing a good CLAUDE.md"; claudelint.com size-rule analysis</li>
+<li>Repo-internal: ADR-003, ADR-004, standards-manifest.yaml v1.0 (2026-06-04), supervisor.md adoption status (2026-04-11)</li>
+</ul>
+<h2 id="appendix-c-corrections-made-during-verification">Appendix C: Corrections made during verification<a class="headerlink" href="#appendix-c-corrections-made-during-verification" title="Permanent link">&para;</a></h2>
+<p>Two subagent findings were corrected before inclusion, recorded here so future audits weigh single-agent negative claims appropriately:</p>
+<ol>
+<li>The structural inventory reported all nine rules files as loading into every session; direct inspection showed <code>python.md</code> and <code>testing.md</code> carry <code>paths:</code> frontmatter and are correctly scoped. Totals above reflect the corrected set.</li>
+<li>The inventory flagged <code>FileChanged</code> as a nonexistent hook event; the documentation research confirmed it is a current (observe-only) event, so the <code>env-file-audit.sh</code> registration was removed from the defect list. Whether an observe-only event suits that script's intent is worth a follow-up check.</li>
+</ol>
 
 
 
@@ -2841,7 +2861,7 @@ maintenance PR.</p>
     <span class="md-icon" title="Created">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 18, 2026 23:26:32 UTC">June 18, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 19, 2026 02:46:43 UTC">June 19, 2026</span>
   </span>
 
     
