@@ -51,7 +51,7 @@ If you doubt every keystroke, you ship nothing. The skill applies only to non-tr
 
 This skill is designed for the **main-session orchestrator**, where Step 3 (DOUBT, detailed below) can spawn a fresh-context reviewer.
 
-- **Do NOT add this skill to an agent's `skills:` frontmatter.** An agent that follows Step 3 would spawn another agent, the orchestration anti-pattern described in `.claude/rules/supervisor.md` (skills do not invoke agents; agents do not dispatch other agents as a default pattern). The supervisor, the main session, is the only layer that dispatches reviewers.
+- **Do NOT add this skill to an agent's `skills:` frontmatter.** Step 3 spawns a fresh-context reviewer, but Claude Code does not allow a subagent to spawn another subagent, so an agent preloaded with this skill could not run the DOUBT step. Dispatching reviewers is the orchestrator's job; see `.claude/rules/supervisor.md` for the skill-vs-agent boundary (skills do not invoke agents). The supervisor, the main session, is the only layer that dispatches reviewers.
 - **If you find yourself applying this skill from inside a subagent context** (where Claude Code prevents nested subagent spawn): the preferred path is to surface to the user that doubt-driven cannot run nested and let the main session handle it. As a last resort only, a degraded self-questioning fallback exists: rewrite ARTIFACT + CONTRACT as a fresh self-prompt with a hard mental separator from your prior reasoning, and walk Steps 1 to 5. This is **not fresh-context review** (you carry your own context with you), so flag the result as degraded and prefer escalation whenever the user is reachable.
 
 ## The Process
