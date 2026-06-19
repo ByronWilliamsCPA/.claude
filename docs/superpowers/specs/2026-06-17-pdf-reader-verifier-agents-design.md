@@ -7,7 +7,7 @@ tags: [agents, architecture, optimization, specifications]
 purpose: Design for two pinned, reusable agents that isolate PDF reading on a cheap model and semantic page-verification on a mid-tier model, so catch-all subagent PDF work stops inheriting the session Opus model (about 31% of Opus subagent spend in the SAA build).
 ---
 
-> **Status**: Approved (brainstorming) | **Date**: 2026-06-17 | **Author**: Byron Williams
+> **Brainstorming**: approved | **Date**: 2026-06-17 | **Author**: Byron Williams | **Lifecycle**: draft (design approved, implementation not started)
 
 ## Problem
 
@@ -152,7 +152,9 @@ shows the high-stakes numeric path never needs it.
 ## Dependencies
 
 - Add `pdfplumber` to the environment that runs the helper.
-- `PyMuPDF` (`fitz`) and `PyPDF2` already present.
+- `PyMuPDF` (`fitz`) and `PyPDF2` are already present in the SAA build
+  environment. They are not in this repo's `pyproject.toml`/`uv.lock`; add all
+  three wherever the helper is hosted (see Open decisions).
 - No third-party skills installed; no hosted APIs. The
   `claude-office-skills/pdf-extraction` skill (pdfplumber-based, security-audited)
   was evaluated and its patterns may inform `pdf_extract.py`, but it is not added
@@ -174,6 +176,28 @@ PDFs. The `pdf-verifier` remains strictly read-only (no Bash).
 - `scripts/pdf_extract.py`
 - `tests/test_pdf_extract.py`
 - Update `AGENTS-AND-SKILLS.md` (registration).
+
+## Open decisions
+
+Resolve both before implementation; each is a deliberate design choice, not an
+oversight.
+
+- **Read-only tier plus `Bash`.** `pdf-reader` is pinned to `haiku` (the tier
+  `.claude/agents/CLAUDE.md` reserves for read-only agents) yet is granted
+  `Bash`, which the same convention reserves to non-read-only agents. The grant
+  is intentional and scoped (Bash only invokes `pdf_extract.py`, never mutates
+  source PDFs). Decide whether to keep the deviation and document the scoped
+  grant inline in the agent definition so reviewers and the frontmatter
+  validator do not re-flag it, or to move extraction off the read-only agent so
+  the convention holds unmodified.
+- **Where the helper and its dependencies live.** The agents are global
+  (`~/.claude/agents/`) and reusable across projects, but a global agent that
+  invokes `scripts/pdf_extract.py` via `Bash` resolves that relative path
+  against the consuming project's working directory, not `~/.claude/`. Decide
+  between a global helper invoked by absolute path (with `pdfplumber`,
+  `PyMuPDF`, and `PyPDF2` in the global environment) and a per-project vendored
+  helper (with those dependencies added to each consuming project's lockfile).
+  The Files list above assumes the latter; confirm or switch it.
 
 ## Testing / acceptance
 
