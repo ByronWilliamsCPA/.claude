@@ -1,7 +1,7 @@
 ---
 name: security-auditor
 description: Security analysis specialist for vulnerability detection, threat assessment, and compliance validation.
-model: sonnet
+model: opus
 tools: ["Read", "Bash", "Grep", "Glob"]
 ---
 
