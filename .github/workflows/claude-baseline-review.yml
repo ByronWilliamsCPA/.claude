@@ -53,4 +53,8 @@ jobs:
           vendored dependency source or commit.
         - Changes under scripts/ that perform writes via gh api, handle
           secrets, or transfer/delete resources.
-    secrets: inherit  # pragma: allowlist secret
+    # Least-privilege: pass only the one secret the reusable declares in its
+    # workflow_call.secrets contract (ANTHROPIC_API_KEY, required: true), rather
+    # than forwarding every inherited secret via `secrets: inherit`.
+    secrets:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}  # pragma: allowlist secret
