@@ -1,0 +1,56 @@
+# ============================================================================
+# Claude Baseline Review -- caller for the .claude config repo
+# ============================================================================
+# Thin caller for the Tier 0 baseline reviewer. The reviewer logic, security
+# posture, and prompt live in the reusable workflow in ByronWilliamsCPA/.github;
+# this file only supplies the trigger, the permission ceiling, and this repo's
+# framing. Part of the tiered-pr-review Phase 3 evaluation cohort.
+#
+# #CRITICAL: a called (reusable) workflow runs with a token bounded by the
+# CALLER job's permissions. The four scopes below are the ceiling the reusable
+# needs (id-token for the Claude App OIDC exchange); omitting any one fails the
+# run at startup.
+# ============================================================================
+name: Claude Baseline Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, edited]
+    branches:
+      - main
+
+permissions: {}
+
+jobs:
+  review:
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+      id-token: write
+    # #ASSUME: pinned to the reusable's PR-head SHA (ByronWilliamsCPA/.github
+    # PR #214) so this caller can run during the evaluation. Re-pin to the
+    # squash-merge SHA on main once #214 merges (Renovate then tracks it).
+    uses: ByronWilliamsCPA/.github/.github/workflows/claude-baseline-review.yml@e5e695122efeb6feccd92e390bc3f79715832b07  # pre-merge ref of #214
+    with:
+      repo-description: >-
+        the global Claude Code configuration repo: agents, skills, slash
+        commands, MCP server configuration, settings, and operator scripts,
+        symlinked into ~/.claude on developer machines.
+      sensitive-paths: >-
+        .claude/agents/, .claude/skills/, .claude/commands/,
+        .claude/settings.json, settings.json, .mcp.json, mcp/, .submodules/,
+        .gitmodules, scripts/
+      escalation-guidance: |
+        - Changes to settings.json or .claude/settings.json that widen tool
+          permissions, weaken deny or ask rules, change permission modes, or
+          alter hook configuration (hooks run automatically on Claude events).
+        - Changes to MCP server configuration (.mcp.json, mcp/) that add or
+          alter a server command, since MCP servers execute.
+        - Changes to agent or skill definitions (.claude/agents/,
+          .claude/skills/) that grant broader tools or invoke shell commands.
+        - Submodule pin bumps (.submodules/, .gitmodules) that change a
+          vendored dependency source or commit.
+        - Changes under scripts/ that perform writes via gh api, handle
+          secrets, or transfer/delete resources.
+    secrets: inherit  # pragma: allowlist secret
