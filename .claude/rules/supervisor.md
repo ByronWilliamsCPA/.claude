@@ -59,10 +59,10 @@ Match the model to where the verdict actually comes from:
 | Judgment / adversarial | Find the non-obvious flaw the author missed | `opus` |
 
 Current pins: code-reviewer, security-auditor, and document-validator run
-`opus` (adversarial, first-party or own-library source); phase-reviewer,
-plan-validator, scope-analyzer, test-reviewer, and general-compliance-auditor
-run `sonnet` (tool- or checklist-decided). The three vendor-mirror agents
-below remain on `inherit` by exception.
+`opus` (adversarial, first-party or own-library source); phase-reviewer runs
+`haiku` and plan-validator, scope-analyzer, test-reviewer, and
+general-compliance-auditor run `sonnet` (all tool- or checklist-decided). The
+three vendor-mirror agents below remain on `inherit` by exception.
 
 **In-family decorrelation has a ceiling.** Within the Anthropic family you
 cannot get maximum reasoning *and* strong decorrelation at once, because the
