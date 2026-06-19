@@ -63,7 +63,9 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude/scripts/bash-pre-hook.sh"
+            "command": "bash $HOME/.claude/scripts/bash-pre-hook.sh",
+            "timeout": 10,
+            "statusMessage": "Checking Bash command safety..."
           }
         ]
       }
@@ -157,7 +159,7 @@
     }
   },
   "enableAllProjectMcpServers": false,
-  "enabledMcpjsonServers": ["zen", "context7", "github", "playwright", "postgres", "sentry", "mermaid", "docker", "uml-mcp-server"],
+  "enabledMcpjsonServers": ["zen", "context7", "github"],
   "feedbackSurveyState": {
     "lastShownTime": 1754083719175
   },

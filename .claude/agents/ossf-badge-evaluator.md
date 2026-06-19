@@ -47,7 +47,7 @@ After all criteria, always emit all three automation URLs regardless of the `lev
 Read the companion reference file before evaluating anything:
 
 ```text
-~/.claude/agents/ossf-criteria-reference.md
+~/.claude/standards/ossf-criteria-reference.md
 ```
 
 This file contains the authoritative slug list for all three levels, N/A eligibility, and
@@ -356,7 +356,7 @@ If `level` is `silver` or `gold`, evaluate the additional criteria from those le
 ## Generating the Automation URLs
 
 Always produce all three automation URLs, one per level, regardless of which level was evaluated.
-Use the slug tables in `ossf-criteria-reference.md` to ensure complete coverage.
+Use the slug tables in `~/.claude/standards/ossf-criteria-reference.md` to ensure complete coverage.
 
 **Critical rule**: each level's URL contains only the slugs introduced at that level.
 Passing slugs do not appear in the silver URL; passing and silver slugs do not appear in the gold URL.

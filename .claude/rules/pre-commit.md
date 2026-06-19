@@ -43,7 +43,7 @@ Before committing ANY changes, verify all items:
 **Production / OSS / client** (external users, revenue-bearing, or multi-contributor):
 - [ ] **Full review**: Run `/pr-review <url>` (8 agents + Copilot + SonarQube, ~15 min)
 - [ ] **CodeRabbit review**: address inline comments before merging; use `@coderabbitai` for follow-ups
-- [ ] **Copilot review** (automatic, ruleset-driven): fires when PR opens via the `copilot_code_review` rule; address comments before merging. Instructions in `.github/copilot-instructions.md`.
+- [ ] **Copilot review** (automatic, ruleset-driven): fires when PR opens via the `copilot_code_review` rule. Comments are advisory, not a merge blocker; address or dismiss at your discretion. Instructions in `.github/copilot-instructions.md`.
 
 **Spike branch** (`spike/` prefix):
 - [ ] No PR review required; linting and secrets scanning are sufficient
