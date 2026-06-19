@@ -1,4 +1,14 @@
-# Skills Deep Dive: Non-Ignored Repos vs. What We Already Have
+---
+title: "Skills Deep Dive: Non-Ignored Repos vs. What We Already Have"
+schema_type: common
+status: published
+owner: core-maintainer
+purpose: "Deep dive comparing public skill repositories against the skills already present in this configuration."
+tags:
+  - skills
+  - evaluation
+  - research
+---
 
 **Date:** 2026-06-18
 **Companion to:** `skills-repos-survey-2026-06.md`

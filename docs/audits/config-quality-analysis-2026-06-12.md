@@ -18,7 +18,7 @@ tags:
 
 ## Summary
 
-The repo is in good operational health: 50 commits in 60 days, every pre-commit invariant in `.claude/rules/pre-commit.md` verified against the actual `.pre-commit-config.yaml` with zero mismatches, all CLAUDE.md cross-references resolving, and all 46 working agents carrying `tools:` restrictions. The improvement opportunities fall into two classes:
+The repo is in good operational health: 50 commits in 60 days, every pre-commit invariant in `.claude/rules/pre-commit.md` verified against the actual `.pre-commit-config.yaml` with zero mismatches, all CLAUDE.md cross-references resolving, and 45 of 46 working agents carrying `tools:` restrictions (the lone exception is the frontmatter-less `ossf-criteria-reference` reference file, relocated to `.claude/standards/` in this change). The improvement opportunities fall into two classes:
 
 1. **Architecture lag.** Several homegrown mechanisms predate native Claude Code features that now do the same job better: the MCP tier-loading design (never wired to a hook) is superseded by per-subagent `mcpServers` frontmatter; the commands directory is a legacy mechanism; the symlink-plus-submodule install is what plugin marketplaces now solve; and prose "always/never" rules sit in always-loaded context where hooks would give deterministic enforcement at zero context cost.
 2. **Context budget.** Roughly 33,000 tokens load before any work begins in a typical task session (15,200 from CLAUDE.md plus unscoped rules, about 18,000 from the task-observer skill). Official guidance targets under 200 lines per CLAUDE.md file and warns that bloat reduces instruction adherence. This is the single largest lever on output quality across all repos this config governs.
@@ -30,7 +30,7 @@ Findings are ordered by priority. Each item names the file, the problem, and the
 - The pre-commit invariant system (PC-YAMLLINT-FILE-REF, PC-MARKDOWNLINT-MD040, PC-HOOK-STAGED-SCOPE, no-em-dash PC-011, interrogate, pydoclint, commitizen, detect-secrets) is fully consistent between the rule doc and the live config. This audit found zero gaps.
 - `.claude/rules/python.md` and `.claude/rules/testing.md` use `paths:` frontmatter correctly and load only when matching files are touched.
 - The standards manifest (174 checks across 9 domains) plus the domain-auditor agent family is a coherent, testable compliance architecture with regression fixtures under `data/test_fixtures/`.
-- Agent hygiene is above community norms: 46 of 46 working agents restrict `tools:`, and the supervisor output-envelope contract (verdict plus mandatory evidence field) is a pattern Anthropic's own docs now recommend.
+- Agent hygiene is above community norms: 45 of 46 working agents restrict `tools:` (the one exception, `ossf-criteria-reference`, carries no frontmatter and is a reference file, not an executable agent), and the supervisor output-envelope contract (verdict plus mandatory evidence field) is a pattern Anthropic's own docs now recommend.
 - The cost-lane documentation in `mcp-strategy.md` (subscription vs Agent SDK credit vs metered API) is accurate and ahead of most community guidance.
 
 ## Priority 1: Broken or misfiring machinery

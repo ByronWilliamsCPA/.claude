@@ -18,9 +18,10 @@ because our config and tool identifiers point at the fork; do not rename these
 references to `pal`. Multi-model consensus has moved to the `/consensus` skill
 (OpenRouter-based; `.claude/skills/consensus/`), which supersedes the zen/pal
 `consensus` and `tiered_consensus` tools. Those tools remain available from the
-now-frozen server, and the `project-planning` and `pr-review` skills still call
-them pending migration; new work should use the `/consensus` skill. The zen
-server's current value is `chat`, `thinkdeep`, and `codereview`.
+now-frozen server; the `project-planning` skill still calls `consensus` pending
+migration, while `pr-review` has already moved to the `/consensus` skill. New
+work should use the `/consensus` skill. Apart from that one legacy `consensus`
+call, the server's active tools are `chat`, `thinkdeep`, and `codereview`.
 
 ### Three cost lanes
 

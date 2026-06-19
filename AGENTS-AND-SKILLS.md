@@ -26,7 +26,9 @@ To list exactly which entries are vendored in the current checkout (drift-proof;
 rather than a hand-maintained tag list):
 
 ```bash
-find ~/.claude/agents ~/.claude/skills -maxdepth 1 -type l -printf '%f -> %l\n'
+# Portable across GNU and BSD/macOS find (avoids the GNU-only -printf):
+find ~/.claude/agents ~/.claude/skills -maxdepth 1 -type l \
+  -exec sh -c 'for l; do printf "%s -> %s\n" "${l##*/}" "$(readlink "$l")"; done' _ {} +
 ```
 
 If you need auto-population at session start instead of running the command manually, the

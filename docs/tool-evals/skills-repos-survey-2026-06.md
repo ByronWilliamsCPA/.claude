@@ -1,4 +1,15 @@
-# Tool Eval: 11 Public Skill/Agent Repos (Submodule Survey)
+---
+title: "Tool Eval: 11 Public Skill/Agent Repos (Submodule Survey)"
+schema_type: common
+status: published
+owner: core-maintainer
+purpose: "Survey of eleven public skill and agent repositories evaluated for submodule adoption."
+tags:
+  - skills
+  - agents
+  - evaluation
+  - submodules
+---
 
 **Date:** 2026-06-18
 **Method:** tool-eval skill, one research agent per repo (README + file tree +
