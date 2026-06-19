@@ -16,8 +16,10 @@
 #      not to an unrelated tool that shares the command line. Indirection
 #      wrappers (eval, bash -c, sh -c, zsh -c) are unwrapped one level deep so
 #      flags inside the inner argument are still detected.
-#   2. Block force-pushes to main or master (exit 2 with BLOCKED message)
-#   3. Write a timing start timestamp to ${HOME}/.claude/tmp_cleanup/bash-start
+#   2. Block force-pushes to main, master, or develop (exit 2 with BLOCKED message)
+#   3. Block `git reset --hard` when HEAD is on a protected branch
+#      (main / master / develop); feature-branch hard resets are allowed
+#   4. Write a timing start timestamp to ${HOME}/.claude/tmp_cleanup/bash-start
 #      for the post-hook notification script to compute command duration.
 #      The marker lives under the user's home (audit H-01) to avoid the
 #      symlink-race window of a fixed /tmp path.
@@ -358,9 +360,50 @@ EOF
 done < <(printf '%s' "$PRE_SCAN" | split_segments)
 
 # ---------------------------------------------------------------------------
+# Hard-reset guard (git-guardrails)
+# Block `git reset --hard` when the CURRENT branch is a protected branch
+# (main / master / develop). A hard reset there discards committed or
+# working-tree state that should only change through a reviewed PR.
+#
+# Feature-branch hard resets are intentionally ALLOWED. Resyncing an
+# in-progress feature branch with `git reset --hard origin/<branch>` is a
+# normal workflow and must not be blocked; the guard only fires when HEAD is
+# on a protected branch.
+#
+# Detection mirrors the force-push normalization so `git -C <dir> reset --hard`
+# is still caught. Operates on PRE_SCAN (message-arg values already blanked) so
+# a commit message that merely mentions "git reset --hard" cannot false-trip.
+#
+# Fail-open: if the current branch cannot be determined, allow the command.
+# Per this script's design (see header), authoritative protection lives in the
+# GitHub rulesets; this hook is an early-warning UX layer and must never brick
+# the Bash tool on a transient git error.
+# ---------------------------------------------------------------------------
+HR_CMD=$(printf '%s' "$PRE_SCAN" | sed -E ':loop
+s/(^|[^[:alnum:]_])git[[:space:]]+(-C[[:space:]]+[^[:space:]]+|-c[[:space:]]+[^[:space:]]+|--git-dir=[^[:space:]]+|--work-tree=[^[:space:]]+|--namespace=[^[:space:]]+|--exec-path=[^[:space:]]+|--bare|-p|-P|--paginate|--no-pager|--no-replace-objects|--literal-pathspecs|--no-optional-locks)[[:space:]]+/\1git /
+tloop')
+
+if echo "$HR_CMD" | grep -qE '(^|[^[:alnum:]_])git[[:space:]]+reset([[:space:]]|$)' \
+   && echo "$HR_CMD" | grep -qE '(^|[[:space:]])--hard([[:space:]]|=|$)'; then
+    CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || true)
+    if echo "$CURRENT_BRANCH" | grep -qE '^(main|master|develop)$'; then
+        log "BLOCKED git reset --hard on protected branch ${CURRENT_BRANCH}: CMD=${CMD}"
+        cat >&2 <<EOF
+BLOCKED: 'git reset --hard' on protected branch '${CURRENT_BRANCH}'.
+
+A hard reset here discards state that should only change through a reviewed PR.
+For feature work, switch to a feature branch first (git checkout -b fix/...).
+If you are intentionally resyncing a protected branch to its remote, run the
+command yourself from a terminal outside Claude.
+EOF
+        exit 2
+    fi
+fi
+
+# ---------------------------------------------------------------------------
 # Force-push guard
 # Block: git push with --force, -f, or --force-with-lease when:
-#   (a) the explicit branch target is main or master, OR
+#   (a) the explicit branch target is main, master, or develop, OR
 #   (b) no branch token is present at all (bare force push), OR
 #   (c) parsing is ambiguous (safe fallback: block)
 #
@@ -467,10 +510,10 @@ if echo "$PUSH_SEGMENT" | grep -qE '(--force|--force-with-lease(=[^\s]+)?|-f)(\s
     # Block if: no branch token (bare force push), explicit branch is main/master,
     # or destination ref extracted from a refspec is main/master.
     if [[ -z "$BRANCH_TOKEN" ]] || \
-       echo "$NORMALIZED_BRANCH_TOKEN" | grep -qE '^(main|master)$' || \
-       echo "$NORMALIZED_DEST_TOKEN" | grep -qE '^(main|master)$'; then
+       echo "$NORMALIZED_BRANCH_TOKEN" | grep -qE '^(main|master|develop)$' || \
+       echo "$NORMALIZED_DEST_TOKEN" | grep -qE '^(main|master|develop)$'; then
         log "BLOCKED force-push: CMD=${CMD}"
-        echo "BLOCKED: force-push to main/master (or bare force-push) is prohibited. Use a PR instead."
+        echo "BLOCKED: force-push to main/master/develop (or bare force-push) is prohibited. Use a PR instead."
         exit 2
     fi
 fi
