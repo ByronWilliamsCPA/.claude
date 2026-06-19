@@ -138,6 +138,40 @@ def _handle_bad_row(
         skipped.append(msg)
 
 
+def _decode_line(
+    raw_bytes: bytes,
+    *,
+    loc: str,
+    strict: bool,
+    skipped: list[str] | None,
+) -> str | None:
+    """Decode one raw log line as UTF-8, applying the bad-row policy on failure.
+
+    Args:
+        raw_bytes (bytes): The raw bytes of a single log line, newline excluded.
+        loc (str): A ``{path}:{line}`` prefix used in any bad-row message.
+        strict (bool): Forwarded to :func:`_handle_bad_row`; a non-UTF-8 row is
+            fatal when True.
+        skipped (list[str] | None): Forwarded sink for recorded skip reasons.
+
+    Returns:
+        str | None: The decoded, non-blank line. None when the bytes are not
+            valid UTF-8 (routed through the bad-row policy and skipped) or the
+            line is blank (skipped silently, like the header sentinel).
+    """
+    try:
+        raw = raw_bytes.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        _handle_bad_row(
+            f"{loc}: invalid UTF-8: {exc}",
+            strict=strict,
+            skipped=skipped,
+            cause=exc,
+        )
+        return None
+    return raw if raw.strip() else None
+
+
 def load_entries(
     jsonl_path: Path,
     *,
@@ -147,11 +181,12 @@ def load_entries(
 ) -> list[dict[str, Any]]:
     """Load JSONL entries, skipping the header sentinel line.
 
-    Malformed JSON lines and (when ``validate`` is True) schema-incomplete
-    entries are handled by a single policy: under ``strict`` the first bad
-    row raises with file:line context; otherwise the row is skipped with a
-    ``WARNING:`` to stderr and, when ``skipped`` is supplied, its reason is
-    recorded so callers can surface how many rows were dropped.
+    Rows that are not valid UTF-8, not valid JSON, not a JSON object, or
+    (when ``validate`` is True) schema-incomplete are handled by a single
+    policy: under ``strict`` the first bad row raises with file:line context;
+    otherwise the row is skipped with a ``WARNING:`` to stderr and, when
+    ``skipped`` is supplied, its reason is recorded so callers can surface how
+    many rows were dropped.
 
     Args:
         jsonl_path (Path): Path to the JSONL master log.
@@ -181,19 +216,27 @@ def load_entries(
         return []
 
     entries: list[dict[str, Any]] = []
-    for line_num, raw in enumerate(
-        jsonl_path.read_text(encoding="utf-8").splitlines(), start=1
-    ):
-        if not raw.strip():
+    for line_num, raw_bytes in enumerate(jsonl_path.read_bytes().splitlines(), start=1):
+        loc = f"{jsonl_path}:{line_num}"
+        raw = _decode_line(raw_bytes, loc=loc, strict=strict, skipped=skipped)
+        if raw is None:
             continue
         try:
             obj = json.loads(raw)
         except json.JSONDecodeError as exc:
             _handle_bad_row(
-                f"{jsonl_path}:{line_num}: malformed JSON: {exc}",
+                f"{loc}: malformed JSON: {exc}",
                 strict=strict,
                 skipped=skipped,
                 cause=exc,
+            )
+            continue
+        if not isinstance(obj, dict):
+            _handle_bad_row(
+                f"{loc}: expected JSON object, got {type(obj).__name__}",
+                strict=strict,
+                skipped=skipped,
+                cause=TypeError("non-object JSON row"),
             )
             continue
         if obj.get("type") == "header":
@@ -203,7 +246,7 @@ def load_entries(
                 validate_entry(obj)
             except SchemaError as exc:
                 _handle_bad_row(
-                    f"{jsonl_path}:{line_num}: {exc}",
+                    f"{loc}: {exc}",
                     strict=strict,
                     skipped=skipped,
                     cause=exc,

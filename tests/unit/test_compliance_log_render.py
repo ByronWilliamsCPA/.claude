@@ -468,3 +468,29 @@ def test_render_tolerates_missing_audit_mode(
     ]
     assert len(repo_rows) == 1
     assert "skipped" not in text
+
+
+def test_render_skips_non_object_json_row_and_notes_in_footer(
+    tmp_path: Path, sample_entry: dict
+) -> None:
+    """A valid-JSON but non-object row is skipped, not allowed to abort render.
+
+    A line such as ``[1, 2, 3]`` parses as JSON but is not a dict; before the
+    guard it raised ``AttributeError`` at ``obj.get("type")`` and aborted the
+    whole render. Now it is skipped with a footer note and the valid row still
+    renders.
+    """
+    from claude_config.compliance.log_render import render
+
+    jsonl = tmp_path / "master-log.jsonl"
+    md = tmp_path / "master-log.md"
+    jsonl.write_text(
+        _HEADER_LINE + "\n" + json.dumps(sample_entry) + "\n[1, 2, 3]\n",
+        encoding="utf-8",
+    )
+
+    render(jsonl, md)
+
+    text = md.read_text(encoding="utf-8")
+    assert "ByronWilliamsCPA/llc-manager" in text
+    assert "1 log row(s) skipped" in text

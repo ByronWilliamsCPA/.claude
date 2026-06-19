@@ -102,6 +102,131 @@ def test_load_entries_strict_validate_raises_on_schema_error(
         load_entries(p, strict=True, validate=True)
 
 
+def test_load_entries_skips_non_object_json_row(tmp_path: Path) -> None:
+    from claude_config.compliance.log_common import load_entries
+
+    p = tmp_path / "log.jsonl"
+    p.write_text(
+        '{"type": "header", "schema_version": 1, "created": "2026-05-16"}\n'
+        '{"schema_version": 1, "session_date": "2026-05-16", "session_id": "a", '
+        '"repo": "x/y", "superseded_by": null}\n'
+        "[1, 2, 3]\n",
+        encoding="utf-8",
+    )
+
+    skipped: list[str] = []
+    entries = load_entries(p, skipped=skipped)
+
+    assert len(entries) == 1
+    assert entries[0]["repo"] == "x/y"
+    assert len(skipped) == 1
+    assert f"{p}:3" in skipped[0]
+    assert "expected JSON object" in skipped[0]
+
+
+def test_load_entries_skips_invalid_utf8_row(tmp_path: Path) -> None:
+    from claude_config.compliance.log_common import load_entries
+
+    p = tmp_path / "log.jsonl"
+    p.write_bytes(
+        b'{"type": "header", "schema_version": 1, "created": "2026-05-16"}\n'
+        b'{"schema_version": 1, "session_date": "2026-05-16", "session_id": "a"'
+        b', "repo": "x/y", "superseded_by": null}\n'
+        b"\xff\xfe not valid utf-8\n",
+    )
+
+    skipped: list[str] = []
+    entries = load_entries(p, skipped=skipped)
+
+    assert len(entries) == 1
+    assert entries[0]["repo"] == "x/y"
+    assert len(skipped) == 1
+    assert f"{p}:3" in skipped[0]
+    assert "invalid UTF-8" in skipped[0]
+
+
+def test_load_entries_default_keeps_schema_incomplete_row(tmp_path: Path) -> None:
+    """Default (validate=False) callers must not drop schema-incomplete rows.
+
+    Regression guard for the two production callers (append, reconcile) that
+    call ``load_entries`` with no keyword args: a valid-JSON row missing a
+    required key is returned unchanged, since schema is only checked under
+    ``validate=True``.
+    """
+    from claude_config.compliance.log_common import load_entries
+
+    p = tmp_path / "log.jsonl"
+    p.write_text(
+        '{"type": "header", "schema_version": 1, "created": "2026-05-16"}\n'
+        '{"schema_version": 1, "session_date": "2026-05-16", "repo": "x/z"}\n',
+        encoding="utf-8",
+    )
+
+    entries = load_entries(p)
+
+    assert len(entries) == 1
+    assert entries[0]["repo"] == "x/z"
+    assert "session_id" not in entries[0]
+
+
+def test_load_entries_nonstrict_skips_malformed_without_sink(
+    tmp_path: Path,
+) -> None:
+    """Non-strict load with no ``skipped`` sink warns and skips, never raises."""
+    from claude_config.compliance.log_common import load_entries
+
+    p = tmp_path / "log.jsonl"
+    p.write_text(
+        '{"type": "header", "schema_version": 1, "created": "2026-05-16"}\n'
+        '{"schema_version": 1, "session_date": "2026-05-16", "session_id": "a", '
+        '"repo": "x/y", "superseded_by": null}\n'
+        "{not valid json}\n",
+        encoding="utf-8",
+    )
+
+    entries = load_entries(p)
+
+    assert len(entries) == 1
+    assert entries[0]["repo"] == "x/y"
+
+
+def test_load_entries_strict_raises_on_malformed_json(tmp_path: Path) -> None:
+    import pytest
+
+    from claude_config.compliance.log_common import load_entries
+
+    p = tmp_path / "log.jsonl"
+    p.write_text(
+        '{"type": "header", "schema_version": 1, "created": "2026-05-16"}\n'
+        "{not valid json}\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match=r"log\.jsonl:2: malformed JSON"):
+        load_entries(p, strict=True)
+
+
+def test_load_entries_strict_chains_original_cause(tmp_path: Path) -> None:
+    """The strict raise chains the originating exception for operator context."""
+    import json
+
+    import pytest
+
+    from claude_config.compliance.log_common import load_entries
+
+    p = tmp_path / "log.jsonl"
+    p.write_text(
+        '{"type": "header", "schema_version": 1, "created": "2026-05-16"}\n'
+        "{not valid json}\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match=r"malformed JSON") as excinfo:
+        load_entries(p, strict=True)
+
+    assert isinstance(excinfo.value.__cause__, json.JSONDecodeError)
+
+
 def test_resolve_canonical_picks_latest_session_id_when_no_supersede(
     compliance_entry: dict,
 ) -> None:
