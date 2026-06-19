@@ -74,7 +74,16 @@ When invoked with `generate` or `generate <file_path>`:
 When invoked with `enforce` or as part of a hook:
 
 1. Run `pytest --cov=src --cov-report=json --cov-branch --cov-fail-under=80`
-2. Parse results and check against per-file thresholds if configured
+2. Parse results and check against per-file thresholds if configured.
+
+   **Granularity disclaimer (Obs 469):** by default this skill enforces only the
+   aggregate project gate (80% line / 70% branch) plus critical-module targets. There is
+   NO default per-file, per-function, or per-branch floor. A high aggregate can mask
+   individual files sitting far below it (observed: files at 29-49% while the project
+   passed at 90%+). Per-file enforcement is opt-in via the `per_file_floor` key in
+   `[tool.test-coverage-agent]` (see Configuration); when it is unset, do not claim or
+   assume a per-file floor exists. If a user expects a per-file minimum, point them at
+   that key rather than inferring protection the aggregate gate does not provide.
 3. Apply quality gates (entry/exit criteria per ISO 25010):
    - Entry: all dependencies installed, database migrations current
    - Exit: coverage thresholds met, no CRITICAL security findings,
@@ -165,11 +174,27 @@ default_threshold = 80
 patch_threshold = 90        # for new/changed code
 critical_modules = ["auth", "payment", "data_processing"]
 critical_threshold = 90
+per_file_floor = 50         # optional; fails Enforce on any measured file below this.
+                            # Unset by default: aggregate gate alone can mask
+                            # low-coverage files (Obs 469).
 exclude_patterns = ["*/migrations/*", "*/conftest.py"]
 test_command = "pytest"
 max_generation_iterations = 3
 max_review_iterations = 2
 ```
+
+## filterwarnings=error Is a Latent-Bug Detector (Obs 467)
+
+When bringing a suite to `filterwarnings = ["error"]` conformance, treat it as a bug
+detector, not just a style gate. Promoting warnings to errors converts silent latent
+defects into visible failures: a previously-silent `ResourceWarning` (e.g. an
+`HTTPError` caught but never closed, leaking a tempfile-backed stream that warns only at
+GC) becomes a hard failure that pytest's unraisable plugin attributes to whichever test
+was running. Fix these at the source (`e.close()` on the error branch), not with a
+blanket ignore. Apply the policy incrementally and expect it to surface real
+resource/Deprecation issues. Reserve a targeted, message-scoped, colon-free regex ignore
+with documented rationale only for genuinely-expected warnings (e.g. a numerical-fallback
+warning); never a blanket category ignore.
 
 ## Output Format
 

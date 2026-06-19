@@ -95,6 +95,25 @@ EOF
 )"
 ```
 
+### 5b. Guard against formatter-daemon drift (Obs 428)
+
+In an IDE-attached or daemon-watched workspace, an editor formatter (Ruff LSP, Prettier on
+save) can rewrite staged files on disk AFTER `git add`, so the staged blob and working tree
+diverge and the commit captures a torn version. The working tree is not frozen at `git add`
+time when a formatter daemon watches it.
+
+A file appearing in BOTH the staged and unstaged lists is the signal, not a mistake to
+ignore. Before committing:
+
+```bash
+# Run the project formatter once to canonical form, then re-stage
+git add <intended paths>
+git diff --name-only -- <intended paths>   # MUST be empty (staged == working)
+```
+
+If that diff is non-empty, re-run the formatter, re-stage, and confirm stability before
+committing.
+
 ### 6. Post-Commit
 
 After successful commit:

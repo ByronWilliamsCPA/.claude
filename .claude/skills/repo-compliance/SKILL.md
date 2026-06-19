@@ -70,6 +70,28 @@ answer. Agents should still verify anything time-sensitive (CI runs, live Scorec
 The `_meta.lastUpdated` field shows the refresh date; flag data older than 30 days as
 potentially stale.
 
+**Do not trust `repositoryType` alone for Python applicability.** The label drifts: repos
+labeled `python-app` have been found to contain no code at all (corrected to `docs-only`).
+Before applying any Python-domain check (TOOL-*, uv adoption), cross-check the label with a
+live packaging-file probe (presence of `pyproject.toml`, `*.py` source, `uv.lock`,
+`requirements.txt`, `poetry.lock`). When the probe and the label disagree, trust the probe
+and note the drift in the audit summary.
+
+**uv adoption is three-tier, not binary.** Asking "does this repo use uv" as yes/no
+overstates adoption. The reproducibility-bearing artifact is the committed `uv.lock`, not the
+presence of the `uv` command in a workflow. Classify each repo into one of three states:
+
+- **full**: committed `uv.lock` at repo root + PEP 621 / PEP 735 layout (`[project]` /
+  `[dependency-groups]`). This is the only PASSing state for uv adoption.
+- **partial**: `uv` referenced in CI (`uv sync`, `astral-sh/setup-uv`) but no committed
+  `uv.lock`. Flag as a distinct, non-passing finding. These often run `uv sync --frozen`
+  against a lockfile that does not exist, so they are silently broken or non-reproducible
+  today, and are the repos most in need of migration, not the ones to mark compliant.
+- **none**: no uv references.
+
+Manifest check CI-068 enforces "committed `uv.lock` + `--frozen`"; the partial state above is
+the precise gap it does not yet name explicitly (see escalation notes for this review).
+
 ## Domain Agents
 
 | Domain | Agent | Checks |
@@ -83,6 +105,17 @@ potentially stale.
 | general | `general-compliance-auditor` | unclassified |
 | mkdocs | `mkdocs-auditor` | MKDOCS-* (skipped when mkdocs.yml absent) |
 | api | `openapi-compliance-agent` (via check-repo-compliance.py) | API-001..005 (applies_to: api_repos; skip when api.servesApi is false) |
+
+### Pre-commit Domain: silent-skip wrapper defeats PC-* presence checks (obs 163)
+
+Hook presence is necessary but not sufficient for PC-* compliance. The cookiecutter-python
+template wraps required hooks (basedpyright, trufflehog, yamllint, markdownlint, bandit)
+inside a local `qlty-check` shell shim using `command -v tool || echo "tool not installed -
+skipping"` (or `|| true`) fallbacks. When the tool is absent the hook exits 0 and pre-commit
+reports a pass, so PC-003/PC-005 presence checks succeed while zero enforcement happens.
+During the PC-domain audit, grep hook `entry:` blocks for `|| echo`, `|| true`, or
+`command -v ... ||` patterns and treat any silent-skip wrapper as equivalent to hook-absent
+for PC-003/PC-005. This is a fail-open pattern, not a fail-closed gate.
 
 ### CI Domain Agent: Triage Notes
 
@@ -99,6 +132,58 @@ When the Scorecard API returns 0 scores or shows 74+ consecutive failures, check
 If `on.schedule.cron` is absent: emit `[CRITICAL] CI-003c: Scorecard workflow has no schedule trigger; add a weekly cron (e.g., \`0 1 * * 1\`) to enable automatic scoring.`
 
 Run CI-003c first when Scorecard shows 0 scores; the one-line fix (adding a cron trigger) is far cheaper than diagnosing a configuration error that does not exist.
+
+**CI-003d: required ruleset context names must match bare check-run names, not prefixed reusable-workflow names**
+
+When every open PR in a repo reports `mergeStateStatus: BLOCKED` despite every visible check passing, the cause is usually a required status-check context that no job publishes verbatim. A workflow that delegates to an org reusable workflow publishes its check run as `<calling-job> / <reusable-job>` (e.g., `Security Analysis / Security Gate Validation`), not the bare name. If the ruleset requires the bare context (`Security Gate Validation`), GitHub waits for a check run that never reports and blocks merge invisibly.
+
+For each ruleset `required_status_checks` context, verify a check run with that exact name reports on a recent PR head:
+
+```bash
+gh pr checks <pr> --required          # shows which required contexts actually report
+gh api repos/<org>/<repo>/commits/<sha>/check-runs --jq '.check_runs[].name'
+```
+
+Flag any required context that only exists in prefixed `caller / callee` form. Recommend the thin bare-named gate-job pattern (a local job named exactly the required context that depends on the reusable-workflow job), the same pattern repos already use for `ci-gate`. Do not trust an inline comment claiming the prefixed name matches the ruleset; diff the strings.
+
+**CI-enforcement reality: a check that cannot report failure is not a gate (obs 184, 185)**
+
+Two failure modes make a "required" CI gate non-enforcing while every presence check passes:
+
+1. **App StatusContext that always reports SUCCESS.** The `qlty check` status context posted
+   by the qlty.sh GitHub App always reports `state: SUCCESS` regardless of blocking-issue
+   count; the "N blocking issues" text lives only in the description annotation, and GitHub's
+   merge gate reads only `state`. Adding it to `required_status_checks` never blocks. qlty
+   enforcement requires a GitHub Actions CheckRun: a workflow job that runs
+   `qlty check --fail-level <level>` and exits non-zero. Same root cause as the CodeRabbit
+   rate-limit SUCCESS pattern: third-party app StatusContexts cannot be trusted as hard gates
+   because the app controls the state it posts. When auditing any required check, verify it can
+   actually report `failure`, not just `success` with an annotation; prefer Actions CheckRuns
+   over app StatusContexts.
+2. **Required before the producing workflow exists.** Adding a context to
+   `required_status_checks` before a workflow produces it puts every PR in permanent pending:
+   the check never posts, the requirement is never satisfied, no PR merges. Sequence for any
+   new workflow-based check: (1) add the workflow and let it produce at least one successful
+   run, (2) confirm the exact check name from a real run via the Checks API (reusable-workflow
+   callee jobs report as `<caller-job-id> / <callee-job-display-name>`), (3) only then add it to
+   `required_status_checks`. A required check that never runs silently blocks all merges, worse
+   than no required check.
+
+**Dormant equivalent capability: evaluate delta-over-existing, not greenfield (obs 191)**
+
+Before evaluating a NEW tool for a capability (license compliance, SBOM, vuln scanning),
+grep the existing reusable workflows and the manifest for an existing or dormant equivalent:
+disabled flags, warn-only gates, unused action inputs (e.g., a `deny-licenses` lever in
+`dependency-review-action`, a `python-sbom.yml` license job, a REUSE/SPDX gate). Frame the
+evaluation as the marginal gain over what already exists (including the cost of redundancy),
+not as a blank-slate integration. Capabilities are often already present but disabled or
+shallow.
+
+**CI pinning exception list: slsa-github-generator requires tag refs**
+
+Blanket SHA-pinning (zizmor `unpinned-uses`, Scorecard `pinned-dependencies`) must not be applied to every workflow ref. `slsa-framework/slsa-github-generator` reusable workflows are the canonical exception: they hard-fail with `Invalid ref ... Expected ref of the form refs/tags/vX.Y.Z` because the generator downloads its own prebuilt release binary by tag name, and Scorecard itself whitelists it. A SHA pin produces a runtime failure that surfaces only on the first real release, far from the pinning change.
+
+When auditing or remediating Actions pinning, maintain an exception list (starting with `slsa-framework/slsa-github-generator` reusable workflows). Skip refs on that list instead of converting them, and require the inline comment convention `@vX.Y.Z # tag ref required: generator rejects SHA pins`. Verify a pin survives the tool's own validation path before standardizing it.
 
 ### Bash file-existence checks: handle 404 responses correctly
 
@@ -246,3 +331,189 @@ Scorecard API skip: <true if private, false if public>
 ```
 
 The OSSF agent queries live APIs (Scorecard REST API, Best Practices Badge API, GitHub API) using the repo slug. It will produce FINDING blocks both for OSSF-* manifest checks and for Scorecard checks that score below 4, even when those checks have no manifest entry. When `Scorecard API skip: true`, the agent must skip the Scorecard REST API call and suppress score-based FINDINGs; it should still evaluate local file checks (SECURITY.md content, workflow presence) that do not require the API.
+
+## Remediation Verification
+
+**Validate bot-managed configs with the official validator before declaring an issue fixed.**
+When remediating any bot-consumed config (`renovate.json`, `dependabot.yml`,
+`.coderabbit.yaml`, `.trivyignore` plus its workflow, semantic-release config), run the
+tool's official validator on the FULL resulting file before merge, not just the hunk being
+changed:
+
+- Renovate: `npx --package renovate renovate-config-validator` (at the same major version as
+  the self-hosted instance)
+- semantic-release: `uvx --from python-semantic-release semantic-release --noop version`
+- dependabot, coderabbit: their respective CLI / dry-run paths
+
+Fixing the error named in a bot's issue proves the report is addressed, not that the file is
+valid: validators check the whole contract, while error reports only surface the first
+breach. A config that fixes the reported error and still has a second invalid option will
+re-halt all dependency PRs on the bot's next run.
+
+## Re-verify Prior Audit Mode
+
+Audit branches produced by automated audits (`claude/repo-audit-*`) go stale relative to
+`main`. To decide whether such a branch is still actionable, do NOT check it out and do NOT
+trust commit ancestry (squash-merge breaks ahead/behind counts). Instead run a content-level
+delta against `origin/main`:
+
+1. Read the machine-readable findings from the branch without checkout:
+   `git show <branch>:findings.csv` (or `findings.json`).
+2. For each finding (id, files, evidence columns), re-check the evidence against current main
+   with `git grep <pattern> origin/main -- <files>` or `git show origin/main:<file>`.
+3. Classify each finding as resolved or still open; emit a resolved/open delta table.
+4. Recommend merge-docs-and-file-issues (if open findings remain) vs delete-as-stale (if all
+   resolved).
+
+Machine-readable findings with file+evidence columns make audits cheaply re-verifiable months
+later without re-running the full audit. Triage always runs against `origin/main` via
+`git show` / `git grep`, never against the stale checked-out branch. This also applies to
+any audit finding or remediation that depends on release tags or version refs: confirm tag
+state via `git ls-remote --tags origin` first, because a local clone may have zero tags
+fetched and "no tags" presented silently as ground truth produces remediations built on a
+false premise.
+
+## Audit Grounding and Verification
+
+The audit reasons from whatever it measures, so a polluted measurement produces a confident
+wrong conclusion. Apply these grounding rules before relaying any count, status, or finding.
+
+### Catalog-less fallback (obs 106)
+
+The catalog (`standards-manifest.yaml`, `github-repos.json`) is an optimization, not a hard
+dependency. If either file is absent (e.g., a fresh machine or a research fork), proceed in
+catalog-less mode: run domain checks from first principles using the
+FOUND-/TOOL-/PC-/CI-/OSSF- check families, default `repositoryType` to a generic profile, and
+default visibility from `gh repo view --json isPrivate`. Do not error or stall on a missing
+catalog; treat the catalog loads in "Local Repo Inventory" and "Type and Visibility
+Evaluation" as conditional, consistent with the stated limitation that the catalog is "a
+starting hint, not a definitive answer."
+
+### Anchor field counts to the field, not a substring (obs 105)
+
+When counting or inventorying manifest fields (severity tiers, `override_eligible`, domains),
+anchor to the field position rather than substring-matching, because config VALUES collide
+with field NAMES. `grep -oE 'severity:\s*"?[a-z]+'` falsely counts `fail-on-severity: high`
+(a dependency-review VALUE) as a severity TIER. Use an anchored regex
+(`grep -nE '^\s+severity:\s*(critical|important|suggested)\s*$'`) or a real YAML parser. The
+manifest's active tiers are critical / important / suggested; there is no `high` or `blocker`
+tier. Counts that drive calibration judgments must come from the anchored field or the audit
+reasons from a polluted denominator.
+
+### Configured vs executing vs effective (obs 90, 177)
+
+Config presence proves intent, not operation. For any check asserting a tool or bot is
+"active," separate three states explicitly: (1) configured (config file present), (2)
+executing (durable artifacts exist), (3) effective (the outcome it should produce is present).
+Detect execution by durable artifacts (branch-name prefixes, generated issues/labels, workflow
+run history), never by config presence or an assumed bot login. Specifics:
+
+- **Renovate health:** A `renovate.json` with `pinDigests: true` is inert if the bot has auth
+  errors or is not installed. Verify by (1) Renovate app installed at org level (app
+  installations API), (2) Dependency Dashboard issue body free of `ERROR`/`unhandledRejection`
+  lines, (3) recent SHA-to-SHA bump PR as proof, not config-file presence alone.
+- **Bot identity breaks under self-hosting:** self-hosted Renovate/Dependabot run under a
+  user/PAT identity, so author-based filters (`renovate[bot]`) silently miss them. The reliable
+  signal is the artifact signature: head-branch prefix `renovate/` and the Dependency Dashboard
+  issue, regardless of author.
+
+### Paginate before reporting counts (obs 178)
+
+Unpaginated GitHub list endpoints cap at one page (default 30); `length` of one page is an
+upper-bounded sample, not a total. `gh api repos/<r>/dependabot/alerts --jq length` returned
+30 for a repo with 56 open alerts (a 46% undercount that would understate severity). Any check
+that surfaces a count from a GitHub list endpoint (alerts, PRs, issues, workflow runs) must use
+`--paginate` with an explicit state filter (`?state=open&per_page=100`). Never report `length`
+of a single unpaginated page as a total.
+
+### Enumerate every ecosystem before declaring a vuln scan clean (obs 180)
+
+A vulnerability scan's completeness is bounded by its ecosystem coverage, not its database. A
+Python-only SBOM/scan reports false-clean on a repo whose real exposure is npm packages in a
+frontend `package-lock.json` (or a container base image, or Go/Ruby/Cargo). Discover every
+dependency ecosystem present (Python lockfiles, npm/yarn/pnpm lockfiles, Go, Ruby, Cargo,
+container base images) and scan each before declaring "0 findings." Reconcile against an
+independent multi-ecosystem source (Dependabot alerts) as the backstop; single-ecosystem CI
+gates miss cross-ecosystem surfaces.
+
+### Scope a tool swap from its active config, not its feature set (obs 133)
+
+When evaluating replacing or removing a tool, read the tool's active configuration (ignore
+lists, strictness, enabled rule subset) to determine the ACTUAL enforced behavior before
+mapping replacements, rather than assuming the tool's full advertised capability. A repo
+nominally "running darglint" may, via its `[tool.darglint]` ignore list, enforce only the
+excess/mismatch direction (DAR102/202/302/402), which narrows the replacement requirement and
+exposes coverage gaps in candidates (Ruff's pydoclint port omits the DOC1xx argument family).
+Also disambiguate adjacent tools that occupy different concerns (coverage vs consistency,
+format vs lint) so only the correct one is swapped.
+
+### Dead config: settings defined but never consumed (obs 64)
+
+A config setting that exists but is never read is worse than no config: it misleads operators
+into believing a value is tunable when changing it has no effect. For services using a Settings
+class (Pydantic Settings especially), cross-reference every defined setting against grep
+evidence that it is read at least once in application code. Flag settings with no consumer as a
+dead-config finding.
+
+### Broaden migration greps to lock/TOML/install references (obs 101)
+
+A migration sed pass keyed on `grep -rln "poetry "` (trailing space) catches command
+invocations but silently misses `poetry.lock` filename mentions, `[tool.poetry.group.*]` TOML
+block headers, and `pip install poetry` setup steps. Run two passes: trailing-space for
+commands, no-trailing-space for filename/config references; diff the file lists and review the
+delta. Use the broader no-trailing-space pattern as the post-pass verification command.
+
+### Renovate tag-comment scheme mismatch (obs 301)
+
+When Renovate reports "Could not determine new digest" for a github-tags dependency and the
+SHA pin is valid, cross-check the version comment against actual upstream tag names via
+`gh api repos/<owner>/<repo>/tags --jq '.[].name'`. Renovate uses the version comment as its
+datasource lookup key; a `v`-prefix mismatch (`# v1.1.0` comment vs `1.1.0` actual tag, or
+vice versa) silently breaks digest resolution. The fix is always in the comment, not the SHA.
+
+### Linter onboarding: baseline-violation triage (obs 148)
+
+Onboarding a new linter onto a legacy codebase always produces a baseline violation count
+(pydoclint found 2284 across 149 files on one repo); that count is a debt snapshot, not a
+blocker. When violations exceed the migration threshold: (1) record the per-directory
+histogram in the PR body as a baseline, (2) open a follow-up issue tagged `tech-debt` with
+the counts, (3) note any already-clean directories as quick wins. The migration PR is correct
+even with violations present: it establishes the config + hook and defers bulk remediation.
+Do not conflate "is the tool wired correctly" with "is all existing code clean."
+
+### Baseline pre-commit against main before attributing failures (obs 92)
+
+Repos with known pre-commit debt fail `pre-commit run --all-files` on a feature branch for
+reasons that pre-date the branch. Before attributing a pre-commit failure to the current
+change, stash the changes and re-run on clean `main` to confirm the failures are pre-existing.
+Note pre-existing failures in the PR description rather than fixing them in an unrelated PR's
+scope; only the hooks specific to the change need to pass cleanly.
+
+### Defang secret-shaped strings in audit docs (obs 270)
+
+Documentation about a secret pattern reproduces the secret pattern, and scanners cannot
+distinguish evidence from leakage. When quoting secret-shaped strings (placeholder keys,
+masked tokens, default passwords) as finding evidence, break the detector pattern the way
+malware samples are defanged (`api-xxxx[masked]`, not a format-length-exact placeholder), or
+reference `file:line` instead of reproducing the value. Per-commit scanners (GitGuardian)
+catch quoted findings in new doc files even when diff-based scanners pass. Defang at write
+time, never allowlist after the trip.
+
+### Verify shared-component breakage against sibling consumers (obs 275)
+
+When a handoff or issue claims a shared component (reusable workflow, org template) is broken
+for N consumers, the first verification step is to sample run history across 3-5 OTHER
+consumers (`gh run list -R org/repo --workflow=X`). One sibling succeeding against the same
+component version falsifies the "shared component is broken" hypothesis and points to a
+caller-side cause (caller passes an input the reusable no longer defines; caller's permission
+grant is below what the reusable's jobs request). Differential diagnosis beats deep-dive.
+
+### Catalog entries are audits, not roster rows: stub, never fabricate (obs 207)
+
+Catalog entries that carry a populated `review` block encode a completed audit. When
+reconciling the catalog against the live fleet, add a never-tracked repo as an explicit stub
+(identity fields from the API plus a `review._status` marker like "not yet audited; run
+repo-compliance to populate") and tell the user the stub needs an audit pass. Never copy a
+neighbor's review block as a template: that fabricates unverified branch-protection / scorecard
+state. Confirm round-trip formatting fidelity (load/dump diff empty) before programmatic edits,
+especially on a shared clone with concurrent uncommitted edits.

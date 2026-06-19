@@ -42,6 +42,17 @@ is not session cruft.
 
 ### 3. Tier B: build the preview (delete nothing yet)
 
+In multi-session repos, audit data has a shelf life of minutes: worktrees get
+deleted by their owning session, PRs merge, new worktrees appear, and main
+advances, all between an audit snapshot and the prune (Obs 311). So refresh
+remote state immediately before building the preview, and again before each
+removal in Step 4. Refresh first:
+
+```bash
+git fetch --prune origin
+git worktree list   # re-read; do not reuse an earlier snapshot
+```
+
 Build a single grouped preview with per-category counts and sizes, then ask
 once: **proceed all / pick categories / cancel.** Remove nothing before the
 answer. Omit any category that is empty. If all three categories are empty,
@@ -62,11 +73,14 @@ find . tmp_cleanup -maxdepth 1 -name '.tmp-*' -type f -mtime +14 2>/dev/null \
 removal only when its tree is clean AND (its branch is fully merged into the
 default branch, OR its branch is gone, OR, for a detached HEAD, its HEAD is an
 ancestor of the default branch). List any worktree with a dirty tree or commits
-absent from the default branch under "needs review, not removed". First resolve
-the default branch, then check each candidate worktree at path `$WT` with branch
-`$BR` (or detached commit `$SHA`). `$WT`, `$BR`, and `$SHA` are filled per
-worktree from the parsed `git worktree list` output, not predefined shell
-variables:
+absent from the default branch under "needs review, not removed". Additionally,
+flag any worktree created within the last hour as a likely-active parallel
+session under "needs review, not removed" even when it technically qualifies as
+merged/clean; a just-created worktree is far more likely to belong to a live
+session than to be finished cruft. First resolve the default branch, then check
+each candidate worktree at path `$WT` with branch `$BR` (or detached commit
+`$SHA`). `$WT`, `$BR`, and `$SHA` are filled per worktree from the parsed
+`git worktree list` output, not predefined shell variables:
 
 ```bash
 DEFAULT=$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null | sed 's|^origin/||')
@@ -74,6 +88,7 @@ DEFAULT=${DEFAULT:-$(git show-ref --verify --quiet refs/heads/main && echo main 
 git -C "$WT" status --porcelain                                  # must be empty: clean tree
 git branch --merged "$DEFAULT" --format='%(refname:short)' | grep -qx "$BR"  # branch merged
 git merge-base --is-ancestor "$SHA" "$DEFAULT"                   # detached HEAD: ancestor of default
+find "$WT" -maxdepth 0 -mmin -60                                 # non-empty => created <1h ago, treat as active
 ```
 
 **Stale skill workspaces:** gitignored benchmark remnants under any `skills/`
@@ -86,11 +101,16 @@ find . \( -path ./.git -o -path ./.venv -o -path ./.submodules -o -path ./.workt
 
 ### 4. Remove confirmed Tier B items and report
 
-After the single confirmation, remove only the approved categories:
+After the single confirmation, remove only the approved categories. Because the
+preview may now be minutes old, re-verify each destructive precondition at
+execution time, not from the Step 3 snapshot (Obs 311):
 
 - Temp files and skill workspaces: `rm -rf` the listed paths.
-- Worktrees: `git worktree remove "$WT"` for each approved worktree (plain, never
-  `--force`).
+- Worktrees: immediately before each `git worktree remove "$WT"`, re-run
+  `git -C "$WT" status --porcelain` and confirm it is still clean and still
+  merged/ancestor; skip and re-list under "needs review" any worktree whose
+  state changed since the preview (now dirty, now unmerged, or newly recreated).
+  Remove plain, never `--force`.
 
 Print a final summary: artifacts cleaned (Tier A), temp files removed,
 worktrees removed, worktrees skipped for review, skill workspaces removed.
@@ -99,6 +119,8 @@ worktrees removed, worktrees skipped for review, skill workspaces removed.
 
 - Tier B deletes nothing without the explicit confirmation; cancel leaves the
   tree untouched.
+- Re-verify every worktree's cleanliness and merge state immediately before
+  removing it; never act on the Step 3 snapshot alone.
 - Never remove a worktree with a dirty tree or unmerged commits; never use
   `git worktree remove --force`.
 - Never delete or discard uncommitted tracked changes; Tier A targets only

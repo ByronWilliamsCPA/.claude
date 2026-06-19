@@ -24,6 +24,27 @@ what exists in `docs/architecture/diagrams/`.
 - **Workflow Expansion**: Develop detailed sub-diagrams from high-level workflow sections
 - **AI Visuals**: Generate Gemini-powered PNG visuals for Level 0/1 executive documentation
 
+## Edit-Scope Guard (Obs 483)
+
+When a task instructs you to make a diagram's wording match a source-of-truth decision file
+("use the language/rationale already in `recommendation.yaml`"), treat that file as a content
+SOURCE, never a content TARGET. Decision and source-of-truth files (e.g.,
+`recommendation.yaml`, ADRs, human-signed override files) are READ-ONLY in update/remediation
+mode; a prompt that says "use the language from file X" implicitly means "do not modify X."
+
+Edits are allowed ONLY within this allowlist:
+
+- diagram `.puml` files under `docs/architecture/diagrams/`
+- `INDEX.md` / `DIAGRAM_INDEX.md` / `index.md`
+- `style.puml` / `STYLE_GUIDE.md`
+- the diagram manifest
+
+Before reporting done, run a post-run scope check: `git status --porcelain` and flag any
+modified file outside the allowlist. If an out-of-scope file (especially a decision file read
+as input) was modified, revert it and report the violation rather than committing it. When an
+agent is given a file as a content source, it will sometimes treat it as a target; this guard
+plus the out-of-scope-change check prevents silently rewriting the source of truth.
+
 ## Diagram Hierarchy
 
 Projects use either a **2-level** or **4-level** hierarchy. Detect which applies by checking
@@ -268,6 +289,21 @@ grep -r "old_path" docs/architecture/diagrams/
 - **Unicode characters**: Replace en-dashes (`–`) with regular dashes (`-`)
 - **Notes after stop**: Don't place notes after `stop` in activity diagrams
 - **Multi-page diagrams**: Avoid mixing diagram types with `newpage`
+- **Per-stereotype skinparam (Obs 458)**: In PlantUML 1.2024.8 the block form
+  `skinparam rectangle<<stereo>> { ... }` fails to parse. Attach the stereotype to the
+  property inside the element block instead:
+  `skinparam rectangle { BackgroundColor<<stereo>> #HEX }`. A silently-broken shared style
+  file leads contributors to inline duplicate colors into every diagram, defeating the
+  shared-style purpose. Always verify the shared style actually renders (regenerate one
+  diagram that includes it and confirm the stereotype color applies) before relying on it.
+
+### Render-tool path math when relocating the SVG generator (Obs 458)
+
+The reference render script computes its diagrams directory relative to its own location
+(e.g., `SCRIPT_DIR.parent / "docs/architecture/diagrams"`), assuming a fixed repo-root/tools
+layout. When copying or relocating `generate_diagram_svgs.py`, recompute the diagrams
+directory relative to the tool's own location for the new layout rather than assuming the
+original repo structure; a relocated tool silently resolves the wrong directory otherwise.
 
 ## SVG Generation
 

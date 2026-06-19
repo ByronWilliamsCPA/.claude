@@ -1,7 +1,7 @@
 ---
 name: python-toolchain-auditor
 description: Python toolchain compliance auditor and remediator. Checks dev dependency presence/absence (ruff, basedpyright, pip-audit, pydoclint, interrogate), Ruff rule set completeness against PyStrict-aligned codes, BasedPyright config block, qlty config, and target-version setting against TOOL-* checks in the standards manifest.
-model: sonnet
+model: haiku
 tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
 ---
 

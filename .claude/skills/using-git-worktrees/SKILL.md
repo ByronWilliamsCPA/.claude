@@ -149,17 +149,118 @@ Tests passing (<N> tests, 0 failures)
 Ready to implement <feature-name>
 ```
 
+## Recovery: When Local State Vanishes Mid-Session (Obs 287)
+
+In a repo with multiple concurrent actors (your terminals, parallel agent sessions,
+cleanup automation), a worktree, its branch, or the main checkout's branch can disappear
+underneath an active session, and `main` can jump forward several commits. The first
+instinct is data loss and reconstruction from context. That instinct is usually wrong and
+reconstructing blindly produces a duplicate PR of already-merged work.
+
+**Rule: before re-applying anything, fetch and check the remote for the in-flight work.**
+
+```bash
+git fetch origin
+# Inspect recent integration-target commits for your work, matched by SUBJECT + content,
+# not by branch name (the branch may already be cleaned up):
+git log origin/main --oneline -20
+git show origin/main -- <files you were editing>   # did your exact edits already land?
+```
+
+If the edits are present on `origin/main` (committed, PR'd, merged, branch pruned by a
+parallel actor), the work landed: do NOT reconstruct or re-open a PR. Confirm the match
+and report that the work is already integrated. Only reconstruct if the remote shows the
+work genuinely absent.
+
+**Principle:** Disappearance of local state in a multi-actor repo is as likely to mean
+"work landed" as "work lost." Verify the remote before reconstructing.
+
+## When the deliverables are gitignored (Obs 446, 457)
+
+A git worktree isolates version-controlled state only. When the work product is gitignored
+(generated data, model outputs, build artifacts, report markdown in a code-only repo), a
+fresh worktree branched from HEAD is EMPTY of those artifacts, and "merge back" is not a git
+merge at all. Classify what is tracked vs ignored FIRST, not as an afterthought:
+
+```bash
+git check-ignore <candidate deliverable paths>   # which work product is ignored
+```
+
+Then handle the gitignored work explicitly:
+
+- **Provision inputs one-way.** Copy required gitignored inputs from the source tree into the
+  new worktree before anything will run; a fresh checkout does not have them.
+- **Validate by reproduction, not by diff.** Verify against the source-of-truth by re-running
+  and reproducing the authoritative numbers, not by diffing files (the files are not tracked,
+  so there is nothing to diff). A guard/test that depends on gitignored runtime artifacts
+  cannot do a live end-to-end run inside a bare worktree: either root-parametrize the tool (a
+  `--root` flag) and bridge the real artifacts via a gitignored symlink, or run the live
+  check in the original checkout that physically holds the artifacts. Reserve build-time unit
+  tests (synthetic fixtures) for inside the worktree; reserve the live check for where the
+  state lives. Decide this BEFORE isolating, not after.
+- **Treat merge-back as two moves.** A git merge for the few tracked code/doc files, plus a
+  plain file-copy for the gitignored deliverables. Coordinate writes when another session
+  owns the target tree.
+
+## Multi-session isolation: a worktree per actor (Obs 466)
+
+The git index and working tree are per-worktree global state, not per-process. Any workflow
+that runs multiple concurrent committers against ONE working tree will interleave and lose
+work. When more than one agent/session operates on the same repo concurrently, each MUST work
+in its own `git worktree` (separate index and working dir, shared object store). Sharing one
+working tree corrupts staging across sessions because the index is global.
+
+Symptoms that signal a shared-tree race:
+
+- `git add -A` from another session sweeping your staged files into an unrelated commit.
+- pre-commit "files were modified by this hook" from a whole-project hook running while
+  another session edits files mid-hook.
+- HEAD moving unexpectedly between your commands (verify via `git reflog`).
+
+Isolation (a worktree per actor) is a precondition for safe parallel commits, not an
+optimization.
+
+## Worktree-aware reversible dedup of duplicate clones (Obs 175)
+
+Local clone "duplicates" (a hyphen and an underscore copy of the same project) are rarely
+clean copies; the directory name is cosmetic and the remote is usually identical for both.
+Let the work-bearing clone win, and treat dedup as a worktree-aware, reversible procedure:
+
+1. **Compare both clones fully:** remote, branches, unpushed commits, stashes, uncommitted
+   state, AND enumerate registered worktrees (`git worktree list`). A "lean" clone can hold
+   registered worktrees with their own feature branches; a "bloated" one can hold unpushed
+   commits and large uncommitted diffs.
+2. **Preserve with `git bundle`, not `git push`.** `git bundle create --all` is local,
+   lossless across all refs INCLUDING worktree branches, fully reversible, and has zero
+   outward side effects (no recreated branches, no CI). Prefer it to pushing `[gone]`/merged
+   branches, which would recreate deleted branches and retrigger CI. Also capture per-worktree
+   `git diff HEAD` patches, archived `git ls-files --others --exclude-standard` untracked
+   files, and stash patches. Then `git bundle verify` and confirm the load-bearing commit is
+   inside the bundle before any `rm`.
+3. **Delete the redundant clone only after** the verified bundle contains its unique commits.
+4. **On rename, repair worktrees explicitly.** A bare `git worktree repair` does NOT fix
+   moved worktrees; pass the NEW worktree paths so it rewrites both the admin gitdir and the
+   worktree `.git` file, then verify each worktree resolves HEAD. A renamed clone's `.venv`
+   also has stale absolute paths needing `uv sync`.
+
+Note: `git log --branches --not --remotes` OVERCOUNTS "unpushed" because squash-merged-then-
+deleted branches show upstream `[gone]` and their commits are not on origin/main.
+
 ## Quick Reference
 
 | Situation | Action |
 |-----------|--------|
 | `.worktrees/` exists | Use it (verify ignored) |
+| Concurrent agent sessions on one repo | One worktree per actor; shared index races and loses work |
+| Deliverables are gitignored | Classify tracked-vs-ignored first; provision inputs, validate by reproduction, merge back in two moves |
+| Live verification needs gitignored artifacts | Root-parametrize + symlink, or run the check in the original checkout |
 | `worktrees/` exists | Use it (verify ignored) |
 | Both exist | Use `.worktrees/` |
 | Neither exists | Check CLAUDE.md → Ask user |
 | Directory not ignored | Add to .gitignore + commit |
 | Tests fail during baseline | Report failures + ask |
 | No package.json/Cargo.toml | Skip dependency install |
+| Worktree/branch vanished mid-session | `git fetch`; check origin/main for the work before reconstructing |
 
 ## Common Mistakes
 
@@ -182,6 +283,11 @@ Ready to implement <feature-name>
 
 - **Problem:** Breaks on projects using different tools
 - **Fix:** Auto-detect from project files (package.json, etc.)
+
+### Reconstructing vanished work without checking the remote
+
+- **Problem:** A worktree/branch deleted by a parallel actor usually means the work merged; blind reconstruction creates a duplicate PR
+- **Fix:** `git fetch` and match your edits against origin/main by subject + content before re-applying anything
 
 ### Additional common mistakes
 
@@ -214,12 +320,14 @@ Ready to implement auth feature
 - Proceed with failing tests without asking
 - Assume directory location when ambiguous
 - Skip CLAUDE.md check
+- Reconstruct vanished work before checking origin/main for it
 
 **Always:**
 - Follow directory priority: existing > CLAUDE.md > ask
 - Verify directory is ignored for project-local
 - Auto-detect and run project setup
 - Verify clean test baseline
+- On unexpected loss of local state, fetch and check the remote first
 
 ## Integration
 

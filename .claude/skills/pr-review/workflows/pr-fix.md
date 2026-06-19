@@ -94,6 +94,19 @@ If the user picks 1 or 2, perform the resolution in the worktree (Step 3)
 before continuing to Step 1 issue gathering. After resolution, push so the
 PR shows `mergeable: MERGEABLE` before any fix commits.
 
+**The branch refresh can itself be the remediation.** A class of findings is
+state-dependent and clears on a fresh `synchronize` alone: stale CI results from a run
+that predates a label or base change, label-timing races in jobs gated on
+`github.event.pull_request.labels`, and orphaned/queued checks. For these, the BEHIND-
+resolving rebase/update the precondition just performed IS the fix, and Steps 1-8 may
+have nothing left to do. After pushing the refreshed tip, re-fetch CI status and
+mergeStateStatus on the NEW head SHA before gathering or applying further fixes. If the
+findings that motivated /pr-fix were stale-CI or label-timing-race class (greppable
+signals: a failing check that is non-required, a job gated on
+`github.event.pull_request.labels`, a check whose run SHA predates the latest label/base
+event), verify whether the refresh already resolved them before hunting for code fixes.
+Frame branch refresh as potentially-remediating, not solely as setup.
+
 The merge or rebase commit that records the conflict resolution is subject
 to the same `--no-verify` prohibition documented in Step 6. Run pre-commit
 on the merge commit and fix anything it flags; do not skip hooks even when
@@ -180,9 +193,31 @@ For each check with `conclusion` not `success` and not `neutral`, do the followi
 | Compatibility | Py version | Fix 3.10+ incompatibilities |
 | SBOM | SBOM | Fix dependency declarations |
 | SonarCloud | Quality gate | Defer to Step 1c |
+| qlty | Quality gate | Defer to Step 1c handling; enumerate locally if the qlty CLI is available (see Step 5b) |
+| Changelog | Changelog (label-aware) | If the gate's pass condition is "CHANGELOG edited OR skip-label present" (`if: !contains(...labels..., 'skip-changelog')`), the remedy is commit-type-dependent: release-impacting commits (feat/fix/perf/breaking) need an entry; docs/chore/test/refactor need the skip label. See Step 4 Changelog enforcement for the label + re-trigger ordering. |
+| Reusable workflow startup_failure (0 jobs, no logs, "workflow file issue") | Workflow-load failure | Not a step failure; diagnose at file/reference level. Check `uses:@<sha>` reachability via `gh api repos/<owner>/<repo>/compare/<default>...<sha>`; if `diverged` (orphaned by a squash-merge), re-pin to a SHA reachable from the reusable repo's default branch that contains the file and exposes the same `workflow_call` inputs. `contents?ref=<sha>` serves dangling commits, so existence checks mislead; use `compare`. Validate cheaply with `workflow_dispatch` on a throwaway branch (startup validation runs at load time, before job `if:`). When a failure appears after an edit, confirm causation by reverting the suspected change on the current base before committing to a fix direction. |
 | GitGuardian | Secrets | Alert user only, never auto-fix |
 | Docs, Build & Deploy | Doc build | Fix markdown/config |
 | Core Validation, PR Validation | PR rules | Fix commits, description, etc. |
+| attestation verify / HTTP 5xx during tool install (e.g. `gh attestation verify` -> 500 installing Qlty CLI) | Transient infra | Remediation is a re-run, not a code change. Check UNSTABLE vs BLOCKED first (advisory checks need no action). `gh run rerun` is permission-blocked in review sessions (HTTP 401); fall back to a user UI "Re-run failed jobs" click or a heavyweight empty-commit retrigger. |
+| pip-audit / osv-scanner / trivy / license / SBOM-drift / cert-expiry showing a NEW finding that was green at session start | External / newly-disclosed | Classify by input-provenance, not timestamp: if the failing STEP consumes the dependency tree or external/time-based state rather than the diff, it is not a session regression even though it appeared mid-session. Confirm the same step also fails on the base branch (or the advisory ID postdates the branch's last green run). Surface distinctly; prefer a version bump over an ignore/suppress entry per the Unfixed-CVEs policy. |
+
+**Identify the failing STEP, not just the job, before classifying.** A job named
+"Code Quality Checks" going red on a YAML-only diff is impossible at the linter level;
+drilling to the failing step (e.g., "Dependency vulnerability scan" / pip-audit) reveals
+the real, often diff-independent, cause.
+
+**A scanner's exit code is a verdict, not a diagnosis.** Tools invoked with a file-output
+format (`osv-scanner --output=report.json`, `trivy --output`, `bandit -o report.json`)
+write findings to an artifact and print only a summary plus exit code to stdout. Grepping
+the log then surfaces only whichever noise IS printed (filtered/disputed advisories,
+"Exit code: 1"), which actively misleads diagnosis toward the wrong cause. When the failing
+step is a security/quality scanner: (1) detect `--output`/`-o`/`--format json` in the
+step's args and, if present, download the report artifact (`gh run download -n <artifact>`)
+and parse it; (2) if the artifact is absent (upload skipped because the scan step aborted
+the job first), reproduce the scan locally against the worktree lockfiles with the same
+config and read the result there. Treat "Exit code: 1" with no visible finding in the log
+as a signal to go to the artifact or local reproduction, never as the finding itself.
 
 ### 1b. Review comments
 
@@ -306,7 +341,28 @@ Proceed? (yes / review details / cancel)
 If the user asks to review details, expand each category.
 Wait for confirmation before proceeding.
 
+**Classify each fix as code-changing vs GitHub-metadata-only** (PR title/body edits,
+thread resolution, label changes such as `skip-changelog`, comment replies). Record
+`HAS_CODE_FIXES = true` only if at least one fix touches a working-tree file. This gates
+Step 3: a fix set that mutates no files needs no worktree.
+
+**Shared-root-cause triage when many PRs are BLOCKED.** If this run is part of a fleet
+where N>1 PRs are all BLOCKED with the same red signal, suspect shared infrastructure
+before per-PR work: diff the branch-protection / ruleset required status-check contexts
+against the contexts actually emitted on the PR head, and check whether the same failure
+appears on the base branch. A never-reported required context sits pending forever and
+blocks silently, while the visible red Xs may be stale orphaned contexts NOT in the
+required set. Confirm with `gh api .../rulesets`, `gh pr view <n> --json statusCheckRollup`,
+and a presence/state cross-check of each required context. Fixing the contexts on one
+keystone PR often unblocks the fleet; only after ruling out shared infra should PRs be
+treated individually.
+
 ## Step 3: Set up worktree
+
+**Skip worktree creation entirely when `HAS_CODE_FIXES` is false** (metadata/
+thread-resolution only). Apply the metadata fixes directly via `gh`/GraphQL and leave
+`WORKTREE_PATH` unused; provisioning a checkout to edit nothing is pure overhead. Gate the
+heavyweight isolation on the presence of the working-tree mutation it protects against.
 
 Create an isolated worktree on the PR branch:
 
@@ -318,6 +374,29 @@ git worktree add .worktrees/fix-pr{PR_NUMBER} {HEAD_BRANCH}
 Record `WORKTREE_PATH=.worktrees/fix-pr{PR_NUMBER}`.
 
 All file edits happen inside `WORKTREE_PATH`. Never touch the main working tree.
+
+**Worktree-head vs PR-head precondition (mandatory).** `git worktree add {HEAD_BRANCH}`
+checks out the LOCAL branch ref, which can be ahead of the origin PR head when the
+author has unpushed local commits. A later rebase-and-force-push would then silently
+publish those unreviewed commits to the PR under the banner of the fix. A workflow that
+operates "on a PR" must treat the remote PR head as the source of truth, not the local
+ref of the same name. Immediately after `git worktree add`:
+
+```bash
+git -C {WORKTREE_PATH} fetch origin {HEAD_BRANCH}
+WT_HEAD=$(git -C {WORKTREE_PATH} rev-parse HEAD)
+PR_HEAD=$(git -C {WORKTREE_PATH} rev-parse origin/{HEAD_BRANCH})
+if [ "$WT_HEAD" != "$PR_HEAD" ]; then
+  git -C {WORKTREE_PATH} log --oneline origin/{HEAD_BRANCH}..HEAD
+fi
+```
+
+If they differ, surface the divergent commits and their diffs BEFORE any fix work, state
+that a force-push will publish these previously-unpushed commits to the PR, and require
+explicit confirmation. Prefer resetting the worktree to the fetched origin PR head
+(`git -C {WORKTREE_PATH} reset --hard origin/{HEAD_BRANCH}`) when the goal is strictly to
+fix reviewed findings; treat local-ahead commits as an opt-in addition the user
+acknowledges.
 
 **Error handling:**
 
@@ -348,6 +427,33 @@ the lock file as a side effect and report "files were modified by this hook" -- 
 failure unrelated to the PR's changes. This one-time sync stabilises the lock before any
 hooks fire.
 
+**Sync with the project's extras when a repo-wide type-check hook is present.** A bare
+`uv sync` installs only core deps. When the repo has a type-check hook configured
+`pass_filenames: false` (it scans all of `src/` regardless of staged files) AND the typed
+deps (numpy/torch/numba and similar) live in `[project.optional-dependencies]` extras,
+that bare sync leaves the stubs uninstalled and basedpyright emits dozens of purely
+environmental `reportUnknown*` errors that block an otherwise-clean commit. Grep
+`.pre-commit-config.yaml` for `pass_filenames: false` type-check hooks before choosing sync
+depth; if found (or if the project CLAUDE.md documents an extras requirement), sync with the
+documented extras instead:
+
+```bash
+if grep -qE 'pass_filenames:\s*false' "{WORKTREE_PATH}/.pre-commit-config.yaml" 2>/dev/null; then
+    (cd {WORKTREE_PATH} && uv sync --all-extras --frozen 2>/dev/null || uv sync --all-extras)
+fi
+```
+
+A worktree's local gate only matches CI when its environment matches CI's; a tree synced
+without the extras CI installs produces false-failures indistinguishable from real defects.
+
+**Edit precondition is path-specific (worktree vs main tree).** The Edit tool's
+"file has been read" precondition keys on the exact absolute path, not on content. A
+file Read earlier from the main tree (`/repo/CHANGELOG.md`) does NOT satisfy an Edit on
+the worktree copy (`/repo/.worktrees/fix-prN/CHANGELOG.md`); the Edit rejects with "File
+has not been read yet." Before editing ANY file inside the worktree, Read it from the
+worktree path first, ideally with offset/limit near the insertion point. Never edit a
+worktree file on the strength of having read its main-tree counterpart.
+
 ---
 
 ## Step 4: Execute fixes in priority order
@@ -373,6 +479,14 @@ the second call can reference it.
 at least one usage of the symbol in the same Edit call. Plan edits so no
 intermediate state introduces an unused import or unreferenced symbol.
 
+**Editing `.github/workflows/*.yml`:** The `security_reminder_hook.py` PreToolUse hook
+commonly fires as a one-time informational reminder that blocks the FIRST Edit on a
+workflow file, then allows an identical retry. For a benign change with no `${{ }}`
+injection surface (e.g., a `node-version` string bump), retry the identical Edit once
+before falling back to a `sed`/Python rewrite. Fall back to non-Edit rewriting only if
+the retry is also blocked. Hook behavior here is environment- and version-dependent;
+confirm the current behavior rather than assuming a permanent hard block.
+
 ### Priority 1: CI failures
 
 For each failing check, apply the fix strategy from the Step 1a table.
@@ -391,12 +505,59 @@ and `uv.lock` and recreate the AG04 trust gap that Step 5a's tiers close).
   the test-fix category as "verification deferred to Step 5a" and
   proceed to the next category.
 
-**Changelog enforcement:** Check whether any commit on this branch (since
+**Changelog enforcement (label-aware):** Check whether any commit on this branch (since
 `git merge-base HEAD origin/{BASE_BRANCH}`) uses type `feat`, `fix`, `perf`, or
-includes `!` (breaking change). If yes, generate an entry from the PR title,
-commit messages, and changed files, and place it under `[Unreleased]` in
-CHANGELOG.md. If no such commits exist, note "CHANGELOG not required: no
-feat/fix/perf/breaking changes on this branch" and skip.
+includes `!` (breaking change).
+
+- Release-impacting commits exist: generate an entry from the PR title, commit messages,
+  and changed files, and place it under `[Unreleased]` in CHANGELOG.md.
+- No release-impacting commits (docs/chore/test/refactor only): a red required Changelog
+  check is cleared only by the remedy the workflow accepts, and merely noting "no entry
+  required" leaves the gate RED. Inspect the gate. When its pass condition is
+  "CHANGELOG edited OR a skip label present" (`if: !contains(...labels..., 'skip-changelog')`),
+  apply the repo's changelog-skip label (commonly `skip-changelog`, confirm via
+  `gh label list`) rather than adding a wrong entry or silently skipping:
+
+  ```bash
+  gh pr edit "$PR_NUMBER" --repo "$OWNER/$REPO" --add-label skip-changelog
+  ```
+
+  **Re-trigger ordering matters.** The label only takes effect on a run whose triggering
+  event already carried it. If the workflow's `on:` block lacks `labeled` (commonly it is
+  only `[opened, synchronize, reopened]`), adding the label does nothing to the already-red
+  check, and a plain "re-run failed job" replays the original label-free payload and fails
+  again. Apply the label BEFORE the next push/rebase-push (or close+reopen) so the resulting
+  synchronize-event payload includes it. Inspect the `on:` types before assuming a label
+  change re-runs anything.
+
+  If no skip-label bypass exists, note "CHANGELOG not required: no feat/fix/perf/breaking
+  changes on this branch" and surface the still-red gate to the user.
+
+**Invalid commit-type fixes (non-interactive reword):** When a commit on the branch uses
+an invalid or non-allowed Conventional Commit type (a Critical CLAUDE.md violation),
+rewrite it without an interactive terminal. Interactive `git rebase -i` is unavailable in
+automated contexts; use scripted editors instead:
+
+```bash
+# GIT_SEQUENCE_EDITOR marks the target commits as `reword`;
+# GIT_EDITOR replaces the invalid prefix in each reworded message.
+GIT_SEQUENCE_EDITOR='sed -i "s/^pick \(.*\) <bad-prefix>:/reword \1 <bad-prefix>:/"' \
+GIT_EDITOR='sed -i "1s/^<bad-prefix>:/<good-prefix>:/"' \
+git -C {WORKTREE_PATH} rebase -i origin/{BASE_BRANCH}
+```
+
+This rewrites every subsequent commit SHA and requires a force-push (Step 8). Flag in the
+PR summary that any SHA referenced in prior review comments is now stale.
+
+**Dependency CVE bumps: check base and open bot PRs first.** On an actively-maintained
+repo, automated bots may resolve the same CVE concurrently, so authoring a duplicate bump
+creates redundant work and a lockfile conflict. Before committing a dependency bump to clear
+a CVE: (1) `git fetch origin {BASE_BRANCH}` and check whether base's lockfile already
+satisfies the fixed version (`git show origin/{BASE_BRANCH}:uv.lock | grep -A1 'name = "<pkg>"'`);
+(2) check for an open Renovate/Dependabot PR bumping the same package. If base already fixes
+it or a bump PR is open, recommend "rebase onto base / merge the bump PR" instead of a
+duplicate bump. This moves the rebase-preference check earlier (pre-commit, not just
+pre-push at Step 7).
 
 **Python version compatibility:** Check for `datetime.UTC` (use
 `datetime.timezone.utc`), `tomllib` without fallback, `match/case` syntax,
@@ -414,6 +575,22 @@ uv tool run --from pydoclint pydoclint {new_path}
 
 Pre-commit's changed-files scoping hides violations the move newly exposed;
 a full-file scan is required to surface them before commit.
+
+**JS/TS dependency manifest-lockfile sync (blocking):** When a fix adds or removes a
+JS/TS package (e.g., migrating a generator's plugin config), `package.json` and its
+lockfile must stay in exact sync or CI's `npm ci` fails hard (`npm ci` requires an exact
+match; a half-migration is strictly worse than no change because it converts a latent
+issue into a hard CI failure). The Step 5a default gate is Python-only and will not
+catch this. Treat a manifest/lockfile desync as a blocking condition:
+
+1. Detect the package manager from the committed lockfile: `package-lock.json` -> npm,
+   `pnpm-lock.yaml` -> pnpm, `yarn.lock` -> yarn.
+2. Regenerate the lockfile with the matching tool (`npm install`, `pnpm install`,
+   `yarn install`).
+3. Verify the frozen-install command succeeds before commit: `npm ci`
+   (or `pnpm i --frozen-lockfile`, `yarn install --frozen-lockfile`). The binding
+   correctness check for a lockfile-bearing ecosystem is "does the frozen-install
+   succeed against the regenerated lockfile," not the language linters.
 
 ### Priority 2: SonarQube findings
 
@@ -508,6 +685,35 @@ For each unresolved actionable comment:
    features not requested. When the root cause fix touches more than 3 files not in
    the original diff, pause and confirm with the user before proceeding.
 
+**Documenting a declined recommendation:** When the fix DECLINES a recommendation (keeps
+the current posture deliberately), the documentation must state the decision first, then
+scope any mitigation to the audience it applies to. Write (a) that the declined posture
+is a deliberate decision, and (b) any opt-out/mitigation instruction bounded to its
+audience (e.g., "on other machines, set X"). A RAD `#VERIFY` note that states only the
+mitigation ("set the entry to false first") without stating the decision reads as a
+contradiction of the committed value, and an automated reviewer (CodeRabbit) will flag
+the gap on the next pass, costing a re-fix cycle. Decision first, mitigation second.
+
+**Verify a finding's claim before applying it (substantive vs cosmetic).** Both review-agent
+findings and bot review comments can be confidently wrong; applying them blindly inherits
+their false positives.
+
+- *Substantive findings* get behavioral verification: treat the assertion as a hypothesis
+  and confirm it against the actual code before changing anything.
+- *Technical claims about tool schema/behavior* (from Copilot/CodeRabbit) get doc
+  verification: confirm against the authoritative source (WebFetch) before acting. If the
+  claim is false (e.g., a "this option is invalid" claim the docs contradict), record it as
+  "Declined: false positive" with the doc citation instead of authoring a wrong fix.
+- *Cosmetic/style findings* (indentation, formatting, quoting, naming) get
+  convention-consistency verification: before applying, check whether the flagged pattern is
+  the file's consistent house style. The only valid outcomes are "fix all occurrences" or
+  "leave as house style"; never fix a strict subset, which introduces the very inconsistency
+  the finding claimed to remove.
+- *Documented intentional non-catches:* before applying any silent-failure fix, read the
+  full file (not just the hunk) and honor a rationale documented in the enclosing function or
+  module docstring. A documented deliberate non-catch is not a defect; do not implement a fix
+  that contradicts it.
+
 **Agent-supplied test assertion verification:** When applying tests from the pr-test-analyzer
 agent or any agent-generated test skeleton, treat assertions as hypotheses, not ground truth.
 Before committing, confirm each assertion against the actual control flow:
@@ -556,6 +762,16 @@ For each of the following, launch the named agent to evaluate the finding and
 produce a concrete fix recommendation or draft fix. Run agent evaluations in
 parallel after all auto-fixes are applied (Step 4 end). Include agent outputs
 in the Step 6 commit options and Step 8 PR summary.
+
+**Brief mechanical-fix agents to forbid the harmful class precisely, not an over-broad
+proxy.** When dispatching agents for a mechanical batch fix (docstring sync, type-hint
+backfill, import sort), do NOT instruct "never change code": that over-broad prohibition
+conflicts with validators whose rules require signature annotations (e.g., pydoclint DOC107
+on an unannotated `call_next`), and an agent forced to satisfy both will reach for a
+suppression hack (`# noqa`) that trips the next linter. Instead forbid the harmful class
+exactly: "do not change runtime behavior or logic." Permit type-only signature changes
+(matching the existing pattern in sibling files) with the supervisor reviewing the aggregate,
+or carve the type-requiring cases out for the supervisor to handle directly.
 
 | Finding type | Agent to invoke | What to ask it |
 | --- | --- | --- |
@@ -677,7 +893,7 @@ indirect invocations that bypass the trust model.
 cd {WORKTREE_PATH}
 uv tool run ruff format --check .
 uv tool run ruff check .
-uv tool run --from basedpyright basedpyright src/  # if pyrightconfig or [tool.basedpyright] present
+uv tool run --from basedpyright basedpyright src/  # if pyrightconfig or [tool.basedpyright] present AND CHANGED_FILES contains a .py file; otherwise skip with note "basedpyright: skipped (no Python files in diff)" to avoid a cold-start delay on docs/config-only PRs (type-checking still runs via the pre-commit confirm tier if approved)
 uv tool run --from bandit bandit -r src/  # always runs; uses bandit defaults. Do NOT pass -c pyproject.toml (the reviewed repo's pyproject can declare plugin_paths and skips that compromise the scan)
 ```
 
@@ -883,6 +1099,16 @@ reported to the user as-is; the user decides commit vs stop. The retry
 policy and the pre-existing failure policy below do not apply to
 confirm-tier failures.
 
+**`pre-commit run --all-files` is not the commit gate (two-question triage).**
+`pre-commit run --all-files` runs every hook against every matching file regardless of
+what is staged; the actual `git commit` only runs hooks whose `files:` pattern matches
+the staged set. These diverge whenever pre-existing violations live in files unrelated
+to the change. When `--all-files` fails, do not treat it as an automatic commit-blocker;
+triage with two questions: (1) Is the failure pre-existing on the base branch? (run the
+failing hook on the unmodified base tree to confirm.) (2) Does the failing hook's
+`files:` pattern match any staged file? If both answers are no, the failure is
+pre-existing noise in unrelated files and will not block the commit.
+
 If the default gate is still failing after 3 attempts: check whether the
 failures existed before this fix session started (see pre-existing failure
 policy below). Report remaining failures and ask the user whether to
@@ -898,9 +1124,19 @@ After 3 retry cycles, compare remaining local failures against `PREEXISTING`:
 - If the remaining failure is in `PREEXISTING`: offer to commit with a
   mandatory PR comment: "Known pre-existing failure: {check name}. Not
   introduced by this fix session. Tracked separately."
-- If the remaining failure is NOT in `PREEXISTING` (i.e., it was introduced
-  during the fix session): do NOT offer to commit. Stop and require the user
-  to decide how to proceed. Committing a regression is not an option.
+- If the remaining failure is NOT in `PREEXISTING`, apply the diff-independence test
+  before treating it as a session regression: "did this failure appear during my
+  session" and "did my change cause it" are different questions. Identify the failing
+  STEP (per Step 1a) and ask whether its input is the diff or external/time-based state
+  (pip-audit, osv-scanner, trivy, license scan, SBOM drift, cert/advisory expiry). If the
+  step consumes diff-independent state AND the same step fails on the base branch (or the
+  advisory postdates the branch's last green run), classify it as "external/newly-
+  disclosed, out of scope for this PR": surface it distinctly and offer fix-in-place
+  (prefer a version bump per the Unfixed-CVEs policy) vs defer-to-dependency-bot, rather
+  than blocking as a regression.
+- If the remaining failure is NOT in `PREEXISTING`, is diff-dependent, and was introduced
+  during the fix session: do NOT offer to commit. Stop and require the user to decide how
+  to proceed. Committing a regression is not an option.
 
 **Defect-class rescoping when branch is BEHIND:** When the branch is behind
 main and the PR targets a recurring, greppable defect class (malformed token,
@@ -934,12 +1170,26 @@ The same trust tiers from Step 5a apply to Step 5b validations.
 | --- | --- |
 | REUSE compliance | `cd {WORKTREE_PATH} && uv tool run --from reuse reuse lint` (if `reuse` installable from the overseer's tool environment; skip with note if unavailable) |
 | shellcheck | `shellcheck {WORKTREE_PATH}/scripts/*.sh` (if `.sh` files changed; uses overseer's `shellcheck` from `$PATH`) |
+| qlty gate | `cd {WORKTREE_PATH} && qlty check --upstream origin/{BASE_BRANCH} --level medium --no-fix` (if `.qlty/qlty.toml` exists and the `qlty` binary is available). The local Step 5a gate does NOT run qlty, so this class of failure otherwise surfaces only after push. Run the SAME tool the CI gate runs, not a sibling. A green pre-commit does not guarantee a green qlty gate: qlty bundles its own (often newer) linter versions, so when two tools wrap the same linter at different pinned versions the stricter one defines the merge gate (e.g., qlty's markdownlint-cli2 enforces MD022 more strictly and adds MD060, which a pinned markdownlint-cli v0.38 lacks). Config-disable semantics can also differ: a rule disabled in the native config (`.markdownlint.yaml`) is not always honored by qlty's bundled plugin, so a suppression may need a matching `[[triage]]` in `.qlty/qlty.toml` as well. |
+
+**actionlint false positives from a stale bundled context model.** actionlint carries its
+own model of GitHub Actions contexts, which lags the platform. A valid expression can be
+flagged as undefined (e.g., `job.workflow_sha` / `job.workflow_repository` for pinning a
+reusable workflow's self-checkout is current per GitHub docs, but actionlint through
+1.7.12 only knows `{check_run_id, container, services, status}` on the job context; the
+older `github.job_workflow_sha` spelling is gone from the docs entirely). When actionlint
+flags a context property as undefined: (1) verify the property against LIVE GitHub docs,
+not training memory, since names migrate; (2) if it is real, add a paths-scoped ignore in
+`.github/actionlint.yaml`; (3) test the ignore against the repo's CI-PINNED actionlint
+version (download that exact version locally), since paths-config support varies by
+version. The same caution applies to any linter that bundles a model of an external
+platform: resolve against the platform's live docs and the CI-pinned tool version.
 
 *Confirm tier (require literal `yes` per the Step 5a refusal-proof confirmation pattern):*
 
 | CI check | Local validation command | Trust note |
 |---|---|---|
-| pip-audit | `cd {WORKTREE_PATH} && uv tool run pip-audit -r pyproject.toml` (or `-r requirements.txt`, or `-r uv.lock` if present in the worktree) | Overseer's pip-audit binary reads the reviewed repo's manifest as input data, not as an active environment. Do NOT use bare `uv tool run pip-audit`; that audits the empty ephemeral tool env and returns a misleading clean result. Do NOT use `uv run pip-audit`; that pulls pip-audit from the reviewed repo's environment and recreates the AG04 gap. |
+| pip-audit | `cd {WORKTREE_PATH} && uv export --no-hashes --format requirements-txt \| uv tool run pip-audit -r /dev/stdin $IGNORE_ARGS` | This is the only working invocation: `pip-audit -r pyproject.toml` fails (TOML pip-audit cannot parse) and `-r uv.lock` fails (uv-specific format pip-audit does not recognize); exporting to a requirements stream first is required. Overseer's pip-audit binary reads the exported manifest as input data, not as an active environment. Do NOT use bare `uv tool run pip-audit`; that audits the empty ephemeral tool env and returns a misleading clean result. Do NOT use `uv run pip-audit`; that pulls pip-audit from the reviewed repo's environment and recreates the AG04 gap. **Match CI's ignore policy and treat resolve errors as inconclusive:** a local pip-audit without the project's ignore list over-reports CVEs that CI legitimately suppresses (risking a wrong "this won't go green" conclusion or an unnecessary suppression edit). Before running, read `[tool.pip-audit] ignore-vuln` from `pyproject.toml` and build `IGNORE_ARGS` as one `--ignore-vuln <ID>` per entry (the org reusable workflow forwards these; this is a workflow convention, not native pip-audit config). Any pip-audit run that ends in a build/resolve error (e.g., lxml failing to build under a newer Python) is INCONCLUSIVE, not clean: zero findings from a failed resolution is a false-clean, never a pass. |
 | bandit (full repo) | already covered by the Step 5a default gate (which now runs bandit unconditionally with bandit defaults, no longer gated on `[tool.bandit]`) | n/a |
 
 *Hard-refused:*
@@ -1041,6 +1291,19 @@ Which option?
 If the user selects rebase: run `git -C {WORKTREE_PATH} rebase origin/{BASE_BRANCH}`.
 If conflicts occur, report them and offer Option 3 (keep worktree).
 
+**Linter/validator-snapshot commits go semantically obsolete when rebased past refactors.**
+When the PR's diff is the output of a linter/validator/formatter snapshot (docstring sync,
+type-hint backfill, import sort) AND the branch is BEHIND a base that refactored the same
+symbols (renamed functions, consolidated helpers, new params), mechanical conflict
+resolution is insufficient: taking either side leaves the validator failing because the
+snapshot no longer matches the new signatures, and a clean `git rebase --continue` is a
+false finish. The only trustworthy finish is to re-run the validator against the rebased
+tree and fix the residuals. Offer "fresh from base + regenerate" as a first-class option
+alongside rebase/merge: reset to base, re-apply only the non-generated change (e.g., the
+config edit), and regenerate the tool's output against current base. A commit that encodes
+a tool's output is a snapshot of code at one instant; re-running the tool is the only
+verification the rebased result is correct.
+
 **CI workflow identity conflict guard:** When resolving conflicts in
 `.github/workflows/` files, classify each conflict. A conflict where BOTH sides
 rewrote the `uses:` reusable-workflow reference or job `name:` field is a DESIGN
@@ -1085,9 +1348,26 @@ branch). Surface any in-flight or staged fixes as a follow-up PR and stop.
 **Reply to all threads:**
 
 For every open finding in the unified issue list, whether fixed, deferred, or declined,
-post a reply to its GitHub thread via GitHub MCP `add_pull_request_review_comment`
-(or `create_pull_request_review`). Note: exact method name depends on the GitHub MCP
-server version; confirm with `gh api` if the MCP call fails.
+post a reply to its GitHub thread using the dedicated review-comment replies endpoint:
+
+```bash
+gh api repos/{OWNER}/{REPO}/pulls/{PR_NUMBER}/comments/{comment_id}/replies \
+  -X POST -f body="{reply text}"
+```
+
+**Build a finding-id to comment-id map first; never carry one `comment_id` across
+findings.** When batch-replying to several threads in one block, a reused or last-known id
+silently attaches a correct reply to the wrong thread (a decline rationale landing on an
+unrelated finding), which is harder to notice than an outright failure. Resolve each
+finding's `comment_id` from the source of truth (one lookup by path+line) immediately
+before its own write, post against that mapped id, and after posting re-read each thread to
+confirm the reply landed under the intended comment.
+
+Use this form, not `pulls/{n}/comments -X POST -f in_reply_to={id}`: the latter fails 422
+because `-f` sends `in_reply_to` as a string and the endpoint's oneOf schema rejects it.
+The `/replies` endpoint takes only a `body` field and works for every thread. (The GitHub
+MCP `add_pull_request_review_comment` method is an equivalent if available, but the
+`gh api` call above is the confirmed-working form.)
 
 | Outcome | Reply format |
 | --- | --- |
@@ -1161,15 +1441,46 @@ cycle that dominated both PR #20 and dna#1.
 
 ### Phase A: Wait for CI + reviewer stabilization (up to 10 minutes)
 
+Record `PUSH_SHA` (the HEAD SHA after this push) and anchor every check query to it.
 Poll in parallel every 60 seconds:
 
-1. **CI checks:** `gh run list --branch {HEAD_BRANCH} --repo {OWNER}/{REPO} --limit 5 --json status,conclusion,name`
-   - Track: all checks reach a terminal state (`completed`, `cancelled`, `skipped`)
+1. **CI checks (anchored to PUSH_SHA, not `gh pr checks`).** After any push, status
+   queries race against run registration: a zero-pending result immediately post-push is
+   ambiguous between "all done" and "nothing started yet", and `gh pr checks` can report
+   only stale old-run data before GitHub creates the new commit's check runs. Query the
+   new SHA's check-runs directly:
+
+   ```bash
+   gh api repos/{OWNER}/{REPO}/commits/$PUSH_SHA/check-runs --paginate \
+     --jq '[.[]? // empty] | length' >/dev/null  # see structured query below
+   ACTIVE=$(gh api repos/{OWNER}/{REPO}/commits/$PUSH_SHA/check-runs --paginate \
+     | jq -s '[.[].check_runs[] | select(.status != "completed")] | length')
+   ACTIVE=${ACTIVE:-99}   # empty/failed poll = still active, never "done"
+   ```
+
+   A check is non-terminal when `status` is any of `queued`, `in_progress`, `waiting`,
+   `pending`, `requested` (enumerate the non-terminal set explicitly; do NOT test for a
+   single known pending value). Terminal = `status == "completed"` (with `conclusion` in
+   `{success, skipped, neutral, cancelled, failure}`). Treat an empty or failed poll
+   response as still-active, never as done.
+
+   **Debounce the exit.** Do not exit on the first all-terminal poll. Require EITHER a
+   minimum elapsed time of 2 minutes since the push, OR two consecutive all-terminal
+   polls, before declaring CI settled.
+
 2. **Review comments:** `gh api repos/{OWNER}/{REPO}/pulls/{PR_NUMBER}/comments --jq 'length'`
    - Track: comment count stabilizes (same count for 2 consecutive polls)
 3. **PR state (when AUTO_MERGE=true):** `gh pr view --json state --jq '.state'`
    - If `state == "MERGED"`: stop immediately. The PR merged between cycles.
      Any staged fixes must go to a follow-up PR.
+
+**Do not block on `mergeStateStatus` for the all-green signal.** That field (and
+`mergeable`) is computed asynchronously and can return `null` or lag by minutes even when
+the underlying data is settled. The authoritative green signal is two direct-data checks:
+(1) all `check-runs` for `PUSH_SHA` are `completed` with `conclusion` in
+`{success, skipped, neutral}`, and (2) `mergeable_state == "clean"` from the pull
+endpoint. If both hold, the branch is all-green regardless of `mergeStateStatus`; reserve
+`mergeStateStatus` as a supplementary signal only.
 
 Exit the wait when all conditions are met, or after 10 minutes (whichever
 comes first).
@@ -1190,6 +1501,17 @@ Mark comments with an older `commit_id` AND whose cited content is absent from
 current HEAD as `STALE`. Include them in the Phase C summary as "Reply-only
 ({N} stale comments already addressed in {PUSH_SHA})" rather than as new
 findings requiring a code-change cycle.
+
+**Reusable-workflow startup_failure (no jobs, no logs).** A `completed/startup_failure`
+conclusion (distinct from `completed/failure`) means no job ran, so logs and annotations
+will be absent: diagnose at the file/reference level, not by reading logs that do not exist.
+The common cause is a `uses: org/repo/...@<sha>` reusable ref pinned to a commit orphaned by
+a squash-merge (`gh api repos/<owner>/<repo>/compare/<default>...<sha>` returns `diverged`).
+Re-pin to a SHA reachable from the reusable repo's default branch; `contents?ref=<sha>`
+still serves dangling commits, so use `compare`, not existence. Validate the fix cheaply via
+`workflow_dispatch` on a throwaway branch (startup validation runs at load time, before job
+`if:`). When the failure appeared right after an edit, confirm causation by reverting the
+suspected change on the current base before committing to a fix direction.
 
 **SARIF / code-scanning orphan checks:** When "Code scanning results / *" checks remain
 in `queued` state indefinitely after a push, check whether the upstream analysis job was
@@ -1214,7 +1536,24 @@ Classify the outcome:
 | All green | New comments arrived | Enter Phase C (re-fix pass) |
 | Failures | Any | Enter Phase C (re-fix pass) |
 | SARIF checks queued + `mergeable: MERGEABLE` | Any | Classify as advisory pending; proceed to merge or Phase C for comments only |
+| All green + `mergeStateStatus: BLOCKED` | None | Unresolved-conversation block (see below); resolve threads, NOT a re-fix cycle |
 | Timed out | Any | Report current state, offer manual options |
+
+**Green-but-BLOCKED: distinguish the cause before acting.** "All checks green" is
+necessary but not sufficient for mergeability; `mergeStateStatus` is the authoritative
+gate and BLOCKED has multiple independent causes that each need a different, non-code
+action. When CI is all green AND there are no new non-stale comments AND
+`mergeStateStatus` is BLOCKED:
+
+- **Unresolved review threads** (branch protection enforces conversation resolution):
+  check `reviewThreads.nodes` for `isResolved == false` whose findings are already
+  addressed, and resolve them via the `resolveReviewThread` GraphQL mutation (already
+  implied by Step 8). This clears BLOCKED -> CLEAN without any code change.
+- **Phantom or name-mismatched required checks** (a required context that is never
+  reported sits pending forever): clears by fixing branch protection / the workflow job
+  name, not by resolving threads.
+
+Neither cause is a re-fix cycle. Identify which one applies before acting.
 
 ### Phase C: Automatic re-fix pass (up to 2 cycles)
 

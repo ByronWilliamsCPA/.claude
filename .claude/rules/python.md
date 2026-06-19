@@ -134,6 +134,16 @@ def create_user(request: UserCreationRequest) -> User:
     ...
 ```
 
+**Group at design time, not as a retrofit.** PLR0913 enforces a design
+constraint, not a style nit. The dataclass grouping is the same work whether
+done when first writing the signature or after the linter fires, but the
+retrofit additionally forces rewriting every call site and every test. When
+sketching a public signature that will plausibly exceed the limit, group the
+cohesive subsets up front. Cohesion test: arguments that always travel together
+(a dataset and its correlation matrix; a set of input file paths) belong in one
+frozen record. Design signatures against the known lint budget from the first
+line.
+
 ### Naming Standards
 - **Variables**: Descriptive, ≥3 characters, no abbreviations unless domain-standard
 - **Functions**: Verb-based (`calculate_total`, not `total`)

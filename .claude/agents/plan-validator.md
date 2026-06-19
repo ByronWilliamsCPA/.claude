@@ -1,6 +1,6 @@
 ---
 name: plan-validator
-description: Validates a proposed action plan against phase scope boundaries to detect scope creep. Internal agent — invoked by phase-gate skill only.
+description: Validates a proposed action plan against phase scope boundaries to detect scope creep. Internal agent, invoked by phase-gate skill only.
 user-invocable: false
 model: sonnet
 tools: ["Read", "Grep", "Glob"]
@@ -29,14 +29,14 @@ The caller provides:
 
 The agent reads:
 
-1. `docs/IMPLEMENTATION_PLAN.md` — the specific phase section
+1. `docs/IMPLEMENTATION_PLAN.md`: the specific phase section
 2. The proposed action plan from the caller
 
 ## Process
 
 ### 1. Extract Acceptance Criteria
 
-Parse the implementation plan for the given phase and build a list of concrete acceptance criteria — every bullet point, file to create, endpoint to implement, or feature to deliver.
+Parse the implementation plan for the given phase and build a list of concrete acceptance criteria: every bullet point, file to create, endpoint to implement, or feature to deliver.
 
 ### 2. Map Plan Items to Criteria
 
@@ -68,21 +68,21 @@ Categorize unmapped items:
 Return a structured report:
 
 ```markdown
-# Plan Validation: Phase {N} — {Phase Name}
+# Plan Validation: Phase {N} ({Phase Name})
 
 ## Traceability Matrix
 
 | Plan Item | Maps To | Status |
 | --- | --- | --- |
 | {action item} | {criterion from impl plan} | MAPPED |
-| {action item} | — | UNMAPPED ({category}) |
+| {action item} | (none) | UNMAPPED ({category}) |
 
 ## Acceptance Criteria Coverage
 
 | Criterion | Covered By | Status |
 | --- | --- | --- |
 | {criterion from impl plan} | {plan item(s)} | COVERED |
-| {criterion from impl plan} | — | GAP |
+| {criterion from impl plan} | (none) | GAP |
 
 ## Summary
 

@@ -28,6 +28,13 @@ Before mapping the File Structure, run a read-only discovery pass using the buil
 Explore subagent (`subagent_type: "Explore"` in the Agent tool):
 
 - [ ] Confirm which existing files will be modified (paths, line counts, naming patterns in use)
+- [ ] **Verify-base-branch-existence:** When a spec or issue references files by
+      path, confirm each exists on the plan's base branch with
+      `git log origin/main -- <path>` (not just "anywhere in the repo"). A spec's
+      file references are claims about repository state at authoring time, possibly
+      on a different branch. If a referenced file lives only on an open feature
+      branch, record its owning PR as a hard precondition (a Task 0 gate) rather
+      than writing tasks that edit files absent from the base branch.
 - [ ] Identify abstractions, types, or utilities the new code should reuse rather than duplicate
 - [ ] Note the test file location convention (`tests/unit/`, `tests/`, etc.)
 - [ ] Check for existing patterns the plan should follow (error handling style, import conventions)
@@ -38,6 +45,29 @@ Explore subagent (`subagent_type: "Explore"` in the Agent tool):
       proofs, verify the cited code against the cited check. A "proven" pattern in a handoff
       is a claim about a past moment, not a present property -- plans that inherit broken
       patterns multiply the rework across every task built on them.
+- [ ] **Verify-present-tense-defects:** For any gap, defect, or fix the source spec/audit
+      asserts about the CURRENT code's behavior, reproduce or verify it against the source
+      before writing a task that depends on it. A spec or upstream audit is a set of
+      hypotheses, not ground truth; pre-baking a fix for an unconfirmed gap produces a wrong,
+      unnecessary task (e.g., a "palette overflow fix" when the grid uses `repeat(5, 1fr)`
+      and cannot overflow). When the remediation phase is audit-driven, the correct structure
+      is concrete harness/measurement tasks plus a triage-and-fix procedure, NOT
+      pre-enumerated fixes for gaps not yet observed running. (Obs 238)
+- [ ] **Validate spec-provided fixtures against their gate:** If the spec supplies a concrete
+      data fixture, config, or payload that a validator/schema/linter will gate at runtime,
+      locate that gate and check the fixture's required keys and enum/vocabulary values
+      against it NOW. A spec's example data is the most-copied, least-verified artifact a plan
+      inherits; one wrong enum value or missing required key multiplies into a failure in
+      every task that consumes it. Treat a spec's "verified"/"resolved" claim about a fixture
+      as a claim about a past moment. Encode the corrected, gate-passing shape in the plan,
+      not the spec's sketch. (Obs 239)
+- [ ] **Confirm the dependency-declaration convention before prescribing uv flags:** When the
+      plan will add or sync dependencies, confirm which pyproject table the repo uses (PEP 621
+      `[project.optional-dependencies]` vs PEP 735 `[dependency-groups]`) and which uv flags
+      match (`--optional`/`--extra` vs `--dev`/`--group`). uv's flag pairs silently target
+      different tables, so a command that "looks standard" can be a no-op or error in repos
+      using the other convention. Copy the flag style from an existing working command (CI
+      workflow or docs) verbatim. (Obs 317)
 
 Skip this step only if the plan covers a brand-new, isolated repository with no existing code.
 
@@ -157,6 +187,30 @@ git commit -m "feat: add specific feature"
 ```
 ````
 
+### Operational Task variant (state-change tasks)
+
+The failing-test/run/implement/pass/commit template above fits code-change
+tasks. It does not fit operations-heavy maintenance plans (git operations, `gh`
+CLI triage, config refreshes, fleet sweeps), where the TDD analog is "run
+command, verify expected output." For those steps, use this variant instead of
+forcing a fake test:
+
+````markdown
+### Task N: [Operation Name]
+
+- [ ] **Step 1: [exact command]**
+
+Run: `gh pr list --state open --json number,title`
+Expected: <the specific output or state you require>
+Abort if: <the condition under which the operation must stop, not proceed>
+````
+
+Each operational step states the exact command, the expected output, and an
+abort condition. Reserve the TDD shape for steps that change code; use the
+operational shape for steps that change state. Distinguishing the two prevents
+both fake tests on ops steps and vague "run the command" hand-waving. The
+No Placeholders rule below applies to both variants.
+
 ## No Placeholders
 
 Every step must contain the actual content an engineer needs. These are **plan failures**; never write them:
@@ -177,7 +231,7 @@ Every step must contain the actual content an engineer needs. These are **plan f
 
 After writing the complete plan, look at the spec with fresh eyes and check the plan against it. This is a checklist you run yourself, not a subagent dispatch.
 
-**1. Spec coverage:** Skim each section/requirement in the spec. Can you point to a task that implements it? List any gaps.
+**1. Spec coverage (clause-level, not section-level) (Obs 324):** Split each spec section into individual testable claims, anything with a verb describing runtime behavior, and point each CLAIM to a task step. Section-granularity checks pass when ANY clause in the section is implemented, so a section like "429/5xx retry, then failover to the next candidate" reads as covered even when one clause (failover substitution) has no implementing step. Once the plan exists, every downstream reviewer verifies against the plan, so a clause dropped at planning time becomes invisible to the entire review chain. List any gaps. Note: a live end-to-end run against the spec's acceptance criteria is the only reviewer that does not inherit the plan's blind spots; schedule one before declaring parity.
 
 **2. Placeholder scan:** Search your plan for red flags; any of the patterns from the "No Placeholders" section above should be fixed.
 
