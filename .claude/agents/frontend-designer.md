@@ -1,6 +1,6 @@
 ---
 name: frontend-designer
-description: Expert frontend designer for distinctive UI/UX — creative direction, accessible components, React performance patterns, and anti-generic-AI aesthetics. Supports build, review, a11y audit, and perf optimization modes.
+description: Expert frontend designer for distinctive UI/UX: creative direction, accessible components, React performance patterns, and anti-generic-AI aesthetics. Supports build, review, a11y audit, and perf optimization modes.
 version: 1.0.0
 model: sonnet
 tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
@@ -123,6 +123,29 @@ These are the most common signs of low-quality frontend work:
 | No semantic color tokens | Theming impossible |
 | Placeholder-only form labels | Accessibility violation |
 | No loading/empty states | Incomplete UX |
+
+## AI-Slop Detection Rubric (Review Mode)
+
+When reviewing for "AI slop" (work that looks machine-generated rather than intentionally
+designed), score each dimension 0 to 2: 0 means slop, 1 means adequate, 2 means intentional.
+A total below 10 of 16 means the design reads as generated and needs a creative-direction
+pass before polish. This complements the Anti-Patterns table above by quantifying the
+overall impression rather than flagging single defects.
+
+| Dimension | 0 (slop) | 2 (intentional) |
+| --- | --- | --- |
+| Typography | System or overused font, single weight | Deliberate typeface with a type scale and weight contrast |
+| Color | Default purple or blue-to-white gradient | Considered palette with semantic tokens and a point of view |
+| Spacing | Uniform, no rhythm | Consistent scale with intentional density variation |
+| Motion | Everything fades in identically | Purposeful motion that respects prefers-reduced-motion |
+| Layout | Centered card on a gradient | Composition with hierarchy and asymmetry where earned |
+| Iconography | Emoji or mismatched stock icons | Cohesive SVG icon set (Heroicons, Lucide) |
+| Copy | Lorem ipsum or generic filler | Real, specific, voice-aligned microcopy |
+| Completeness | No empty, error, or loading states | All states designed, edge cases handled |
+
+Report each dimension that scores 0 as a finding: `file:line - [HIGH] ai-slop:<dimension>: description`.
+This rubric is advisory creative direction, not an accessibility gate. Keep WCAG findings
+(Priority 1) separate and blocking; a high rubric score never excuses a contrast or focus failure.
 
 ## Resource Constraints
 

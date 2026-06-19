@@ -156,6 +156,20 @@
   and repo-compliance reference all move to pydoclint.
 
 ### Added
+* feat(skills): port two Tier 2 reasoning skills from `addyosmani/agent-skills`
+  (MIT, commit `a5f0b17`), adapted to our standards. `doubt-driven-development`
+  subjects every non-trivial decision to a fresh-context adversarial review
+  (claim, contract, issues-only reviewer, reconcile, bounded stop) and acts as
+  the active complement to RAD's assumption tagging; cross-model review is
+  repointed to the `consensus` skill and `clink` instead of an external API.
+  `context-engineering` curates the five-tier context hierarchy, file trust
+  levels, confusion management, and the inline-planning pattern, repointed to our
+  scoped CLAUDE.md model and tiered MCP loading. Both registered in
+  `AGENTS-AND-SKILLS.md` and `docs/reference/skills.md`. Injected
+  anti-rationalization tables into `rad`, `debug-tests`, and `security`; added an
+  AI-slop detection rubric to the `frontend-designer` agent and Diataxis mode
+  discipline to the `documentation-writer` agent (both gstack `/design-review`
+  inspired).
 * feat(skills): weekly skill-review apply pass (2026-06-17 task-observer review).
   Added 15 skills: 3 standalone (`external-reference-verification`, `pdf-extras`,
   `chat-app-handoff-to-repo`) and 12 `-extras` companions that layer guidance onto
