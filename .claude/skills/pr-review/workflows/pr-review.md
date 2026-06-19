@@ -108,7 +108,7 @@ Do not block the rest of this workflow on the result.
 
 ```bash
 gh pr view "$PR_NUMBER" --repo "$OWNER/$REPO" \
-  --json title,body,state,isDraft,labels,baseRefName,headRefName,author,number,mergeStateStatus
+  --json title,body,state,isDraft,labels,baseRefName,headRefName,headRefOid,author,number,mergeStateStatus
 ```
 
 **Eligibility check (Haiku agent):**
@@ -133,6 +133,8 @@ Store:
 - `BASE_BRANCH`: baseRefName
 - `HEAD_BRANCH`: headRefName
 - `MERGE_STATE`: mergeStateStatus
+- `HEAD_SHA`: headRefOid (PR head commit SHA; required by later steps for
+  SHA-anchored file fetches and report links)
 - `PR_DIFF`: full unified diff text
 - `CHANGED_FILES`: list of file paths from the files JSON
 
@@ -169,7 +171,7 @@ required set once:
 
 ```bash
 REQUIRED=$(gh api "repos/$OWNER/$REPO/branches/$BASE_BRANCH/protection/required_status_checks/contexts" \
-  2>/dev/null || gh api "repos/$OWNER/$REPO/rulesets" 2>/dev/null | jq -r '..|.required_status_checks?//empty' )
+  2>/dev/null | jq -r '.[]' || gh api "repos/$OWNER/$REPO/rulesets" 2>/dev/null | jq -r '..|.required_status_checks?//empty' )
 ```
 
 - Failing check IS in the required set, OR `MERGE_STATE` is `BLOCKED`: tier it per the
@@ -386,7 +388,8 @@ judgment. Store all collisions as `SYMBOL_COLLISIONS` and pass to Agent M.
 For a stale PR, the first question is "does the base branch already contain this?" not
 "is this code good?" A byte-level comparison against the base costs a couple of git
 commands and can invalidate the entire premise of the review before the agent fleet
-runs. Skip this step when `MERGE_STATE` is `CLEAN` or `MERGEABLE`.
+runs. Skip this step when `MERGE_STATE` is `CLEAN` (the up-to-date-with-base state;
+`mergeStateStatus` has no `MERGEABLE` value, that belongs to the separate `mergeable` field).
 
 For each file in `CHANGED_FILES`, compare the PR head content to the base branch:
 
