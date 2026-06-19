@@ -216,32 +216,19 @@ def test_supersede_skips_corrupted_jsonl_lines(
     raw = fake_central.read_text(encoding="utf-8")
     assert "{not valid json on this line}" in raw
 
+    # load_entries (non-strict default) skips the malformed line with a
+    # stderr warning and returns the surviving entries, so canonical
+    # resolution runs directly on them. The corrupted raw line is still
+    # present in the file (asserted above).
     entries = load_entries(fake_central)
-    # load_entries raises on malformed lines per the new contract, so
-    # callers wanting "skip and continue" semantics must handle that
-    # exception themselves. For this test, we want both the surviving
-    # canonical entry AND the corrupted line to be present, so we read
-    # the raw text and pick entries manually.
-    valid_payloads = []
-    for line in raw.splitlines():
-        if not line.strip():
-            continue
-        try:
-            obj = json.loads(line)
-        except json.JSONDecodeError:
-            continue
-        if obj.get("type") == "header":
-            continue
-        valid_payloads.append(obj)
 
-    canonical = resolve_canonical_per_key(valid_payloads)
+    canonical = resolve_canonical_per_key(entries)
     assert len(canonical) == 1
     assert canonical[0]["session_id"] == "2026-05-17T18:00:00Z-new2"
     # The prior active entry is now superseded, not active.
-    superseded = [p for p in valid_payloads if p.get("superseded_by") is not None]
+    superseded = [e for e in entries if e.get("superseded_by") is not None]
     assert len(superseded) == 1
     assert superseded[0]["session_id"] == "2026-05-17T08:00:00Z-old1"
-    _ = entries  # keep the import wired so static analysis sees the dep
 
 
 def test_atomic_supersede_marks_prior_entry_superseded(
