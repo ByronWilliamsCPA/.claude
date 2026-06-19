@@ -205,9 +205,9 @@
   (`docs/tool-evals/skills-deep-dive-2026-06.md`, item 19). Five static,
   model-referenceable CSVs from `nextlevelbuilder/ui-ux-pro-max-skill` (MIT,
   commit `b7e3af8`, retrieved 2026-06-19): `styles.csv` (84 style families with
-  palettes and prompt keywords), `typography.csv` (73 font pairings with
+  palettes and prompt keywords), `typography.csv` (74 font pairings with
   imports), `charts.csv` (25 chart types with a11y grades), `ui-reasoning.csv`
-  (161 product-type UX decision rules), and `app-interface.csv` (29 interface
+  (161 product-type UX decision rules), and `app-interface.csv` (30 interface
   Do/Don't rules with code). The upstream `search.py` BM25 runtime was dropped
   (files are referenced directly); the 745 KB Google Fonts catalog, the
   Chinese-language single-column dumps, and the framework-specific stack files

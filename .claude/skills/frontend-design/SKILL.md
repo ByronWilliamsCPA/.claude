@@ -415,9 +415,9 @@ Before delivering any frontend work:
 Static design catalogs live in [`context/`](context/README.md), extracted from
 `ui-ux-pro-max-skill` (MIT). Load the one that fits the task instead of inventing
 options: `styles.csv` (84 style families with palettes and prompt keywords),
-`typography.csv` (73 font pairings with imports), `charts.csv` (25 chart types
+`typography.csv` (74 font pairings with imports), `charts.csv` (25 chart types
 with a11y grades), `ui-reasoning.csv` (161 product-type UX decision rules), and
-`app-interface.csv` (29 interface Do/Don't rules with code). See
+`app-interface.csv` (30 interface Do/Don't rules with code). See
 [`context/README.md`](context/README.md) for the full index and usage.
 
 ## Attribution
