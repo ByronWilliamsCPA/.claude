@@ -15,7 +15,7 @@ user-invocable: true
 > [`addyosmani/agent-skills`](https://github.com/addyosmani/agent-skills) (MIT),
 > all retrieved 2026-06-18 via our skills survey
 > (`docs/tool-evals/skills-repos-survey-2026-06.md` and
-> `skills-deep-dive-2026-06.md`). This is not a verbatim port: it is written to
+> `docs/tool-evals/skills-deep-dive-2026-06.md`). This is not a verbatim port: it is written to
 > our conventions (no em-dashes; Pattern B tool-invoked; cross-referenced to our
 > own brainstorming, feasibility-check, and writing-plans skills). The gstack
 > `{{PREAMBLE}}` macro is stripped.

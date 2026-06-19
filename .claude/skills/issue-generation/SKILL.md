@@ -1,6 +1,6 @@
 ---
 name: issue-generation
-description: Converts a conversation or utterance into a well-formed GitHub issue, with a mandatory PII/secret redaction gate before filing. Use when you want to file an issue, create a github issue, turn this into an issue, generate an issue from a conversation, or run spec-to-issue.
+description: Converts a conversation or utterance into a well-formed GitHub issue, with a mandatory PII/secret redaction gate before filing. Use when you want to file an issue, create a GitHub issue, turn this into an issue, generate an issue from a conversation, or run spec-to-issue.
 user-invocable: true
 ---
 
@@ -100,7 +100,7 @@ explicit "yes, file it" before the create call.
 ### Step 4: FILE
 
 The orchestrator (not this skill, not an agent) performs the creation via the
-GitHub MCP issue tool (`mcp__github__issue_write`). Apply labels and assignees
+GitHub MCP `issue_write` tool (method `create`). Apply labels and assignees
 per our conventions:
 
 - **Labels**: map the issue's type to our conventional-commit prefixes
@@ -166,4 +166,4 @@ Before the create call, confirm all of the following:
       explicit go-ahead.
 - [ ] Labels map to our conventional-commit prefixes; assignees match user intent
       or approved CODEOWNERS.
-- [ ] The orchestrator (not an agent) performs the `mcp__github__issue_write` call.
+- [ ] The orchestrator (not an agent) performs the `issue_write` (method `create`) call.
