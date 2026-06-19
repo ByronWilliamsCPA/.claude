@@ -15,29 +15,32 @@ branch. If neither works, ask the user for the PR URL before proceeding.
 
 ## Configuration
 
-PAL tool parameters used throughout this workflow. Edit these values to tune
+Model-validation parameters used throughout this workflow. Edit these values to tune
 model selection and consensus depth without touching the workflow logic.
 
 ```text
 PAL_CHAT_MODEL:        google/gemini-2.5-pro-preview
 PAL_CONSENSUS_MODELS:  ["google/gemini-2.5-pro-preview", "openai/gpt-4o"]
-PAL_TIERED_LEVEL:      1
-PAL_TIERED_THINKING:   auto
+CONSENSUS_LEVEL:       1
 PREMISE_MERGED_PR_LOOKBACK:   10
 PREMISE_STALENESS_HOLD_DAYS:  14
 ```
 
 - `PAL_CHAT_MODEL`: model passed to `mcp__pal__chat` for targeted validations
 - `PAL_CONSENSUS_MODELS`: model list passed to `mcp__pal__consensus` for Agent L
-- `PAL_TIERED_LEVEL`: level (1/2/3) for all `mcp__pal__tiered_consensus` calls;
-  level 1 uses 3 free models, level 2 adds paid models (~$0.50), level 3 is
-  comprehensive (~$5)
-- `PAL_TIERED_THINKING`: thinking depth for tiered_consensus (`auto`, `low`,
-  `high`)
+- `CONSENSUS_LEVEL`: level (1/2/3) for the `/consensus` skill engine used in Step 7b;
+  level 1 uses 3 free models (cap $0.50), level 2 adds economy models (6 total, cap
+  $1.00), level 3 adds high-cost models (8 total, cap $10.00)
 - `PREMISE_MERGED_PR_LOOKBACK`: number of recently merged PRs scanned for file and
   symbol overlap in Step 2e
 - `PREMISE_STALENESS_HOLD_DAYS`: branch age in days above which staleness biases
   Agent M toward a HOLD verdict on a confirmed regression
+
+Step 7b cross-model validation runs through the `consensus` skill's CLI engine
+(`.claude/skills/consensus/scripts/consensus_cli.py`), not PAL `tiered_consensus`. The
+PAL multi-step protocol reliably returned setup-only messages without verdicts in this
+step (observed repeatedly), so it was replaced with the one-shot consensus engine, which
+returns model responses and counts in a single `run` call.
 
 ---
 
@@ -71,16 +74,25 @@ rule in the org ruleset (`<ORG>-default-branch-baseline` in both
 ByronWilliamsCPA and williaby). It is requested when the PR opens.
 No API call from this workflow is needed.
 
-Verify it landed (one-line, non-blocking):
+Verify it landed (one-line, non-blocking). Treat "requested OR already-submitted" as
+success: a reviewer that has already submitted is removed from `requested_reviewers` and
+moves to `/reviews`, so checking only the pending queue false-negatives on a
+fast-reviewing or previously-pushed PR.
 
 ```bash
-gh api repos/"$OWNER"/"$REPO"/pulls/"$PR_NUMBER" \
-  --jq '.requested_reviewers[].login' | grep -q copilot-pull-request-reviewer \
-  && echo "Copilot: ruleset-requested OK" \
-  || echo "Copilot: NOT requested -- verify copilot_code_review rule in org ruleset"
+if gh api repos/"$OWNER"/"$REPO"/pulls/"$PR_NUMBER" \
+     --jq '.requested_reviewers[].login' | grep -q copilot-pull-request-reviewer; then
+  echo "Copilot: ruleset-requested OK"
+elif [ "$(gh api repos/"$OWNER"/"$REPO"/pulls/"$PR_NUMBER"/reviews \
+     --jq '[.[] | select(.user.login=="copilot-pull-request-reviewer[bot]")] | length')" -gt 0 ]; then
+  echo "Copilot: already reviewed (submission present)"
+else
+  echo "Copilot: NOT requested -- verify copilot_code_review rule in org ruleset"
+fi
 ```
 
-If verification fails, the `copilot_code_review` rule is missing or
+Only the final branch (neither pending nor submitted) indicates a real ruleset
+misconfiguration. If that branch fires, the `copilot_code_review` rule is missing or
 disabled. Re-apply via:
 
 ```bash
@@ -96,7 +108,7 @@ Do not block the rest of this workflow on the result.
 
 ```bash
 gh pr view "$PR_NUMBER" --repo "$OWNER/$REPO" \
-  --json title,body,state,isDraft,labels,baseRefName,headRefName,author,number,mergeStateStatus
+  --json title,body,state,isDraft,labels,baseRefName,headRefName,headRefOid,author,number,mergeStateStatus
 ```
 
 **Eligibility check (Haiku agent):**
@@ -121,8 +133,19 @@ Store:
 - `BASE_BRANCH`: baseRefName
 - `HEAD_BRANCH`: headRefName
 - `MERGE_STATE`: mergeStateStatus
+- `HEAD_SHA`: headRefOid (PR head commit SHA; required by later steps for
+  SHA-anchored file fetches and report links)
 - `PR_DIFF`: full unified diff text
 - `CHANGED_FILES`: list of file paths from the files JSON
+
+**mergeStateStatus is computed lazily.** GitHub often returns `UNKNOWN` immediately
+after a PR is loaded (the value is not yet computed, not a clean state). Step 2c
+branches on `MERGE_STATE`, so an `UNKNOWN` read there silently skips the base-branch
+lookup and can misclassify pre-existing base failures as PR-introduced. If
+`MERGE_STATE` is `UNKNOWN`, wait 5 seconds and re-fetch once. If it is still `UNKNOWN`
+after the retry, set `MERGE_STATE=BEHIND` conservatively (so the base-branch lookup
+runs) and add to the report header:
+**mergeStateStatus: UNKNOWN; branch-divergence attribution may be inaccurate.**
 
 ### 2c. CI status
 
@@ -138,11 +161,41 @@ Store as `CI_CHECKS`. For any check where `state` is not `SUCCESS` and not
 `PENDING` (PENDING means in-progress; skip it), classify each failing check
 by branch state before emitting.
 
-**Classifying failing CI checks by branch state:**
+**Required-vs-non-required tiering (decide tier before branch-state attribution).**
+A failing check is a fact; whether it BLOCKS merge is a separate fact, and the tier
+should follow the second. Before assigning a tier, determine whether the failing check
+is a required status context. A check failing on an `UNSTABLE` (mergeable) PR is
+non-required and does not block merge; only `BLOCKED`, or membership in
+branch-protection `required_status_checks`, indicates a gate that does. Fetch the
+required set once:
+
+```bash
+REQUIRED=$(gh api "repos/$OWNER/$REPO/branches/$BASE_BRANCH/protection/required_status_checks/contexts" \
+  2>/dev/null | jq -r '.[]' || gh api "repos/$OWNER/$REPO/rulesets" 2>/dev/null | jq -r '..|.required_status_checks?//empty' )
+```
+
+- Failing check IS in the required set, OR `MERGE_STATE` is `BLOCKED`: tier it per the
+  branch-state rules below (Critical is in play).
+- Failing check is NOT required and `MERGE_STATE` is `UNSTABLE`: emit `[Important]` with
+  the annotation "non-required, does not block merge" plus the check's own remediation
+  hint. Do not emit BUILD FAILING for a non-required check. Rigidly labelling a trivially
+  remediable non-required check (e.g., a Changelog gate clearable by a `skip-changelog`
+  label on a docs/test PR) as Critical overstates impact and pushes the user toward
+  unnecessary code changes.
+
+**Changelog-gate remedy is commit-type-dependent.** When the failing check is a Changelog
+gate whose pass condition is "CHANGELOG.md edited OR a skip label present" (a job-level
+`if: !contains(...labels..., 'skip-changelog')` guard), the recommended fix depends on the
+branch's commit types, not on adding an entry reflexively. If the branch has no
+`feat`/`fix`/`perf`/breaking commits (docs/chore/test/refactor only), the remedy is the
+repo's changelog-skip label (commonly `skip-changelog`, confirm via `gh label list`), NOT
+a fabricated CHANGELOG entry. Note the re-trigger ordering for pr-fix: the label only takes
+effect on a run whose triggering event already carried it, so it must be applied BEFORE the
+next push/reopen if the workflow's `on:` block lacks `labeled`.
 
 For each failing check in `CI_CHECKS`:
 
-- If `MERGE_STATE` is not `BEHIND`: emit `[Critical]`; divergence attribution does not apply. No base-branch lookup is needed.
+- If `MERGE_STATE` is not `BEHIND`: emit at the tier set above; divergence attribution does not apply. No base-branch lookup is needed.
 - If `MERGE_STATE` is `BEHIND`: a CI failure may originate in the diverged base history rather than in the PR's diff. Fetch the base branch's check results to distinguish the two cases:
 
   ```bash
@@ -161,7 +214,32 @@ For each failing check in `CI_CHECKS`:
 
   Look up the failing check name in `BASE_CHECKS`:
   - Fails on base too: emit `[Critical - pre-existing, rebase needed]`; the fix is rebase, not a code change.
-  - Passes on base (or absent from base): emit `[Critical - PR-introduced]`; the fix is in the PR's diff.
+  - Passes on base (or absent from base): apply the transient-infrastructure test below before emitting `[Critical - PR-introduced]`.
+
+**Transient-infrastructure test (third category; run for any check that "passes on base").**
+Pass/fail topology has three causes, not two: yours, pre-existing, and an infrastructure
+flake unrelated to either branch. Before labelling a "passes on base" failure
+PR-introduced, grep the failed run log for infrastructure signatures:
+
+```bash
+gh run view {RUN_ID} --repo "$OWNER/$REPO" --log \
+  | grep -iE "requires authentication|httperror: 5[0-9][0-9]|rate limit|could not provision|runner.*offline|attestation.*verify" \
+  | head -5
+```
+
+- Log matches an infra signature, or the conclusion is `CANCELLED` (collateral cancel):
+  emit `[Critical - likely transient, rerun]` with the matched evidence line. The
+  remediation is a re-run, not a code change. A docs-only or config-only diff that
+  fails a code-analysis check (CodeQL, security-analysis) is a strong tell for this
+  class, since such a diff cannot cause that failure.
+- No infra signature and the log points at the diff: emit `[Critical - PR-introduced]`;
+  the fix is in the PR's diff.
+
+A failure that passes on base but red on the PR is PR-caused regardless of whether the
+check is a *required* status context: required-context-green is necessary but not
+sufficient. Pin-bump PRs (Renovate/Dependabot) that bump a reusable-workflow or action
+SHA are the common offender, because the one-line SHA swap understates the upstream
+behavioural delta it imports.
 
 Emit each finding:
 
@@ -170,11 +248,33 @@ Emit each finding:
 Confidence: 100 (objective CI result)
 ```
 
-If any Critical CI finding exists, the report header must include:
+If any Critical CI finding exists (a required check failing, or `MERGE_STATE` is
+`BLOCKED`), the report header must include:
 **BUILD FAILING: do not merge until CI is green.**
+
+**Phantom / never-reported required check (silent BLOCKED).** `gh pr checks` and the
+GraphQL `statusCheckRollup` show only checks that ACTUALLY RAN; a required context that
+never reports (wrong name, or no workflow emits it) sits `EXPECTED` forever and blocks
+merge while the rollup looks green. When `MERGE_STATE` is `BLOCKED` but no failing check
+appears in `CI_CHECKS`, cross-reference the required set against the contexts actually
+emitted on the head SHA and flag any required context with no matching completed run:
+
+```text
+[Critical] CI: required context "{name}" is in branch protection but never reported on this
+PR (phantom/name-mismatch). It blocks merge silently. Remediation is a branch-protection or
+workflow job-name fix, not a code change.
+```
+
+GitHub Actions reports check names as `workflow_name / job_name`; a required context listed
+as the bare `job_name` will never match. Reliable merge readiness requires `MERGE_STATE` in
+`{CLEAN, UNSTABLE}` (not `BLOCKED`) in addition to green check conclusions.
 
 If any finding is tagged `[Critical - pre-existing, rebase needed]`, also add to the header:
 **BRANCH BEHIND: some failures may clear after rebasing on {BASE_BRANCH}.**
+
+If every Critical CI finding is tagged `[Critical - likely transient, rerun]`, do NOT
+add BUILD FAILING; instead add:
+**CI: transient infrastructure failures detected; remediation is re-run, not a code change.**
 
 ---
 
@@ -283,6 +383,47 @@ judgment. Store all collisions as `SYMBOL_COLLISIONS` and pass to Agent M.
 
 ---
 
+## Step 2f: Supersession pre-check (only when MERGE_STATE is DIRTY or BEHIND)
+
+For a stale PR, the first question is "does the base branch already contain this?" not
+"is this code good?" A byte-level comparison against the base costs a couple of git
+commands and can invalidate the entire premise of the review before the agent fleet
+runs. Skip this step when `MERGE_STATE` is `CLEAN` (the up-to-date-with-base state;
+`mergeStateStatus` has no `MERGEABLE` value, that belongs to the separate `mergeable` field).
+
+For each file in `CHANGED_FILES`, compare the PR head content to the base branch:
+
+```bash
+for f in {CHANGED_FILES}; do
+  if git diff --quiet "origin/$BASE_BRANCH" "$HEAD_SHA" -- "$f" 2>/dev/null; then
+    echo "IDENTICAL  $f"
+  else
+    echo "DIFFERS    $f"
+  fi
+done
+```
+
+- **Most files IDENTICAL to base:** short-circuit to a "superseded PR" report. Diff the
+  remaining DIFFERS files base->head to enumerate exactly what merging would still add
+  (the *residual* salvage list) and what it would REGRESS (lines a later base commit
+  deliberately removed that this branch re-adds). Recommend close-plus-follow-up-issue,
+  attach the salvage list, and stop before spawning the full agent fleet. Supersession
+  is rarely all-or-nothing: report the residual, not a binary yes/no.
+- **Few or no files IDENTICAL:** proceed to Step 3 normally; note any IDENTICAL files so
+  agents do not waste effort reviewing already-merged content.
+
+**Dependency-pin and dual-PR caveat.** `gh pr diff` is computed against the merge base,
+not the live base branch, so a bot-generated dependency PR can show a SHA or version
+change that a sibling PR already landed on base (e.g., two Renovate PRs pointing at the
+same upstream commit via two tags). For pin PRs, fetch the changed lines' current
+content on the base branch and compare to the PR's intended end-state; if base already
+matches, flag "functionally superseded; effective change is comment-only" before agents
+run. When verifying a SHA pin against an annotated tag, dereference it first
+(`git/ref/tags/{tag}` returns the tag OBJECT sha; resolve via `git/tags/{sha}`) before
+declaring a mismatch.
+
+---
+
 ## Step 3: Classify Changes (Haiku agent)
 
 Analyze `CHANGED_FILES` and the first 50 lines of `PR_DIFF` to classify:
@@ -309,6 +450,72 @@ Docs-only definition: every changed file has a `.md`, `.rst`, or `.txt` extensio
 non-doc file in the diff (e.g., a config change alongside a README update) makes the PR
 non-docs-only and restores Agents C and D.
 
+**Generated-lockfile-only PRs (match review effort to the artifact).**
+When `CHANGED_FILES` is exactly one generated lockfile (`uv.lock`, `poetry.lock`,
+`package-lock.json`, `pnpm-lock.yaml`, `yarn.lock`, etc.), the diff is machine-generated:
+its defects live in the resolved version set and the PR description's accuracy, not in
+diff hunks. Skip the hand-written-code agent battery (Agents B, E, F, G, H, K, L) and run
+only:
+
+- a **dependency-delta check**: parse name/version pairs from the lockfile diff and flag
+  any major or minor bumps against the PR description's claims (Renovate's boilerplate
+  "patch only / no breaking changes" is frequently false; a major bump can still be valid
+  when direct deps use `>=` lower bounds and the full CI matrix passed, but it must be
+  surfaced, not assumed);
+- confirmation that the **dependency-security CI checks** (Dependency Review, Socket,
+  Trivy, SonarCloud) are green.
+
+Agents A (CLAUDE.md/CHANGELOG), C, D, J, and M still apply if not skipped by the
+docs-only rule.
+
+**Trivial-change fast path (scale effort to the analyzable surface, not just line count).**
+When the diff is a single file (or all files share one config/data extension) AND total
+changed lines are <= 30 AND there is no history or prior-PR surface (a brand-new file),
+collapse to: config-mode `code-reviewer` + Agent J (PR-desc-vs-diff) + a security/secrets
+scan + the Step 8 bot-finding harvest. Skip git-history (Agent C), prior-PR (Agent D), and
+the bug/type/test/perf agents (B, H, G, K), and skip Step 7b Critical-validation when zero
+Critical findings exist. This scaling is EXPECTED, not a coverage failure: a brand-new
+single config file has near-zero surface for history, type, test, and performance analysis,
+so the "report everything / do not dismiss as trivial" instruction must not be read as
+"spawn every agent." Agent M (premise) and Agent A still apply.
+
+**Config/infra files encode behavioral guarantees, not just syntax.** For config-mode PRs
+(CI workflows, dependabot/renovate, Docker, k8s manifests), syntax validity is necessary
+but not sufficient. For each behavioral guarantee asserted in the PR body or config
+comments, verify the configured option's DOCUMENTED behavior supports the claim (fetch the
+tool's docs when uncertain), and where a live setting governs the guarantee, query it
+(e.g., `gh api` repo settings) to confirm the invariant currently holds. Emit an Important
+finding when the guarantee depends on an out-of-file setting the change does not document.
+Example: `open-pull-requests-limit: 0` does not govern Dependabot security-update PRs (they
+use a separate internal limit), so a "sole PR-opener" guarantee also depends on
+`automated-security-fixes` being disabled, which is invisible in the diff. Treat
+unverifiable behavioral claims about tool semantics like unverifiable quantitative claims:
+confirm or flag, never assume.
+
+**Reusable-workflow ref reachability (workflow files present).** For each
+`uses: <owner>/<repo>/...@<sha>` cross-repo reusable reference, verify the SHA is reachable
+from that repo's default branch and that the file exists at that ref:
+
+```bash
+gh api "repos/<owner>/<repo>/compare/<default>...<sha>" --jq '.status'   # must not be "diverged"
+```
+
+A `diverged` status means the pin points at a commit reachable from no ref (commonly a
+PR-branch SHA orphaned by a squash-merge); the Actions resolver refuses it and the workflow
+fails at startup once the source branch is deleted. Note `contents?ref=<sha>` still serves
+the file for dangling commits, so a file-existence check gives false confidence; use
+`compare`. Emit:
+
+```text
+[Important] Workflow: reusable ref @<sha> is not reachable from <repo> default branch; it
+will fail to resolve once the source branch is deleted (e.g., after squash-merge). Re-pin to
+a reachable SHA.
+```
+
+A passing CI check on the PR head is NOT sufficient evidence that a pinned cross-repo ref is
+durable: the check passes only until the orphaning event happens. Review the durability of
+external references, not just their current resolvability.
+
 **Size classification:**
 
 - Small: < 100 lines changed
@@ -317,25 +524,18 @@ non-docs-only and restores Agents C and D.
 
 **File rename / path-boundary detection:**
 
-After size classification, scan `CHANGED_FILES` for renames or moves. Use the files JSON:
+After size classification, scan `CHANGED_FILES` for renames or moves. Use the REST
+`pulls/{n}/files` endpoint, which exposes `previous_filename` for renamed files:
 
 ```bash
-gh api graphql -f query='
-  query($owner: String!, $name: String!, $number: Int!) {
-    repository(owner: $owner, name: $name) {
-      pullRequest(number: $number) {
-        files(first: 100) {
-          nodes { path changeType previousFilename }
-        }
-      }
-    }
-  }' -F owner="$OWNER" -F name="$REPO" -F number="$PR_NUMBER" \
-  --jq '[.data.repository.pullRequest.files.nodes[]
-        | select(.changeType=="RENAMED")
-        | {old:.previousFilename, new:.path}]'
+gh api repos/"$OWNER"/"$REPO"/pulls/"$PR_NUMBER"/files --paginate \
+  --jq '.[] | select(.status=="renamed") | {old: .previous_filename, new: .filename}'
 ```
 
-Note: `gh pr view --json files` does not expose `previousFilename`; the GraphQL query above is required.
+Note: `gh pr view --json files` does not expose `previous_filename`, and the GraphQL
+`previousFilename` field on `PullRequestChangedFile` was removed from GitHub's schema
+(a query using it errors with "Field 'previousFilename' doesn't exist"). The REST
+endpoint above is the authoritative source.
 
 For any rename where the source and destination top-level path segments differ (e.g.,
 `scripts/` to `src/`, `utils/` to `lib/`), emit an Important finding immediately
@@ -372,6 +572,23 @@ Route to the correct MCP server:
 
 If neither org is detected, skip SonarQube and note "SonarQube: not configured
 for this repository" in the report. Do not block the rest of the workflow.
+
+**REST fallback when the MCP server is not loaded.** The sonarqube MCP server is not
+connected in every session. When the MCP prefix is unavailable, query the SonarCloud Web
+API directly with `SONARQUBE_TOKEN` (a local shell env var) rather than skipping Sonar
+entirely:
+
+```bash
+curl -s -u "${SONARQUBE_TOKEN}:" \
+  "https://sonarcloud.io/api/issues/search?projects={KEY}&organization={ORG}&pullRequest={N}"
+curl -s -u "${SONARQUBE_TOKEN}:" \
+  "https://sonarcloud.io/api/hotspots/search?projectKey={KEY}&pullRequest={N}"
+```
+
+Both endpoints require authentication: an anonymous request returns "Project doesn't
+exist" even for a valid key, so the `-u "${SONARQUBE_TOKEN}:"` form is mandatory and the
+curl path covers BOTH issues and hotspots. Only if both MCP and REST fail should the
+workflow skip Sonar.
 
 ### 4b. Resolve project key
 
@@ -474,6 +691,25 @@ The review report shows only a one-line summary:
 Omit the hotspot clause if M = 0. The fix step resolves both without
 further review unless a hotspot genuinely requires a human decision.
 
+### 4h. Qlty findings (other configured quality gate)
+
+Account for every configured quality gate that produces findings, not just the ones with
+convenient APIs. Qlty posts a blocking-issue count as a GitHub commit STATUS (not a
+check_run), so the check-runs/annotations API returns nothing for it. Detect it:
+
+```bash
+gh api "repos/$OWNER/$REPO/commits/$HEAD_SHA/statuses" \
+  --jq '.[] | select(.context | test("qlty"; "i")) | {state, description, target_url}'
+```
+
+If a `qlty check` status is present, extract the issue count and `target_url` and note
+them in the report header. If the `qlty` CLI is available locally, enumerate findings with
+`qlty check --upstream origin/{BASE_BRANCH} --format json` against the PR head. Otherwise
+state explicitly in the report that qlty's N issues were counted but NOT enumerated (the
+qlty.sh issues page is auth-walled, so WebFetch returns a login page), so the user knows
+there is an un-itemized queue rather than assuming full coverage. Pass the count to the fix
+workflow. Never let an un-enumerable queue silently imply full coverage.
+
 ---
 
 ## Step 5: Run Parallel Review Agents
@@ -542,6 +778,21 @@ Review the diff against CLAUDE.md. Find every violation, large and small.
 Do NOT filter anything as trivial. Report each issue with: file, approximate
 line, description, which CLAUDE.md rule it violates.
 
+HARD CONSTRAINT: you have only the diff and the CLAUDE.md text below. Do NOT assert
+any fact that requires external tool access: commit signature/verification status, CI
+results, or the contents of files not present in the provided diff. You cannot verify
+these and will fabricate a plausible-sounding status if you try. If you suspect an issue
+needs external verification, flag it as "unverifiable from diff alone" for the main loop
+to check; never state a verification status as fact.
+
+Also check for declared-but-unwired dev tooling: scan any `pyproject.toml` in the diff
+for tools added under `[dependency-groups] dev` or `[tool.poetry.dev-dependencies]`
+(e.g., basedpyright, pydoclint, interrogate). For each, check whether a CI workflow file
+or `.pre-commit-config.yaml` in the diff actually invokes it. A tool installed on every
+`uv sync` but never run adds lock weight and a false impression of quality coverage.
+Report:
+  [Suggested] Dev dep "{tool}" declared but not wired to CI or pre-commit.
+
 Also check: if the commit history contains any `feat:`, `fix:`, `perf:`, or `!`
 (breaking) commit (run `gh api repos/{OWNER}/{REPO}/commits?sha={HEAD_SHA}&per_page=20`
 and scan the commit messages), verify that `CHANGELOG.md` appears in CHANGED_FILES.
@@ -560,6 +811,27 @@ table (fetch `.claude/standards/conventional-commits.md` via `gh api repos/{OWNE
 if absent, use the default set: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert).
 Any commit type not in that table (e.g., `security:`, `ops:`, `claude:`) should be flagged:
   [Suggested] CLAUDE.md: Commit type "{type}" is not in the allowed-type table.
+
+STRUCTURAL-INVARIANT PASS (run these regardless of which diff lines changed; a
+diff-line scan is structurally blind to invariants the diff implies but does not touch):
+
+Manifest freshness: if `docs/standards-manifest.yaml` is in CHANGED_FILES, fetch it at
+HEAD_SHA (`gh api repos/{OWNER}/{REPO}/contents/docs/standards-manifest.yaml?ref={HEAD_SHA}`)
+and assert its header `last_updated` field is >= the latest commit date on the branch.
+If the stamp is older than the newest commit, report:
+  [Important] Manifest: last_updated ({value}) is stale; a manifest edit landed after it.
+Do not rely on a per-PR reminder for this; it is reliably forgotten under review flow.
+
+Spec/plan alignment: when both an implementation/workflow file AND a spec or plan file
+(paths under `docs/superpowers/plans/`, `docs/superpowers/specs/`, `plans/`, or `specs/`)
+appear in CHANGED_FILES, cross-check the docs against the implementation. This is a
+structural consistency check, not a correctness judgment:
+  (a) any format example in the plan/spec matches what the implementation actually emits;
+  (b) any scope qualifier in the plan/spec ("ONLY on X", "directly emit") matches the
+      implementation's actual scope.
+Report drift as:
+  [Important] SpecDrift: {plan/spec path} describes "{quoted text}", superseded by the
+  implementation's "{actual behavior}".
 ```
 
 ### Agent B: Bug Scan (Sonnet)
@@ -578,6 +850,21 @@ Scan only the changed lines (additions and modifications). Find:
 - Missing error handling
 - Data integrity risks
 - Security vulnerabilities in the changed code
+- Platform-default encoding defects: in Python diffs, flag open(), Path.read_text(),
+  Path.write_text(), and Path.open() calls that omit an explicit encoding= argument when
+  the repo runs a Windows CI leg (check the diff and changed workflows for a
+  windows-latest matrix entry). The platform default differs (cp1252 on Windows vs UTF-8
+  on Linux/macOS), so an unencoded read silently mis-decodes non-UTF-8 input instead of
+  raising. Phrase it as a portability defect, not a style nit; it is invisible to
+  Linux-only pre-commit and surfaces only as a red Windows leg after push.
+
+Batch-remediation completeness: if the PR description indicates a pattern-based fix
+(keywords "remediate", "harden", "fix all", "sonar", "migrate"), do NOT trust per-line
+correctness alone. For each pattern named in the description, search every changed file
+for instances that still match the OLD pattern and were not converted. The same pattern
+often appears multiple times in one file, and fixing the most visible instance creates a
+false impression of completeness (e.g., one of two curl calls hardened). Report any
+missed instance.
 
 Do NOT filter anything as trivial. Report every issue you find, regardless
 of how minor. Include: file, approximate line, description, severity
@@ -668,6 +955,24 @@ Find every place where errors could be swallowed silently:
   verify the except clauses cover all raised types, not just the primary
   network call.
 
+Asserted-invariant enforcement: when the diff (or its prose/docstrings) asserts a
+safety or scope invariant ("only gitignored paths", "read-only", "never touches X",
+"targets only regenerable files"), verify the code ENFORCES that exact invariant, not
+merely that the operation is bounded. "Bounded" is not "compliant": a deletion that
+cannot escape the repo tree still violates an "only gitignored" promise if it matches
+files by name (`__pycache__`, `.coverage`) instead of gating on `git check-ignore`.
+Containment (can it escape?) and invariant (does it do only what it promised?) are
+different checks; flag any gap between an asserted invariant and its enforcement as at
+least Important.
+
+Documented intentional non-catch: before flagging an uncaught exception type as a
+silent failure, check the enclosing function AND module docstring (which may sit outside
+the diff hunk) for a documented rationale. Error-handling philosophy is often documented
+at module scope, outside the changed lines. If the non-catch is documented as deliberate
+(e.g., "a JSONDecodeError signals an API contract change and must fail loudly"), classify
+it as [Informational] documented-design, not a defect. A diff hunk alone is not enough
+context to judge whether an omitted handler is a bug or a design choice.
+
 Do NOT dismiss anything as minor. Report every case: file, line, pattern,
 what failure scenario it silences, recommended fix.
 ```
@@ -740,6 +1045,15 @@ Checks:
 - Insecure deserialization: unsafe deserialization of untrusted binary or text data,
   yaml.load without Loader=SafeLoader
 
+Asserted-invariant enforcement (separate from the checks above): when the diff or its
+prose claims a safety/scope invariant ("only gitignored paths", "read-only", "never
+deletes tracked files"), verify the code ENFORCES that exact claim, not merely that the
+blast radius is bounded. A destructive operation that is symlink-contained and cannot
+escape the repo still violates an "only gitignored" promise if it matches paths by name
+instead of gating on `git check-ignore`. Verifying containment (can it escape?) does NOT
+satisfy invariant verification (does it do only what it promised?); the prose claim is
+the spec. Flag any gap as at least Important.
+
 For each check output one of:
   [Critical] Security/{check}: {finding}
   [Info] Security/{check}: No issues found
@@ -787,6 +1101,23 @@ Checks:
    names that appear plausible but are absent from the actual diff are a
    common hallucination pattern for architecture-review agents receiving
    truncated context.
+
+7. External-claim dereferencing (manifest, compliance, and config PRs especially):
+   a green CI run proves the artifact is internally well-formed, not that its claims
+   about OTHER repos or files hold. When the PR introduces or edits a check, rule, or
+   config that references an external file or pattern (a `verify` directive that greps
+   another repo's file, a rollout count, a repo named as a PASS fixture in the test plan):
+   - Dereference every external path/pattern against the live repo(s) it claims to govern.
+     Fetch the named file (`gh api repos/{O}/{R}/contents/{path}`) and confirm the pattern
+     the check greps for is actually present. Report [Important] PRDesc: check references
+     {pattern} in {repo}:{file}, but that file contains {actual}; the stated PASS fixture
+     would FAIL.
+   - Treat each test-plan checkbox as a falsifiable claim and spot-verify the cheapest
+     ones via `gh api` before reporting.
+   - When PR_BODY claims "rebased onto current main," confirm MERGE_STATE is not
+     DIRTY/BEHIND and that any sibling-PR IDs referenced in the diff are actually present
+     post-rebase. Report a merge-conflict mismatch as [Critical], an unmet test-plan
+     claim as [Important].
 ```
 
 ### Agent K: Performance Review (Sonnet)
@@ -957,6 +1288,28 @@ Scoring rubric:
       Or: directly called out in CLAUDE.md.
 - 100: Certain, frequent impact. Direct evidence in the diff confirms it.
 
+Anchor examples and caps (small scoring models pattern-match "violates a standard" to
+high scores and cluster at round numbers; these constraints correct both):
+- 75+ requires user-visible breakage, data loss, dead links shipped by the PR, or a
+  hard CLAUDE.md rule violation evidenced in the diff.
+- PR-body process hygiene (unchecked acceptance-criteria checkboxes, missing `Fixes #N`
+  issue references, description completeness, missing motivation section) is capped at
+  49 (Suggested) unless the finding evidences an actual untested code-behavior risk in
+  the diff. A statically-verifiable no-op (e.g., a boolean input that is never read,
+  default false) is not Critical.
+- Doc-nit findings (missing CHANGELOG entry, doc count off-by-one, missing Bash
+  permissions allow rule, SKILL.md frontmatter gap, style/vocabulary inconsistency) are
+  capped at 65 (Important) unless they break a build, lose data, or violate a hard
+  CLAUDE.md rule.
+- Cite ONLY rules present verbatim in the provided context. Do NOT invent a project
+  rule to justify a tier (e.g., do not claim CLAUDE.md mandates issue references; it
+  mandates Conventional Commits and says nothing about issue references).
+- If the finding's check is pre-assigned a tier by an Agent prompt in this workflow
+  (e.g., Agent J's [Suggested] checks), the score MUST stay within that tier's range
+  unless the diff provides direct evidence of higher impact.
+- Do not default to the 50 boundary. If torn between Important and Suggested, pick a
+  score that reflects the decision, not 50 exactly.
+
 Additional constraint: If the agent source is C (Git History) or D (Prior PR
 Comments) AND the finding describes historical context, file churn, or past review
 patterns rather than a specific, fixable line in the diff: cap the score at 20
@@ -1010,90 +1363,118 @@ Return a JSON array of deduplicated findings with all original fields preserved.
 
 ---
 
-## Step 7b: PAL Validation of Critical Findings
+## Step 7b: Validate Critical Findings
 
-After deduplication, use PAL tools to validate the Critical tier before
-assembling the final report. This catches false positives before they reach
-the user.
+After deduplication, validate the Critical tier before assembling the final report. This
+catches false positives before they reach the user. Validation follows an evidence
+ladder: cheaper, more authoritative evidence first; cross-model consensus only for what
+remains.
 
-**Before calling either tiered_consensus below, extract a 15-line diff context
-window for each Critical finding.** For each finding, locate its `file` and
-`line` in `PR_DIFF` and capture lines `[line - 7 .. line + 7]` (clamped to
-file boundaries). Attach this context to the finding JSON passed to PAL so
-models can assess the actual code, not just the description.
+**Evidence precedence (apply in order; stop as soon as a Critical finding is resolved):**
 
-### 7b-1. Cross-model false-positive filter (all Critical findings)
+1. **Empirical evidence from the PR's own CI run.** The system under review has often
+   already executed the disputed code path. Before any model call, check whether the
+   PR's own check conclusions, skipped jobs, or step outputs already demonstrate or
+   refute the claimed behavior (e.g., "Documentation Links: SKIPPED" on a pull_request
+   event proves a boolean gate works). Observed runtime behavior from the head SHA
+   outrules model opinion in either direction. Resolve the finding on it and skip the
+   consensus call for that finding.
+2. **Empirical local execution (only when the local checkout is already at the PR head
+   SHA).** If `git rev-parse HEAD` equals the PR head SHA and a Critical finding is an
+   empirical claim (test-plan counts, lint result, build result), run the stated command
+   locally with a timeout and use the result as authoritative. This is a deliberate,
+   read-only exception to "no local checkout for review": running a command on an
+   already-matching checkout does not touch the working tree. Never check out the PR to
+   create this condition; only use it when it already holds.
+3. **Primary-source verification for third-party-tool and cross-repo claims.** When a
+   Critical finding (or a bot-reviewer concern) hinges on the runtime semantics of a
+   third-party action or tool (python-semantic-release, sigstore, actions/checkout) or
+   on state outside the diff (another repo's file names, an external convention, remote
+   config), spawn a `research-agent` to verify against the tool's documentation or
+   source, or `gh api`-dereference the external state, BEFORE consensus scoring.
+   Doc-verified or directly-checked evidence overrides agent confidence in both
+   directions. Crucially: when multiple agents converge on a finding whose correctness
+   depends on state outside the diff, that agreement is NOT independent confirmation
+   (the agents share the same evidence boundary). Verify the external fact directly and
+   weight convergence as zero additional evidence; a clarifying-comment suggestion may
+   survive, but the "bug" framing must not.
+4. **Cross-model consensus (7b-1 / 7b-2 below)** for Critical findings still unresolved
+   after steps 1-3.
 
-If there are any Critical findings (score 75–100), call:
+**Before the consensus call, extract a 15-line diff context window for each remaining
+Critical finding.** Locate its `file` and `line` in `PR_DIFF` and capture lines
+`[line - 7 .. line + 7]` (clamped to file boundaries) so models assess the actual code,
+not just the description.
 
-```text
-mcp__pal__tiered_consensus(
-  level:          PAL_TIERED_LEVEL,
-  domain:         "code_review",
-  thinking_mode:  PAL_TIERED_THINKING,
-  prompt: "You are reviewing Critical-tier findings from a PR code review.
-           For each finding, decide: is this a genuine defect that must be
-           fixed before merge, or is it a false positive? A false positive
-           is a finding that does not survive scrutiny when you read the
-           actual code context provided.
+### 7b-1. Cross-model false-positive filter (Critical findings unresolved by the ladder)
 
-           Findings (JSON array):
-           {Critical findings as JSON with file, line, description, score,
-            rationale, and 15 lines of diff context around the finding}
+If any Critical findings (score 75-100) remain after the evidence ladder, validate them
+with the `consensus` skill engine (one-shot; replaces the PAL `tiered_consensus` call
+that reliably returned setup-only messages with no verdicts):
 
-           For each finding return:
-           { 'finding_id': N, 'verdict': 'genuine' | 'false_positive',
-             'reason': 'one sentence' }
+```bash
+cat > /tmp/prreview-consensus-prompt.txt << 'PROMPT'
+You are reviewing Critical-tier findings from a PR code review. For each finding,
+decide: is this a genuine defect that must be fixed before merge, or is it a false
+positive? A false positive is a finding that does not survive scrutiny when you read
+the actual code context provided.
 
-           Demote false positives to Informational tier; do not discard them."
-)
+Findings (JSON array):
+{Critical findings as JSON with finding_id, file, line, description, score, rationale,
+ and 15 lines of diff context around the finding}
+
+Return a JSON array; for each finding:
+{ "finding_id": N, "verdict": "genuine" | "false_positive", "reason": "one sentence" }
+PROMPT
+
+uv run .claude/skills/consensus/scripts/consensus_cli.py select \
+  --level "$CONSENSUS_LEVEL" --domain code_review > /tmp/prreview-roster.json
+uv run .claude/skills/consensus/scripts/consensus_cli.py run \
+  --prompt-file /tmp/prreview-consensus-prompt.txt \
+  --roster-file /tmp/prreview-roster.json --level "$CONSENSUS_LEVEL"
 ```
 
-**PAL incomplete-response fallback:** If `mcp__pal__tiered_consensus` returns only a
-configuration/setup message (e.g., "Level: 1, Models: 3...Step 2 will begin model
-consultations...") without `finding_id`/`verdict` JSON objects, note
-"PAL validation: incomplete (setup message only); proceeding on independent evidence
-quality" and continue. Do not retry; a second call to a rate-limited or overloaded
-service typically returns the same partial response. Downgrade no findings based on
-an incomplete response.
+Synthesize the per-model responses yourself (do not delegate synthesis to a template):
+a finding is `false_positive` only when a majority of succeeded models agree it does not
+survive scrutiny.
 
-Apply the verdicts: move any finding marked `false_positive` from Critical to
-Informational, appending "(PAL: false positive: {reason})" to its rationale.
+**Incomplete-response fallback:** If the engine reports `succeeded < 2` (every model
+failed, or only one voice returned), note "consensus validation: incomplete
+(succeeded < 2); proceeding on independent evidence quality" and continue. Downgrade no
+findings on an incomplete response. Do not retry within the same review.
+
+Apply the verdicts: move any finding the panel marks `false_positive` from Critical to
+Informational, appending "(consensus: false positive: {reason})" to its rationale.
 
 ### 7b-2. Security finding validation (Critical security findings only)
 
-If any Critical finding originates from Agent I (Security Pass) or contains
-"Security/" in its description, call:
+If any Critical finding originates from Agent I (Security Pass) or contains "Security/"
+in its description, repeat the 7b-1 engine call with `--domain security` and
+`--level 2` (security decisions warrant more model coverage regardless of
+`CONSENSUS_LEVEL`), using this prompt:
 
 ```text
-mcp__pal__tiered_consensus(
-  level:          2,
-  domain:         "security",
-  thinking_mode:  PAL_TIERED_THINKING,
-  prompt: "You are validating security findings from a PR review.
-           For each finding, assess: is the vulnerability real and
-           exploitable given the code context, or is it a false positive?
+You are validating security findings from a PR review. For each finding, assess: is
+the vulnerability real and exploitable given the code context, or is it a false
+positive?
 
-           Findings:
-           {Security findings as JSON with file, line, description, score,
-            and 20 lines of diff context}
+Findings (JSON array):
+{Security findings as JSON with finding_id, file, line, description, score, and 20
+ lines of diff context}
 
-           For each finding return:
-           { 'finding_id': N, 'verdict': 'real' | 'false_positive',
-             'exploitability': 'high' | 'medium' | 'low' | 'theoretical',
-             'reason': 'one sentence' }
-
-           False positives should be downgraded to Important (not removed)
-           so reviewers still see them."
-)
+Return a JSON array; for each finding:
+{ "finding_id": N, "verdict": "real" | "false_positive",
+  "exploitability": "high" | "medium" | "low" | "theoretical",
+  "reason": "one sentence" }
 ```
 
-Apply security verdicts: downgrade `false_positive` security findings from
-Critical to Important. Retain `exploitability` in the finding rationale:
-"(PAL security: {exploitability}, {reason})".
+If 7b-1 already returned an incomplete response (`succeeded < 2`), skip 7b-2: the same
+engine in the same session will near-certainly return the same outcome, and level 2 is
+not free. Note the skip.
 
-Note: security validation always runs at level 2 regardless of
-`PAL_TIERED_LEVEL` because security decisions warrant more model coverage.
+Apply security verdicts: downgrade `false_positive` security findings from Critical to
+Important (not removed, so reviewers still see them). Retain `exploitability` in the
+finding rationale: "(consensus security: {exploitability}, {reason})".
 
 ---
 
@@ -1119,11 +1500,27 @@ for i in $(seq 1 10); do
 done
 ```
 
+**Bot "green check" can mask a review that never ran.** A passing status check proves a
+job completed, not that it did its intended work. Before counting a bot's submission as
+coverage, verify the review artifact (a comment body with findings) actually exists. In
+particular, when CodeRabbit's check is `SUCCESS`, fetch `issues/{PR_NUMBER}/comments` and
+scan the bot's body for rate-limit markers ("Review limit reached", "run out of usage
+credits", "rate limited"). If found, report in the Review Status header as
+"CodeRabbit: check green but NO review ran (rate-limited)" rather than "Received N
+comments". The same caution applies to any bot whose check-run completes independently of
+whether its review body has content: check-state and work-done are independent signals.
+
 **When reviews arrive during the window:**
 
 1. Fetch Copilot review comments:
    `gh api repos/{OWNER}/{REPO}/pulls/{PR_NUMBER}/comments`
-   and filter by `user.login == "copilot-pull-request-reviewer"`
+   and filter by `user.login` IN (`"Copilot"`, `"copilot-pull-request-reviewer"`,
+   `"copilot-pull-request-reviewer[bot]"`). The inline-comment author login differs from
+   the review-submission login: GitHub authors Copilot INLINE comments under `Copilot`
+   (no `[bot]` suffix) while only the review SUBMISSION uses
+   `copilot-pull-request-reviewer[bot]`. Filtering on the submission login alone returns
+   zero inline comments and silently drops every Copilot finding; always match the
+   alternation.
 2. Fetch CodeRabbit review comments:
    `gh api repos/{OWNER}/{REPO}/pulls/{PR_NUMBER}/comments`
    and filter by `user.login == "coderabbitai[bot]"`
@@ -1131,8 +1528,27 @@ done
    - file, line from the comment's `path` and `line` fields
    - description from the comment body
    - agent source: "Copilot" or "CodeRabbit"
-4. Run each through the same confidence scoring as Step 6
-5. Merge into the existing `FINDINGS` list and deduplicate (Step 7)
+4. **Reconcile each bot comment against the PR head SHA before tiering.** Async
+   reviewers are pinned to the commit they analyzed, which may be behind head. For each
+   bot comment whose `path` is in `CHANGED_FILES`, fetch the head-SHA file context
+   (`gh api repos/{OWNER}/{REPO}/contents/{path}?ref={HEAD_SHA}`) and verify the flagged
+   issue still exists in current code. Drop or mark "already addressed" any comment that
+   does not survive the head-SHA check (a missing-RAD-markers comment where markers are
+   now present, a missing-bounds comment where `Field(ge=...)` bounds already exist, an
+   "except Exception" comment where the code now uses try/finally). A green CI gate (e.g.
+   Ruff passing) is a corroborating signal that lint/catch-all comments are stale. Code
+   read at head plus a green gate beats a stale bot comment.
+5. **Verify a bot's technical assertion against authoritative docs before treating it as
+   actionable.** Automated reviewers post confident, plausible, and sometimes wrong
+   claims about a tool's schema or behavior. When a bot comment makes a factual claim
+   about tool semantics (e.g., "`open-pull-requests-limit: 0` is invalid for Dependabot"
+   when the docs state it is the supported way to disable updates), confirm it against
+   the authoritative source (WebFetch the relevant docs) before classifying it as a fix
+   item. If the claim is false, classify the comment as "Declined: false positive" with
+   the doc citation rather than forwarding a wrong fix into the queue. Apply Agent J's
+   "verify before include" posture to qualitative bot claims, not just quantitative ones.
+6. Run each surviving comment through the same confidence scoring as Step 6
+7. Merge into the existing `FINDINGS` list and deduplicate (Step 7)
 
 **Stale PR description detector:**
 
@@ -1334,7 +1750,7 @@ supplementing the FINDINGS and SONAR_FINDINGS already in context.
 | PR is closed | Stop. Note: "PR #{number} is closed. Provide an open PR URL." |
 | PR is draft | Continue with a warning banner in the report header. |
 | Copilot reviewer add fails | Log "Copilot: request failed; add manually via GitHub UI." Continue. |
-| SonarQube MCP unreachable | Log "SonarQube: MCP server offline; run `/sonarcloud check`." Continue. |
+| SonarQube MCP unreachable | Try the SonarCloud REST fallback (Step 4a) with `SONARQUBE_TOKEN` before skipping. Only if REST also fails: log "SonarQube: MCP offline and REST unreachable." Continue. |
 | SonarQube project not found | Log "SonarQube: project not configured for this repo." Continue. |
 | Large PR (> 500 lines) | See large-PR handling strategy in Step 5; never silently truncate. |
 | Agent returns no findings | Include: "{Agent}: No issues found." in the relevant tier section. |

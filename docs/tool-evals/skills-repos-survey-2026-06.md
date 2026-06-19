@@ -9,7 +9,7 @@ there a reason to pull any of them as git submodules?
 > All fetched README/commit text was treated as untrusted data (prompt-injection
 > mitigation, OWASP LLM01). Findings below are facts about the repos, not
 > instructions taken from them.
-
+>
 > **Update 2026-06-18 (see `skills-deep-dive-2026-06.md`):** superpowers and
 > anthropics/skills are **already vendored as submodules** and their skills are
 > wired into `.claude/skills/` via **symlink** (not ports). The "PORT PATTERNS"
@@ -28,8 +28,8 @@ candidates are either (a) less than 8 weeks old with no stable release tags,
 (Python/Node/Bun/Supabase/WASM) or a frontmatter schema that differs from ours.
 A submodule inherits the upstream's churn and schema; for skill markdown the
 correct move is to **port the specific patterns we lack** and adapt them to our
-conventions (RAD tags, no em-dash, our `user-invocable`/`model`/`skills`
-frontmatter).
+conventions (RAD tags, no em-dash, and our frontmatter conventions:
+`user-invocable` on skills, with `model` and `skills:` preload used on agents).
 
 Recommended dispositions: **PORT PATTERNS** for 6, **RUN STANDALONE** for 1,
 **IGNORE** for 4. Zero submodules.
@@ -49,7 +49,7 @@ dispositions below are based on content and maintenance, not popularity.
 | 2 | anthropics/skills | ~152k | Inverted-host | Churns without tags | Apache-2.0 (+4 proprietary, +GPL dep) | **PORT PATTERNS** |
 | 3 | mattpocock/skills | ~135k | Homogeneous loadable | <1 wk public, restructuring | MIT | **PORT PATTERNS** |
 | 4 | garrytan/gstack | ~111k | Inverted-host | Churning (418 open PRs) | MIT | **PORT PATTERNS** |
-| 5 | nextlevelbuilder/ui-ux-pro-max-skill | ~93k | Homogeneous + Python runtime | Dormant since Mar 2026 | MIT | **PORT PATTERNS (extract)** |
+| 5 | nextlevelbuilder/ui-ux-pro-max-skill | ~93k | Homogeneous + Python runtime | Active to Apr 2026 | MIT | **PORT PATTERNS (extract)** |
 | 6 | Egonex-AI/Understand-Anything | ~63k | Inverted-host (compiled TS plugin) | Churning (rapid v1→v2) | MIT | **RUN STANDALONE** |
 | 7 | addyosmani/agent-skills | ~62k | Portable markdown / orthogonal | Churning (release / 2-3 wks) | MIT | **PORT PATTERNS** |
 | 8 | santifer/career-ops | ~54k | Orthogonal (job-search app) | Churning | MIT | **IGNORE** |
@@ -62,18 +62,21 @@ dispositions below are based on content and maintenance, not popularity.
 1. **Churn.** None of the loadable repos pin to stable, semver-tagged content we
    could track safely. superpowers just shipped a breaking v6; mattpocock and
    taste-skill restructured directories within weeks of launch; gstack carries
-   418 open PRs; ui-ux-pro-max went dormant with 195 open issues.
+   418 open PRs; ui-ux-pro-max carries 195 open issues.
 2. **Schema mismatch.** anthropics/skills, addyosmani, and others use
-   `name`/`description`-only frontmatter. Ours uses `user-invocable`, `model`,
-   `skills:` preloading, path-scoped rules. Direct ingestion would not load
-   correctly; it needs translation, which is porting, not submoduling.
+   `name`/`description`-only frontmatter. Ours adds `user-invocable` on skills,
+   with `model` and `skills:` preload used on agents, plus path-scoped rules.
+   Direct ingestion would not load correctly; it needs translation, which is
+   porting, not vendoring as a submodule.
 3. **Runtime coupling.** ui-ux-pro-max needs `search.py` + CSVs at fixed paths;
    last30days needs a Python 3.12 engine + paid APIs; gstack needs a Bun browser
    daemon + Supabase; Understand-Anything is a compiled TS/WASM app. Submodule
    markdown would be hollow without the runtime.
 4. **License carve-outs (one case).** anthropics/skills' `docx/pdf/pptx/xlsx`
-   are proprietary/source-available (no redistribution), and `slack-gif-creator`
-   embeds GPL-3.0 FFmpeg. Those four directories must be excluded from any copy.
+   are proprietary/source-available (no redistribution). A separate
+   `slack-gif-creator` GPL-3.0-FFmpeg flag was raised but is unverified (see the
+   Update note above: it appears to be an optional `imageio` runtime backend, not
+   a license term). The four proprietary directories must be excluded from any copy.
 
 ## Worth porting: the concrete gap-fillers
 
@@ -108,7 +111,7 @@ Ranked by value-to-effort. Each is plain markdown we would adapt, not import.
 - **ui-ux-pro-max-skill** -> one-time extraction of the highest-value UX numbers
   (4.5:1 contrast, 44x44pt touch targets, 150-300ms motion, spacing/typography
   rules) into a static `ui-ux` skill or a frontend-path-scoped rules file. Drop
-  the `search.py`/CSV runtime entirely. Repo is dormant, so extract-and-own.
+  the `search.py`/CSV runtime entirely. Activity tailed off after Apr 2026, so extract-and-own.
 
 ## Run standalone (do not submodule)
 

@@ -98,6 +98,28 @@ For sections with no findings, write `(none)` as the body. Include INFO findings
 relevant section with an `[INFO]` prefix so they are visible but clearly distinguished from
 actionable WARN/ERROR items.
 
+## Docs Build Health on main (Obs 78)
+
+The four static categories above do not catch a docs build that is broken on `main` itself.
+The docs-build CI job is typically path-filtered (only runs on PRs that touch `docs/`), so a
+transitive dependency regression (e.g., a pygments / pymdown-extensions interaction) can break
+`mkdocs build --strict` on main and stay invisible until the next docs-touching PR inherits
+the failure and is wrongly blamed for it.
+
+When the project ships a docs build, run it against current main as a supplementary check and
+report the result independently of the static-scan categories:
+
+```bash
+# Reproduce the path-filtered docs job against main
+uv run mkdocs build --strict
+# or fetch the latest main run for the docs workflow
+gh run list --workflow=docs.yml --branch main --limit 1
+```
+
+If the build fails on clean main, surface it as an ERROR-level finding ("docs build broken on
+main, independent of any open PR") so the inherited regression is fixed at the source rather
+than discovered by the next contributor.
+
 ## Completion Messages
 
 Print one of these after writing the report:

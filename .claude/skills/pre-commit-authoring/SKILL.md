@@ -150,6 +150,14 @@ awk '/^  - id:/{name=$3; have_stage=0} /stages:/{have_stage=1} /^  - id:/{if(nam
 
 # 4. Find inline configs that should be file-ref
 grep -nE 'args:.*-d ' .pre-commit-config.yaml
+
+# 5. Find silent-skip wrappers that make a hook a no-op
+grep -nE 'entry:.*(\|\| echo|\|\| true|command -v .* \|\|)' .pre-commit-config.yaml
+
+# 6. Coverage check: run a hook and confirm it does NOT print "(no files to
+#    check) Skipped" for the paths it is meant to govern. Presence in the
+#    config is not enforcement; a chronically-skipped hook is a silent pass.
+pre-commit run <hook-id> --all-files
 ```
 
 Patch any findings against the invariants above before committing the audit fix.
@@ -169,6 +177,60 @@ Patch any findings against the invariants above before committing the audit fix.
 - **Hook order matters when one fixes and another checks the result.**
   Ruff format must run before ruff check; whitespace fixers must run
   before linters that fail on trailing whitespace.
+- **`pass_filenames: false` hooks that rglob a directory tree** (e.g. a
+  cookiecutter-shipped `validate-front-matter` with `files: ^docs/` that then
+  walks the whole `docs/` tree) violate the staged-scope invariant twice: they
+  validate files never staged, and they do not respect `.gitignore`. A
+  one-line docs change then fails on a pre-existing template defect or on
+  local-only gitignored notes. Directory-walking validators must derive their
+  file list from `git ls-files` (which already skips gitignored paths), not
+  from the filesystem. When such a hook blocks an unrelated commit, first ask
+  "did this fail before my change?" via `git log -- <flagged-file>` before
+  fixing; the defect usually predates your commit. (Obs 264; see the Scope
+  invariant section.)
+- **Inline `#` comment on a backslash-continued shell line silently
+  truncates the command.** A line inside a YAML `run:` block or `.sh` file
+  that ends with `\` meant as a continuation, but carries a mid-line `#`
+  comment before it, has its backslash consumed by the comment, terminating
+  the command early (e.g. an image-pin sweep appended
+  `# 6-alpine as of 2026-05-28 \` to a `docker run` line and broke five
+  workflows for 12 days). The pattern is mechanical and greppable
+  (`#[^\n]*\\$`); flag it on `.sh` files and workflow `run:` blocks as a
+  candidate hook. Any bulk sweep that appends text to existing line endings
+  needs a post-pass syntax check (`bash -n` on reconstructed run blocks),
+  because the failure is silent until runtime. Never append an inline comment
+  to a line that ends in a continuation backslash. (Obs 285)
+- **Silent-skip wrappers turn any hook into a no-op, not just TruffleHog.**
+  A hook whose `entry:` wraps the tool in `command -v tool || echo "skipping"`,
+  `|| true`, or any fallback that exits 0 when the tool is absent provides zero
+  enforcement while passing all presence checks. The cookiecutter-python
+  template ships this pattern around a local `qlty-check` shim covering
+  basedpyright, trufflehog, yamllint, markdownlint, and bandit. Generalize the
+  detection beyond secret scanners: grep every `entry:` block for `|| echo`,
+  `|| true`, and `command -v ... ||`, and treat any silent-skip wrapper as
+  equivalent to hook-absent. A fail-open wrapper is the absence of the check.
+  (Obs 163)
+- **Inline suppression pragmas must survive the auto-formatter.** Directives
+  like `# pragma: allowlist secret`, `# noqa: CODE`, and `# type: ignore` are
+  line-anchored: they only suppress the token on the same physical line. When
+  the suppressed statement is long enough that ruff-format (or black) wraps it
+  across lines, the pragma is carried to a different physical line and silently
+  stops working, surfacing as a confusing "files were modified by this hook" or
+  baseline-updated failure rather than an obvious error. When suppressing a
+  finding on a wrap-prone line, restructure so the token and its pragma fit on
+  one sub-width line (e.g. assign the literal to a short-named constant first,
+  then operate on the constant). Run the formatter BEFORE relying on the pragma.
+  (Obs 183)
+- **A hook that matches zero files is a silent pass, indistinguishable from a
+  real validation pass.** When pre-commit prints `(no files to check) Skipped`
+  for a hook, that hook enforced nothing on this commit; if its `files:` /
+  `types:` filter chronically excludes the paths where the rule matters (e.g.
+  a `no-em-dash` hook whose regex omits `.claude/skills/.*\.md` and
+  `.claude/agents/.*\.md`, the exact directories where skill/agent prose lives),
+  the rule "exists" and CI is green while violations ship. For any rule
+  classified as a hard rule, audit coverage, not presence: confirm the hook
+  actually matched at least one file in the paths it is meant to govern, and
+  broaden the `files:` regex when it does not. (Obs 71)
 
 ## Sources
 

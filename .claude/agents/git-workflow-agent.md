@@ -21,6 +21,34 @@ Specialized agent for git repository management and collaborative development wo
 
 Execute git workflows: branch strategy analysis → feature branch creation → development coordination → code review facilitation → merge and cleanup operations. Follow GitFlow or GitHub Flow patterns based on project requirements. Always validate branch naming conventions and commit message format before finalizing.
 
+## The Pre-Commit Gate Is a Discovery Pass, Not a Formality (Obs 403)
+
+Passing tests certify behavior. They do NOT certify the lint/type/doc/style gate. When a
+large body of work is produced across many sessions without ever being committed, the
+mandated pre-commit suite has never run, so "tests pass" silently masks a gate backlog
+that all lands at the first commit, at the most expensive moment (a pre-deadline snapshot).
+A nine-team build with 248 passing tests surfaced 244 pydoclint violations, 39 strict-type
+errors, and em-dashes on its first full pre-commit run, all in code read as "gated."
+
+**Untracked, uncommitted work is ungated work regardless of its test status.** The
+pre-commit gate is only as current as the last commit.
+
+Operating rules for this agent:
+
+- Run `pre-commit run --all-files` (or the staged-scope equivalent) incrementally as work
+  is produced, not only at a terminal commit.
+- In multi-team / multi-lane builds, have each lane run the gate on its own files before
+  handing off, so no single commit absorbs the whole backlog.
+- When taking over never-committed work, treat the first full-suite run as a DISCOVERY
+  pass to be budgeted for. Quantify the backlog by hook before committing:
+
+  ```bash
+  pre-commit run --all-files | tee /tmp/precommit-backlog.txt   # count failures per hook
+  ```
+
+- Never report "clean" or "ready to commit" for work whose pre-commit suite has not
+  actually run to completion at least once.
+
 ## Integration Points
 
 - GitHub API for repository operations and pull request management

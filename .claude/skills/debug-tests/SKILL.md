@@ -70,6 +70,19 @@ Include the root cause category in the commit message:
 ```text
 fix(tests): repair auth fixture after session scope change
 
-Root cause: Category 1 (fixture scope) — conftest session fixture
+Root cause: Category 1 (fixture scope), conftest session fixture
 was sharing state across test classes.
 ```
+
+## Common Rationalizations
+
+The shortcuts that make a red test green without fixing anything. Each one defers the
+failure instead of resolving it.
+
+| Rationalization | Reality |
+| --- | --- |
+| "The test is flaky, just re-run it" | Flakiness is a root cause (shared state, timing, ordering), not noise. Classify it (Category 4). |
+| "Add a sleep and it passes" | A sleep masks an async or ordering bug; it fails again under load or on a faster runner. |
+| "Bump the timeout" | A rising timeout is a symptom. Find what got slower instead of widening the window. |
+| "Mock it so the test goes green" | A mock that hides the failure also hides the regression the test existed to catch. |
+| "It only fails in CI" | CI is the honest environment. The difference (env, ordering, parallelism) is the bug (Category 2). |

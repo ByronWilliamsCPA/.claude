@@ -39,6 +39,24 @@ information.
 "ensuring reliability," "fostering collaboration," "driving growth," "delivering value,"
 "enabling success," "enhancing performance"
 
+## Banned-Term Grep Gate (Obs 369)
+
+When a project defines its own banned-term or prose-style list (common in regulated or
+report-writing repos, e.g. a CLAUDE.md blacklist), do not rely on a read-through to enforce
+it. Build a regex from the project's list and grep the generated artifact before claiming
+completion. A read-through catches awkward AI phrasing but misses banned words that are also
+legitimate domain terms.
+
+Inherited vocabulary is the blind spot: any term that appears in BOTH the source inputs (or
+the task prompt) and the banned list is a near-certain violation, because it reads as correct
+and bypasses the mental filter. Example: "robust" flowing in verbatim from source material as
+load-bearing technical vocabulary while sitting on the banned list. Search for those
+explicitly and replace while preserving meaning ("stable", "rank-stability check").
+
+```bash
+grep -nE 'robust|leverage|seamless|...' generated_artifact.md
+```
+
 ## Structural Tells to Avoid
 
 These patterns appear in AI output and make text look unreviewed:

@@ -1,6 +1,6 @@
 ---
 name: diagram-maintenance
-description: Update, create, and audit PlantUML diagrams — SVG regeneration, traceability checking, and diagram index maintenance. Triggers on "diagram, PUML, SVG".
+description: Update, create, and audit PlantUML diagrams: SVG regeneration, traceability checking, and diagram index maintenance. Triggers on "diagram, PUML, SVG".
 tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
 ---
 
@@ -44,6 +44,12 @@ Report:
 3. Diagrams missing traceability notes entirely
 4. Index entries that don't match existing PUML files
 5. SVG files that are older than their corresponding PUML file
+6. Stale existence/state CLAIMS in diagram prose: scan note text and labels
+   for negative or provisional assertions ("does not exist", "not yet built",
+   "proposed", "not enforced", "TODO") and verify each against the current
+   codebase. If the named script, gate, or feature now exists, the claim is
+   stale. Negative claims rot exactly when the project succeeds at building
+   the thing they deny, so a positive-reference-only audit misses them.
 
 Format findings as:
 - STALE REFERENCES: [list]
@@ -51,6 +57,7 @@ Format findings as:
 - MISSING TRACEABILITY: [list]
 - INDEX MISMATCHES: [list]
 - SVGs NEEDING REGENERATION: [list]
+- STALE EXISTENCE/STATE CLAIMS: [claim, file, verified-against, now-true?]
 ```
 
 3. Present findings grouped by severity
@@ -75,7 +82,26 @@ Steps:
 5. List which SVG files need regeneration
 
 Apply project color conventions from docs/architecture/STYLE_GUIDE.md if it exists.
+
+Edit-scope guard (Obs 483): edit ONLY diagram artifacts (.puml, INDEX/index.md,
+style.puml/STYLE_GUIDE.md, the diagram manifest). Any decision/source-of-truth file
+named as a content source (e.g. recommendation.yaml, an ADR, a signed override file)
+is READ-ONLY: "use the language from file X" means do not modify X. Before reporting
+done, run `git status --porcelain` and revert + flag any modified file outside the
+diagram allowlist.
 ```
+
+**Result-depicting vs. process diagrams (Obs 472):** Before updating, classify
+the diagram. Process and structure diagrams (data flow, component layout, gate
+sequence) are safe to update continuously. Result-depicting diagrams (rankings,
+scores, a recommendation, a "current state" leaderboard) bake a claim into a
+committed artifact; updating one mid-flight publishes an unvalidated result that
+reads greener than the build record. For result-depicting elements, mark them
+INTERIM (use the existing unverified/proposed stereotype) and defer the final
+depiction until the producing artifact is validated. Also annotate code-state
+and artifact-state distinctly: a fix landing in code does NOT mean the
+downstream SVG/output was regenerated, so do not annotate both as settled from
+a single edit.
 
 3. After agent completes, offer to run SVG regeneration
 
@@ -126,6 +152,22 @@ If `tools/generate_diagram_svgs.py` does not exist, inform the user that the SVG
 tool is not set up for this project and point them to the image_detection project as a
 reference implementation.
 
+> **WARNING (Obs 471): mtime-glob-rename generators corrupt multi-diagram directories.**
+> Some SVG generators (including the `--all` path of common implementations) render by
+> globbing the output directory, picking the freshest file by mtime, then renaming it to
+> the expected name. In any directory holding two or more sibling diagrams, this swaps or
+> deletes SVGs: one diagram's freshly-rendered SVG gets renamed over its sibling's name
+> while the tool prints "Generated" for both, committing a diagram that shows the wrong
+> picture. A `-o <relative-dir>` flag can separately write into a nested junk path. The
+> tool reports success over a silent corruption.
+>
+> Robust fallback for directories with multiple diagrams: render each `.puml` from inside
+> its own directory with no `-o` flag (PlantUML names output by the `@startuml` name), then
+> VERIFY no two sibling SVGs are byte-identical (`md5sum *.svg | sort | uniq -d`, or `cmp`
+> pairwise) before trusting the result. Never trust a generator's success message over an
+> independent check of the artifacts: a step that infers its output by "newest file in the
+> directory" is unsafe whenever a directory holds more than one artifact.
+
 ---
 
 ## Post-Task Checklist
@@ -134,6 +176,11 @@ After any diagram operation, verify:
 
 - [ ] PUML syntax is valid (no unclosed blocks, invalid arrows)
 - [ ] SVG regenerated for modified PUML files
+- [ ] No two sibling SVGs in the same directory are byte-identical
+      (`md5sum *.svg | sort | uniq -d` returns nothing) -- guards against
+      mtime-glob-rename corruption (Obs 471)
+- [ ] Any result-depicting diagram updated this session is either backed by a
+      validated artifact or marked INTERIM (Obs 472)
 - [ ] INDEX.md / DIAGRAM_INDEX.md updated
 - [ ] No broken documentation links (`[[...]]` references)
 - [ ] Color conventions consistent with STYLE_GUIDE.md

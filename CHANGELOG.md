@@ -83,6 +83,24 @@
   to dev dependencies, or rely on the `not_applicable_when` no-Python-source
   scope.
 
+### Security
+
+* fix(compliance): validate the master-log renderer CLI `--jsonl`/`--md` overrides
+  against the repository root before any filesystem access, closing three SonarCloud
+  `pythonsecurity:S8707` path-injection findings (`read_text` via `load_entries`,
+  `mkdir`, and `write_text`). A new `_validated_override()` canonicalizes each override
+  with `Path.resolve()` and rejects it via `parser.error()` unless `Path.is_relative_to`
+  confirms it stays within the repo root, so a prompt-injected agent driving the CLI can
+  no longer read or clobber files outside the repository. Legitimate callers (unit tests
+  calling `render()` directly, in-repo reconciler paths) are unaffected.
+
+* fix(deps): bump cryptography (48.0.0 -> 49.0.0), jupyter-server
+  (2.19.0 -> 2.20.0), and tornado (6.5.6 -> 6.5.7) in `uv.lock` to clear three
+  pip-audit advisories (GHSA-537c-gmf6-5ccf, GHSA-fcw5-x6j4-ccmp,
+  GHSA-pw6j-qg29-8w7f). All three had fix versions available, so no
+  `docs/known-vulnerabilities.md` deferral is needed. `pip-audit` reports no known
+  vulnerabilities after the bump.
+
 ### Fixed
 
 * fix(compliance): replace incorrect Python-only exemption in TOOL-009 (.qlty/qlty.toml
@@ -138,6 +156,27 @@
   and repo-compliance reference all move to pydoclint.
 
 ### Added
+* feat(skills): port two Tier 2 reasoning skills from `addyosmani/agent-skills`
+  (MIT, commit `a5f0b17`), adapted to our standards. `doubt-driven-development`
+  subjects every non-trivial decision to a fresh-context adversarial review
+  (claim, contract, issues-only reviewer, reconcile, bounded stop) and acts as
+  the active complement to RAD's assumption tagging; cross-model review is
+  repointed to the `consensus` skill and `clink` instead of an external API.
+  `context-engineering` curates the five-tier context hierarchy, file trust
+  levels, confusion management, and the inline-planning pattern, repointed to our
+  scoped CLAUDE.md model and tiered MCP loading. Both registered in
+  `AGENTS-AND-SKILLS.md` and `docs/reference/skills.md`. Injected
+  anti-rationalization tables into `rad`, `debug-tests`, and `security`; added an
+  AI-slop detection rubric to the `frontend-designer` agent and Diataxis mode
+  discipline to the `documentation-writer` agent (both gstack `/design-review`
+  inspired).
+* feat(skills): weekly skill-review apply pass (2026-06-17 task-observer review).
+  Added 15 skills: 3 standalone (`external-reference-verification`, `pdf-extras`,
+  `chat-app-handoff-to-repo`) and 12 `-extras` companions that layer guidance onto
+  read-only submodule and system skills. Refreshed about 21 existing skills, agents,
+  commands, and rules. Added standards-manifest checks CI-082 through CI-086
+  (workflow-library coverage plus a CI cost-tier check), CLAUDE-015 (model-table
+  drift), and a reserved-ID registry formalizing CI-079 (qlty-gate ruleset companion).
 * feat(skills): add `/tool-eval` skill for incorporate-vs-vendor decisions on
   external tools and repos. Eight-phase workflow: characterize, LOC map,
   coupling gate, licence gate, relationship classification, gap mapping,

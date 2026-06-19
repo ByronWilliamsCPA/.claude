@@ -188,3 +188,29 @@ assert SPDX_MIT in header
 ```
 
 Note: wrapping code with `REUSE-IgnoreStart` / `REUSE-IgnoreEnd` HTML comment markers is the other documented approach, but support varies by REUSE tool version. String concatenation is more reliable across versions.
+
+### Reproduce lint/type findings through the real gate, not a path-scoped run (Obs 478)
+
+A linter or type-checker invoked with explicit file paths on the command line can surface diagnostics the project's actual gate never reports, because the project config restricts its `include` scope (e.g. basedpyright `include = ["src", "scripts"]` with pre-commit `pass_filenames: false`, so tests are deliberately untyped). A path-scoped run can also flag known framework-reflection false positives (a `reportUnusedFunction` on a pytest autouse fixture).
+
+Before treating such a diagnostic as a blocker: (1) confirm it is not pre-existing (diff against HEAD), and (2) reproduce it through the project's real gate invocation (the config-driven `include`/`exclude` and the pre-commit/CI entry point), not an ad-hoc file-path run. A tool's command-line scope is not the project's gate scope; only diagnostics the gate-as-configured emits are gate failures.
+
+### Testing CLI main() that reads module-level path constants (Obs 481)
+
+Two traps appear when a thin CLI driver's `main()` or helpers read module-level path constants:
+
+1. **Path-family coupling.** A `main()` that prints `OUTPUT.relative_to(REPO)` couples every path constant to `REPO`. Monkeypatching only the output path leaves siblings (`PARQUET`, `TARGETS`) pointing at the real repo while `REPO` moves, so their `relative_to()` raises `ValueError`. Relocate the whole path family (root plus all derived paths) into the tmp tree together, not just one.
+2. **Bound-default gotcha.** `def load(x=MODULE_CONST)` evaluates the default once at import, so monkeypatching the module attribute does NOT change the function's bound default; `main()` calls `load()` and still reads the real file. Stub the function itself (or pass the path explicitly) rather than reassigning the module constant.
+
+Monkeypatching a module attribute only affects name lookups that happen at call time. Default-argument values and already-derived sibling constants are resolved earlier and ignore the patch. Test seams must target the binding actually evaluated when the code under test runs.
+
+### Banned characters in guard tests: encode, do not spell (Obs 429)
+
+When a project bans a character or token (e.g. the no-em-dash hook) and a test must assert against it, a guard test that embeds the forbidden token as a source literal becomes a violation of the rule it checks. Reference the token by codepoint escape or a constructed value so the file carries no literal byte while the runtime assertion is unchanged:
+
+```python
+EM_DASH = "\u2014"  # reference by codepoint escape, never the literal
+assert EM_DASH not in rendered_markdown
+```
+
+Scan test files for banned literals alongside prose and code.

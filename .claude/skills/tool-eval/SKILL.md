@@ -37,9 +37,26 @@ the next. Concrete commands for each phase live in `workflows/evaluation.md`.
 
 ### Phase 1: Characterize
 
-Read the target's `README`, `DESIGN`, `SPEC`, or architecture docs. Produce
-one paragraph: what it is, stated purpose, primary stack, and stated scale
-target. Note the source URL and commit or tag inspected.
+This phase has two distinct sub-phases that operate on different objects: a
+pre-clone quick read and a post-clone provenance record. They are intentionally
+separate. `workflows/evaluation.md` shows the concrete commands.
+
+**Phase 1a (pre-clone quick read):** Before any clone exists, read the target's
+`README`, `DESIGN`, `SPEC`, or architecture docs (e.g. via a `curl` of the raw
+`/main/` doc URLs). Produce one paragraph: what it is, stated purpose, primary
+stack, and stated scale target.
+
+**Phase 1b (post-clone provenance record):** After cloning, record the commit
+actually inspected (`git rev-parse HEAD`) and note the source URL alongside it.
+
+> **Why the split matters (Obs 329):** the Phase 1a doc preview hardcodes
+> `/main/` because no clone yet exists, while the Phase 1b provenance record
+> captures whatever commit was cloned, which may differ from `main`. These are
+> NOT meant to reference the same object. Keep the label so a reviewer or future
+> editor does not read the two adjacent blocks as one unit and raise a false
+> "the curl `/main/` and the recorded SHA are inconsistent" reproducibility
+> finding. When a two-phase workflow operates before and after a resource
+> exists, the boundary needs an explicit label.
 
 ### Phase 2: Map the source tree
 

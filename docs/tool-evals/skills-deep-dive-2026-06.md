@@ -16,7 +16,7 @@ Our config does **not** copy most external skills. It vendors source repos as
 git submodules under `.submodules/` and **symlinks** individual skills into
 `.claude/skills/<name>`:
 
-```
+```text
 .claude/skills/brainstorming -> ../../.submodules/superpowers/skills/brainstorming
 .claude/skills/docx          -> ../../.submodules/anthropics-skills/skills/docx
 .claude/skills/skill-creator  -> ../../.submodules/anthropics-skills/skills/skill-creator
@@ -145,21 +145,21 @@ knowledge graphs are ever needed. Nothing to port.
 These are the highest-confidence gaps because 2-3 repos built the same thing and
 we lack it:
 
-1. **Premise interrogation before spec** — gstack `/office-hours`, mattpocock
+1. **Premise interrogation before spec**: gstack `/office-hours`, mattpocock
    `grilling`/`grill-me`, addyosmani `interview-me`/`idea-refine`. Our symlinked
    `brainstorming` only partially covers (it moves toward a spec; these hold the
    pen back and interrogate demand/scope first). Port **one** interrogation skill
    or strengthen brainstorming with a pre-spec gate.
-2. **Conversation -> filed GitHub issue** — gstack `/spec`, mattpocock
+2. **Conversation -> filed GitHub issue**: gstack `/spec`, mattpocock
    `to-issues`/`to-prd`. We write plan docs to disk, never to the issue tracker.
    Port **one** issue-generation skill (with the PII/secret redaction gate from
    `/spec`).
-3. **Anti-rationalization tables** — addyosmani uses excuse/rebuttal tables in 4
+3. **Anti-rationalization tables**: addyosmani uses excuse/rebuttal tables in 4
    skills; our `test-driven-development` already uses one. Adopt cross-cutting.
 
 ## Consolidated recommendation (deduplicated, ranked)
 
-### Tier 1 — pure production-ops gaps (highest net-new, addyosmani)
+### Tier 1: pure production-ops gaps (highest net-new, addyosmani)
 
 Nothing in superpowers/anthropics/native covers these:
 
@@ -172,17 +172,17 @@ Nothing in superpowers/anthropics/native covers these:
 5. `source-driven-development` (version-detect + cite official docs; note
    context7 MCP already does the retrieval step)
 
-### Tier 2 — reasoning/quality enhancements (cheap, high-leverage)
+### Tier 2: reasoning/quality enhancements (cheap, high-leverage)
 
-6. `doubt-driven-development` (addyosmani) — adversarial fresh-context review
+6. `doubt-driven-development` (addyosmani): adversarial fresh-context review
    layer that complements RAD; cross-reference from `rad/SKILL.md`
-7. `context-engineering` (addyosmani) — five-tier context hierarchy + trust
+7. `context-engineering` (addyosmani): five-tier context hierarchy + trust
    levels + confusion-management; upgrades every multi-file session
-8. Anti-rationalization tables — add to `rad`, `debug-tests`, `security`
+8. Anti-rationalization tables: add to `rad`, `debug-tests`, `security`
 9. gstack `/design-review` AI-slop rubric -> into `frontend-designer` agent
 10. gstack Diataxis discipline -> into `documentation-writer` agent
 
-### Tier 3 — planning/discovery cluster (convergent; targeted ports)
+### Tier 3: planning/discovery cluster (convergent; targeted ports)
 
 11. One **premise-interrogation** skill (merge office-hours + grilling +
     interview-me)
@@ -190,7 +190,7 @@ Nothing in superpowers/anthropics/native covers these:
 13. `domain-modeling` CONTEXT.md glossary (mattpocock)
 14. One **issue-generation** skill (gstack `/spec` ~ mattpocock `to-issues`)
 
-### Tier 4 — workflow/analytics (gstack + mattpocock)
+### Tier 4: workflow/analytics (gstack + mattpocock)
 
 15. `/retro` git-history engineering analytics (unique)
 16. `/health` quality dashboard aggregator
@@ -198,7 +198,7 @@ Nothing in superpowers/anthropics/native covers these:
     directory scope-lock (gstack, via hook)
 18. `git-guardrails` PreToolUse hook -> implement as a **hookify rule**
 
-### Tier 5 — design data (ui-ux-pro-max)
+### Tier 5: design data (ui-ux-pro-max)
 
 19. Extract the 6 CSV catalogs into `frontend-design/context/`
 20. Optional `brand`/`slides`/`banner`/`design-system` sub-skills (low priority)

@@ -406,6 +406,69 @@ coupling boundary, licence carve-outs, relationship classification, gap mapping,
 convergent validation) and writes a decision doc to `docs/tool-evals/<tool-slug>.md`. Activates on:
 "compare X to our setup", "should we adopt/vendor/submodule X", "cherry-pick from X".
 
+### AI & ML Engineering
+
+**[/meta-harness](/.claude/skills/meta-harness/SKILL.md)**
+Runs a Meta-Harness-style optimization loop natively: searches over the scaffolding around a
+fixed base model (memory, retrieval, context assembly, prompt templates, summarization) by
+proposing candidate variants, scoring each on a cheap deterministic eval, and keeping a Pareto
+frontier of quality vs cost, using native Agent / Workflow / loop tools instead of a standalone
+Python harness. Vendored from 001TMF/harness-forge (MIT); see
+`docs/tool-evals/harness-forge.md` for the adoption rationale and MTG_AI pilot trigger. Activates
+on: "Meta-Harness", "harness optimization", "scaffold evolution", "optimize the harness without
+retraining", "Pareto search over candidates".
+
+### Production Operations
+
+Ported from [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills) (MIT,
+commit `a5f0b17`) and adapted to our standards. These cover the production-ops lifecycle
+that the superpowers/anthropics skill sets do not.
+
+**[/observability-and-instrumentation](/.claude/skills/observability-and-instrumentation/SKILL.md)**
+Instruments code so production behavior is visible: structured logging, RED/USE metrics,
+correlation IDs, cardinality discipline, distributed tracing, and symptom-based alerting.
+Activates on: "logging", "metrics", "tracing", "alerting", "telemetry", "observability".
+
+**[/deprecation-and-migration](/.claude/skills/deprecation-and-migration/SKILL.md)**
+Removes code that no longer earns its keep and migrates users safely: the deprecation
+decision, strangler/adapter/feature-flag patterns, the Churn Rule, and zombie-code
+handling. Activates on: "deprecate", "migration", "sunset", "remove old system".
+
+**[/performance-optimization](/.claude/skills/performance-optimization/SKILL.md)**
+Measure-first performance work: Core Web Vitals targets, the measure/identify/fix/verify
+loop, N+1 and bundle-size anti-patterns, and enforced performance budgets. Activates on:
+"performance", "optimize", "slow", "Core Web Vitals", "N+1", "bundle size".
+
+**[/shipping-and-launch](/.claude/skills/shipping-and-launch/SKILL.md)**
+Safe production launches: pre-launch checklist, feature-flag lifecycle, staged/canary
+rollout with decision thresholds, post-launch verification loop, and rollback strategy.
+Activates on: "ship", "launch", "deploy", "rollout", "canary", "rollback".
+
+**[/source-driven-development](/.claude/skills/source-driven-development/SKILL.md)**
+Grounds framework-specific code in official documentation (context7 preferred for
+retrieval): detect versions, fetch authoritative docs, implement, and cite sources.
+Activates on: "cite docs", "official documentation", "verify API", "current best practices".
+
+### Reasoning & Quality
+
+Ported from [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills) (MIT,
+commit `a5f0b17`) and adapted to our standards. Tier 2 reasoning enhancements that
+complement RAD and our review pipeline.
+
+**[/doubt-driven-development](/.claude/skills/doubt-driven-development/SKILL.md)**
+Subjects every non-trivial decision to a fresh-context adversarial review before it
+stands: name the CLAIM, extract artifact + contract, spawn an issues-only reviewer
+(cross-model via the `consensus` skill or `clink` when authorized), reconcile, and stop
+on a bounded condition. The active complement to RAD's assumption tagging. Activates on:
+"adversarial review", "fresh-context review", "disprove this", "doubt-driven".
+
+**[/context-engineering](/.claude/skills/context-engineering/SKILL.md)**
+Curates what the agent sees and when: the five-tier context hierarchy (rules files,
+specs, source, errors, history), trust levels for loaded files, confusion management,
+and the inline-planning pattern. Repointed to our scoped CLAUDE.md and tiered MCP
+loading. Activates on: "context engineering", "new session setup", "output quality
+degrading", "rules file".
+
 ### Frontend
 
 **[/frontend-design](/.claude/skills/frontend-design/SKILL.md)**
