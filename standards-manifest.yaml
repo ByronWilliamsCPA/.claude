@@ -1,6 +1,10 @@
 # docs/standards-manifest.yaml
 version: "1.0"
-last_updated: "2026-06-04"
+last_updated: "2026-06-18"
+# 2026-06-18: Weekly skill-review apply pass. Added CI-082..085 (workflow-library
+# checks), CI-086 (CI cost-tier), CLAUDE-015 (model-table drift), and a reserved-ID
+# registry formalizing CI-079 (qlty-gate ruleset companion). All start at suggested
+# per the policy-execution-gap lesson.
 # 2026-06-04: License compliance coverage. Added CI-080 (sbom.yml caller
 # forbidden-licenses denylist includes LGPL and MPL, not GPL/AGPL only,
 # suggested) and CI-081 (dependency-review.yml caller declares deny-licenses
@@ -140,6 +144,28 @@ solo_dev_constraints:
     All managed repos are solo-dev; required_approving_review_count must remain 0
     in every classic protection state and every ruleset rule.
     setup_org_rulesets.py enforces this with a hard guard.
+
+# reserved_ids (Obs 81): single authoritative registry of check IDs that are
+# claimed by an approved-but-not-yet-merged plan, so concurrent planning work
+# and in-flight PRs cannot collide on the same ID. The committed `checks:` list
+# below tracks only IDs that have shipped; this block closes the gap for IDs
+# reserved by plans. Governance: before assigning a new ID, scan BOTH the
+# committed checks list AND this block. When a reserved ID's check merges into
+# `checks:`, remove its entry here. Keep entries sorted by ID prefix then number.
+# A standalone docs/manifest-id-registry.yaml was considered; an inline block is
+# preferred so the reservation lives in the same file reviewers already diff.
+reserved_ids:
+  - id: CI-079
+    reserved_by: "ByronWilliamsCPA/.github#188 (qlty-gate ruleset companion)"
+    reserved_on: "2026-06-02"
+    note: >-
+      Ruleset companion to CI-078 (qlty-gate). Held so the renovate-health
+      suite and the license-compliance suite did not reuse it. See header
+      notes dated 2026-06-02 and 2026-06-04.
+  # New checks added 2026-06-17 (Obs 45/252/258) are committed directly into
+  # the checks: list below (CI-082..086, CLAUDE-015) and therefore are NOT
+  # reserved here; they are listed only to document that those numbers are now
+  # consumed. Do not re-add them as reservations.
 
 checks:
 
@@ -1418,6 +1444,47 @@ checks:
       CLAUDE-010 covers the settings.json $schema field; this check covers a
       different surface (secret content, not schema URL).
 
+  - id: CLAUDE-015
+    domain: claude_docs
+    severity: suggested
+    override_eligible: true
+    description: >-
+      The CLAUDE.md Model Selection table is current against the live model
+      lineup. Documentation that encodes a vendor product lineup has an
+      external staleness clock, so the check is keyed to a live source rather
+      than the doc's own last-updated date. FAIL when the harness-reported
+      model name (the model running the audit session) is absent from the
+      table, or when a model tier named in the claude-api skill model catalog
+      is newer than the top tier listed in CLAUDE.md.
+    verify: >-
+      Compare the model identifiers in the CLAUDE.md Model Selection section
+      against a live source, in this order of preference:
+      (1) the harness-reported model id for the current session;
+      (2) the model catalog in the claude-api skill
+      (~/.claude/skills/claude-api or the installed plugin equivalent).
+      FAIL if the current harness model id is not represented in the table,
+      OR if the live catalog lists a tier newer than the table's top entry.
+      Also verify the agent-authoring enum in .claude/agents/CLAUDE.md
+      includes every frontmatter model value the live source supports
+      (for example a newly released fable tier). Advisory only; no automated
+      remediation. This check is global-config-scoped.
+    not_applicable_when: >-
+      CLAUDE.md has no Model Selection section (CLAUDE-002 covers presence),
+      OR no live model source is reachable in the current environment.
+    source_frameworks:
+      - manifest-internal
+      - claude-api skill model catalog
+    notes: >-
+      Added 2026-06-17 at severity: suggested per feedback_policy_execution_gap.md.
+      Motivated by drift caught only during an explicit Fable-readiness review:
+      the table referenced Opus 4.7 while Opus 4.8 and Fable 5 were already
+      released, and the agent enum omitted the fable frontmatter value. Tie the
+      trigger to the harness model id or claude-api catalog, never to the doc's
+      last_updated field. Primarily applies to the global ~/dev/.claude config
+      repo whose CLAUDE.md carries the canonical Model Selection table; project
+      CLAUDE.md files that omit the table are not_applicable. Routing:
+      claude-docs-auditor agent (extends its CLAUDE-* coverage).
+
   # ── OSSF (Best Practices Badge + Scorecard) ──────────────────────────────────
   # These checks supplement the live Scorecard API and Badge API results with
   # local file content that those APIs cannot evaluate. The ossf-compliance-auditor
@@ -2211,6 +2278,152 @@ checks:
       lists are separate and must be kept in sync. Reference implementation
       target: .github/workflows/dependency-review.yml under the
       actions/dependency-review-action with: block.
+
+  # ── workflow-library type checks (Obs 45) ──────────────────────────────────
+  # The .github repo is the only repo that is simultaneously a community-health
+  # file store AND a reusable workflow library. There is no formal type_profiles
+  # registry block in this manifest; repository scope is expressed per-check via
+  # applies_to_types and not_applicable_when against the catalog repositoryType
+  # field. CI-082..085 below are the workflow-library scope: they apply only when
+  # repositoryType is workflow-library and own the workflow-quality surface
+  # (script injection, over-scoped permissions, relative uses: paths, template
+  # drift) that previously surfaced as unclassified candidates on every audit of
+  # .github. To activate them, set the .github catalog entry repositoryType to
+  # workflow-library. The originally proposed IDs CI-028..031 were already in use;
+  # renumbered to CI-082..085. Dispatch target: devops-deployment-agent (a
+  # dedicated workflow-quality-auditor agent is a future option, not yet created).
+
+  - id: CI-082
+    domain: ci
+    check_family: workflow-library
+    severity: suggested
+    override_eligible: true
+    description: >-
+      Reusable and callable workflows in a workflow-library repo do not pass
+      untrusted ${{ github.event.* }} values (PR title, body, branch ref,
+      author) directly into a run: shell block. Script injection through
+      workflow inputs lets an attacker execute arbitrary commands in the
+      privileged context of any consumer that calls the workflow.
+    verify: >-
+      Grep .github/workflows/*.yml for run: blocks that interpolate
+      github.event.pull_request.title, github.event.pull_request.body,
+      github.event.issue.title, github.head_ref, or
+      github.event.*.author.* directly. PASS when such values are routed
+      through an env: variable and referenced as "$VAR" inside the run block;
+      FAIL on direct ${{ ... }} interpolation into shell.
+    not_applicable_when: "repositoryType != 'workflow-library'"
+    source_frameworks:
+      - GitHub Security Hardening (untrusted input / script injection)
+      - OWASP Top 10 CI/CD A04 Poisoned Pipeline Execution
+
+  - id: CI-083
+    domain: ci
+    check_family: workflow-library
+    severity: suggested
+    override_eligible: true
+    description: >-
+      Workflows in a workflow-library repo declare least-privilege
+      permissions. A top-level permissions: block is present and no job
+      grants permissions: write-all or contents: write without a documented
+      need. Over-scoped tokens in a shared library propagate the excess
+      privilege to every consumer.
+    verify: >-
+      Read each .github/workflows/*.yml. FAIL if any workflow omits a
+      top-level permissions: block, or if any job declares write-all, or
+      grants a write scope (contents, packages, id-token, actions) that the
+      job body does not use. PASS when permissions are explicit and minimal.
+    not_applicable_when: "repositoryType != 'workflow-library'"
+    source_frameworks:
+      - OpenSSF Scorecard Token-Permissions
+      - GitHub Security Hardening
+
+  - id: CI-084
+    domain: ci
+    check_family: workflow-library
+    severity: suggested
+    override_eligible: true
+    description: >-
+      Callable workflows in a workflow-library repo do not reference local
+      actions or scripts by repo-relative path (uses: ./... or
+      ${{ github.workspace }} script paths). Relative references resolve
+      against the CALLER checkout, not the library, so they break silently
+      for every consumer that does not happen to vendor the same path.
+    verify: >-
+      Grep .github/workflows/*.yml for uses: ./ entries and for run: steps
+      that invoke scripts by a path assumed to exist in the caller tree.
+      FAIL on relative uses: in a reusable (on.workflow_call) workflow; PASS
+      when local actions are referenced as owner/repo/path@ref.
+    not_applicable_when: "repositoryType != 'workflow-library'"
+    source_frameworks:
+      - GitHub reusable-workflow documentation (path resolution)
+      - manifest-internal
+
+  - id: CI-085
+    domain: ci
+    check_family: workflow-library
+    severity: suggested
+    override_eligible: true
+    description: >-
+      Org community-health and workflow templates in a workflow-library repo
+      have not drifted from the canonical source set. Template drift means a
+      consumer pulling the org default receives a stale or inconsistent file.
+    verify: >-
+      Compare the .github repo template set (workflow-templates/,
+      profile/, and root community-health files) against the documented
+      canonical inventory. FAIL when a template present in the inventory is
+      missing, or when a tracked template diverges from its source_template
+      reference without a recorded override. Content review is advisory; the
+      check enforces presence and basic structural parity.
+    not_applicable_when: "repositoryType != 'workflow-library'"
+    source_frameworks:
+      - manifest-internal
+
+  # ── CI cost-tier check (Obs 258) ───────────────────────────────────────────
+  # Mirrors the existing ruleset tiers (package / infra / docs). There is no
+  # formal ci_tiers registry block in this manifest yet; the tier is inferred
+  # from the catalog repositoryType. The intent: an infrastructure repo (IaC
+  # with a thin Python CLI, e.g. homelab-infra) should run security and
+  # compliance gates per-PR but push heavy scans (OS compatibility matrices,
+  # SBOM-on-PR, FIPS, mutation testing) to scheduled runs. A per-PR workflow
+  # that is neither a required status check nor consumed by a human or release
+  # process is pure cost. See feedback note: homelab-infra carried the full
+  # python-package CI profile (31 workflows, ~12.1k quota-weighted minutes in
+  # May 2026) while its ruleset required only 3 status checks.
+
+  - id: CI-086
+    domain: ci
+    check_family: ci-cost-tier
+    severity: suggested
+    override_eligible: true
+    description: >-
+      A repo's per-PR workflow set does not exceed its CI cost tier. For
+      infrastructure-tier repos (repositoryType infrastructure), heavy scans
+      (OS-compatibility matrices, SBOM-on-PR, FIPS, mutation testing, PyPI
+      publish) must run on a schedule or release trigger, not on every
+      pull_request. Only security/compliance gates and the required status
+      checks should run per-PR.
+    verify: >-
+      Determine the repo CI tier from repositoryType (package vs
+      infrastructure vs docs-only). Enumerate workflows triggered by
+      pull_request in .github/workflows/. FAIL when a pull_request-triggered
+      workflow is a heavy scan (compat matrix, sbom, fips, mutation, release/
+      publish) that is not in this manifest's required_checks for the repo
+      tier. Cross-check against the effective required-status-checks set
+      (see CI-023). A per-PR workflow that is not required and not consumed
+      by a human or release process is reported as removable cost.
+    not_applicable_when: >-
+      repositoryType is package (full python-package CI profile is expected),
+      OR repositoryType is docs-only and only docs workflows run per-PR.
+    source_frameworks:
+      - manifest-internal
+      - DORA (CI efficiency / lead-time cost)
+    notes: >-
+      Added 2026-06-17 at severity: suggested per feedback_policy_execution_gap.md
+      (define before reach). Promote to important once the infra-tier workflow
+      split is implemented on at least one reference repo (homelab-infra) and a
+      tier mapping is recorded. A formal ci_tiers block (mirroring the
+      package/infra/docs ruleset tiers) is the natural successor if a second
+      tier-scoped check is added.
 
   - id: CI-055
     domain: ci
