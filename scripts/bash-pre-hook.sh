@@ -385,7 +385,21 @@ tloop')
 
 if echo "$HR_CMD" | grep -qE '(^|[^[:alnum:]_])git[[:space:]]+reset([[:space:]]|$)' \
    && echo "$HR_CMD" | grep -qE '(^|[[:space:]])--hard([[:space:]]|=|$)'; then
-    CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || true)
+    # Honor `git -C <dir>` for the branch check so it reads the repo the reset
+    # actually targets, not the hook's cwd. Without this, `git -C /path reset
+    # --hard` run from outside /path reads the wrong repo (or none) and the
+    # guard fails open even when /path is on a protected branch. Extract the
+    # dir from a `git -C <dir> ... reset` invocation (no command separator
+    # between -C and reset).
+    HR_DIR=$(printf '%s' "$PRE_SCAN" \
+        | grep -oE '(^|[^[:alnum:]_])git[[:space:]]+-C[[:space:]]+[^[:space:]]+[^;&|]*reset' \
+        | sed -E 's/.*git[[:space:]]+-C[[:space:]]+([^[:space:]]+).*/\1/' \
+        | head -n1)
+    if [ -n "$HR_DIR" ]; then
+        CURRENT_BRANCH=$(git -C "$HR_DIR" rev-parse --abbrev-ref HEAD 2>/dev/null || true)
+    else
+        CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || true)
+    fi
     if echo "$CURRENT_BRANCH" | grep -qE '^(main|master|develop)$'; then
         log "BLOCKED git reset --hard on protected branch ${CURRENT_BRANCH}: CMD=${CMD}"
         cat >&2 <<EOF
