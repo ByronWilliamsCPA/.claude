@@ -140,3 +140,16 @@ README calling auth "optional" is not a substitute for the binding being scoped.
 8. **Insecure Deserialization**: Validate and sanitize serialized data
 9. **Using Components with Known Vulnerabilities**: Keep dependencies updated
 10. **Insufficient Logging**: Log security events, monitor for anomalies
+
+## Common Rationalizations
+
+The reasons a control gets skipped, and why each one is how incidents start. When an audit
+hears the left column, the right column is the response.
+
+| Rationalization | Reality |
+| --- | --- |
+| "It is internal-only, so it is safe" | Internal networks get breached. Defense in depth assumes the perimeter fails. |
+| "We will add auth later" | "Later" ships to production. Add the control before the port is exposed, not after. |
+| "No one would think to attack this" | Attackers automate discovery. Obscurity is not a control. |
+| "The library handles security for us" | Libraries handle the cases you configure. Misconfiguration is the top cause of breaches. |
+| "pip-audit is noisy, I will suppress it" | Suppression without a documented entry (see CLAUDE.md > Unfixed CVEs) is how known CVEs reach production. |

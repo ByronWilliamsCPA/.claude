@@ -187,6 +187,19 @@ grep "❌ BLOCKING" assumption-report.md
 - **Cost Efficiency**: >90% of verifications using free models
 - **Production Impact**: Reduction in assumption-related incidents
 
+## Common Rationalizations
+
+The reasons people skip assumption verification, and why each one fails. When you catch
+yourself thinking the left column, the right column is the correction.
+
+| Rationalization | Reality |
+| --- | --- |
+| "This assumption is obviously safe" | Obvious-to-you is not verified. Tag it and let a fresh check confirm or kill it. |
+| "Tagging slows me down" | One untagged bad assumption in production costs more than every tag you would ever write. |
+| "I'll verify it later" | Later rarely comes. Unverified tags accumulate into invisible risk you cannot see at release time. |
+| "The test passes, so the assumption holds" | A passing test confirms the path you wrote, not the input you assumed. Verify the assumption directly. |
+| "It is just a timing or ordering detail" | Timing, ordering, and concurrency are the top sources of assumption-driven incidents, not edge cases. |
+
 ## Resources
 
 - **Complete Methodology**: See [context/methodology.md](context/methodology.md)
