@@ -393,6 +393,23 @@ Git workflow automation including branch creation/validation, commit message pre
 preparation, PR validation checklist, and branch strategy guidance. Activates on git-related
 keywords.
 
+**[/retro](/.claude/skills/retro/SKILL.md)**
+Engineering analytics from local git history: commit cadence, per-author contribution, churn
+hotspots, PR cycle time, Conventional Commit type distribution, and trend deltas vs a prior window.
+Metrics framed as signals, not targets (Goodhart-aware). Adapted from the gstack concept (MIT).
+Activates on: "retro", "engineering analytics", "velocity report", "churn report".
+
+**[/triage](/.claude/skills/triage/SKILL.md)**
+Deterministic issue/PR triage state machine: drives each item from NEW to a terminal or
+clearly-owned state with explicit entry criteria per transition. Treats issue/PR body text as
+untrusted (OWASP LLM01). Adapted from the mattpocock concept (MIT). Activates on: "triage",
+"issue triage", "backlog triage".
+
+**[/prototype](/.claude/skills/prototype/SKILL.md)**
+Builds a deliberately throwaway prototype to answer exactly one named question, then discards it;
+maps to our `spike/` branch convention. Adapted from the mattpocock concept (MIT). Activates on:
+"prototype", "spike", "proof of concept", "answer one question".
+
 **[/phase-gate](/.claude/skills/phase-gate/SKILL.md)**
 Evaluates phase readiness by analyzing scope completion and running quality gates. Use when
 transitioning between implementation phases or checking whether a phase is ready for completion.
@@ -423,6 +440,12 @@ session that wrote observations to a project-local path instead of the global lo
 **[/quality](/.claude/skills/quality/SKILL.md)**
 Runs code quality checks: ruff formatting, ruff linting with auto-fix, BasedPyright type checking,
 markdownlint, and yamllint. Activates on: "quality check", "lint", "format code".
+
+**[/health](/.claude/skills/health/SKILL.md)**
+Weighted code-health dashboard that aggregates the existing `quality`, `test-coverage`, and
+`sonarcloud` checks into one grade with a per-dimension breakdown (types, lint, tests/coverage,
+dead code, security); a skipped check reports as UNKNOWN, never a silent pass. Adapted from the
+gstack concept (MIT). Activates on: "health", "health check", "quality dashboard", "project health".
 
 **[/rad](/.claude/skills/rad/SKILL.md)**
 Response-Aware Development: systematic assumption tagging and multi-model verification. Tags

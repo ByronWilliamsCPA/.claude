@@ -23,12 +23,16 @@ All skill directories live in `.claude/skills/` (symlinked to `~/.claude/skills/
 | `using-git-worktrees` | `/using-git-worktrees` | Creates and manages git worktrees for parallel development |
 | `ci-fix` | `/ci-fix` | Diagnoses and fixes failing CI pipeline jobs |
 | `verification-before-completion` | `/verification-before-completion` | Final verification checklist before marking work complete |
+| `retro` | `/retro` | Engineering analytics from git history: cadence, contribution, churn, cycle time, commit-type mix, trend deltas |
+| `triage` | `/triage` | Deterministic issue/PR triage state machine driving each item to a terminal or owned state |
+| `prototype` | `/prototype` | Throwaway prototype to answer one named question, then discard; maps to the `spike/` branch convention |
 
 ## Code Quality
 
 | Skill | Trigger | What it does |
 | --- | --- | --- |
 | `quality` | `/quality` | Ruff format, lint, BasedPyright type checking, and code quality gates |
+| `health` | `/health` | Weighted health dashboard aggregating quality, coverage, and SonarCloud into one grade |
 | `rad` | `/rad` | Response-Aware Development: tags and verifies critical code assumptions |
 | `requesting-code-review` | `/requesting-code-review` | Structures a review request and invokes the code-reviewer agent |
 | `receiving-code-review` | `/receiving-code-review` | Processes incoming code review feedback systematically |

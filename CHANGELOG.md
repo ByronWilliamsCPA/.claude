@@ -170,6 +170,22 @@
   AI-slop detection rubric to the `frontend-designer` agent and Diataxis mode
   discipline to the `documentation-writer` agent (both gstack `/design-review`
   inspired).
+* feat(skills): port Tier 4 workflow/analytics skills and extend the
+  git-guardrails hook (`docs/tool-evals/skills-deep-dive-2026-06.md`, items
+  15-18), adapted from MIT-licensed concepts (authored fresh). `retro` mines git
+  history for engineering analytics (gstack), `health` aggregates the existing
+  `quality`, `test-coverage`, and `sonarcloud` checks into one weighted dashboard
+  (gstack), `triage` is a deterministic issue/PR triage state machine
+  (mattpocock), and `prototype` enforces throwaway-to-answer-one-question
+  discipline mapped to our `spike/` branch convention (mattpocock). The
+  git-guardrails concept (mattpocock) was implemented by extending the existing
+  `scripts/bash-pre-hook.sh` PreToolUse hook rather than adding a redundant
+  script: force-push protection now covers `develop` (matching the git-workflow
+  Force-Push Prohibition), and a new guard blocks `git reset --hard` when HEAD is
+  on a protected branch while leaving feature-branch resyncs allowed. The
+  session directory scope-lock (`/freeze`, item 17) is deferred: it needs
+  stateful per-session infrastructure and carries false-positive risk. Skills
+  registered in `AGENTS-AND-SKILLS.md` and `docs/reference/skills.md`.
 * feat(skills): port Tier 3 planning/discovery skills from the public skill-repo
   survey (`docs/tool-evals/skills-deep-dive-2026-06.md`), adapted to our
   standards from MIT-licensed concepts (authored fresh, not verbatim ports).
