@@ -162,6 +162,49 @@ assert_blocked 'git push -f origin master' \
     'git push -f origin master'
 
 echo ""
+echo "=== Force-push guard: develop (git-guardrails extension; must BLOCK) ==="
+assert_blocked 'git push --force origin develop' \
+    'git push --force origin develop'
+assert_blocked 'git push -f origin develop' \
+    'git push -f origin develop'
+assert_blocked 'git push --force-with-lease origin develop' \
+    'git push --force-with-lease origin develop'
+
+echo ""
+echo "=== Hard-reset guard (git-guardrails; protected branch must BLOCK) ==="
+# The guard keys off the CURRENT branch of the repo the reset targets, not the
+# command text, so testing the BLOCK path must not depend on the test runner's
+# own branch (CI checks out a detached HEAD). Drive the guard through its
+# `git -C <dir>` path against a throwaway repo pinned to a protected branch so
+# the resolved HEAD is deterministic. The hook only inspects the command; it
+# never executes the reset, so no real repo state is mutated.
+HR_TMP="$(mktemp -d)"
+git -C "$HR_TMP" init -q
+git -C "$HR_TMP" -c user.email=t@example.com -c user.name=test \
+    commit -q --allow-empty -m init
+git -C "$HR_TMP" branch -M develop
+assert_blocked 'git -C <develop-repo> reset --hard' \
+    "git -C $HR_TMP reset --hard"
+git -C "$HR_TMP" branch -M main
+assert_blocked 'git -C <main-repo> reset --hard origin/main' \
+    "git -C $HR_TMP reset --hard origin/main"
+# Feature-branch hard resets are an intentional, allowed resync workflow.
+git -C "$HR_TMP" branch -M feature/resync
+assert_allowed 'git -C <feature-repo> reset --hard origin/feature' \
+    "git -C $HR_TMP reset --hard origin/feature/resync"
+rm -rf "$HR_TMP"
+
+echo ""
+echo "=== Hard-reset guard: false positives must be ALLOWED ==="
+# --soft/--mixed are not destructive to the working tree; only --hard is guarded.
+assert_allowed 'git reset --soft HEAD~1' \
+    'git reset --soft HEAD~1'
+# A commit message that merely mentions the phrase must not trip the guard
+# (message-arg values are blanked in PRE_SCAN before the reset check runs).
+assert_allowed 'git commit -m "docs: warn against git reset --hard on main"' \
+    'git commit -m "docs: warn against git reset --hard on main"'
+
+echo ""
 echo "=== Innocuous commands must be ALLOWED ==="
 assert_allowed 'ls -la' \
     'ls -la'
