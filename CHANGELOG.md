@@ -200,6 +200,21 @@
   complement `plan-validator`'s completeness check (gstack). All registered in
   `AGENTS-AND-SKILLS.md`, `docs/reference/skills.md`, and
   `docs/reference/agents.md`.
+* feat(skills): extract Tier 5 design catalogs into
+  `.claude/skills/frontend-design/context/`
+  (`docs/tool-evals/skills-deep-dive-2026-06.md`, item 19). Five static,
+  model-referenceable CSVs from `nextlevelbuilder/ui-ux-pro-max-skill` (MIT,
+  commit `b7e3af8`, retrieved 2026-06-19): `styles.csv` (84 style families with
+  palettes and prompt keywords), `typography.csv` (74 font pairings with
+  imports), `charts.csv` (25 chart types with a11y grades), `ui-reasoning.csv`
+  (161 product-type UX decision rules), and `app-interface.csv` (30 interface
+  Do/Don't rules with code). The upstream `search.py` BM25 runtime was dropped
+  (files are referenced directly); the 745 KB Google Fonts catalog, the
+  Chinese-language single-column dumps, and the framework-specific stack files
+  were excluded. A `context/README.md` records provenance, the per-catalog
+  index, and usage; `frontend-design/SKILL.md` points to it. The optional
+  `brand`/`slides`/`banner`/`design-system` sub-skills (item 20) are deferred as
+  low priority.
 * feat(skills): weekly skill-review apply pass (2026-06-17 task-observer review).
   Added 15 skills: 3 standalone (`external-reference-verification`, `pdf-extras`,
   `chat-app-handoff-to-repo`) and 12 `-extras` companions that layer guidance onto

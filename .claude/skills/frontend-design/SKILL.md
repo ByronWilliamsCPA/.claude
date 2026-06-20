@@ -410,6 +410,16 @@ Before delivering any frontend work:
 - [ ] Tested at 375px width and landscape orientation
 - [ ] Dark mode contrast verified independently
 
+## Reference catalogs
+
+Static design catalogs live in [`context/`](context/README.md), extracted from
+`ui-ux-pro-max-skill` (MIT). Load the one that fits the task instead of inventing
+options: `styles.csv` (84 style families with palettes and prompt keywords),
+`typography.csv` (74 font pairings with imports), `charts.csv` (25 chart types
+with a11y grades), `ui-reasoning.csv` (161 product-type UX decision rules), and
+`app-interface.csv` (30 interface Do/Don't rules with code). See
+[`context/README.md`](context/README.md) for the full index and usage.
+
 ## Attribution
 
 This skill synthesizes guidance from:
