@@ -58,7 +58,10 @@ All skill directories live in `.claude/skills/` (symlinked to `~/.claude/skills/
 | `project-planning` | `/project-planning` | Creates a structured project plan with phases and acceptance criteria |
 | `phase-gate` | `/phase-gate` | Validates that all phase acceptance criteria are met before closing a phase |
 | `executing-plans` | `/executing-plans` | Executes a structured plan step-by-step with checkpoints |
+| `premise-interrogation` | `/premise-interrogation` | Pre-spec gate: interrogates demand and scope before specifying; challenges whether to build at all, then hands off to brainstorming |
 | `brainstorming` | `/brainstorming` | Structured brainstorming for problem-solving or feature design |
+| `domain-modeling` | `/domain-modeling` | Maintains a folder-scoped domain glossary and challenges terminology drift to enforce ubiquitous language |
+| `issue-generation` | `/issue-generation` | Converts a conversation into a scoped GitHub issue with a mandatory PII/secret redaction gate before filing |
 | `writing-plans` | `/writing-plans` | Creates a structured writing plan for a document or content piece |
 | `claude-md-improver` | `/claude-md-improver` | Reviews and improves CLAUDE.md files |
 | `claude-automation-recommender` | `/claude-automation-recommender` | Recommends Claude Code automations for a given workflow |

@@ -55,6 +55,8 @@ All agent files live in `.claude/agents/` (symlinked to `~/.claude/agents/`). Th
 | `project-plan-synthesizer` | `project-plan-synthesizer.md` | Synthesizes planning documents into a PROJECT-PLAN.md with phase branches and quality gates |
 | `scope-analyzer` | `scope-analyzer.md` | Produces a scope boundary document for a project phase (internal: phase-gate skill) |
 | `plan-validator` | `plan-validator.md` | Validates an action plan against scope boundaries to detect creep (internal: phase-gate skill) |
+| `plan-ceo-review` | `plan-ceo-review.md` | Reviews a plan for problem-framing (right problem, business value, do-nothing baseline); adapted from gstack (MIT) |
+| `plan-devex-review` | `plan-devex-review.md` | Reviews a plan for developer-experience (ergonomics, cognitive load, maintainability); adapted from gstack (MIT) |
 | `phase-reviewer` | `phase-reviewer.md` | Executes quality gates to determine if a phase is complete (internal: phase-gate skill) |
 
 ## API and Backend

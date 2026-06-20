@@ -170,6 +170,20 @@
   AI-slop detection rubric to the `frontend-designer` agent and Diataxis mode
   discipline to the `documentation-writer` agent (both gstack `/design-review`
   inspired).
+* feat(skills): port Tier 3 planning/discovery skills from the public skill-repo
+  survey (`docs/tool-evals/skills-deep-dive-2026-06.md`), adapted to our
+  standards from MIT-licensed concepts (authored fresh, not verbatim ports).
+  `premise-interrogation` is a pre-spec gate that interrogates demand and scope
+  before any spec is written (merges the gstack `/office-hours`, mattpocock
+  `grill-me`, and addyosmani `interview-me` concepts). `domain-modeling`
+  maintains a folder-scoped domain glossary and challenges terminology drift
+  (mattpocock). `issue-generation` converts a conversation into a scoped GitHub
+  issue behind a mandatory PII/secret redaction gate (gstack `/spec`, mattpocock
+  `to-issues`). Added two read-only plan-review agents, `plan-ceo-review`
+  (problem-framing) and `plan-devex-review` (developer experience), that
+  complement `plan-validator`'s completeness check (gstack). All registered in
+  `AGENTS-AND-SKILLS.md`, `docs/reference/skills.md`, and
+  `docs/reference/agents.md`.
 * feat(skills): weekly skill-review apply pass (2026-06-17 task-observer review).
   Added 15 skills: 3 standalone (`external-reference-verification`, `pdf-extras`,
   `chat-app-handoff-to-repo`) and 12 `-extras` companions that layer guidance onto
