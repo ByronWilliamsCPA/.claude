@@ -60,6 +60,15 @@ path = [
 SPDX-License-Identifier = "CC0-1.0"
 SPDX-FileCopyrightText = "2025 Byron Williams"
 
+# Vale prose-linter configuration and custom styles - CC0-1.0
+[[annotations]]
+path = [
+    ".vale.ini",
+    "styles/**",
+]
+SPDX-License-Identifier = "CC0-1.0"
+SPDX-FileCopyrightText = "2025 Byron Williams"
+
 # Data files and models - ODbL-1.0 (Open Database License)
 [[annotations]]
 path = [
