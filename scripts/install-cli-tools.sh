@@ -11,13 +11,22 @@ ASTGREP_VERSION="0.43.0"
 # ast-grep: structural code search and multi-file refactoring.
 # Installed via npm (@ast-grep/cli). Invoke the tool as 'ast-grep', never 'sg':
 # shadow-utils ships its own 'sg' command (a newgrp wrapper) that shadows it.
-if ! command -v ast-grep >/dev/null 2>&1; then
-    if ! command -v npm >/dev/null 2>&1; then
+if ! command -v ast-grep > /dev/null 2>&1; then
+    if ! command -v npm > /dev/null 2>&1; then
         echo "SESSION SETUP: npm not found -- skipping ast-grep install." >&2
-    elif npm install -g "@ast-grep/cli@${ASTGREP_VERSION}" >&2; then
-        echo "SESSION SETUP: ast-grep ${ASTGREP_VERSION} installed." >&2
     else
-        echo "SESSION SETUP: ast-grep install failed -- continuing without it." >&2
+        # Bound the install so the SessionStart hook timeout cannot kill it
+        # before the failure branch emits a breadcrumb. Use 'timeout' when it
+        # is available; fall back to an unbounded install otherwise.
+        install_cmd=(npm install -g "@ast-grep/cli@${ASTGREP_VERSION}")
+        if command -v timeout > /dev/null 2>&1; then
+            install_cmd=(timeout 25 "${install_cmd[@]}")
+        fi
+        if "${install_cmd[@]}" >&2; then
+            echo "SESSION SETUP: ast-grep ${ASTGREP_VERSION} installed." >&2
+        else
+            echo "SESSION SETUP: ast-grep install failed -- continuing without it." >&2
+        fi
     fi
 fi
 
