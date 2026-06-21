@@ -1,0 +1,21 @@
+# Flags AI filler phrases and corporate buzzwords from the banned-term list
+# in .claude/rules/writing.md. These phrases signal unrevised AI-generated
+# text; delete or restate directly.
+extends: existence
+message: "AI filler phrase '%s': delete or restate directly."
+level: warning
+ignorecase: true
+tokens:
+  - delve into
+  - it's important to note
+  - it is important to note
+  - in conclusion
+  - in summary
+  - to summarize
+  - moving forward
+  - in today's landscape
+  - at the end of the day
+  - leverage
+  - synergies
+  - streamline
+  - empower

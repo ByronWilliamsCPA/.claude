@@ -1,0 +1,14 @@
+# Flags vague qualifiers from the banned-term list in .claude/rules/writing.md.
+# These words carry no measurable information. Replace with a specific number
+# or remove entirely.
+extends: existence
+message: "Vague qualifier '%s': replace with a specific number or remove."
+level: warning
+ignorecase: true
+tokens:
+  - significantly
+  - substantially
+  - considerably
+  - greatly
+  - highly
+  - markedly

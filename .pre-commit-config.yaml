@@ -18,7 +18,7 @@ minimum_pre_commit_version: '1.14.0'
 ci:
   autoupdate_schedule: monthly
   autofix_prs: true
-  skip: [validate-front-matter, qlty-check, qlty-full, trufflehog, bandit, bandit-full, pip-audit]  # Skip local-only hooks
+  skip: [validate-front-matter, qlty-check, qlty-full, trufflehog, bandit, bandit-full, pip-audit, vale]  # Skip local-only hooks
 
 repos:
   # ============================================================================
@@ -153,6 +153,18 @@ repos:
         stages: [pre-commit]
 
   # ============================================================================
+  # GitHub Actions Linting - actionlint
+  # ============================================================================
+  # Validates GitHub Actions workflow syntax, expression types, and shell
+  # scripts embedded in `run:` steps. Complements check-github-workflows
+  # (schema) with semantic checks (undefined variables, shell errors, etc.).
+  - repo: https://github.com/rhysd/actionlint
+    rev: 03d0035246f3e81f36aed592ffb4bebf33a03106  # v1.7.7
+    hooks:
+      - id: actionlint
+        stages: [pre-commit]
+
+  # ============================================================================
   # YAML Linting
   # ============================================================================
   - repo: https://github.com/adrienverge/yamllint
@@ -170,6 +182,37 @@ repos:
     hooks:
       - id: markdownlint
         args: [--config, .markdownlint.json]
+        stages: [pre-commit]
+
+  # ============================================================================
+  # Prose Linting - Vale (PC-VALE)
+  # ============================================================================
+  # Enforces the banned-term policy from .claude/rules/writing.md:
+  # vague qualifiers, AI filler phrases, puffery/hype words, and em-dashes.
+  # Uses a local hook scoped to staged Markdown files only (PC-HOOK-STAGED-SCOPE).
+  # Vale binary must be installed separately: https://vale.sh/docs/vale-cli/installation/
+  # Config: .vale.ini / styles/Claude/
+  # MinAlertLevel is set to warning (not error) so day-one violations surface
+  # without hard-blocking commits. Raise to error once the existing corpus is clean.
+  - repo: local
+    hooks:
+      - id: vale
+        name: Vale prose linter (staged Markdown)
+        # Collect staged .md files and pass them to vale; skip gracefully when
+        # vale is not installed so new checkouts do not break immediately.
+        entry: >-
+          bash -c '
+          staged=$(git diff --cached --name-only --diff-filter=d | grep "\.md$" || true);
+          if [ -z "$staged" ]; then exit 0; fi;
+          if ! command -v vale >/dev/null 2>&1; then
+            echo "vale not installed - skipping (install: https://vale.sh/docs/vale-cli/installation/)";
+            exit 0;
+          fi;
+          echo "$staged" | xargs vale --config=.vale.ini
+          '
+        language: system
+        pass_filenames: false
+        types: [markdown]
         stages: [pre-commit]
 
   # ============================================================================
@@ -272,6 +315,22 @@ repos:
         types: [python]
         stages: [pre-commit]
         exclude: ^(tests|scripts|benchmarks|tools|noxfile\.py|\.claude/skills/)
+
+  # ============================================================================
+  # Shell Script Formatting - shfmt (PC-SHFMT)
+  # ============================================================================
+  # Formats shell scripts consistently. Args match the 4-space indentation
+  # style used across scripts/ in this repo (verified by inspection):
+  #   -i 4   : 4-space indentation (matches existing scripts)
+  #   -ci    : indent case statement bodies
+  #   -bn    : binary ops like && and || go on the next line (common style)
+  #   -sr    : redirect operators are followed by a space
+  - repo: https://github.com/scop/pre-commit-shfmt
+    rev: f007dc66ff0428b2f0410a71aef99a243d9d6e91  # v3.10.0-1
+    hooks:
+      - id: shfmt
+        args: [-i, "4", -ci, -bn, -sr]
+        stages: [pre-commit]
 
   # ============================================================================
   # Ruff Linting and Formatting (PC-002)

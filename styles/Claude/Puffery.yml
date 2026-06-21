@@ -1,0 +1,27 @@
+# Flags puffery and hype words from the banned-term list in
+# .claude/rules/writing.md. These terms replace measurable facts with
+# vague praise. Replace with specific evidence or a concrete description.
+extends: existence
+message: "Puffery or hype word '%s': replace with specific evidence or a concrete description."
+level: warning
+ignorecase: true
+tokens:
+  - robust
+  - seamless
+  - holistic
+  - comprehensive
+  - pivotal
+  - vital
+  - testament
+  - unwavering
+  - unparalleled
+  - exemplary
+  - crucial
+  - best-in-class
+  - cutting-edge
+  - game-changer
+  - innovative
+  - revolutionary
+  - transformative
+  - state-of-the-art
+  - groundbreaking
