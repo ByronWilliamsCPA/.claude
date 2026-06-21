@@ -9,6 +9,18 @@
     "deny": []
   },
   "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash $HOME/.claude/scripts/install-cli-tools.sh",
+            "timeout": 30,
+            "statusMessage": "Installing preferred CLI tools (ast-grep)..."
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Bash",

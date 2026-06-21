@@ -441,6 +441,12 @@ session that wrote observations to a project-local path instead of the global lo
 Runs code quality checks: ruff formatting, ruff linting with auto-fix, BasedPyright type checking,
 markdownlint, and yamllint. Activates on: "quality check", "lint", "format code".
 
+**[/ast-grep](/.claude/skills/ast-grep/SKILL.md)**
+Structural code search and multi-file refactoring with ast-grep: meta-variable patterns (`$X`,
+`$$$`), rewrite templates, and YAML relational rules. Prefer over Grep plus Edit when the query
+targets a code shape rather than a literal string. Activates on: "structural search", "structural
+refactor", "ast-grep", "find a code pattern", "rewrite a call signature", "codemod".
+
 **[/health](/.claude/skills/health/SKILL.md)**
 Weighted code-health dashboard that aggregates the existing `quality`, `test-coverage`, and
 `sonarcloud` checks into one grade with a per-dimension breakdown (types, lint, tests/coverage,
