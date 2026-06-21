@@ -6,6 +6,7 @@ message: "AI filler phrase '%s': delete or restate directly."
 level: warning
 ignorecase: true
 tokens:
+  # Multi-word phrases are already specific; no word-boundary anchoring needed.
   - delve into
   - it's important to note
   - it is important to note
@@ -15,7 +16,9 @@ tokens:
   - moving forward
   - in today's landscape
   - at the end of the day
-  - leverage
-  - synergies
-  - streamline
-  - empower
+  # Single words anchored with \b so they match whole words only (e.g.
+  # 'leverage' must not flag 'leveraged', 'empower' not 'empowerment').
+  - '\bleverage\b'
+  - '\bsynergies\b'
+  - '\bstreamline\b'
+  - '\bempower\b'

@@ -5,10 +5,12 @@ extends: existence
 message: "Vague qualifier '%s': replace with a specific number or remove."
 level: warning
 ignorecase: true
+# Tokens are anchored with \b so they match whole words only and do not fire
+# inside longer words (e.g. 'greatly' must not flag a substring match).
 tokens:
-  - significantly
-  - substantially
-  - considerably
-  - greatly
-  - highly
-  - markedly
+  - '\bsignificantly\b'
+  - '\bsubstantially\b'
+  - '\bconsiderably\b'
+  - '\bgreatly\b'
+  - '\bhighly\b'
+  - '\bmarkedly\b'

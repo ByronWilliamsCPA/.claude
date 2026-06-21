@@ -159,7 +159,7 @@ repos:
   # scripts embedded in `run:` steps. Complements check-github-workflows
   # (schema) with semantic checks (undefined variables, shell errors, etc.).
   - repo: https://github.com/rhysd/actionlint
-    rev: 03d0035246f3e81f36aed592ffb4bebf33a03106  # v1.7.7
+    rev: 03d0035246f3e81f36aed592ffb4bebf33a03106  # v1.7.7  # pragma: allowlist secret
     hooks:
       - id: actionlint
         stages: [pre-commit]
@@ -205,6 +205,10 @@ repos:
         entry: >-
           bash -c '
           if ! command -v vale >/dev/null 2>&1; then
+            if [ -n "${CI:-}" ]; then
+              echo "vale not installed but CI is set - failing so prose is not left unchecked" >&2;
+              exit 1;
+            fi;
             echo "vale not installed - skipping (install: https://vale.sh/docs/vale-cli/installation/)";
             exit 0;
           fi;
@@ -323,10 +327,10 @@ repos:
   # style used across scripts/ in this repo (verified by inspection):
   #   -i 4   : 4-space indentation (matches existing scripts)
   #   -ci    : indent case statement bodies
-  #   -bn    : binary ops like && and || go on the next line (common style)
+  #   -bn    : allow binary ops like && and || to start a line (common style)
   #   -sr    : redirect operators are followed by a space
   - repo: https://github.com/scop/pre-commit-shfmt
-    rev: f007dc66ff0428b2f0410a71aef99a243d9d6e91  # v3.10.0-1
+    rev: f007dc66ff0428b2f0410a71aef99a243d9d6e91  # v3.10.0-1  # pragma: allowlist secret
     hooks:
       - id: shfmt
         args: [-i, "4", -ci, -bn, -sr]
