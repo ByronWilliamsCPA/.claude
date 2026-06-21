@@ -198,20 +198,20 @@ repos:
     hooks:
       - id: vale
         name: Vale prose linter (staged Markdown)
-        # Collect staged .md files and pass them to vale; skip gracefully when
-        # vale is not installed so new checkouts do not break immediately.
+        # pre-commit passes the staged Markdown paths as arguments; argv is
+        # space- and newline-safe, so no manual file-list parsing is needed.
+        # Skip gracefully when vale is not installed so new checkouts do not
+        # break immediately.
         entry: >-
           bash -c '
-          staged=$(git diff --cached --name-only --diff-filter=d | grep "\.md$" || true);
-          if [ -z "$staged" ]; then exit 0; fi;
           if ! command -v vale >/dev/null 2>&1; then
             echo "vale not installed - skipping (install: https://vale.sh/docs/vale-cli/installation/)";
             exit 0;
           fi;
-          echo "$staged" | xargs vale --config=.vale.ini
-          '
+          vale --config=.vale.ini "$@"
+          ' --
         language: system
-        pass_filenames: false
+        pass_filenames: true
         types: [markdown]
         stages: [pre-commit]
 

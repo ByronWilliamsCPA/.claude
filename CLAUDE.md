@@ -119,8 +119,8 @@ exhaust code-level fixes before ruling out the environment.
 Prefer these over regex/sed equivalents when they are on PATH:
 
 - **ast-grep** for structural code search and multi-file refactors. Reach for
-  `ast-grep` (call it by full name; the short `sg` alias collides with
-  shadow-utils `newgrp`) instead of Grep plus Edit when the target is a code
+  `ast-grep` (call it by full name; `sg` is shadow-utils' own command, a
+  `newgrp` wrapper, that shadows it) instead of Grep plus Edit when the target is a code
   shape (a call signature, a decorator, an import), not a literal string. Use
   Grep for prose and config.
 - **difftastic** (`difft`) for reviewing AI-generated changes.

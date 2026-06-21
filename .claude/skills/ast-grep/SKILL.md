@@ -13,7 +13,8 @@ tools: ["Bash", "Read", "Glob"]
 # ast-grep Reference
 
 Structural search and rewrite across codebases. Always invoke as `ast-grep`,
-not `sg` (the `sg` alias collides with shadow-utils `newgrp`).
+not `sg`: shadow-utils ships its own `sg` command (a `newgrp` wrapper) that
+shadows it.
 
 ## When to use ast-grep vs Grep
 
