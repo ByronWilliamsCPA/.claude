@@ -1,0 +1,16 @@
+# Flags vague qualifiers from the banned-term list in .claude/rules/writing.md.
+# These words carry no measurable information. Replace with a specific number
+# or remove entirely.
+extends: existence
+message: "Vague qualifier '%s': replace with a specific number or remove."
+level: warning
+ignorecase: true
+# Tokens are anchored with \b so they match whole words only and do not fire
+# inside longer words (e.g. 'greatly' must not flag a substring match).
+tokens:
+  - '\bsignificantly\b'
+  - '\bsubstantially\b'
+  - '\bconsiderably\b'
+  - '\bgreatly\b'
+  - '\bhighly\b'
+  - '\bmarkedly\b'

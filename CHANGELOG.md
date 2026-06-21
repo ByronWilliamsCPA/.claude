@@ -156,6 +156,18 @@
   and repo-compliance reference all move to pydoclint.
 
 ### Added
+* feat: adopt `ast-grep` and `difftastic` as preferred CLI tools and add
+  `actionlint`, `shfmt`, and `vale` pre-commit hooks. A new `/ast-grep` skill
+  (meta-variable patterns, rewrite templates, YAML relational rules) is
+  registered in `AGENTS-AND-SKILLS.md`, and CLAUDE.md gains a "Preferred CLI
+  tools" section directing structural search and refactors to `ast-grep` and
+  AST-aware review to `difftastic`. A SessionStart hook
+  (`scripts/install-cli-tools.sh`, wired in the root `settings.json`)
+  best-effort installs `ast-grep` via npm (pinned `@ast-grep/cli@0.43.0`).
+  Pre-commit adds SHA-pinned `actionlint` (v1.7.7) and `shfmt` (v3.10.0-1),
+  plus a local, warning-level `vale` prose linter (`.vale.ini` +
+  `styles/Claude/`) enforcing the banned-term policy in
+  `.claude/rules/writing.md`.
 * feat(skills): port two Tier 2 reasoning skills from `addyosmani/agent-skills`
   (MIT, commit `a5f0b17`), adapted to our standards. `doubt-driven-development`
   subjects every non-trivial decision to a fresh-context adversarial review

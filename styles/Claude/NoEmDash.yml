@@ -1,0 +1,10 @@
+# Flags the em-dash character (U+2014).
+# This repo bans em-dashes in all text output (see .claude/rules/writing.md
+# and the no-em-dash pre-commit hook PC-011). Use a comma, semicolon,
+# colon, or restructured sentence instead.
+extends: existence
+message: "Em-dash found: use a comma, semicolon, colon, or restructured sentence."
+level: warning
+ignorecase: false
+tokens:
+  - '—'

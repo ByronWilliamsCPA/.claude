@@ -1,0 +1,29 @@
+# Flags puffery and hype words from the banned-term list in
+# .claude/rules/writing.md. These terms replace measurable facts with
+# vague praise. Replace with specific evidence or a concrete description.
+extends: existence
+message: "Puffery or hype word '%s': replace with specific evidence or a concrete description."
+level: warning
+ignorecase: true
+# Tokens are anchored with \b so they match whole words only and do not fire
+# inside longer words (e.g. 'vital' must not flag 'vitality').
+tokens:
+  - '\brobust\b'
+  - '\bseamless\b'
+  - '\bholistic\b'
+  - '\bcomprehensive\b'
+  - '\bpivotal\b'
+  - '\bvital\b'
+  - '\btestament\b'
+  - '\bunwavering\b'
+  - '\bunparalleled\b'
+  - '\bexemplary\b'
+  - '\bcrucial\b'
+  - '\bbest-in-class\b'
+  - '\bcutting-edge\b'
+  - '\bgame-changer\b'
+  - '\binnovative\b'
+  - '\brevolutionary\b'
+  - '\btransformative\b'
+  - '\bstate-of-the-art\b'
+  - '\bgroundbreaking\b'
