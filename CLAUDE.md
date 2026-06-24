@@ -234,13 +234,33 @@ acceptance criterion; use `/phase-gate` to verify phase readiness before
 closing a phase.
 
 **Session length**: Sessions accumulate rolling context with every exchange,
-increasing cache-write cost and slowing responses. After completing any
-discrete task unit, self-assess whether the session has grown long (signals:
-visibly slower responses, many tool calls accumulated, the conversation has
-spanned several distinct task units). If it has, tell the user the session
-is becoming expensive and suggest a clean break before starting the next
-task. Do not silently continue into a new task on a session that is already
-over-long.
+raising cache-write cost and slowing responses. Autocompact is configured to
+fire at 80% context fill (`CLAUDE_AUTOCOMPACT_PCT_OVERRIDE`), and its summary is
+lossy, so a deliberate handoff before that point preserves more than letting
+autocompact run.
+
+Use the context-fill % (statusLine bar or `/context`) as the primary signal, and
+gate any suggestion on a completed task unit so you never interrupt mid-task.
+Interim thresholds (calibrate locally, see below):
+
+- **Below 55% fill**: keep working.
+- **55 to 70% fill AND a task unit just finished**: tell the user the session is
+  getting expensive and offer the remedy in the same message, do not make them
+  ask for it: "Want a handoff doc and a kickoff prompt for a fresh session?
+  (`/handoff`)". The `/handoff` skill emits both the doc and the paste-ready
+  kickoff prompt.
+- **Above 70% fill** (nearing the 80% autocompact): recommend the break before
+  starting any new task unit. If mid-task, finish the unit, then run `/handoff`.
+
+Secondary signals that justify offering earlier within the band: several
+distinct task units completed, a large accumulated tool-call count, or a STOP
+verdict from `/usage-report blocks`. Never start a new task unit on a session
+already past ~70% fill without offering the handoff first.
+
+These percentages are interim defaults, not measured values. Calibrate them to
+the real inflection points in your own usage with
+`scripts/analyze-session-inflection.py`; method and signals are documented in
+`docs/development/session-length-trigger.md`.
 
 ## Compact Instructions
 

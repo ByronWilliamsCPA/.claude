@@ -133,6 +133,7 @@ When tests fail or builds break, feed the specific error back to the agent:
 Long conversations accumulate stale context. Manage this (our root `CLAUDE.md` "Session length" guidance says the same: rolling context raises cache-write cost and slows responses, so break cleanly between discrete task units):
 
 - **Start fresh sessions** when switching between major features
+- **Hand off at the fill thresholds**: once context-fill passes ~55% and a task unit is done, run `/handoff` for a doc plus kickoff prompt rather than letting the session drift into the 80% autocompact (see root `CLAUDE.md` "Session length" and `docs/development/session-length-trigger.md`)
 - **Summarize progress** when context is getting long: "So far we've completed X, Y, Z. Now working on W."
 - **Compact deliberately**: if the tool supports it, compact/summarize before critical work
 

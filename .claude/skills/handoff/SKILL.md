@@ -1,9 +1,9 @@
 ---
 name: handoff
 description: >
-  Generate a structured handoff document for session continuity. Auto-activates on:
-  handoff, session end, context handoff, end of session, switch context, next session,
-  wrap up session
+  Generate a structured handoff document AND a paste-ready kickoff prompt for
+  session continuity. Auto-activates on: handoff, session end, context handoff,
+  end of session, switch context, next session, wrap up session
 allowed-tools:
   - Read
   - Write
@@ -13,8 +13,19 @@ allowed-tools:
 
 # Handoff Skill
 
-Create a structured handoff document capturing current session state so the next
-session can resume without context loss.
+Capture current session state so the next session resumes without context loss.
+This skill produces **two** artifacts, by design:
+
+1. **Kickoff Prompt**: a short, paste-ready block printed to chat. This is the
+   thing you copy into the new session. It is budgeted small (target <= 200
+   words) so it seeds a fresh session without re-bloating its initial context.
+2. **Full Handoff Doc**: saved to `tmp_cleanup/.tmp-handoff-<ts>.md`. The
+   detailed backup the new session reads ON DEMAND by following the path in the
+   kickoff prompt.
+
+The split resolves the core tradeoff: the new session starts from the lean
+prompt (low initial-context cost) and pulls the full doc only when it needs
+detail (no context loss). Do not paste the full doc into the new session.
 
 ## Invocation
 
@@ -24,292 +35,154 @@ session can resume without context loss.
 
 ## Workflow
 
-### 1. Gather State
+### 1. Gather state
 
 ```bash
 git branch --show-current
-git status
+git status --short
 git log --oneline -10
 git diff --stat
 ```
 
-### 2. Check In-Progress Work
+Also capture, from the conversation and tools: the original goal of the
+session, in-progress TODO items, current test state (pass/fail counts and the
+names of any failing tests), and the verbatim text of any active error. These
+feed the template fields below; gather them now so the doc is complete.
 
-Review any active TODO items or in-progress tasks noted in the conversation.
+### 2. Write the full handoff doc
 
-### 3. Write Handoff Document
+Output to: `tmp_cleanup/.tmp-handoff-$(date +%Y%m%d-%H%M).md` (gitignored;
+single-machine continuity, not committed).
 
-Output to: `tmp_cleanup/.tmp-handoff-$(date +%Y%m%d-%H%M).md`
-
-The document must contain all six sections:
+The template's required fields are a **superset of the CLAUDE.md "Compact
+Instructions" preserve-list**, so a handoff is never weaker than an autocompact
+summary. Every field is mandatory; write "none" rather than dropping a heading.
 
 ```markdown
 # Session Handoff: {date}
 
+## Goal / Intent
+[The WHY. One or two sentences: what this session set out to achieve and the
+problem behind it. This is the highest-value anti-context-loss field, so it
+leads.]
+
+## Current State
+[Active branch; uncommitted/staged changes (notable unstaged work named);
+test state with pass/fail counts and specific failing test names; any active
+error message quoted VERBATIM, not paraphrased.]
+
 ## What Was Done
-[Completed items with file paths changed]
+[Completed items, each with the file:line it touched.]
 
 ## What Remains
-[Incomplete items, ordered by priority]
+[Incomplete items, ordered by priority. For each, state the GOAL (required);
+add the assumed MECHANISM only if flagged as an assumption.]
 
 ## Key Decisions
-[Architecture/design decisions made, with rationale]
+[Each decision with its rationale: "chose X over Y because ...", not just "chose
+X". Architecture/design choices belong here with the reasoning, not the bare
+verdict.]
 
-## Files Modified
-[From git diff --stat]
+## Dead Ends / Rejected Approaches
+[What was tried and ruled out, and why. Prevents the next session from
+re-spending budget rediscovering a known dead end.]
+
+## User Corrections / Constraints
+[User-specific corrections made this session ("no, do it this way instead") and
+any standing constraints the next session must honor.]
+
+## Files Touched
+[path:line for each, with one phrase on WHY it matters. Not a bare
+`git diff --stat` dump.]
 
 ## How to Resume
-[Exact next steps with commands -- be specific enough to follow without context]
+[The single immediate next action, then subsequent steps with exact commands.
+Specific enough to follow without this conversation.]
 
 ## Gotchas
-[Non-obvious context the next session needs: workarounds, known issues, assumptions made]
+[Non-obvious context: workarounds, known issues, assumptions. Tag anything not
+verified against live source as `[VERIFY]`.]
 ```
 
-### 3.5. Verify Output Against Hard Writing Rules
+Keep the full doc complete but lean: mirror the Compact Instructions "do not
+preserve" list. No raw tool-call logs, no pasted command output, no exploratory
+detours that did not inform the result. Summarize conclusions, not transcripts.
 
-Before reporting the path, grep the generated file for hard writing-rule
-violations and fix any hits in place. This is mandatory; a skill that produces
-prose deliverables must verify its own output, especially when the session
-context makes the rule salient (e.g., the handoff itself documents another
-file's em-dash violations).
+### 3. Emit the kickoff prompt
 
-```bash
-HANDOFF_FILE="tmp_cleanup/.tmp-handoff-...md"   # the file written in step 3
-grep -nP '\x{2014}' "$HANDOFF_FILE" && echo "EM-DASH violations above; fix before reporting" || echo "no em-dash"
-```
-
-Replace any em-dash with a comma, semicolon, colon, or restructured sentence.
-Apply the same self-check for any other hard writing rule in effect for the
-project before declaring the handoff complete.
-
-### 4. Report
-
-Output the path to the generated file so it can be referenced or committed.
-
----
-
-## Handoff Quality Standards
-
-A handoff is a snapshot of a past moment, not ground truth. The consuming session must
-treat it as a starting hypothesis, not a task list to execute blindly. The following
-standards apply when authoring a handoff and when consuming one.
-
-### For handoff authors
-
-**Separate GOAL from MECHANISM.** For every prescribed action, state:
-- The GOAL: what outcome the change must achieve (required)
-- The MECHANISM: the specific edit or command assumed to achieve it (optional, clearly flagged as an assumption)
-
-When the mechanism rests on an unverified structural assumption (CI runs tests inline,
-a field exists in the data, a tool is on PATH, a function accepts a certain parameter),
-the consuming session needs the goal to recover gracefully when the assumption fails.
-
-Bad: "Add a step inside the CI Gate job, which already has Python set up"
-Good: "Ensure CI validates the manifest self-consistency check. The current ci.yml may
-      delegate to a reusable workflow; confirm where Python tests actually run before
-      deciding which file to edit."
-
-**Distinguish verified from speculative.** Tag any field names, API endpoints, CLI
-flags, assertion patterns, or identifier names that were NOT directly verified against
-the live source as `[VERIFY before implementing]`. This tells the consuming session
-which parts need a probe check:
+Append a `## Next-Session Kickoff Prompt` section to the doc, AND print the same
+block to chat so it can be copied immediately. Budget: <= ~200 words. It must be
+self-contained enough to orient the new session even if the full doc is never
+opened:
 
 ```markdown
-## Implementation notes
-- The manifest uses `applies_to` (verified at manifest:line 42)
-- The check accepts `--check-id` flag [VERIFY: grep check-repo-compliance.py --help]
-- Severity should be `suggested` on introduction [VERIFY: confirm current policy]
+## Next-Session Kickoff Prompt
+
+Resuming work on {repo} (branch `{branch}`). Goal: {one-line goal}.
+
+First, refresh state before acting (the handoff is a snapshot, treat What
+Remains as a hypothesis):
+    git fetch --all && git status --short && git log --oneline -5
+
+Immediate next action: {the single most important next step}.
+Hard constraints: {any standing user constraint, or "none"}.
+Full handoff (read on demand for detail): {path to the .tmp-handoff doc}.
 ```
 
-**Pre-written artifacts must be paste-correct for the introduction state.** When a
-handoff includes literal YAML, JSON, or code blocks to be pasted, the literal value
-must be correct for the moment of introduction, not the eventual target state. When
-introduction state and end state differ on a field (e.g., `severity: suggested`
-introducing a check that will later be promoted to `severity: critical`), annotate
-the divergent field inline:
+### 4. Self-verify (pre-flight, mandatory)
 
-```yaml
-severity: suggested  # target: critical after 100% fleet reach
-```
-
-Do not rely on a separate "Rollout note" prose section to communicate the introduction
-state; an implementer copying a block trusts the block, not a paragraph three sections away.
-
-**Include coupled-invariant checklists.** For known artifact types, list the secondary
-edits that must accompany the primary change:
-
-- **Standards manifest check addition:** also update `last_updated` in the manifest header,
-  add a `### Added` CHANGELOG entry, classify the commit per `manifest-changes.md` (feat vs fix)
-- **Pre-commit hook addition:** also verify `rev:` is pinned to a SHA, add to `additional_dependencies`
-  if needed, run `pre-commit autoupdate` or pin manually
-
-**Cite only durably-stored artifacts (Obs 187).** A handoff is only as resumable as its
-least-durable cited artifact. Naming a file is not preserving it: the receiving session
-inherits the citation but not necessarily the bytes. For every data artifact the handoff
-cites as a source, verify it resolves to a path inside durable/version-controlled storage
-(the workspace folder), NOT `/tmp` or another ephemeral location:
+Re-read the output and check it against the rules before reporting. A skill that
+produces prose deliverables must verify its own output.
 
 ```bash
-# At handoff-write time, while the file still exists:
-for f in <each cited artifact>; do case "$f" in /tmp/*) echo "EPHEMERAL: $f";; esac; done
+HANDOFF_FILE="tmp_cleanup/.tmp-handoff-...md"   # the file written in step 2
+grep -nP '\x{2014}' "$HANDOFF_FILE" && echo "EM-DASH violations above; fix" || echo "no em-dash"
+for h in "Goal / Intent" "Current State" "What Was Done" "What Remains" \
+  "Key Decisions" "Dead Ends" "User Corrections" "Files Touched" \
+  "How to Resume" "Gotchas" "Next-Session Kickoff Prompt"; do
+  grep -qF "## $h" "$HANDOFF_FILE" || echo "MISSING SECTION: $h"
+done
 ```
 
-Surface any artifact that exists only in `/tmp` as a preservation risk and either copy it
-into the durable folder or note explicitly that it must be regenerated (and from what).
-Verify durability at write time, not at resume time when the file may be gone.
+Fix any em-dash (replace with comma, semicolon, colon, or restructure), add any
+missing section, and confirm the kickoff prompt is within budget before
+declaring the handoff complete.
 
-**Quote counts and tallies from the source verbatim (Obs 276).** Handoffs are lossy
-compressions, and numeric claims are where loss is most damaging because downstream sessions
-use them as completion criteria. When summarizing an artifact's claims (finding counts,
-severity tallies, file counts), copy the artifact's own numbers verbatim rather than
-paraphrasing. If the source is internally inconsistent (executive summary says "two", the
-numbered list has three), state the discrepancy explicitly ("doc internally inconsistent:
-summary says 2, list has 3") instead of silently resolving it to one value.
+### 5. Report
 
-**Add a consumer trace to every file:line edit spec (Obs 414).** A "repoint A onto B" or
-"edit file X" task carries a hidden assumption that the named entry point is on the live
-critical path. In repos with duplicated loaders or parallel entry points (common during a
-migration), the named file may be DEAD relative to the gate that actually consumes the
-output. Before accepting the framing, trace the consuming artifact: for each entry point,
-name the downstream artifact and the gate/script that reads it, and state explicitly whether
-the entry point is on the live gate path or a parallel/legacy path. A spec that lists
-file:line edits without a consumer trace can send an implementer to harden a path nothing
-reads while the real risk (loader duplication/drift) goes unnamed.
+Print the kickoff prompt to chat and report the full doc's path so it can be
+referenced. Tell the user to paste the kickoff prompt (not the full doc) into
+the new session.
 
-**Preserve a pre-existing versioned artifact before writing a same-named deliverable (Obs 454).**
-"Write to FILE" does not imply FILE is empty. A same-named artifact from an earlier run is
-evidence, not clutter: it may encode conclusions formed before a later discovery. Before
-writing any versioned or re-run deliverable to a named path, check whether the path already
-exists; if it does, read its provenance (embedded date/commit, or git metadata), and if it
-is a prior run of the same artifact, preserve it under a date- or commit-stamped name rather
-than overwriting. Diff the headline conclusions and surface any divergence to the user rather
-than silently replacing.
+## Authoring rules (load-bearing digest)
 
-**Put a superseding pointer at the TOP, not only at the end (Obs 463).** A handoff is read in
-order, so a correction placed AFTER the thing it corrects is not a correction for a
-sequential reader who acts top-to-bottom. When a later edit contradicts the existing body, do
-not rely on an end-of-file addendum alone. Place a short banner at the very top that
-enumerates the reversed claims and points to the truth:
+- **Separate GOAL from MECHANISM** for every prescribed action; the goal is
+  required, the mechanism is an optional, clearly-flagged assumption.
+- **Distinguish verified from speculative**: tag any field name, flag, endpoint,
+  or identifier not checked against live source as `[VERIFY]`.
+- **Quote counts and tallies verbatim** from the source (Obs 276); if the source
+  is internally inconsistent, state the discrepancy rather than resolving it.
+- **Add a consumer trace to every file:line edit spec** (Obs 414): name the gate
+  or script that actually reads the artifact, so the next session does not harden
+  a dead path.
 
-```markdown
-> **SUPERSEDED ON N POINTS (read first):**
-> - Body says "scoring fixed, no more modeling" -> VOID; one modeling task remains (see Addendum).
-> - Body framing "own-leaning" -> VOID; framing is current-anchored.
-```
+> Full author standards (paste-correct artifacts, coupled-invariant checklists,
+> durable-artifact checks, supersession banners) and the orphaned-branch /
+> stash git-forensics procedure: see
+> [`context/handoff-quality-standards.md`](context/handoff-quality-standards.md).
 
-The body stays for unaffected detail; the banner prevents a top-to-bottom reader from acting
-on the stale parts. Supersession belongs at the first point of contact, with the void claims
-named explicitly.
+## Consuming a handoff (pre-flight digest)
 
-### Documenting orphaned branches, stashes, and other uncommitted git artifacts
+Before acting on any handoff:
 
-When the handoff describes a local branch with no remote, a git stash, or any
-uncommitted artifact, run a content-level supersession and freshness check
-BEFORE drafting action options. Commit ancestry is an unreliable signal in
-squash-merge repositories: ahead/behind counts, `git log main..branch`, and
-`git cherry` all break when a branch was squash-merged or re-implemented under
-different SHAs. A branch that reads as "3 commits, no remote, 20 behind main"
-may already be fully delivered on main.
+- **Re-verify current state** (`git fetch --all`, `gh pr list`): branches and PRs
+  advance after a handoff is written. Treat "What Remains" as a hypothesis and
+  diagnose current state first.
+- **Verify identifiers before building**: confirm every check ID, path, flag, or
+  function name named in the doc still exists in live source.
+- **Treat completed-fix claims as hypotheses** when a live symptom contradicts
+  them; the live system wins.
 
-Run these cheap checks at write time and record their results in the doc:
-
-```bash
-# Supersession by content: does main already define the branch's distinctive symbols?
-git grep -n 'distinctive_symbol_from_branch' origin/main
-git diff origin/main <branch> -- <each touched file>   # two-tree diff, NOT three-dot
-gh pr list --state merged --search "<branch commit title>"  # squash-merge by title
-
-# For a stash: diff against the CURRENT merged main, direction-checked
-git diff <current-main> 'stash@{0}' -- <each touched file>
-
-# Record the upstream sync point the claims were evaluated against
-git rev-parse origin/main
-git rev-list --left-right --count origin/main...HEAD   # local-vs-origin divergence
-```
-
-Then write the action options ordered by likelihood after the check, not by
-effort:
-
-- If the branch or stash content is already on main (symbols present, per-file
-  diff empty, or a squash-merged PR shares the title), lead with
-  "likely superseded, verify and delete" instead of an elaborate PR-split or
-  cherry-pick plan.
-- State the invariant the work was meant to establish (e.g., "no unpinned
-  actions", "digest-pinned images"), then test whether main already satisfies
-  it. Close as superseded-by-outcome when the invariant holds even though the
-  patches differ. Patch identity and outcome identity are different equivalence
-  classes; `git cherry` tests only the former.
-- Never assert branch topology ("this was the tip of the branch that became
-  PR #N", "these are post-merge tweaks") from commit-message inference. Back
-  every topology claim with `git merge-base --is-ancestor` output, and record
-  the local-vs-origin divergence so the consumer knows whether the checkout was
-  stale when the claim was made.
-
-### For handoff consumers (mandatory pre-flight before acting on any handoff)
-
-**Re-verify current state before executing.** A handoff's "What Remains" section
-describes work as of the moment it was written. Branches and PRs advance after a
-handoff is created. The cheapest, highest-leverage first action when resuming is:
-
-```bash
-git fetch --all
-gh pr list --state all
-gh pr view {PR_NUMBER} --json state,mergeable,checks  # if PR referenced
-```
-
-Treat "What Remains" as a hypothesis. Diagnose the CURRENT state of the work
-before executing the handoff's plan. A 2-minute check may reveal that the
-"remaining work" is already complete, or that the actual blocker is different
-from what the handoff described.
-
-**Check whether another session is already executing this handoff.** A handoff
-doc is a work queue with no locking; in a multi-session environment any doc that
-says "the team executing this decides" will eventually be executed twice. Before
-acting:
-
-- Run `gh pr list --head <branch>` for every branch the handoff names, and scan
-  for recent PRs or worktrees whose content matches the handoff's work. A match
-  means another executor is already on it; coordinate or stand down rather than
-  producing duplicate PRs.
-- Mark the handoff file as claimed so a second session sees the claim: rename to
-  `.executing-<session-id>.md` or prepend a `CLAIMED: <timestamp> <session-id>`
-  header. On completion, update the file to `RESOLVED` rather than deleting it,
-  so a late-arriving session sees the outcome instead of an apparently-open queue.
-
-**Treat completed-fix claims as hypotheses when a live symptom contradicts them.**
-A handoff or plan doc records what a session believed at write time; the "fix"
-may have been wrong or later reverted. Whenever a current symptom contradicts a
-recorded "done" item (a 404 after a config was reportedly "fixed live", a test
-failing that was reportedly passing), re-verify the claim against the live
-system (API, config, run logs) before extending work that depends on it. The
-live system wins; do not rationalize the symptom to fit the note.
-
-**Re-resolve pinned external references at merge time.** Pre-flight must cover
-not just the state of the work queue but the freshness of facts embedded in
-queued work. For any PR or instruction that pins an external ref (commit SHA,
-version number, image digest, URL), re-resolve the ref at merge time and confirm
-the pinned target still matches intent. A long-lived PR that pinned an org
-reusable workflow weeks ago can silently downgrade it when merged as-written if
-the upstream file has since changed. Verify the original reason for the pin
-still holds at the current ref before merging or updating it.
-
-**Verify external identifiers before building.** Before using any identifier named
-in the handoff (check IDs, file paths, CLI flags, API endpoints, function names,
-schema field names), confirm it exists in the current live source:
-
-- Check IDs: grep the manifest (`grep "id: CI-NNN" docs/standards-manifest.yaml`)
-- File paths: `test -f {path}` or `ls {path}`
-- Function names: `grep "def {name}" {file}`
-- CLI flags: `{tool} --help | grep {flag}`
-
-A handoff mixes verified observations with speculative scaffolding, and the reader
-cannot tell them apart by tone. The fix is to verify before building.
-
-**Probe data schemas before writing assertions.** If the handoff prescribes tests
-or assertions against a data structure, run a schema probe of the actual data first:
-
-```python
-import yaml; data = yaml.safe_load(open("manifest.yaml")); print(list(data['checks'][0].keys()))
-```
-
-Assertions against fields that do not exist will raise `KeyError` (dict key access) or fail for the wrong reason (if `dict.get()` returns `None` and the assertion happens to pass on that).
+> Full consumer pre-flight (multi-session claim/lock, re-resolving pinned refs,
+> schema probes): see
+> [`context/handoff-quality-standards.md`](context/handoff-quality-standards.md).
