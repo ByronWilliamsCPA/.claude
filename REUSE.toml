@@ -118,6 +118,7 @@ path = [
     "scripts/**/*.sh",  # Shell scripts for automation
     "tmp_cleanup/**/*.txt",  # Temporary text files
     "tmp_cleanup/.gitkeep",  # Directory placeholder
+    "skill-observations/**",  # Task-observer runtime state and observation logs
     "sonar-project.properties",  # SonarCloud/SonarQube configuration
     "codemeta.json",  # CodeMeta software metadata
     ".zenodo.json",  # Zenodo DOI metadata
