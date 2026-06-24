@@ -134,14 +134,26 @@ Full handoff (read on demand for detail): {path to the .tmp-handoff doc}.
 Re-read the output and check it against the rules before reporting. A skill that
 produces prose deliverables must verify its own output.
 
+Use a portable check, not `grep -nP '\x{2014}'`: on a grep build without working
+`-P` the pattern errors and an `|| echo "no em-dash"` fallback reports clean on
+the failure (a false pass). Python cannot false-pass:
+
 ```bash
 HANDOFF_FILE="tmp_cleanup/.tmp-handoff-...md"   # the file written in step 2
-grep -nP '\x{2014}' "$HANDOFF_FILE" && echo "EM-DASH violations above; fix" || echo "no em-dash"
-for h in "Goal / Intent" "Current State" "What Was Done" "What Remains" \
-  "Key Decisions" "Dead Ends" "User Corrections" "Files Touched" \
-  "How to Resume" "Gotchas" "Next-Session Kickoff Prompt"; do
-  grep -qF "## $h" "$HANDOFF_FILE" || echo "MISSING SECTION: $h"
-done
+python3 - "$HANDOFF_FILE" <<'PY'
+import sys
+text = open(sys.argv[1], encoding="utf-8").read()
+problems = []
+if "\u2014" in text:  # em-dash (escaped so this file stays em-dash-free)
+    problems.append("em-dash present (replace with comma, semicolon, or colon)")
+required = [
+    "Goal / Intent", "Current State", "What Was Done", "What Remains",
+    "Key Decisions", "Dead Ends", "User Corrections", "Files Touched",
+    "How to Resume", "Gotchas", "Next-Session Kickoff Prompt",
+]
+problems += [f"missing section: {h}" for h in required if f"## {h}" not in text]
+print("FAIL:\n  " + "\n  ".join(problems) if problems else "self-check OK")
+PY
 ```
 
 Fix any em-dash (replace with comma, semicolon, colon, or restructure), add any
