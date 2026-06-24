@@ -93,21 +93,58 @@ diminishing new work.
 Run it:
 
 ```bash
-python3 scripts/analyze-session-inflection.py                 # default glob + 200k window
-python3 scripts/analyze-session-inflection.py --window 200000 --min-turns 8
+python3 scripts/analyze-session-inflection.py                 # default glob, per-model window
+python3 scripts/analyze-session-inflection.py --min-turns 8   # auto-detect window from each model
 python3 scripts/analyze-session-inflection.py ~/.claude/projects/**/*.jsonl --json
 ```
 
+The window is auto-detected per session from the model id in the transcript
+(1M for the current Opus/Sonnet/Fable models, 200K for Haiku); `--window`
+overrides it. A session whose peak fill exceeds 100% prints a warning: the
+window is wrong for that model and the fill numbers are not trustworthy.
+
 Read the recommendation, then update the band in CLAUDE.md "Session length" (and
 the table above) so the "offer" floor sits a little below the measured p25
-inflection and the "recommend" line sits near the median, keeping both under the
-80% autocompact ceiling. Re-run periodically; the inflection point shifts as
-project size and working style change.
+inflection and the "recommend" line sits near the median. Re-run periodically;
+the inflection point shifts as project size and working style change.
+
+## Calibration finding: the knee is far below 80% on a 1M window
+
+A first run against an Opus 4.8 session (1M-token window) put the carry-ratio
+knee at roughly **15% fill** (about 150K tokens carried), with the session
+peaking near 33%. That is one data point, not a calibrated band, but the
+direction is unambiguous and it exposes a flaw in the 80%-autocompact anchor
+above: on a 1M-context model the session becomes cost-inefficient (the knee)
+near 150K tokens, which is only ~15% fill, long before autocompact at 80%
+(~800K tokens) is anywhere near. Anchoring the offer to "below 80%" yields a
+55 to 70% band that fires several hundred thousand tokens *after* the work
+already stopped paying off.
+
+The 55/70 band was implicitly calibrated for a ~200K window (where 55 to 70%
+is ~110 to 140K tokens, near the knee). It does not transfer to a 1M window.
+Two ways to fix it, to decide once real multi-session history is measured:
+
+- **Absolute carried-context tokens (model-independent, preferred).** Trigger
+  on tokens carried, not fill %: e.g. offer around 120 to 150K tokens, recommend
+  by ~200K. This tracks the actual re-send cost regardless of the model's
+  window, and reads directly off `/context`. It does decouple the trigger from
+  the 80% autocompact anchor, which is correct: on a 1M window autocompact is
+  not the binding constraint, cost-per-useful-token is.
+- **Window-aware fill %.** Keep fill %, but set the band per window class
+  (~12% offer / ~15% recommend on 1M; the existing ~55/70 on 200K). More
+  fragile, because one fixed percentage cannot serve both Haiku (200K) and
+  Opus (1M) sessions.
+
+Until calibrated against real history, the CLAUDE.md band stays at its interim
+55/70 values; treat them as a placeholder known to fire late on 1M-context
+sessions, not as a measured result.
 
 ## Limitations
 
-- The window default is 200k tokens. Override `--window` for 1M-context runs;
-  fill % is meaningless if the window is wrong.
+- The window is auto-detected per session from the model id and only covers the
+  models in the script's table; an unrecognized model falls back to 200K with a
+  warning, so pass `--window` for models the table does not yet know. Fill % is
+  meaningless if the window is wrong, which is why a peak above 100% warns.
 - Carry ratio is noisy on planning-heavy sessions with little output; the script
   smooths and applies a minimum-turns filter, but eyeball the per-session table
   before trusting a single session's number.

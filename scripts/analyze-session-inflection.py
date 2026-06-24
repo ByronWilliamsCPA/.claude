@@ -9,6 +9,11 @@ multiple of its early-session baseline: the knee where a session stops paying
 off. Aggregated across sessions, the output recommends a threshold band for the
 CLAUDE.md "Session length" trigger.
 
+The window is auto-detected per session from the model id recorded in the
+transcript (the current 1M-context Claude models, or 200K for Haiku); override
+it with --window. Getting the window right matters: the fill percentages must
+match the statusLine bar the trigger is calibrated against.
+
 See docs/development/session-length-trigger.md for the method and how to apply
 the result.
 """
@@ -18,6 +23,7 @@ from __future__ import annotations
 import argparse
 import json
 import statistics
+import sys
 from dataclasses import dataclass
 from glob import glob
 from pathlib import Path
@@ -27,7 +33,22 @@ if TYPE_CHECKING:
     from collections.abc import Iterator
 
 DEFAULT_GLOB = str(Path.home() / ".claude" / "projects" / "**" / "*.jsonl")
-DEFAULT_WINDOW = 200_000
+FALLBACK_WINDOW = 200_000
+
+# Context window per model family, in tokens. Source: the claude-api skill's
+# Models catalog (shared/models.md) / the Models API. The current Claude 4.x and
+# Fable/Mythos 5 models expose a 1M window; Haiku 4.5 is 200K. Matched by prefix
+# so dated snapshots (e.g. claude-haiku-4-5-20251001) still resolve.
+MODEL_WINDOWS: dict[str, int] = {
+    "claude-fable-5": 1_000_000,
+    "claude-mythos-5": 1_000_000,
+    "claude-opus-4-8": 1_000_000,
+    "claude-opus-4-7": 1_000_000,
+    "claude-opus-4-6": 1_000_000,
+    "claude-opus-4-5": 1_000_000,
+    "claude-sonnet-4-6": 1_000_000,
+    "claude-haiku-4-5": 200_000,
+}
 
 
 @dataclass
@@ -49,6 +70,8 @@ class SessionResult:
     turns: int
     peak_fill: float
     inflection_fill: float | None
+    window: int
+    model: str | None
 
 
 def parse_args() -> argparse.Namespace:
@@ -62,8 +85,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--window",
         type=int,
-        default=DEFAULT_WINDOW,
-        help=f"Context window size in tokens (default: {DEFAULT_WINDOW})",
+        default=None,
+        help=(
+            "Context window in tokens; overrides per-model auto-detect "
+            f"(fallback {FALLBACK_WINDOW:,} when the model is unknown)"
+        ),
     )
     parser.add_argument(
         "--min-turns",
@@ -99,6 +125,44 @@ def expand_paths(patterns: list[str]) -> list[str]:
     for pattern in patterns:
         found.update(glob(pattern, recursive=True))
     return sorted(found)
+
+
+def window_for_model(model: str | None) -> int | None:
+    """Return the context window for a model id, or None if unrecognized."""
+    if not model:
+        return None
+    for prefix, window in MODEL_WINDOWS.items():
+        if model.startswith(prefix):
+            return window
+    return None
+
+
+def fmt_window(window: int) -> str:
+    """Render a token window as a compact label such as '1M' or '200K'."""
+    if window >= 1_000_000:
+        return f"{window // 1_000_000}M"
+    return f"{window // 1000}K"
+
+
+def detect_model(path: str) -> str | None:
+    """Return the model id from the first assistant turn, or None if absent."""
+    with open(path, encoding="utf-8") as handle:
+        for raw in handle:
+            stripped = raw.strip()
+            if not stripped:
+                continue
+            try:
+                record = json.loads(stripped)
+            except (ValueError, TypeError):
+                continue
+            if not isinstance(record, dict) or record.get("type") != "assistant":
+                continue
+            message = record.get("message")
+            if isinstance(message, dict):
+                model = message.get("model")
+                if isinstance(model, str):
+                    return model
+    return None
 
 
 def iter_usage(path: str) -> Iterator[dict[str, object]]:
@@ -186,19 +250,46 @@ def find_inflection(
     return None
 
 
+def resolve_window(window: int | None, model: str | None, name: str) -> int:
+    """Resolve the window to use for one session, warning on an unknown model."""
+    if window is not None:
+        return window
+    detected = window_for_model(model)
+    if detected is not None:
+        return detected
+    print(
+        f"warning: unknown model {model!r} for {name}; assuming "
+        f"{FALLBACK_WINDOW:,}-token window (pass --window to override)",
+        file=sys.stderr,
+    )
+    return FALLBACK_WINDOW
+
+
 def analyze_session(
-    path: str, window: int, min_turns: int, knee_mult: float, smooth_window: int
+    path: str, window: int | None, min_turns: int, knee_mult: float, smooth_window: int
 ) -> SessionResult | None:
     """Analyze one transcript file; return None if it has too few turns."""
-    turns = build_turns(path, window)
+    model = detect_model(path)
+    name = Path(path).name
+    resolved = resolve_window(window, model, name)
+    turns = build_turns(path, resolved)
     if len(turns) < min_turns:
         return None
-    inflection = find_inflection(turns, knee_mult, smooth_window)
+    peak_fill = max(t.fill for t in turns)
+    if peak_fill > 1.0:
+        print(
+            f"warning: {name} peak fill {peak_fill * 100:.0f}% exceeds the "
+            f"{resolved:,}-token window; the window is likely wrong for "
+            f"{model!r} (pass --window)",
+            file=sys.stderr,
+        )
     return SessionResult(
-        name=Path(path).name,
+        name=name,
         turns=len(turns),
-        peak_fill=max(t.fill for t in turns),
-        inflection_fill=inflection,
+        peak_fill=peak_fill,
+        inflection_fill=find_inflection(turns, knee_mult, smooth_window),
+        window=resolved,
+        model=model,
     )
 
 
@@ -220,6 +311,38 @@ def recommend(inflections: list[float]) -> dict[str, float]:
         "offer_floor": max(0.0, min(p25 - 5.0, 75.0)),
         "recommend_line": min(median, 78.0),
     }
+
+
+def print_table(results: list[SessionResult]) -> None:
+    """Print the per-session table to stdout."""
+    print(f"Analyzed {len(results)} session(s)\n")
+    print(f"{'session':<40} {'turns':>5} {'win':>5} {'peak':>6} {'inflection':>10}")
+    print("-" * 70)
+    for r in sorted(results, key=lambda x: x.name):
+        infl = f"{r.inflection_fill * 100:.0f}%" if r.inflection_fill else "none"
+        win = fmt_window(r.window)
+        print(
+            f"{r.name:<40} {r.turns:>5} {win:>5} {r.peak_fill * 100:>5.0f}% {infl:>10}"
+        )
+
+
+def print_recommendation(rec: dict[str, float] | None, n_inflections: int) -> None:
+    """Print the threshold-band recommendation to stdout."""
+    print()
+    if rec is None:
+        print("No inflection detected in any session (sessions stayed efficient).")
+        print("Re-run after longer sessions accumulate, or lower --knee-mult.")
+        return
+    print(
+        f"Inflection fill across {n_inflections} session(s): "
+        f"p25={rec['p25']:.0f}%  median={rec['median']:.0f}%  p75={rec['p75']:.0f}%"
+    )
+    print(
+        "Suggested band for CLAUDE.md 'Session length' "
+        "(keep both under the 80% autocompact ceiling):"
+    )
+    print(f"  - offer the handoff from ~{rec['offer_floor']:.0f}% fill")
+    print(f"  - recommend the break by ~{rec['recommend_line']:.0f}% fill")
 
 
 def main() -> int:
@@ -248,38 +371,14 @@ def main() -> int:
     if args.json:
         print(
             json.dumps(
-                {
-                    "sessions": [vars(r) for r in results],
-                    "recommendation": rec,
-                },
+                {"sessions": [vars(r) for r in results], "recommendation": rec},
                 indent=2,
             )
         )
         return 0
 
-    print(f"Analyzed {len(results)} session(s); window = {args.window:,} tokens\n")
-    print(f"{'session':<40} {'turns':>5} {'peak':>6} {'inflection':>10}")
-    print("-" * 64)
-    for r in sorted(results, key=lambda x: x.name):
-        infl = f"{r.inflection_fill * 100:.0f}%" if r.inflection_fill else "none"
-        print(f"{r.name:<40} {r.turns:>5} {r.peak_fill * 100:>5.0f}% {infl:>10}")
-
-    print()
-    if rec is None:
-        print("No inflection detected in any session (sessions stayed efficient).")
-        print("Re-run after longer sessions accumulate, or lower --knee-mult.")
-        return 0
-
-    print(
-        f"Inflection fill across {len(inflections)} session(s): "
-        f"p25={rec['p25']:.0f}%  median={rec['median']:.0f}%  p75={rec['p75']:.0f}%"
-    )
-    print(
-        "Suggested band for CLAUDE.md 'Session length' "
-        "(keep both under the 80% autocompact ceiling):"
-    )
-    print(f"  - offer the handoff from ~{rec['offer_floor']:.0f}% fill")
-    print(f"  - recommend the break by ~{rec['recommend_line']:.0f}% fill")
+    print_table(results)
+    print_recommendation(rec, len(inflections))
     return 0
 
 
