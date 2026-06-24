@@ -234,33 +234,40 @@ acceptance criterion; use `/phase-gate` to verify phase readiness before
 closing a phase.
 
 **Session length**: Sessions accumulate rolling context with every exchange,
-raising cache-write cost and slowing responses. Autocompact is configured to
-fire at 80% context fill (`CLAUDE_AUTOCOMPACT_PCT_OVERRIDE`), and its summary is
-lossy, so a deliberate handoff before that point preserves more than letting
-autocompact run.
+raising per-turn cost and inviting context rot. Two separate decisions follow,
+calibrated separately (basis and data:
+`docs/development/context-window-autocompaction-research.md`):
 
-Use the context-fill % (statusLine bar or `/context`) as the primary signal, and
-gate any suggestion on a completed task unit so you never interrupt mid-task.
-Interim thresholds (calibrate locally, see below):
+- *Autocompact, the lossy fallback*: Claude Code force-compacts around 375K
+  carried tokens (`CLAUDE_CODE_AUTO_COMPACT_WINDOW=500000` +
+  `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE=75`). It is lossy and runs when the model is
+  least sharp, so it is the backstop, not the plan.
+- *Handoff suggestion, the proactive lever*: offer a clean break at the cost
+  knee (~150K carried tokens, where carried context stops paying off), well
+  before the fallback.
 
-- **Below 55% fill**: keep working.
-- **55 to 70% fill AND a task unit just finished**: tell the user the session is
-  getting expensive and offer the remedy in the same message, do not make them
-  ask for it: "Want a handoff doc and a kickoff prompt for a fresh session?
-  (`/handoff`)". The `/handoff` skill emits both the doc and the paste-ready
-  kickoff prompt.
-- **Above 70% fill** (nearing the 80% autocompact): recommend the break before
-  starting any new task unit. If mid-task, finish the unit, then run `/handoff`.
+Track carried tokens (absolute, via `/context`), not percent of window (the
+window varies by model and misleads on 1M). Gate every suggestion on a completed
+task unit so you never interrupt mid-task:
 
-Secondary signals that justify offering earlier within the band: several
-distinct task units completed, a large accumulated tool-call count, or a STOP
-verdict from `/usage-report blocks`. Never start a new task unit on a session
-already past ~70% fill without offering the handoff first.
+- **Below ~150K carried tokens**: keep working.
+- **~150K to ~300K, and a task unit just finished**: tell the user the session is
+  past the point where carried context pays off, and offer both remedies in the
+  same message, do not make them ask: "Want a clean break? `/handoff` writes a
+  handoff doc plus kickoff prompt and starts a fresh session (best when switching
+  tasks or you want zero context carried forward); or `/compact [instructions]`
+  sheds stale context in place while keeping the thread (best when continuing this
+  work, e.g. `/compact keep the auth refactor, drop the test debugging`)." Offer
+  once; if declined, do not re-offer until context has grown materially.
+- **Approaching ~300K (nearing the ~375K autocompact)**: recommend acting before
+  starting any new task unit. A steered `/compact` now, or `/handoff` plus a fresh
+  session at a boundary, both beat the unsteered lossy autocompact at 375K. If
+  mid-task, finish the unit first.
 
-These percentages are interim defaults, not measured values. Calibrate them to
-the real inflection points in your own usage with
-`scripts/analyze-session-inflection.py`; method and signals are documented in
-`docs/development/session-length-trigger.md`.
+Regardless of token count, also start fresh when a genuinely new task begins (new
+task, new session), or on fidelity-drift symptoms (the agent re-asks a settled
+decision, re-introduces a fixed bug, or loops re-reading the same files). A STOP
+verdict from `/usage-report blocks` also warrants a break.
 
 ## Compact Instructions
 
