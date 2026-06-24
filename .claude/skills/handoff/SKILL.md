@@ -19,13 +19,12 @@ This skill produces **two** artifacts, by design:
 1. **Kickoff Prompt**: a short, paste-ready block printed to chat. This is the
    thing you copy into the new session. It is budgeted small (target <= 200
    words) so it seeds a fresh session without re-bloating its initial context.
-2. **Full Handoff Doc**: saved to `tmp_cleanup/.tmp-handoff-<ts>.md`. The
-   detailed backup the new session reads ON DEMAND by following the path in the
-   kickoff prompt.
+2. **Full Handoff Doc**: saved to `~/.claude/logs/handoffs/handoff-<ts>.md`, a
+   gitignored, durable runtime path (never committed; survives worktree removal
+   and `/close-clean`). The new session reads it ON DEMAND via the prompt path.
 
-The split resolves the core tradeoff: the new session starts from the lean
-prompt (low initial-context cost) and pulls the full doc only when it needs
-detail (no context loss). Do not paste the full doc into the new session.
+The split resolves the tradeoff: the new session starts from the lean prompt and
+pulls the full doc only on demand. Do not paste the full doc into the session.
 
 ## Invocation
 
@@ -51,8 +50,9 @@ feed the template fields below; gather them now so the doc is complete.
 
 ### 2. Write the full handoff doc
 
-Output to: `tmp_cleanup/.tmp-handoff-$(date +%Y%m%d-%H%M).md` (gitignored;
-single-machine continuity, not committed).
+Write to the durable, gitignored runtime path (never committed; survives
+worktree removal and `/close-clean`). Run `mkdir -p ~/.claude/logs/handoffs`,
+then write `~/.claude/logs/handoffs/handoff-$(date +%Y%m%d-%H%M).md`.
 
 The template's required fields are a **superset of the CLAUDE.md "Compact
 Instructions" preserve-list**, so a handoff is never weaker than an autocompact
@@ -126,7 +126,7 @@ Remains as a hypothesis):
 
 Immediate next action: {the single most important next step}.
 Hard constraints: {any standing user constraint, or "none"}.
-Full handoff (read on demand for detail): {path to the .tmp-handoff doc}.
+Full handoff (read on demand for detail): ~/.claude/logs/handoffs/handoff-<ts>.md.
 ```
 
 ### 4. Self-verify (pre-flight, mandatory)
@@ -139,7 +139,7 @@ Use a portable check, not `grep -nP '\x{2014}'`: on a grep build without working
 the failure (a false pass). Python cannot false-pass:
 
 ```bash
-HANDOFF_FILE="tmp_cleanup/.tmp-handoff-...md"   # the file written in step 2
+HANDOFF_FILE=~/.claude/logs/handoffs/handoff-...md   # the file written in step 2
 python3 - "$HANDOFF_FILE" <<'PY'
 import sys
 text = open(sys.argv[1], encoding="utf-8").read()
