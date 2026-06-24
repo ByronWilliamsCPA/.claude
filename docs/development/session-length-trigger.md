@@ -139,6 +139,38 @@ Until calibrated against real history, the CLAUDE.md band stays at its interim
 55/70 values; treat them as a placeholder known to fire late on 1M-context
 sessions, not as a measured result.
 
+## Two settings, not one: compaction vs new session
+
+The original framing (and the interim band above) conflated two independent
+decisions. They are separate and calibrated separately, because a session
+compacts several times before it is worth restarting.
+
+1. **Force compaction (within a session).** Lossy autocompact that summarizes
+   and discards history so the session keeps going. Lever:
+   `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` (currently 80%). On a 1M-context model 80%
+   is ~800K tokens, far above the carry-ratio knee (~150K / ~15% in the one
+   measured Opus 4.8 session), so compaction relief currently arrives long after
+   per-turn cost has climbed; the session inspected peaked at ~330K and never
+   compacted at all. The script's carry-ratio knee IS this signal, calibrate the
+   threshold toward it. Expect this to fire repeatedly within a session. The
+   "absolute tokens vs window-aware fill %" choice above applies to this setting.
+
+2. **Start a new session (across compactions).** A deliberate `/handoff` plus a
+   fresh start, worth doing only after repeated compaction has eroded fidelity.
+   Lever: the handoff offer. The signal is NOT context fill: it is the number of
+   autocompactions already taken (each lossy), plus a finished task unit, plus
+   cost (`/usage-report blocks`). Placeholder heuristic: offer after ~2
+   compactions AND a task boundary. This number cannot be read cleanly from
+   transcripts (it is partly a quality judgment), so it starts as a heuristic and
+   is tuned by feel.
+
+**Can the script see compaction events (Setting 2's input)?** Unconfirmed. The
+one session inspected had zero compaction events, so the marker format could not
+be verified empirically (its only `system` records were `stop_hook_summary`).
+Before extending the script to count compactions per session, confirm how Claude
+Code records an autocompact in the transcript JSONL against a session that has
+actually compacted.
+
 ## Limitations
 
 - The window is auto-detected per session from the model id and only covers the
