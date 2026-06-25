@@ -65,6 +65,10 @@ ghcr.io/byronwilliamscpa/<prefix>-<name>:<upstream-tag>
 | `ghcr.io/byronwilliamscpa/dhi-uptime-kuma:1-debian13` | Uptime Kuma 1.x |
 | `ghcr.io/byronwilliamscpa/dhi-nginx:1.26-debian13` | nginx 1.26 stable (Debian 13) — use this for production |
 | `ghcr.io/byronwilliamscpa/dhi-nginx:1.27-debian12` | nginx 1.27 mainline (Debian 12 only — DHI has not released 1.27 on Debian 13 yet) |
+| `ghcr.io/byronwilliamscpa/dhi-postgresql-exporter:0-debian13` | PostgreSQL metrics exporter for Prometheus |
+| `ghcr.io/byronwilliamscpa/dhi-redis-exporter:1-debian13` | Redis metrics exporter for Prometheus |
+| `ghcr.io/byronwilliamscpa/dhi-grafana-alloy:1-debian13` | Grafana Alloy (next-gen replacement for Promtail and Grafana Agent) |
+| `ghcr.io/byronwilliamscpa/dhi-uv:0-debian13` | uv Python package manager (use as build-stage base) |
 
 ### Available Distroless images (minimal runtime, no shell)
 
