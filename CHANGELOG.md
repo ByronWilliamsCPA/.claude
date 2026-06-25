@@ -103,6 +103,13 @@
 
 ### Fixed
 
+* fix(ci): re-pin the Claude baseline review caller from the orphaned .github
+  PR #214 head SHA (e5e6951) to a reachable main SHA (ea33319). When #214
+  squash-merged and its source branch was deleted, the pinned commit became
+  unreachable ("diverged" via the compare API), so every baseline review run
+  startup-failed with zero jobs: the Actions resolver refuses an unreachable
+  ref even though the contents API still serves it.
+
 * fix(compliance): replace incorrect Python-only exemption in TOOL-009 (.qlty/qlty.toml
   presence) with a documentation-only exemption in `docs/standards-manifest.yaml`.
   Qlty is a language-agnostic meta-linter wrapping ESLint, ShellCheck, Actionlint,
