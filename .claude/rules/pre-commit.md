@@ -26,6 +26,8 @@ Before committing ANY changes, verify all items:
 
 ## Security
 - [ ] **Security Scanning**: pip-audit runs automatically on pre-push when dependency files change (pyproject.toml, requirements*.txt, uv.lock). Exit code 64 = advisory found; medium+ severity blocks push. For manual audit: `uv run pip-audit`
+- [ ] **Snyk Secrets Gate**: If `SNYK_TOKEN` is set, run `snyk code test --detection-type=secrets <changed-dirs>` on staged Python files before push. This closes the `--no-verify` bypass vector for the local trufflehog hook. Reference: `standards/snyk-mcp-setup.md`.
+- [ ] **Snyk MCP Scan (pre-GA)**: When `snyk mcp-scan` reaches GA, add a pre-push hook scanning `.claude/settings.json` and project-local MCP configs for prompt-injection risks. Track at https://docs.snyk.io/snyk-cli/mcp.
 - [ ] **Dependency Safety**: Requirements files updated if dependencies changed
 - [ ] No secrets or credentials in staged files
 
