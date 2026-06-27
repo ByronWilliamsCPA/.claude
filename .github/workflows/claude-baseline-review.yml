@@ -28,10 +28,16 @@ jobs:
       pull-requests: write
       issues: write
       id-token: write
-    # #ASSUME: pinned to the reusable's PR-head SHA (ByronWilliamsCPA/.github
-    # PR #214) so this caller can run during the evaluation. Re-pin to the
-    # squash-merge SHA on main once #214 merges (Renovate then tracks it).
-    uses: ByronWilliamsCPA/.github/.github/workflows/claude-baseline-review.yml@e5e695122efeb6feccd92e390bc3f79715832b07  # pre-merge ref of #214
+    # #CRITICAL: pin to a SHA reachable from ByronWilliamsCPA/.github main. The
+    # previous pin was #214's PR-head SHA (e5e6951); when #214 squash-merged and
+    # its source branch was deleted, that commit became orphaned ("diverged" via
+    # the compare API) and every run startup-failed with zero jobs, because the
+    # Actions resolver refuses an unreachable ref even though the contents API
+    # still serves it. This pin is the merged history on main; Renovate tracks it.
+    # #VERIFY before bumping: `gh api
+    # repos/ByronWilliamsCPA/.github/compare/main...<sha> --jq .status` must not
+    # return "diverged".
+    uses: ByronWilliamsCPA/.github/.github/workflows/claude-baseline-review.yml@ea333191144736380e70ffb3152a1f0b56f96f17  # main
     with:
       repo-description: >-
         the global Claude Code configuration repo: agents, skills, slash

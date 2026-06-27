@@ -51,6 +51,9 @@ tier_2_agent_bundles:
         - code_security     # Toolset for security alerts
       postgres:
         - analyze_db_health
+      snyk-mcp:
+        - snyk_test         # Requires workstation setup: see standards/snyk-mcp-setup.md
+        - snyk_code_test    # Requires workstation setup: see standards/snyk-mcp-setup.md
     deferred:
       sentry:
         - list_projects     # Admin only
