@@ -58,11 +58,34 @@ Match the model to where the verdict actually comes from:
 | Checklist-decided | Apply a fixed, mostly-objective rubric | `sonnet` |
 | Judgment / adversarial | Find the non-obvious flaw the author missed | `opus` |
 
-Current pins: code-reviewer, security-auditor, and document-validator run
-`opus` (adversarial, first-party or own-library source); phase-reviewer runs
-`haiku` and plan-validator, scope-analyzer, test-reviewer, and
-general-compliance-auditor run `sonnet` (all tool- or checklist-decided). The
-three vendor-mirror agents below remain on `inherit` by exception.
+**Model tier by role:** the table above applies symmetrically to design work,
+not just review work. Opus is correct for agents that produce the key
+architectural artifact (the project plan, the framing, the DX analysis), not
+just the agents that check other agents' output. Sonnet is implementation;
+opus is design and adversarial judgment; haiku is cheap read-only lookup.
+
+Current pins:
+
+- **Opus (design/synthesis):** `project-plan-synthesizer` (synthesizes four
+  planning docs into a project plan -- reconciliation judgment), `plan-ceo-review`
+  (challenges problem framing -- adversarial), `plan-devex-review` (challenges
+  ergonomics -- adversarial)
+- **Opus (adversarial review):** `code-reviewer`, `security-auditor`,
+  `document-validator` (adversarial, first-party or own-library source)
+- **Haiku:** `phase-reviewer`, `pre-commit-auditor`, `python-toolchain-auditor`,
+  `mkdocs-auditor` (all tool- or checklist-decided with minimal interpretation)
+- **Sonnet:** `plan-validator`, `scope-analyzer`, `test-reviewer`,
+  `general-compliance-auditor`, and all implementation agents (checklist- or
+  tool-decided)
+- **Inherit (vendor exception):** the three vendor-mirror agents below
+
+**Skills inherit the session model.** Skills (`brainstorming`, `writing-plans`,
+`project-planning`, etc.) run as instructions in the calling session -- they
+have no `model:` field and cannot be pinned independently. For planning-phase
+skills to run on Opus, the session itself must be on Opus (toggle `/fast` or
+select Opus at session start). Design-phase sessions (brainstorming through
+project plan synthesis) benefit most from Opus; switch back to Sonnet for
+implementation.
 
 **In-family decorrelation has a ceiling.** Within the Anthropic family you
 cannot get maximum reasoning *and* strong decorrelation at once, because the

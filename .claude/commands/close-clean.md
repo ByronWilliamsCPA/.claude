@@ -59,7 +59,10 @@ answer. Omit any category that is empty. If all three categories are empty,
 skip the confirmation and report `0 items to clean`.
 
 **Stale temp files:** `tmp_cleanup/.tmp-*` and root-level `.tmp-*` with an mtime
-older than 14 days, always preserving the single most recent handoff doc. Both
+older than 14 days, always preserving the single most recent handoff doc. Note:
+the canonical handoff location moved to `~/.claude/logs/handoffs/` (gitignored,
+durable, outside this repo-scoped sweep), so this glob now only catches legacy
+handoffs left in `tmp_cleanup`; current handoffs are never at risk here. Both
 sides use `find` so the paths share the same `./` prefix and the newest handoff
 is reliably excluded:
 

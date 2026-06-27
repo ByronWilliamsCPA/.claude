@@ -57,7 +57,9 @@ def evaluate(agent_name: str) -> dict:
     for item in corpus:
         output = candidate.run(item)
         if not isinstance(output, str):
-            raise TypeError(f"{agent_name}.run returned {type(output).__name__}, expected str")
+            raise TypeError(
+                f"{agent_name}.run returned {type(output).__name__}, expected str"
+            )
         qualities.append(score_quality(output, item))
         costs.append(cost_of(output, item))
     return {
@@ -70,7 +72,9 @@ def evaluate(agent_name: str) -> dict:
 
 
 def main(argv: list[str] | None = None) -> int:
-    p = argparse.ArgumentParser(description="Score one harness candidate ($0, deterministic).")
+    p = argparse.ArgumentParser(
+        description="Score one harness candidate ($0, deterministic)."
+    )
     p.add_argument("--agent", required=True, help="candidate module name under agents/")
     p.add_argument("--out", type=Path, default=None)
     args = p.parse_args(argv)
@@ -78,8 +82,10 @@ def main(argv: list[str] | None = None) -> int:
     out_path = args.out or (LOGS / f"{args.agent}.json")
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(result, indent=2))
-    print(f"{result['agent']:24} quality={result['quality']:.3f} "
-          f"cost={result['cost']:.0f} min_quality={result['min_quality']:.2f}")
+    print(
+        f"{result['agent']:24} quality={result['quality']:.3f} "
+        f"cost={result['cost']:.0f} min_quality={result['min_quality']:.2f}"
+    )
     return 0
 
 

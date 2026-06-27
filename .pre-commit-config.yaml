@@ -375,7 +375,7 @@ repos:
         # / Low / L-05). The writing-workspace/ subtree (eval test fixtures)
         # genuinely needs em-dashes preserved as adversarial inputs to the
         # writing pipeline and must remain excluded permanently.
-        exclude: ^(\.claude/|\.pre-commit-config\.yaml|CHANGELOG\.md|CLAUDE\.md)
+        exclude: ^(\.claude/|\.pre-commit-config\.yaml|CHANGELOG\.md|CLAUDE\.md|styles/)
         description: "Prevents em-dash characters in source files (.claude/ tree excluded pending L-05 cleanup PR)"
         stages: [pre-commit]
 

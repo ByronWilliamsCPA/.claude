@@ -332,6 +332,9 @@ docs/troubleshooting/
 # Local MCP server configuration (contains auth tokens and local paths)
 .mcp.json
 
+# codebase-memory-mcp per-repo graph artifact (binary-managed; commit in team repos, ignore in solo repos)
+.codebase-memory/
+
 # Task Observer runtime data (gitignored; populated at runtime, never committed)
 skill-observations/
 skill-updates/

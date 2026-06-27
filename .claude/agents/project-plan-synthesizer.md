@@ -5,7 +5,7 @@ description: >
   comprehensive PROJECT-PLAN.md with semantic release-aligned phase branches, quality gates,
   and TodoWrite integration. Invoke after the project-planning skill generates the initial
   documents and before Phase 1 development begins.
-model: sonnet
+model: opus
 tools: ["Read", "Write", "Edit", "Grep", "Glob", "Bash", "TodoWrite"]
 ---
 

@@ -177,8 +177,13 @@ no value to their task.
 - **Testing**: graduated coverage (80% line, 70% branch, 90% critical, 90% patch)
 - **Git**: conventional commits, signed commits, feature branch workflow
 - **Response-Aware Development**: assumption tagging and verification
+- **Containers**: prefer hardened base images via the GHCR mirror
+  (`ghcr.io/byronwilliamscpa/dhi-*`, `distroless-*`) over standard Docker Hub
+  images; no credentials needed to pull
 
 > Canonical package choices: see `.claude/standards/packages.md`
+>
+> Container image registry hierarchy and GHCR mirror catalog: see `.claude/standards/container-images.md`
 >
 > MCP tool loading strategy: see `.claude/rules/mcp-strategy.md`
 >
@@ -236,13 +241,40 @@ acceptance criterion; use `/phase-gate` to verify phase readiness before
 closing a phase.
 
 **Session length**: Sessions accumulate rolling context with every exchange,
-increasing cache-write cost and slowing responses. After completing any
-discrete task unit, self-assess whether the session has grown long (signals:
-visibly slower responses, many tool calls accumulated, the conversation has
-spanned several distinct task units). If it has, tell the user the session
-is becoming expensive and suggest a clean break before starting the next
-task. Do not silently continue into a new task on a session that is already
-over-long.
+raising per-turn cost and inviting context rot. Two separate decisions follow,
+calibrated separately (basis and data:
+`docs/development/context-window-autocompaction-research.md`):
+
+- *Autocompact, the lossy fallback*: Claude Code force-compacts around 375K
+  carried tokens (`CLAUDE_CODE_AUTO_COMPACT_WINDOW=500000` +
+  `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE=75`). It is lossy and runs when the model is
+  least sharp, so it is the backstop, not the plan.
+- *Handoff suggestion, the proactive lever*: offer a clean break at the cost
+  knee (~150K carried tokens, where carried context stops paying off), well
+  before the fallback.
+
+Track carried tokens (absolute, via `/context`), not percent of window (the
+window varies by model and misleads on 1M). Gate every suggestion on a completed
+task unit so you never interrupt mid-task:
+
+- **Below ~150K carried tokens**: keep working.
+- **~150K to ~300K, and a task unit just finished**: tell the user the session is
+  past the point where carried context pays off, and offer both remedies in the
+  same message, do not make them ask: "Want a clean break? `/handoff` writes a
+  handoff doc plus kickoff prompt and starts a fresh session (best when switching
+  tasks or you want zero context carried forward); or `/compact [instructions]`
+  sheds stale context in place while keeping the thread (best when continuing this
+  work, e.g. `/compact keep the auth refactor, drop the test debugging`)." Offer
+  once; if declined, do not re-offer until context has grown materially.
+- **Approaching ~300K (nearing the ~375K autocompact)**: recommend acting before
+  starting any new task unit. A steered `/compact` now, or `/handoff` plus a fresh
+  session at a boundary, both beat the unsteered lossy autocompact at 375K. If
+  mid-task, finish the unit first.
+
+Regardless of token count, also start fresh when a genuinely new task begins (new
+task, new session), or on fidelity-drift symptoms (the agent re-asks a settled
+decision, re-introduces a fixed bug, or loops re-reading the same files). A STOP
+verdict from `/usage-report blocks` also warrants a break.
 
 ## Compact Instructions
 

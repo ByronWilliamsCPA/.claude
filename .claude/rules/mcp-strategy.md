@@ -9,6 +9,28 @@ MCP tools use a tiered strategy to reduce context consumption by 85-95%:
 - **Before**: ~55K tokens consumed by 80+ tools at session start
 - **After**: ~3K tokens (Tier 1) + context-specific loading
 
+## Binary-managed MCP servers (outside the tiered strategy)
+
+Some MCP servers manage their own Claude Code wiring via an install command and
+are not part of the tiered loading strategy. They load at session start
+unconditionally, like Tier 1, but are configured outside `settings.json`'s
+`mcpServers` block.
+
+| Server | Config file | Managed by | Setup guide |
+|--------|-------------|------------|-------------|
+| `codebase-memory-mcp` | `~/.claude/.mcp.json` (gitignored) | `codebase-memory-mcp install` | `docs/getting-started/codebase-memory-mcp.md` |
+
+**What codebase-memory-mcp provides:** 14 MCP tools for structural code queries
+(`search_graph`, `trace_path`, `get_architecture`, `detect_changes`, Cypher queries,
+dead code detection, ADR management). Indexes each repo into a SQLite knowledge
+graph; answers structural queries in <1ms. Prefer these tools over `Grep`/`Glob`
+for any code-discovery task. Its `PreToolUse` hook (matcher: `Grep|Glob`, script:
+`~/.claude/hooks/cbm-code-discovery-gate`) augments Grep/Glob calls with graph
+context automatically and never blocks.
+
+Do not add this server to `mcp_config.yaml` or the tiered tables below; its binary
+manages upgrades and config changes independently.
+
 ## The zen server: fork identity and cost lanes
 
 `zen` in the tables below is our maintained fork, `williaby/zen-mcp-server`, kept

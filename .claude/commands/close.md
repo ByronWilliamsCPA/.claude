@@ -5,6 +5,10 @@ process, and (on a feature branch) decide how to finish the branch. Use this at
 the end of a working session before starting a fresh one. For a version that
 also cleans up worktrees and stale content, use `/close-clean`.
 
+If you want a resumable handoff, run `/handoff` first: it writes a durable doc
+and a paste-ready kickoff prompt to `~/.claude/logs/handoffs/` (gitignored, not
+committed, outside this repo's cleanup sweep). `/close` does not generate one.
+
 This command never deletes anything and never integrates work without your
 confirmation. The only step that can mutate the repo is the branch decision,
 and it runs only on a feature branch and only on your choice.
