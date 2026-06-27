@@ -3,6 +3,8 @@ INPUT=$(cat)
 
 [ -z "$INPUT" ] && exit 0
 
+command -v python3 &>/dev/null || exit 0
+
 FILE_PATH=$(python3 -c "
 import sys, json
 try:

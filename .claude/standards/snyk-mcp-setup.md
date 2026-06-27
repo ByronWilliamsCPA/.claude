@@ -3,7 +3,7 @@
 > **Status**: Active | Standard
 > **Version**: 1.0.0
 > **Last Updated**: 2026-06-27
-> **References**: `rules/snyk-mcp.md` (pending Task 3), `rules/mcp-strategy.md`, `standards/mcp-minimal-bloat.md`
+> **References**: `rules/snyk-mcp.md`, `rules/mcp-strategy.md`, `standards/mcp-minimal-bloat.md`
 
 Snyk MCP Server enables Claude Code to invoke `snyk test` and `snyk code test`
 inline during authoring, before any commit exists. This closes the vulnerability
@@ -42,6 +42,18 @@ only tools that earn their token cost are documented here.
 | `snyk_test` | SCA: checks the project against the Snyk advisory database | After adding or upgrading a dependency in pyproject.toml, requirements*.txt, or uv.lock |
 | `snyk_code_test` | SAST: scans specified file paths for code vulnerabilities | Before committing a new authentication module, secrets handler, or user-input processor |
 | `snyk_monitor` | Pushes a snapshot to the Snyk org dashboard | **Manual only; do not invoke automatically** (see below) |
+
+## Secrets Detection (CLI)
+
+For pre-push secrets scanning without running a full SAST pass, use the CLI directly:
+
+```bash
+snyk code test --detection-type=secrets .
+```
+
+This scans the working tree for hardcoded secrets only. It is faster than a full `snyk code test` run and suitable for use as a pre-push gate. This is distinct from `snyk_code_test` (the MCP tool), which runs the full SAST suite on specified paths.
+
+Requires `SNYK_TOKEN` to be set or `snyk auth` to have been run.
 
 ## When to invoke snyk_test
 
@@ -94,5 +106,5 @@ https://docs.snyk.io/snyk-cli/mcp.
 
 Snyk MCP Server is Tier 2 (on-demand) per `rules/mcp-strategy.md`. It is
 NOT in the always-loaded `mcpServers` block. The path-scoped rule
-`rules/snyk-mcp.md` (pending Task 3) and the PostToolUse hook in `settings.json` serve as
+`rules/snyk-mcp.md` and the PostToolUse hook in `settings.json` serve as
 reminder enforcement points during authoring.
