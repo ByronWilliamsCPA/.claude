@@ -71,7 +71,7 @@ rather than incidental.
 | --- | --- |
 | Independent fan-out, no peer interaction needed | Subagents (Task/Agent tool) |
 | Agents must build on or challenge each other's work | Agent teams |
-| A different model's opinion on one decision | `/consensus` skill (OpenRouter, metered) |
+| A different model's opinion on one decision | `/panel` skill (OpenRouter, metered) |
 
 ## Sources
 

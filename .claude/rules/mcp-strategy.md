@@ -37,12 +37,12 @@ manages upgrades and config changes independently.
 in sync with upstream `BeehiveInnovations/pal-mcp-server` (the rebrand of the
 original zen-mcp-server) so we can pull their updates. We keep the `zen` name
 because our config and tool identifiers point at the fork; do not rename these
-references to `pal`. Multi-model consensus has moved to the `/consensus` skill
-(OpenRouter-based; `.claude/skills/consensus/`), which supersedes the zen/pal
+references to `pal`. Multi-model panel reviews have moved to the `/panel` skill
+(OpenRouter-based; `.claude/skills/panel/`), which supersedes the zen/pal
 `consensus` and `tiered_consensus` tools. Those tools remain available from the
 now-frozen server; the `project-planning` skill still calls `consensus` pending
-migration, while `pr-review` has already moved to the `/consensus` skill. New
-work should use the `/consensus` skill. Apart from that one legacy `consensus`
+migration, while `pr-review` has already moved to the `/panel` skill. New
+work should use the `/panel` skill. Apart from that one legacy `consensus`
 call, the server's active tools are `chat`, `thinkdeep`, and `codereview`.
 
 ### Three cost lanes
@@ -54,7 +54,7 @@ to the cheapest lane that can do the job.
 |------|---------------|----------------|
 | Interactive subscription | None (flat Max plan) | Interactive `claude` sessions, Claude Code Task/Agent subagents, and Claude Code agent teams (all run inside the interactive session); web/mobile conversations and Cowork |
 | Agent SDK credit | Separate monthly credit from 2026-06-15 (Pro $20, Max 5x $100, Max 20x $200); overage at API rates only if usage credits enabled | `claude -p` / `--print` scripts, the Python/TypeScript Agent SDK, and zen/pal `clink` (its Claude agent runs `claude --print --output-format json`, verified in `clink/constants.py`) |
-| Provider API | Metered, real money | zen/pal `chat`, `thinkdeep`, `codereview`, and similar calling Gemini/GPT/Grok/etc.; the `/consensus` skill (OpenRouter); plus any direct Claude-over-API usage |
+| Provider API | Metered, real money | zen/pal `chat`, `thinkdeep`, `codereview`, and similar calling Gemini/GPT/Grok/etc.; the `/panel` skill (OpenRouter); plus any direct Claude-over-API usage |
 
 Selection heuristic:
 
@@ -62,7 +62,7 @@ Selection heuristic:
   they ride the flat subscription at no marginal cost.
 - Reserve metered cross-model tools for what only they provide, a different
   model's judgment on a high-value decision: zen `chat` or `thinkdeep` for one
-  outside opinion, the `/consensus` skill for a multi-model panel. You pay per
+  outside opinion, the `/panel` skill for a multi-model panel. You pay per
   call, so use them deliberately, not for volume.
 - `clink` lands in the `-p` bucket, not the interactive subscription. Use it for
   bridging to other CLIs (gemini, codex) or occasional structured headless
@@ -132,7 +132,7 @@ Loaded automatically when specific skills are invoked:
 |-------|-----------------|
 | `/git` (commit prep) | `zen.precommit`, `github.repos` |
 | `/git` (PR prep) | `zen.codereview`, `github.pull_requests`, `github.issues`, `sentry.list_releases` |
-| `/project-planning` | `zen.planner`, `zen.consensus`, `mermaid.*` (consensus tool retained pending the skill's migration to the `/consensus` skill) |
+| `/project-planning` | `zen.planner`, `zen.consensus`, `mermaid.*` (consensus tool retained pending the skill's migration to the `/panel` skill) |
 
 ## Tier 3: Keyword-Triggered
 

@@ -9,8 +9,8 @@ Structured multi-model review with levels and professional roles.
    `code_review`, anything else `general`).
 
    ```bash
-   uv run .claude/skills/consensus/scripts/consensus_cli.py select --level <N> --domain <domain> > /tmp/consensus-roster.json
-   cat /tmp/consensus-roster.json
+   uv run .claude/skills/panel/scripts/consensus_cli.py select --level <N> --domain <domain> > /tmp/panel-roster.json
+   cat /tmp/panel-roster.json
    ```
 
 2. **Present roster and cost.** Show the user the models, roles, and
@@ -22,7 +22,7 @@ Structured multi-model review with levels and professional roles.
    they supplied. Keep it self-contained; the models see nothing else.
 
    ```bash
-   cat > /tmp/consensus-prompt.txt << 'PROMPT'
+   cat > /tmp/panel-prompt.txt << 'PROMPT'
    <the question, with context>
    PROMPT
    ```
@@ -30,9 +30,9 @@ Structured multi-model review with levels and professional roles.
 4. **Run.**
 
    ```bash
-   uv run .claude/skills/consensus/scripts/consensus_cli.py run \
-     --prompt-file /tmp/consensus-prompt.txt \
-     --roster-file /tmp/consensus-roster.json \
+   uv run .claude/skills/panel/scripts/consensus_cli.py run \
+     --prompt-file /tmp/panel-prompt.txt \
+     --roster-file /tmp/panel-roster.json \
      --level <N>
    ```
 
