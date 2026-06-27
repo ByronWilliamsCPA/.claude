@@ -92,7 +92,7 @@ Loaded automatically when specific agents are invoked:
 
 | Agent | MCP Tools Loaded |
 |-------|------------------|
-| security-auditor | `zen.secaudit`, `sentry.*`, `github.code_security`, `postgres.analyze_db_health`, `snyk_test`, `snyk_code_test` |
+| security-auditor | `zen.secaudit`, `sentry.*`, `github.code_security`, `postgres.analyze_db_health`, `snyk-mcp.snyk_test`, `snyk-mcp.snyk_code_test` |
 | code-reviewer | `zen.precommit`, `zen.challenge`, `github.pull_requests` |
 | test-engineer | `zen.testgen`, `playwright.*` |
 | test-writer | `zen.testgen` |
