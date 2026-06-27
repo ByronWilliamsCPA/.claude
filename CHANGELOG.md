@@ -83,6 +83,19 @@
   to dev dependencies, or rely on the `not_applicable_when` no-Python-source
   scope.
 
+### Added
+
+* feat(snyk): add Snyk MCP Server integration as a Tier 2 on-demand security
+  tool. Wires `snyk_test` and `snyk_code_test` into the `security-auditor`
+  agent bundle via `mcp/mcp_config.yaml`. Adds a path-scoped rule
+  (`rules/snyk-mcp.md`) and a PostToolUse hook (`scripts/snyk-dep-reminder.sh`)
+  that surfaces a reminder to run `snyk_test` when `pyproject.toml`, `uv.lock`,
+  or `requirements*.txt` files are edited. Adds a setup standard
+  (`standards/snyk-mcp-setup.md`) with one-time workstation configuration steps
+  and a pre-commit checklist item for `snyk code test --detection-type=secrets`
+  as a supplemental secrets gate. Snyk MCP Server remains Tier 2 (not
+  always-loaded) per `standards/mcp-minimal-bloat.md`.
+
 ### Security
 
 * fix(compliance): validate the master-log renderer CLI `--jsonl`/`--md` overrides
