@@ -3,7 +3,7 @@
 > **Status**: Active | Standard
 > **Version**: 1.0.0
 > **Last Updated**: 2026-06-27
-> **References**: `rules/snyk-mcp.md`, `rules/mcp-strategy.md`, `standards/mcp-minimal-bloat.md`
+> **References**: `rules/snyk-mcp.md` (pending Task 3), `rules/mcp-strategy.md`, `standards/mcp-minimal-bloat.md`
 
 Snyk MCP Server enables Claude Code to invoke `snyk test` and `snyk code test`
 inline during authoring, before any commit exists. This closes the vulnerability
@@ -66,9 +66,18 @@ Invoke `snyk_code_test` on the changed files before committing:
 - A module that processes user-supplied input.
 - A module that handles secrets, tokens, or credentials.
 
+Pass the changed file paths as the argument (e.g., the output of `git diff --cached --name-only`
+filtered to relevant files), not the project root.
+
+If `snyk_code_test` returns HIGH or CRITICAL findings, surface them to the user
+before committing. Do not block the commit unilaterally; report and let the user decide.
+
+If `SNYK_TOKEN` is not set or the MCP server is not configured, note the gap
+and continue without blocking.
+
 ## snyk_monitor: manual only
 
-`snyk_monitor` creates a persistent project entry in the Snyk organisation
+`snyk_monitor` creates a persistent project entry in the Snyk organization
 dashboard. Automatic calls accumulate entries that require manual cleanup.
 Rules and hooks in this config do NOT call `snyk_monitor`. Use it only when
 deliberately registering a project for ongoing Snyk monitoring.
@@ -85,5 +94,5 @@ https://docs.snyk.io/snyk-cli/mcp.
 
 Snyk MCP Server is Tier 2 (on-demand) per `rules/mcp-strategy.md`. It is
 NOT in the always-loaded `mcpServers` block. The path-scoped rule
-`rules/snyk-mcp.md` and the PostToolUse hook in `settings.json` serve as
+`rules/snyk-mcp.md` (pending Task 3) and the PostToolUse hook in `settings.json` serve as
 reminder enforcement points during authoring.
