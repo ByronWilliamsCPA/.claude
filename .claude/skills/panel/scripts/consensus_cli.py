@@ -847,7 +847,8 @@ def _cmd_run(
         # #CRITICAL: base the substitution cap on the cost actually incurred so
         # far (outcome["total_cost_usd"]), not the pre-flight estimate; a
         # high-token first round plus substitution could otherwise breach the
-        # level cap. #VERIFY: test_substitution_cap_uses_actual_incurred_cost.
+        # level cap.
+        # #VERIFY: confirm enforce_cost_cap receives actual incurred cost, not pre-flight estimate
         enforce_cost_cap(
             outcome["total_cost_usd"] + sub_estimate, args.level, args.max_cost
         )

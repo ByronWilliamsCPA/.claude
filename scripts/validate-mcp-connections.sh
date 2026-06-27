@@ -29,14 +29,22 @@ echo ""
 
 echo "-- Environment --"
 if [[ -n "${GITHUB_PERSONAL_ACCESS_TOKEN:-}" ]]; then
-  GH_USER=$(curl -sf -H "Authorization: Bearer $GITHUB_PERSONAL_ACCESS_TOKEN" \
-    https://api.github.com/user 2>/dev/null \
-    | python3 -c "import json,sys; print(json.load(sys.stdin).get('login','unknown'))" 2>/dev/null \
-    || echo "error")
-  if [[ "$GH_USER" == "error" ]]; then
-    check "GITHUB_PERSONAL_ACCESS_TOKEN" "fail" "set but GitHub auth failed: token may be expired"
-  else
+  GH_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+    -H "Authorization: Bearer $GITHUB_PERSONAL_ACCESS_TOKEN" \
+    https://api.github.com/user 2>/dev/null)
+  GH_CURL_EXIT=$?
+  if [[ $GH_CURL_EXIT -ne 0 ]]; then
+    check "GITHUB_PERSONAL_ACCESS_TOKEN" "warn" "set but cannot reach api.github.com (network error)"
+  elif [[ "$GH_CODE" == "200" ]]; then
+    GH_USER=$(curl -sf -H "Authorization: Bearer $GITHUB_PERSONAL_ACCESS_TOKEN" \
+      https://api.github.com/user 2>/dev/null \
+      | python3 -c "import json,sys; print(json.load(sys.stdin).get('login','unknown'))" 2>/dev/null \
+      || echo "unknown")
     check "GITHUB_PERSONAL_ACCESS_TOKEN" "ok" "authenticates as $GH_USER"
+  elif [[ "$GH_CODE" == "401" ]]; then
+    check "GITHUB_PERSONAL_ACCESS_TOKEN" "fail" "set but token rejected (HTTP 401): may be expired or missing scope"
+  else
+    check "GITHUB_PERSONAL_ACCESS_TOKEN" "warn" "set but unexpected HTTP $GH_CODE from api.github.com"
   fi
 else
   check "GITHUB_PERSONAL_ACCESS_TOKEN" "fail" "NOT SET: add to ~/.bashrc"
@@ -58,8 +66,9 @@ echo ""
 echo "-- Servers --"
 
 # zen/pal: check if python venv and server.py exist
-ZEN_PY="/home/byron/dev/zen-mcp-server/.pal_venv/bin/python"
-ZEN_SRV="/home/byron/dev/zen-mcp-server/server.py"
+ZEN_BASE="${MCP_ZEN_PATH:-$HOME/dev/zen-mcp-server}"
+ZEN_PY="$ZEN_BASE/.pal_venv/bin/python"
+ZEN_SRV="$ZEN_BASE/server.py"
 if [[ -x "$ZEN_PY" && -f "$ZEN_SRV" ]]; then
   check "zen (pal)" "ok" "venv and server.py present"
 else

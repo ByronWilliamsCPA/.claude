@@ -117,6 +117,19 @@
 
 ### Changed
 
+* refactor(skills): rename the `/consensus` multi-model panel skill to `/panel`
+  and update all internal references. The skill's OpenRouter-based `consensus_cli.py`
+  engine is unchanged; only the skill directory (`skills/consensus/` to
+  `skills/panel/`), slash-command name, and referencing docs (`mcp_config.yaml`,
+  `mcp-strategy.md`, AGENTS-AND-SKILLS.md, pr-review workflow) are updated. Existing
+  `/consensus` invocations should migrate to `/panel`.
+
+* feat(agents): pin `project-plan-synthesizer`, `plan-ceo-review`, and
+  `plan-devex-review` to the Opus model tier in their agent definitions. All three
+  perform adversarial or synthesis judgment tasks where the Opus tier's reasoning
+  depth materially improves output; `supervisor.md` and `AGENTS-AND-SKILLS.md`
+  updated to document the new pins.
+
 * feat(standards): upgrade TOOL-011 in `docs/standards-manifest.yaml` from a
   presence check to a value check. Ruff `target-version` must now be `py310` or
   higher (verify `ruff_target_min: py310`) rather than merely present, matching
@@ -156,6 +169,35 @@
   and repo-compliance reference all move to pydoclint.
 
 ### Added
+* feat(mcp): add `scripts/validate-mcp-connections.sh` for end-to-end MCP server
+  connectivity validation from any project directory. Checks environment variables
+  (GITHUB_PERSONAL_ACCESS_TOKEN with live auth test, SONARQUBE_TOKEN, SNYK_TOKEN),
+  server availability (zen/pal venv, context7 via npx, GitHub Docker MCP, SonarQube
+  ports 8090/8091, codebase-memory-mcp binary, snyk via npx). Adds
+  `docs/reference/mcp-fleet-status.md` documenting the eight-server fleet and
+  per-server validation steps. Exits non-zero on any FAIL result.
+
+* feat(mcp): integrate `codebase-memory-mcp` as a binary-managed always-loaded
+  MCP server outside the tiered loading strategy. Documented in
+  `docs/getting-started/codebase-memory-mcp.md` with one-time setup steps; wired
+  into `rules/mcp-strategy.md` with a code-discovery protocol that prefers
+  `search_graph`, `trace_path`, and `get_code_snippet` over Grep/Glob for
+  code exploration; registered as a `/codebase-memory` skill. The server indexes
+  the repo into a SQLite knowledge graph and answers structural queries in under 1ms.
+
+* feat(sessions): add quantitative session-length trigger and calibrated thresholds
+  to `CLAUDE.md`. The guidance ties the handoff suggestion to the ~150K
+  carried-token cost knee and the compact recommendation to the ~300K pre-autocompact
+  zone (backstop at 375K autocompact). Adds `docs/development/session-length-trigger.md`
+  (analysis of 595 sessions) and `scripts/analyze-session-inflection.py` (inflection
+  point measurement tool). Compaction events are counted and surfaced as a
+  new-session signal.
+
+* feat(handoff): store handoff documents in a gitignored `~/.claude/handoffs/`
+  directory rather than committing them to the worktree. Handoff docs written via
+  the `/handoff` skill are preserved across sessions without cluttering git history
+  or triggering pre-commit hooks.
+
 * feat: adopt `ast-grep` and `difftastic` as preferred CLI tools and add
   `actionlint`, `shfmt`, and `vale` pre-commit hooks. A new `/ast-grep` skill
   (meta-variable patterns, rewrite templates, YAML relational rules) is
