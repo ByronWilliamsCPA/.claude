@@ -220,7 +220,7 @@ def _as_int(value: object) -> int:
     """Coerce a JSON numeric value to int; treat missing or odd values as 0."""
     if isinstance(value, bool):
         return 0
-    if isinstance(value, (int, float)):
+    if isinstance(value, int | float):
         return int(value)
     return 0
 

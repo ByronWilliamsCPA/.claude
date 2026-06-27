@@ -54,6 +54,21 @@ Full bundle list: `.claude/rules/mcp-strategy.md`.
 | `sentry`, `error monitoring`, `exception` | `sentry.*` |
 | `diagram`, `mermaid`, `uml`, `flowchart` | `mermaid.*`, `uml-mcp-server.*` |
 
+## Binary-Managed Servers (Outside the Tiers)
+
+Some MCP servers manage their own Claude Code wiring and are not part of the
+tiered strategy. They load unconditionally via `~/.claude/.mcp.json` (gitignored),
+which Claude Code merges with `settings.json`'s `mcpServers` block.
+
+| Server | Tools | Config |
+| --- | --- | --- |
+| `codebase-memory-mcp` | 14 tools: `search_graph`, `trace_path`, `get_architecture`, `detect_changes`, Cypher queries, dead code detection, ADR management, and more | `~/.claude/.mcp.json`, managed by `codebase-memory-mcp install` |
+
+Do not add binary-managed servers to the tier tables. Their config changes with
+binary upgrades, not with edits to `mcp-strategy.md`.
+
+Setup: [docs/getting-started/codebase-memory-mcp.md](../getting-started/codebase-memory-mcp.md)
+
 ## Placement and Promotion
 
 All new MCP tools default to Tier 3. To request promotion:

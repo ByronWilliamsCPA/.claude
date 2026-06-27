@@ -177,8 +177,13 @@ no value to their task.
 - **Testing**: graduated coverage (80% line, 70% branch, 90% critical, 90% patch)
 - **Git**: conventional commits, signed commits, feature branch workflow
 - **Response-Aware Development**: assumption tagging and verification
+- **Containers**: prefer hardened base images via the GHCR mirror
+  (`ghcr.io/byronwilliamscpa/dhi-*`, `distroless-*`) over standard Docker Hub
+  images; no credentials needed to pull
 
 > Canonical package choices: see `.claude/standards/packages.md`
+>
+> Container image registry hierarchy and GHCR mirror catalog: see `.claude/standards/container-images.md`
 >
 > MCP tool loading strategy: see `.claude/rules/mcp-strategy.md`
 >
