@@ -19,7 +19,7 @@ tags:
 
 | Date | Repo | Mode | Critical | Important | Suggested | Candidates | Reconciled | Report |
 |------|------|------|---------:|----------:|----------:|-----------:|:----------:|--------|
-| 2026-06-19 | ByronWilliamsCPA/pp-security-master | interactive | 0 | 1 | 1 | 7 |  | [report](docs/compliance-reports/lessons-learned/2026-06-19.md) |
+| 2026-06-19 | ByronWilliamsCPA/pp-security-master | interactive | 0 | 1 | 1 | 7 |  |  |
 | 2026-06-01 | ByronWilliamsCPA/MTG_AI | interactive | 9 | 37 | 26 | 11 |  | [report](https://github.com/ByronWilliamsCPA/MTG_AI/blob/main/docs/compliance-reports/lessons-learned/2026-06-01.md) |
 | 2026-06-01 | ByronWilliamsCPA/AMC | interactive | 4 | 48 | 23 | 1 |  |  |
 
