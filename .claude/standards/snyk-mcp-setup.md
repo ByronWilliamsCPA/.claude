@@ -21,10 +21,17 @@ snyk auth
 
 # Configure MCP Server for Claude Code
 npx -y snyk@latest mcp configure --tool=claude-cli
+
+# Verify the installed version (record for audit/pinning reference)
+snyk --version
 ```
 
 The configure command writes a `snyk-mcp` entry to `~/.claude/settings.json`
 automatically.
+
+> **Version pinning:** `snyk@latest` installs the current release at setup time.
+> To pin a specific version for reproducibility, use `npm install -g snyk@<version>`
+> (e.g., `snyk@1.1296.2`). Re-run the configure step after upgrading the CLI.
 
 ## Verify the MCP entry
 
@@ -101,6 +108,17 @@ not generally available yet. When it reaches GA, add a pre-push hook that runs
 `snyk mcp-scan` on `.claude/settings.json` and any project-local MCP
 configuration files. Track the GA announcement at
 https://docs.snyk.io/snyk-cli/mcp.
+
+## Dual-enforcement design
+
+Two independent mechanisms reinforce the same behavior, covering different failure modes:
+
+| Mechanism | How it works | What it covers |
+|-----------|-------------|----------------|
+| Path-scoped rule `rules/snyk-mcp.md` | Loaded into Claude's context when editing Python dependency files; instructs Claude when to call `snyk_test` and `snyk_code_test` | Planned edits where Claude can act proactively |
+| PostToolUse hook `scripts/snyk-dep-reminder.sh` | Fires after every Edit/Write/MultiEdit; prints a reminder if the file is `pyproject.toml`, `uv.lock`, or `requirements*.txt` | Unplanned edits or sessions where the rule was not loaded |
+
+The rule provides proactive guidance; the hook provides a reactive safety net. Neither blocks the edit unilaterally; both surface the same recommendation: run `snyk_test` before committing.
 
 ## Tier placement
 

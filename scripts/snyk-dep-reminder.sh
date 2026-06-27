@@ -11,8 +11,8 @@ try:
     data = json.loads(sys.stdin.read())
     val = data.get('tool_input', {}).get('file_path', '') or ''
     print(val if isinstance(val, str) else '')
-except Exception:
-    pass
+except Exception as e:
+    sys.stderr.write(f'[Snyk hook] JSON parse error: {e}\n')
 " <<< "$INPUT")
 
 [ -z "$FILE_PATH" ] && exit 0
