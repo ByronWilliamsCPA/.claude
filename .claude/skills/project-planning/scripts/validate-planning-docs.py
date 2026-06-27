@@ -54,8 +54,10 @@ def check_required_sections(
     """Check that required sections exist."""
     issues = []
     for section in required:
-        # Check for section as H2 or H3
-        pattern = rf"^##\s*{re.escape(section)}|^###\s*{re.escape(section)}"
+        # Check for section as H2 or H3, tolerating an optional numeric/ordinal
+        # prefix (e.g. "## 1. Technology Stack") that the doc templates prescribe.
+        sect = re.escape(section)
+        pattern = rf"^##\s*(?:\d+\.\s*)?{sect}|^###\s*(?:\d+\.\s*)?{sect}"
         if not re.search(pattern, content, re.MULTILINE | re.IGNORECASE):
             issues.append(f"{filepath}: Missing required section '{section}'")
     return issues
@@ -68,21 +70,25 @@ def check_tldr(content: str, filepath: Path) -> list[str]:
     return []
 
 
-def check_cross_references(content: str, filepath: Path, docs_dir: Path) -> list[str]:
-    """Check that cross-references point to existing files."""
+def check_cross_references(content: str, filepath: Path) -> list[str]:
+    """Check that cross-references point to existing files.
+
+    Links are resolved relative to the directory of the file that contains
+    them (standard markdown semantics), not a fixed base, so a link between
+    two ADRs inside ``adr/`` resolves correctly. Any ``#fragment`` anchor on
+    the link is ignored for the existence check.
+    """
     issues = []
-    # Find markdown links to local files
-    links = re.findall(r"\[([^\]]+)\]\(\.?/?([^)]+\.md)\)", content)
+    # Find markdown links to local .md files, ignoring any #fragment anchor.
+    links = re.findall(r"\[([^\]]+)\]\(([^)]+?\.md)(?:#[^)]*)?\)", content)
 
     for link_text, link_path in links:
         # Skip external links
         if link_path.startswith("http"):
             continue
 
-        # Resolve relative to docs/planning/
-        link_path = link_path.removeprefix("./")
-
-        target = docs_dir / link_path
+        # Resolve relative to the file that contains the link.
+        target = (filepath.parent / link_path).resolve()
         if not target.exists():
             issues.append(
                 f"{filepath}: Broken link to '{link_path}' (text: '{link_text}')"
@@ -209,7 +215,7 @@ def main() -> int:
         all_issues.extend(validator(content, filepath))
 
         # Check cross-references
-        all_issues.extend(check_cross_references(content, filepath, docs_dir))
+        all_issues.extend(check_cross_references(content, filepath))
 
     # Check ADR directory
     adr_dir = docs_dir / "adr"
@@ -228,7 +234,7 @@ def main() -> int:
                     continue
 
                 all_issues.extend(validate_adr(content, adr_file))
-                all_issues.extend(check_cross_references(content, adr_file, docs_dir))
+                all_issues.extend(check_cross_references(content, adr_file))
 
     # Report results
     print(f"\n{'=' * 60}")

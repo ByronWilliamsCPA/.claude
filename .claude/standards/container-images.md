@@ -101,9 +101,9 @@ Need a base image?
 
 ## Requesting a new mirror
 
-To add an image to the GHCR mirror, open a PR against
-`ByronWilliamsCPA/homelab-infra` and add an entry to the relevant job matrix
-in `.github/workflows/mirror-hardened-images.yml`:
+The mirror workflow lives in the dedicated public repo
+`ByronWilliamsCPA/container-images`. To add an image, open a PR there and
+add an entry to the DHI matrix in `.github/workflows/mirror-hardened-images.yml`:
 
 ```yaml
 # Under mirror-dhi job, strategy.matrix.image:
@@ -113,7 +113,7 @@ in `.github/workflows/mirror-hardened-images.yml`:
 The image becomes available after the next weekly sync or a manual trigger:
 
 ```bash
-gh workflow run mirror-hardened-images.yml --repo ByronWilliamsCPA/homelab-infra
+gh workflow run mirror-hardened-images.yml --repo ByronWilliamsCPA/container-images
 ```
 
 ## Security properties

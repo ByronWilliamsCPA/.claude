@@ -63,7 +63,9 @@ def load_jsonl(path: Path) -> list[dict]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    p = argparse.ArgumentParser(description="Floor-respecting Pareto frontier over a run log.")
+    p = argparse.ArgumentParser(
+        description="Floor-respecting Pareto frontier over a run log."
+    )
     p.add_argument("run_log", type=Path)
     p.add_argument("--floor", type=float, default=0.0)
     p.add_argument("--quality-key", default="quality")
@@ -74,16 +76,22 @@ def main(argv: list[str] | None = None) -> int:
 
     points = latest_per_agent(load_jsonl(args.run_log))
     front = pareto_frontier(
-        points, floor=args.floor,
-        quality_key=args.quality_key, cost_key=args.cost_key,
+        points,
+        floor=args.floor,
+        quality_key=args.quality_key,
+        cost_key=args.cost_key,
         min_quality_key=args.min_quality_key,
     )
     front_sorted = sorted(front, key=lambda x: x[args.cost_key])
     if args.out:
         args.out.write_text(json.dumps(front_sorted, indent=2))
-    print(f"frontier ({len(front_sorted)} of {len(points)} candidates, floor={args.floor}):")
+    print(
+        f"frontier ({len(front_sorted)} of {len(points)} candidates, floor={args.floor}):"
+    )
     for pt in front_sorted:
-        print(f"  {pt['agent']:24} quality={pt[args.quality_key]:.3f} cost={pt[args.cost_key]:.0f}")
+        print(
+            f"  {pt['agent']:24} quality={pt[args.quality_key]:.3f} cost={pt[args.cost_key]:.0f}"
+        )
     return 0
 
 
