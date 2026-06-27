@@ -114,7 +114,7 @@ Loaded automatically when specific agents are invoked:
 
 | Agent | MCP Tools Loaded |
 |-------|------------------|
-| security-auditor | `zen.secaudit`, `sentry.*`, `github.code_security`, `postgres.analyze_db_health` |
+| security-auditor | `zen.secaudit`, `sentry.*`, `github.code_security`, `postgres.analyze_db_health`, `snyk-mcp.snyk_test`, `snyk-mcp.snyk_code_test` |
 | code-reviewer | `zen.precommit`, `zen.challenge`, `github.pull_requests` |
 | test-engineer | `zen.testgen`, `playwright.*` |
 | test-writer | `zen.testgen` |
@@ -133,6 +133,24 @@ Loaded automatically when specific skills are invoked:
 | `/git` (commit prep) | `zen.precommit`, `github.repos` |
 | `/git` (PR prep) | `zen.codereview`, `github.pull_requests`, `github.issues`, `sentry.list_releases` |
 | `/project-planning` | `zen.planner`, `zen.consensus`, `mermaid.*` (consensus tool retained pending the skill's migration to the `/panel` skill) |
+
+### Snyk MCP Server (Tier 2)
+
+`snyk_test` and `snyk_code_test` are surfaced to the `security-auditor` agent
+bundle. The Snyk MCP Server requires one-time workstation setup before these
+tools are available:
+
+```bash
+npx -y snyk@latest mcp configure --tool=claude-cli
+```
+
+Full setup instructions and tool invocation guidance: `standards/snyk-mcp-setup.md`.
+
+Do NOT add Snyk MCP Server to the always-loaded `mcpServers` block. It is
+on-demand only, per `standards/mcp-minimal-bloat.md`.
+
+`snyk_monitor` must not be called from any agent bundle or hook. See
+`standards/snyk-mcp-setup.md` for the reason.
 
 ## Tier 3: Keyword-Triggered
 
