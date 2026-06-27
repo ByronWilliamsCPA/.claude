@@ -1,7 +1,7 @@
 ---
 name: plan-ceo-review
 description: Reviews an implementation plan in founder/CEO mode to challenge whether it solves the right problem. Complements plan-validator (which checks scope completeness against phase boundaries) by questioning business value, opportunity cost, and problem framing. Invoke for plan problem-framing review before committing to a plan.
-model: sonnet
+model: opus
 tools: ["Read", "Grep", "Glob"]
 ---
 

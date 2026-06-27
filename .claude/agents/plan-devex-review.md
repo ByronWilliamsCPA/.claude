@@ -1,7 +1,7 @@
 ---
 name: plan-devex-review
 description: Reviews an implementation plan in developer-experience mode to challenge the ergonomics and maintainability of what it will produce. Complements plan-validator (scope completeness) and plan-ceo-review (problem framing) by questioning whether the resulting interface will be pleasant to use and maintain. Invoke for plan DX review before committing to a plan.
-model: sonnet
+model: opus
 tools: ["Read", "Grep", "Glob"]
 ---
 
