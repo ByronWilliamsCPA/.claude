@@ -103,6 +103,13 @@
 
 ### Fixed
 
+* fix(standards): correct GHCR image names for `grafana-alloy` and
+  `postgres-exporter` in `docs/standards-manifest.yaml` and
+  `.claude/standards/container-images.md`. Both entries carried the wrong
+  repository slug after the initial catalog import; correct slugs are
+  `ghcr.io/byronwilliamscpa/grafana-alloy` and
+  `ghcr.io/byronwilliamscpa/postgres-exporter`.
+
 * fix(compliance): replace incorrect Python-only exemption in TOOL-009 (.qlty/qlty.toml
   presence) with a documentation-only exemption in `docs/standards-manifest.yaml`.
   Qlty is a language-agnostic meta-linter wrapping ESLint, ShellCheck, Actionlint,
@@ -156,6 +163,31 @@
   and repo-compliance reference all move to pydoclint.
 
 ### Added
+* feat(standards): add three new checks to `docs/standards-manifest.yaml` from
+  the container-images supply-chain audit. CI-087 (critical): no supply-chain
+  pipeline step carries `continue-on-error: true` (applies to cosign sign/attest
+  and syft SBOM steps). CI-088 (important): SBOM generation tools invoked via
+  `docker run` must use a digest pin (`@sha256:...`) not a mutable tag. FOUND-017
+  (suggested): `.editorconfig` present at project root. Also adds
+  `.claude/standards/container-images.md` (132 lines) documenting the container
+  image registry hierarchy and GHCR mirror catalog.
+
+* feat(agents): promote `plan-ceo-review`, `plan-devex-review`, and
+  `project-plan-synthesizer` agents from `model: sonnet` to `model: opus`.
+  Design and synthesis agents (agents that produce or critique key architectural
+  artifacts) now follow the reviewer-model-policy in `.claude/rules/supervisor.md`
+  that reserves Opus for judgment-heavy roles, not just adversarial reviewers.
+  Updates `.claude/rules/supervisor.md` to document the "Model tier by role"
+  principle distinguishing design/synthesis (opus) from implementation (sonnet).
+
+* feat(mcp): integrate `codebase-memory-mcp` binary-managed server with rules,
+  skill, and docs. Adds a `.claude/skills/codebase-memory/SKILL.md` quick-reference
+  (14 MCP tools, knowledge-graph decision matrix, Cypher examples), a "Binary-managed
+  MCP servers" section to `.claude/rules/mcp-strategy.md`, and
+  `docs/getting-started/codebase-memory-mcp.md` setup guide. The server manages its
+  own `~/.claude/.mcp.json` wiring via `codebase-memory-mcp install`; it is not part
+  of the tiered loading strategy.
+
 * feat: adopt `ast-grep` and `difftastic` as preferred CLI tools and add
   `actionlint`, `shfmt`, and `vale` pre-commit hooks. A new `/ast-grep` skill
   (meta-variable patterns, rewrite templates, YAML relational rules) is
