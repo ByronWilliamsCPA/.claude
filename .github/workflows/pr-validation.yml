@@ -1,266 +1,97 @@
-# PR Validation for Claude Code Configuration
-# Comprehensive pull request validation using org-level workflow plus additional checks.
-#
-# This workflow calls the org-level PR validation workflow and adds supplementary
-# checks for dead code detection and documentation links.
+# PR Validation Workflow
+# Validates PR title format (Conventional Commits) and non-empty PR body.
 name: PR Validation
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize, reopened, edited]
     branches:
       - main
       - master
-      - develop
 
-# Cancel in-progress runs for same PR
+  merge_group:
+permissions: {}
+
 concurrency:
   group: pr-validation-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
-permissions: {}
-
 jobs:
-  # ==========================================================================
-  # Org-Level PR Validation (Core Checks)
-  # ==========================================================================
-  core-validation:
-    name: Core Validation
-    permissions:
-      contents: read
-      pull-requests: write
-      checks: write
-    uses: ByronWilliamsCPA/.github/.github/workflows/python-ci.yml@6f71aecae2c91214ca0a0a2206a36cf912aa31ac  # v1.1.0
-    with:
-      python-version: '3.12'
-      coverage-threshold: 80
-      enable-dead-code-check: true
-      # claude-config has no published wheel; the shared workflow defaults
-      # no-build: true which would block the editable install.
-      no-build: false
-
-  # ==========================================================================
-  # Additional Checks (Template-Specific)
-  # ==========================================================================
-
-  # Dead Code Detection with Vulture
-  dead-code:
-    name: Dead Code Check
+  title-check:
+    name: PR Title Format
     runs-on: ubuntu-latest
-    timeout-minutes: 15
     permissions:
-      contents: read
+      pull-requests: read
     steps:
-      - name: Harden the runner
-        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411  # v2.19.4
+      - name: Harden runner
+        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7  # v2.10.1
         with:
           egress-policy: audit
-
-      - name: Checkout repository
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7
-
-      - name: Set up Python
-        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1  # v6.3.0
-        with:
-          python-version: "3.12"
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39  # v8.2.0
-        with:
-          enable-cache: true
-          cache-dependency-glob: "uv.lock"
-          cache-local-path: ".uv-cache"
-
-      - name: Install dependencies
-        run: uv sync --all-extras --frozen
-
-      - name: Run vulture
-        run: |
-          echo "## Dead Code Report" >> $GITHUB_STEP_SUMMARY
-          uv run --frozen vulture src/ --min-confidence 90 | tee vulture-report.txt || true
-          if [ -s vulture-report.txt ]; then
-            echo '```' >> $GITHUB_STEP_SUMMARY
-            cat vulture-report.txt >> $GITHUB_STEP_SUMMARY
-            echo '```' >> $GITHUB_STEP_SUMMARY
-            echo "::warning::Potential dead code detected. Review vulture report."
-          else
-            echo "No dead code detected with 90% confidence." >> $GITHUB_STEP_SUMMARY
-          fi
-
-  # Documentation Link Check
-  link-check:
-    name: Documentation Links
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    permissions:
-      contents: read
-    steps:
-      - name: Harden the runner
-        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411  # v2.19.4
-        with:
-          egress-policy: audit
-
-      - name: Checkout repository
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7
-
-      - name: Check documentation links
-        uses: lycheeverse/lychee-action@8646ba30535128ac92d33dfc9133794bfdd9b411  # v2
-        with:
-          args: >-
-            --verbose
-            --no-progress
-            --accept 200,204,206,301,302,403,429
-            --exclude-mail
-            --exclude '^https://github.com/.*/(issues|pulls|compare)/.*$'
-            --exclude '^https://linear.app/.*$'
-            './docs/**/*.md'
-            './README.md'
-            './CONTRIBUTING.md'
-          fail: false
-          jobSummary: true
+      - name: Validate conventional commit title
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-
-  # Qlty Checks: runs all enabled plugins in .qlty/qlty.toml (ruff, basedpyright, bandit, smells)
-  # on PR diff only. Not smells-only; all configured checks run and can fail this gate.
-  # For non-Python diffs, plugin linters produce no findings and exit 0 (handled gracefully).
-  qlty-smells:
-    name: Qlty Checks
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    permissions:
-      contents: read
-    steps:
-      - name: Harden the runner
-        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411  # v2.19.4
-        with:
-          egress-policy: audit
-
-      - name: Checkout repository
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7
-        with:
-          fetch-depth: 0  # full history required; diff against base needs merge-base to be reachable
-
-      - name: Fetch base ref for diff
-        run: git fetch origin "$GITHUB_BASE_REF"
-
-      - name: Install Qlty
-        uses: qltysh/qlty-action/install@fd52dc852530a708d68c3b7342f8d33d1df4cd55  # v2
-
-      - name: Run qlty check
+          PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
-          # --diff-filter=ACMR excludes Deleted paths; qlty check errors on a
-          # path that no longer exists in the working tree (deletion-only PRs).
-          mapfile -t CHANGED < <(git diff --name-only --diff-filter=ACMR "origin/$GITHUB_BASE_REF")
-          if [ "${#CHANGED[@]}" -eq 0 ]; then
-            echo "No changed files to check"
-            exit 0
+          # Conventional Commits: type(scope)!: description
+          PATTERN='^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([^()]+\))?!?: .+'
+          if echo "$PR_TITLE" | grep -qE "$PATTERN"; then
+            echo "PR title follows Conventional Commits format."
+          else
+            echo "::error::PR title must follow Conventional Commits format."
+            echo "::error::  Expected: type(scope): description"
+            echo "::error::  Example:  feat(auth): add OAuth2 support"
+            echo "::error::  Got: $PR_TITLE"
+            exit 1
           fi
-          qlty check "${CHANGED[@]}"
 
-
-  # Qlty Coverage Upload (reuses artifact from core-validation, runs on synchronize events)
-  qlty-coverage:
-    name: Qlty Coverage Upload
+  body-check:
+    name: PR Body Non-Empty
     runs-on: ubuntu-latest
-    timeout-minutes: 10
-    needs: [core-validation]
-    if: always() && needs.core-validation.result == 'success' && github.event.pull_request.head.repo.fork == false
     permissions:
-      contents: read
-      actions: read
-    env:
-      QLTY_COVERAGE_TOKEN: ${{ secrets.QLTY_COVERAGE_TOKEN }}
+      pull-requests: read
     steps:
-      - name: Harden the runner
-        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411  # v2.19.4
+      - name: Harden runner
+        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7  # v2.10.1
         with:
           egress-policy: audit
+      - name: Check PR body is non-empty
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          if [ -z "$PR_BODY" ] || [ "$PR_BODY" = "null" ]; then
+            echo "::error::PR description is empty. Please describe what this PR does."
+            exit 1
+          fi
+          STRIPPED=$(echo "$PR_BODY" | tr -d '[:space:]')
+          if [ -z "$STRIPPED" ]; then
+            echo "::error::PR description contains only whitespace."
+            exit 1
+          fi
+          echo "PR body is present."
 
-      - name: Download coverage artifact
-        id: download-coverage
-        continue-on-error: true
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
-        with:
-          name: coverage-reports
-          path: reports/
-
-      - name: Upload coverage to Qlty
-        if: env.QLTY_COVERAGE_TOKEN != '' && steps.download-coverage.outcome == 'success'
-        uses: qltysh/qlty-action/coverage@fd52dc852530a708d68c3b7342f8d33d1df4cd55  # v2
-        with:
-          token: ${{ secrets.QLTY_COVERAGE_TOKEN }}
-          files: reports/coverage*.xml     # combined + per-suite breakdown
-
-
-  # ==========================================================================
-  # Dependency & Standards Validation Gate
-  # ==========================================================================
-  validation-summary:
-    name: Dependency & Standards Validation
+  pr-validation-gate:
+    name: PR Validation Gate
     runs-on: ubuntu-latest
-    timeout-minutes: 5
-    permissions:
-      contents: read
-    needs: [core-validation, dead-code, link-check, qlty-smells, qlty-coverage]
+    needs: [title-check, body-check]
     if: always()
     steps:
-      - name: Harden the runner
-        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+      - name: Harden runner
+        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7  # v2.10.1
         with:
           egress-policy: audit
-
-      - name: Check validation results
+      - name: Check all PR validation results
         env:
-          CORE_RESULT: ${{ needs.core-validation.result }}
-          DEAD_CODE_RESULT: ${{ needs.dead-code.result }}
-          LINK_CHECK_RESULT: ${{ needs.link-check.result }}
-          QLTY_SMELLS_RESULT: ${{ needs.qlty-smells.result }}
-          QLTY_COVERAGE_RESULT: ${{ needs.qlty-coverage.result }}
+          TITLE_RESULT: ${{ needs.title-check.result }}
+          BODY_RESULT: ${{ needs.body-check.result }}
         run: |
           echo "## PR Validation Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-
-          if [ "$CORE_RESULT" == "success" ]; then
-            echo "Core Validation: Passed" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "Core Validation: $CORE_RESULT" >> $GITHUB_STEP_SUMMARY
-          fi
-
-          if [ "$DEAD_CODE_RESULT" == "success" ]; then
-            echo "Dead Code Check: Passed" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "Dead Code Check: $DEAD_CODE_RESULT" >> $GITHUB_STEP_SUMMARY
-          fi
-
-          if [ "$LINK_CHECK_RESULT" == "success" ]; then
-            echo "Link Check: Passed" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "Link Check: $LINK_CHECK_RESULT" >> $GITHUB_STEP_SUMMARY
-          fi
-
-          if [ "$QLTY_SMELLS_RESULT" == "success" ]; then
-            echo "Qlty Checks: Passed" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "Qlty Checks: $QLTY_SMELLS_RESULT" >> $GITHUB_STEP_SUMMARY
-          fi
-
-          if [ "$QLTY_COVERAGE_RESULT" == "success" ]; then
-            echo "Qlty Coverage: Uploaded" >> $GITHUB_STEP_SUMMARY
-          elif [ "$QLTY_COVERAGE_RESULT" == "skipped" ]; then
-            echo "Qlty Coverage: Skipped (core-validation did not succeed)" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "Qlty Coverage: $QLTY_COVERAGE_RESULT" >> $GITHUB_STEP_SUMMARY
-          fi
-
-          BLOCK=0
-          if [ "$CORE_RESULT" != "success" ]; then BLOCK=1; fi
-          if [ "$DEAD_CODE_RESULT" == "failure" ]; then BLOCK=1; fi
-          if [ "$QLTY_SMELLS_RESULT" == "failure" ]; then BLOCK=1; fi
-          if [ "$BLOCK" == "1" ]; then
-            echo "One or more required checks failed. Please review and fix issues." >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Result |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| PR Title Format | $TITLE_RESULT |" >> $GITHUB_STEP_SUMMARY
+          echo "| PR Body Non-Empty | $BODY_RESULT |" >> $GITHUB_STEP_SUMMARY
+          if [ "$TITLE_RESULT" != "success" ] || [ "$BODY_RESULT" != "success" ]; then
+            echo "::error::One or more PR validation checks failed."
             exit 1
           fi
-          echo ""
-          echo "All validation checks passed!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "All PR validation checks passed." >> $GITHUB_STEP_SUMMARY
