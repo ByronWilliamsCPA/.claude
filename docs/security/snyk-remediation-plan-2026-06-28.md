@@ -130,6 +130,7 @@ suppression for its own sake.
 ## Sequenced checklist
 
 - [x] Commit `.snyk` exclusion policy (P0.1)
+- [x] Annotate `.snyk` in `REUSE.toml` so the REUSE compliance gate passes (P0.1)
 - [ ] Add + document IDE OSS folder exclusions (P0.2)
 - [ ] Verify IDE panels show owned scope only (P0.3)
 - [x] `CommandInjection` analyzed: verified false positive, no code change (P1.4)

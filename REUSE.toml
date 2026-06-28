@@ -163,6 +163,7 @@ path = [
     ".mcp.json",
     ".prettierrc",
     ".shellcheckrc",
+    ".snyk",  # Snyk scan policy (exclude-scoping config, same class as .trivyignore)
     ".trivyignore",
     ".yamllint",
     "scripts/README.md",

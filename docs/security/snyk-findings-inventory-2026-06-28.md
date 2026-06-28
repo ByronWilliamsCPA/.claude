@@ -61,6 +61,13 @@ CLAUDE.md) and tracked in [known-vulnerabilities.md](../known-vulnerabilities.md
 
 ## Part B: Code Security (158 issues in IDE) -- all vendored after exclusion
 
+Count reconciliation: the **234** in the executive summary is the raw Code-panel
+total (every flagged entry, including duplicate manifest hits); **158** is the
+subset of Code issues the IDE surfaces as distinct entries, all resolving to
+`.submodules/`; **13** is the owned residual after applying the `.snyk` exclusions
+(Part C). The three numbers describe the same finding set at decreasing scope, not
+three separate populations.
+
 The IDE Code Security panel's visible entries all resolve to submodules:
 
 | Panel label | Issues | Resolves to |
