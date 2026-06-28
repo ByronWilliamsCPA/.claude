@@ -224,6 +224,16 @@ specific rule; it lives here because workflow-file remediation is where it bites
 - For cognitive complexity issues (S3776), refactor the function rather than suppressing.
 - For security hotspots (githubactions:S7637, etc.), apply the specific remediation
   (e.g., pin GitHub Actions to full SHA hashes).
+- For taint-analysis rules (rule-key prefix `pythonsecurity:` / `javasecurity:` etc.:
+  injection, SSRF, path traversal, S8707), the flagged line is the *sink*, not the
+  fix location. Trace the flow back to the untrusted *source* (argparse, request
+  params, env) and insert one canonicalize-and-validate gate at that boundary, before
+  the value forks to multiple sinks. Re-read the rule's "how to fix it" for the exact
+  sanitizer shape, and confirm the gate sits on the data-flow path in
+  normalize -> validate -> use order. N flagged sinks fed by one source are usually
+  one fix at the boundary, not N fixes at the sinks; fixing at each sink scatters
+  duplicate checks and can leave the taint unbroken if the sanitizer is not recognized
+  on the flow path.
 
 #### Mode: Gate (`gate`)
 
@@ -294,6 +304,20 @@ paths that make the hotspot unexploitable; otherwise prefer `ACKNOWLEDGED`.
 
 Designed for weekly hygiene runs or on-demand combined review. Fetches all open
 issues AND all TO_REVIEW hotspots in a single session and walks through remediation.
+
+**Ownership pre-step (when triaging IDE security-panel counts):** Before counting
+or planning remediation from any IDE security-panel total (the VS Code SONARQUBE
+tab, or a peer security plugin such as Snyk), resolve each flagged path to
+git-ownership first. IDE plugins scan the entire open workspace, including vendored
+git submodules and the gitignored virtualenv, so a raw panel count reflects what was
+scanned, not what you own or can act on. Split owned (tracked source) from
+vendored/venv (`git ls-files` / `git check-ignore`, or compare paths against
+`.submodules/*` and `.venv/*`). Check whether the scanner has a scope-config file and
+whether peer gates (pre-commit, linters) already exclude the same paths; aligning the
+scanner to that existing boundary is usually higher-leverage than fixing individual
+findings. Triage only the owned residual, confirmed by a re-scan with exclusions
+applied. A 200-plus-finding "sprint" can collapse to a one-file scope-config plus a
+handful of owned items once ownership is mapped.
 
 1. Run Steps 1 and 2 (detect org, select MCP server) as normal
 2. Fetch all data in parallel:

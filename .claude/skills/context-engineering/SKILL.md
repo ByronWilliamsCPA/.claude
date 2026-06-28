@@ -137,6 +137,19 @@ Long conversations accumulate stale context. Manage this (our root `CLAUDE.md` "
 - **Summarize progress** when context is getting long: "So far we've completed X, Y, Z. Now working on W."
 - **Compact deliberately**: if the tool supports it, compact/summarize before critical work
 
+**Autocompact config depends on the model's current context window; re-verify when it
+changes.** The autocompact settings in root `CLAUDE.md` (`CLAUDE_CODE_AUTO_COMPACT_WINDOW=500000`
++ `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE=75`) yield a ~375K trigger on a 1M window and, via the
+documented "capped at the model's actual context window" behavior, ~150K on a 200K window. Today
+every model in use exposes a 1M window, so the 200K cap branch is unexercised at runtime, and
+Anthropic has historically moved the 1M window in and out of subscription availability. When a
+200K-window model option reappears (or on the next monthly compliance sweep), verify in a live
+200K session that `/context` reports an autocompact threshold near 150K, not 375K and not an
+unreachable trigger that defers to the model's hard limit. If the cap does not behave as
+documented, switch to an explicit per-regime setting. A config that depends on a vendor's
+mutable capability should carry a re-verification trigger tied to that capability changing,
+rather than be treated as set-and-forget.
+
 ## Context Packing Strategies
 
 ### The Brain Dump

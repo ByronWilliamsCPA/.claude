@@ -350,6 +350,21 @@ valid: validators check the whole contract, while error reports only surface the
 breach. A config that fixes the reported error and still has a second invalid option will
 re-halt all dependency PRs on the bot's next run.
 
+**Validate manifest edits against the self-consistency test, not just YAML parse.** After any
+edit to `docs/standards-manifest.yaml`, run the repo's own consistency gate, not just a YAML
+parser:
+
+```bash
+python3 -m pytest tests/unit/test_manifest_consistency.py -o addopts="" -q
+```
+
+(The `-o addopts=""` override skips the unrelated 80% coverage gate.) The manifest carries
+invariants the schema does not encode, and a parse-only check passes the
+semantically-wrong-but-syntactically-valid case. Specific invariant: suggested-tier checks
+always set `override_eligible: true`, because the field is inert at that tier; copying
+`override_eligible: false` by analogy with a critical security check parses cleanly but fails
+the consistency test.
+
 ## Re-verify Prior Audit Mode
 
 Audit branches produced by automated audits (`claude/repo-audit-*`) go stale relative to
@@ -377,6 +392,22 @@ false premise.
 
 The audit reasons from whatever it measures, so a polluted measurement produces a confident
 wrong conclusion. Apply these grounding rules before relaying any count, status, or finding.
+
+### Read authoritative remote files via the Contents API, not WebFetch
+
+When you need the exact content of a file on a GitHub repo at HEAD (a sibling repo's manifest,
+a workflow you do not have cloned, an upstream config), use the Contents API, not WebFetch on
+the `blob` URL. GitHub `github.com/.../blob/...` URLs serve an HTML rendering; WebFetch
+converts that HTML to Markdown and garbles code-block structure and whitespace. The Contents
+API returns the raw bytes (base64-encoded) and works on private repos when `gh` is authed:
+
+```bash
+gh api repos/<owner>/<repo>/contents/<path>?ref=main \
+  | python3 -c "import sys,json,base64; print(base64.b64decode(json.load(sys.stdin)['content']).decode())"
+```
+
+Pair it with a targeted `grep` to audit exactly what a file contains without cloning. This is
+the same authority as `git show origin/main:<file>` for repos you do have cloned.
 
 ### Catalog-less fallback (obs 106)
 

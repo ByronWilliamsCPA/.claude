@@ -82,6 +82,26 @@ cannot be safely undone once other contributors have pulled.
 If a force-push seems necessary (e.g., to remove a secret accidentally committed), stop
 and ask the user before proceeding.
 
+## Protected-branch reset guard: key on the mutated branch, not the name
+
+The `bash-pre-hook.sh` protected-branch reset guard must block a destructive
+operation only when the branch being MUTATED is itself `main`/`master`/`develop`
+(the current HEAD branch, or a detached HEAD on that branch's tip). It must NOT
+fire on a feature-branch operation that merely NAMES a protected branch as a
+SOURCE. Pointing a feature branch at main's tip is the documented squash-orphan
+rebuild recipe (reset the feature branch to main, then cherry-pick its unique
+commits); it does not mutate main and is safe.
+
+A guard keyed on a raw substring scan of the command line produces false
+positives here: it blocks the legitimate rebuild because the command contains the
+protected name or the target ref resolves to main's tip, and it even blocks
+heredocs that merely DOCUMENT the command. Worse, it teaches an equivalent
+bypass: `git checkout -B <branch> <bare-sha>` achieves the identical mutation
+with no literal protected name, so a substring guard adds friction without adding
+safety. Match on parsed git argv (the target ref being moved versus the current
+branch), apply the same target-branch logic to `git checkout -B`, and allow the
+operation whenever the mutated branch is not a protected one.
+
 ## Branch Workflow Override
 
 The branch-first rule (never commit directly to `main`) applies in all standard cases.
