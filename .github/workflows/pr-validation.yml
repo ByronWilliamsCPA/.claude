@@ -12,10 +12,11 @@ on:
       - main
       - master
       - develop
+  merge_group:
 
-# Cancel in-progress runs for same PR
+# Cancel in-progress runs for same PR (or merge_group ref when queued)
 concurrency:
-  group: pr-validation-${{ github.event.pull_request.number }}
+  group: pr-validation-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 permissions: {}
