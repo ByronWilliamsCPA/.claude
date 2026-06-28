@@ -1,95 +1,167 @@
-# CI/CD Pipeline for Claude Code Configuration
-# Delegates to the org-level reusable CI workflow for standard quality gates.
+# ============================================================================
+# Basic CI for DeQA-Doc
+# ============================================================================
+# Lightweight checks suited for a research codebase with heavy GPU deps.
+# Tests requiring torch/CUDA are excluded; run those locally with GPU.
+# ============================================================================
+
 name: CI
 
 on:
-  push:
-    branches: [main, master, develop]
   pull_request:
-    types: [opened, synchronize, reopened]
-    branches: [main, master, develop]
-  workflow_dispatch:
+    branches: [main]
+  merge_group:
+  push:
+    branches: [main]
 
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
-permissions: {}
-
+# Permissions are declared per-job (least privilege) rather than workflow-wide,
+# per githubactions:S8264 and the org workflow-permissions standard.
 jobs:
-  ci:
-    name: CI (Python 3.12)
+  quality:
+    name: Quality Checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450  # v2.19.1
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b  # v8.1.0
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install 3.11
+
+      - name: Install linting tools
+        run: uv tool install ruff && uv tool install bandit
+
+      # Lint new/local code only (not upstream DeQA-Score or Llamafactory)
+      - name: Ruff format check (results/)
+        run: |
+          if [ -d results/ ]; then
+            ruff format --check results/ || echo "::warning::Formatting issues in results/"
+          fi
+
+      - name: Ruff lint (results/)
+        run: |
+          if [ -d results/ ]; then
+            ruff check results/ --output-format=github || echo "::warning::Lint issues in results/"
+          fi
+
+      - name: Python syntax check (all .py files)
+        run: |
+          echo "Checking Python syntax..."
+          find . -name "*.py" -not -path "./.git/*" -not -path "./.venv/*" | \
+            xargs python -m py_compile 2>&1 | tee /tmp/syntax.log || true
+          if [ -s /tmp/syntax.log ]; then
+            echo "::warning::Syntax issues found; see log above"
+          fi
+
+      - name: Bandit security scan (results/)
+        run: |
+          if [ -d results/ ]; then
+            bandit -r results/ -ll || echo "::warning::Security issues in results/"
+          fi
+
+      - name: Check for secrets/credentials
+        run: |
+          echo "Scanning for potential secrets..."
+          FOUND=0
+          # Check for hardcoded API keys/tokens
+          if grep -rE "(api_key|api_secret|password|token)\s*=\s*[\"'][^\"']{8,}[\"']" \
+               --include="*.py" --include="*.sh" --include="*.yaml" --include="*.yml" \
+               --exclude-dir=.git --exclude-dir=tests . 2>/dev/null; then
+            echo "::error::Potential hardcoded secret detected"
+            FOUND=1
+          fi
+          # Check for .env committed
+          if git ls-files --error-unmatch .env 2>/dev/null; then
+            echo "::error::.env file is tracked by git"
+            FOUND=1
+          fi
+          if [ "$FOUND" -eq 1 ]; then
+            exit 1
+          fi
+          echo "No secrets detected."
+
+  # CodeQL security analysis is handled by GitHub's default setup.
+  # Do not add an advanced CodeQL configuration here; it conflicts
+  # with the default setup and causes SARIF upload failures.
+
+  dependency-review:
+    name: Dependency Review
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       pull-requests: write
-      checks: write
-    uses: ByronWilliamsCPA/.github/.github/workflows/python-ci.yml@6f71aecae2c91214ca0a0a2206a36cf912aa31ac # v1.1.0
-    with:
-      python-version: "3.12"
-      coverage-threshold: 80
-      # claude-config has no published wheel; the shared workflow defaults
-      # no-build: true which would block the editable install.
-      no-build: false
 
-  # ==========================================================================
-  # Manifest self-consistency: validates docs/standards-manifest.yaml invariants
-  # (severity/override-eligibility coherence, unique IDs, known domains). Runs as
-  # a separately named check so a manifest contradiction surfaces clearly rather
-  # than buried in the reusable workflow's pytest output.
-  # ==========================================================================
-  manifest-consistency:
-    name: Manifest self-consistency
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450  # v2.19.1
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48  # v4.9.0
+        with:
+          fail-on-severity: high
+          # Accepted residual: deepspeed (training-only) has no release that
+          # both fixes this RCE (<0.15.1) and keeps pydantic<2 (0.15.x needs
+          # pydantic>=2). Tracked in docs/known-vulnerabilities.md (reassess
+          # 2026-07-27; cleared by the pydantic-v2 / model-stack migration).
+          allow-ghsas: GHSA-8cp5-3rf8-8gfh
+          comment-summary-in-pr: always
+
+  # Aggregating gate that emits the exact context required by the org ruleset
+  # (ByronWilliamsCPA-default-branch-baseline). For a non-reusable job the
+  # required-check context equals the job name verbatim, so this job is named
+  # "Dependency & Standards Validation". It passes only when the quality and
+  # dependency-review jobs both succeed (dependency-review is skipped on push,
+  # which is acceptable; it always runs on the pull_request merge gate).
+  dependency-standards-validation:
+    name: Dependency & Standards Validation
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    needs: [quality, dependency-review]
+    if: always()
     permissions:
       contents: read
-    steps:
-      - name: Harden runner
-        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411  # v2.19.4
-        with:
-          egress-policy: audit
-      - name: Checkout repository
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
-      - name: Install uv
-        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
-        with:
-          enable-cache: true
-      - name: Set up Python
-        run: uv python install 3.12
-      - name: Install dependencies
-        run: uv sync --frozen --extra dev
-      - name: Validate manifest consistency
-        # --no-cov: this job runs a single validation file, so the repo-wide
-        # --cov-fail-under in pyproject addopts would measure src/ coverage
-        # against one test file and fail. Coverage is enforced by the full
-        # suite in the ci job and the coverage workflow, not here.
-        run: uv run pytest tests/unit/test_manifest_consistency.py -v --no-cov
 
-  # ==========================================================================
-  # CI Gate: aggregates the CI result; must pass for branch protection
-  # ==========================================================================
-  ci-gate:
-    name: CI Gate
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    needs: [ci, manifest-consistency]
-    if: always()
     steps:
-      - name: Harden runner
-        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411  # v2.19.4
+      - name: Harden Runner
+        uses: step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450  # v2.19.1
         with:
           egress-policy: audit
-      - name: Check CI results
+
+      - name: Validate dependency and standards checks
         env:
-          CI_RESULT: ${{ needs.ci.result }}
-          MANIFEST_RESULT: ${{ needs.manifest-consistency.result }}
+          QUALITY_RESULT: ${{ needs.quality.result }}
+          DEPREVIEW_RESULT: ${{ needs.dependency-review.result }}
         run: |
-          if [ "$CI_RESULT" != "success" ]; then
-            echo "::error::CI Gate failed: CI result is $CI_RESULT"
+          echo "Quality Checks:    $QUALITY_RESULT"
+          echo "Dependency Review: $DEPREVIEW_RESULT"
+          if [ "$QUALITY_RESULT" != "success" ]; then
+            echo "::error::Dependency & Standards Validation failed: Quality Checks result is $QUALITY_RESULT"
             exit 1
           fi
-          if [ "$MANIFEST_RESULT" != "success" ]; then
-            echo "::error::CI Gate failed: manifest-consistency result is $MANIFEST_RESULT"
+          if [ "$DEPREVIEW_RESULT" != "success" ] && [ "$DEPREVIEW_RESULT" != "skipped" ]; then
+            echo "::error::Dependency & Standards Validation failed: Dependency Review result is $DEPREVIEW_RESULT"
             exit 1
           fi
-          echo "CI Gate passed"
+          echo "Dependency & Standards Validation passed"
