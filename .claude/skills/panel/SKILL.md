@@ -1,16 +1,16 @@
 ---
-name: consensus
+name: panel
 description: >
-  Multi-model consensus via OpenRouter, replacing the zen/pal MCP consensus tools. Two
+  Multi-model panel via OpenRouter, replacing the zen/pal MCP consensus tools. Two
   modes: tiered-review (structured IT review team, levels 1-3, professional roles per
-  domain) and consensus (fully flexible models and stances). Use when the user wants
-  second opinions from multiple AI models, a tiered review, multi-model consensus, or to
-  consult other models. Triggers on: consensus, tiered consensus, tiered review, second
-  opinion, multi-model review, ask other models, review team, model roster.
+  domain) and panel (fully flexible models and stances). Use when the user wants
+  second opinions from multiple AI models, a tiered review, multi-model panel, or to
+  consult other models. Triggers on: panel, consensus, tiered consensus, tiered review,
+  second opinion, multi-model review, ask other models, review team, model roster.
 tools: ["Read", "Bash", "Grep", "Glob", "Edit", "Write"]
 ---
 
-# Consensus
+# Panel
 
 Fan a question out to multiple AI models via OpenRouter and synthesize their
 responses. The engine script handles selection, parallel calls, retries,
@@ -29,7 +29,7 @@ synthesis to a model template.
 | User intent | Mode | Workflow |
 | --- | --- | --- |
 | "tiered consensus", "review team", "level 1/2/3", wants structured IT review | Tiered review | `workflows/tiered-review.md` |
-| Names specific models, wants stances (for/against), ad-hoc panel | Flexible consensus | `workflows/consensus.md` |
+| Names specific models, wants stances (for/against), ad-hoc panel | Flexible panel | `workflows/panel.md` |
 | "refresh the model data", roster references dead models | Data refresh | `workflows/refresh-data.md` |
 
 When the request is ambiguous, default to tiered review at level 1 (it is
@@ -38,11 +38,11 @@ nearly free) and say so.
 ## Engine quick reference
 
 ```bash
-uv run .claude/skills/consensus/scripts/consensus_cli.py select --level 2 --domain architecture
-uv run .claude/skills/consensus/scripts/consensus_cli.py estimate --level 3
-uv run .claude/skills/consensus/scripts/consensus_cli.py run --prompt-file /tmp/q.txt --roster-file /tmp/roster.json
-uv run .claude/skills/consensus/scripts/consensus_cli.py run --prompt-file /tmp/q.txt --models "openai/gpt-5.1,anthropic/claude-opus-4.6" --roles-file /tmp/roles.json
-uv run .claude/skills/consensus/scripts/consensus_cli.py refresh
+uv run .claude/skills/panel/scripts/consensus_cli.py select --level 2 --domain architecture
+uv run .claude/skills/panel/scripts/consensus_cli.py estimate --level 3
+uv run .claude/skills/panel/scripts/consensus_cli.py run --prompt-file /tmp/q.txt --roster-file /tmp/roster.json
+uv run .claude/skills/panel/scripts/consensus_cli.py run --prompt-file /tmp/q.txt --models "openai/gpt-5.1,anthropic/claude-opus-4.6" --roles-file /tmp/roles.json
+uv run .claude/skills/panel/scripts/consensus_cli.py refresh
 ```
 
 Domains: `code_review` (default), `security`, `architecture`, `general`.

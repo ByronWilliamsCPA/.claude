@@ -163,6 +163,11 @@ repos:
     hooks:
       - id: actionlint
         stages: [pre-commit]
+        # Disable actionlint's embedded shellcheck pass: it ignores repo
+        # shellcheck config and flags pre-existing run-block style (SC2086,
+        # SC2046) unrelated to workflow correctness. actionlint's own
+        # syntax/expression checks stay active. See PR #235 for the same fix.
+        args: [-shellcheck=]
 
   # ============================================================================
   # YAML Linting

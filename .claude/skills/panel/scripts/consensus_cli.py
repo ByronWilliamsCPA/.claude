@@ -30,7 +30,7 @@ from typing import TextIO
 import httpx
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
-CACHE_PATH = Path.home() / ".cache" / "consensus-skill" / "openrouter-models.json"
+CACHE_PATH = Path.home() / ".cache" / "panel-skill" / "openrouter-models.json"
 CACHE_TTL_SECONDS = 24 * 3600
 OPENROUTER_BASE = "https://openrouter.ai/api/v1"
 EST_INPUT_TOKENS = 2000
@@ -847,7 +847,8 @@ def _cmd_run(
         # #CRITICAL: base the substitution cap on the cost actually incurred so
         # far (outcome["total_cost_usd"]), not the pre-flight estimate; a
         # high-token first round plus substitution could otherwise breach the
-        # level cap. #VERIFY: test_substitution_cap_uses_actual_incurred_cost.
+        # level cap.
+        # #VERIFY: confirm enforce_cost_cap receives actual incurred cost, not pre-flight estimate
         enforce_cost_cap(
             outcome["total_cost_usd"] + sub_estimate, args.level, args.max_cost
         )

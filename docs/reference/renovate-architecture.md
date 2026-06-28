@@ -245,38 +245,37 @@ The reusable `python-sbom.yml` workflow in `ByronWilliamsCPA/.github` generates 
 | Tool | Role | Trigger |
 | --- | --- | --- |
 | `cyclonedx-bom==7.3.0` | Generate SBOM from installed environment | Workflow `Generate SBOMs` job |
-| `trivy` (gating, parallel-run) | Scan SBOM for known CVEs (CRITICAL/HIGH by default) | Workflow `Scan Runtime Dependencies` job |
-| `grype` (advisory, parallel-run) | Scan SBOM for known CVEs; non-gating until 2026-06-24 parity checkpoint | Workflow `Scan Runtime Dependencies (Grype - advisory)` job |
+| `grype` (gating) | Scan SBOM for known CVEs (CRITICAL/HIGH by default) | Workflow `Scan Runtime Dependencies` job |
+| `osv-scanner` (gating, keyless) | Scan SBOM for known CVEs across OSV/GHSA/NVD/PyPI | Workflow `Scan Runtime Dependencies (OSV-Scanner)` job |
 | License compliance check | Block forbidden SPDX licenses (default: GPL/AGPL family) | Workflow `License Compliance Check` job |
 
-**Parallel-run note (2026-05-25 to 2026-06-24, issue ByronWilliamsCPA/.github#152):** Trivy and Grype run
-side-by-side. Trivy remains the merge gate. Grype runs with `continue-on-error: true`
-and `fail-build: false`. A `parity-summary` job writes a results-comparison table to
-the run summary. At the day-30 checkpoint, a human spot-checks 3-5 caller-repo runs
-and decides whether to cut over to Grype-only (separate PR) or extend the window.
+**Trivy-to-Grype cutover complete (issue ByronWilliamsCPA/.github#152):** Grype
+(Anchore) replaced Trivy as the gating runtime-dependency CVE scanner. Trivy's release
+infrastructure was compromised in March 2026 with vulnerability-database updates
+suspended, making the scanner itself a supply-chain risk. A parallel-run window
+confirmed package-level and severity-level detection parity (Grype missed nothing
+Trivy caught, at identical CVSS scores including HIGH findings) before the cutover
+landed. The promoted Grype job keeps the `Scan Runtime Dependencies` status-check name
+the former Trivy job used, so consumer rulesets are unaffected. OSV-Scanner remains a
+second keyless gate.
 
 **Workflow inputs:**
 - `python-version`: which interpreter to scan against
 - `fail-on-vulnerabilities`: true by default; blocks merge on CRITICAL/HIGH
 - `severity-threshold`: defaults to `CRITICAL,HIGH`
 - `forbidden-licenses`: JSON array of SPDX IDs
-- `trivyignore-path`: `.trivyignore` to suppress known CVEs (must have tracked references).
-  Pending deprecation: scheduled for removal at Trivy cutover (target 2026-06-24,
-  see ByronWilliamsCPA/.github#152). Continue using it during the parallel-run window,
-  Trivy remains the gating scanner.
 - `grype-config-path`: `.grype.yaml` to suppress known CVEs in Grype
-  (parallel-run; default `.grype.yaml`).
+  (default `.grype.yaml`). The former `trivyignore-path` input was removed at the
+  issue ByronWilliamsCPA/.github#152 cutover.
 
 **How SBOM and Renovate interact:**
 1. Renovate proposes a dependency PR (routine or vulnerability-triggered).
 2. The PR triggers CI, which runs `python-sbom.yml`.
-3. Trivy scans the post-update SBOM. If a CRITICAL/HIGH CVE remains, CI fails and the PR
-   cannot merge. Grype scans the same SBOM in parallel during the 2026-05-25 to 2026-06-24
-   parity window; Grype findings are advisory only.
-4. If Trivy finds a CVE Renovate doesn't know about (e.g., not yet in OSV or GHSA), the
-   SBOM scan blocks the PR even though Renovate would have allowed it. Grype's independent
-   CVE DB provides a cross-check; parity divergence surfaces in the `parity-summary` step
-   output.
+3. Grype scans the post-update SBOM. If a CRITICAL/HIGH CVE remains, CI fails and the PR
+   cannot merge. OSV-Scanner scans the same SBOM as a second keyless gate.
+4. If Grype finds a CVE Renovate doesn't know about (e.g., not yet surfaced as a Renovate
+   update), the SBOM scan blocks the PR even though Renovate would have allowed it.
+   Grype's and OSV's independent databases provide cross-checks against each other.
 
 **Net effect:** SBOM scanning is the *last line of defense* against vulnerable dependencies sneaking into main. It does not generate PRs; it gates them. The 90-day artifact retention preserves SBOMs for audit.
 
@@ -292,8 +291,8 @@ The `dependency-review.yml` reusable workflow runs on every pull request to main
 
 **How it differs from SBOM:**
 - SBOM scans the **entire installed environment** for vulnerabilities; dependency-review scans **only the diff**.
-- SBOM uses Trivy (parallel-run with Grype until 2026-06-24, see
-  ByronWilliamsCPA/.github#152); dependency-review uses GitHub's GHSA directly.
+- SBOM uses Grype plus OSV-Scanner (see ByronWilliamsCPA/.github#152); dependency-review
+  uses GitHub's GHSA directly.
 - SBOM persists artifacts (90 days); dependency-review is ephemeral check-run output.
 
 **How it differs from Renovate:**
@@ -308,7 +307,7 @@ The `dependency-review.yml` reusable workflow runs on every pull request to main
 | --- | --- | --- | --- |
 | Where it runs | Developer machine + CI | Self-hosted Docker | GitHub Actions |
 | What it scans | Installed environment | Lockfile + manifest | Generated SBOM |
-| Data source | PyPI Advisory DB | OSV + GHSA | Trivy DB + Anchore Grype DB (parallel-run) |
+| Data source | PyPI Advisory DB | OSV + GHSA | Anchore Grype DB + OSV-Scanner |
 | Output | CLI report | PR | SARIF + artifact |
 | Cadence | On-demand | Scheduled + on PR | On every PR |
 
@@ -326,7 +325,7 @@ The `dependency-review.yml` reusable workflow runs on every pull request to main
 2. Reads each repo's effective config: docker-compose env → global config → org template → per-repo override.
 3. Detects a new `pydantic` minor version via pep621 manager.
 4. Opens PR, signed by `Renovate Bot <renovate@byronwilliams.dev>`.
-5. CI runs: tests, `python-sbom.yml` (SBOM + Trivy scan), `dependency-review.yml`, pip-audit (if in dev deps).
+5. CI runs: tests, `python-sbom.yml` (SBOM + Grype/OSV scan), `dependency-review.yml`, pip-audit (if in dev deps).
 6. All checks pass; Renovate's automerge rule fires after the 3-day stability window.
 7. PR auto-merges via squash.
 

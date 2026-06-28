@@ -1,4 +1,4 @@
-# Flexible Consensus
+# Flexible Panel
 
 Ad-hoc multi-model consultation: any models, any roles or stances.
 
@@ -13,7 +13,7 @@ Ad-hoc multi-model consultation: any models, any roles or stances.
    `system_architect`) or a literal system prompt:
 
    ```bash
-   cat > /tmp/consensus-roles.json << 'ROLES'
+   cat > /tmp/panel-roles.json << 'ROLES'
    {
      "openai/gpt-5.1": "Argue FOR the proposal. Steelman it.",
      "anthropic/claude-opus-4.6": "Argue AGAINST the proposal. Find the flaws.",
@@ -30,10 +30,10 @@ Ad-hoc multi-model consultation: any models, any roles or stances.
    models outside the curated catalog are not cost-capped at all.
 
    ```bash
-   uv run .claude/skills/consensus/scripts/consensus_cli.py run \
-     --prompt-file /tmp/consensus-prompt.txt \
+   uv run .claude/skills/panel/scripts/consensus_cli.py run \
+     --prompt-file /tmp/panel-prompt.txt \
      --models "openai/gpt-5.1,anthropic/claude-opus-4.6,deepseek/deepseek-chat:free" \
-     --roles-file /tmp/consensus-roles.json \
+     --roles-file /tmp/panel-roles.json \
      --max-cost 2.00
    ```
 

@@ -1,1 +1,1 @@
-../../../.submodules/anthropics-plugins/plugins/claude-md-management/commands/revise-claude-md.md
+../../.submodules/anthropics-plugins/plugins/claude-md-management/commands/revise-claude-md.md
