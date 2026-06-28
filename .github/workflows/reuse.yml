@@ -12,15 +12,12 @@ on:
       - "REUSE.toml"
       - "LICENSES/**"
       - ".github/workflows/reuse.yml"
+  merge_group:
   push:
     branches:
       - main
       - master
       - develop
-
-concurrency:
-  group: reuse-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -29,15 +26,14 @@ jobs:
   reuse:
     name: Check REUSE Compliance
     runs-on: ubuntu-latest
-    timeout-minutes: 10
     steps:
       - name: Harden the runner
-        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        uses: step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450 # v2.19.1
         with:
           egress-policy: audit
 
       - name: Checkout repository
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
 
       - name: REUSE Compliance Check
         uses: fsfe/reuse-action@676e2d560c9a403aa252096d99fcab3e1132b0f5  # v6.0.0
@@ -52,22 +48,20 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
           name: reuse-spdx
-          include-hidden-files: true
           path: reuse-spdx.json
           retention-days: 90
 
   validate-licenses:
     name: Validate License Files
     runs-on: ubuntu-latest
-    timeout-minutes: 5
     steps:
       - name: Harden the runner
-        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        uses: step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450 # v2.19.1
         with:
           egress-policy: audit
 
       - name: Checkout repository
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
 
       - name: Check primary license exists
         run: |
