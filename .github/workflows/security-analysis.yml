@@ -1,4 +1,4 @@
-# Security Analysis Workflow for Claude Code Configuration
+# Security Analysis Workflow
 # Delegates security scans to the org-level reusable workflow.
 name: Security Analysis
 
@@ -7,14 +7,11 @@ on:
     branches: [main, master]
   pull_request:
     branches: [main, master]
+  merge_group:
   schedule:
     # Weekly scan on Mondays at 09:00 UTC
     - cron: '0 9 * * 1'
   workflow_dispatch:
-
-concurrency:
-  group: security-analysis-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
 
 permissions: {}
 
@@ -26,43 +23,27 @@ jobs:
       security-events: write
       pull-requests: write
       actions: read
-    uses: ByronWilliamsCPA/.github/.github/workflows/python-security-analysis.yml@6f71aecae2c91214ca0a0a2206a36cf912aa31ac # v1.1.0
+    uses: ByronWilliamsCPA/.github/.github/workflows/python-security-analysis.yml@c22009ccaab0d3234819d30d9d7a03d53c531cb9 # main
     with:
       python-version: "3.12"
-      # safety scanner support was removed in the v1.1.0 reusable workflow;
-      # pip-audit (in [project.optional-dependencies]) covers the same surface.
-      # CodeQL is handled by the dedicated codeql.yml workflow to avoid
-      # duplicate runs and double Security tab entries.
+      run-safety: false
       run-codeql: false
-      # Dependency Review is available (public repo) but handled separately;
-      # enable here if the org workflow adds value beyond what dependabot covers.
       run-dependency-review: false
-      # osv-scanner-action v2.2.4 has a bug where IgnoredVulns entries that
-      # actively filter a finding are still reported as "unused", causing exit 1.
-      # The py/PYSEC-2022-42969 entry correctly filters the disputed ReDoS vuln
-      # but is marked unused after filtering. pip-audit (dev dep) covers the same
-      # surface. Re-enable once the org workflow updates to osv-scanner >= 2.3.0.
       run-osv: false
-      # claude-config has no published wheel; the shared workflow defaults
-      # no-build: true which would block the editable install.
-      no-build: false
-      # Bandit runs twice already via python-ci.yml, which is called by both
-      # ci.yml and pr-validation.yml. Running it here a third time on the same
-      # commit is pure duplication with no additional signal.
       run-bandit: false
 
-  # ==========================================================================
-  # Security Gate Validation: aggregates the security scan result
-  # ==========================================================================
   security-gate-validation:
-    name: Security Gate Validation
+    # Job name is set to the exact context string required by the org ruleset
+    # (ByronWilliamsCPA-default-branch-baseline). For a non-reusable job the
+    # required-check context equals this name verbatim, so naming it
+    # "Security Analysis / Security Gate Validation" satisfies that requirement.
+    name: Security Analysis / Security Gate Validation
     runs-on: ubuntu-latest
-    timeout-minutes: 5
     needs: [security]
     if: always()
     steps:
       - name: Harden runner
-        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411  # v2.19.4
+        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7  # v2.10.1
         with:
           egress-policy: audit
       - name: Check security scan results
