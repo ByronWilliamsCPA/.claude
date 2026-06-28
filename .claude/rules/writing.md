@@ -29,7 +29,24 @@ information.
 
 **AI filler phrases** (delete or restate directly):
 `delve into`, `it's important to note`, `in conclusion`, `in summary`, `to summarize`,
-`moving forward`, `in today's landscape`, `at the end of the day`
+`moving forward`, `in today's landscape`, `at the end of the day`,
+`at its core`, `when it comes to`, `in a world where`
+
+**Adverbs** (delete; use stronger verbs and nouns instead):
+`really`, `just`, `literally`, `genuinely`, `honestly`, `simply`, `actually`,
+`deeply`, `truly`, `fundamentally`, `inherently`, `inevitably`
+
+**Throat-clearing openers** (cut entirely; lead with the claim):
+"Here's the thing:", "The uncomfortable truth is", "It turns out", "Let me be clear",
+"The truth is,", "Can we talk about", "Here's what [X]"
+
+**Emphasis crutches** (cut; if the sentence needs them, rewrite the sentence):
+"Full stop.", "Period.", "Let that sink in.", "Make no mistake",
+"Here's why that matters"
+
+**Meta-commentary** (cut; state the thing directly):
+"Hint:", "Plot twist:", "You already know this, but", "Let me walk you through...",
+"But that's another post"
 
 **Puffery** (replace with specific evidence):
 `crucial`, `robust`, `seamless`, `holistic`, `comprehensive`, `pivotal`, `vital`,
@@ -68,6 +85,23 @@ These patterns appear in AI output and make text look unreviewed:
 - "Additionally," "Furthermore," "Moreover" used more than once per page
 - Excessive bolding: more than one bolded phrase per section, or entire bolded sentences
 - Emoji used as formatting decorators in professional documents
+- Binary contrast sentences: "Not X. Y." / "X isn't the problem. Y is." / "It's not this. It's that."
+- Negative listing: "Not A... Not B... C." / "It wasn't X. It wasn't Y. It was Z."
+- Dramatic fragmentation: "[Noun]. That's it. That's the [thing]." / "X. And Y. And Z."
+- Rhetorical setups: "What if [reframe]?" / "Think about it:" / "Here's what I mean:"
+- Paragraphs that open with "So," / sentences that open with "Look,"
+- Wh- sentence starters: "What makes this work is..." / "What this means is..."
+
+## Voice and Agency
+
+Human subjects perform actions; inanimate things do not. Rewrite whenever an abstract
+noun or concept acts in place of a person or team.
+
+Bad: "The data tells us X." / "The market rewards Y." / "The decision emerges."
+Good: "We see X in the data." / "Buyers reward Y." / "The team chose Z."
+
+Remove pull-quote sentences: any sentence written to sound quotable or tweetable is
+performing rather than communicating. Flatten it into a plain claim.
 
 ## Quantification Over Vagueness
 
@@ -111,3 +145,4 @@ Always run in order. See `../standards/writing-quality.md` for thresholds and se
 
 - Claude Code memory and CLAUDE.md: <https://code.claude.com/docs/en/memory>
 - Humanlayer "Writing a good Claude.md": <https://www.humanlayer.dev/blog/writing-a-good-claude-md>
+- stop-slop (Hardik Pandya): <https://github.com/hardikpandya/stop-slop>
