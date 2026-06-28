@@ -521,7 +521,19 @@
          <lastmod>2026-06-28</lastmod>
     </url>
     <url>
+         <loc>https://claude-config.readthedocs.io/tool-evals/agent-opt/</loc>
+         <lastmod>2026-06-28</lastmod>
+    </url>
+    <url>
+         <loc>https://claude-config.readthedocs.io/tool-evals/future-agi-eval-metrics/</loc>
+         <lastmod>2026-06-28</lastmod>
+    </url>
+    <url>
          <loc>https://claude-config.readthedocs.io/tool-evals/harness-forge/</loc>
+         <lastmod>2026-06-28</lastmod>
+    </url>
+    <url>
+         <loc>https://claude-config.readthedocs.io/tool-evals/simulate-sdk/</loc>
          <lastmod>2026-06-28</lastmod>
     </url>
     <url>
@@ -530,6 +542,10 @@
     </url>
     <url>
          <loc>https://claude-config.readthedocs.io/tool-evals/skills-repos-survey-2026-06/</loc>
+         <lastmod>2026-06-28</lastmod>
+    </url>
+    <url>
+         <loc>https://claude-config.readthedocs.io/tool-evals/traceai/</loc>
          <lastmod>2026-06-28</lastmod>
     </url>
 </urlset>
