@@ -1,4 +1,4 @@
-"""Unit tests for the consensus skill engine script.
+"""Unit tests for the panel skill engine script (consensus_cli.py).
 
 The script lives under .claude/skills/ (a dot-directory), so it is loaded by
 file path rather than imported as a package, matching the pattern in
@@ -19,7 +19,7 @@ import httpx
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-SCRIPT = REPO_ROOT / ".claude" / "skills" / "consensus" / "scripts" / "consensus_cli.py"
+SCRIPT = REPO_ROOT / ".claude" / "skills" / "panel" / "scripts" / "consensus_cli.py"
 
 _spec = importlib.util.spec_from_file_location("consensus_cli", SCRIPT)
 assert _spec is not None

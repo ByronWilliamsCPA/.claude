@@ -8,11 +8,11 @@ never edits the dataset; benchmark scores and specializations are hand-rated.
 1. **Generate the report.**
 
    ```bash
-   uv run .claude/skills/consensus/scripts/consensus_cli.py refresh
+   uv run .claude/skills/panel/scripts/consensus_cli.py refresh
    ```
 
 2. **Remove dead rows.** For each model in `dead_in_curated`, delete its row
-   from `.claude/skills/consensus/data/models.csv` (or fix the id if the
+   from `.claude/skills/panel/data/models.csv` (or fix the id if the
    model was renamed upstream; check https://openrouter.ai/models).
 
 3. **Curate additions sparingly.** From `live_free_not_in_curated`, add only
@@ -27,9 +27,9 @@ never edits the dataset; benchmark scores and specializations are hand-rated.
 4. **Verify.**
 
    ```bash
-   uv run .claude/skills/consensus/scripts/consensus_cli.py select --level 1
+   uv run .claude/skills/panel/scripts/consensus_cli.py select --level 1
    uv run pytest tests/unit/test_consensus_cli.py -q --no-cov
    ```
 
-5. **Commit** the dataset change with a `chore(consensus): refresh model data`
+5. **Commit** the dataset change with a `chore(panel): refresh model data`
    message.

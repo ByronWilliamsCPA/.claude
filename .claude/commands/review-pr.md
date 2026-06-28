@@ -1,1 +1,1 @@
-../../../.submodules/anthropics-plugins/plugins/pr-review-toolkit/commands/review-pr.md
+../../.submodules/anthropics-plugins/plugins/pr-review-toolkit/commands/review-pr.md

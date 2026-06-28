@@ -28,7 +28,7 @@ PREMISE_STALENESS_HOLD_DAYS:  14
 
 - `PAL_CHAT_MODEL`: model passed to `mcp__pal__chat` for targeted validations
 - `PAL_CONSENSUS_MODELS`: model list passed to `mcp__pal__consensus` for Agent L
-- `CONSENSUS_LEVEL`: level (1/2/3) for the `/consensus` skill engine used in Step 7b;
+- `CONSENSUS_LEVEL`: level (1/2/3) for the `/panel` skill engine used in Step 7b;
   level 1 uses 3 free models (cap $0.50), level 2 adds economy models (6 total, cap
   $1.00), level 3 adds high-cost models (8 total, cap $10.00)
 - `PREMISE_MERGED_PR_LOOKBACK`: number of recently merged PRs scanned for file and
@@ -1427,9 +1427,9 @@ Return a JSON array; for each finding:
 { "finding_id": N, "verdict": "genuine" | "false_positive", "reason": "one sentence" }
 PROMPT
 
-uv run .claude/skills/consensus/scripts/consensus_cli.py select \
+uv run .claude/skills/panel/scripts/consensus_cli.py select \
   --level "$CONSENSUS_LEVEL" --domain code_review > /tmp/prreview-roster.json
-uv run .claude/skills/consensus/scripts/consensus_cli.py run \
+uv run .claude/skills/panel/scripts/consensus_cli.py run \
   --prompt-file /tmp/prreview-consensus-prompt.txt \
   --roster-file /tmp/prreview-roster.json --level "$CONSENSUS_LEVEL"
 ```

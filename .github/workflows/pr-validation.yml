@@ -77,15 +77,17 @@ jobs:
 
       - name: Run vulture
         run: |
-          echo "## Dead Code Report" >> $GITHUB_STEP_SUMMARY
+          echo "## Dead Code Report" >> "$GITHUB_STEP_SUMMARY"
           uv run --frozen vulture src/ --min-confidence 90 | tee vulture-report.txt || true
           if [ -s vulture-report.txt ]; then
-            echo '```' >> $GITHUB_STEP_SUMMARY
-            cat vulture-report.txt >> $GITHUB_STEP_SUMMARY
-            echo '```' >> $GITHUB_STEP_SUMMARY
+            {
+              echo '```'
+              cat vulture-report.txt
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
             echo "::warning::Potential dead code detected. Review vulture report."
           else
-            echo "No dead code detected with 90% confidence." >> $GITHUB_STEP_SUMMARY
+            echo "No dead code detected with 90% confidence." >> "$GITHUB_STEP_SUMMARY"
           fi
 
   # Documentation Link Check
@@ -153,7 +155,10 @@ jobs:
         run: |
           # --diff-filter=ACMR excludes Deleted paths; qlty check errors on a
           # path that no longer exists in the working tree (deletion-only PRs).
-          mapfile -t CHANGED < <(git diff --name-only --diff-filter=ACMR "origin/$GITHUB_BASE_REF")
+          # The symlink filter (! -L) excludes symlinks whose targets are not
+          # resolvable without submodules, which also causes qlty to abort.
+          mapfile -t CHANGED < <(git diff --name-only --diff-filter=ACMR "origin/$GITHUB_BASE_REF" \
+            | while IFS= read -r f; do test ! -L "$f" && echo "$f"; done)
           if [ "${#CHANGED[@]}" -eq 0 ]; then
             echo "No changed files to check"
             exit 0
@@ -220,39 +225,39 @@ jobs:
           QLTY_SMELLS_RESULT: ${{ needs.qlty-smells.result }}
           QLTY_COVERAGE_RESULT: ${{ needs.qlty-coverage.result }}
         run: |
-          echo "## PR Validation Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## PR Validation Summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
 
           if [ "$CORE_RESULT" == "success" ]; then
-            echo "Core Validation: Passed" >> $GITHUB_STEP_SUMMARY
+            echo "Core Validation: Passed" >> "$GITHUB_STEP_SUMMARY"
           else
-            echo "Core Validation: $CORE_RESULT" >> $GITHUB_STEP_SUMMARY
+            echo "Core Validation: $CORE_RESULT" >> "$GITHUB_STEP_SUMMARY"
           fi
 
           if [ "$DEAD_CODE_RESULT" == "success" ]; then
-            echo "Dead Code Check: Passed" >> $GITHUB_STEP_SUMMARY
+            echo "Dead Code Check: Passed" >> "$GITHUB_STEP_SUMMARY"
           else
-            echo "Dead Code Check: $DEAD_CODE_RESULT" >> $GITHUB_STEP_SUMMARY
+            echo "Dead Code Check: $DEAD_CODE_RESULT" >> "$GITHUB_STEP_SUMMARY"
           fi
 
           if [ "$LINK_CHECK_RESULT" == "success" ]; then
-            echo "Link Check: Passed" >> $GITHUB_STEP_SUMMARY
+            echo "Link Check: Passed" >> "$GITHUB_STEP_SUMMARY"
           else
-            echo "Link Check: $LINK_CHECK_RESULT" >> $GITHUB_STEP_SUMMARY
+            echo "Link Check: $LINK_CHECK_RESULT" >> "$GITHUB_STEP_SUMMARY"
           fi
 
           if [ "$QLTY_SMELLS_RESULT" == "success" ]; then
-            echo "Qlty Checks: Passed" >> $GITHUB_STEP_SUMMARY
+            echo "Qlty Checks: Passed" >> "$GITHUB_STEP_SUMMARY"
           else
-            echo "Qlty Checks: $QLTY_SMELLS_RESULT" >> $GITHUB_STEP_SUMMARY
+            echo "Qlty Checks: $QLTY_SMELLS_RESULT" >> "$GITHUB_STEP_SUMMARY"
           fi
 
           if [ "$QLTY_COVERAGE_RESULT" == "success" ]; then
-            echo "Qlty Coverage: Uploaded" >> $GITHUB_STEP_SUMMARY
+            echo "Qlty Coverage: Uploaded" >> "$GITHUB_STEP_SUMMARY"
           elif [ "$QLTY_COVERAGE_RESULT" == "skipped" ]; then
-            echo "Qlty Coverage: Skipped (core-validation did not succeed)" >> $GITHUB_STEP_SUMMARY
+            echo "Qlty Coverage: Skipped (core-validation did not succeed)" >> "$GITHUB_STEP_SUMMARY"
           else
-            echo "Qlty Coverage: $QLTY_COVERAGE_RESULT" >> $GITHUB_STEP_SUMMARY
+            echo "Qlty Coverage: $QLTY_COVERAGE_RESULT" >> "$GITHUB_STEP_SUMMARY"
           fi
 
           BLOCK=0
@@ -260,8 +265,8 @@ jobs:
           if [ "$DEAD_CODE_RESULT" == "failure" ]; then BLOCK=1; fi
           if [ "$QLTY_SMELLS_RESULT" == "failure" ]; then BLOCK=1; fi
           if [ "$BLOCK" == "1" ]; then
-            echo "One or more required checks failed. Please review and fix issues." >> $GITHUB_STEP_SUMMARY
+            echo "One or more required checks failed. Please review and fix issues." >> "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
           echo ""
-          echo "All validation checks passed!" >> $GITHUB_STEP_SUMMARY
+          echo "All validation checks passed!" >> "$GITHUB_STEP_SUMMARY"

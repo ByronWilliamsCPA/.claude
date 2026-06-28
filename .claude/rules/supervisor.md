@@ -91,9 +91,9 @@ implementation.
 cannot get maximum reasoning *and* strong decorrelation at once, because the
 strongest reasoner (Opus) is also the likely maker. Pins buy reasoning
 adequacy; they do not buy independence when the session maker is itself Opus
-or Fable. For that independent pass, use `/consensus` (tiered-review or
-consensus) to bring a non-Anthropic peer model in. Family-only is the default
-operating mode; `/consensus` is the deliberate cross-vendor escalation for
+or Fable. For that independent pass, use `/panel` (tiered-review or flexible
+panel) to bring a non-Anthropic peer model in. Family-only is the default
+operating mode; `/panel` is the deliberate cross-vendor escalation for
 high-stakes or irreversible changes.
 
 **Vendored-agent exception.** `silent-failure-hunter`, `type-design-analyzer`,
@@ -103,10 +103,10 @@ submodule-isolation policy, their model is **not** pinned: editing
 vendor-mirror content would drift from upstream and be clobbered on the next
 sync. They are left on `inherit` deliberately. Because `inherit` gives these
 adversarial checkers zero decorrelation against an Opus/Fable maker, their
-independent pass comes from `/consensus` (cross-vendor), not from the subagent
+independent pass comes from `/panel` (cross-vendor), not from the subagent
 itself. When adopting any new agent from a vendored source, decide its pin
 against the table above before wiring it in; if it cannot be pinned at source,
-route its independence through `/consensus` and note the exception here.
+route its independence through `/panel` and note the exception here.
 
 ## Temporary Reference Files
 

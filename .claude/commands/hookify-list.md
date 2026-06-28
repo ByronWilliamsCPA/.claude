@@ -1,1 +1,1 @@
-../../../.submodules/anthropics-plugins/plugins/hookify/commands/list.md
+../../.submodules/anthropics-plugins/plugins/hookify/commands/list.md
