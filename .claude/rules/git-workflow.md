@@ -102,6 +102,11 @@ safety. Match on parsed git argv (the target ref being moved versus the current
 branch), apply the same target-branch logic to `git checkout -B`, and allow the
 operation whenever the mutated branch is not a protected one.
 
+Implementation status: the current `bash-pre-hook.sh` keys its `git reset --hard`
+guard on the mutated branch as described above, but does NOT yet parse
+`git checkout -B`. Treat the `checkout -B` arm as a known gap to close, not as a
+guard already in place.
+
 ## Branch Workflow Override
 
 The branch-first rule (never commit directly to `main`) applies in all standard cases.
