@@ -1,6 +1,15 @@
 # docs/standards-manifest.yaml
 version: "1.0"
-last_updated: "2026-06-18"
+last_updated: "2026-06-27"
+# 2026-06-27: Supply-chain gap checks from container-images compliance audit.
+# Added CI-087 (continue-on-error on supply-chain steps, critical), CI-088
+# (syft/SBOM tool reference by mutable docker tag, important), and FOUND-017
+# (.editorconfig absent, suggested). CI-087 is the highest-priority addition:
+# continue-on-error: true on cosign and SBOM attestation steps silently permits
+# an unsigned image to ship, defeating the supply-chain guarantee. These were
+# surfaced as GENERAL-004 / GENERAL-007 unclassified findings in the 2026-06-27
+# container-images audit retrospective; promoted to manifest after single-repo
+# pattern review per retrospective protocol.
 # 2026-06-18: Weekly skill-review apply pass. Added CI-082..085 (workflow-library
 # checks), CI-086 (CI cost-tier), CLAUDE-015 (model-table drift), and a reserved-ID
 # registry formalizing CI-079 (qlty-gate ruleset companion). All start at suggested
@@ -3300,6 +3309,26 @@ checks:
       rate is effectively zero given that legitimate license text never
       contains the OSI template placeholder syntax.
 
+  - id: FOUND-017
+    domain: foundations
+    severity: suggested
+    override_eligible: true
+    description: >-
+      .editorconfig present at project root. Ensures consistent indentation,
+      line endings, and whitespace across editors and contributors. Absence
+      causes diff noise from editor-specific whitespace divergence.
+    verify: "file_exists: .editorconfig"
+    not_applicable_when: >-
+      Repo is a single-author solo project with no external contributors
+      and pre-commit whitespace hooks (trailing-whitespace, end-of-file-fixer)
+      are already enforcing consistency.
+    notes: >-
+      Promoted from unclassified candidate in 2026-06-27 container-images
+      audit retrospective. Start at suggested; promote to important once
+      fleet-wide pre-commit whitespace coverage is confirmed (at that point
+      .editorconfig provides editor-native enforcement rather than
+      CI-only enforcement).
+
   - id: OSSF-011
     domain: ossf
     severity: suggested
@@ -3545,3 +3574,70 @@ checks:
       -f delete_branch_on_merge=true. Override eligible for repos that
       intentionally retain merged branches for historical reference, but no
       such repo currently exists in either org.
+
+  # ── Supply-chain hardening (container / SBOM pipeline) ───────────────────────
+
+  - id: CI-087
+    domain: ci
+    severity: critical
+    override_eligible: false
+    description: >-
+      No supply-chain pipeline step (SBOM generation, cosign signing, cosign
+      attestation) carries continue-on-error: true or an inline suppressor
+      such as "|| echo ... non-fatal" or "|| true". These patterns silently
+      permit a workflow to report success while the SBOM or signature was never
+      produced, defeating the supply-chain guarantee the pipeline advertises.
+    verify: >-
+      In .github/workflows/, for every step whose name or uses value references
+      cosign (sign, attest), syft, cyclonedx, anchore/sbom-action, or
+      trivy (in attestation mode): check that continue-on-error is absent or
+      false AND that the run: block contains no "|| echo", "|| true", or
+      "|| :" fallbacks. FAIL on any match. A FINDING is raised per affected
+      step, not per workflow.
+    not_applicable_when: "Repo has no SBOM generation or cosign signing steps."
+    source_frameworks:
+      - SLSA L2 (non-falsifiable provenance)
+      - SSDF PW.9.1 (verify security properties)
+    notes: >-
+      Promoted from GENERAL-004 unclassified finding in 2026-06-27
+      container-images audit. The pattern is architecturally distinct from
+      general workflow error handling (CI-006): it specifically targets steps
+      whose output is a trust artifact. A workflow with continue-on-error on
+      these steps can ship an unsigned, un-attested image while CI reports
+      green. Severity is critical because downstream consumers may rely on
+      cosign verify-attestation as a hard trust anchor and silently skipped
+      attestation is indistinguishable from a successfully attested image until
+      verification is run.
+
+  - id: CI-088
+    domain: ci
+    severity: important
+    override_eligible: true
+    description: >-
+      SBOM generation tools invoked via docker run (e.g. anchore/syft,
+      cyclonedx-cli) reference the image by digest (@sha256:...) rather than
+      a mutable tag. A mutable tag means the tool version can silently change
+      between runs, producing non-reproducible SBOMs and introducing
+      supply-chain risk from a compromised upstream image.
+    verify: >-
+      In .github/workflows/, grep for "docker run" lines that include syft,
+      cyclonedx, or other SBOM generator image names. PASS if every such
+      reference uses the @sha256: digest form (e.g. anchore/syft@sha256:abc...).
+      FAIL if any uses a bare tag (e.g. anchore/syft:v1.44.0 without a digest).
+      Note: when using anchore/sbom-action (an Action, not a docker run), pin
+      the action ref via standard SHA pinning (CI-005) instead of this check.
+    not_applicable_when: >-
+      Repo uses anchore/sbom-action or another Action-based SBOM tool
+      exclusively (no direct docker run invocations of SBOM images).
+    source_frameworks:
+      - SLSA L2 (reproducible build / hermetic)
+      - SSDF PW.4.1 (use well-secured build environments)
+    notes: >-
+      Promoted from GENERAL-007 unclassified finding in 2026-06-27
+      container-images audit. Distinct from CI-005 (GitHub Actions SHA pinning)
+      because docker run image refs are not covered by zizmor or
+      actionlint SHA-pin checks; they require a separate grep pattern.
+      Starts at important (not critical) because the blast radius is limited to
+      SBOM drift, not unsigned images. Promote to critical if syft is also used
+      in signing/attestation mode where the tool binary integrity is a trust
+      anchor.
