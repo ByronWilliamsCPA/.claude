@@ -24,6 +24,12 @@ exclude_patterns = [
     "**/.git/**",
     "**/.submodules/**",
     "**/.nox/**",
+    # These directories contain symlinks to submodule content (.submodules/).
+    # Qlty errors on a symlink whose target is not present (submodules are not
+    # checked out in the qlty CI job). No Python code lives here; exclusion is safe.
+    ".claude/commands/**",
+    ".claude/agents/**",
+    ".claude/skills/**",
 ]
 
 # Patterns to identify test files for enhanced analysis
