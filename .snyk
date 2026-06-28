@@ -1,0 +1,23 @@
+# Snyk policy file for the .claude repository.
+#
+# Purpose: make Snyk honor the same scope boundary every other quality gate
+# in this repo already respects. `.submodules/` is vendored upstream code
+# (excluded from trufflehog, ruff, basedpyright, bandit, interrogate, coverage,
+# and qlty per .pre-commit-config.yaml), and `.venv/` is the gitignored Python
+# virtualenv. Neither is owned, shipped, or editable here (see the submodule
+# isolation policy), so Snyk findings inside them are upstream's responsibility,
+# not this repo's. Excluding them aligns the Snyk IDE plugin and CLI with the
+# established isolation policy and removes ~99% of the noise that is not
+# actionable in this repo.
+#
+# Scope note: `exclude:` governs Snyk Code (snyk code test) and the IDE Code
+# scan. Open Source (snyk test) scanning of vendored npm manifests is suppressed
+# at the IDE level via folder exclusions; see the remediation plan.
+version: v1.25.0
+exclude:
+  global:
+    - .submodules/**
+    - .venv/**
+    - "**/.venv/**"
+    - site/**
+    - "**/node_modules/**"
