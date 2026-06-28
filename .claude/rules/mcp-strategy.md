@@ -31,6 +31,15 @@ context automatically and never blocks.
 Do not add this server to `mcp_config.yaml` or the tiered tables below; its binary
 manages upgrades and config changes independently.
 
+**Recognizing a binary-managed server:** any MCP server distributed as a standalone binary
+with its own `install`/`uninstall` command that writes to `~/.claude` is binary-managed. Its
+config file (typically `~/.claude/.mcp.json`) is the source of truth for that server's
+presence, not the tiered strategy YAML. Before adding any new server to the tiered tables,
+check whether it ships such a command; if it does, document it in the table above with a
+pointer to its setup guide rather than wiring it into the tiers. Adding a binary-managed
+server to the tiers creates a parallel config with no enforcement: an upgrade to either side
+will not propagate to the other.
+
 ## The zen server: fork identity and cost lanes
 
 `zen` in the tables below is our maintained fork, `williaby/zen-mcp-server`, kept

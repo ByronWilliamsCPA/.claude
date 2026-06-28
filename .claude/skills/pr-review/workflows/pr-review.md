@@ -241,6 +241,18 @@ sufficient. Pin-bump PRs (Renovate/Dependabot) that bump a reusable-workflow or 
 SHA are the common offender, because the one-line SHA swap understates the upstream
 behavioural delta it imports.
 
+**Dangling-submodule check (when a `submodules: recursive` step fails).** A submodule
+pinned to a SHA reachable from no ref on its remote (no branch, no tag contains it; e.g. a
+pre-release commit that was garbage-collected or never pushed as a named ref) makes
+`git clone --recurse-submodules` fail with `fatal: upload-pack: not our ref <sha>` on EVERY
+fresh CI clone, silently failing all checks that use `submodules: recursive` regardless of
+which PR triggered the run. The symptom looks like a transient network or CI-infra error.
+When a CI step that checks out submodules fails this way, run `git submodule status` and
+verify each listed SHA is reachable on its remote (`git ls-remote <remote-url> | grep <sha>`).
+If a SHA is unreachable, this is a pre-existing repo-wide blocker (confirm by checking run
+IDs before and after the PR's commits), and the fix is a submodule-bump PR, not debugging CI
+config; flag it as `[Critical - pre-existing]`.
+
 Emit each finding:
 
 ```text
@@ -409,6 +421,16 @@ done
   deliberately removed that this branch re-adds). Recommend close-plus-follow-up-issue,
   attach the salvage list, and stop before spawning the full agent fleet. Supersession
   is rarely all-or-nothing: report the residual, not a binary yes/no.
+
+**`git diff base head` direction alone is not enough to declare a regression.** Diff
+direction between two diverged tips conflates "this branch changed it" with "base changed
+it later"; a DIFFERS file on a stale branch can look like it re-adds deliberately-removed
+content when in fact the branch never touched the file relative to the merge-base and a
+merge would cleanly take base's version. For each DIFFERS file, run a merge-base-aware
+three-way classification (`git merge-tree --write-tree "origin/$BASE_BRANCH" "$HEAD_SHA"`,
+or per-file three-way reasoning) to bucket it as (a) genuine conflict, (b) branch-regresses-
+base, or (c) merely-behind-base (merge takes base cleanly). Only (a) and (b) are actionable;
+(c) is a non-finding. Only a three-way merge tells you what a merge would actually do.
 - **Few or no files IDENTICAL:** proceed to Step 3 normally; note any IDENTICAL files so
   agents do not waste effort reviewing already-merged content.
 
@@ -438,6 +460,7 @@ Analyze `CHANGED_FILES` and the first 50 lines of `PR_DIFF` to classify:
 | `.sh` / `.bash` files present | code-reviewer (shell mode) |
 | `.yml` / `.yaml` / `.json` / `.toml` / `.cfg` only | code-reviewer (config mode) |
 | `.md` / `.rst` / `.txt` only | comment-analyzer (plus the always-on code-reviewer); skip Agent C and Agent D |
+| `uses: anthropics/claude-code-action` or another autonomous-agent action in a workflow file | Agent I (LLM-agent-in-CI lens, see below) |
 
 **Always active regardless of content:**
 
@@ -778,6 +801,14 @@ Review the diff against CLAUDE.md. Find every violation, large and small.
 Do NOT filter anything as trivial. Report each issue with: file, approximate
 line, description, which CLAUDE.md rule it violates.
 
+"Missing X" findings require verifying absence, not just verifying that X is warranted.
+Before flagging a missing RAD marker (`#CRITICAL`, `#VERIFY`, `#ASSUME`, `#EDGE`) on a
+production-risk assumption, grep the changed file's diff context around the flagged
+construct for an existing marker of that family; a RAD-marker finding must cite the
+specific lines checked and confirm none were found. A reviewer that notices an assumption
+warranting a tag but does not confirm the tag is absent will routinely surface false
+positives on a well-tagged codebase and cost a wasted fix cycle.
+
 HARD CONSTRAINT: you have only the diff and the CLAUDE.md text below. Do NOT assert
 any fact that requires external tool access: commit signature/verification status, CI
 results, or the contents of files not present in the provided diff. You cannot verify
@@ -804,6 +835,14 @@ permission patterns use space syntax (e.g., `Bash(git *)`) not colon syntax (e.g
 `Bash(git:*)`). Colon syntax is the MCP tool format and does not match shell commands;
 it makes allow entries silently inert.
   [Important] CLAUDE.md: Bash permission in settings.json uses colon syntax; use space syntax.
+
+Also check: if the diff renames a tool prefix or config identifier (`mcp__*` tool names,
+MCP server keys, env var names, settings keys), resolve the NEW identifier against the
+authoritative machine-readable registration (`.mcp.json`, `settings.json`, or the live
+tool list), not the surrounding doc prose. Prose can lag or contradict the runtime
+registration: a rename that reads as internally consistent in narrative documentation can
+still be broken against the registry and fail at runtime. Report:
+  [Critical] CLAUDE.md: renamed identifier "{new}" does not resolve in {.mcp.json|settings.json|live tool list}; the rename breaks every reference at runtime.
 
 Also check commit types: if commit history is available (from the CHANGELOG check),
 cross-check each commit type against the project's conventional-commits allowed-type
@@ -865,6 +904,26 @@ for instances that still match the OLD pattern and were not converted. The same 
 often appears multiple times in one file, and fixing the most visible instance creates a
 false impression of completeness (e.g., one of two curl calls hardened). Report any
 missed instance.
+
+Exemption-guard false negatives (validators and linters): when the diff adds or changes a
+guard function or allow-list predicate that suppresses findings for some input category
+(an `is_local_build()`-style check, a skip list), do not judge it on whether it "makes
+sense in principle." Ask what real inputs satisfy the guard and whether they should be
+exempted: run the predicate against representative real inputs and flag any case where
+`f(real_input)` returns True and silently exempts a substantial class of inputs that should
+be flagged (e.g., `is_local_build("grafana/grafana")` -> True wrongly exempts the largest
+class of real Docker Hub images). A single incorrect predicate reduces findings for every
+matching input with no visible warning, so surface it as the general pattern, not just the
+one instance.
+
+Compose env-default flips break unpinned CI callers: when the diff changes the default value
+of a docker-compose environment variable (pattern `${VAR:-old}` -> `${VAR:-new}`), it is a
+global default change, not just a documentation change. Grep the repo's CI workflow files for
+any step that starts that service; for each, verify it sets the env var explicitly. If a
+caller starts the service without pinning the var, flag [Important]: it inherits the new
+default, and if the new default needs credentials or infrastructure CI lacks (remote APIs,
+GPU, cloud services), the break is silent until Newman or health checks fail. Reviewing an
+env-default change requires cross-searching all callers.
 
 Do NOT filter anything as trivial. Report every issue you find, regardless
 of how minor. Include: file, approximate line, description, severity
@@ -1060,6 +1119,23 @@ For each check output one of:
 
 Confidence: Critical findings score 90 unless attacker-controlled input is
 demonstrably impossible, in which case 70.
+
+LLM-agent-in-CI lens (run ONLY when a workflow file in the diff embeds an autonomous
+agent action such as `uses: anthropics/claude-code-action`): the agent's behavioral spec
+is the natural-language `prompt:` block, not the surrounding YAML, so the imperative-code
+checks above largely do not apply. Review the `prompt:` block as executable control flow:
+- Classification/precedence rules that could route a security-relevant PR into a class
+  that SKIPS substantive checks (a single-class rule with the wrong precedence is a real
+  finding).
+- Escalation/label-apply steps (`gh label apply` and similar) that can fail silently and
+  drop the PR from a downstream queue.
+- The security boundary is `--allowedTools` plus the job's token scopes, NOT the repo's
+  local `.claude/settings.json` deny rules (whose CI applicability is unverified). Treat
+  the allowlist and token scopes as the enforcement boundary.
+- Confirm only trusted event context is interpolated into the prompt, and that the trigger
+  is `pull_request`, not `pull_request_target`.
+Cross-reference project memory `project_agent_in_ci_review.md` if present. Emit findings in
+the same `[Critical|Important] Security/{check}` form.
 ```
 
 ### Agent J: PR Description vs Diff Validation (Sonnet)
@@ -1092,6 +1168,13 @@ Checks:
    `gh api repos/{OWNER}/{REPO}/contents/{path}?ref={HEAD_SHA}`, not the
    default branch. Reading main-branch files produces false positives because
    it returns the pre-change state.
+
+   Also scan committed markdown (and other committed docs) in the diff for paths under
+   `/tmp`, `/var/folders`, session-local scratchpad directories, or any path containing a
+   UUID-like segment. Any such path is a dangling reference the moment the authoring
+   session ends and reads as authoritative to a future reader who will 404 following it.
+   Report [Important] PRDesc: committed doc {file} references ephemeral path {path}; replace
+   with inline rationale or a pointer to a committed file.
 
 6. For every quantitative claim in your findings (file counts, line counts,
    symbol names, test counts, function names): verify against
@@ -1225,7 +1308,14 @@ cannot cite evidence, DROP the finding; do not downgrade it.
 2. Contradicts a recorded decision: does the change reverse something fixed in an ADR
    (docs/architecture/**, docs/ADRs/**), a CHANGELOG entry, or a prior PR review
    comment? Evidence required: the ADR path + section, the CHANGELOG line, or the PR
-   comment.
+   comment. When the change renames a tool prefix or config identifier (`mcp__*` names,
+   MCP server keys, env var or settings keys), ground truth is the machine-readable
+   registration (`.mcp.json`, `settings.json`) and the live runtime, NOT the surrounding
+   prose: a rename that reads as internally consistent in docs can still be broken against
+   the registry. Resolve the new identifier against the live registration before judging
+   the rename correct, and flag a rename whose new name is unregistered as a Regression
+   (it breaks every reference at runtime). Evidence required: the registry key the new
+   identifier does or does not match.
 3. Unjustified churn / scope creep: does each change trace to the PR's stated goal in
    PR_BODY? Evidence required: the stated-goal text plus the specific change that does
    not trace to it.
@@ -1234,6 +1324,15 @@ cannot cite evidence, DROP the finding; do not downgrade it.
    existing in-repo pattern. You may NEVER propose a hypothetical design.
 
 For docs-only PRs (every changed file is .md/.rst/.txt), run only checks 1 and 2.
+
+A branch being behind base and lacking a file is NOT the same as the PR deleting that file.
+If `git diff {BASE_BRANCH}..{HEAD_BRANCH}` shows a file as "deleted" (present in base, absent
+from the branch), do NOT flag it as "would be silently deleted by merge" unless that file is
+in CHANGED_FILES. A `mergeStateStatus: CLEAN` merge preserves all of base's files regardless
+of whether the branch predates them; files absent from the branch but not in CHANGED_FILES
+are simply ancestry gaps the branch predates, and the merge keeps them. CHANGED_FILES is the
+authoritative source of what the PR will actually change; `git diff base..branch` shows
+ancestry, not merge intent. Do not raise the PREMISE verdict on this false positive.
 
 Also surface the pre-computed SYMBOL_COLLISIONS and any open-PR file collisions as
 findings.
@@ -1301,6 +1400,12 @@ high scores and cluster at round numbers; these constraints correct both):
   permissions allow rule, SKILL.md frontmatter gap, style/vocabulary inconsistency) are
   capped at 65 (Important) unless they break a build, lose data, or violate a hard
   CLAUDE.md rule.
+- Severity is impact multiplied by reachability. For code/config/detection content the PR
+  ITSELF documents as not-yet-activated (feature-flagged off, awaiting a documented out-of-
+  band deploy step, or guarded by an as-yet-undeployed component), a genuine correctness
+  defect is at most Important (must-fix-before-activation), not Critical (must-fix-before-
+  merge), unless merging itself activates it. A real bug in code that cannot execute yet is
+  real but deferred; do not conflate "this is a real bug" with "this blocks merge."
 - Cite ONLY rules present verbatim in the provided context. Do NOT invent a project
   rule to justify a tier (e.g., do not claim CLAUDE.md mandates issue references; it
   mandates Conventional Commits and says nothing about issue references).
@@ -1397,7 +1502,14 @@ remains.
    depends on state outside the diff, that agreement is NOT independent confirmation
    (the agents share the same evidence boundary). Verify the external fact directly and
    weight convergence as zero additional evidence; a clarifying-comment suggestion may
-   survive, but the "bug" framing must not.
+   survive, but the "bug" framing must not. This verification gate keys on the TYPE of
+   claim, not the source's provenance: a technical claim about tool/runtime/library
+   semantics (or about state outside the diff) from one of THIS workflow's own dispatched
+   subagents (Agents A-M) gets the same authoritative-doc / direct-check verification that
+   Step 8 applies to bot review comments, BEFORE it is tiered Critical or Important. An
+   agent you dispatched is as capable of a confident, plausible, wrong claim as an external
+   bot; trusting your own subagents more than bots is an unjustified asymmetry that lets
+   false positives in through the side door.
 4. **Cross-model consensus (7b-1 / 7b-2 below)** for Critical findings still unresolved
    after steps 1-3.
 
@@ -1709,6 +1821,16 @@ EOF
 
 Use the full 40-character SHA in every file link. Never use branch names;
 they are mutable.
+
+**Re-verify volatile state immediately before posting.** Findings about volatile PR state
+(mergeability, head SHA, CI conclusions) have a short shelf life on actively-maintained PRs
+and an even shorter one on bot-authored PRs that auto-rebase. The lag between analysis and
+posting is enough for an automated agent to invalidate a conflict finding. When the PR author
+is a known auto-rebasing bot (renovate, dependabot), re-fetch `headRefOid`,
+`mergeStateStatus`, and `mergeable` right before posting; if a conflict finding has self-
+resolved (now CLEAN/MERGEABLE), drop or soften it. Where a conflict finding is still emitted
+on a bot PR, annotate it: "this bot auto-rebases its branches; the conflict may clear without
+manual action."
 
 After posting, if `NEXT_ACTION` is 3, continue to the fix workflow below.
 If `NEXT_ACTION` is 1, stop here.

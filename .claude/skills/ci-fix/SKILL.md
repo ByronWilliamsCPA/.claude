@@ -211,6 +211,29 @@ gh run view <run-id> --json referencedWorkflows
 
 Any permission the callee requests (e.g. `actions: read` on a codeql job) but the caller's explicit `permissions:` block omits fails validation before any job runs. (See also systematic-debugging: sample sibling consumers before concluding the reusable workflow itself is broken.)
 
+### Stale-base CI failures masquerade as real failures: read the log and rebase first (Obs 586)
+
+Before fixing code for a failing gate, confirm the failure belongs to the change and not the base. A branch several commits behind base can fail a gate on something the base already fixed: a `pip-audit --frozen` run against a stale lockfile keeps reporting CVEs that a later-merged PR already patched on base, and re-running the job can never clear it. The tell is that the failing artifact named in the log is unrelated to what the PR changed (e.g. pip-audit flags `pydantic-settings`/`msgpack` on a PR that only bumps `transformers`).
+
+Diagnostic step before editing code:
+
+1. Read the actual failure log; identify the failing artifact or package.
+2. Compare it against what the PR changes. If unrelated and the branch is behind base, suspect a stale base.
+3. Rebase onto current base and re-run. Only treat the failure as intrinsic once the branch is current with base.
+
+A CI failure on a branch behind its base may belong to the base, not the change. Rule out stale-base before spending any effort on a code fix.
+
+### `gh run rerun` replays a frozen merge commit, not the current base (Obs 510)
+
+After fixing a broken workflow file on the base branch, `gh run rerun` on existing PR runs will NOT pick up the fix. For same-repo pull requests, GitHub creates a virtual merge commit (PR head merged onto base at merge time); `gh run rerun` replays that original merge commit unchanged, so it uses the workflow file as it was on the base at the time of the original merge event, not the current base.
+
+To pick up a base-branch workflow fix, a new `pull_request` synchronize event is required, which makes GitHub build a fresh merge commit against the current base:
+
+- Push (or force-push) to the PR branch.
+- For Renovate branches where direct push is not possible, comment `@renovatebot rebase` to force a rebase.
+
+Distinction: `gh run rerun` = replay the same frozen merge commit; new synchronize event = fresh merge commit against current base.
+
 ### Pre-validate every downstream config before each unblocking push (Obs 289)
 
 A pipeline red for weeks hides every defect downstream of the first failing step. A pipeline that has never reached step N gives zero evidence about steps N+1..end, so fixing failures one CI round-trip at a time is the slowest possible loop. Before pushing each fix that unblocks a long-failing pipeline, locally validate every config the now-reachable downstream steps will consume:
@@ -224,3 +247,41 @@ npx --package renovate renovate-config-validator
 ```
 
 Treat every downstream config as unvalidated and run its dry-run or validator locally where one exists, instead of discovering defects one merge cycle at a time. Build the per-tool local-validation checklist as you go.
+
+## GitHub Actions Authoring Anti-Patterns
+
+Defects introduced while authoring or editing workflow files. These do not surface as lint findings; they surface as runtime failures with misleading error messages, so catch them at authoring time.
+
+### Inline comment after `\` silently breaks line continuation (Obs 509)
+
+In a `run:` block, `\` is a bash line continuation ONLY when it is the absolute last character on the line. A comment placed after `\` on the same line makes the `\` part of the comment text, so the next line is not joined and the shell sees a truncated command. The resulting error (e.g. `error: missing required argument 'collection'`) gives no hint that a misplaced comment is the cause, and the pattern is easy to introduce during review cleanup ("add a comment near this digest pin").
+
+```bash
+# Broken: the trailing comment consumes the continuation
+my-cmd sha256:...run  # pin the digest \
+  --collection foo
+
+# Correct: comment on its own line before the command
+# pin the digest
+my-cmd sha256:...run \
+  --collection foo
+```
+
+Line continuation (`\` as last char) and inline comments (`# ...`) are mutually exclusive on the same line; place comments on the preceding line, never after the continuation operator.
+
+### Detect-before-scan for tools that exit hard on empty input (Obs 684)
+
+A CLI tool that exits non-zero when given no work (rather than exiting 0 with no output) fails the build even when its scan is legitimately not applicable. Example: `snyk iac test` exits code 2 (a hard error, not "found issues") on a directory with no supported files, so a repo with no Terraform would fail an IaC gate.
+
+Wrap such tools in a two-phase pattern: a detect job that probes for file presence (e.g. `find` for the relevant file types) runs first, and each scan job is gated via `needs:` + `if: needs.detect.outputs.found == 'true'`. Treat a `skipped` scan job as passing so the build is not blocked when the scan type is absent. This keeps the workflow safe to add to any repo regardless of its footprint, with no per-repo operator configuration.
+
+Tools that distinguish "ran and found nothing" (exit 0) from "couldn't run at all" (exit 2) need detect-then-act; treating detect-and-skip as a success case is what makes the gate universally safe.
+
+### `enable-*` vs `run-*` verb convention for reusable workflow inputs (Obs 685)
+
+Naming verbs in reusable workflow inputs carry semantic load; a consistent convention makes the relationship between inputs readable without reading the implementation, and its absence forces explanatory comment blocks.
+
+- `enable-*`: activates a feature nested inside another feature (requires a parent toggle to also be true). Example: `enable-aibom` is subordinate to `run-snyk: true`.
+- `run-*`: toggles a standalone job or top-level capability at the same level as sibling jobs.
+
+Both are boolean; the verb signals whether the input is a subordinate feature gate or a peer job toggle. Apply this when adding inputs to reusable workflows so future additions do not need a comment to explain the distinction.

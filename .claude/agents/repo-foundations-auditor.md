@@ -65,6 +65,14 @@ with open('pyproject.toml', 'rb') as f:
 
 If this command fails, abort and review the insertion point before staging. Common cause: the new table was placed before an existing array-valued key inside `[project]`. Move it to after all array-valued keys in the parent section, or append it at the very end of the `[project]` block.
 
+**Dependabot version updates vs Renovate:** When a repo uses Renovate for dependency updates,
+the correct way to disable Dependabot version-update PRs (which otherwise conflict with
+Renovate) is to DELETE `.github/dependabot.yml`, not to author an empty or updates-less
+version. Both `updates: []` and omitting the `updates:` key are schema-invalid: GitHub rejects
+the empty array ("contained invalid details") and flags the missing required property.
+`dependabot.yml` controls only version-update PRs; Dependabot security alerts remain active via
+repo settings and are unaffected by deleting the file.
+
 **Shell script executable bit:** After creating any `.sh` file, set the executable bit before staging:
 
 ```bash

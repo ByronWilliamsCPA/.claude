@@ -202,6 +202,47 @@ Then handle the gitignored work explicitly:
   plain file-copy for the gitignored deliverables. Coordinate writes when another session
   owns the target tree.
 
+## Target the correct worktree path when multiple are active (Obs 700)
+
+The Read and Edit tools operate on absolute filesystem paths and have no awareness of
+which git branch a path belongs to. When the main checkout and a child worktree both
+contain the same file, the project-root path silently refers to the MAIN branch, not the
+PR branch you are working on. An Edit aimed at the project root lands on the wrong branch.
+
+Before applying any Edit or Write to a file that exists in both the main checkout and a
+child worktree:
+
+1. Confirm which branch is checked out at the project root: `git branch --show-current`.
+2. If the target branch lives in a child worktree, build the absolute path with the
+   `.worktrees/<slug>/` prefix, e.g.
+   `/home/byron/dev/<project>/.worktrees/<slug>/<path>`. Never use the project-root path
+   for an edit targeting a child worktree's branch.
+3. If a stray edit already landed on the main checkout, recover by verifying the worktree
+   file is still unedited, applying the edit to the correct absolute path, then reverting
+   the main checkout with `git checkout -- <file>`.
+
+Explicit absolute paths carrying the worktree slug are the only safe way to target a
+specific branch's files.
+
+## `git stash` does not restore index-only changes (`git rm --cached`) on pop (Obs 697)
+
+`git stash` saves and restores the WORKING TREE reliably, but pure-index operations lose
+their staged status on pop. `git rm --cached` removes a file from the index without
+touching the working tree; on `stash pop`, git applies the index diff against HEAD, and
+because the files are unchanged on disk the rm-cached delta is dropped and the files
+revert to tracked. The staged deletions silently disappear, and a commit made afterward
+misses the intended index cleanup.
+
+So do NOT use `git stash` to temporarily suspend staged changes when those changes
+include `git rm --cached`. When you need to test pre-existing hook behavior in that state:
+
+- Run `pre-commit run <hook-id> --all-files` directly without stashing; hooks run on all
+  files regardless of staged state.
+- Or use a separate worktree on main to test baseline behavior without touching the
+  working branch's staged index.
+- Or use `git stash --keep-index` if the goal is only to stash unstaged changes and leave
+  the staged index intact.
+
 ## Multi-session isolation: a worktree per actor (Obs 466)
 
 The git index and working tree are per-worktree global state, not per-process. Any workflow

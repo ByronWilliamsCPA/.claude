@@ -541,6 +541,21 @@ costs seconds. If observations have accumulated, this prevents the common
 failure mode where the skill is loaded but no observations are written until
 the user explicitly asks.
 
+**Subagent-controller sessions are the highest-risk case for this checkpoint.**
+In a multi-task session where the controller dispatches implementer plus
+reviewer subagents per task (a spec-compliance review and a code-quality review
+each round), the cognitive load of coordinating those review loops reliably
+crowds out observation logging. A six-task session ran roughly twelve subagent
+dispatches with multiple correction moments and wrote zero observations until
+the closing surfacing step. The "pause and ask" framing loses to this work
+because it is a separate reminder that competes for attention. Bind the
+checkpoint to an action that already happens: immediately before dispatching
+the next implementer subagent (or marking the next task completed), WRITE any
+accumulated observations to the log. The write is the checkpoint, not a mental
+note to write later. Observation checkpoints that compete with cognitively
+demanding work lose to that work; attaching the write to an unavoidable
+existing step is what makes it stick.
+
 **Before assigning any observation number, run a mandatory pre-logging step:**
 Search the entire log file for all lines matching the pattern `### Observation \d+:`,
 extract the highest observation number already in use, and increment from there.
@@ -632,6 +647,7 @@ Each observation follows this format:
 
 ```markdown
 ### Observation [N]: [Short descriptive title]
+**Status:** OPEN
 
 **Date:** [date]
 **Session context:** [brief description of what task was being worked on]
@@ -656,6 +672,18 @@ observation into a reusable insight.]
 This format was refined through iterative real-world use. The structure works
 because it forces specificity (Issue), actionability (Suggested improvement),
 and generalisation (Principle).
+
+**The `**Status:** OPEN` line is mandatory and must be the first field, directly
+under the header.** The entire observation lifecycle (OPEN, ACTIONED, DECLINED)
+and every review query keys on this line. An observation logged without it is
+invisible to the weekly review's OPEN filter, so it silently accumulates as an
+unprocessed backlog that no review ever surfaces. This is a real failure mode:
+the field was once present only in the Log Structure example below and absent
+from this format block, and every observation logged for ten days afterward
+dropped it, producing 170 status-orphaned entries. The fix was structural,
+the field now lives in the template agents actually copy. When logging, copy
+this whole block including the Status line; never reconstruct the format from
+memory.
 
 **Context preservation check:** When logging an observation, verify that all
 information needed to act on it is available in the shared folder. If the

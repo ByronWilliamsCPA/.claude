@@ -196,6 +196,7 @@ For each check with `conclusion` not `success` and not `neutral`, do the followi
 | qlty | Quality gate | Defer to Step 1c handling; enumerate locally if the qlty CLI is available (see Step 5b) |
 | Changelog | Changelog (label-aware) | If the gate's pass condition is "CHANGELOG edited OR skip-label present" (`if: !contains(...labels..., 'skip-changelog')`), the remedy is commit-type-dependent: release-impacting commits (feat/fix/perf/breaking) need an entry; docs/chore/test/refactor need the skip label. See Step 4 Changelog enforcement for the label + re-trigger ordering. |
 | Reusable workflow startup_failure (0 jobs, no logs, "workflow file issue") | Workflow-load failure | Not a step failure; diagnose at file/reference level. Check `uses:@<sha>` reachability via `gh api repos/<owner>/<repo>/compare/<default>...<sha>`; if `diverged` (orphaned by a squash-merge), re-pin to a SHA reachable from the reusable repo's default branch that contains the file and exposes the same `workflow_call` inputs. `contents?ref=<sha>` serves dangling commits, so existence checks mislead; use `compare`. Validate cheaply with `workflow_dispatch` on a throwaway branch (startup validation runs at load time, before job `if:`). When a failure appears after an edit, confirm causation by reverting the suspected change on the current base before committing to a fix direction. |
+| Failing reusable-workflow check (job renders as `<workflow> / <job>`, caller uses `uses: org/repo/...@<ref>`) and the FIX is to the workflow body | Wrong-ref fix risk | Before authoring a fix, resolve the running definition. For a workflow consumed via `uses: ...@<sha>`, the running body is whatever that SHA resolves to; it is NOT necessarily the reusable repo's default branch. Read the caller's pinned ref and `gh api compare` it against main AND any open-PR branch heads to identify which definition actually runs and will become canonical. A fix landed on the wrong ref (e.g. main, when the caller pins a diverged in-flight rework branch) is cosmetic, will not clear the observed failure, and can collide with an open rework PR of the same file. Fix the ref that runs. |
 | GitGuardian | Secrets | Alert user only, never auto-fix |
 | Docs, Build & Deploy | Doc build | Fix markdown/config |
 | Core Validation, PR Validation | PR rules | Fix commits, description, etc. |
@@ -206,6 +207,17 @@ For each check with `conclusion` not `success` and not `neutral`, do the followi
 "Code Quality Checks" going red on a YAML-only diff is impossible at the linter level;
 drilling to the failing step (e.g., "Dependency vulnerability scan" / pip-audit) reveals
 the real, often diff-independent, cause.
+
+**For an auth-suspected failure, read the input echo before assuming a missing secret.**
+GitHub renders a masked `name: ***` in an Actions log only for a registered, NON-EMPTY
+secret (an unset secret prints nothing after the colon). A masked `***` is therefore
+positive evidence the secret is present and non-empty; look downstream for the real error
+rather than chasing a "secret not pulled" hypothesis. Diagnose from the actual error line,
+not the assumed cause. One known cause of a claude-code-action failure that mimics an auth
+problem: a dangling symlink into a submodule. If a `.claude/...` path symlinks into
+`.submodules/` and the reusable's checkout omits `submodules: recursive`, the action aborts
+with `ENOENT ... statx '.claude/...'`; the fix is to add `submodules: recursive` to the
+checkout, not to touch the secret.
 
 **A scanner's exit code is a verdict, not a diagnosis.** Tools invoked with a file-output
 format (`osv-scanner --output=report.json`, `trivy --output`, `bandit -o report.json`)
@@ -341,6 +353,17 @@ Proceed? (yes / review details / cancel)
 If the user asks to review details, expand each category.
 Wait for confirmation before proceeding.
 
+**Partition failing checks by ruleset required-contexts FIRST, and present required-first.**
+When a PR is BLOCKED with many red checks, the merge gate is defined by the ruleset's
+required status contexts, not by the count of red Xs; "required" and "red" are independent
+axes. As an explicit first action in this step, fetch the branch ruleset's
+`required_status_checks` contexts and partition the failing checks into required vs
+non-required. Order the fix plan required-first: the single highest-leverage fix is usually
+the one that clears a cascade-failing REQUIRED gate, while many reds are non-required noise.
+This is the same required-vs-non-required tiering pr-review applies to CI findings; the same
+partition must drive pr-fix prioritisation and the user-facing plan, not just the finding
+tier.
+
 **Classify each fix as code-changing vs GitHub-metadata-only** (PR title/body edits,
 thread resolution, label changes such as `skip-changelog`, comment replies). Record
 `HAS_CODE_FIXES = true` only if at least one fix touches a working-tree file. This gates
@@ -446,6 +469,21 @@ fi
 A worktree's local gate only matches CI when its environment matches CI's; a tree synced
 without the extras CI installs produces false-failures indistinguishable from real defects.
 
+**Pin the interpreter to a CI-supported Python version.** A local gate predicts CI only when
+BOTH the dependency set AND the interpreter version match CI. `uv` defaults to the newest
+installed interpreter, which can exceed the project's CI matrix and silently break version-
+sensitive tools (bandit, AST-based linters) on touched and untouched files alike,
+manufacturing failures unrelated to the diff. For example, bandit pinned at 1.7.7 cannot
+parse a 3.14 AST and crashes with exit 0 on every file, which would fail the `uv run bandit`
+pre-commit hook (and `--no-verify` is prohibited). After lock-file stabilisation, determine
+the CI matrix's max supported Python (from `.github/workflows/*` or the `requires-python`
+upper bound) and, if `uv run python --version` in the worktree exceeds it, recreate the venv
+pinned to a CI-supported version before any Step 5a gate or commit:
+
+```bash
+(cd {WORKTREE_PATH} && uv venv --python <ci-version> && uv sync)
+```
+
 **Edit precondition is path-specific (worktree vs main tree).** The Edit tool's
 "file has been read" precondition keys on the exact absolute path, not on content. A
 file Read earlier from the main tree (`/repo/CHANGELOG.md`) does NOT satisfy an Edit on
@@ -486,6 +524,22 @@ injection surface (e.g., a `node-version` string bump), retry the identical Edit
 before falling back to a `sed`/Python rewrite. Fall back to non-Edit rewriting only if
 the retry is also blocked. Hook behavior here is environment- and version-dependent;
 confirm the current behavior rather than assuming a permanent hard block.
+
+When the `PreToolUse:Edit` security hook fires on GHA YAML and the Edit tool will not
+execute even on an identical retry, use a Bash+Python fallback rather than fighting the
+hook: read the file with `pathlib.Path.read_text()`, apply one targeted `str.replace()`
+per finding (each guarded by `assert old in txt, "<description>"`), then write back with
+`pathlib.Path.write_text()`. The assertion guards give the same unique-match safety as the
+Edit tool's uniqueness check and make a partial-match failure explicit instead of silently
+producing wrong output; batching all of a file's changes into one script is also more
+reliable for multi-edit sessions. The hook does not intercept the Bash tool.
+
+**RAD markers in YAML go on separate comment lines.** When writing paired `#ASSUME`/`#VERIFY`
+RAD markers in YAML (workflow files, compose files), always place `#ASSUME` and `#VERIFY` on
+separate comment lines; never combine them on one line. YAML indentation (commonly 8-12
+chars) plus the combined form `# #ASSUME: ... #VERIFY: ...` almost always exceeds the
+yamllint 120-char line-length limit at any indentation depth beyond a few characters, so the
+qlty/yamllint gate fails on a marker that would fit fine in a prose comment.
 
 ### Priority 1: CI failures
 
@@ -591,6 +645,16 @@ catch this. Treat a manifest/lockfile desync as a blocking condition:
    (or `pnpm i --frozen-lockfile`, `yarn install --frozen-lockfile`). The binding
    correctness check for a lockfile-bearing ecosystem is "does the frozen-install
    succeed against the regenerated lockfile," not the language linters.
+4. Run the repo's dependency-vulnerability scanner locally against the regenerated
+   lockfile (`npm audit`, `osv-scanner`; by analogy `uv export | pip-audit` for `uv.lock`)
+   and confirm 0 high/critical BEFORE committing. A lockfile is an input to security/SCA
+   gates: an out-of-sync lockfile can make `npm ci` fail before the scanner ever parses it,
+   so regenerating it to satisfy the installer can feed the full resolved tree to a scanner
+   that gates merge and flip a previously-green REQUIRED gate (Security Gate / OSV-Scanner)
+   to red. Fixing a non-required check (e.g. a `Frontend` npm-ci check) this way can regress
+   a required one. If the scan surfaces advisories, patch them (or revert) before pushing;
+   never push a regenerated lockfile without re-running the dependency scanner that consumes
+   it.
 
 ### Priority 2: SonarQube findings
 
@@ -1109,6 +1173,27 @@ failing hook on the unmodified base tree to confirm.) (2) Does the failing hook'
 `files:` pattern match any staged file? If both answers are no, the failure is
 pre-existing noise in unrelated files and will not block the commit.
 
+**Hooks that validate runtime config can fail on absent-but-gitignored env files.** If the
+`pre-commit run --all-files` gate fails on a compose-validation (or k8s/template) hook with a
+"required variable is missing" error, check whether the variable is host-specific and lives
+in a gitignored `stack.env`. Docker Compose's `${VAR:?...}` required-variable syntax makes the
+hook fail in ANY environment without that file, including CI diff-from-main runs and local
+pr-fix sessions, and the failure is unrelated to any changed file. Confirm whether the failure
+pre-existed the PR's changes before treating it as a blocker; to satisfy the hook without
+editing any file, export a placeholder (`VAR=placeholder pre-commit run --all-files`).
+
+**`pass_filenames: false` hooks block the commit itself on unrelated files.** A hook with
+`pass_filenames: false` re-validates a fixed scope (e.g. a `validate-front-matter` hook
+with `files: ^docs/.*\.md$` scans the WHOLE `docs/` tree) whenever any matching file is
+staged, so it can fail the `git commit` on pre-existing defects in files this PR never
+touched. The two-question triage above identifies these; the commit-time decision is
+separate. Distinguish failures caused by the PR's own changed files (must fix) from
+pre-existing failures in unrelated files the commit merely triggers, and never treat a
+whole-tree hook failure as the PR's fault. For the unrelated-file case, surface it to the
+user with options: fix the unrelated files, hold, or, only with the user's explicit
+request, an authorized `--no-verify` for this commit. Never auto-bypass; `--no-verify` is
+prohibited except by explicit user instruction (Step 6).
+
 If the default gate is still failing after 3 attempts: check whether the
 failures existed before this fix session started (see pre-existing failure
 policy below). Report remaining failures and ask the user whether to
@@ -1221,6 +1306,23 @@ fails, fix the issue in the worktree and re-run the affected check.
 
 Group fixes into logical commits using conventional commit format.
 One concern per commit. Sign each: `git -C {WORKTREE_PATH} commit -S -m "..."`.
+
+**New shebang scripts need the Git-tracked executable bit.** When staging a new file whose
+first line is a shebang (`#!/`), set the executable bit in Git's index with
+`git add --chmod=+x <file>`. Git tracks file mode separately from the filesystem: plain
+`chmod +x` sets the working-tree bit but not Git's tracked mode, and the
+`check-shebang-scripts-are-executable` pre-commit hook checks the tracked mode, so a
+`chmod`-only fix passes locally yet fails in CI. The default-tier gate (ruff, basedpyright,
+bandit) does not check this; only confirm-tier `pre-commit run --all-files` does.
+
+**Staged-content byte-sanity check (run before committing).** A green test+lint+build is
+NOT evidence a committed text file is byte-clean: an Edit can write a stray NUL byte (e.g.
+where a space was intended) that `tsc`, eslint, vitest, and the production build all tolerate
+silently, and a `grep -P '[^\x00-\x7F]'` misses it (a NUL is within 0x00-0x7F). Git's own
+binary detection is the cheap reliable signal. After staging, run
+`git -C {WORKTREE_PATH} diff --cached --numstat` and flag any known-text path that shows
+`-  -` (binary), and/or `git diff --cached --stat` and flag any text path reported as
+`Bin ... bytes`. Scan staged text files for NUL bytes before commit when either fires.
 
 **Procedural git rule (mandatory):** Never invoke `git commit` with
 `--no-verify` on any commit, including merge commits. The rule applies even
@@ -1369,6 +1471,14 @@ The `/replies` endpoint takes only a `body` field and works for every thread. (T
 MCP `add_pull_request_review_comment` method is an equivalent if available, but the
 `gh api` call above is the confirmed-working form.)
 
+If you instead post against the create-review-comment endpoint, the threading field is
+`in_reply_to` (an INTEGER, pass with `-F in_reply_to="$comment_id"`), NOT `in_reply_to_id`:
+a 422 with "`in_reply_to_id` is not a permitted key" means the field NAME is wrong, not the
+value. GitHub's reply-threading key names are inconsistent across endpoint families (the
+create-review-comment endpoint uses `in_reply_to`; some other APIs use `reply_to_id`), so
+verify the exact parameter name and type (`-f` string vs `-F` integer) against the specific
+endpoint's schema before a batch of reply calls.
+
 | Outcome | Reply format |
 | --- | --- |
 | Fixed | `Fixed in {commit SHA}: {one sentence description of what changed}` |
@@ -1474,6 +1584,19 @@ Poll in parallel every 60 seconds:
    - If `state == "MERGED"`: stop immediately. The PR merged between cycles.
      Any staged fixes must go to a follow-up PR.
 
+**Confirm each REQUIRED context actually re-ran on the new head SHA.** GitHub evaluates
+required status contexts against the head SHA. A fix commit that touches only files outside
+a required path-filtered workflow's trigger paths does NOT re-run that workflow; its required
+context then has no status on the new head, reads as unsatisfied-on-head, and
+`mergeStateStatus` stays or returns to BLOCKED even though every check that DID run is green.
+After pushing a narrow fix, check `gh api repos/{OWNER}/{REPO}/commits/$PUSH_SHA/check-runs`
+for each required context; if a required context is missing on the head, the PR is silently
+blocked. Re-trigger it by ensuring the final push touches that workflow's trigger paths (for
+example, bundle the fixes so the last commit also edits a path the required workflow watches,
+such as a CHANGELOG entry). This is the same phantom/never-reported required-check failure
+mode pr-review documents, surfacing here via path-filtered re-triggers; a green prior run does
+not carry forward to a new head.
+
 **Do not block on `mergeStateStatus` for the all-green signal.** That field (and
 `mergeable`) is computed asynchronously and can return `null` or lag by minutes even when
 the underlying data is settled. The authoritative green signal is two direct-data checks:
@@ -1536,8 +1659,24 @@ Classify the outcome:
 | All green | New comments arrived | Enter Phase C (re-fix pass) |
 | Failures | Any | Enter Phase C (re-fix pass) |
 | SARIF checks queued + `mergeable: MERGEABLE` | Any | Classify as advisory pending; proceed to merge or Phase C for comments only |
+| Hard-FAILED check NOT in required contexts + `mergeStateStatus: UNSTABLE` + `mergeable: MERGEABLE` | Any | Advisory; do NOT enter Phase C for it (see below). Phase C still applies to any genuinely required failure or new comment |
 | All green + `mergeStateStatus: BLOCKED` | None | Unresolved-conversation block (see below); resolve threads, NOT a re-fix cycle |
 | Timed out | Any | Report current state, offer manual options |
+
+**A hard-FAILED check is not automatically a merge blocker.** A check sitting in a
+terminal `failure`/`error` state is advisory, not blocking, when it is (a) absent from the
+branch's required-status-check contexts AND (b) on a PR whose `mergeStateStatus` is
+`UNSTABLE` (not `BLOCKED`) and `mergeable` is `MERGEABLE`. `UNSTABLE` plus `MERGEABLE`
+means the failing check is non-required regardless of its red state, and no PR-side code
+change can clear it. Before treating any single FAILURE as a blocker that warrants a
+Phase C re-fix cycle, run `gh pr view "$PR_NUMBER" --repo "$OWNER/$REPO" --json
+mergeable,mergeStateStatus` and a required-contexts lookup; classify by the merge-
+eligibility API and the required-context list, not by the check's terminal color alone.
+The worked example is a CodeQL default-setup job ("Analyze (javascript-typescript)")
+failing "no source code seen during build" on a repo with zero JS/TS source: it is enabled
+org-wide by the recommended code-security config, is non-required, and merges straight
+through. This is the same advisory logic the queued/PENDING SARIF row applies, extended to
+the hard-FAILED terminal case.
 
 **Green-but-BLOCKED: distinguish the cause before acting.** "All checks green" is
 necessary but not sufficient for mergeability; `mergeStateStatus` is the authoritative
@@ -1657,6 +1796,14 @@ with all-green status, or when the user explicitly chooses to discard.
 ```bash
 git worktree remove {WORKTREE_PATH}
 ```
+
+`git worktree remove` deletes the worktree directory before returning, which collapses the
+shell's CWD if the shell is currently inside that worktree. In that case the command emits
+`pwd: error retrieving current directory: getcwd: ...` and exits 1 even on success; a retry
+then prints `fatal: '<path>' is not a working tree` (it was already removed), which looks
+like a second error. Exit code 1 here does NOT mean failure: verify cleanup via
+`git worktree list`, not the remove command's exit code. Safer still, `cd` to the repo root
+before running `git worktree remove`.
 
 ---
 

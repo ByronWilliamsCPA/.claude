@@ -74,6 +74,24 @@ Root cause: Category 1 (fixture scope), conftest session fixture
 was sharing state across test classes.
 ```
 
+## Environment Setup for Iterative Runs (uv projects)
+
+`uv run pytest` re-syncs the environment to the DEFAULT dependency set on every invocation,
+uninstalling extras from `[project.optional-dependencies]` each time. In a debug loop this
+silently drops test deps (hypothesis, pytest-cov) or app deps (fastapi) between runs, and
+collection then fails with `ModuleNotFoundError` that looks like Category 3 drift but is just
+env churn. Stable repeated runs require pinning the env once and opting out of per-call sync,
+not re-passing `--extra` flags each time:
+
+```bash
+uv sync --all-extras                      # sync once
+uv run --no-sync python -m pytest ...      # repeat without re-syncing
+```
+
+Prefer `python -m pytest` over the `pytest` console script, and scrub `PYTHONPATH`
+(`env -u PYTHONPATH ...`) so system site-packages (e.g. `/usr/lib/python3/dist-packages` on
+WSL, which can shadow the venv with an old Pydantic or pytest) do not win over the venv.
+
 ## Common Rationalizations
 
 The shortcuts that make a red test green without fixing anything. Each one defers the

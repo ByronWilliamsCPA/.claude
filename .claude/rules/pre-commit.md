@@ -1,5 +1,16 @@
 # Pre-Commit Checklist
 
+## Run pre-commit from the worktree root, not the shell CWD
+
+`pre-commit` resolves `.pre-commit-config.yaml` relative to the current working
+directory, not the git repo root and not `GIT_DIR`. In a worktree setup the main
+checkout and each worktree have separate working trees but share `GIT_DIR`, so
+running `pre-commit run` from the main repo directory while editing files in a
+worktree loads the MAIN repo's config and checks the wrong files. This surfaces as
+a false failure: a line already fixed in the worktree fails against the main repo's
+stale hook config. Always `cd` into the worktree directory before running
+`pre-commit` so it picks up that worktree's config and edits.
+
 Before committing ANY changes, verify all items:
 
 ## Branch & Process
