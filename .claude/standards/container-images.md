@@ -1,6 +1,6 @@
 # Container Image Registry Standards
 
-> **Status**: Active | Core Standard | **Version**: 1.0.0 | **Last Updated**: 2026-06-25
+> **Status**: Active | Core Standard | **Version**: 1.1.0 | **Last Updated**: 2026-06-27
 >
 > Defines the trusted registry hierarchy and GHCR mirror catalog for all container
 > images across homelab projects. Applies to Dockerfiles, docker-compose files,
@@ -48,8 +48,9 @@ ghcr.io/byronwilliamscpa/<prefix>-<name>:<upstream-tag>
 | `ghcr.io/byronwilliamscpa/dhi-postgres:16-debian13` | PostgreSQL 16 |
 | `ghcr.io/byronwilliamscpa/dhi-postgres:14-debian13` | PostgreSQL 14 |
 | `ghcr.io/byronwilliamscpa/dhi-redis:7-debian13` | Redis 7 |
-| `ghcr.io/byronwilliamscpa/dhi-python:3.12-debian13` | Python 3.12 base |
-| `ghcr.io/byronwilliamscpa/dhi-python:3.11-debian13` | Python 3.11 base |
+| `ghcr.io/byronwilliamscpa/dhi-python:3.12-debian13` | Python 3.12 runtime (no shell; use as runtime stage `FROM`) |
+| `ghcr.io/byronwilliamscpa/dhi-python:3.12-debian13-dev` | Python 3.12 builder (shell + apt + build tools; use as builder stage `FROM`) |
+| `ghcr.io/byronwilliamscpa/dhi-python:3.11-debian13` | Python 3.11 runtime (no shell) |
 | `ghcr.io/byronwilliamscpa/dhi-node:24-debian13` | Node.js 24 |
 | `ghcr.io/byronwilliamscpa/dhi-node:22-debian13` | Node.js 22 |
 | `ghcr.io/byronwilliamscpa/dhi-traefik:3.6-debian13` | Traefik 3.6 |
@@ -63,12 +64,12 @@ ghcr.io/byronwilliamscpa/<prefix>-<name>:<upstream-tag>
 | `ghcr.io/byronwilliamscpa/dhi-promtail:3.5-debian13` | Promtail 3.5 |
 | `ghcr.io/byronwilliamscpa/dhi-node-exporter:1-debian13` | Node Exporter 1.x |
 | `ghcr.io/byronwilliamscpa/dhi-uptime-kuma:1-debian13` | Uptime Kuma 1.x |
-| `ghcr.io/byronwilliamscpa/dhi-nginx:1.26-debian13` | nginx 1.26 stable (Debian 13) — use this for production |
-| `ghcr.io/byronwilliamscpa/dhi-nginx:1.27-debian12` | nginx 1.27 mainline (Debian 12 only — DHI has not released 1.27 on Debian 13 yet) |
+| `ghcr.io/byronwilliamscpa/dhi-nginx:1.26-debian13` | nginx 1.26 stable (Debian 13); use this for production |
+| `ghcr.io/byronwilliamscpa/dhi-nginx:1.27-debian12` | nginx 1.27 mainline (Debian 12 only; DHI has not released 1.27 on Debian 13 yet) |
 | `ghcr.io/byronwilliamscpa/dhi-postgres-exporter:0-debian13` | PostgreSQL metrics exporter for Prometheus |
 | `ghcr.io/byronwilliamscpa/dhi-redis-exporter:1-debian13` | Redis metrics exporter for Prometheus |
 | `ghcr.io/byronwilliamscpa/dhi-alloy:1-debian13` | Grafana Alloy (next-gen replacement for Promtail and Grafana Agent; DHI publishes as "alloy") |
-| `ghcr.io/byronwilliamscpa/dhi-uv:0-debian13` | uv Python package manager (use as build-stage base) |
+| `ghcr.io/byronwilliamscpa/dhi-uv:0-debian13` | uv Python package manager; `COPY --from` binary into builder stages running Debian 13 only (glibc 2.39+; incompatible with Debian 12/bookworm) |
 
 ### Available Distroless images (minimal runtime, no shell)
 
@@ -86,8 +87,18 @@ Need a base image?
   ├─ Is there a GHCR mirror for it? (dhi-*, distroless-*)
   │    └─ YES → Use ghcr.io/byronwilliamscpa/<prefix>-<name>:<tag>  [Tier S]
   │
+  ├─ Does DHI publish it? Check dhi.io including -dev variants for builder stages.
+  │    └─ YES → Add an entry to catalog/images.yaml in ByronWilliamsCPA/container-images,
+  │             trigger the mirror workflow, then use the GHCR path.  [Tier S, pending mirror]
+  │             Note: a -dev variant (e.g. python:3.12-debian13-dev) has a shell and apt
+  │             for builder stages; the plain variant is the hardened no-shell runtime.
+  │
   ├─ Is it a Docker Official Image? (postgres, redis, alpine, nginx...)
-  │    └─ YES → Use the official image, pin to a specific version tag  [Tier A]
+  │    └─ PREFERRED → Mirror it into GHCR via the container-images catalog (adds SHA
+  │    │               pinning, SBOM attestation, and Trivy scan), then use the GHCR path.
+  │    │               Requires extending the catalog to support docker.io as a source tier.
+  │    └─ FALLBACK → Use the official image directly with a pinned version tag if mirroring
+  │                   is not yet set up for that source.  [Tier A]
   │
   ├─ Is it a LinuxServer.io media app?
   │    └─ YES → Use lscr.io/linuxserver/<name>  [Tier B+]
@@ -101,20 +112,47 @@ Need a base image?
 
 ## Requesting a new mirror
 
-The mirror workflow lives in the dedicated public repo
-`ByronWilliamsCPA/container-images`. To add an image, open a PR there and
-add an entry to the DHI matrix in `.github/workflows/mirror-hardened-images.yml`:
+The mirror workflow lives in `ByronWilliamsCPA/container-images` and is driven by
+`catalog/images.yaml`. To add an image, open a PR there and add a catalog entry:
 
 ```yaml
-# Under mirror-dhi job, strategy.matrix.image:
-- {name: "nginx", tag: "1.27-debian13", ghcr_tag: "1.27-debian13"}
+- id: dhi-python-312-dev
+  display_name: "DHI Python 3.12 Dev"
+  source_tier: primary
+  criticality: high
+  classification_status: classified
+  disposition: mirror_only
+  image_modification:
+    strategy: mirror_only
+  upstream:
+    registry: dhi.io
+    name: python
+    tag: "3.12-debian13-dev"
+  ghcr:
+    name: dhi-python
+    tag: "3.12-debian13-dev"
+  platform_compatibility:
+    default: linux/amd64
+    supported: [linux/amd64]
+  notes: "Builder stage image: includes shell, apt, and build tools. Use with dhi-uv:0-debian13 (both Debian 13, glibc compatible)."
 ```
 
-The image becomes available after the next weekly sync or a manual trigger:
+After merging, trigger the mirror or wait for the next weekly sync:
 
 ```bash
 gh workflow run mirror-hardened-images.yml --repo ByronWilliamsCPA/container-images
 ```
+
+**DHI dev variants**: DHI publishes `-dev` suffixed tags (e.g. `python:3.12-debian13-dev`,
+`node:24-debian13-dev`) for every language runtime. These images include a shell, apt,
+and build tools and are the correct builder stage base when your runtime stage uses the
+corresponding no-shell DHI image. Add dev variants to the catalog the same way as the
+standard image, with a `-dev` suffix on the `ghcr.tag`.
+
+**glibc compatibility**: DHI images link against glibc 2.39+ (Debian 13). Copying
+binaries from a Debian 13 DHI image (e.g. `dhi-uv:0-debian13`) into a Debian 12
+(bookworm) builder fails at runtime with a symbol version error. Always pair the
+`-debian13-dev` builder base with `-debian13` source images.
 
 ## Security properties
 
