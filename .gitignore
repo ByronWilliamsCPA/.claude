@@ -358,3 +358,6 @@ session-report-*.html
 
 # Local-only audit snapshots and backlogs (planning artifacts, not committed)
 docs/audit/
+
+# Session-specific planning documents (ephemeral, not for sharing)
+docs/superpowers/plans/

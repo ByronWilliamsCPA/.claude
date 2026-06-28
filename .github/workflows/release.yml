@@ -35,15 +35,10 @@ on:
   workflow_dispatch:
     inputs:
       force_release:
-        description: 'Force release type (leave empty for auto)'
+        description: 'Force release type (patch/minor/major/prerelease, or leave empty for auto)'
         required: false
-        type: choice
-        options:
-          - ''
-          - patch
-          - minor
-          - major
-          - prerelease
+        type: string
+        default: ''
 
 # Prevent concurrent releases
 concurrency:
