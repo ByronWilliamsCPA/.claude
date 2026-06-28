@@ -58,32 +58,42 @@ This is the bulk of the value and is already drafted on this branch.
 
 ---
 
-## P1 -- Fix the two real owned medium findings
+## P1 -- The two "medium" findings are verified false positives (no code change)
+
+Both were read in full. Each already implements the correct guard, so per the
+code-quality rule ("fix the actual issue; do not paper over it") there is no
+issue to fix, and a code edit would be cargo-cult.
 
 4. **`python/CommandInjection` -- `scripts/populate-github-repos.py:82`.**
-   An environment variable flows into `subprocess.run`. Confirm the call uses a
-   list-form argv (no `shell=True`) and that the env-derived value is validated
-   or constrained to an allowlist. Fix if exploitable; if the input is trusted
-   operator config only, add a Snyk ignore with a written justification and a
-   `#VERIFY` note rather than a blanket suppression.
+   The call uses list-form argv (no `shell=True`); the only env-derived value
+   (`GH_BINARY`) is resolved through `shutil.which()` and existence-checked. The
+   flagged `org` is a positional list element, never shell-interpolated. Snyk's
+   taint tracker fires on `os.environ -> subprocess.run` regardless. **Disposition:
+   verified false positive. No code change.**
 5. **`python/Ssrf` -- `scripts/check_quality_gate.py:69`.**
-   A CLI argument flows into `urllib.request.urlopen`. This is local CI tooling
-   where the URL is operator-supplied, so real SSRF exposure is low. Either
-   constrain the scheme/host, or ignore-with-justification documenting that the
-   input is operator-controlled, not attacker-controlled.
+   The code already validates the URL scheme against an `ALLOWED_SCHEMES`
+   allowlist before `urlopen` and carries a documented `# noqa: S310` for
+   bandit's equivalent rule. The host is operator-supplied CI config.
+   **Disposition: verified false positive. No code change.**
 
-**Acceptance:** both findings either code-fixed (preferred) or ignored via
-`.snyk` with a one-line justification each; no bare suppressions.
+**Local-ignore limitation (verified):** a `.snyk` `ignore:` block is not honored
+by `snyk code test` in this CLI version; only file-level `exclude:` works
+locally. Excluding a whole real source file to hide one false positive would
+blind Snyk to future real bugs in that file, so do not. Apply the two
+suppressions as **Snyk platform UI ignores** instead, citing the analysis above.
+
+**Acceptance:** the two false positives are recorded (in the inventory and, when
+convenient, as Snyk UI ignores); no suppressions added to real source files.
 
 ---
 
 ## P2 -- Disposition the 11 owned low (note) findings
 
-6. **3x `python/InsecureHash/test` in `tests/fixtures/fips/bad_*.py`.** These are
-   **intentional** negative fixtures for the FIPS-compatibility checker. The rule
-   id carries a `/test` suffix. Add a `.snyk` ignore scoped to
-   `tests/fixtures/fips/**` with justification "deliberate insecure-hash fixtures
-   for FIPS compat tests; not production code."
+6. **3x `python/InsecureHash/test` in `tests/fixtures/fips/bad_*.py`. DONE.**
+   Resolved on this branch: `.snyk` now excludes `tests/fixtures/fips/**`
+   (deliberate insecure-hash/cipher fixtures for the FIPS-compat checker, not
+   production code). Verified the residual dropped from 13 to 10 with 0 fixture
+   findings remaining.
 7. **8x `python/PT` (path traversal) across `consensus_cli.py`,
    `parse_coverage.py`, `generate_python_tier_repos.py`, `doc-audit.py`,
    `populate-github-repos.py`.** In every case the "untrusted input" is the
@@ -119,13 +129,14 @@ suppression for its own sake.
 
 ## Sequenced checklist
 
-- [ ] Commit `.snyk` (P0.1)
+- [x] Commit `.snyk` exclusion policy (P0.1)
 - [ ] Add + document IDE OSS folder exclusions (P0.2)
 - [ ] Verify IDE panels show owned scope only (P0.3)
-- [ ] Resolve `CommandInjection` finding (P1.4)
-- [ ] Resolve `Ssrf` finding (P1.5)
-- [ ] Scoped `.snyk` ignore for FIPS fixtures (P2.6)
-- [ ] Disposition 8 path-traversal notes (P2.7)
+- [x] `CommandInjection` analyzed: verified false positive, no code change (P1.4)
+- [x] `Ssrf` analyzed: verified false positive, no code change (P1.5)
+- [x] `.snyk` exclude for FIPS fixtures; residual 13 -> 10 (P2.6)
+- [ ] Disposition 8 path-traversal notes: accepted risk, optional UI ignores (P2.7)
+- [ ] (Optional) Apply the 2 false-positive ignores in the Snyk UI
 - [ ] (Optional) uv upgrade for Snyk OSS / scope-decision note / CI wiring (P3)
 - [ ] Open PR from `chore/snyk-scope-cleanup`; run `pre-commit run --all-files`
 

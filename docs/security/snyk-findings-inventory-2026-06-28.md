@@ -76,14 +76,15 @@ The IDE Code Security panel's visible entries all resolve to submodules:
 and `site/` excluded. **No vendored or venv path leaked through the exclusions.**
 
 **Total: 13 findings -- 0 critical, 0 high, 2 warning (medium), 11 note (low).**
+After excluding the FIPS fixtures (below), the residual is **10** (2 warning, 8 note).
 
 | Severity | Rule | File:line | Disposition |
 | --- | --- | --- | --- |
-| warning | `python/CommandInjection` | `scripts/populate-github-repos.py:82` | Real. Env var flows into `subprocess.run`. Review/sanitize. |
-| warning | `python/Ssrf` | `scripts/check_quality_gate.py:69` | Real but low risk. CLI arg flows into `urllib.request.urlopen` in local CI tooling. Review or ignore-with-justification. |
-| note | `python/InsecureHash/test` | `tests/fixtures/fips/bad_hashlib.py:8` | **Intentional fixture.** FIPS-compat negative test input. Ignore with justification. |
-| note | `python/InsecureHash/test` | `tests/fixtures/fips/bad_new_call.py:16` | **Intentional fixture.** Ignore with justification. |
-| note | `python/InsecureHash/test` | `tests/fixtures/fips/bad_sha1.py:15` | **Intentional fixture.** Ignore with justification. |
+| warning | `python/CommandInjection` | `scripts/populate-github-repos.py:82` | **Verified false positive.** Call uses list-form argv (no `shell=True`); the only env-derived value (`GH_BINARY`) is resolved via `shutil.which()` and existence-checked. `org` is a positional list element, never shell-interpolated. No code change; recommend Snyk UI ignore. |
+| warning | `python/Ssrf` | `scripts/check_quality_gate.py:69` | **Verified false positive.** Code already validates the URL scheme against an `ALLOWED_SCHEMES` allowlist before `urlopen` and carries a documented `# noqa: S310`. Host is operator-supplied CI config. No code change; recommend Snyk UI ignore. |
+| note | `python/InsecureHash/test` | `tests/fixtures/fips/bad_hashlib.py:8` | **Resolved.** Excluded via `.snyk` (`tests/fixtures/fips/**`); intentional FIPS-compat fixture. |
+| note | `python/InsecureHash/test` | `tests/fixtures/fips/bad_new_call.py:16` | **Resolved.** Excluded via `.snyk`. |
+| note | `python/InsecureHash/test` | `tests/fixtures/fips/bad_sha1.py:15` | **Resolved.** Excluded via `.snyk`. |
 | note | `python/PT` (path traversal) | `.claude/skills/panel/scripts/consensus_cli.py:630` | CLI arg into `pathlib.Path`. Local tool; low risk. |
 | note | `python/PT` | `.claude/skills/panel/scripts/consensus_cli.py:800` | Same pattern. |
 | note | `python/PT` | `.claude/skills/test-coverage/scripts/parse_coverage.py:98` | CLI arg into `pathlib.Path`. |
@@ -92,6 +93,16 @@ and `site/` excluded. **No vendored or venv path leaked through the exclusions.*
 | note | `python/PT` | `scripts/doc-audit.py:176` | CLI arg into path concatenation. |
 | note | `python/PT` | `scripts/doc-audit.py:566` | CLI arg into path concatenation. |
 | note | `python/PT` | `scripts/populate-github-repos.py:332` | CLI arg into `os.replace`. |
+
+### Tool limitation: finding-level ignores are not local
+
+Verified empirically on Snyk CLI 1.1305.2: a `.snyk` `ignore:` block is **not
+honored** by `snyk code test` (a probe ignore left the finding count unchanged).
+Only the file-level `exclude:` mechanism works locally. Per-finding suppression
+("this specific line is a verified false positive") must be applied in the Snyk
+platform UI / org policy, which is out-of-repo state. This is why the two
+verified false positives above are documented for UI ignore rather than
+suppressed in `.snyk`, and why intentional whole-file fixtures use `exclude`.
 
 ### Blocked: Snyk Open Source on owned Python deps
 
@@ -106,7 +117,7 @@ enabling Snyk OSS here is optional (see remediation plan, item 5).
 | OSS vulns in `.venv/` npm manifests | ~110 | No (not owned, gitignored) |
 | OSS vulns in `.submodules/` npm manifests | ~119 | No (upstream's responsibility) |
 | Code issues in `.submodules/` | ~145 | No (upstream's responsibility) |
-| Owned Code findings, intentional fixtures | 3 | Ignore-with-justification |
-| Owned Code findings, real (medium) | 2 | Yes -- triage/fix |
-| Owned Code findings, low (CLI path inputs) | 8 | Yes -- review, fix or ignore |
+| Owned Code findings, intentional fixtures | 3 | Resolved via `.snyk` exclude |
+| Owned Code findings, "medium" warnings | 2 | Verified false positives; UI ignore |
+| Owned Code findings, low (CLI path inputs) | 8 | Accepted risk (operator-supplied paths to local tools) |
 | Owned OSS (Python deps) | unknown (scan blocked) | Covered by pip-audit |
