@@ -12,7 +12,7 @@
         <meta name="author" content="Byron Williams">
       
       
-        <link rel="canonical" href="https://claude-config.readthedocs.io/compliance-reports/master-log/">
+        <link rel="canonical" href="https://claude-config.readthedocs.io/getting-started/codebase-memory-mcp/">
       
       
       
@@ -25,7 +25,7 @@
     
     
       
-        <title>Compliance Master Log - Claude Code Configuration</title>
+        <title>Setting Up codebase-memory-mcp - Claude Code Configuration</title>
       
     
     
@@ -88,7 +88,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#2026-06" class="md-skip">
+        <a href="#what-the-binary-installs-once" class="md-skip">
           Skip to content
         </a>
       
@@ -122,7 +122,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Compliance Master Log
+              Setting Up codebase-memory-mcp
             
           </span>
         </div>
@@ -256,7 +256,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../getting-started/" class="md-tabs__link">
+        <a href="../" class="md-tabs__link">
           
   
   
@@ -479,7 +479,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../getting-started/" class="md-nav__link ">
+            <a href="../" class="md-nav__link ">
               
   
   
@@ -530,7 +530,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../getting-started/install/" class="md-nav__link">
+      <a href="../install/" class="md-nav__link">
         
   
   
@@ -565,7 +565,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../getting-started/first-agent/" class="md-nav__link">
+      <a href="../first-agent/" class="md-nav__link">
         
   
   
@@ -600,7 +600,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../getting-started/first-skill/" class="md-nav__link">
+      <a href="../first-skill/" class="md-nav__link">
         
   
   
@@ -635,7 +635,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../getting-started/picking/" class="md-nav__link">
+      <a href="../picking/" class="md-nav__link">
         
   
   
@@ -670,7 +670,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../getting-started/troubleshooting/" class="md-nav__link">
+      <a href="../troubleshooting/" class="md-nav__link">
         
   
   
@@ -2201,10 +2201,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#2026-06" class="md-nav__link">
+  <a href="#what-the-binary-installs-once" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2026-06
+        What the binary installs (once)
       
     </span>
   </a>
@@ -2212,10 +2212,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2026-05" class="md-nav__link">
+  <a href="#step-1-install-the-binary" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2026-05
+        Step 1: Install the binary
       
     </span>
   </a>
@@ -2223,10 +2223,137 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2026-04" class="md-nav__link">
+  <a href="#step-2-verify-what-the-install-wrote" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2026-04
+        Step 2: Verify what the install wrote
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-3-restart-claude-code-and-confirm-14-tools-load" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 3: Restart Claude Code and confirm 14 tools load
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-4-enable-auto-index" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 4: Enable auto-index
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-5-index-your-first-repos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 5: Index your first repos
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-6-per-repo-decisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 6: Per-repo decisions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 6: Per-repo decisions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#team-shared-graph-artifact" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Team-shared graph artifact
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-extension-mappings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom extension mappings
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-ignore-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom ignore patterns
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-7-how-the-hook-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 7: How the hook works
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keeping-up-to-date" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Keeping up to date
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#uninstalling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Uninstalling
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architecture-decision-records" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Architecture Decision Records
       
     </span>
   </a>
@@ -2253,278 +2380,173 @@
   
 
 
-  <h1>Compliance Master Log</h1>
+  <h1>Setting Up codebase-memory-mcp</h1>
 
-<p><strong>Total sessions:</strong> 19
-<strong>Distinct repos:</strong> 13
-<strong>Newest entry:</strong> 2026-06-19
-<strong>Oldest entry:</strong> 2026-04-25
-<strong>Open fleet actions:</strong> 0</p>
-<h2 id="2026-06">2026-06<a class="headerlink" href="#2026-06" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Date</th>
-<th>Repo</th>
-<th>Mode</th>
-<th style="text-align: right;">Critical</th>
-<th style="text-align: right;">Important</th>
-<th style="text-align: right;">Suggested</th>
-<th style="text-align: right;">Candidates</th>
-<th style="text-align: center;">Reconciled</th>
-<th>Report</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>2026-06-19</td>
-<td>ByronWilliamsCPA/pp-security-master</td>
-<td>interactive</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">7</td>
-<td style="text-align: center;"></td>
-<td></td>
-</tr>
-<tr>
-<td>2026-06-01</td>
-<td>ByronWilliamsCPA/MTG_AI</td>
-<td>interactive</td>
-<td style="text-align: right;">9</td>
-<td style="text-align: right;">37</td>
-<td style="text-align: right;">26</td>
-<td style="text-align: right;">11</td>
-<td style="text-align: center;"></td>
-<td><a href="https://github.com/ByronWilliamsCPA/MTG_AI/blob/main/docs/compliance-reports/lessons-learned/2026-06-01.md">report</a></td>
-</tr>
-<tr>
-<td>2026-06-01</td>
-<td>ByronWilliamsCPA/AMC</td>
-<td>interactive</td>
-<td style="text-align: right;">4</td>
-<td style="text-align: right;">48</td>
-<td style="text-align: right;">23</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: center;"></td>
-<td></td>
-</tr>
-</tbody>
-</table>
-<h2 id="2026-05">2026-05<a class="headerlink" href="#2026-05" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Date</th>
-<th>Repo</th>
-<th>Mode</th>
-<th style="text-align: right;">Critical</th>
-<th style="text-align: right;">Important</th>
-<th style="text-align: right;">Suggested</th>
-<th style="text-align: right;">Candidates</th>
-<th style="text-align: center;">Reconciled</th>
-<th>Report</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>2026-05-24</td>
-<td>ByronWilliamsCPA/llc-manager</td>
-<td>interactive</td>
-<td style="text-align: right;">3</td>
-<td style="text-align: right;">20</td>
-<td style="text-align: right;">10</td>
-<td style="text-align: right;">6</td>
-<td style="text-align: center;"></td>
-<td></td>
-</tr>
-<tr>
-<td>2026-05-23</td>
-<td>ByronWilliamsCPA/rag-processor</td>
-<td>interactive</td>
-<td style="text-align: right;">6</td>
-<td style="text-align: right;">32</td>
-<td style="text-align: right;">16</td>
-<td style="text-align: right;">16</td>
-<td style="text-align: center;"></td>
-<td></td>
-</tr>
-<tr>
-<td>2026-05-19</td>
-<td>ByronWilliamsCPA/rag-processor</td>
-<td>interactive</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: right;">32</td>
-<td style="text-align: right;">11</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: center;"></td>
-<td><a href="https://github.com/ByronWilliamsCPA/rag-processor/blob/main/docs/compliance-reports/lessons-learned/2026-05-19-rag-processor.md">report</a></td>
-</tr>
-<tr>
-<td>2026-05-18</td>
-<td>williaby/image-generation</td>
-<td>interactive</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: right;">10</td>
-<td style="text-align: right;">20</td>
-<td style="text-align: center;"></td>
-<td></td>
-</tr>
-<tr>
-<td>2026-05-16</td>
-<td>ByronWilliamsCPA/reference-library</td>
-<td>unknown</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/reference-library/blob/main/docs/compliance-reports/lessons-learned/2026-05-16-b.md">report</a></td>
-</tr>
-<tr>
-<td>2026-05-16</td>
-<td>ByronWilliamsCPA/fragrance-rater</td>
-<td>unknown</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: right;">30</td>
-<td style="text-align: right;">21</td>
-<td style="text-align: right;">21</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/fragrance-rater/blob/main/docs/compliance-reports/lessons-learned/2026-05-16.md">report</a></td>
-</tr>
-<tr>
-<td>2026-05-16</td>
-<td>ByronWilliamsCPA/audio-processor</td>
-<td>unknown</td>
-<td style="text-align: right;">12</td>
-<td style="text-align: right;">38</td>
-<td style="text-align: right;">15</td>
-<td style="text-align: right;">11</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/audio-processor/blob/main/docs/compliance-reports/lessons-learned/2026-05-16.md">report</a></td>
-</tr>
-<tr>
-<td>2026-05-14</td>
-<td>ByronWilliamsCPA/gleif</td>
-<td>unknown</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">21</td>
-<td style="text-align: right;">5</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/gleif/blob/main/docs/compliance-reports/lessons-learned/2026-05-14.md">report</a></td>
-</tr>
-<tr>
-<td>2026-05-14</td>
-<td>ByronWilliamsCPA/.claude</td>
-<td>unknown</td>
-<td style="text-align: right;">6</td>
-<td style="text-align: right;">17</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/.claude/blob/main/docs/compliance-reports/lessons-learned/2026-05-14-github-repo.md">report</a></td>
-</tr>
-<tr>
-<td>2026-05-13</td>
-<td>ByronWilliamsCPA/reference-library</td>
-<td>unknown</td>
-<td style="text-align: right;">3</td>
-<td style="text-align: right;">28</td>
-<td style="text-align: right;">2</td>
-<td style="text-align: right;">4</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/reference-library/blob/main/docs/compliance-reports/lessons-learned/2026-05-13.md">report</a></td>
-</tr>
-<tr>
-<td>2026-05-13</td>
-<td>ByronWilliamsCPA/.claude</td>
-<td>unknown</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">10</td>
-<td style="text-align: right;">6</td>
-<td style="text-align: right;">2</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/.claude/blob/main/docs/compliance-reports/lessons-learned/2026-05-13.md">report</a></td>
-</tr>
-<tr>
-<td>2026-05-08</td>
-<td>ByronWilliamsCPA/family-office-portal</td>
-<td>unknown</td>
-<td style="text-align: right;">6</td>
-<td style="text-align: right;">24</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: right;">3</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/family-office-portal/blob/main/docs/compliance-reports/lessons-learned/2026-05-08.md">report</a></td>
-</tr>
-<tr>
-<td>2026-05-07</td>
-<td>ByronWilliamsCPA/homelab-infra</td>
-<td>unknown</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">5</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">4</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/homelab-infra/blob/main/docs/compliance-reports/lessons-learned/2026-05-07.md">report</a></td>
-</tr>
-<tr>
-<td>2026-05-02</td>
-<td>ByronWilliamsCPA/homelab-infra</td>
-<td>unknown</td>
-<td style="text-align: right;">7</td>
-<td style="text-align: right;">42</td>
-<td style="text-align: right;">13</td>
-<td style="text-align: right;">7</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/homelab-infra/blob/main/docs/compliance-reports/lessons-learned/2026-05-02.md">report</a></td>
-</tr>
-</tbody>
-</table>
-<h2 id="2026-04">2026-04<a class="headerlink" href="#2026-04" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Date</th>
-<th>Repo</th>
-<th>Mode</th>
-<th style="text-align: right;">Critical</th>
-<th style="text-align: right;">Important</th>
-<th style="text-align: right;">Suggested</th>
-<th style="text-align: right;">Candidates</th>
-<th style="text-align: center;">Reconciled</th>
-<th>Report</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>2026-04-28</td>
-<td>ByronWilliamsCPA/llc-manager</td>
-<td>unknown</td>
-<td style="text-align: right;">11</td>
-<td style="text-align: right;">18</td>
-<td style="text-align: right;">9</td>
-<td style="text-align: right;">15</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/llc-manager/blob/main/docs/compliance-reports/lessons-learned/2026-04-28.md">report</a></td>
-</tr>
-<tr>
-<td>2026-04-25</td>
-<td>ByronWilliamsCPA/gleif</td>
-<td>unknown</td>
-<td style="text-align: right;">10</td>
-<td style="text-align: right;">22</td>
-<td style="text-align: right;">13</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/gleif/blob/main/docs/compliance-reports/lessons-learned/2026-04-25.md">report</a></td>
-</tr>
-</tbody>
-</table>
+<p>codebase-memory-mcp is a code intelligence engine that indexes a repository into a
+persistent knowledge graph and exposes it via 14 MCP tools. It replaces chains of
+<code>grep | grep | Read</code> cycles with single structural queries (<code>trace_path</code>,
+<code>search_graph</code>, <code>get_architecture</code>), cutting token consumption by ~120x for code
+discovery tasks.</p>
+<p><strong>Why it fits this setup:</strong> It ships as a single static binary (C, zero runtime
+dependencies), stores indexes in <code>~/.cache/codebase-memory-mcp/</code>, and manages its
+own Claude Code wiring (skill, hook, MCP entry) via an <code>install</code> command. You do
+not manage it through the tiered MCP strategy; it runs alongside that stack.</p>
 <hr />
-<p><em>Rendered 2026-06-28 03:53:14 from master-log.jsonl by compliance_log_render.py.</em></p>
+<h2 id="what-the-binary-installs-once">What the binary installs (once)<a class="headerlink" href="#what-the-binary-installs-once" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Artifact</th>
+<th>Location</th>
+<th>Managed by</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MCP server entry</td>
+<td><code>~/.claude/.mcp.json</code></td>
+<td>binary <code>install</code> / <code>uninstall</code></td>
+</tr>
+<tr>
+<td>Skill</td>
+<td><code>~/.claude/skills/codebase-memory/SKILL.md</code></td>
+<td>binary <code>install</code> / <code>uninstall</code></td>
+</tr>
+<tr>
+<td>Hook script</td>
+<td><code>~/.claude/hooks/cbm-code-discovery-gate</code></td>
+<td>binary <code>install</code> / <code>uninstall</code></td>
+</tr>
+<tr>
+<td>Hook wiring (PreToolUse, <code>Grep\|Glob</code> matcher)</td>
+<td><code>~/.claude/settings.json</code></td>
+<td>binary <code>install</code> / <code>uninstall</code></td>
+</tr>
+<tr>
+<td>Project indexes</td>
+<td><code>~/.cache/codebase-memory-mcp/</code></td>
+<td>binary at runtime</td>
+</tr>
+</tbody>
+</table>
+<p><code>~/.claude/.mcp.json</code> is gitignored in this repo (line 333 of <code>.gitignore</code>). The
+skill and hook script are binary-managed files that live in git-tracked directories
+but are not committed; treat them the same as compiled outputs.</p>
+<hr />
+<h2 id="step-1-install-the-binary">Step 1: Install the binary<a class="headerlink" href="#step-1-install-the-binary" title="Permanent link">&para;</a></h2>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>curl<span class="w"> </span>-fsSL<span class="w"> </span>https://raw.githubusercontent.com/DeusData/codebase-memory-mcp/main/install.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>bash
+</span></code></pre></div>
+<p>This downloads the static binary to <code>~/.local/bin/codebase-memory-mcp</code>, verifies
+the SHA-256 checksum against the release manifest, and then automatically runs
+<code>codebase-memory-mcp install</code> to configure Claude Code.</p>
+<p>Verify:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>codebase-memory-mcp<span class="w"> </span>--version
+</span></code></pre></div>
+<p>Check <code>~/.local/bin</code> is on <code>PATH</code> if the command is not found:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nb">echo</span><span class="w"> </span><span class="s1">&#39;export PATH=&quot;$HOME/.local/bin:$PATH&quot;&#39;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>~/.zshrc<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">source</span><span class="w"> </span>~/.zshrc
+</span></code></pre></div>
+<hr />
+<h2 id="step-2-verify-what-the-install-wrote">Step 2: Verify what the install wrote<a class="headerlink" href="#step-2-verify-what-the-install-wrote" title="Permanent link">&para;</a></h2>
+<p>The <code>install</code> command runs non-interactively as part of step 1. Confirm each
+artifact landed:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># MCP entry</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>cat<span class="w"> </span>~/.claude/.mcp.json
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1"># Skill</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>ls<span class="w"> </span>~/.claude/skills/codebase-memory/
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="c1"># Hook script</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>ls<span class="w"> </span>~/.claude/hooks/cbm-code-discovery-gate
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="c1"># Hook wiring in settings.json: look for the Grep|Glob PreToolUse entry</span>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>python3<span class="w"> </span>-m<span class="w"> </span>json.tool<span class="w"> </span>~/.claude/settings.json<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-A6<span class="w"> </span><span class="s2">&quot;cbm\|codebase-memory\|Grep&quot;</span>
+</span></code></pre></div>
+<p>If any artifact is missing, run <code>codebase-memory-mcp install</code> manually.</p>
+<hr />
+<h2 id="step-3-restart-claude-code-and-confirm-14-tools-load">Step 3: Restart Claude Code and confirm 14 tools load<a class="headerlink" href="#step-3-restart-claude-code-and-confirm-14-tools-load" title="Permanent link">&para;</a></h2>
+<p>Restart Claude Code completely (not just reload). Then verify:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>/mcp
+</span></code></pre></div>
+<p>You should see <code>codebase-memory-mcp</code> with 14 tools listed. If it shows 0 tools or
+is absent, check that the path in <code>~/.claude/.mcp.json</code> points to the installed
+binary.</p>
+<hr />
+<h2 id="step-4-enable-auto-index">Step 4: Enable auto-index<a class="headerlink" href="#step-4-enable-auto-index" title="Permanent link">&para;</a></h2>
+<p>By default, projects must be indexed manually each session. Auto-index handles this
+on first connection per project:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>codebase-memory-mcp<span class="w"> </span>config<span class="w"> </span><span class="nb">set</span><span class="w"> </span>auto_index<span class="w"> </span><span class="nb">true</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>codebase-memory-mcp<span class="w"> </span>config<span class="w"> </span><span class="nb">set</span><span class="w"> </span>auto_index_limit<span class="w"> </span><span class="m">50000</span>
+</span></code></pre></div>
+<p>After enabling auto-index, previously-indexed projects are registered with the
+background watcher for ongoing git-based change detection. New projects get a full
+index on first session connection.</p>
+<hr />
+<h2 id="step-5-index-your-first-repos">Step 5: Index your first repos<a class="headerlink" href="#step-5-index-your-first-repos" title="Permanent link">&para;</a></h2>
+<p>Auto-index triggers on the next Claude Code session start per project. To index
+immediately without opening a session:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>codebase-memory-mcp<span class="w"> </span>cli<span class="w"> </span>index_repository<span class="w"> </span><span class="s1">&#39;{&quot;repo_path&quot;: &quot;/home/byron/dev/.claude&quot;}&#39;</span>
+</span></code></pre></div>
+<p>Or inside a Claude Code session:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>Index this project
+</span></code></pre></div>
+<p>Verify:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>codebase-memory-mcp<span class="w"> </span>cli<span class="w"> </span>list_projects
+</span></code></pre></div>
+<hr />
+<h2 id="step-6-per-repo-decisions">Step 6: Per-repo decisions<a class="headerlink" href="#step-6-per-repo-decisions" title="Permanent link">&para;</a></h2>
+<p>For each individual project repo (not this global config), decide three things:</p>
+<h3 id="team-shared-graph-artifact">Team-shared graph artifact<a class="headerlink" href="#team-shared-graph-artifact" title="Permanent link">&para;</a></h3>
+<p>Commit <code>.codebase-memory/graph.db.zst</code> so teammates skip the full reindex on clone.
+The binary auto-creates a <code>.gitattributes</code> entry with <code>merge=ours</code> to prevent
+binary merge conflicts. For solo repos, skip this and add <code>.codebase-memory/</code> to
+<code>.gitignore</code> instead.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># Solo repos: ignore the artifact</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="nb">echo</span><span class="w"> </span><span class="s1">&#39;.codebase-memory/&#39;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>.gitignore
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="c1"># Team repos: commit the artifact after first index</span>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>git<span class="w"> </span>add<span class="w"> </span>.codebase-memory/graph.db.zst
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>git<span class="w"> </span>commit<span class="w"> </span>-S<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;chore: add codebase knowledge graph artifact&quot;</span>
+</span></code></pre></div>
+<h3 id="custom-extension-mappings">Custom extension mappings<a class="headerlink" href="#custom-extension-mappings" title="Permanent link">&para;</a></h3>
+<p>Only needed for repos with non-standard extensions:</p>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="p">{</span><span class="nt">&quot;extra_extensions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;.blade.php&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;php&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;.mjs&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;javascript&quot;</span><span class="p">}}</span>
+</span></code></pre></div>
+<h3 id="custom-ignore-patterns">Custom ignore patterns<a class="headerlink" href="#custom-ignore-patterns" title="Permanent link">&para;</a></h3>
+<p>Only needed when <code>.gitignore</code> alone is insufficient (e.g., large generated files
+you want in git but not in the graph):</p>
+<p>Place in <code>.cbmignore</code> (gitignore syntax) at the repo root:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>generated/
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>vendor/large-stubs/
+</span></code></pre></div>
+<hr />
+<h2 id="step-7-how-the-hook-works">Step 7: How the hook works<a class="headerlink" href="#step-7-how-the-hook-works" title="Permanent link">&para;</a></h2>
+<p>The <code>cbm-code-discovery-gate</code> hook fires on every <code>Grep</code> and <code>Glob</code> tool call. It
+calls <code>codebase-memory-mcp hook-augment</code>, which runs a <code>search_graph</code> query
+matching the search token and injects results as <code>additionalContext</code>. It <strong>never
+blocks</strong> a tool call: if the binary is absent, hung, or returns an error, it
+exits 0 silently.</p>
+<p>The hook complements the skill's instruction to prefer graph tools. For searches
+that fall through to Grep/Glob anyway, it automatically enriches results with
+structural context.</p>
+<hr />
+<h2 id="keeping-up-to-date">Keeping up to date<a class="headerlink" href="#keeping-up-to-date" title="Permanent link">&para;</a></h2>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>codebase-memory-mcp<span class="w"> </span>update
+</span></code></pre></div>
+<p>The binary also checks for updates on each startup and notifies on the first tool
+call if a newer release is available.</p>
+<hr />
+<h2 id="uninstalling">Uninstalling<a class="headerlink" href="#uninstalling" title="Permanent link">&para;</a></h2>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>codebase-memory-mcp<span class="w"> </span>uninstall
+</span></code></pre></div>
+<p>Removes the skill, hook script, hook wiring from <code>settings.json</code>, and the
+<code>~/.claude/.mcp.json</code> entry. Does not remove the binary or SQLite indexes at
+<code>~/.cache/codebase-memory-mcp/</code>.</p>
+<hr />
+<h2 id="architecture-decision-records">Architecture Decision Records<a class="headerlink" href="#architecture-decision-records" title="Permanent link">&para;</a></h2>
+<p>The <code>manage_adr</code> tool stores ADRs in the SQLite graph database per project. They
+persist across re-indexes but are not in git by default. To version-control ADRs,
+export them to <code>docs/architecture/</code> manually to align with the existing ADR
+convention in this repo.</p>
 
 
 
@@ -2547,7 +2569,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 28, 2026 16:07:38 UTC">June 28, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 27, 2026 20:12:43 UTC">June 27, 2026</span>
   </span>
 
     
@@ -2557,7 +2579,7 @@
     <span class="md-icon" title="Created">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="May 17, 2026 22:44:10 UTC">May 17, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 27, 2026 20:12:43 UTC">June 27, 2026</span>
   </span>
 
     

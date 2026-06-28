@@ -12,7 +12,7 @@
         <meta name="author" content="Byron Williams">
       
       
-        <link rel="canonical" href="https://claude-config.readthedocs.io/compliance-reports/master-log/">
+        <link rel="canonical" href="https://claude-config.readthedocs.io/development/session-length-trigger/">
       
       
       
@@ -25,7 +25,7 @@
     
     
       
-        <title>Compliance Master Log - Claude Code Configuration</title>
+        <title>Session-length trigger (measurement method and calibration) - Claude Code Configuration</title>
       
     
     
@@ -88,7 +88,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#2026-06" class="md-skip">
+        <a href="#what-this-calibrates" class="md-skip">
           Skip to content
         </a>
       
@@ -122,7 +122,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Compliance Master Log
+              Session-length trigger (measurement method and calibration)
             
           </span>
         </div>
@@ -2201,10 +2201,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#2026-06" class="md-nav__link">
+  <a href="#what-this-calibrates" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2026-06
+        What this calibrates
       
     </span>
   </a>
@@ -2212,10 +2212,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2026-05" class="md-nav__link">
+  <a href="#the-measurement-script" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2026-05
+        The measurement script
       
     </span>
   </a>
@@ -2223,10 +2223,32 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2026-04" class="md-nav__link">
+  <a href="#recalibrating" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2026-04
+        Recalibrating
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#limitations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Limitations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#related" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Related
       
     </span>
   </a>
@@ -2253,278 +2275,74 @@
   
 
 
-  <h1>Compliance Master Log</h1>
+  <h1>Session-length trigger (measurement method and calibration)</h1>
 
-<p><strong>Total sessions:</strong> 19
-<strong>Distinct repos:</strong> 13
-<strong>Newest entry:</strong> 2026-06-19
-<strong>Oldest entry:</strong> 2026-04-25
-<strong>Open fleet actions:</strong> 0</p>
-<h2 id="2026-06">2026-06<a class="headerlink" href="#2026-06" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Date</th>
-<th>Repo</th>
-<th>Mode</th>
-<th style="text-align: right;">Critical</th>
-<th style="text-align: right;">Important</th>
-<th style="text-align: right;">Suggested</th>
-<th style="text-align: right;">Candidates</th>
-<th style="text-align: center;">Reconciled</th>
-<th>Report</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>2026-06-19</td>
-<td>ByronWilliamsCPA/pp-security-master</td>
-<td>interactive</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">7</td>
-<td style="text-align: center;"></td>
-<td></td>
-</tr>
-<tr>
-<td>2026-06-01</td>
-<td>ByronWilliamsCPA/MTG_AI</td>
-<td>interactive</td>
-<td style="text-align: right;">9</td>
-<td style="text-align: right;">37</td>
-<td style="text-align: right;">26</td>
-<td style="text-align: right;">11</td>
-<td style="text-align: center;"></td>
-<td><a href="https://github.com/ByronWilliamsCPA/MTG_AI/blob/main/docs/compliance-reports/lessons-learned/2026-06-01.md">report</a></td>
-</tr>
-<tr>
-<td>2026-06-01</td>
-<td>ByronWilliamsCPA/AMC</td>
-<td>interactive</td>
-<td style="text-align: right;">4</td>
-<td style="text-align: right;">48</td>
-<td style="text-align: right;">23</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: center;"></td>
-<td></td>
-</tr>
-</tbody>
-</table>
-<h2 id="2026-05">2026-05<a class="headerlink" href="#2026-05" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Date</th>
-<th>Repo</th>
-<th>Mode</th>
-<th style="text-align: right;">Critical</th>
-<th style="text-align: right;">Important</th>
-<th style="text-align: right;">Suggested</th>
-<th style="text-align: right;">Candidates</th>
-<th style="text-align: center;">Reconciled</th>
-<th>Report</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>2026-05-24</td>
-<td>ByronWilliamsCPA/llc-manager</td>
-<td>interactive</td>
-<td style="text-align: right;">3</td>
-<td style="text-align: right;">20</td>
-<td style="text-align: right;">10</td>
-<td style="text-align: right;">6</td>
-<td style="text-align: center;"></td>
-<td></td>
-</tr>
-<tr>
-<td>2026-05-23</td>
-<td>ByronWilliamsCPA/rag-processor</td>
-<td>interactive</td>
-<td style="text-align: right;">6</td>
-<td style="text-align: right;">32</td>
-<td style="text-align: right;">16</td>
-<td style="text-align: right;">16</td>
-<td style="text-align: center;"></td>
-<td></td>
-</tr>
-<tr>
-<td>2026-05-19</td>
-<td>ByronWilliamsCPA/rag-processor</td>
-<td>interactive</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: right;">32</td>
-<td style="text-align: right;">11</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: center;"></td>
-<td><a href="https://github.com/ByronWilliamsCPA/rag-processor/blob/main/docs/compliance-reports/lessons-learned/2026-05-19-rag-processor.md">report</a></td>
-</tr>
-<tr>
-<td>2026-05-18</td>
-<td>williaby/image-generation</td>
-<td>interactive</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: right;">10</td>
-<td style="text-align: right;">20</td>
-<td style="text-align: center;"></td>
-<td></td>
-</tr>
-<tr>
-<td>2026-05-16</td>
-<td>ByronWilliamsCPA/reference-library</td>
-<td>unknown</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/reference-library/blob/main/docs/compliance-reports/lessons-learned/2026-05-16-b.md">report</a></td>
-</tr>
-<tr>
-<td>2026-05-16</td>
-<td>ByronWilliamsCPA/fragrance-rater</td>
-<td>unknown</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: right;">30</td>
-<td style="text-align: right;">21</td>
-<td style="text-align: right;">21</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/fragrance-rater/blob/main/docs/compliance-reports/lessons-learned/2026-05-16.md">report</a></td>
-</tr>
-<tr>
-<td>2026-05-16</td>
-<td>ByronWilliamsCPA/audio-processor</td>
-<td>unknown</td>
-<td style="text-align: right;">12</td>
-<td style="text-align: right;">38</td>
-<td style="text-align: right;">15</td>
-<td style="text-align: right;">11</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/audio-processor/blob/main/docs/compliance-reports/lessons-learned/2026-05-16.md">report</a></td>
-</tr>
-<tr>
-<td>2026-05-14</td>
-<td>ByronWilliamsCPA/gleif</td>
-<td>unknown</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">21</td>
-<td style="text-align: right;">5</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/gleif/blob/main/docs/compliance-reports/lessons-learned/2026-05-14.md">report</a></td>
-</tr>
-<tr>
-<td>2026-05-14</td>
-<td>ByronWilliamsCPA/.claude</td>
-<td>unknown</td>
-<td style="text-align: right;">6</td>
-<td style="text-align: right;">17</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/.claude/blob/main/docs/compliance-reports/lessons-learned/2026-05-14-github-repo.md">report</a></td>
-</tr>
-<tr>
-<td>2026-05-13</td>
-<td>ByronWilliamsCPA/reference-library</td>
-<td>unknown</td>
-<td style="text-align: right;">3</td>
-<td style="text-align: right;">28</td>
-<td style="text-align: right;">2</td>
-<td style="text-align: right;">4</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/reference-library/blob/main/docs/compliance-reports/lessons-learned/2026-05-13.md">report</a></td>
-</tr>
-<tr>
-<td>2026-05-13</td>
-<td>ByronWilliamsCPA/.claude</td>
-<td>unknown</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">10</td>
-<td style="text-align: right;">6</td>
-<td style="text-align: right;">2</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/.claude/blob/main/docs/compliance-reports/lessons-learned/2026-05-13.md">report</a></td>
-</tr>
-<tr>
-<td>2026-05-08</td>
-<td>ByronWilliamsCPA/family-office-portal</td>
-<td>unknown</td>
-<td style="text-align: right;">6</td>
-<td style="text-align: right;">24</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: right;">3</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/family-office-portal/blob/main/docs/compliance-reports/lessons-learned/2026-05-08.md">report</a></td>
-</tr>
-<tr>
-<td>2026-05-07</td>
-<td>ByronWilliamsCPA/homelab-infra</td>
-<td>unknown</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">5</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">4</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/homelab-infra/blob/main/docs/compliance-reports/lessons-learned/2026-05-07.md">report</a></td>
-</tr>
-<tr>
-<td>2026-05-02</td>
-<td>ByronWilliamsCPA/homelab-infra</td>
-<td>unknown</td>
-<td style="text-align: right;">7</td>
-<td style="text-align: right;">42</td>
-<td style="text-align: right;">13</td>
-<td style="text-align: right;">7</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/homelab-infra/blob/main/docs/compliance-reports/lessons-learned/2026-05-02.md">report</a></td>
-</tr>
-</tbody>
-</table>
-<h2 id="2026-04">2026-04<a class="headerlink" href="#2026-04" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Date</th>
-<th>Repo</th>
-<th>Mode</th>
-<th style="text-align: right;">Critical</th>
-<th style="text-align: right;">Important</th>
-<th style="text-align: right;">Suggested</th>
-<th style="text-align: right;">Candidates</th>
-<th style="text-align: center;">Reconciled</th>
-<th>Report</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>2026-04-28</td>
-<td>ByronWilliamsCPA/llc-manager</td>
-<td>unknown</td>
-<td style="text-align: right;">11</td>
-<td style="text-align: right;">18</td>
-<td style="text-align: right;">9</td>
-<td style="text-align: right;">15</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/llc-manager/blob/main/docs/compliance-reports/lessons-learned/2026-04-28.md">report</a></td>
-</tr>
-<tr>
-<td>2026-04-25</td>
-<td>ByronWilliamsCPA/gleif</td>
-<td>unknown</td>
-<td style="text-align: right;">10</td>
-<td style="text-align: right;">22</td>
-<td style="text-align: right;">13</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/gleif/blob/main/docs/compliance-reports/lessons-learned/2026-04-25.md">report</a></td>
-</tr>
-</tbody>
-</table>
-<hr />
-<p><em>Rendered 2026-06-28 03:53:14 from master-log.jsonl by compliance_log_render.py.</em></p>
+<h2 id="what-this-calibrates">What this calibrates<a class="headerlink" href="#what-this-calibrates" title="Permanent link">&para;</a></h2>
+<p>Two separate triggers, both expressed in absolute carried tokens (not percent of window,
+which misleads on a 1M model):</p>
+<ol>
+<li><strong>Handoff nudge (~150K carried tokens):</strong> the proactive, lossless lever. At a task
+   boundary past the cost knee, Claude offers <code>/compact</code> or <code>/handoff</code>. Operative text:
+   root CLAUDE.md "Session length".</li>
+<li><strong>Autocompact backstop (~375K):</strong> the lossy fallback, set via
+   <code>CLAUDE_CODE_AUTO_COMPACT_WINDOW=500000</code> + <code>CLAUDE_AUTOCOMPACT_PCT_OVERRIDE=75</code>.</li>
+</ol>
+<p>Why absolute tokens, and why these values: see
+<code>docs/development/context-window-autocompaction-research.md</code>.</p>
+<h2 id="the-measurement-script">The measurement script<a class="headerlink" href="#the-measurement-script" title="Permanent link">&para;</a></h2>
+<p><code>scripts/analyze-session-inflection.py</code> reads Claude Code transcript JSONL (default glob
+<code>~/.claude/projects/**/*.jsonl</code>) and, per main-thread assistant turn, computes the carried
+context (<code>input_tokens + cache_read_input_tokens + cache_creation_input_tokens</code>), the fill
+against the per-model window, the output tokens, and the carry ratio (context per output
+token). From those it derives two signals:</p>
+<ul>
+<li><strong>Carry-ratio knee (the ~150K nudge signal).</strong> The fill at which the smoothed carry
+  ratio first reaches a multiple of its early-session baseline, where a turn starts
+  carrying a lot of context for little new output. Across 595 local sessions the knee sits
+  at a median of ~17% of a 1M window (~150-200K tokens), p25 13% / p75 20%.</li>
+<li><strong>Compaction count (the restart signal).</strong> A compaction leaves no transcript marker, so
+  the script detects it as a sustained context drop (&gt;= 50K tokens that does not recover
+  the next turn) and counts those per session. This supersedes an earlier draft that left
+  compaction detection unconfirmed; the script now counts via the drop heuristic and does
+  not depend on a marker format.</li>
+</ul>
+<p>Run it:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>python3<span class="w"> </span>scripts/analyze-session-inflection.py<span class="w">                 </span><span class="c1"># default glob, per-model window</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>python3<span class="w"> </span>scripts/analyze-session-inflection.py<span class="w"> </span>--min-turns<span class="w"> </span><span class="m">8</span><span class="w">   </span><span class="c1"># skip short sessions</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>python3<span class="w"> </span>scripts/analyze-session-inflection.py<span class="w"> </span>--json<span class="w">          </span><span class="c1"># machine-readable</span>
+</span></code></pre></div>
+<p>The window is auto-detected per session from the model id (1M for current Opus/Sonnet/
+Fable, 200K for Haiku); <code>--window</code> overrides. A peak fill above 100% warns that the window
+is wrong for that model.</p>
+<h2 id="recalibrating">Recalibrating<a class="headerlink" href="#recalibrating" title="Permanent link">&para;</a></h2>
+<p>Re-run periodically; the knee shifts with project size and working style:</p>
+<ol>
+<li>Read the carry-ratio knee distribution. If the median knee has moved, update the
+   CLAUDE.md nudge floor (currently ~150K) to track it.</li>
+<li>Review the peak-fill and compaction-count distributions. If most sessions now peak much
+   higher or lower, revisit the ~375K autocompact backstop (and the
+   <code>CLAUDE_CODE_AUTO_COMPACT_WINDOW</code> / <code>CLAUDE_AUTOCOMPACT_PCT_OVERRIDE</code> values).</li>
+<li>Record the revised values and the reasoning in the research doc.</li>
+</ol>
+<h2 id="limitations">Limitations<a class="headerlink" href="#limitations" title="Permanent link">&para;</a></h2>
+<ul>
+<li>The per-model window only covers the models in the script's table; an unrecognized model
+  falls back to 200K with a warning, so pass <code>--window</code> for models the table does not know.
+  Fill is meaningless if the window is wrong, which is why a peak above 100% warns.</li>
+<li>The carry ratio is noisy on planning-heavy sessions with little output; the script
+  smooths and applies a minimum-turns filter, but eyeball the per-session table before
+  trusting a single session's number.</li>
+<li>The transcript captures token usage, not wall-clock latency, so "slower responses" is
+  inferred from context growth, not measured directly.</li>
+<li>Peak fill is a usage signal, not a quality signal: a high peak means the session ran
+  long, not that output stayed high quality there.</li>
+</ul>
+<h2 id="related">Related<a class="headerlink" href="#related" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>docs/development/context-window-autocompaction-research.md</code> (evidence and decisions)</li>
+<li>root <code>CLAUDE.md</code> "Session length" (the operative thresholds)</li>
+<li><code>scripts/analyze-session-inflection.py</code> (the measurement)</li>
+</ul>
 
 
 
@@ -2547,7 +2365,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 28, 2026 16:07:38 UTC">June 28, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 27, 2026 20:12:43 UTC">June 27, 2026</span>
   </span>
 
     
@@ -2557,7 +2375,7 @@
     <span class="md-icon" title="Created">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="May 17, 2026 22:44:10 UTC">May 17, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 27, 2026 20:12:43 UTC">June 27, 2026</span>
   </span>
 
     

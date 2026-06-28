@@ -12,7 +12,7 @@
         <meta name="author" content="Byron Williams">
       
       
-        <link rel="canonical" href="https://claude-config.readthedocs.io/compliance-reports/master-log/">
+        <link rel="canonical" href="https://claude-config.readthedocs.io/reference/mcp-fleet-status/">
       
       
       
@@ -25,7 +25,7 @@
     
     
       
-        <title>Compliance Master Log - Claude Code Configuration</title>
+        <title>MCP Fleet Status - Claude Code Configuration</title>
       
     
     
@@ -88,7 +88,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#2026-06" class="md-skip">
+        <a href="#global-config-claudesettingsjson" class="md-skip">
           Skip to content
         </a>
       
@@ -122,7 +122,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Compliance Master Log
+              MCP Fleet Status
             
           </span>
         </div>
@@ -300,7 +300,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../reference/" class="md-tabs__link">
+        <a href="../" class="md-tabs__link">
           
   
   
@@ -1471,7 +1471,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../reference/" class="md-nav__link ">
+            <a href="../" class="md-nav__link ">
               
   
   
@@ -1522,7 +1522,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/agents/" class="md-nav__link">
+      <a href="../agents/" class="md-nav__link">
         
   
   
@@ -1557,7 +1557,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/skills/" class="md-nav__link">
+      <a href="../skills/" class="md-nav__link">
         
   
   
@@ -1592,7 +1592,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/hooks/" class="md-nav__link">
+      <a href="../hooks/" class="md-nav__link">
         
   
   
@@ -1627,7 +1627,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/mcp/" class="md-nav__link">
+      <a href="../mcp/" class="md-nav__link">
         
   
   
@@ -2201,10 +2201,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#2026-06" class="md-nav__link">
+  <a href="#global-config-claudesettingsjson" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2026-06
+        Global Config (~/.claude/settings.json)
       
     </span>
   </a>
@@ -2212,10 +2212,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2026-05" class="md-nav__link">
+  <a href="#binary-managed-servers" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2026-05
+        Binary-Managed Servers
       
     </span>
   </a>
@@ -2223,10 +2223,65 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2026-04" class="md-nav__link">
+  <a href="#required-environment-variables" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2026-04
+        Required Environment Variables
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fleet-project-override-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fleet Project Override Status
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#key-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Settings
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-add-project-level-mcpservers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to Add Project-Level mcpServers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Validation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#known-gotchas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Known Gotchas
       
     </span>
   </a>
@@ -2253,278 +2308,166 @@
   
 
 
-  <h1>Compliance Master Log</h1>
+  <h1>MCP Fleet Status</h1>
 
-<p><strong>Total sessions:</strong> 19
-<strong>Distinct repos:</strong> 13
-<strong>Newest entry:</strong> 2026-06-19
-<strong>Oldest entry:</strong> 2026-04-25
-<strong>Open fleet actions:</strong> 0</p>
-<h2 id="2026-06">2026-06<a class="headerlink" href="#2026-06" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p>Last audited: 2026-06-27</p>
+</blockquote>
+<h2 id="global-config-claudesettingsjson">Global Config (<code>~/.claude/settings.json</code>)<a class="headerlink" href="#global-config-claudesettingsjson" title="Permanent link">&para;</a></h2>
+<p>Servers defined in the global config are visible in every project session, labeled
+"User" in the MCP panel of other repos and "Project" in this repo (since
+<code>~/.claude/</code> is symlinked here).</p>
 <table>
 <thead>
 <tr>
-<th>Date</th>
-<th>Repo</th>
-<th>Mode</th>
-<th style="text-align: right;">Critical</th>
-<th style="text-align: right;">Important</th>
-<th style="text-align: right;">Suggested</th>
-<th style="text-align: right;">Candidates</th>
-<th style="text-align: center;">Reconciled</th>
-<th>Report</th>
+<th>Server</th>
+<th>Type</th>
+<th>Always-on</th>
+<th>Notes</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>2026-06-19</td>
-<td>ByronWilliamsCPA/pp-security-master</td>
-<td>interactive</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">7</td>
-<td style="text-align: center;"></td>
-<td></td>
+<td>zen (pal)</td>
+<td>command (Python)</td>
+<td>Yes</td>
+<td>Requires venv at <code>/home/byron/dev/zen-mcp-server/.pal_venv/</code></td>
 </tr>
 <tr>
-<td>2026-06-01</td>
-<td>ByronWilliamsCPA/MTG_AI</td>
-<td>interactive</td>
-<td style="text-align: right;">9</td>
-<td style="text-align: right;">37</td>
-<td style="text-align: right;">26</td>
-<td style="text-align: right;">11</td>
-<td style="text-align: center;"></td>
-<td><a href="https://github.com/ByronWilliamsCPA/MTG_AI/blob/main/docs/compliance-reports/lessons-learned/2026-06-01.md">report</a></td>
+<td>context7</td>
+<td>command (npx)</td>
+<td>Yes</td>
+<td>npx at <code>/home/byron/.npm-global/bin/npx</code></td>
 </tr>
 <tr>
-<td>2026-06-01</td>
-<td>ByronWilliamsCPA/AMC</td>
-<td>interactive</td>
-<td style="text-align: right;">4</td>
-<td style="text-align: right;">48</td>
-<td style="text-align: right;">23</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: center;"></td>
-<td></td>
+<td>github</td>
+<td>command (docker)</td>
+<td>Conditional</td>
+<td>Requires <code>GITHUB_PERSONAL_ACCESS_TOKEN</code> in env; fails silently without it</td>
+</tr>
+<tr>
+<td>sonarqube</td>
+<td>url (localhost:8090)</td>
+<td>Conditional</td>
+<td>Requires <code>SONARQUBE_TOKEN</code> + Docker container running</td>
+</tr>
+<tr>
+<td>sonarqube-williaby</td>
+<td>url (localhost:8091)</td>
+<td>Conditional</td>
+<td>Same token; sometimes fails to register tools even when healthy</td>
 </tr>
 </tbody>
 </table>
-<h2 id="2026-05">2026-05<a class="headerlink" href="#2026-05" title="Permanent link">&para;</a></h2>
+<p>Tier &#8532; servers (defined in <code>mcp/*.json</code>, listed in <code>enabledMcpjsonServers</code>):
+playwright, sentry, mermaid, docker, uml-mcp-server</p>
+<h2 id="binary-managed-servers">Binary-Managed Servers<a class="headerlink" href="#binary-managed-servers" title="Permanent link">&para;</a></h2>
+<p>These servers manage their own wiring outside <code>settings.json</code> and the tier system.</p>
 <table>
 <thead>
 <tr>
-<th>Date</th>
-<th>Repo</th>
-<th>Mode</th>
-<th style="text-align: right;">Critical</th>
-<th style="text-align: right;">Important</th>
-<th style="text-align: right;">Suggested</th>
-<th style="text-align: right;">Candidates</th>
-<th style="text-align: center;">Reconciled</th>
-<th>Report</th>
+<th>Server</th>
+<th>Config</th>
+<th>Managed by</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>2026-05-24</td>
-<td>ByronWilliamsCPA/llc-manager</td>
-<td>interactive</td>
-<td style="text-align: right;">3</td>
-<td style="text-align: right;">20</td>
-<td style="text-align: right;">10</td>
-<td style="text-align: right;">6</td>
-<td style="text-align: center;"></td>
-<td></td>
-</tr>
-<tr>
-<td>2026-05-23</td>
-<td>ByronWilliamsCPA/rag-processor</td>
-<td>interactive</td>
-<td style="text-align: right;">6</td>
-<td style="text-align: right;">32</td>
-<td style="text-align: right;">16</td>
-<td style="text-align: right;">16</td>
-<td style="text-align: center;"></td>
-<td></td>
-</tr>
-<tr>
-<td>2026-05-19</td>
-<td>ByronWilliamsCPA/rag-processor</td>
-<td>interactive</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: right;">32</td>
-<td style="text-align: right;">11</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: center;"></td>
-<td><a href="https://github.com/ByronWilliamsCPA/rag-processor/blob/main/docs/compliance-reports/lessons-learned/2026-05-19-rag-processor.md">report</a></td>
-</tr>
-<tr>
-<td>2026-05-18</td>
-<td>williaby/image-generation</td>
-<td>interactive</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: right;">10</td>
-<td style="text-align: right;">20</td>
-<td style="text-align: center;"></td>
-<td></td>
-</tr>
-<tr>
-<td>2026-05-16</td>
-<td>ByronWilliamsCPA/reference-library</td>
-<td>unknown</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/reference-library/blob/main/docs/compliance-reports/lessons-learned/2026-05-16-b.md">report</a></td>
-</tr>
-<tr>
-<td>2026-05-16</td>
-<td>ByronWilliamsCPA/fragrance-rater</td>
-<td>unknown</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: right;">30</td>
-<td style="text-align: right;">21</td>
-<td style="text-align: right;">21</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/fragrance-rater/blob/main/docs/compliance-reports/lessons-learned/2026-05-16.md">report</a></td>
-</tr>
-<tr>
-<td>2026-05-16</td>
-<td>ByronWilliamsCPA/audio-processor</td>
-<td>unknown</td>
-<td style="text-align: right;">12</td>
-<td style="text-align: right;">38</td>
-<td style="text-align: right;">15</td>
-<td style="text-align: right;">11</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/audio-processor/blob/main/docs/compliance-reports/lessons-learned/2026-05-16.md">report</a></td>
-</tr>
-<tr>
-<td>2026-05-14</td>
-<td>ByronWilliamsCPA/gleif</td>
-<td>unknown</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">21</td>
-<td style="text-align: right;">5</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/gleif/blob/main/docs/compliance-reports/lessons-learned/2026-05-14.md">report</a></td>
-</tr>
-<tr>
-<td>2026-05-14</td>
-<td>ByronWilliamsCPA/.claude</td>
-<td>unknown</td>
-<td style="text-align: right;">6</td>
-<td style="text-align: right;">17</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/.claude/blob/main/docs/compliance-reports/lessons-learned/2026-05-14-github-repo.md">report</a></td>
-</tr>
-<tr>
-<td>2026-05-13</td>
-<td>ByronWilliamsCPA/reference-library</td>
-<td>unknown</td>
-<td style="text-align: right;">3</td>
-<td style="text-align: right;">28</td>
-<td style="text-align: right;">2</td>
-<td style="text-align: right;">4</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/reference-library/blob/main/docs/compliance-reports/lessons-learned/2026-05-13.md">report</a></td>
-</tr>
-<tr>
-<td>2026-05-13</td>
-<td>ByronWilliamsCPA/.claude</td>
-<td>unknown</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">10</td>
-<td style="text-align: right;">6</td>
-<td style="text-align: right;">2</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/.claude/blob/main/docs/compliance-reports/lessons-learned/2026-05-13.md">report</a></td>
-</tr>
-<tr>
-<td>2026-05-08</td>
-<td>ByronWilliamsCPA/family-office-portal</td>
-<td>unknown</td>
-<td style="text-align: right;">6</td>
-<td style="text-align: right;">24</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: right;">3</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/family-office-portal/blob/main/docs/compliance-reports/lessons-learned/2026-05-08.md">report</a></td>
-</tr>
-<tr>
-<td>2026-05-07</td>
-<td>ByronWilliamsCPA/homelab-infra</td>
-<td>unknown</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">5</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">4</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/homelab-infra/blob/main/docs/compliance-reports/lessons-learned/2026-05-07.md">report</a></td>
-</tr>
-<tr>
-<td>2026-05-02</td>
-<td>ByronWilliamsCPA/homelab-infra</td>
-<td>unknown</td>
-<td style="text-align: right;">7</td>
-<td style="text-align: right;">42</td>
-<td style="text-align: right;">13</td>
-<td style="text-align: right;">7</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/homelab-infra/blob/main/docs/compliance-reports/lessons-learned/2026-05-02.md">report</a></td>
+<td>codebase-memory-mcp v0.8.1</td>
+<td><code>~/.claude/.mcp.json</code></td>
+<td><code>codebase-memory-mcp install</code></td>
 </tr>
 </tbody>
 </table>
-<h2 id="2026-04">2026-04<a class="headerlink" href="#2026-04" title="Permanent link">&para;</a></h2>
+<p>Do NOT add these to <code>settings.json</code> or <code>mcp/*.json</code>; the binary is authoritative.</p>
+<h2 id="required-environment-variables">Required Environment Variables<a class="headerlink" href="#required-environment-variables" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>Date</th>
-<th>Repo</th>
-<th>Mode</th>
-<th style="text-align: right;">Critical</th>
-<th style="text-align: right;">Important</th>
-<th style="text-align: right;">Suggested</th>
-<th style="text-align: right;">Candidates</th>
-<th style="text-align: center;">Reconciled</th>
-<th>Report</th>
+<th>Variable</th>
+<th>Where Set</th>
+<th>Purpose</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>2026-04-28</td>
-<td>ByronWilliamsCPA/llc-manager</td>
-<td>unknown</td>
-<td style="text-align: right;">11</td>
-<td style="text-align: right;">18</td>
-<td style="text-align: right;">9</td>
-<td style="text-align: right;">15</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/llc-manager/blob/main/docs/compliance-reports/lessons-learned/2026-04-28.md">report</a></td>
+<td><code>SONARQUBE_TOKEN</code></td>
+<td><code>~/.bashrc</code></td>
+<td>sonarqube + sonarqube-williaby auth</td>
 </tr>
 <tr>
-<td>2026-04-25</td>
-<td>ByronWilliamsCPA/gleif</td>
-<td>unknown</td>
-<td style="text-align: right;">10</td>
-<td style="text-align: right;">22</td>
-<td style="text-align: right;">13</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: center;">yes</td>
-<td><a href="https://github.com/ByronWilliamsCPA/gleif/blob/main/docs/compliance-reports/lessons-learned/2026-04-25.md">report</a></td>
+<td><code>GITHUB_PERSONAL_ACCESS_TOKEN</code></td>
+<td><code>~/.bashrc</code> (add: scopes repo, read:org, read:user)</td>
+<td>github MCP server auth</td>
+</tr>
+<tr>
+<td><code>SNYK_TOKEN</code></td>
+<td><code>~/.bashrc</code> (add when Snyk plan executes)</td>
+<td>snyk MCP tools auth</td>
 </tr>
 </tbody>
 </table>
-<hr />
-<p><em>Rendered 2026-06-28 03:53:14 from master-log.jsonl by compliance_log_render.py.</em></p>
+<h2 id="fleet-project-override-status">Fleet Project Override Status<a class="headerlink" href="#fleet-project-override-status" title="Permanent link">&para;</a></h2>
+<p>Audited 2026-06-27: <strong>0 of 23 project-level settings.json files</strong> have <code>mcpServers</code>
+blocks. All repos inherit from global config. Repos audited:
+- <code>.claude</code>, <code>.github</code>, <code>AMC</code>, <code>CYO_Adventure</code>, <code>MTG_AI</code>, <code>PromptCraft</code>,
+  <code>audio-processor</code>, <code>bwcpa-.github</code>, <code>cyo-adventure</code>, <code>dot-github</code>,
+  <code>family-office-portal</code>, <code>fragrance-rater</code>, <code>gleif</code>, <code>homelab-infra</code>,
+  <code>image-generation</code>, <code>llc-manager</code>, <code>pp-security-master</code>, <code>rag-processor</code>,
+  <code>reference-library</code>, <code>taxdome</code>, <code>usc</code>, <code>williaby-dot-github</code>, <code>zen-mcp-server</code></p>
+<p>This is the correct posture. Do NOT add global Tier 1 servers to project
+settings.json: that creates drift when server paths or args change.</p>
+<h2 id="key-settings">Key Settings<a class="headerlink" href="#key-settings" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>enableAllProjectMcpServers: false</code>: project-level <code>mcpServers</code> blocks do not
+  auto-enable. Servers must be in global settings or explicitly listed in
+  <code>enabledMcpjsonServers</code>. Since no project defines <code>mcpServers</code>, this has no
+  current effect but is the correct default.</li>
+</ul>
+<h2 id="when-to-add-project-level-mcpservers">When to Add Project-Level mcpServers<a class="headerlink" href="#when-to-add-project-level-mcpservers" title="Permanent link">&para;</a></h2>
+<p>Only add a project-level <code>mcpServers</code> block when:
+1. A project needs a server the global config does not have (e.g., a project-specific
+   Postgres instance).
+2. A server needs project-specific env vars (e.g., different <code>SENTRY_ORG</code> per project).</p>
+<p>Never duplicate the global Tier 1 servers in project settings: it causes drift.</p>
+<h2 id="validation">Validation<a class="headerlink" href="#validation" title="Permanent link">&para;</a></h2>
+<p>Run any time a server seems missing:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>bash<span class="w"> </span>~/.claude/scripts/validate-mcp-connections.sh
+</span></code></pre></div>
+<p>Expected healthy output (after GitHub PAT and SNYK_TOKEN are set):</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>=== MCP Connection Validation ===
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>-- Environment --
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>  [OK]   GITHUB_PERSONAL_ACCESS_TOKEN: authenticates as ByronWilliamsCPA
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>  [OK]   SONARQUBE_TOKEN: set (40 chars)
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>  [OK]   SNYK_TOKEN: set
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>-- Servers --
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>  [OK]   zen (pal): venv and server.py present
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>  [OK]   context7: npx found at /home/byron/.npm-global/bin/npx
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>  [OK]   github: docker running and PAT set
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>  [OK]   sonarqube: port 8090 responding (HTTP 405)
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>  [OK]   sonarqube-williaby: port 8091 responding (HTTP 405)
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>  [OK]   codebase-memory-mcp: binary present (codebase-memory-mcp 0.8.1)
+</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>  [OK]   snyk: npx reachable and SNYK_TOKEN set
+</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>
+</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>=== Summary: 9 ok, 0 warn, 0 fail ===
+</span></code></pre></div>
+<h2 id="known-gotchas">Known Gotchas<a class="headerlink" href="#known-gotchas" title="Permanent link">&para;</a></h2>
+<ul>
+<li>The <code>sonarqube-williaby</code> server sometimes shows as connected but fails to register
+  its tools. If tools are absent after the container is healthy, fall back to the
+  SonarCloud REST API directly.</li>
+<li>The <code>github</code> MCP server starts a Docker container on each session startup (5-10s
+  delay). If it is missing from the panel immediately after session open, wait 15 seconds
+  before diagnosing.</li>
+<li>The <code>claude.ai (8)</code> servers visible in the MCP panel (Consensus, Craft, Gmail, etc.)
+  are Anthropic account-level integrations, not local MCP servers. They are independent
+  of <code>settings.json</code>. "Needs Auth" means they have not been authenticated in the
+  claude.ai account settings; this has no effect on the Project target state.</li>
+<li>Context7, sonarqube, and pal may take 15-30 seconds to appear after session open.
+  Absence immediately after open is a timing issue, not a configuration problem.</li>
+</ul>
 
 
 
@@ -2547,7 +2490,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 28, 2026 16:07:38 UTC">June 28, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 28, 2026 16:07:34 UTC">June 28, 2026</span>
   </span>
 
     
@@ -2557,7 +2500,7 @@
     <span class="md-icon" title="Created">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="May 17, 2026 22:44:10 UTC">May 17, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 28, 2026 16:07:34 UTC">June 28, 2026</span>
   </span>
 
     

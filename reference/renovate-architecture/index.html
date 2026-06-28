@@ -2958,14 +2958,14 @@
 <td>Workflow <code>Generate SBOMs</code> job</td>
 </tr>
 <tr>
-<td><code>trivy</code> (gating, parallel-run)</td>
+<td><code>grype</code> (gating)</td>
 <td>Scan SBOM for known CVEs (CRITICAL/HIGH by default)</td>
 <td>Workflow <code>Scan Runtime Dependencies</code> job</td>
 </tr>
 <tr>
-<td><code>grype</code> (advisory, parallel-run)</td>
-<td>Scan SBOM for known CVEs; non-gating until 2026-06-24 parity checkpoint</td>
-<td>Workflow <code>Scan Runtime Dependencies (Grype - advisory)</code> job</td>
+<td><code>osv-scanner</code> (gating, keyless)</td>
+<td>Scan SBOM for known CVEs across OSV/GHSA/NVD/PyPI</td>
+<td>Workflow <code>Scan Runtime Dependencies (OSV-Scanner)</code> job</td>
 </tr>
 <tr>
 <td>License compliance check</td>
@@ -2974,32 +2974,31 @@
 </tr>
 </tbody>
 </table>
-<p><strong>Parallel-run note (2026-05-25 to 2026-06-24, issue ByronWilliamsCPA/.github#152):</strong> Trivy and Grype run
-side-by-side. Trivy remains the merge gate. Grype runs with <code>continue-on-error: true</code>
-and <code>fail-build: false</code>. A <code>parity-summary</code> job writes a results-comparison table to
-the run summary. At the day-30 checkpoint, a human spot-checks 3-5 caller-repo runs
-and decides whether to cut over to Grype-only (separate PR) or extend the window.</p>
+<p><strong>Trivy-to-Grype cutover complete (issue ByronWilliamsCPA/.github#152):</strong> Grype
+(Anchore) replaced Trivy as the gating runtime-dependency CVE scanner. Trivy's release
+infrastructure was compromised in March 2026 with vulnerability-database updates
+suspended, making the scanner itself a supply-chain risk. A parallel-run window
+confirmed package-level and severity-level detection parity (Grype missed nothing
+Trivy caught, at identical CVSS scores including HIGH findings) before the cutover
+landed. The promoted Grype job keeps the <code>Scan Runtime Dependencies</code> status-check name
+the former Trivy job used, so consumer rulesets are unaffected. OSV-Scanner remains a
+second keyless gate.</p>
 <p><strong>Workflow inputs:</strong>
 - <code>python-version</code>: which interpreter to scan against
 - <code>fail-on-vulnerabilities</code>: true by default; blocks merge on CRITICAL/HIGH
 - <code>severity-threshold</code>: defaults to <code>CRITICAL,HIGH</code>
 - <code>forbidden-licenses</code>: JSON array of SPDX IDs
-- <code>trivyignore-path</code>: <code>.trivyignore</code> to suppress known CVEs (must have tracked references).
-  Pending deprecation: scheduled for removal at Trivy cutover (target 2026-06-24,
-  see ByronWilliamsCPA/.github#152). Continue using it during the parallel-run window,
-  Trivy remains the gating scanner.
 - <code>grype-config-path</code>: <code>.grype.yaml</code> to suppress known CVEs in Grype
-  (parallel-run; default <code>.grype.yaml</code>).</p>
+  (default <code>.grype.yaml</code>). The former <code>trivyignore-path</code> input was removed at the
+  issue ByronWilliamsCPA/.github#152 cutover.</p>
 <p><strong>How SBOM and Renovate interact:</strong>
 1. Renovate proposes a dependency PR (routine or vulnerability-triggered).
 2. The PR triggers CI, which runs <code>python-sbom.yml</code>.
-3. Trivy scans the post-update SBOM. If a CRITICAL/HIGH CVE remains, CI fails and the PR
-   cannot merge. Grype scans the same SBOM in parallel during the 2026-05-25 to 2026-06-24
-   parity window; Grype findings are advisory only.
-4. If Trivy finds a CVE Renovate doesn't know about (e.g., not yet in OSV or GHSA), the
-   SBOM scan blocks the PR even though Renovate would have allowed it. Grype's independent
-   CVE DB provides a cross-check; parity divergence surfaces in the <code>parity-summary</code> step
-   output.</p>
+3. Grype scans the post-update SBOM. If a CRITICAL/HIGH CVE remains, CI fails and the PR
+   cannot merge. OSV-Scanner scans the same SBOM as a second keyless gate.
+4. If Grype finds a CVE Renovate doesn't know about (e.g., not yet surfaced as a Renovate
+   update), the SBOM scan blocks the PR even though Renovate would have allowed it.
+   Grype's and OSV's independent databases provide cross-checks against each other.</p>
 <p><strong>Net effect:</strong> SBOM scanning is the <em>last line of defense</em> against vulnerable dependencies sneaking into main. It does not generate PRs; it gates them. The 90-day artifact retention preserves SBOMs for audit.</p>
 <h2 id="relationship-to-dependency-review">Relationship to dependency-review<a class="headerlink" href="#relationship-to-dependency-review" title="Permanent link">&para;</a></h2>
 <p>The <code>dependency-review.yml</code> reusable workflow runs on every pull request to main and uses GitHub's <code>dependency-review-action</code>. It checks the <em>diff</em> of dependencies in a PR against GHSA and a license allowlist.</p>
@@ -3027,8 +3026,8 @@ and decides whether to cut over to Grype-only (separate PR) or extend the window
 </table>
 <p><strong>How it differs from SBOM:</strong>
 - SBOM scans the <strong>entire installed environment</strong> for vulnerabilities; dependency-review scans <strong>only the diff</strong>.
-- SBOM uses Trivy (parallel-run with Grype until 2026-06-24, see
-  ByronWilliamsCPA/.github#152); dependency-review uses GitHub's GHSA directly.
+- SBOM uses Grype plus OSV-Scanner (see ByronWilliamsCPA/.github#152); dependency-review
+  uses GitHub's GHSA directly.
 - SBOM persists artifacts (90 days); dependency-review is ephemeral check-run output.</p>
 <p><strong>How it differs from Renovate:</strong>
 - Renovate <strong>proposes</strong> updates; dependency-review <strong>gates</strong> them.
@@ -3061,7 +3060,7 @@ and decides whether to cut over to Grype-only (separate PR) or extend the window
 <td>Data source</td>
 <td>PyPI Advisory DB</td>
 <td>OSV + GHSA</td>
-<td>Trivy DB + Anchore Grype DB (parallel-run)</td>
+<td>Anchore Grype DB + OSV-Scanner</td>
 </tr>
 <tr>
 <td>Output</td>
@@ -3089,7 +3088,7 @@ and decides whether to cut over to Grype-only (separate PR) or extend the window
 <li>Reads each repo's effective config: docker-compose env → global config → org template → per-repo override.</li>
 <li>Detects a new <code>pydantic</code> minor version via pep621 manager.</li>
 <li>Opens PR, signed by <code>Renovate Bot &lt;renovate@byronwilliams.dev&gt;</code>.</li>
-<li>CI runs: tests, <code>python-sbom.yml</code> (SBOM + Trivy scan), <code>dependency-review.yml</code>, pip-audit (if in dev deps).</li>
+<li>CI runs: tests, <code>python-sbom.yml</code> (SBOM + Grype/OSV scan), <code>dependency-review.yml</code>, pip-audit (if in dev deps).</li>
 <li>All checks pass; Renovate's automerge rule fires after the 3-day stability window.</li>
 <li>PR auto-merges via squash.</li>
 </ol>
@@ -3237,7 +3236,7 @@ and decides whether to cut over to Grype-only (separate PR) or extend the window
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="May 26, 2026 19:40:56 UTC">May 26, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 28, 2026 16:07:38 UTC">June 28, 2026</span>
   </span>
 
     
