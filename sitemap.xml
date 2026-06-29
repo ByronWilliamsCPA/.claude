@@ -145,6 +145,10 @@
          <lastmod>2026-06-29</lastmod>
     </url>
     <url>
+         <loc>https://claude-config.readthedocs.io/architecture/adr/ADR-009-snyk-role-and-provenance/</loc>
+         <lastmod>2026-06-29</lastmod>
+    </url>
+    <url>
          <loc>https://claude-config.readthedocs.io/architecture/diagrams/</loc>
          <lastmod>2026-06-29</lastmod>
     </url>
