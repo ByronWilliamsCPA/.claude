@@ -85,6 +85,26 @@
 
 ### Added
 
+* feat(snyk): make Snyk an always-on authoring server and add the shift-left
+  layer. Adds a curated always-on Secure-at-Inception rule
+  (`rules/snyk-secure-at-inception.md`) that runs `snyk_code_scan` after a
+  significant first-party code change and `snyk_package_health_check` before a
+  dependency add, then fixes and rescans, surfacing HIGH/CRITICAL to the user
+  without blocking; the significant-change trigger bounds Snyk hosted-test quota.
+  Revises `rules/mcp-strategy.md` so Snyk is an always-on authoring server
+  (user-scope `~/.claude.json`) while keeping the `security-auditor` bundle for
+  deep on-demand scans. Records the decision in
+  `docs/architecture/adr/ADR-009-snyk-role-and-provenance.md` (Snyk role table,
+  always-on quota trade-off, OSS-stays-advisory, and the two-layer provenance
+  design), cross-referencing `.github` ADR-003 and this repo's ADR-008. Adds the
+  `dependency-provenance` agent (`.claude/agents/dependency-provenance.md`,
+  model: opus), a local cross-repo interpretation agent that maps vulnerable
+  transitive packages to introducing direct deps and writes a fleet plan, running
+  on the subscription via `claude -p` at a >7-day cadence. Adds manifest check
+  FOUND-019 (code repos ship a `.snyk` scope baseline, suggested) and extends this
+  repo's own `.snyk` exclude list with `.worktrees`, `htmlcov`, `out`, and
+  `site-packages` paths. Registers the new agent in `AGENTS-AND-SKILLS.md`.
+
 * feat(snyk): add Snyk MCP Server integration as a Tier 2 on-demand security
   tool. Wires `snyk_test` and `snyk_code_test` into the `security-auditor`
   agent bundle via `mcp/mcp_config.yaml`. Adds a path-scoped rule
@@ -115,6 +135,19 @@
   vulnerabilities after the bump.
 
 ### Fixed
+
+* fix(snyk): correct the documented Snyk MCP tool names, which did not exist on
+  the running server, so an agent following the standard called non-existent
+  tools and silently scanned nothing. Replaces `snyk_test` with `snyk_sca_scan`
+  and `snyk_code_test` with `snyk_code_scan` across `standards/snyk-mcp-setup.md`,
+  `rules/snyk-mcp.md`, `rules/mcp-strategy.md`, `mcp/mcp_config.yaml`, and
+  `scripts/snyk-dep-reminder.sh`. Removes the `snyk_monitor` MCP guidance
+  (`monitor` is a CLI-only command, not an MCP tool) and keeps a one-line note
+  that `snyk monitor` must not be run automatically. Rewrites the broken
+  `npx -y snyk@latest mcp configure` setup to use the installed global binary
+  (`snyk mcp configure --tool=claude-cli`), documents that it registers at user
+  scope in `~/.claude.json` (not `settings.json`) and injects a CLAUDE.md rule
+  block that must be removed in favor of the curated rule.
 
 * fix(standards): correct GHCR image names for `grafana-alloy` and
   `postgres-exporter` in `docs/standards-manifest.yaml` and

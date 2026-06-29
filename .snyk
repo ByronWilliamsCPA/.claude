@@ -21,6 +21,11 @@ exclude:
     - "**/.venv/**"
     - site/**
     - "**/node_modules/**"
+    - .worktrees/**
+    - "**/.worktrees/**"
+    - htmlcov/**
+    - out/**
+    - "**/site-packages/**"
     # FIPS-compat test fixtures: deliberately-insecure inputs (md5/sha1/weak
     # ciphers) that exist so the FIPS checker has something to flag. They are
     # fixture data, not shipped code, so Snyk findings inside them are expected

@@ -21,7 +21,7 @@ BASENAME=$(basename "$FILE_PATH")
 
 case "$BASENAME" in
   pyproject.toml|uv.lock|requirements*.txt)
-    echo "[Snyk] Dependency file modified. If SNYK_TOKEN is set, invoke snyk_test via the Snyk MCP Server before committing."
+    echo "[Snyk] Dependency file modified. If SNYK_TOKEN is set, invoke snyk_package_health_check (and snyk_sca_scan for a project-wide check) via the Snyk MCP Server before committing."
     ;;
 esac
 

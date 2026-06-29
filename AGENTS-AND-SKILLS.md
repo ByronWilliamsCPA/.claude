@@ -140,6 +140,14 @@ data handling, access controls, and integration security in low-code/no-code env
 Agentic AI security specialist. Reviews autonomous agent systems for privilege escalation,
 uncontrolled recursion, insecure tool use, and insufficient human oversight.
 
+**[dependency-provenance](/.claude/agents/dependency-provenance.md)**
+Local cross-repo dependency-provenance interpretation agent (model: opus). Reads each local clone's
+latest provenance issue/artifact under `~/dev` plus live `uv tree --invert` / `npm why`, maps every
+vulnerable transitive package to its introducing direct dep(s) across the fleet, and writes a
+consolidated fleet plan with per-package recommended actions (remove / upgrade / replace /
+accept-via-gate). Runs on the subscription via `claude -p` (no API cost) on a >7-day cadence;
+cross-repo reach over local clones is why a cloud agent cannot do this. See ADR-009.
+
 ### Planning & Architecture
 
 **[phase-reviewer](/.claude/agents/phase-reviewer.md)**
