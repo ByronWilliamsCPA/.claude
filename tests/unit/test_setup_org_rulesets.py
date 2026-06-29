@@ -73,6 +73,55 @@ def test_rejects_count_of_5():
         validate_solo_dev_safe(body)
 
 
+def test_rejects_require_code_owner_review_true():
+    # With a CODEOWNERS file this forces a code-owner approval the solo
+    # maintainer cannot self-grant, even when the review count is 0.
+    body = {
+        "rules": [
+            {
+                "type": "pull_request",
+                "parameters": {
+                    "required_approving_review_count": 0,
+                    "require_code_owner_review": True,
+                },
+            }
+        ]
+    }
+    with pytest.raises(SoloDevViolation, match="require_code_owner_review"):
+        validate_solo_dev_safe(body)
+
+
+def test_accepts_require_code_owner_review_false():
+    body = {
+        "rules": [
+            {
+                "type": "pull_request",
+                "parameters": {
+                    "required_approving_review_count": 0,
+                    "require_code_owner_review": False,
+                },
+            }
+        ]
+    }
+    assert validate_solo_dev_safe(body) is None
+
+
+def test_rejects_require_last_push_approval_true():
+    body = {
+        "rules": [
+            {
+                "type": "pull_request",
+                "parameters": {
+                    "required_approving_review_count": 0,
+                    "require_last_push_approval": True,
+                },
+            }
+        ]
+    }
+    with pytest.raises(SoloDevViolation, match="require_last_push_approval"):
+        validate_solo_dev_safe(body)
+
+
 def test_render_substitutes_generated_token(tmp_path):
     from scripts.setup_org_rulesets import render_body
 

@@ -149,10 +149,17 @@ required_checks:
 
 solo_dev_constraints:
   forbid_required_approving_reviews: true
+  forbid_require_code_owner_review: true
+  forbid_require_last_push_approval: true
   notes: >-
-    All managed repos are solo-dev; required_approving_review_count must remain 0
-    in every classic protection state and every ruleset rule.
-    setup_org_rulesets.py enforces this with a hard guard.
+    All managed repos are solo-dev; no ruleset or classic-protection rule may
+    force a human PR approval the maintainer cannot self-grant.
+    required_approving_review_count must remain 0, and both
+    require_code_owner_review and require_last_push_approval must remain false.
+    With a CODEOWNERS file, require_code_owner_review=true blocks self-merge
+    even when the review count is 0; that was the regression that locked the
+    maintainer out of merging their own PRs. setup_org_rulesets.py enforces
+    all three with a hard guard (validate_solo_dev_safe).
 
 # reserved_ids (Obs 81): single authoritative registry of check IDs that are
 # claimed by an approved-but-not-yet-merged plan, so concurrent planning work
@@ -3328,6 +3335,34 @@ checks:
       fleet-wide pre-commit whitespace coverage is confirmed (at that point
       .editorconfig provides editor-native enforcement rather than
       CI-only enforcement).
+
+  - id: FOUND-018
+    domain: foundations
+    severity: suggested
+    override_eligible: true
+    description: >-
+      Code repositories carry a project-scoped .mcp.json declaring the
+      context7 and sonarqube MCP servers, so Claude Code has library-docs
+      lookup and SonarCloud access available in-repo. The sonarqube url port
+      must match the repo's SonarCloud org (sonar.organization in
+      sonar-project.properties), not its GitHub org: byronwilliamscpa maps to
+      http://localhost:8090/mcp, williaby maps to http://localhost:8091/mcp.
+    verify: |
+      file_exists: .mcp.json
+      content_present: .mcp.json, context7
+      content_present: .mcp.json, sonarqube
+    not_applicable_when: >-
+      repo.repositoryType not in [python-app, python-package, python-script,
+      python-template], OR repo.isArchived == true. Config, docs-only, and
+      infrastructure repos have no code-intelligence surface.
+    notes: >-
+      Established by the 2026-06-29 fleet rollout (28 PRs); see memory
+      project_mcp_fleet_standard. pal and codebase-memory-mcp are user-scope
+      (available in every repo) and are intentionally NOT required per-repo.
+      The sonarqube endpoint is localhost-bound to the maintainer workstation,
+      matching ByronWilliamsCPA/.claude; it reports "failed to connect" on CI
+      or another machine, which is expected and not a violation. Start at
+      suggested; promote to important once fleet coverage reaches 100 percent.
 
   - id: OSSF-011
     domain: ossf

@@ -30,7 +30,11 @@ git push -u origin feat/new-feature
 ### Main Branch Protection
 
 - **Direct commits prohibited**: All changes via Pull Request
-- **Required reviews**: Minimum 1 reviewer for changes
+- **Required reviews**: 0 required approvals (solo-dev policy). Branch
+  protection keeps `required_approving_review_count` at 0 and
+  `require_code_owner_review` false so the maintainer can merge their own PRs;
+  Copilot auto-review is advisory, not a merge blocker. See
+  `solo_dev_constraints` in `docs/standards-manifest.yaml`.
 - **Status checks**: All CI/CD checks must pass
 - **Up-to-date branches**: Must be current with main before merge
 

@@ -120,8 +120,10 @@ def validate_solo_dev_safe(body: dict) -> None:
         body: Parsed ruleset body.
 
     Raises:
-        SoloDevViolation: If any pull_request rule has
-            required_approving_review_count > 0.
+        SoloDevViolation: If any pull_request rule would force a human
+            approval the solo maintainer cannot self-grant:
+            required_approving_review_count > 0, require_code_owner_review
+            true, or require_last_push_approval true.
     """
     for rule in body.get("rules", []):
         if rule.get("type") != "pull_request":
@@ -133,6 +135,18 @@ def validate_solo_dev_safe(body: dict) -> None:
                 f"Body requires {count} approving reviews "
                 f"(required_approving_review_count={count}); solo-dev policy "
                 "forbids any value > 0. The user merges their own PRs."
+            )
+        if params.get("require_code_owner_review"):
+            raise SoloDevViolation(
+                "Body sets require_code_owner_review=true; with a CODEOWNERS "
+                "file this forces a code-owner approval the solo maintainer "
+                "cannot self-grant. Solo-dev policy forbids it."
+            )
+        if params.get("require_last_push_approval"):
+            raise SoloDevViolation(
+                "Body sets require_last_push_approval=true; this forces a "
+                "separate approver after the maintainer's own last push. "
+                "Solo-dev policy forbids it."
             )
 
 
