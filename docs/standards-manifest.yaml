@@ -1,6 +1,10 @@
 # docs/standards-manifest.yaml
 version: "1.0"
-last_updated: "2026-06-27"
+last_updated: "2026-06-29"
+# 2026-06-29: Snyk shift-left work (ADR-009). Added FOUND-019 (code repos ship a
+# .snyk scope baseline excluding generated/vendored paths, suggested). Starts at
+# suggested per the policy-execution-gap lesson; promotes to important once the
+# cookiecutter template baseline reaches 100 percent fleet coverage.
 # 2026-06-27: Supply-chain gap checks from container-images compliance audit.
 # Added CI-087 (continue-on-error on supply-chain steps, critical), CI-088
 # (syft/SBOM tool reference by mutable docker tag, important), and FOUND-017
@@ -3363,6 +3367,35 @@ checks:
       matching ByronWilliamsCPA/.claude; it reports "failed to connect" on CI
       or another machine, which is expected and not a violation. Start at
       suggested; promote to important once fleet coverage reaches 100 percent.
+
+  - id: FOUND-019
+    domain: foundations
+    severity: suggested
+    override_eligible: true
+    description: >-
+      Code repositories ship a .snyk scope baseline so Snyk Code and the Snyk
+      IDE plugin honor the same filesystem-scope boundary the other quality
+      gates already respect. The exclude: global: list must cover the
+      generated and vendored paths that produce non-actionable noise: virtualenvs
+      (.venv), worktrees (.worktrees), coverage output (htmlcov), build output
+      (out), site-packages, node_modules, and built docs (site). Without the
+      baseline, Snyk over-reports filesystem-scope findings that are upstream's
+      responsibility, not the repo's.
+    verify: |
+      file_exists: .snyk
+      content_present: .snyk, exclude
+      content_present: .snyk, .venv
+      content_present: .snyk, .worktrees
+    not_applicable_when: >-
+      repo.repositoryType not in [python-app, python-package, python-script,
+      python-template], OR repo.isArchived == true. Config, docs-only, and
+      infrastructure repos have no Snyk scan surface.
+    notes: >-
+      Established by the 2026-06-29 Snyk shift-left work (ADR-009). The .snyk
+      exclude: list governs Snyk Code path scope; the cookiecutter template
+      ships the generalized baseline so new repos are clean by default. Start
+      at suggested; promote to important once fleet coverage reaches 100
+      percent. See docs/architecture/adr/ADR-009-snyk-role-and-provenance.md.
 
   - id: OSSF-011
     domain: ossf

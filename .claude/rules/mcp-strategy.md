@@ -123,7 +123,7 @@ Loaded automatically when specific agents are invoked:
 
 | Agent | MCP Tools Loaded |
 |-------|------------------|
-| security-auditor | `zen.secaudit`, `sentry.*`, `github.code_security`, `postgres.analyze_db_health`, `snyk-mcp.snyk_test`, `snyk-mcp.snyk_code_test` |
+| security-auditor | `zen.secaudit`, `sentry.*`, `github.code_security`, `postgres.analyze_db_health`, `snyk-mcp.snyk_sca_scan`, `snyk-mcp.snyk_code_scan` |
 | code-reviewer | `zen.precommit`, `zen.challenge`, `github.pull_requests` |
 | test-engineer | `zen.testgen`, `playwright.*` |
 | test-writer | `zen.testgen` |
@@ -143,23 +143,33 @@ Loaded automatically when specific skills are invoked:
 | `/git` (PR prep) | `zen.codereview`, `github.pull_requests`, `github.issues`, `sentry.list_releases` |
 | `/project-planning` | `zen.planner`, `zen.consensus`, `mermaid.*` (consensus tool retained pending the skill's migration to the `/panel` skill) |
 
-### Snyk MCP Server (Tier 2)
+### Snyk MCP Server (always-on authoring)
 
-`snyk_test` and `snyk_code_test` are surfaced to the `security-auditor` agent
-bundle. The Snyk MCP Server requires one-time workstation setup before these
-tools are available:
+Snyk MCP Server is an **always-on authoring server**, registered at user scope in
+`~/.claude.json` so `snyk_code_scan` and `snyk_package_health_check` are callable
+inline in every session. This is a deliberate shift-left choice: security
+feedback woven into authoring, not deferred to CI. The always-on rule
+`rules/snyk-secure-at-inception.md` governs when the agent calls these tools,
+using a significant-change trigger (not every edit) to bound Snyk hosted-test
+quota.
+
+The `security-auditor` agent bundle still surfaces `snyk_sca_scan` and
+`snyk_code_scan` for deep on-demand scans (the bundle path complements, rather
+than replaces, the always-on authoring path).
+
+The server is registered with the installed global Snyk binary, not via npx:
 
 ```bash
-npx -y snyk@latest mcp configure --tool=claude-cli
+snyk mcp configure --tool=claude-cli
 ```
 
-Full setup instructions and tool invocation guidance: `standards/snyk-mcp-setup.md`.
+It registers at user scope in `~/.claude.json` (runtime-managed, not committed),
+for the same machine-specific-path reason the localhost-bound sonarqube entry is
+not committed. Full setup instructions, including removing the auto-injected
+CLAUDE.md rule block, and tool invocation guidance: `standards/snyk-mcp-setup.md`.
 
-Do NOT add Snyk MCP Server to the always-loaded `mcpServers` block. It is
-on-demand only, per `standards/mcp-minimal-bloat.md`.
-
-`snyk_monitor` must not be called from any agent bundle or hook. See
-`standards/snyk-mcp-setup.md` for the reason.
+`snyk monitor` (a CLI-only command, not an MCP tool) must not be called from any
+agent bundle or hook. See `standards/snyk-mcp-setup.md` for the reason.
 
 ## Tier 3: Keyword-Triggered
 
