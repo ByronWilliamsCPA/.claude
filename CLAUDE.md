@@ -51,7 +51,7 @@ documentation rework.
 ### Repository structure
 
 ```text
-~/dev/.claude/                    # Repo root (symlinked to ~/.claude/ by setup.sh)
+~/dev/.claude/                    # Repo root; setup.sh symlinks items from here into ~/.claude/
 ├── CLAUDE.md                     # Global standards (this file)
 ├── AGENTS-AND-SKILLS.md          # Full agent and skill catalog
 ├── README.md                     # Setup and install guide
@@ -73,6 +73,14 @@ documentation rework.
 ├── mcp/                          # MCP tool loading configuration
 └── scripts/                      # MCP loading and hook utilities
 ```
+
+`~/.claude/` is Claude Code's real home directory, not a whole-directory
+symlink to this repo. `setup.sh` symlinks specific items from this repo into
+it: `CLAUDE.md` and the `agents/`, `skills/`, `commands/`, `rules/`,
+`standards/`, and `scripts/` directories (plus `reference-library/` from
+`.submodules/`). Runtime-managed state stays real in `~/.claude/` and is not
+part of this repo: `settings.json`, `plugins/` (including plugin caches and
+Docker-backed MCP servers), and `projects/`.
 
 Rules in `.claude/rules/` are path-scoped where possible; they apply only when
 Claude is editing files under the path specified in the rule header. Standards
@@ -98,6 +106,21 @@ Always run `pre-commit run --all-files` before committing.
 
 Always create worktrees inside the project at `.worktrees/<branch-slug>`. Never
 create them at global or user-config paths (e.g., `~/.config/...`).
+
+### Commit and push cadence
+
+Commit autonomously at logical checkpoints (a working unit done, tests green,
+before a risky refactor); do not wait to be asked. This overrides the harness
+default that gates commits behind an explicit user request. Follow the
+branch-first rule: if on `main`, `master`, or `develop`, create a feature
+branch before the first commit.
+
+Pushing is different: never `git push` or open a PR without explicit user
+approval. Local commits are cheap and reversible; pushing is outward-facing.
+
+Stage only the files you changed (`git add <paths>`); never `git add -A` or
+`git add .`. This repo runs concurrent sessions in one working tree, so a
+blanket stage can bundle another session's edits into your commit.
 
 > Branch rules, worktree patterns, naming conventions:
 > see `.claude/rules/git-workflow.md`
