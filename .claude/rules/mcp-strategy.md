@@ -171,6 +171,19 @@ CLAUDE.md rule block, and tool invocation guidance: `standards/snyk-mcp-setup.md
 `snyk monitor` (a CLI-only command, not an MCP tool) must not be called from any
 agent bundle or hook. See `standards/snyk-mcp-setup.md` for the reason.
 
+### Claude Design MCP Server (per-UI-repo, local scope)
+
+Claude Design is a runtime-config server like Snyk, but scoped the opposite way:
+registered at `--scope local` in UI repos only (cyo-adventure, fragrance-rater,
+future UI repos), never at user scope and never in the config repo. It is an
+OAuth HTTP connector (claude.ai login, scopes `user:design:read`/`write`), so it
+is present by scope rather than gated by the loader tables below. It exposes one
+tool, `DesignSync`, driven by the `/design` and `/design-sync` skills. Local
+scope deliberately keeps it isolated per project path, which also sidesteps the
+`--scope user` registration defects (anthropics/claude-code#16728, #32939,
+#54803). Full setup, the OAuth-grant step, and the `frontend-designer` /
+`ui-testing-agent` bundle intent: `standards/claude-design-setup.md`.
+
 ## Tier 3: Keyword-Triggered
 
 | Keywords | Tools Loaded |

@@ -80,6 +80,27 @@ tier_2_agent_bundles:
         - "*"               # All playwright tools for E2E testing
     deferred: []
 
+  # Intent map only. claude-design is an OAuth HTTP connector registered per UI
+  # repo at --scope local (see standards/claude-design-setup.md); it is present
+  # by scope, not loaded by this YAML loader. playwright IS loader-gated below.
+  frontend-designer:
+    estimated_tokens: 4000
+    tools:
+      claude-design:
+        - "*"               # Single DesignSync tool; scope-provided, not loader-managed
+      playwright:
+        - "*"               # Live browser for design review
+    deferred: []
+
+  ui-testing-agent:
+    estimated_tokens: 4000
+    tools:
+      playwright:
+        - "*"               # Drive/reproduce UI; assertions land in @playwright/test
+      claude-design:
+        - "*"               # Read design-system reference (DesignSync get_file); scope-provided
+    deferred: []
+
   documentation-writer:
     estimated_tokens: 3500
     tools:
