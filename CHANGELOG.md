@@ -85,6 +85,20 @@
 
 ### Added
 
+* feat(mcp): register Claude Design as a per-UI-repo, local-scope MCP
+  connector. Adds `standards/claude-design-setup.md` (setup command, the
+  `/mcp` OAuth Authenticate step, the `DesignSync` method lifecycle,
+  plan-gated write safety, untrusted-response-data handling, and the
+  shared-subscription-pool cost caveat), and `rules/design.md` (path-scoped
+  to `frontend/**`, `**/components/**`, `*.tsx`/`*.jsx`) distinguishing the
+  Design MCP from the Playwright MCP and the project's own
+  `@playwright/test` runner. Registers the connector at `--scope local` per
+  UI repo rather than through the `mcp/mcp_config.yaml` tier loader, since
+  native HTTP MCP has no per-agent lazy loading; adds `frontend-designer`
+  and `ui-testing-agent` intent-map rows to `mcp/mcp_config.yaml`
+  documenting which agents call it. Cross-referenced from `CLAUDE.md` and
+  `rules/mcp-strategy.md`.
+
 * feat(snyk): make Snyk an always-on authoring server and add the shift-left
   layer. Adds a curated always-on Secure-at-Inception rule
   (`rules/snyk-secure-at-inception.md`) that runs `snyk_code_scan` after a
