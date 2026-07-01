@@ -180,9 +180,10 @@ OAuth HTTP connector (claude.ai login, scopes `user:design:read`/`write`), so it
 is present by scope rather than gated by the loader tables below. It exposes one
 tool, `DesignSync`, driven by the `/design` and `/design-sync` skills. Local
 scope deliberately keeps it isolated per project path, which also sidesteps the
-`--scope user` registration defects (anthropics/claude-code#16728, #32939,
-#54803). Full setup, the OAuth-grant step, and the `frontend-designer` /
-`ui-testing-agent` bundle intent: `standards/claude-design-setup.md`.
+`--scope user` registration defects
+(anthropics/claude-code#16728, `#32939`, `#54803`). Full setup, the OAuth-grant
+step, and the `frontend-designer` / `ui-testing-agent` bundle intent:
+`standards/claude-design-setup.md`.
 
 ## Tier 3: Keyword-Triggered
 
