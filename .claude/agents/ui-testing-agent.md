@@ -57,6 +57,17 @@ Execute testing workflows: test scenario planning â†’ user journey automation â†
 - Color contrast and visual accessibility (WCAG 2.1 AA/AAA)
 - Page load performance, LCP, CLS, FID measurement
 
+## Design System Follow-up
+
+After a test run validates changes to component files (`**/components/**`,
+`*.tsx`, `*.jsx`), check whether Claude Design is registered for this repo
+(see `standards/claude-design-setup.md`). If it is, prompt the user to run
+`/design-sync` so the design system stays current with the components just
+verified. Do not run `/design-sync` automatically: it writes to a shared
+resource visible to the whole org (a synced design system appears under
+Design systems for everyone), so it stays user-gated like any other
+outward-visible action.
+
 ---
 
 ## Use Cases
