@@ -146,6 +146,47 @@ not a design system. For a code-based design system, skip `create_project`
 entirely and run `/design-sync` from Claude Code instead; see "Design systems
 are a separate object from Projects" above.
 
+**Observed sequence, first successful sync (CYO Adventure, confirmed
+2026-06-30):** `/design-sync`, run after "Create using Claude Code" had already
+provisioned an empty design-system project, never called `create_project`. It
+called `list_projects` (confirm the project exists), `get_project` (verify
+`type: PROJECT_TYPE_DESIGN_SYSTEM` before writing), `finalize_plan`,
+`write_files` twice (a sentinel file first, `_ds_sync.json` last), then
+`list_files` to confirm the remote count matched. The plan-boundary invariant
+held: a path outside the finalized plan would have been rejected.
+
+## Non-Storybook React/Vite conversion gotchas (confirmed 2026-06-30)
+
+`/design-sync` converts the local component library into a bundle the canvas
+design agent's runtime loads; on a repo with no Storybook, that conversion has
+sharp edges not obvious from its own error output. Confirmed on CYO Adventure
+(React 19 + Vite + TypeScript, no Storybook, 7 components, 47 files):
+
+- **A built `dist/` is a prerequisite, not optional.** Run `npm run build`
+  (or the project's equivalent) before the sync tooling runs; the converter
+  bundles components from `dist/`, not from source directly.
+- **`tsconfig.json` `noEmit: true` breaks default component discovery.** The
+  converter's default path scans emitted `.d.ts` files via ts-morph. With
+  `noEmit: true`, no `.d.ts` files exist, discovery silently finds zero
+  components, and the sync falls through to tokens-only mode (logged as
+  `[ZERO_MATCH]`, easy to miss). Fix: add a `componentSrcMap` entry in
+  `design-sync.config.json` mapping each component name to its source file
+  path, bypassing `.d.ts` discovery for that component.
+- **Components with no `previewArgs` render as blank "floor cards."** The
+  error output does not name the fix. Fix: author a
+  `.design-sync/previews/<ComponentName>.tsx` preview file for that component.
+- **Fixed-position/backdrop components (modals, dialogs) escape the preview
+  iframe** unless overridden. Fix: set `"cardMode": "single", "viewport":
+  "<W>x<H>"` for that component in `design-sync.config.json`, and wrap the
+  preview's JSX in a bounded `position: relative; overflow: hidden` container.
+  Expect this on any modal-pattern component, not just one repo's `Dialog`.
+- **`[FONT_MISSING]` is non-blocking** (the validator still exits 0). Safe to
+  ignore on repos using system font stacks; it is not a sync failure.
+
+These are per-repo config fixes (`design-sync.config.json`,
+`.design-sync/previews/`), not something to hand-author here; they live in the
+UI repo itself, the same as design tokens.
+
 ## Operational gotchas
 
 - **Plan-gated writes keep file contents out of the model context.**
