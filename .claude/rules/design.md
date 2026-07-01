@@ -31,6 +31,11 @@ browser and confirm behavior, then write the assertion into the project's
   than being re-described each session. Tokens that live next to the components
   stop the brand-rule drift that recurs even when rules are written into
   CLAUDE.md.
+- `/design-sync` is also **how a design system gets created**, not only how an
+  existing one gets updated: run it if none exists yet for this repo. Do not
+  reach for `DesignSync.create_project` for this; that creates an unrelated
+  Projects-tab object, not a design system. See
+  `standards/claude-design-setup.md`.
 - Sync **incrementally, one component at a time**, against a structural diff.
   Never mass-replace a design-system project.
 - `/design-sync` writes the token data into the project repo itself
