@@ -212,6 +212,8 @@ no value to their task.
 >
 > Snyk MCP Server (on-demand, Tier 2): one-time setup and invocation rules: see `.claude/standards/snyk-mcp-setup.md`
 >
+> Claude Design MCP Server (per-UI-repo, local scope): setup, OAuth grant, and DesignSync usage: see `.claude/standards/claude-design-setup.md`
+>
 > Supervisor patterns and agent assignment: see `.claude/rules/supervisor.md`
 >
 > Settings scope hierarchy and permissions evaluation: see `.claude/rules/settings-and-permissions.md`
