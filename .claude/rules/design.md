@@ -26,15 +26,27 @@ browser and confirm behavior, then write the assertion into the project's
 
 ## When to sync design
 
-- Run `/design-sync` at the start of UI work so components and design tokens
-  (color values, type scale, spacing) come from the real design system rather
-  than being re-described each session. Tokens that live next to the components
+**`/design-sync` is a mid-pipeline formalize-and-sync step, not a bootstrapping
+tool.** It needs a real, buildable component library to convert (a built
+`dist/`, discoverable exports); it is not where a UI repo's frontend work
+starts. For a repo with no components yet, build the first real ones in code
+first (the `frontend-designer` agent, informed by the `brainstorming` skill's
+product/UX intent, verified with `ui-testing-agent` + Playwright), then run
+`/design-sync` once there is something substantive to formalize. See
+`standards/claude-design-setup.md` for the confirmed non-Storybook conversion
+gotchas.
+
+- Once a design system exists, run `/design-sync` at the start of a UI work
+  **session** (not the start of the project) so components and design tokens
+  (color values, type scale, spacing) come from the real system rather than
+  being re-described each session. Tokens that live next to the components
   stop the brand-rule drift that recurs even when rules are written into
   CLAUDE.md.
-- `/design-sync` is also **how a design system gets created**, not only how an
-  existing one gets updated: run it if none exists yet for this repo. Do not
-  reach for `DesignSync.create_project` for this; that creates an unrelated
-  Projects-tab object, not a design system. See
+- `/design-sync` is also **how a design system gets created** the first time,
+  once real components exist: run it after "Design systems -> Set up design
+  system -> Create using Claude Code" on claude.ai/design has provisioned the
+  (empty) project. Do not reach for `DesignSync.create_project` for this; that
+  creates an unrelated Projects-tab object, not a design system. See
   `standards/claude-design-setup.md`.
 - Sync **incrementally, one component at a time**, against a structural diff.
   Never mass-replace a design-system project.
