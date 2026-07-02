@@ -55,7 +55,7 @@ https://mcp.supabase.com/mcp?project_ref=<REF>&read_only=true&features=database,
   such a configuration at production.
 - `features=database,docs,development` restricts the tool surface. It deliberately
   excludes `account` (create/pause/delete projects, read billing), `storage`,
-  `branching`, and `edge functions`. Add a group only when the repo actually needs
+  `branching`, and `functions` (Edge Functions). Add a group only when the repo actually needs
   it.
 - Use a **development** Supabase project, not production. The prompt-injection
   wrapper Supabase applies to SQL results is, in their words, not foolproof.
@@ -114,7 +114,7 @@ claude mcp list | grep supabase || echo "correctly absent here"
 | `development` | get_project_url, get_publishable_keys, generate_typescript_types | Yes |
 | `debugging` | get_logs, get_advisors | No (add when triaging) |
 | `account` | list/get/create/pause/restore projects, org, cost | No (high blast radius) |
-| `edge functions` | list/get/deploy_edge_function | No |
+| `functions` (Edge Functions) | list/get/deploy_edge_function | No |
 | `branching` | create/list/delete/merge/reset/rebase_branch | No |
 | `storage` | list_storage_buckets, get/update_storage_config | No (disabled by default) |
 
