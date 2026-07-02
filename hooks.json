@@ -12,6 +12,15 @@
       ]
     },
     {
+      "matcher": "Write|Edit|MultiEdit",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "$HOME/.claude/scripts/tdd-enforcement-hook.sh"
+        }
+      ]
+    },
+    {
       "matcher": "Edit|Write|MultiEdit",
       "hooks": [
         {
@@ -63,6 +72,25 @@
       ]
     },
     {
+      "matcher": "mcp__*",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "$HOME/.claude/scripts/track-mcp-usage.sh"
+        }
+      ]
+    },
+    {
+      "matcher": "Edit|Write|MultiEdit",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "bash $HOME/.claude/scripts/snyk-dep-reminder.sh",
+          "timeout": 5
+        }
+      ]
+    },
+    {
       "hooks": [
         {
           "type": "command",
@@ -96,6 +124,63 @@
           "command": "python3 $HOME/.claude/scripts/pr-review-reminder.py",
           "timeout": 5,
           "statusMessage": "Checking for PR review intent..."
+        }
+      ]
+    },
+    {
+      "matcher": ".*",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "$HOME/.claude/scripts/keyword-tool-trigger.sh"
+        }
+      ]
+    }
+  ],
+  "SessionStart": [
+    {
+      "hooks": [
+        {
+          "type": "command",
+          "command": "$HOME/.claude/scripts/keyword-tool-trigger.sh --reset"
+        }
+      ]
+    },
+    {
+      "hooks": [
+        {
+          "type": "command",
+          "command": "$HOME/.claude/scripts/run-superpowers-session-start.sh"
+        }
+      ]
+    },
+    {
+      "hooks": [
+        {
+          "type": "command",
+          "command": "$HOME/.claude/scripts/session-start-rules.sh",
+          "timeout": 10,
+          "statusMessage": "Detecting session context..."
+        }
+      ]
+    },
+    {
+      "hooks": [
+        {
+          "type": "command",
+          "command": "$HOME/.claude/scripts/generate-skills-manifest.sh",
+          "timeout": 10,
+          "statusMessage": "Generating skills manifest..."
+        }
+      ]
+    },
+    {
+      "hooks": [
+        {
+          "type": "command",
+          "command": "bash $HOME/.claude/scripts/install-cli-tools.sh",
+          "timeout": 30,
+          "statusMessage": "Installing preferred CLI tools (ast-grep)..."
         }
       ]
     }
