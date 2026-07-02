@@ -22,7 +22,7 @@ tags:
 
 This specification defines a system of six OWASP Top 10 specialist agents,
 each an expert on one complete OWASP Top 10 list. These agents operate in
-three modes: code review, test review, and test generation: and integrate
+three modes (code review, test review, and test generation) and integrate
 with the existing Hephaestus-Anvil test coverage agent as callable
 subagents. When the test-writer or test-reviewer agents encounter
 security-relevant code, they dispatch to the appropriate specialist for
