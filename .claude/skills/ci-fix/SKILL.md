@@ -40,6 +40,18 @@ attempts, mark it `❌ BLOCKER` and advance to the next gate.
 > `targets` field. If present, use that path. If absent, use `src/` if it exists, otherwise
 > use `.` as the scan root.
 
+## Iteration cap and escalation
+
+Run at most 3 fix-and-rerun cycles per gate. On the 3rd failure of the same
+gate, stop and emit:
+
+    {"verdict": "BLOCKED", "gate": "<gate name>", "attempts": 3,
+     "blocker": "<one-line root cause>", "proposed_fix": "<what a human
+     or stronger model should do>"}
+
+Do not continue to later gates if an earlier gate is BLOCKED and later gates
+depend on it (type errors gate tests). Do continue for independent gates.
+
 ## Status Table
 
 Print the full table after each gate completes. Always print all 7 rows regardless of
