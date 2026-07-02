@@ -140,7 +140,7 @@ git commit -m "chore(compliance): apply standards alignment from repo-compliance
 Remediations applied:
 <list check IDs that were remediated>
 
-Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
+Co-Authored-By: <the model attribution line the harness instructs for the current session>"
 
 git push -u origin HEAD
 

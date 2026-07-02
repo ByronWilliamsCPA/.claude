@@ -39,11 +39,9 @@ For missing Model Selection section, append:
 ```markdown
 ## Model Selection
 
-| Task type | Model | When |
-| --- | --- | --- |
-| Architecture, planning, ADRs | Opus 4.8 | Multi-step decisions, deep code review |
-| Standard development | Sonnet 4.6 | Most coding and editing |
-| Read-only exploration | Haiku 4.5 | File scanning, quick lookups |
+The model roster and selection guidance live in one place: the "Model
+Selection" section of the root `CLAUDE.md`. Audit model references in other
+files against that table; do not maintain a copy here.
 ```
 
 For missing RAD section, append:
