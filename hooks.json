@@ -183,6 +183,16 @@
           "statusMessage": "Installing preferred CLI tools (ast-grep)..."
         }
       ]
+    },
+    {
+      "hooks": [
+        {
+          "type": "command",
+          "command": "bash $HOME/.claude/scripts/harness-doctor.sh",
+          "timeout": 10,
+          "statusMessage": "Checking harness gate inventory..."
+        }
+      ]
     }
   ]
 }
