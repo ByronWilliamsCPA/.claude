@@ -11,6 +11,19 @@ purpose: Design for tracking canonical SHA pins for org-owned reusable workflows
 **Status**: Draft
 **Author**: Byron Williams
 
+> **Superseded in part (2026-07-02)**: the `followTag: "v1"` mechanism this
+> design specifies is being retired via ByronWilliamsCPA/.github PR #244
+> (open as of 2026-07-02; the `v1` tag itself is already deleted on both
+> orgs). The org tag-protection ruleset forbids re-pointing `v*` tags, so
+> the floating `v1` tag froze at the v1.1.0 commit and `followTag` silently
+> froze all consumer SHA-pin updates with it. Since `release-tag.yml` cuts
+> an immutable `vX.Y.Z` tag on every push to main, plain semver tracking
+> (no `followTag`) delivers the release-cadence behavior this design wanted.
+> CI-057 now requires the absence of `followTag`. The registry-currency
+> (CI-055) and stale-pin detection (CI-056) portions of this design remain
+> valid. Sections below that describe the retired mechanism carry their own
+> historical markers.
+
 ---
 
 ## Problem
@@ -81,6 +94,12 @@ docs/org-workflow-pins.yaml  <-- source of truth for current canonical pin
 ## Components
 
 ### 1. Release Tagging Workflow (`ByronWilliamsCPA/.github`)
+
+> **Historical (superseded 2026-07-02)**: steps 5-6 and the closing
+> paragraph below describe force-moving a floating `v1` tag.
+> `release-tag.yml` no longer maintains any floating major tag; the `v1`
+> tag is deleted and the org tag-protection ruleset makes every `v*` tag
+> immutable. Steps 1-4 (immutable `vX.Y.Z` tagging) remain current.
 
 **File**: `.github/workflows/release-tag.yml`
 **Trigger**: `push` to `main`
@@ -178,6 +197,11 @@ Fires on any consumer repo where a `uses: ByronWilliamsCPA/.github/...@<sha>` or
 `uses: williaby/.github/...@<sha>` does not match the registry's `current_sha`.
 
 **CI-057** (severity: important)
+
+> **Historical (superseded 2026-07-02)**: the entry below is the original
+> followTag-mandating version. The live manifest entry now requires the
+> ABSENCE of `followTag`; see `docs/standards-manifest.yaml` CI-057.
+
 ```yaml
 description: "renovate.json contains a packageRules entry targeting org workflow
   source repos with followTag set to the floating major version tag"
@@ -194,6 +218,11 @@ to stay on an older SHA (incident investigation, staged rollout) should be
 documentable in `.claude/compliance-overrides.md`.
 
 ### 5. Renovate Consumer Config
+
+> **Historical (superseded 2026-07-02)**: the example and explanation below
+> show the retired `followTag` mechanism. Current consumer config omits
+> `followTag` entirely and relies on plain semver tag tracking; CI-057 now
+> FAILS any renovate.json that sets a `"followTag":` key.
 
 Each consumer repo's `renovate.json` needs a `packageRules` entry:
 
