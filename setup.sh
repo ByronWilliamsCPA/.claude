@@ -380,6 +380,9 @@ done
 ensure_symlink "${CLAUDE_DIR}/reference-library" "${REPO_DIR}/.submodules/reference-library"
 ensure_symlink "${CLAUDE_DIR}/scripts"           "${REPO_DIR}/scripts"
 
+# Symlink plugin-hooks so hooks.json's guarded plugin commands resolve
+ensure_symlink "${CLAUDE_DIR}/plugin-hooks" "${REPO_DIR}/.submodules/anthropics-plugins/plugins"
+
 # Settings merge (backup -> hooks -> claudeMdExcludes)
 backup_settings "${CLAUDE_DIR}/settings.json"
 merge_hooks

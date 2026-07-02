@@ -45,7 +45,7 @@
       "hooks": [
         {
           "type": "command",
-          "command": "python3 $HOME/dev/.claude/.submodules/anthropics-plugins/plugins/security-guidance/hooks/security_reminder_hook.py",
+          "command": "bash -c '[ -f \"$HOME/.claude/plugin-hooks/security-guidance/hooks/security_reminder_hook.py\" ] && python3 \"$HOME/.claude/plugin-hooks/security-guidance/hooks/security_reminder_hook.py\" || echo \"[security-guidance] skipped: plugin hooks not installed\" >&2'",
           "timeout": 10,
           "statusMessage": "Checking for security patterns..."
         }
@@ -55,7 +55,7 @@
       "hooks": [
         {
           "type": "command",
-          "command": "CLAUDE_PLUGIN_ROOT=$HOME/dev/.claude/.submodules/anthropics-plugins/plugins/hookify python3 $HOME/dev/.claude/.submodules/anthropics-plugins/plugins/hookify/hooks/pretooluse.py",
+          "command": "bash -c '[ -f \"$HOME/.claude/plugin-hooks/hookify/hooks/pretooluse.py\" ] && CLAUDE_PLUGIN_ROOT=\"$HOME/.claude/plugin-hooks/hookify\" python3 \"$HOME/.claude/plugin-hooks/hookify/hooks/pretooluse.py\" || echo \"[hookify] skipped: plugin hooks not installed\" >&2'",
           "timeout": 10
         }
       ]
@@ -94,7 +94,7 @@
       "hooks": [
         {
           "type": "command",
-          "command": "CLAUDE_PLUGIN_ROOT=$HOME/dev/.claude/.submodules/anthropics-plugins/plugins/hookify python3 $HOME/dev/.claude/.submodules/anthropics-plugins/plugins/hookify/hooks/posttooluse.py",
+          "command": "bash -c '[ -f \"$HOME/.claude/plugin-hooks/hookify/hooks/posttooluse.py\" ] && CLAUDE_PLUGIN_ROOT=\"$HOME/.claude/plugin-hooks/hookify\" python3 \"$HOME/.claude/plugin-hooks/hookify/hooks/posttooluse.py\" || echo \"[hookify] skipped: plugin hooks not installed\" >&2'",
           "timeout": 10
         }
       ]
@@ -105,7 +105,7 @@
       "hooks": [
         {
           "type": "command",
-          "command": "CLAUDE_PLUGIN_ROOT=$HOME/dev/.claude/.submodules/anthropics-plugins/plugins/hookify python3 $HOME/dev/.claude/.submodules/anthropics-plugins/plugins/hookify/hooks/stop.py",
+          "command": "bash -c '[ -f \"$HOME/.claude/plugin-hooks/hookify/hooks/stop.py\" ] && CLAUDE_PLUGIN_ROOT=\"$HOME/.claude/plugin-hooks/hookify\" python3 \"$HOME/.claude/plugin-hooks/hookify/hooks/stop.py\" || echo \"[hookify] skipped: plugin hooks not installed\" >&2'",
           "timeout": 10
         }
       ]
@@ -116,7 +116,7 @@
       "hooks": [
         {
           "type": "command",
-          "command": "CLAUDE_PLUGIN_ROOT=$HOME/dev/.claude/.submodules/anthropics-plugins/plugins/hookify python3 $HOME/dev/.claude/.submodules/anthropics-plugins/plugins/hookify/hooks/userpromptsubmit.py",
+          "command": "bash -c '[ -f \"$HOME/.claude/plugin-hooks/hookify/hooks/userpromptsubmit.py\" ] && CLAUDE_PLUGIN_ROOT=\"$HOME/.claude/plugin-hooks/hookify\" python3 \"$HOME/.claude/plugin-hooks/hookify/hooks/userpromptsubmit.py\" || echo \"[hookify] skipped: plugin hooks not installed\" >&2'",
           "timeout": 10
         },
         {
