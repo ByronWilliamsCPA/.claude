@@ -208,8 +208,9 @@ local.conf
 node_modules/
 
 # Skills-manager (find-skills) npm artifacts, written at repo root when a skill
-# is installed. This is a Python/config repo, so a root package.json misleads
-# Renovate and CI. skills-lock.json is the tracked source of truth instead.
+# is installed. This is a Python/config repo; ignoring these prevents an
+# accidental commit whose root package.json would mislead Renovate and CI.
+# skills-lock.json is the tracked source of truth instead.
 /package.json
 /package-lock.json
 
@@ -309,10 +310,12 @@ docs/reviews/
 .claude/skills/**/evals/evals-r2.json
 
 # Skills-manager (find-skills) materialized skill content. The manager writes
-# real files into .agents/ and exposes them as symlinks under .claude/skills/.
+# real files into .agents/ and exposes them as symlinks under .claude/skills/
+# (the find-skills symlink is currently dangling; cleanup tracked elsewhere).
 # Both are reproducible from skills-lock.json, so they are not committed here.
-# Add a line per new manager-installed skill.
-.agents/
+# Add a line per new manager-installed skill. No trailing slash on the symlink
+# entries: dir-only gitignore patterns (trailing /) do not match symlinks.
+/.agents/
 .claude/skills/find-skills
 .claude/skills/supabase-server
 
