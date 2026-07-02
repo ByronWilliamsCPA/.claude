@@ -207,6 +207,12 @@ local.conf
 # Node modules (if using any Node tools)
 node_modules/
 
+# Skills-manager (find-skills) npm artifacts, written at repo root when a skill
+# is installed. This is a Python/config repo, so a root package.json misleads
+# Renovate and CI. skills-lock.json is the tracked source of truth instead.
+/package.json
+/package-lock.json
+
 # Docker
 docker-compose.override.yml
 
@@ -290,6 +296,9 @@ tmp_cleanup/
 docs/content_reviews/
 docs/audit-report.md
 
+# /senior-review and similar review-run outputs (local artifacts, not tracked)
+docs/reviews/
+
 # Skill workspace and A/B test variant directories (not user-facing skills)
 .claude/skills/*-workspace/
 .claude/skills/*-workspace-r2/
@@ -298,6 +307,14 @@ docs/audit-report.md
 
 # Skill eval artifacts (r2 iteration files)
 .claude/skills/**/evals/evals-r2.json
+
+# Skills-manager (find-skills) materialized skill content. The manager writes
+# real files into .agents/ and exposes them as symlinks under .claude/skills/.
+# Both are reproducible from skills-lock.json, so they are not committed here.
+# Add a line per new manager-installed skill.
+.agents/
+.claude/skills/find-skills
+.claude/skills/supabase-server
 
 # Git worktrees (always project-local, never at global paths)
 .worktrees/
