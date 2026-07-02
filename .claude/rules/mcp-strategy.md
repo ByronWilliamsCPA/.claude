@@ -185,6 +185,20 @@ scope deliberately keeps it isolated per project path, which also sidesteps the
 step, and the `frontend-designer` / `ui-testing-agent` bundle intent:
 `standards/claude-design-setup.md`.
 
+### Supabase MCP Server (per-Supabase-repo, project scope)
+
+Supabase is the data-layer connector, registered at `--scope project` into the
+repo's committed `.mcp.json`, in repos backed by a Supabase project only, never
+in the config repo. It is an OAuth HTTP connector (dynamic client registration,
+no token in config), so like Design it is present by scope rather than gated by
+the loader tables. It scopes the opposite way from Design on purpose: its URL
+carries a per-repo, non-secret payload (`project_ref` plus the `read_only` and
+`features` hardening flags) that is worth committing and reviewing, whereas
+Design's URL is identical everywhere. Always register the hardened URL
+(`read_only=true`, restricted `features`, a development project), never the bare
+`?project_ref=...` form. Full setup, the OAuth-grant step, hardening rationale,
+and the feature-group reference: `standards/supabase-mcp-setup.md`.
+
 ## Tier 3: Keyword-Triggered
 
 | Keywords | Tools Loaded |
