@@ -149,7 +149,7 @@
       ]
     },
     {
-      "description": "Track org workflow floating v1 tag for SHA pin updates (CI-056)",
+      "description": "Advance org reusable-workflow SHA pins to the latest semver release tag (CI-056/CI-057). No followTag: the org tag-protection ruleset makes every vX.Y.Z tag immutable and no floating major tag exists, so a followed tag would freeze pins permanently.",
       "matchManagers": [
         "github-actions"
       ],
@@ -157,7 +157,7 @@
         "ByronWilliamsCPA/.github",
         "williaby/.github"
       ],
-      "followTag": "v1"
+      "versioning": "semver"
     },
     {
       "description": "Hold step-security/harden-runner at v2.19.3 in block-mode workflows only -- v2.19.4 introduced a block-mode regression that drops legitimate github.com:443 traffic at the eBPF layer. Audit-mode workflows are unaffected and bump normally. matchFileNames scopes the constraint to the two block-mode workflows in this repo (release.yml, slsa-provenance.yml). Remove this rule once upstream ships a fix and we have verified those two files pass on a newer version.",

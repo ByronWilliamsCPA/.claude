@@ -2482,10 +2482,17 @@ checks:
       .github/workflows/*.yml). Skip silently when not applicable.
     description: >-
       renovate.json contains a packageRules entry targeting org workflow
-      source repos with followTag set to the floating major version tag
-      (v1). Without this, Renovate either ignores org workflow updates or
-      opens PRs on every non-tagged commit.
-    verify: "content_present: renovate.json, ByronWilliamsCPA/.github"
+      source repos (github-actions manager, semver versioning) and does
+      NOT set followTag. Every push to the source repo's main cuts an
+      immutable vX.Y.Z tag (release-tag.yml) and the org tag-protection
+      ruleset forbids re-pointing v* tags, so no floating major tag
+      exists; a followed tag can never advance and silently freezes all
+      SHA-pin updates. This check originally mandated followTag: "v1";
+      that requirement was inverted when the frozen v1 tag was retired
+      (ByronWilliamsCPA/.github PR #244, 2026-07-02).
+    verify: >-
+      content_present: renovate.json, ByronWilliamsCPA/.github.
+      content_absent: renovate.json, followTag.
     source_frameworks:
       - manifest-internal
 

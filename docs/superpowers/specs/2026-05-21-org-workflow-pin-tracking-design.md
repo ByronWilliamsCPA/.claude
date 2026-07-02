@@ -11,6 +11,16 @@ purpose: Design for tracking canonical SHA pins for org-owned reusable workflows
 **Status**: Draft
 **Author**: Byron Williams
 
+> **Superseded in part (2026-07-02)**: the `followTag: "v1"` mechanism this
+> design specifies was retired in ByronWilliamsCPA/.github PR #244. The org
+> tag-protection ruleset forbids re-pointing `v*` tags, so the floating `v1`
+> tag froze at the v1.1.0 commit and `followTag` silently froze all consumer
+> SHA-pin updates with it. Since `release-tag.yml` now cuts an immutable
+> `vX.Y.Z` tag on every push to main, plain semver tracking (no `followTag`)
+> delivers the release-cadence behavior this design wanted. CI-057 now
+> requires the absence of `followTag`. The registry (CI-056) and stale-pin
+> detection portions of this design remain valid.
+
 ---
 
 ## Problem
