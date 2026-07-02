@@ -1,4 +1,5 @@
 """No hook script may be registered in more than one committed source."""
+
 import json
 import re
 from pathlib import Path
@@ -38,9 +39,7 @@ def test_no_duplicate_script_registration():
             continue
         for event, cmd in iter_commands(json.loads(path.read_text())):
             key = (event, script_key(cmd))
-            assert key not in seen, (
-                f"{key} registered in {seen[key]} and {source}"
-            )
+            assert key not in seen, f"{key} registered in {seen[key]} and {source}"
             seen[key] = source
 
 

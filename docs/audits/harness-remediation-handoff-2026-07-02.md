@@ -14,7 +14,6 @@ tags:
   - skills
 ---
 
-# Session Handoff: 2026-07-02
 
 Written by the cloud session on branch `claude/harness-architecture-review-46bhiz`.
 The handoff skill's default output path (`~/.claude/logs/handoffs/`) is

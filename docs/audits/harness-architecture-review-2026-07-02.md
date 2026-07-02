@@ -14,7 +14,6 @@ tags:
   - quality
 ---
 
-# Harness Architecture Review: 2026-07-02
 
 This review treats the repo as what it is in practice: an operating system for
 a language model. The design question throughout is not "is this elegant" but

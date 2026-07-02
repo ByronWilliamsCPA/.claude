@@ -51,7 +51,11 @@ def test_no_dead_tool_references():
 def test_allowed_files_carry_superseded_marker():
     for rel in ALLOWED:
         text = (ROOT / rel).read_text().lower()
-        assert "panel" in text and ("frozen" in text or "supersed" in text), (
+        assert "panel" in text, (
             f"{rel} is allowlisted for historical zen/pal mentions but does "
-            "not mark them as superseded by /panel"
+            "not point at the /panel replacement"
+        )
+        assert "frozen" in text or "supersed" in text, (
+            f"{rel} is allowlisted for historical zen/pal mentions but does "
+            "not mark them as frozen or superseded"
         )
