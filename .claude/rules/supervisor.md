@@ -77,7 +77,7 @@ Current pins:
 - **Sonnet:** `plan-validator`, `scope-analyzer`, `test-reviewer`,
   `general-compliance-auditor`, and all implementation agents (checklist- or
   tool-decided)
-- **Inherit (vendor exception):** the three vendor-mirror agents below
+- **Inherit (vendor exception):** the four vendor-mirror agents below
 
 **Skills inherit the session model.** Skills (`brainstorming`, `writing-plans`,
 `project-planning`, etc.) run as instructions in the calling session -- they
@@ -97,8 +97,9 @@ operating mode; `/panel` is the deliberate cross-vendor escalation for
 high-stakes or irreversible changes.
 
 **Vendored-agent exception.** `silent-failure-hunter`, `type-design-analyzer`,
-and `comment-analyzer` are symlinked from the `anthropics-plugins`
-pr-review-toolkit submodule and ship with `model: inherit`. Per the
+`comment-analyzer`, and `pr-test-analyzer` are symlinked from the
+`anthropics-plugins` pr-review-toolkit submodule and ship with
+`model: inherit`. Per the
 submodule-isolation policy, their model is **not** pinned: editing
 vendor-mirror content would drift from upstream and be clobbered on the next
 sync. They are left on `inherit` deliberately. Because `inherit` gives these
