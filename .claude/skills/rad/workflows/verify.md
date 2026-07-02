@@ -10,11 +10,14 @@ Systematically verify code assumptions using multi-model AI analysis with intell
 
 ## Task Overview
 
-Analyze code for assumption tags and route them to appropriate AI models:
+Analyze code for assumption tags and route them to appropriate AI models.
+Model names come from the current roster in
+`.claude/skills/panel/data/models.csv`; the tiers below name capability
+bands, not fixed models:
 
-- **#CRITICAL:** → Premium models (Gemini 2.5 Pro, O3-Mini)
-- **#ASSUME:** → Dynamic free model selection (DeepSeek-R1, Qwen-Coder)
-- **#EDGE:** → Fast batch processing (Gemini Flash Lite)
+- **#CRITICAL:** → Premium models from the roster
+- **#ASSUME:** → Panel selection of cost-effective models from the roster
+- **#EDGE:** → Fast batch processing with a fast roster model
 
 ## Arguments
 
@@ -65,10 +68,13 @@ Search for assumption patterns:
 
 **Critical Assumptions (Premium Models)**:
 
-- Payment/Financial → OpenAI O3-Mini or Gemini 2.5 Pro
-- Security/Auth → Gemini 2.5 Pro
-- Concurrency/Race → DeepSeek-R1 (free) or Gemini 2.5 Pro (paid)
-- Database/Transactions → DeepSeek-R1
+Route each category to a premium reasoning model from the current roster in
+`.claude/skills/panel/data/models.csv`:
+
+- Payment/Financial → premium reasoning model
+- Security/Auth → premium reasoning model
+- Concurrency/Race → strong free reasoning model, or premium if budget allows
+- Database/Transactions → strong free reasoning model
 
 **Standard Assumptions (Panel Review)**:
 

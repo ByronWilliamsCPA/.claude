@@ -35,7 +35,7 @@ Claude Code acts as SUPERVISOR for all development tasks.
 | Multiple independent problems | `dispatching-parallel-agents` skill | Skill |
 | Implement task with review loop | `subagent-driven-development` skill | Skill |
 
-> **MCP tool loading**: Tools marked "auto-loaded" activate via Tier 2 bundling when the agent is invoked. See `.claude/rules/mcp-strategy.md` for details.
+> **MCP tool loading**: Tier 2 bundles activate MCP tools when the matching agent is invoked. Rows marked "(frozen zen server; use /panel)" lost their zen bundle; use the `/panel` skill for cross-model review instead. See `.claude/rules/mcp-strategy.md` for details.
 >
 > **Built-in subagents**: `Explore` (haiku, read-only: no Edit/Write/Bash) and
 > `Plan` (inherits model, read-only) are native Claude Code subagent types. Invoke

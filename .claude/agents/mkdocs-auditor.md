@@ -104,7 +104,7 @@ Content gaps requiring authoring (pass to mkdocs-specialist):
   - docs/contributing/adding-hooks.md: placeholder created, nav entry added
 ```
 
-After both steps, invoke PAL secondary analysis same as audit mode.
+After both steps, invoke panel secondary analysis same as audit mode.
 
 ## Config Rules
 

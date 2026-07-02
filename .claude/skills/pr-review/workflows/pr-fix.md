@@ -903,7 +903,7 @@ Skill("panel")(
 )
 ```
 
-  If PAL flags tautological tests, revise them before presenting to the user.
+  If the panel review flags tautological tests, revise them before presenting to the user.
   Note any tests that could not be made non-tautological in the confirmation
   prompt.
 
@@ -1780,14 +1780,14 @@ Use the `can_retry` field to drive the exit presentation:
 - If `can_retry: true`: present `proposed_fix` as Option 1 for a targeted third attempt
 - If `can_retry: false`: surface `blocker` as the reason automation is exhausted
 
-Include the PAL diagnosis in the report presented to the user, then stop:
+Include the panel diagnosis in the report presented to the user, then stop:
 
 ```text
 Completed 2 re-fix cycles. Remaining issues:
   {list with reasons}
 
-PAL diagnosis:
-  Root cause:    {root_cause from tiered_consensus}
+Panel diagnosis:
+  Root cause:    {root_cause from the panel tiered review}
   Can retry:     {yes, proposed fix: {proposed_fix} | no, blocker: {blocker}}
 
 Options:

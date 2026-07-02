@@ -49,10 +49,10 @@ because our config and tool identifiers point at the fork; do not rename these
 references to `pal`. Multi-model panel reviews have moved to the `/panel` skill
 (OpenRouter-based; `.claude/skills/panel/`), which supersedes the zen/pal
 `consensus` and `tiered_consensus` tools. Those tools remain available from the
-now-frozen server; the `project-planning` skill still calls `consensus` pending
-migration, while `pr-review` has already moved to the `/panel` skill. New
-work should use the `/panel` skill. Apart from that one legacy `consensus`
-call, the server's active tools are `chat`, `thinkdeep`, and `codereview`.
+now-frozen server, but no skill calls them anymore: `project-planning`,
+`pr-review`, and `rad` have all migrated to the `/panel` skill. New work
+should use the `/panel` skill. The frozen server's remaining active tools are
+`chat`, `thinkdeep`, and `codereview`.
 
 ### Three cost lanes
 
