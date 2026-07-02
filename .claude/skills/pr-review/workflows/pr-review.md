@@ -19,15 +19,19 @@ Model-validation parameters used throughout this workflow. Edit these values to 
 model selection and consensus depth without touching the workflow logic.
 
 ```text
-PAL_CHAT_MODEL:        google/gemini-2.5-pro-preview
-PAL_CONSENSUS_MODELS:  ["google/gemini-2.5-pro-preview", "openai/gpt-4o"]
+PANEL_SINGLE_MODEL:    google/gemini-2.5-pro-preview
+PANEL_TIERED_MODELS:   ["google/gemini-2.5-pro-preview", "openai/gpt-4o"]
 CONSENSUS_LEVEL:       1
 PREMISE_MERGED_PR_LOOKBACK:   10
 PREMISE_STALENESS_HOLD_DAYS:  14
 ```
 
-- `PAL_CHAT_MODEL`: model passed to `mcp__pal__chat` for targeted validations
-- `PAL_CONSENSUS_MODELS`: model list passed to `mcp__pal__consensus` for Agent L
+- `PANEL_SINGLE_MODEL`: model passed to `Skill("panel")` single-reviewer mode
+  for targeted validations. Precondition: `OPENROUTER_API_KEY` must be set;
+  if it is not, degrade to single-model verification with the
+  `doubt-driven-development` skill and tag the output `VERIFIED-SINGLE-MODEL`.
+- `PANEL_TIERED_MODELS`: model list passed to `Skill("panel")` tiered-review
+  mode for Agent L
 - `CONSENSUS_LEVEL`: level (1/2/3) for the `/panel` skill engine used in Step 7b;
   level 1 uses 3 free models (cap $0.50), level 2 adds economy models (6 total, cap
   $1.00), level 3 adds high-cost models (8 total, cap $10.00)
@@ -1233,16 +1237,16 @@ If no issues found:
   [Info] Perf: No performance issues detected in diff
 ```
 
-### Agent L: Architectural Review (PAL consensus)
+### Agent L: Architectural Review (panel tiered review)
 
 *Run when `CHANGED_FILES` includes new modules, new public API surfaces,
 new base classes, or structural changes to existing modules (heuristic:
 any file where more than 30% of lines changed or a new top-level class
 or function was added).*
 
-Call `mcp__pal__consensus` with `PAL_CONSENSUS_MODELS` and the prompt below.
-Each model is assigned stance `neutral` so all participate as independent
-reviewers rather than debating a position.
+Call `Skill("panel")` in tiered-review mode with `PANEL_TIERED_MODELS` and the
+prompt below. Each model is assigned stance `neutral` so all participate as
+independent reviewers rather than debating a position.
 
 ```text
 Prompt: You are reviewing a pull request for architectural quality.

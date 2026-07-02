@@ -1,7 +1,7 @@
 ---
 argument-hint: [--strategy=tiered] [--budget=balanced] [--scope=changed-files] [--explain] [--apply-fixes=review]
 description: Intelligent tiered verification of code assumptions using multiple AI models based on risk levels.
-allowed-tools: Bash(git:*), Read, Grep, mcp__pal__chat, mcp__pal__dynamic_model_selector
+allowed-tools: Bash(git:*), Read, Grep, Skill
 ---
 
 # Assumption Verification Workflow
@@ -70,21 +70,29 @@ Search for assumption patterns:
 - Concurrency/Race → DeepSeek-R1 (free) or Gemini 2.5 Pro (paid)
 - Database/Transactions → DeepSeek-R1
 
-**Standard Assumptions (Dynamic Free Selection)**:
+**Standard Assumptions (Panel Review)**:
 
-Use `mcp__pal__dynamic_model_selector`:
+Use `Skill("panel")` in panel mode: pass the assumption list as args, one
+reviewer stance per assumption category, model selection drawn from the
+current roster in `.claude/skills/panel/data/models.csv`.
+
 ```json
 {
-  "requirements": "Analyze code assumptions for [category]. Add defensive programming patterns and error handling.",
-  "model": "auto",
-  "complexity_level": "medium",
+  "args": "Analyze code assumptions for [category]. Add defensive programming patterns and error handling.",
+  "mode": "panel",
   "budget_preference": "cost-optimized"
 }
 ```
 
-**Edge Cases (Fast Free Models)**:
+Precondition: `OPENROUTER_API_KEY` must be set. If it is not, degrade to
+single-model verification with the `doubt-driven-development` skill and tag
+the output `VERIFIED-SINGLE-MODEL` so downstream readers know decorrelation
+was not achieved.
 
-Batch process with `mcp__pal__chat` using `gemini-2.0-flash-lite`.
+**Edge Cases (Fast Models)**:
+
+Batch process via `Skill("panel")` in single-reviewer mode using a fast
+model from the current roster.
 
 ### 3. Execute Verification Strategy
 

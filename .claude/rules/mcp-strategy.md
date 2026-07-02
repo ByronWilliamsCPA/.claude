@@ -123,15 +123,15 @@ Loaded automatically when specific agents are invoked:
 
 | Agent | MCP Tools Loaded |
 |-------|------------------|
-| security-auditor | `zen.secaudit`, `sentry.*`, `github.code_security`, `postgres.analyze_db_health`, `snyk-mcp.snyk_sca_scan`, `snyk-mcp.snyk_code_scan` |
-| code-reviewer | `zen.precommit`, `zen.challenge`, `github.pull_requests` |
-| test-engineer | `zen.testgen`, `playwright.*` |
-| test-writer | `zen.testgen` |
-| owasp-dispatch | `zen.secaudit`, `zen.challenge` |
-| documentation-writer | `zen.docgen`, `mermaid.*`, `uml-mcp-server.*` |
+| security-auditor | `sentry.*`, `github.code_security`, `postgres.analyze_db_health`, `snyk-mcp.snyk_sca_scan`, `snyk-mcp.snyk_code_scan` |
+| code-reviewer | `github.pull_requests` |
+| test-engineer | `playwright.*` |
+| test-writer | (frozen zen server; use /panel) |
+| owasp-dispatch | (frozen zen server; use /panel) |
+| documentation-writer | `mermaid.*`, `uml-mcp-server.*` |
 | database-operations-agent | `postgres.*` |
 | devops-deployment-agent | `docker.*`, `github.actions`, `sentry.*` |
-| debug-agent | `zen.debug`, `sentry.*`, `postgres.explain_query` |
+| debug-agent | `sentry.*`, `postgres.explain_query` |
 
 ### Skill Bundles
 
@@ -139,9 +139,9 @@ Loaded automatically when specific skills are invoked:
 
 | Skill | MCP Tools Loaded |
 |-------|-----------------|
-| `/git` (commit prep) | `zen.precommit`, `github.repos` |
-| `/git` (PR prep) | `zen.codereview`, `github.pull_requests`, `github.issues`, `sentry.list_releases` |
-| `/project-planning` | `zen.planner`, `zen.consensus`, `mermaid.*` (consensus tool retained pending the skill's migration to the `/panel` skill) |
+| `/git` (commit prep) | `github.repos` |
+| `/git` (PR prep) | `github.pull_requests`, `github.issues`, `sentry.list_releases` |
+| `/project-planning` | `mermaid.*` (migrated off zen consensus to the `/panel` skill; see `.claude/skills/project-planning/SKILL.md`) |
 
 ### Snyk MCP Server (always-on authoring)
 

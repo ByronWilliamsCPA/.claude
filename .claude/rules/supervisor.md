@@ -17,16 +17,16 @@ Claude Code acts as SUPERVISOR for all development tasks.
 | Codebase exploration (read-only) | Explore subagent (built-in, haiku, read-only) | Agent |
 | Pre-planning structure | Plan subagent (built-in, inherits model, read-only) | Agent |
 | Assumption verification | `/rad` skill | Skill |
-| Security tasks | security-auditor agent (`zen.secaudit` auto-loaded) | Agent |
-| Code reviews | code-reviewer agent (`zen.codereview` auto-loaded) | Agent |
+| Security tasks | security-auditor agent (frozen zen server; use /panel) | Agent |
+| Code reviews | code-reviewer agent (frozen zen server; use /panel) | Agent |
 | Requesting a structured review | `requesting-code-review` skill | Skill |
 | Responding to review feedback | `receiving-code-review` skill | Skill |
-| Testing | test-engineer agent (`zen.testgen` auto-loaded) | Agent |
+| Testing | test-engineer agent (frozen zen server; use /panel) | Agent |
 | Test generation | test-writer agent | Agent |
 | Test review | test-reviewer agent | Agent |
 | Coverage analysis | `/test-coverage` skill | Skill |
 | OWASP security | owasp-dispatch agent | Agent |
-| Documentation | documentation-writer agent (`zen.docgen` auto-loaded) | Agent |
+| Documentation | documentation-writer agent (frozen zen server; use /panel) | Agent |
 | AI content detection / scoring | ai-detection-agent | Agent |
 | Writing pipeline detection audit | ai-detection-agent | Agent |
 | Debugging | `systematic-debugging` skill | Skill |
