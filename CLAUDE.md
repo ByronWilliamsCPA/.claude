@@ -219,6 +219,8 @@ no value to their task.
 >
 > Claude Design MCP Server (per-UI-repo, local scope): setup, OAuth grant, and DesignSync usage: see `.claude/standards/claude-design-setup.md`
 >
+> Supabase MCP Server (per-Supabase-repo, project scope): hardened read-only setup, OAuth grant, and feature groups: see `.claude/standards/supabase-mcp-setup.md`
+>
 > Frontend/UI work sequencing (build before sync) and design-system tooling: see `.claude/rules/design.md`
 >
 > Supervisor patterns and agent assignment: see `.claude/rules/supervisor.md`
