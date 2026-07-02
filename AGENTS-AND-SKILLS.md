@@ -797,13 +797,10 @@ reference, base SHA, head SHA. Mandates addressing Critical issues immediately.
 **[receiving-code-review](.claude/skills/receiving-code-review/SKILL.md)**
 Enforces technical verification before acting on any review feedback. Five verification checks per
 suggestion. Explicitly prohibits performative agreement. Permits pushback when reviewer is incorrect
-or has insufficient context.
-
-**[receiving-code-review-extras](/.claude/skills/receiving-code-review-extras/SKILL.md)**
-Local delta on top of the vendored `receiving-code-review` skill. Adds code-as-arbiter
-adjudication when a review and a status board (or two reviews) conflict, and constraint-first
-remedy re-derivation when a finding's implied fix would violate a standing user constraint.
-Activates on: "conflicting reviews", "review vs status board", "finding implies forbidden fix".
+or has insufficient context. Also covers code-as-arbiter adjudication when a review and a status
+board (or two reviews) conflict, and constraint-first remedy re-derivation when a finding's implied
+fix would violate a standing user constraint. Activates on: "conflicting reviews", "review vs status
+board", "finding implies forbidden fix".
 
 **[code-review-extras](/.claude/skills/code-review-extras/SKILL.md)**
 Local delta on top of the vendored `code-review` skill. Adds a reference-graph pre-read pass
@@ -815,13 +812,10 @@ review", "remediation PR residuals", "ADR factual accuracy", "defined but unrefe
 
 **[test-driven-development](.claude/skills/test-driven-development/SKILL.md)**
 Enforces red-green-refactor discipline. Iron Law: no production code without a failing test first.
-Any pre-existing production code must be deleted and re-implemented test-first.
-
-**[test-driven-development-extras](/.claude/skills/test-driven-development-extras/SKILL.md)**
-Local delta on top of the vendored `test-driven-development` skill. Adds GREEN-step lint
-discipline, shared-definition extraction for comparable metrics, autofix-hook edit ordering, and
-an empirical design-falsification step for metrics. Activates on: "GREEN step", "new metric",
-"comparable metric", "autofix stripped my import".
+Any pre-existing production code must be deleted and re-implemented test-first. Also covers
+GREEN-step lint discipline, shared-definition extraction for comparable metrics, autofix-hook edit
+ordering, and an empirical design-falsification step for metrics. Activates on: "GREEN step", "new
+metric", "comparable metric", "autofix stripped my import".
 
 **[verification-before-completion](/.submodules/superpowers/skills/verification-before-completion/SKILL.md)**
 Universal evidence gate. No completion claim without running verification commands and reading their

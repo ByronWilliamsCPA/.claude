@@ -1,6 +1,6 @@
 ---
 name: receiving-code-review
-description: Use when receiving code review feedback, before implementing suggestions, especially if feedback seems unclear or technically questionable - requires technical rigor and verification, not performative agreement or blind implementation
+description: Use when receiving code review feedback, before implementing suggestions, especially if feedback seems unclear or technically questionable - requires technical rigor and verification, not performative agreement or blind implementation. Also covers adjudicating a review against the code when it conflicts with a status board or another review, and converting red-team or audit findings into a plan under a hard user constraint. Triggers on: conflicting reviews, review vs status board, red-team findings to plan, finding implies forbidden fix, standing constraint, no re-run allowed.
 ---
 
 # Code Review Reception
@@ -170,6 +170,14 @@ When reviewing a branch created by an autonomous AI session, apply two additiona
 **2. AI resolves inconsistencies toward file-state, not git history (Obs 140):** When an AI session finds two config sources that disagree (e.g., `requirements.txt` and `pyproject.toml` pin the same package to different versions), it tends to edit toward consistency with whichever file it read first -- without checking which value reflects the more recent human decision. Before accepting a "consistency fix," run `git log --oneline -5 -- <both_files>` and confirm the surviving value is the newer deliberate human commit. If the AI's fix silently reverts a merged PR's change, the review should flag it and propose the correct resolution direction.
 
 **3. Verify the branch contents match the stated premise (Obs 138):** Instructions about a branch's artifacts presuppose those artifacts exist. Before applying artifact-handling rules (e.g., "gitignore the manifest.json", "strip the analysis report"), run `git diff --name-status $(git merge-base origin/{default_branch} {branch_name})...{branch_name}` and confirm each named artifact is actually present. If a named artifact is absent, surface the discrepancy rather than silently skipping the instruction.
+
+## On a Checkable Claim, the Code Is the Arbiter
+
+Reviews and status boards are both secondary sources and both drift from the code. When a review and a status record disagree (or two reviews disagree) on a factual, checkable claim, read the cited code or artifact and adjudicate from ground truth, not from whichever source is more recent or more authoritative-sounding. A methodology review said one gate was still broken (already fixed) and an engine value was path-invariant (genuinely broken); only reading the live code separated the stale finding from the real one. "Greener than the code" and "scarier than the code" are symmetric failure modes. Capture the split verdict explicitly: list which findings are real and which are stale, so downstream work targets only the real ones.
+
+## A Finding Names a Problem; It Does Not Get to Choose the Remedy
+
+When converting external findings (a code review, a red-team report, an audit) into a plan under a hard user constraint, each finding carries an implied remedy that was written without knowledge of the user's boundaries and will silently breach them if copied through. "Pass-through is unwired" implies "wire it and re-run," but a re-run may be forbidden; "covariance is a single point of failure" implies "add a stress exhibit," but new modeling may be declined. For each finding, restate its remedy in the constraint's terms (remove or soften the claim and disclose the omission; strengthen an existing disclosure rather than build new modeling), and flag explicitly where the finding's own suggested fix would violate the constraint so the executing session does not default to the naive fix. Make the standing constraint the first thing in the plan so it governs every item.
 
 ## Common Mistakes
 
