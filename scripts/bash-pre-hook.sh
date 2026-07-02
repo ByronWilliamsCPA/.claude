@@ -11,6 +11,11 @@
 #        - git -c commit.gpgsign=<falsy>                (inline signing bypass, any case,
 #                                                        falsy = false|0|no|off)
 #        - git -c tag.gpgsign=<falsy>                   (inline tag signing bypass)
+#        - shell redirection into a credential-bearing path (.env, .aws/credentials,
+#                                                        .netrc, .npmrc, .pypirc, SSH
+#                                                        private keys, .pem files)
+#        - git add -A / --all / bare `git add .`        (blanket staging; concurrent
+#                                                        sessions share this working tree)
 #      The guards run per command segment (split on &&, ||, ;, |) so a bypass
 #      flag is only blocked when it belongs to the principal git/gh invocation,
 #      not to an unrelated tool that shares the command line. Indirection
@@ -19,7 +24,10 @@
 #   2. Block force-pushes to main, master, or develop (exit 2 with BLOCKED message)
 #   3. Block `git reset --hard` when HEAD is on a protected branch
 #      (main / master / develop); feature-branch hard resets are allowed
-#   4. Write a timing start timestamp to ${HOME}/.claude/tmp_cleanup/bash-start
+#   4. Block `git checkout -B <branch>` when <branch> (the mutated target) is
+#      a protected branch; naming a protected branch as the START-POINT
+#      (`git checkout -B feature main`) stays allowed
+#   5. Write a timing start timestamp to ${HOME}/.claude/tmp_cleanup/bash-start
 #      for the post-hook notification script to compute command duration.
 #      The marker lives under the user's home (audit H-01) to avoid the
 #      symlink-race window of a fixed /tmp path.
@@ -277,6 +285,30 @@ violates_git_no_sign() {
     echo "$seg" | grep -qiE '(^|[[:space:]])(commit|tag)\.gpgsign[[:space:]]*=[[:space:]]*(false|0|no|off)([[:space:]]|$)'
 }
 
+# Sensitive-redirect guard (review 5.6): shell redirection into a
+# credential-bearing path is the Bash-tool equivalent of an Edit/Write to a
+# guarded sensitive file. Catches `>`, `>>`, and `tee [-a]` into .env,
+# .aws/credentials, .netrc, .npmrc, .pypirc, SSH private keys, or .pem files.
+violates_sensitive_redirect() {
+    local seg
+    seg=$(unwrap_indirection "$1")
+    echo "$seg" | grep -qE '(>>?|tee[[:space:]]+(-a[[:space:]]+)?)[[:space:]]*[^[:space:]]*(\.env|\.aws/credentials|\.netrc|\.npmrc|\.pypirc|id_(rsa|dsa|ecdsa|ed25519)([^.]|$)|\.pem([[:space:]]|$))'
+}
+
+# Blanket-staging guard (review R-13): `git add -A` / `git add --all` /
+# bare `git add .` stage every change in the working tree, including edits
+# from a concurrent session sharing this working tree. Explicit-path forms
+# (`git add src/app.py`) are unaffected.
+violates_git_add_all() {
+    local seg
+    seg=$(unwrap_indirection "$1")
+    echo "$seg" | grep -qE '(^|[[:space:]])git[[:space:]]+add([[:space:]]|$)' || return 1
+    if echo "$seg" | grep -qE '(^|[[:space:]])(-A|--all)([[:space:]]|=|$)'; then
+        return 0
+    fi
+    echo "$seg" | grep -qE '(^|[[:space:]])git[[:space:]]+add[[:space:]]+\.([[:space:]]|$)'
+}
+
 # Pre-scan the command: blank message-arg values so documentation text inside
 # a commit message does not cause false-positive blocks.
 PRE_SCAN=$(printf '%s' "$CMD" | blank_message_args)
@@ -357,6 +389,26 @@ signing is broken, fix the agent setup, not the commit:
 EOF
         exit 2
     fi
+
+    if violates_sensitive_redirect "$SEGMENT"; then
+        log "BLOCKED sensitive redirect: CMD=${CMD}"
+        cat >&2 <<'EOF'
+BLOCKED: shell redirection into a credential-bearing path.
+Sensitive files are guarded for Edit/Write; Bash redirection is the same
+operation. If this is intentional, run it from a terminal outside Claude.
+EOF
+        exit 2
+    fi
+
+    if violates_git_add_all "$SEGMENT"; then
+        log "BLOCKED blanket git add: CMD=${CMD}"
+        cat >&2 <<'EOF'
+BLOCKED: blanket staging (git add -A / git add .) is prohibited.
+Concurrent sessions share this working tree; stage only the files you
+changed: git add <paths>.
+EOF
+        exit 2
+    fi
 done < <(printf '%s' "$PRE_SCAN" | split_segments)
 
 # ---------------------------------------------------------------------------
@@ -410,6 +462,25 @@ For feature work, switch to a feature branch first (git checkout -b fix/...).
 If you are intentionally resyncing a protected branch to its remote, run the
 command yourself from a terminal outside Claude.
 EOF
+        exit 2
+    fi
+fi
+
+# ---------------------------------------------------------------------------
+# checkout -B guard (closes the gap documented in rules/git-workflow.md).
+# `git checkout -B <branch> [<start-point>]` force-moves <branch>, which is
+# a hard mutation of <branch>. Block only when the MUTATED branch (the -B
+# target) is protected. Naming a protected branch as the START-POINT
+# (`git checkout -B feature main`) is the documented squash-orphan rebuild
+# recipe and stays allowed.
+# ---------------------------------------------------------------------------
+if echo "$HR_CMD" | grep -qE '(^|[^[:alnum:]_])git[[:space:]]+checkout([[:space:]]|$)' \
+   && echo "$HR_CMD" | grep -qE '(^|[[:space:]])-B([[:space:]]|$)'; then
+    CB_TARGET=$(printf '%s' "$HR_CMD" \
+        | sed -nE 's/.*[[:space:]]-B[[:space:]]+([^[:space:]]+).*/\1/p' | head -n1)
+    if echo "$CB_TARGET" | grep -qE '^(main|master|develop)$'; then
+        log "BLOCKED git checkout -B onto protected branch ${CB_TARGET}: CMD=${CMD}"
+        echo "BLOCKED: 'git checkout -B ${CB_TARGET}' rewrites protected branch '${CB_TARGET}'. Rebuild feature branches instead; protected branches change only through PRs."
         exit 2
     fi
 fi

@@ -205,6 +205,32 @@ assert_allowed 'git commit -m "docs: warn against git reset --hard on main"' \
     'git commit -m "docs: warn against git reset --hard on main"'
 
 echo ""
+echo "=== Sensitive-redirect guard (review 5.6; must BLOCK) ==="
+assert_blocked 'echo x > .env.production' \
+    'echo x > .env.production'
+
+echo ""
+echo "=== checkout -B guard (git-workflow.md; protected target must BLOCK) ==="
+assert_blocked 'git checkout -B main abc123' \
+    'git checkout -B main abc123'
+assert_allowed 'git checkout -B fix/y main' \
+    'git checkout -B fix/y main'
+
+echo ""
+echo "=== Blanket-staging guard (review R-13; must BLOCK) ==="
+assert_blocked 'git add -A' \
+    'git add -A'
+assert_blocked 'git add .' \
+    'git add .'
+assert_allowed 'git add src/app.py' \
+    'git add src/app.py'
+
+echo ""
+echo "=== Regression: git reset --hard on a feature branch still ALLOWED ==="
+assert_allowed 'git reset --hard origin/feature' \
+    'git reset --hard origin/feature'
+
+echo ""
 echo "=== Innocuous commands must be ALLOWED ==="
 assert_allowed 'ls -la' \
     'ls -la'

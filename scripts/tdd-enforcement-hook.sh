@@ -24,6 +24,22 @@ fi
 # Log directory creation must not block tool calls on failure
 mkdir -p "$(dirname "$TDD_LOG")" || true
 
+# Security (audit M-07): logs may capture file paths and tool names; restrict
+# permissions on first creation. Surface the fallback to stderr so the
+# operator notices when the permission backstop silently failed.
+if [[ ! -f "$TDD_LOG" ]]; then
+    : > "$TDD_LOG"
+    if ! chmod 600 "$TDD_LOG" 2>/dev/null; then
+        echo "[tdd-enforcement-hook] WARN: chmod 600 ${TDD_LOG} failed; redaction is the only secret defense" >&2
+    fi
+fi
+if [[ ! -f "$HOOK_DEBUG_LOG" ]]; then
+    : > "$HOOK_DEBUG_LOG"
+    if ! chmod 600 "$HOOK_DEBUG_LOG" 2>/dev/null; then
+        echo "[tdd-enforcement-hook] WARN: chmod 600 ${HOOK_DEBUG_LOG} failed; redaction is the only secret defense" >&2
+    fi
+fi
+
 log_tdd() {
     local timestamp
     timestamp=$(date '+%Y-%m-%d %H:%M:%S')
