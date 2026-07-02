@@ -1,4 +1,15 @@
-# OWASP Specialist Agent System — Design Specification
+---
+schema_type: common
+title: "OWASP Specialist Agent System: Design Specification"
+status: draft
+owner: core-maintainer
+purpose: "Design spec for six OWASP Top 10 specialist agents that review code and tests and generate missing security tests."
+tags:
+  - specifications
+  - security
+  - agents
+  - architecture
+---
 
 **Project Codename:** Hephaestus-Aegis
 **Version:** 1.0-DRAFT
@@ -11,7 +22,7 @@
 
 This specification defines a system of six OWASP Top 10 specialist agents,
 each an expert on one complete OWASP Top 10 list. These agents operate in
-three modes — code review, test review, and test generation — and integrate
+three modes: code review, test review, and test generation: and integrate
 with the existing Hephaestus-Anvil test coverage agent as callable
 subagents. When the test-writer or test-reviewer agents encounter
 security-relevant code, they dispatch to the appropriate specialist for
@@ -40,7 +51,7 @@ security assessment.
 │                    CLAUDE CODE HOST SESSION                      │
 │                                                                  │
 │  ┌────────────────────────────────────────────────────────────┐  │
-│  │     SKILL: test-coverage (orchestrator — Hephaestus-Anvil) │  │
+│  │     SKILL: test-coverage (orchestrator: Hephaestus-Anvil) │  │
 │  │                                                            │  │
 │  │  Dispatches to test-writer, test-reviewer, AND             │  │
 │  │  OWASP specialists based on code domain detection          │  │
@@ -88,7 +99,7 @@ codebase signals:
 | Authentication/auth modules | `auth/`, `login`, JWT imports | `owasp-web` (A01, A07 focus) |
 | Database access (SQLAlchemy, psycopg2) | imports | `owasp-web` (A03, A05 focus) |
 
-**Default:** `owasp-web` is ALWAYS activated — every project needs
+**Default:** `owasp-web` is ALWAYS activated: every project needs
 traditional AppSec. Other specialists are activated based on detection.
 
 ### 3.2 Operating Modes
@@ -96,9 +107,9 @@ traditional AppSec. Other specialists are activated based on detection.
 Each specialist supports three modes invoked via argument:
 
 ```html
-review-code <path>     — Scan source code for vulnerabilities
-review-tests <path>    — Audit tests for security coverage gaps
-generate <path>        — Produce missing security tests
+review-code <path>    : Scan source code for vulnerabilities
+review-tests <path>   : Audit tests for security coverage gaps
+generate <path>       : Produce missing security tests
 ```
 
 All three modes produce structured output referencing specific OWASP
@@ -111,9 +122,9 @@ category IDs for traceability.
 ```text
 .claude/
 ├── agents/
-│   ├── test-writer.md                # Existing — now calls specialists
-│   ├── test-reviewer.md              # Existing — now calls specialists
-│   ├── owasp-dispatch.md             # NEW — routes to correct specialists
+│   ├── test-writer.md                # Existing: now calls specialists
+│   ├── test-reviewer.md              # Existing: now calls specialists
+│   ├── owasp-dispatch.md             # NEW: routes to correct specialists
 │   └── owasp/
 │       ├── owasp-web.md              # Web Applications Top 10 (2025)
 │       ├── owasp-llm.md              # LLM Applications Top 10 (2025)
@@ -139,7 +150,7 @@ category IDs for traceability.
 
 You are a security triage agent. Your role is to analyze a codebase or
 file set and determine which OWASP Top 10 specialist agents should be
-invoked. You do NOT perform security analysis yourself — you route to
+invoked. You do NOT perform security analysis yourself: you route to
 the correct specialists.
 
 ## Detection Procedure
@@ -176,14 +187,14 @@ Target:  {path}
 Mode:    {review-code | review-tests | generate}
 
 Specialists to invoke:
-  1. owasp-web    — [reason: HTTP framework detected, auth module present]
-  2. owasp-api    — [reason: FastAPI routes in src/api/]
-  3. owasp-llm    — [reason: anthropic SDK in dependencies]
+  1. owasp-web   : [reason: HTTP framework detected, auth module present]
+  2. owasp-api   : [reason: FastAPI routes in src/api/]
+  3. owasp-llm   : [reason: anthropic SDK in dependencies]
 
 Specialists skipped:
-  - owasp-agent   — [reason: no agent orchestration detected]
-  - owasp-ml      — [reason: inference only, no training code]
-  - owasp-citizen — [reason: no low-code indicators]
+  - owasp-agent  : [reason: no agent orchestration detected]
+  - owasp-ml     : [reason: inference only, no training code]
+  - owasp-citizen: [reason: no low-code indicators]
 ```text
 
 Invoke each selected specialist sequentially. Aggregate their findings
@@ -200,7 +211,7 @@ Below are the full definitions for each specialist.
 
 ---
 
-### 5.3 owasp-web — Web Applications Top 10 (2025)
+### 5.3 owasp-web: Web Applications Top 10 (2025)
 
 **Location:** `.claude/agents/owasp/owasp-web.md`
 
@@ -305,7 +316,7 @@ All output MUST include:
 
 ---
 
-### 5.4 owasp-llm — LLM Applications Top 10 (2025)
+### 5.4 owasp-llm: LLM Applications Top 10 (2025)
 
 **Location:** `.claude/agents/owasp/owasp-llm.md`
 
@@ -392,7 +403,7 @@ All generated tests MUST include the LLM category ID in docstrings.
 
 ---
 
-### 5.5 owasp-agent — Agentic Applications Top 10 (2026)
+### 5.5 owasp-agent: Agentic Applications Top 10 (2026)
 
 **Location:** `.claude/agents/owasp/owasp-agent.md`
 
@@ -401,7 +412,7 @@ All generated tests MUST include the LLM category ID in docstrings.
 
 You are a security specialist with deep expertise in the OWASP Top 10
 for Agentic Applications (2026 edition). You review code and tests for
-security risks specific to autonomous AI agent systems — agents that
+security risks specific to autonomous AI agent systems: agents that
 plan, act, and make decisions across complex workflows.
 
 ## Your Categories
@@ -462,7 +473,7 @@ tests reference AG## category IDs.
 
 ---
 
-### 5.6 owasp-citizen — Citizen Developer Top 10 (2025)
+### 5.6 owasp-citizen: Citizen Developer Top 10 (2025)
 
 **Location:** `.claude/agents/owasp/owasp-citizen.md`
 
@@ -515,7 +526,7 @@ tests that specifically target common AI code generation weaknesses.
 
 ---
 
-### 5.7 owasp-api — API Security Top 10 (2023)
+### 5.7 owasp-api: API Security Top 10 (2023)
 
 **Location:** `.claude/agents/owasp/owasp-api.md`
 
@@ -576,7 +587,7 @@ Reference API## category IDs in all test docstrings.
 
 ---
 
-### 5.8 owasp-ml — ML Security Top 10 (v0.3)
+### 5.8 owasp-ml: ML Security Top 10 (v0.3)
 
 **Location:** `.claude/agents/owasp/owasp-ml.md`
 
@@ -703,7 +714,7 @@ recommendation.
 ### 7.1 Full Repo Security Audit
 
 ```bash
-# Via Claude Code — run dispatcher on entire codebase
+# Via Claude Code: run dispatcher on entire codebase
 claude "Run the OWASP dispatcher on this repo in review-code mode,
 then review-tests mode. Identify all security gaps and generate
 missing tests for critical findings."
@@ -727,7 +738,7 @@ on tests/unit/test_auth.py and src/auth/"
 ### 7.3 PR-Level Security Gate
 
 ```bash
-# In CI via headless mode — check changed files only
+# In CI via headless mode: check changed files only
 claude --bare -p "Run the OWASP dispatcher in review-code mode on the files
 changed in this PR. Report any findings with severity HIGH or above.
 If critical gaps exist, generate tests and commit them."
@@ -797,10 +808,10 @@ SPECIALISTS ACTIVATED: owasp-web, owasp-api, owasp-llm, owasp-agent
 ┌─────────────────────────────────────────────────────────────┐
 │ GENERATED TESTS                                             │
 ├─────────────────────────────────────────────────────────────┤
-│ tests/security/test_injection_a05.py        — 8 tests       │
-│ tests/security/test_prompt_leakage_llm07.py — 5 tests       │
-│ tests/security/test_tool_params_ag03.py     — 4 tests       │
-│ tests/security/test_bola_api01.py           — 6 tests       │
+│ tests/security/test_injection_a05.py       : 8 tests       │
+│ tests/security/test_prompt_leakage_llm07.py: 5 tests       │
+│ tests/security/test_tool_params_ag03.py    : 4 tests       │
+│ tests/security/test_bola_api01.py          : 6 tests       │
 │                                                             │
 │ Total: 23 security tests generated                          │
 │ All passing: ✓                                              │
@@ -890,10 +901,10 @@ pytest -k "a05" -m owasp_web
 
 | Phase | Timeline | Action |
 |-------|----------|--------|
-| 1 | Week 1 | Deploy `owasp-web` specialist — applies to every project |
-| 2 | Week 2 | Deploy `owasp-api` — activate on projects with HTTP endpoints |
-| 3 | Week 3 | Deploy `owasp-llm` + `owasp-agent` — activate on AI projects |
-| 4 | Week 4 | Deploy `owasp-ml` + `owasp-citizen` — activate where applicable |
+| 1 | Week 1 | Deploy `owasp-web` specialist: applies to every project |
+| 2 | Week 2 | Deploy `owasp-api`: activate on projects with HTTP endpoints |
+| 3 | Week 3 | Deploy `owasp-llm` + `owasp-agent`: activate on AI projects |
+| 4 | Week 4 | Deploy `owasp-ml` + `owasp-citizen`: activate where applicable |
 | 5 | Week 5 | Deploy dispatcher + orchestrator integration |
 | 6 | Week 6-8 | Full repo audits on all active projects, tune detection patterns |
 
@@ -907,14 +918,14 @@ its domain-specific perspective:
 
 | Vulnerability | Web | LLM | Agent | API | ML | Citizen |
 |--------------|-----|-----|-------|-----|-----|---------|
-| Injection | A05 | LLM01 | AG02 | — | — | CD03 |
-| Supply chain | A03 | LLM03 | AG10 | — | ML06 | CD05 |
-| Access control | A01 | — | AG01 | API01 | — | CD01 |
-| Data exposure | — | LLM02 | — | API03 | ML03 | CD04 |
-| Authentication | A07 | — | AG05 | API02 | — | CD01 |
-| Misconfiguration | A02 | — | — | API08 | — | CD02 |
-| Secrets | — | LLM07 | — | — | — | CD09 |
-| Logging | A09 | — | AG08 | — | — | CD07 |
+| Injection | A05 | LLM01 | AG02 | N/A | N/A | CD03 |
+| Supply chain | A03 | LLM03 | AG10 | N/A | ML06 | CD05 |
+| Access control | A01 | N/A | AG01 | API01 | N/A | CD01 |
+| Data exposure | N/A | LLM02 | N/A | API03 | ML03 | CD04 |
+| Authentication | A07 | N/A | AG05 | API02 | N/A | CD01 |
+| Misconfiguration | A02 | N/A | N/A | API08 | N/A | CD02 |
+| Secrets | N/A | LLM07 | N/A | N/A | N/A | CD09 |
+| Logging | A09 | N/A | AG08 | N/A | N/A | CD07 |
 
 ---
 

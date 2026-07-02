@@ -1,4 +1,15 @@
-# Test Coverage Agent — Design Specification
+---
+schema_type: common
+title: "Test Coverage Agent: Design Specification"
+status: draft
+owner: core-maintainer
+purpose: "Design spec for a Claude Code agent that analyzes coverage gaps, generates missing tests, and enforces coverage thresholds."
+tags:
+  - specifications
+  - testing
+  - agents
+  - architecture
+---
 
 **Project Codename:** Hephaestus-Anvil
 **Version:** 1.0-DRAFT
@@ -9,7 +20,7 @@
 
 ## 1. Executive Summary
 
-This specification defines a Claude Code agent that ensures Python (and secondary JS/TS) projects maintain adequate test coverage through three integrated capabilities: automated coverage gap analysis, AI-powered test generation with iterative validation, and CI/CD threshold enforcement. The agent is built on existing open-source components—CoverUp, pytest-cov, mutmut—orchestrated through Claude Code's skills system, hooks, and subagent architecture rather than developed from scratch.
+This specification defines a Claude Code agent that ensures Python (and secondary JS/TS) projects maintain adequate test coverage through three integrated capabilities: automated coverage gap analysis, AI-powered test generation with iterative validation, and CI/CD threshold enforcement. The agent is built on existing open-source components (CoverUp, pytest-cov, mutmut), orchestrated through Claude Code's skills system, hooks, and subagent architecture rather than developed from scratch.
 
 The design follows a **multi-agent writer/reviewer pattern** validated in production environments (OpenObserve's 380→700+ test growth, Melnik's 30→50% coverage increase) and draws on the CoverUp algorithm's iterative dialog approach, which achieves 80% median coverage versus 47% for single-pass methods.
 
@@ -19,11 +30,11 @@ The design follows a **multi-agent writer/reviewer pattern** validated in produc
 
 ### Goals
 
-1. **Analyze** — Parse coverage.py JSON reports to identify uncovered functions, branches, and files, ranked by business criticality and coverage percentage
-2. **Generate** — Produce idiomatic pytest tests targeting specific coverage gaps using an iterative generate→run→fix loop
-3. **Enforce** — Block merges when coverage drops below configurable thresholds at project, file, and patch levels
-4. **Validate** — Confirm generated test quality via mutation testing (mutmut) and reviewer subagent inspection
-5. **Integrate** — Work seamlessly with existing cookiecutter project templates, pre-commit hooks, and GitHub Actions CI/CD pipelines
+1. **Analyze**: Parse coverage.py JSON reports to identify uncovered functions, branches, and files, ranked by business criticality and coverage percentage
+2. **Generate**: Produce idiomatic pytest tests targeting specific coverage gaps using an iterative generate→run→fix loop
+3. **Enforce**: Block merges when coverage drops below configurable thresholds at project, file, and patch levels
+4. **Validate**: Confirm generated test quality via mutation testing (mutmut) and reviewer subagent inspection
+5. **Integrate**: Work seamlessly with existing cookiecutter project templates, pre-commit hooks, and GitHub Actions CI/CD pipelines
 
 ### Non-Goals
 
@@ -461,7 +472,7 @@ The generation loop follows CoverUp's validated approach, adapted for Claude Cod
 
 ```python
 #!/usr/bin/env python3
-"""parse_coverage.py — Parse coverage.json into structured gap report."""
+"""parse_coverage.py: Parse coverage.json into structured gap report."""
 
 import json
 import ast

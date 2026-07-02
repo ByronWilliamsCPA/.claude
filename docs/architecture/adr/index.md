@@ -32,6 +32,7 @@ Architecture Decision Records (ADRs) capture load-bearing design choices so futu
 | [006](ADR-006-rules-vs-standards.md) | Rules vs Standards Boundary | Accepted | Context injection |
 | [007](ADR-007-dual-audience-docs.md) | Dual-Audience Documentation Structure | Accepted | Documentation layout |
 | [008](ADR-008-scanner-allowlist-tiers.md) | Two-Tier Scanner Allowlist for CI-007/007b | Proposed | Compliance / CI security |
+| [009](ADR-009-snyk-role-and-provenance.md) | Snyk Role Consolidation, Always-On Authoring, and Dependency Provenance | Proposed | Security / dependencies |
 
 ## See Also
 

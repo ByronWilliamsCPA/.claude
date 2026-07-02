@@ -33,7 +33,7 @@ Pulled together from various sources; goal is to verify each file has accurate, 
 | `[~]` | [.claude/rules/git-workflow.md](../.claude/rules/git-workflow.md) | Fixed: mypy→basedpyright; added breaking-change notation; added cross-references |
 | `[~]` | [.claude/rules/mcp-strategy.md](../.claude/rules/mcp-strategy.md) | Fixed: agent frontmatter example; added Tier 2 skill bundles; updated Tier 3 keywords |
 | `[~]` | [.claude/rules/pre-commit.md](../.claude/rules/pre-commit.md) | Fixed: added tests+RAD steps; named /security skill; clarified /quality scope; pip-audit exit code; removed zen-core ref |
-| `[~]` | [.claude/rules/python.md](../.claude/rules/python.md) | Fixed: Black→Ruff label; expanded Ruff rules table; clarified Python version range; added BasedPyright config example; fixed context/python-standards.md |
+| `[~]` | [.claude/rules/python.md](../.claude/rules/python.md) | Fixed: Black→Ruff label; expanded Ruff rules table; clarified Python version range; added BasedPyright config example; fixed the now-removed python-standards.md context copy |
 | `[~]` | [.claude/rules/supervisor.md](../.claude/rules/supervisor.md) | Fixed: removed ghost agent+MCP tools; replaced table with accurate agent/skill/type breakdown; removed mcp__zen-core__pr_prepare |
 
 ---
@@ -105,8 +105,8 @@ Pulled together from various sources; goal is to verify each file has accurate, 
 
 | Status | File | Issues / Notes |
 |--------|------|----------------|
-| `[x]` | [python-standards.md](../.claude/context/python-standards.md) | P1 fix confirmed (Black→Ruff); fully aligned with rules and pyproject.toml |
-| `[x]` | [testing-patterns.md](../.claude/context/testing-patterns.md) | |
+| `[x]` | python-standards.md (removed 2026-07: orphaned duplicate of `.claude/rules/python.md`) | P1 fix confirmed (Black→Ruff); fully aligned with rules and pyproject.toml |
+| `[x]` | testing-patterns.md (removed 2026-07: orphaned duplicate) | |
 
 ---
 
@@ -198,8 +198,8 @@ Pulled together from various sources; goal is to verify each file has accurate, 
 | `[~]` | [standards/git-workflow.md](../standards/git-workflow.md) | Fixed: removed "for Poetry" from commit example |
 | `[~]` | [standards/git-worktree.md](../standards/git-worktree.md) | Fixed: removed poetry install fallback comments |
 | `[x]` | [standards/mcp-minimal-bloat.md](../standards/mcp-minimal-bloat.md) | |
-| `[x]` | [standards/owasp-specialist-agents-spec.md](../standards/owasp-specialist-agents-spec.md) | |
-| `[~]` | [standards/test-coverage-agent-spec.md](../standards/test-coverage-agent-spec.md) | Fixed: mypy→basedpyright; pip install→uv; pytest→uv run pytest |
+| `[x]` | [architecture/specs/owasp-specialist-agents-spec.md](architecture/specs/owasp-specialist-agents-spec.md) | |
+| `[~]` | [architecture/specs/test-coverage-agent-spec.md](architecture/specs/test-coverage-agent-spec.md) | Fixed: mypy→basedpyright; pip install→uv; pytest→uv run pytest |
 
 ### Key Docs (referenced from CLAUDE.md)
 

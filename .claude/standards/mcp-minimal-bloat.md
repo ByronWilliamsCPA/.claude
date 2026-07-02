@@ -4,6 +4,11 @@
 > **Version**: 1.0.0
 > **Last Updated**: 2025-12-12
 > **Reference**: [Anthropic Advanced Tool Use Guide](https://www.anthropic.com/engineering/advanced-tool-use)
+>
+> **Superseded (2026-07):** the live MCP loading policy is
+> `.claude/rules/mcp-strategy.md`. This document predates dynamic tool
+> loading and the /panel skill; its Tier-1 list and "no dynamic loading"
+> claim are historical. Kept for the context-budget method only.
 
 ## The Problem
 
