@@ -17,9 +17,11 @@
 
 ## Sibling Directory Convention
 
-Worktrees live at `../{project}-worktrees/` (sibling to the repo root). The
-`using-git-worktrees` skill enforces this and verifies the directory is git-ignored
-before creating anything.
+Worktrees live at `.worktrees/<branch-slug>` inside the project root. The
+`using-git-worktrees` skill enforces this and verifies `.worktrees/` is
+git-ignored before creating the first worktree. Never create worktrees at
+sibling paths or under user-config directories; see
+`.claude/rules/git-workflow.md` for the rationale.
 
 ## Key Reminders
 
