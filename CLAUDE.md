@@ -1,6 +1,6 @@
 # Global Claude Development Standards
 
-> **Status**: Active | Core Standard | **Version**: 1.5.0 | **Last Updated**: 2026-06-09
+> **Status**: Active | Core Standard | **Version**: 1.5.1 | **Last Updated**: 2026-07-02
 >
 > Universal development standards and practices for Claude Code across all projects.
 
@@ -203,6 +203,11 @@ no value to their task.
 - **Containers**: prefer hardened base images via the GHCR mirror
   (`ghcr.io/byronwilliamscpa/dhi-*`, `distroless-*`) over standard Docker Hub
   images; no credentials needed to pull
+- **Frontend/UI work**: fixed sequence, brainstorm intent, then build real
+  components in code (`frontend-designer` agent), then verify interactions
+  (`ui-testing-agent` + Playwright), then formalize into a design system
+  (`/design-sync`). Design-system tooling is a mid-pipeline sync step, never
+  the first step in a UI repo; do not reach for it before real components exist.
 
 > Canonical package choices: see `.claude/standards/packages.md`
 >
@@ -213,6 +218,8 @@ no value to their task.
 > Snyk MCP Server (on-demand, Tier 2): one-time setup and invocation rules: see `.claude/standards/snyk-mcp-setup.md`
 >
 > Claude Design MCP Server (per-UI-repo, local scope): setup, OAuth grant, and DesignSync usage: see `.claude/standards/claude-design-setup.md`
+>
+> Frontend/UI work sequencing (build before sync) and design-system tooling: see `.claude/rules/design.md`
 >
 > Supervisor patterns and agent assignment: see `.claude/rules/supervisor.md`
 >

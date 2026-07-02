@@ -15,7 +15,7 @@ Two complementary tools support UI work. They are not interchangeable.
 
 | Tool | What it is | Use it to |
 |------|-----------|-----------|
-| Claude Design MCP (`DesignSync`) | Moves component/token files between repo and a claude.ai design-system project | Pull a design system into the repo so new work starts from real components; push finished components back to the canvas |
+| Claude Design MCP (`DesignSync`) | Moves component/token files between repo and a claude.ai design-system project | Pull an existing design system's components/tokens into the repo to work from real values; push newly-verified components back to the canvas |
 | Playwright MCP (`playwright.*`) | Drives a live browser from the agent | Navigate, click, screenshot, and reproduce UI behavior during review |
 | `@playwright/test` (project dev dep) | The repo's committed e2e test runner | The actual e2e suite that runs in CI (e.g. `frontend/e2e/`) |
 
@@ -26,16 +26,38 @@ browser and confirm behavior, then write the assertion into the project's
 
 ## When to sync design
 
-- Run `/design-sync` at the start of UI work so components and design tokens
-  (color values, type scale, spacing) come from the real design system rather
-  than being re-described each session. Tokens that live next to the components
+**`/design-sync` is a mid-pipeline formalize-and-sync step, not a bootstrapping
+tool.** It needs a real, buildable component library to convert (a built
+`dist/`, discoverable exports); it is not where a UI repo's frontend work
+starts. For a repo with no components yet, build the first real ones in code
+first (the `frontend-designer` agent, informed by the `brainstorming` skill's
+product/UX intent, verified with `ui-testing-agent` + Playwright), then run
+`/design-sync` once there is something substantive to formalize. See
+`standards/claude-design-setup.md` for the confirmed non-Storybook conversion
+gotchas.
+
+- Once a design system exists, run `/design-sync` at the start of a UI work
+  **session** (not the start of the project) so components and design tokens
+  (color values, type scale, spacing) come from the real system rather than
+  being re-described each session. Tokens that live next to the components
   stop the brand-rule drift that recurs even when rules are written into
   CLAUDE.md.
+- `/design-sync` is also **how a design system gets created** the first time,
+  once real components exist: run it after "Design systems -> Set up design
+  system -> Create using Claude Code" on claude.ai/design has provisioned the
+  (empty) project. Do not reach for `DesignSync.create_project` for this; that
+  creates an unrelated Projects-tab object, not a design system. See
+  `standards/claude-design-setup.md`.
 - Sync **incrementally, one component at a time**, against a structural diff.
   Never mass-replace a design-system project.
 - `/design-sync` writes the token data into the project repo itself
   (`DESIGN.md` or `design-tokens.json` next to the components), not into the
   global config repo.
+
+`/design-sync` has two distinct trigger moments, not one: pull tokens/components
+once at the start of a UI work session (above), and push after `ui-testing-agent`
+validates a component change (see its "Design System Follow-up" section). Both
+are user-gated, neither is automatic; a session can hit both moments.
 
 ## Verify output against real tokens
 
