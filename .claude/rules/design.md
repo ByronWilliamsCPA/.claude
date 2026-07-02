@@ -15,7 +15,7 @@ Two complementary tools support UI work. They are not interchangeable.
 
 | Tool | What it is | Use it to |
 |------|-----------|-----------|
-| Claude Design MCP (`DesignSync`) | Moves component/token files between repo and a claude.ai design-system project | Pull a design system into the repo so new work starts from real components; push finished components back to the canvas |
+| Claude Design MCP (`DesignSync`) | Moves component/token files between repo and a claude.ai design-system project | Pull an existing design system's components/tokens into the repo to work from real values; push newly-verified components back to the canvas |
 | Playwright MCP (`playwright.*`) | Drives a live browser from the agent | Navigate, click, screenshot, and reproduce UI behavior during review |
 | `@playwright/test` (project dev dep) | The repo's committed e2e test runner | The actual e2e suite that runs in CI (e.g. `frontend/e2e/`) |
 
@@ -53,6 +53,11 @@ gotchas.
 - `/design-sync` writes the token data into the project repo itself
   (`DESIGN.md` or `design-tokens.json` next to the components), not into the
   global config repo.
+
+`/design-sync` has two distinct trigger moments, not one: pull tokens/components
+once at the start of a UI work session (above), and push after `ui-testing-agent`
+validates a component change (see its "Design System Follow-up" section). Both
+are user-gated, neither is automatic; a session can hit both moments.
 
 ## Verify output against real tokens
 

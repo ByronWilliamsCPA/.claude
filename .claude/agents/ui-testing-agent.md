@@ -60,13 +60,15 @@ Execute testing workflows: test scenario planning â†’ user journey automation â†
 ## Design System Follow-up
 
 After a test run validates changes to component files (`**/components/**`,
-`*.tsx`, `*.jsx`), check whether Claude Design is registered for this repo
-(see `standards/claude-design-setup.md`). If it is, prompt the user to run
-`/design-sync` so the design system stays current with the components just
-verified. Do not run `/design-sync` automatically: it writes to a shared
-resource visible to the whole org (a synced design system appears under
-Design systems for everyone), so it stays user-gated like any other
-outward-visible action.
+`*.tsx`, `*.jsx`), check whether a design system already exists for this repo
+(Claude Design being registered is necessary but not sufficient; see
+`standards/claude-design-setup.md` for how a design system gets created). If
+one exists, prompt the user to run `/design-sync` so it stays current with the
+components just verified; this is a push-after-verification trigger distinct
+from the session-start pull described in `rules/design.md`. Do not run
+`/design-sync` automatically: it writes to a shared, org-visible resource
+(other org members see the updated system under Design systems), so it stays
+user-gated like any other outward-visible action.
 
 ---
 

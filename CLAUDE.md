@@ -1,6 +1,6 @@
 # Global Claude Development Standards
 
-> **Status**: Active | Core Standard | **Version**: 1.5.0 | **Last Updated**: 2026-06-09
+> **Status**: Active | Core Standard | **Version**: 1.5.1 | **Last Updated**: 2026-07-02
 >
 > Universal development standards and practices for Claude Code across all projects.
 

@@ -70,13 +70,23 @@ repeated once per repo (local scope does not share grants across project paths).
 
 claude.ai/design has two distinct top-level resource types, shown as separate
 tabs: **Projects** (Prototype, Slides, Document, Wireframe, Animation, or a
-blank project) and **Design systems**. `DesignSync.create_project`,
-`list_projects`, and `get_project` operate on **Projects tab** objects only,
-and `create_project` always produces `type: PROJECT_TYPE_PROJECT`; confirmed
-live against a CYO Adventure attempt. There is no project-creation type picker
-in the web UI, and no `DesignSync` method sets or converts a project to
-`type: PROJECT_TYPE_DESIGN_SYSTEM`. Do not use `create_project` for a
+blank project) and **Design systems**. `create_project` operates on
+**Projects tab** objects only and always produces `type: PROJECT_TYPE_PROJECT`;
+confirmed live against a CYO Adventure attempt. There is no project-creation
+type picker in the web UI, and no `DesignSync` method converts an existing
+project's type after creation. Do not use `create_project` for a
 design-system target; it is the wrong tool for that object type entirely.
+(`get_project` and `list_projects` are unaffected by this restriction: both
+"Verify the registration" below and the observed sequence further down use
+`get_project` to confirm `type: PROJECT_TYPE_DESIGN_SYSTEM`.)
+
+Note: the `DesignSync` tool's own schema description (as of this writing)
+characterizes `create_project` differently, as capable of creating "a new
+design-system project." That description conflicts with the single observed
+CYO Adventure run this section documents. Treat the observed behavior below
+as current pending re-verification: if `create_project` ever behaves
+inconsistently with it, re-check the live tool schema and re-run the test
+before trusting either source.
 
 **Design systems are created through a separate flow**: claude.ai/design ->
 Design systems tab -> "Set up design system" opens an "Add a design system"
@@ -84,22 +94,24 @@ dialog with two creation paths:
 
 - **Create here**: connect a Figma or GitHub source, or upload slides/assets.
 - **Create using Claude Code** (labeled Best Fidelity for React components):
-  the mechanism is running `/design-sync` from an interactive Claude Code
-  session inside the design-system package's own repo:
+  clicking this provisions an empty design-system project on claude.ai; the
+  sync mechanism itself is then running `/design-sync` from an interactive
+  Claude Code session inside the design-system package's own repo:
 
   ```bash
-  cd path/to/your-design-system   # e.g. CYO_Adventure/frontend
+  cd path/to/your-design-system   # e.g. cyo-adventure/frontend
   claude
   ```
-  ```
+
+  ```text
   /design-sync
   ```
 
-  This single command **both creates a new design system, if none exists yet
-  for that repo, and updates an existing one on later runs.** There is no
-  manual pre-creation step, no project ID to copy, and no binding step; the
-  dialog's own text is explicit: "Your system already lives in code, so
-  there's nothing to set up here." When it finishes, the system appears under
+  The web-UI click is the one-time pre-creation step; there is no project ID
+  to copy and no binding step beyond it (the dialog's own text is explicit:
+  "Your system already lives in code, so there's nothing to set up here.").
+  `/design-sync` is what populates the empty project on its first run and
+  updates it on every later run. When it finishes, the system appears under
   Design systems for the whole org.
 
 For a code-based design system (React/Vite repos like cyo-adventure and
@@ -108,9 +120,11 @@ from Claude Code. Do not call `DesignSync.create_project`, and do not use the
 Figma/GitHub connector path, that's for systems sourced outside the repo.
 
 If an agent already called `create_project` and produced a stray
-`PROJECT_TYPE_PROJECT` object before this was understood, it is an orphan under
-the Projects tab, unrelated to the Design systems flow. Delete it; it has no
-bearing on running `/design-sync`.
+`PROJECT_TYPE_PROJECT` object before this was understood, it is an orphan
+under the Projects tab, unrelated to the Design systems flow, and has no
+bearing on running `/design-sync`. Confirm with the user before deleting it;
+this is an outward-visible cleanup action like any other, not something to
+apply automatically.
 
 ## Verify the registration
 
@@ -137,7 +151,7 @@ outside the plan, is rejected.
 | Phase | Methods | Permission |
 |-------|---------|------------|
 | Read | `list_projects`, `get_project`, `list_files`, `get_file` | First call may prompt to add design-system access; none after |
-| Create | `create_project` | Prompts |
+| Create | `create_project` | Prompts; Projects-tab only, not for design systems (see above) |
 | Plan boundary | `finalize_plan` (locks exact write/delete paths + source dir, returns `planId`) | Prompts; user reviews the path list independent of agent narration |
 | Write | `write_files`, `delete_files`, `register_assets`, `unregister_assets`, `report_validate` | Require a finalized `planId` |
 
