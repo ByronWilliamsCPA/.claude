@@ -360,7 +360,9 @@ persuasion, comprehension, and accessibility.
 
 **[diagram-maintenance-agent](/.claude/agents/diagram-maintenance-agent.md)**
 PlantUML diagram maintenance specialist for architecture documentation, source traceability,
-consistency enforcement, and AI visual generation across any project.
+consistency enforcement, and AI visual generation across any project. Also authors "thread
+timeline" plan-status HTML artifacts from phased project plans (spec:
+`.claude/standards/plan-status-artifact.md`).
 
 **[diagram-specialist](/.claude/agents/diagram-specialist.md)**
 Specialized agent for creating and validating technical diagrams (PlantUML, Mermaid) for network
@@ -612,8 +614,9 @@ Activates on: "build UI", "create component", "design page".
 
 **[/diagram-maintenance](/.claude/skills/diagram-maintenance/SKILL.md)**
 Maintains PlantUML architecture diagrams, ensures traceability with source files, manages SVG
-generation, and enforces consistency across diagram hierarchies. Activates on: "update diagram",
-"PUML", "diagram audit".
+generation, and enforces consistency across diagram hierarchies. Also produces plan-status
+HTML artifacts from phased project plans. Activates on: "update diagram", "PUML",
+"diagram audit", "plan status", "project status visual".
 
 ### Code Review & Quality Gates
 

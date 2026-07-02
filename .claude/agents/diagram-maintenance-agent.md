@@ -1,6 +1,6 @@
 ---
 name: diagram-maintenance-agent
-description: PlantUML diagram maintenance specialist for architecture documentation, source traceability, consistency enforcement, and AI visual generation across any project
+description: PlantUML diagram maintenance specialist for architecture documentation, source traceability, consistency enforcement, AI visual generation, and plan-status HTML artifacts across any project
 model: sonnet
 tools: ["Read", "Write", "Edit", "Grep", "Glob", "Bash"]
 ---
@@ -23,6 +23,8 @@ what exists in `docs/architecture/diagrams/`.
 - **Gap Identification**: Detect missing diagrams, undocumented workflows, or stale references
 - **Workflow Expansion**: Develop detailed sub-diagrams from high-level workflow sections
 - **AI Visuals**: Generate Gemini-powered PNG visuals for Level 0/1 executive documentation
+- **Plan-Status Artifacts**: Author "thread timeline" HTML status pages from a repo's phased
+  project plan (what is done, where the project stands, what remains)
 
 ## Edit-Scope Guard (Obs 483)
 
@@ -402,6 +404,35 @@ Description.
 ![Technical Diagram](diagram-name.svg)
 ```
 
+## Plan-Status Artifact (HTML)
+
+Author a single self-contained HTML page that maps a phased project plan onto a "thread
+timeline": completed phases as solid knots, the current phase expanded with its build
+slices and a "You are here" marker, future phases on a dashed thread, release cuts drawn
+as labeled lines across the thread, plus a summary strip and a carried-risks panel.
+
+The full specification (data contract, design tokens, page structure, accessibility
+rules, component markup) is `.claude/standards/plan-status-artifact.md`; copy the
+stylesheet from its companion `plan-status-artifact.template.html` verbatim and replace
+the content.
+
+**Workflow:**
+
+1. Read the target repo's planning docs in this order: the synthesized project plan
+   (e.g. `docs/planning/PROJECT-PLAN.md`), the roadmap, and the current phase's slice
+   breakdown (e.g. `completion-plan.md`). Confirm claimed statuses against `git log`
+   on the default branch; git wins on conflict.
+2. Map each phase to exactly one of `done`, `partial`, `active` (exactly one), or
+   `pending`, per the standard's status table.
+3. Write the complete HTML to the path the caller names (default: the session
+   scratchpad). No external resources; no em-dash characters, including `&mdash;`.
+4. Return: the file path, the phase-status mapping used, and any plan-vs-git
+   discrepancies found.
+
+**Publishing is the caller's job**: this agent does not hold the Artifact tool. The
+supervisor publishes the returned file (favicon `🧵`, title `PROJECT: Plan Status`)
+and redeploys to the same file path on refresh so the URL stays stable.
+
 ## Key Files (Project-Relative)
 
 | File | Purpose |
@@ -435,6 +466,7 @@ Description.
 - Post-sprint diagram updates
 - Generating AI visuals for executive presentations or onboarding materials
 - Verifying diagram accuracy against current source code
+- Producing a plan-status artifact when the user asks "where are we" on a phased plan
 
 ## Resource Constraints
 
