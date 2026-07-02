@@ -686,7 +686,8 @@ Activates on: "build UI", "create component", "design page".
 ### Document Tools
 
 `docx`, `pdf`, `pptx`, and `xlsx` are vendored from `.submodules/anthropics-skills` (see
-"Local vs. vendored entries" above); each has a local `-extras` sibling carrying only the delta.
+"Local vs. vendored entries" above). `docx` and `xlsx` are vendored with no local delta; `pdf`
+and `pptx` each have a local `-extras` sibling carrying only the delta.
 
 **[pdf-extras](/.claude/skills/pdf-extras/SKILL.md)**
 Local delta on top of the vendored `pdf` skill. Adds an environment sanity gate to run before
