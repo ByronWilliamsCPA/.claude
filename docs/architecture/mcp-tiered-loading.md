@@ -50,7 +50,6 @@ Example agent bundles:
 | --- | --- |
 | `security-auditor` | `zen.secaudit`, `sentry.*`, `github.code_security`, `postgres.analyze_db_health` |
 | `code-reviewer` | `zen.precommit`, `zen.challenge`, `github.pull_requests` |
-| `test-engineer` | `zen.testgen`, `playwright.*` |
 | `database-operations-agent` | `postgres.*` |
 | `/git pr` skill | `zen.codereview`, `github.pull_requests`, `github.issues`, `sentry.list_releases` |
 | `/project-planning` skill | `zen.planner`, `zen.tiered_consensus`, `mermaid.*` |

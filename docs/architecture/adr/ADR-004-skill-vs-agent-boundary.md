@@ -56,7 +56,7 @@ Use this table to classify any new capability:
 In plain English:
 
 - **Skills** are automations. They are fast, deterministic, and triggered by user intent signals (keywords, `/commands`). Examples: `/commit`, `/quality`, `/git pr`.
-- **Agents** are specialists. They work in isolation with a narrowly scoped tool set. The main conversation delegates to them; they report back. Examples: `code-reviewer`, `security-auditor`, `test-engineer`.
+- **Agents** are specialists. They work in isolation with a narrowly scoped tool set. The main conversation delegates to them; they report back. Examples: `code-reviewer`, `security-auditor`, `test-writer`.
 - **Rules** are behavioral constraints. They must be active from turn one. Examples: `python.md` (linting standards), `git-workflow.md` (branch naming), `supervisor.md` (agent assignment patterns).
 - **Standards** are reference libraries. Nothing loads them automatically; they are read when a specific task requires them. Examples: `packages.md` (canonical package choices), `writing-quality.md` (quality thresholds).
 

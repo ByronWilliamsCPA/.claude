@@ -276,5 +276,5 @@ def test_process_with_config_variant_produces_output(tmp_path, config):
 
 ---
 
-*Nested workflow within testing skill. For comprehensive E2E strategy and test-engineer
-delegation, use the `test-engineer` agent via the Agent tool (`subagent_type="test-engineer"`).*
+*Nested workflow within testing skill. For comprehensive E2E strategy, see the
+testing skill's Strategy section (`SKILL.md`).*

@@ -95,8 +95,8 @@ When invoked with `enforce` or as part of a hook:
 
 When invoked with `security` or `security <path>`:
 
-1. Run the OWASP dispatcher (owasp-dispatch agent) to detect
-   applicable Top 10 lists based on codebase signals
+1. Run the `/owasp-audit` command to detect applicable Top 10 lists
+   based on codebase signals
 2. For each applicable specialist, run review-code mode
 3. For each applicable specialist, run review-tests mode
 4. For CRITICAL/HIGH findings without test coverage, run generate mode

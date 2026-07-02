@@ -125,9 +125,7 @@ Loaded automatically when specific agents are invoked:
 |-------|------------------|
 | security-auditor | `sentry.*`, `github.code_security`, `postgres.analyze_db_health`, `snyk-mcp.snyk_sca_scan`, `snyk-mcp.snyk_code_scan` |
 | code-reviewer | `github.pull_requests` |
-| test-engineer | `playwright.*` |
 | test-writer | (frozen zen server; use /panel) |
-| owasp-dispatch | (frozen zen server; use /panel) |
 | documentation-writer | `mermaid.*`, `uml-mcp-server.*` |
 | database-operations-agent | `postgres.*` |
 | devops-deployment-agent | `docker.*`, `github.actions`, `sentry.*` |

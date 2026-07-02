@@ -1,1 +1,0 @@
-../../.submodules/anthropics-plugins/plugins/pr-review-toolkit/agents/code-reviewer.md

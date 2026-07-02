@@ -232,4 +232,4 @@ def test_performance_scenario(benchmark):
 ---
 
 *Nested workflow within testing skill. For profiling and optimization strategy,
-use the `test-engineer` agent via the Agent tool (`subagent_type="test-engineer"`).*
+see the testing skill's Strategy section (`SKILL.md`).*

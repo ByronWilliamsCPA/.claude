@@ -36,7 +36,6 @@ This page summarizes the MCP tool loading strategy. The authoritative definition
 | --- | --- |
 | `security-auditor` | `zen.secaudit`, `sentry.*`, `github.code_security`, `postgres.analyze_db_health` |
 | `code-reviewer` | `zen.precommit`, `zen.challenge`, `github.pull_requests` |
-| `test-engineer` | `zen.testgen`, `playwright.*` |
 | `database-operations-agent` | `postgres.*` |
 | `devops-deployment-agent` | `docker.*`, `github.actions`, `sentry.*` |
 | `/git pr` skill | `zen.codereview`, `github.pull_requests`, `github.issues`, `sentry.list_releases` |

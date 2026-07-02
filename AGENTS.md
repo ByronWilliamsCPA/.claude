@@ -38,7 +38,6 @@ belongs outside this block.
 
 | Agent | Purpose |
 | --- | --- |
-| `test-engineer` | Broad test generation and review for unit, integration, property-based, and mutation testing |
 | `test-writer` | Coverage-driven iterative test generation with run-fix loop until targets are met |
 | `test-reviewer` | Validates test quality; returns APPROVE or NEEDS_WORK with specific feedback |
 | `ui-testing-agent` | Playwright end-to-end UI testing, accessibility (WCAG 2.1 AA), visual regression |
@@ -48,7 +47,6 @@ belongs outside this block.
 | Agent | Purpose |
 | --- | --- |
 | `security-auditor` | OWASP scanning, dependency audit, secrets detection, auth review |
-| `owasp-dispatch` | Routes to the correct OWASP specialist based on target type |
 | `owasp-web` | OWASP Top 10 for web applications |
 | `owasp-api` | OWASP API Security Top 10 |
 | `owasp-llm` | OWASP LLM Top 10 for AI-powered applications |

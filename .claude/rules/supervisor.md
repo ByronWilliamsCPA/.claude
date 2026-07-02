@@ -21,11 +21,11 @@ Claude Code acts as SUPERVISOR for all development tasks.
 | Code reviews | code-reviewer agent (frozen zen server; use /panel) | Agent |
 | Requesting a structured review | `requesting-code-review` skill | Skill |
 | Responding to review feedback | `receiving-code-review` skill | Skill |
-| Testing | test-engineer agent (frozen zen server; use /panel) | Agent |
+| Testing | test-writer agent (generation) + test-reviewer agent (validation); strategy and Codecov audit guidance live in the `testing` skill | Agent + Skill |
 | Test generation | test-writer agent | Agent |
 | Test review | test-reviewer agent | Agent |
 | Coverage analysis | `/test-coverage` skill | Skill |
-| OWASP security | owasp-dispatch agent | Agent |
+| OWASP security | `/owasp-audit` command | Command |
 | Documentation | documentation-writer agent (frozen zen server; use /panel) | Agent |
 | AI content detection / scoring | ai-detection-agent | Agent |
 | Writing pipeline detection audit | ai-detection-agent | Agent |
@@ -190,9 +190,9 @@ the output before proceeding (e.g., `/commit`, `/quality`, `/git pr`).
 
 | Layer | Role | Example |
 | ----- | ---- | ------- |
-| **Command** | User interaction point; receives intent, dispatches | `/rad-verify-pipeline` |
+| **Command** | User interaction point; receives intent, dispatches | `/owasp-audit` |
 | **Agent** | Domain specialist; preloaded context + tool restrictions | security-auditor |
-| **Skill** | Stateless output generator; called once per invocation | owasp-dispatch |
+| **Skill** | Stateless output generator; called once per invocation | `/quality` |
 
 Commands invoke agents; agents invoke skills. Skills do not invoke agents. See
 [ADR-004](../../docs/architecture/adr/ADR-004-skill-vs-agent-boundary.md) for the
@@ -201,7 +201,7 @@ full classification rubric.
 ### Current adoption status (2026-04-11)
 
 Pattern B is used exclusively. Pattern A is recommended as a pilot for the two
-highest-invocation agents (security-auditor + owasp-dispatch) before wider adoption.
+highest-invocation agents (security-auditor + owasp-web) before wider adoption.
 Mass `skills:` frontmatter edits are deferred.
 
 Source: Thariq on skills, Mar 17 2026: <https://x.com/trq212/status/2033949937936085378>

@@ -47,9 +47,9 @@ basedpyright src
 pytest -v --cov --cov-report=term-missing
 ```
 
-**Security scan**: delegate to the `owasp-dispatch` agent: "Run security review for this project. Detect applicable OWASP domains and route to specialist agents. Return a unified findings table with severity and gate recommendation (PASS/FAIL)."
+**Security scan**: delegate to the `/owasp-audit` command: "Run security review for this project. Detect applicable OWASP domains and route to specialist agents. Return a unified findings table with severity and gate recommendation (PASS/FAIL)."
 
-If `owasp-dispatch` is not available, fall back to:
+If `/owasp-audit` is not available, fall back to:
 
 ```bash
 bandit -r src/ -c pyproject.toml

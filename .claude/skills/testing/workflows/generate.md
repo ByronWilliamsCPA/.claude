@@ -255,7 +255,8 @@ def test_validate_email_never_raises_on_string_input(s):
 ## Agent Delegation
 
 For complex test generation requiring comprehensive strategy across multiple modules,
-use the `test-writer` agent (or `test-engineer` for multi-tier architecture planning):
+use the `test-writer` agent (see the testing skill's Strategy section for multi-tier
+architecture planning guidance):
 
 ```yaml
 Task: Generate tests for [module]

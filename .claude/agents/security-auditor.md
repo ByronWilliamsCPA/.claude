@@ -86,7 +86,7 @@ gitleaks detect --source .
 ## OWASP Specialist Delegation
 
 For deep domain-specific security analysis, delegate to OWASP specialist agents
-via the `owasp-dispatch` agent, which routes to the correct specialists based on
+via the `/owasp-audit` command, which routes to the correct specialists based on
 codebase signals:
 
 - **owasp-web** — Web Applications Top 10 (2025): A01-A10
@@ -96,8 +96,9 @@ codebase signals:
 - **owasp-ml** — ML Security Top 10 (v0.3): ML01-ML10
 - **owasp-citizen** — Citizen Developer Top 10 (2025): CD01-CD10
 
-Use `owasp-dispatch` for comprehensive OWASP coverage. This agent handles general
-security auditing (SAST, dependency scanning, secret detection, compliance).
+Use `/owasp-audit` for comprehensive OWASP coverage; this agent (security-auditor)
+still handles general security auditing directly (SAST, dependency scanning,
+secret detection, compliance).
 
 ## OWASP Top 10 Web (2025) Quick Reference
 

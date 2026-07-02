@@ -86,7 +86,7 @@ TIMESTAMP,ACTION,REASON,FILE_PATH
 #### Agents Affected by TDD Enforcement
 - **database-operations-agent**: Schema changes require migration tests
 - **api-development-agent**: Endpoints require contract tests
-- **test-engineer**: Can freely create test files (exempt)
+- **test-writer**: Can freely create test files (exempt)
 - **security-auditor**: Security fixes require security tests
 
 #### Agents Exempt from TDD Enforcement

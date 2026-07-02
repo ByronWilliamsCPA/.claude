@@ -88,7 +88,7 @@ agents/
 ├── README.md                 # 🎯 Agent overview and usage
 ├── security-auditor.md       # 🎯 Security analysis specialist
 ├── code-reviewer.md          # 🎯 Code quality and standards
-├── test-engineer.md          # 🎯 Testing and coverage specialist
+├── test-writer.md            # 🎯 Testing and coverage specialist
 ├── api-development-agent.md  # 🎯 API development specialist
 └── [25+ other agents]        # 🎯 Specialized domain experts
 ```
@@ -100,7 +100,7 @@ agents/
 
 **Agent Naming Convention:**
 - Domain-based: `{domain}-{role}.md` (e.g., `security-auditor.md`)
-- Function-based: `{function}-agent.md` (e.g., `test-engineer.md`)
+- Function-based: `{function}-agent.md` (e.g., `api-development-agent.md`)
 
 ---
 

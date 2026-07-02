@@ -29,7 +29,6 @@ All agent files live in `.claude/agents/` (symlinked to `~/.claude/agents/`). Th
 
 | Agent (`subagent_type`) | File | Purpose |
 | --- | --- | --- |
-| `test-engineer` | `test-engineer.md` | Test strategy, generation, and quality assurance targeting 80%+ coverage |
 | `test-writer` | `test-writer.md` | Coverage-driven iterative test generation with run-fix loop for pytest |
 | `test-reviewer` | `test-reviewer.md` | Senior test quality review with OWASP and ISO 25010 coverage |
 | `pr-test-analyzer` | `pr-test-analyzer.md` | Reviews pull request test coverage quality and completeness |
@@ -40,7 +39,6 @@ All agent files live in `.claude/agents/` (symlinked to `~/.claude/agents/`). Th
 | Agent (`subagent_type`) | File | Purpose |
 | --- | --- | --- |
 | `security-auditor` | `security-auditor.md` | Vulnerability detection, threat assessment, and compliance validation |
-| `owasp-dispatch` | `owasp-dispatch.md` | Routes security testing to the correct OWASP specialist based on project type |
 | `owasp-web` | `owasp-web.md` | OWASP Top 10 for Web Applications (2025): reviews A01–A10 vulnerabilities |
 | `owasp-api` | `owasp-api.md` | OWASP API Security Top 10 (2023): REST, GraphQL, gRPC, WebSocket |
 | `owasp-llm` | `owasp-llm.md` | OWASP Top 10 for LLM Applications (2025): LLM01–LLM10 |

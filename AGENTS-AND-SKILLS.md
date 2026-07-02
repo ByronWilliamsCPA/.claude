@@ -6,7 +6,7 @@ reaches those directories through symlinks.
 
 ## Local vs. vendored entries
 
-14 agents, 19 skills, and 7 commands are symlinks into `.submodules/` (reference-library,
+13 agents, 19 skills, and 7 commands are symlinks into `.submodules/` (reference-library,
 superpowers, anthropics-skills, anthropics-plugins, image-generation, jeffallan-claude-skills).
 They include the entire writing pipeline (the seven reference-library agents: document-drafter,
 grammar-composition-editor, document-validator, writing-style-editor, style-analyzer, tone-rewriter,
@@ -57,14 +57,11 @@ preserve existing behavior.
 
 ### PR Review Toolkit (vendored)
 
-Six specialists from the `pr-review-toolkit` plugin, dispatched by `/pr-review`. They are symlinks
+Five specialists from the `pr-review-toolkit` plugin, dispatched by `/pr-review`. They are symlinks
 into `.submodules/anthropics-plugins/`, so they require submodule init to load (see the Local vs.
-vendored note above). The catalog symlink `pr-toolkit-code-reviewer` points at the plugin's
-`code-reviewer.md` to avoid colliding with the local `code-reviewer` agent.
-
-**[pr-toolkit-code-reviewer](/.claude/agents/pr-toolkit-code-reviewer.md)**
-Reviews recently changed code (typically the unstaged `git diff`) for adherence to project guidelines,
-style guides, and CLAUDE.md patterns. Flags style violations and potential issues before commit or PR.
+vendored note above). Code review itself stays with the local `code-reviewer` agent (Code Quality
+& Review, above); the plugin's own `code-reviewer.md` twin (formerly cataloged here as
+`pr-toolkit-code-reviewer`) was retired as a duplicate reviewer with no distinct role.
 
 **[code-simplifier](/.claude/agents/code-simplifier.md)**
 Simplifies recently modified code for clarity, consistency, and maintainability while preserving all
@@ -88,10 +85,6 @@ quantitative ratings on encapsulation, invariant expression, usefulness, and enf
 
 ### Testing
 
-**[test-engineer](/.claude/agents/test-engineer.md)**
-Generates and reviews tests for Python projects. Handles unit, integration, property-based, and
-mutation testing using pytest. Use for broad test generation and review tasks.
-
 **[test-writer](/.claude/agents/test-writer.md)**
 Coverage-driven iterative test generation. Runs coverage measurement, identifies uncovered functions
 ranked by criticality, writes tests, and loops until targets are met.
@@ -111,10 +104,6 @@ Core Web Vitals.
 Performs comprehensive security analysis including OWASP scanning, dependency vulnerability
 assessment, secrets detection, and authentication/authorization review. Returns findings with
 severity and remediation steps.
-
-**[owasp-dispatch](/.claude/agents/owasp-dispatch.md)**
-Routes security testing requests to one of six OWASP specialist agents based on the target type
-(web app, API, LLM application, ML pipeline, citizen development, or agentic AI).
 
 **[owasp-web](/.claude/agents/owasp-web.md)**
 OWASP Top 10 specialist for web application security testing. Focuses on injection, broken auth,
@@ -478,7 +467,9 @@ pre-commit hook", "audit pre-commit", "fix pre-commit hook", "hook false positiv
 
 **[/testing](/.claude/skills/testing/SKILL.md)**
 Test generation, review, and execution for pytest projects. Covers unit, integration, e2e, security,
-and performance testing patterns. Activates on: "run tests", "test suite", "write tests".
+and performance testing patterns, plus a Strategy section for test-plan design, coverage targets,
+and Codecov configuration audit (absorbed from the retired test-engineer agent). Activates on:
+"run tests", "test suite", "write tests".
 
 **[/test-coverage](/.claude/skills/test-coverage/SKILL.md)**
 Analyzes coverage gaps, generates missing tests ranked by criticality, and enforces coverage
@@ -504,6 +495,13 @@ dependency drift, and test isolation before modifying assertions or application 
 **[/security](/.claude/skills/security/SKILL.md)**
 Security validation including GPG/SSH key checks, bandit static analysis, safety dependency
 scanning, and environment variable validation. Activates on: "security check", "scan", "security".
+
+**[/owasp-audit](/.claude/commands/owasp-audit.md)**
+Detects project type (web, API, LLM, ML, agentic, citizen-development) and dispatches the matching
+`owasp-*` specialist agents via the Agent tool, then aggregates their findings into a unified
+security report sorted by severity. Command-layer replacement for the retired `owasp-dispatch`
+agent (dispatch and aggregation are orchestration, not a specialist role). Activates on: "owasp
+audit", "run owasp scan", "security testing dispatch".
 
 ### Planning & Documentation
 

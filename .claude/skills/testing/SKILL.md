@@ -91,6 +91,63 @@ uv run pytest --hypothesis-show-statistics
 - **Patch Coverage**: 90% minimum (new/changed code)
 - **Coverage Report**: HTML and terminal output
 
+## Strategy
+
+Guidance absorbed from the retired `test-engineer` agent: test-plan design,
+coverage targets, and the Codecov configuration audit. Mechanics (naming,
+parametrize, fixtures, execution) live in the Workflows and Commands
+sections above; this section covers what to test and how to validate the
+project's coverage tooling.
+
+### Test Planning
+
+- Design test plans and strategies before writing test code: identify
+  critical paths first, then fill in supporting coverage.
+- Balance unit, integration, and e2e tests; do not default to unit tests
+  alone when a change crosses component boundaries.
+- Define coverage targets and metrics per component before generation
+  starts (see Coverage Standards above for the organizational floor).
+
+### Test Quality Criteria
+
+- Tests are deterministic (no flaky tests).
+- Tests are isolated (no shared state between tests).
+- Tests are fast (under 1s for unit tests).
+- Tests are readable (clear arrange-act-assert).
+
+### Test Automation
+
+- Configure CI/CD test pipelines and parallel test execution.
+- Implement test reporting and coverage collection in CI.
+
+### Security Test Coverage
+
+Route security test coverage to the `/owasp-audit` command, which
+dispatches the `owasp-*` specialist agents and aggregates their findings.
+It replaces the retired `owasp-dispatch` agent.
+
+### Codecov Configuration Audit
+
+Audit `codecov.yaml` against Testing Standards Section 16 whenever
+reviewing or setting up a project's test infrastructure:
+
+1. **Check flag coverage**: each `tests/<type>/` directory should have a
+   matching flag in `codecov.yaml` with its own status check target.
+2. **Check component coverage**: each `src/<module>/` should have a
+   component with `statuses` enforcing the graduated thresholds above.
+3. **Check CI integration**: workflow files should upload with `-F <flag>`
+   per test type and include `test-results-action@v5` for Test Analytics.
+4. **Check target alignment**: verify patch=90%, critical=90%, default=80%
+   match organizational standards.
+5. **Report gaps**: flag missing flags, components without targets, and
+   absent Test Analytics upload as findings.
+
+Validate the configuration directly:
+
+```bash
+curl --data-binary @codecov.yaml https://codecov.io/validate
+```
+
 ## Advanced Workflows
 
 For automated coverage gap analysis, test generation, and enforcement,
