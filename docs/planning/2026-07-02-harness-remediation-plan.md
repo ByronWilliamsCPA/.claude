@@ -575,8 +575,13 @@ In `hooks.json`, replace each command that contains
 form. For the hookify pretooluse entry the new command is:
 
 ```text
-bash -c '[ -f "$HOME/.claude/plugin-hooks/hookify/hooks/pretooluse.py" ] && CLAUDE_PLUGIN_ROOT="$HOME/.claude/plugin-hooks/hookify" python3 "$HOME/.claude/plugin-hooks/hookify/hooks/pretooluse.py" || echo "[hookify] skipped: plugin hooks not installed" >&2'
+bash -c 'if [ -f "$HOME/.claude/plugin-hooks/hookify/hooks/pretooluse.py" ]; then CLAUDE_PLUGIN_ROOT="$HOME/.claude/plugin-hooks/hookify" python3 "$HOME/.claude/plugin-hooks/hookify/hooks/pretooluse.py"; else echo "[hookify] skipped: plugin hooks not installed" >&2; fi'
 ```
+
+Use if/then/else, never `[ -f F ] && run F || echo skipped`: with the
+and/or chain, a plugin that exits nonzero (including a legitimate exit-2
+block) also triggers the `||` branch, so real blocks would be mislabeled
+"skipped" and lost. The if/else form propagates the plugin's exit code.
 
 Apply the same transformation to the hookify posttooluse, stop, and
 userpromptsubmit entries, and to the security-guidance entry

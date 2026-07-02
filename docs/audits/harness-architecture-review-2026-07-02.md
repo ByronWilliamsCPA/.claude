@@ -537,10 +537,12 @@ an existence check so an uninitialized submodule degrades to a logged
 warning instead of a per-tool-call python error:
 
 ```text
-command: bash -c '[ -f "$HOME/.claude/plugin-hooks/hookify/hooks/pretooluse.py" ] \
-  && CLAUDE_PLUGIN_ROOT="$HOME/.claude/plugin-hooks/hookify" \
-     python3 "$HOME/.claude/plugin-hooks/hookify/hooks/pretooluse.py" \
-  || echo "[hookify] skipped: submodule not initialized" >&2'
+command: bash -c 'if [ -f "$HOME/.claude/plugin-hooks/hookify/hooks/pretooluse.py" ]; then
+    CLAUDE_PLUGIN_ROOT="$HOME/.claude/plugin-hooks/hookify" \
+      python3 "$HOME/.claude/plugin-hooks/hookify/hooks/pretooluse.py"
+  else echo "[hookify] skipped: submodule not initialized" >&2; fi'
+# if/else, not [ -f ] && run || echo: the and/or chain would relabel a
+# plugin's legitimate nonzero exit (including an exit-2 block) as "skipped".
 ```
 
 Dead-reference kill list (every occurrence verified by the inventory agents):
