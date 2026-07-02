@@ -11,7 +11,7 @@ tags:
   - agents
   - skills
   - hooks
-  - audit
+  - quality
 ---
 
 # Harness Architecture Review: 2026-07-02
