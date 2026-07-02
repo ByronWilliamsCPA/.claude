@@ -20,7 +20,9 @@ git pull origin main
 git checkout -b feat/new-feature
 
 # Work on feature with regular commits
-git add .
+# Stage only the files you changed; never `git add -A` or `git add .`
+# (CLAUDE.md core rule: concurrent sessions share this working tree).
+git add <the specific files you changed>
 git commit -m "feat: add initial implementation"
 
 # Push and create PR
@@ -293,7 +295,7 @@ git pull origin main
 git checkout -b hotfix/critical-security-fix
 
 # Make minimal necessary changes
-git add .
+git add <the specific files you changed>
 git commit -m "fix: resolve critical security vulnerability"
 
 # Push and create urgent PR
