@@ -38,7 +38,7 @@ A single user message triggers the following hook sequence:
 
 ```text
 User sends message
-  → UserPromptSubmit (hooks.json, no matcher): hookify userpromptsubmit.py, then pr-review-reminder.py
+  → UserPromptSubmit (hooks.json, no matcher, existence-guarded): hookify userpromptsubmit.py, then pr-review-reminder.py
   → UserPromptSubmit (hooks.json, matcher .*): keyword-tool-trigger.sh
 
   Model processes, issues tool calls. The no-matcher hookify PreToolUse and
@@ -47,16 +47,16 @@ User sends message
 
     Bash calls:
       → PreToolUse (hooks.json, matcher Bash): bash-pre-hook.sh
-      → PreToolUse (hooks.json, no matcher): hookify pretooluse.py
+      → PreToolUse (hooks.json, no matcher, existence-guarded): hookify pretooluse.py
       → Tool executes
-      → PostToolUse (hooks.json, no matcher): hookify posttooluse.py
+      → PostToolUse (hooks.json, no matcher, existence-guarded): hookify posttooluse.py
       → PostToolUse (.claude/settings.json, matcher Bash): bash-notify.sh
 
     Write / Edit / MultiEdit calls:
       → PreToolUse (hooks.json, matcher Write|Edit|MultiEdit): tdd-enforcement-hook.sh
       → PreToolUse (hooks.json, matcher Edit|Write|MultiEdit): sensitive-file-guard.sh
       → PreToolUse (hooks.json, matcher Edit|Write|MultiEdit, existence-guarded): security_reminder_hook.py
-      → PreToolUse (hooks.json, no matcher): hookify pretooluse.py
+      → PreToolUse (hooks.json, no matcher, existence-guarded): hookify pretooluse.py
       → Tool executes
       → PostToolUse (hooks.json, matcher Edit|Write): py310-compat-check.sh
       → PostToolUse (hooks.json, matcher Edit|Write|MultiEdit): snyk-dep-reminder.sh
@@ -66,18 +66,18 @@ User sends message
 
     Skill calls:
       → PreToolUse (hooks.json, matcher Skill): planning-bridge-gate.sh
-      → PreToolUse (hooks.json, no matcher): hookify pretooluse.py
+      → PreToolUse (hooks.json, no matcher, existence-guarded): hookify pretooluse.py
       → Tool executes
       → PostToolUse (hooks.json, no matcher, existence-guarded): hookify posttooluse.py
 
     mcp__* calls:
-      → PreToolUse (hooks.json, no matcher): hookify pretooluse.py
+      → PreToolUse (hooks.json, no matcher, existence-guarded): hookify pretooluse.py
       → Tool executes
       → PostToolUse (hooks.json, matcher mcp__*): track-mcp-usage.sh
       → PostToolUse (hooks.json, no matcher, existence-guarded): hookify posttooluse.py
 
     Any other tool call:
-      → PreToolUse (hooks.json, no matcher): hookify pretooluse.py
+      → PreToolUse (hooks.json, no matcher, existence-guarded): hookify pretooluse.py
       → Tool executes
       → PostToolUse (hooks.json, no matcher, existence-guarded): hookify posttooluse.py
 
