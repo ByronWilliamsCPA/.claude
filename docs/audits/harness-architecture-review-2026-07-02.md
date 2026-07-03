@@ -568,13 +568,18 @@ scanner to bash-pre-hook.sh's per-segment loop:
 violates_sensitive_redirect() {
     local seg
     seg=$(unwrap_indirection "$1")
-    echo "$seg" | grep -qE '(>>?|tee[[:space:]]+(-a[[:space:]]+)?)[[:space:]]*[^[:space:]]*(\.env|\.aws/credentials|\.netrc|\.npmrc|\.pypirc|id_(rsa|dsa|ecdsa|ed25519)([^.]|$)|\.pem([[:space:]]|$))'
+    echo "$seg" | grep -qE '(>>?|tee[[:space:]]+(-a[[:space:]]+)?)[[:space:]]*[^[:space:]]*((\.env|\.netrc|\.npmrc|\.pypirc)(\.[^[:space:]]+)?([[:space:]]|$)|\.aws/credentials([[:space:]]|$)|id_(rsa|dsa|ecdsa|ed25519)([[:space:]]|$)|\.pem([[:space:]]|$))'
 }
 ```
 
 Block with the same message style as the other guards. This is deliberately
 narrow (redirect and tee only); deeper indirection remains out of scope for
-the same reasons documented in the header.
+the same reasons documented in the header. Every alternative carries a
+right-hand boundary (end-of-token or whitespace, plus an optional dot-suffix
+for the rc-file family so `.env.production` still blocks); an earlier
+unbounded draft false-positived on names like `config.environment.yaml`,
+`my.netrcfile.txt`, `.npmrcignore`, and `id_rsa_public_key_notes.md` and was
+corrected during the task 25 security review.
 
 ---
 

@@ -1660,9 +1660,16 @@ verbatim from review 5.6:
 violates_sensitive_redirect() {
     local seg
     seg=$(unwrap_indirection "$1")
-    echo "$seg" | grep -qE '(>>?|tee[[:space:]]+(-a[[:space:]]+)?)[[:space:]]*[^[:space:]]*(\.env|\.aws/credentials|\.netrc|\.npmrc|\.pypirc|id_(rsa|dsa|ecdsa|ed25519)([^.]|$)|\.pem([[:space:]]|$))'
+    echo "$seg" | grep -qE '(>>?|tee[[:space:]]+(-a[[:space:]]+)?)[[:space:]]*[^[:space:]]*((\.env|\.netrc|\.npmrc|\.pypirc)(\.[^[:space:]]+)?([[:space:]]|$)|\.aws/credentials([[:space:]]|$)|id_(rsa|dsa|ecdsa|ed25519)([[:space:]]|$)|\.pem([[:space:]]|$))'
 }
 ```
+
+Every alternative carries a right-hand boundary (end-of-token or whitespace,
+plus an optional dot-suffix for the rc-file family so `.env.production`
+still blocks). The earlier unbounded draft false-positived on unrelated
+names such as `config.environment.yaml`, `my.netrcfile.txt`,
+`.npmrcignore`, and `id_rsa_public_key_notes.md`; corrected during the
+task 25 security review.
 
 Add a matching block in the segment loop (same shape as the other guards),
 message:
@@ -1711,9 +1718,15 @@ violates_git_add_all() {
     if echo "$seg" | grep -qE '(^|[[:space:]])(-A|--all)([[:space:]]|=|$)'; then
         return 0
     fi
-    echo "$seg" | grep -qE '(^|[[:space:]])git[[:space:]]+add[[:space:]]+\.([[:space:]]|$)'
+    echo "$seg" | grep -qE '(^|[[:space:]])git[[:space:]]+add[[:space:]]+\.[./]*([[:space:]]|$)'
 }
 ```
+
+The bare-dot arm matches dot-slash spellings too (`git add ./`,
+`git add ./.`), which stage the same blanket set; the earlier draft that
+required a lone `.` token missed them. Explicit-path forms
+(`git add src/app.py`, `git add ./src/app.py`) stay allowed. Corrected
+during the task 25 security review.
 
 Block message:
 

@@ -208,6 +208,19 @@ echo ""
 echo "=== Sensitive-redirect guard (review 5.6; must BLOCK) ==="
 assert_blocked 'echo x > .env.production' \
     'echo x > .env.production'
+assert_blocked 'echo x >> .env.production' \
+    'echo x >> .env.production'
+assert_blocked 'echo token | tee -a .npmrc' \
+    'echo token | tee -a .npmrc'
+
+echo ""
+echo "=== Sensitive-redirect guard: boundary false positives must be ALLOWED ==="
+# Right-hand boundary regression (task 25 security review): unrelated names
+# that merely contain a sensitive basename as a substring must not block.
+assert_allowed 'echo x > config.environment.yaml' \
+    'echo x > config.environment.yaml'
+assert_allowed 'echo x > .npmrcignore' \
+    'echo x > .npmrcignore'
 
 echo ""
 echo "=== checkout -B guard (git-workflow.md; protected target must BLOCK) ==="
@@ -222,8 +235,13 @@ assert_blocked 'git add -A' \
     'git add -A'
 assert_blocked 'git add .' \
     'git add .'
+# Dot-slash spelling of the bare-dot blanket stage (task 25 security review).
+assert_blocked 'git add ./' \
+    'git add ./'
 assert_allowed 'git add src/app.py' \
     'git add src/app.py'
+assert_allowed 'git add ./src/app.py' \
+    'git add ./src/app.py'
 
 echo ""
 echo "=== Regression: git reset --hard on a feature branch still ALLOWED ==="

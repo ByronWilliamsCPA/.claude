@@ -289,16 +289,23 @@ violates_git_no_sign() {
 # credential-bearing path is the Bash-tool equivalent of an Edit/Write to a
 # guarded sensitive file. Catches `>`, `>>`, and `tee [-a]` into .env,
 # .aws/credentials, .netrc, .npmrc, .pypirc, SSH private keys, or .pem files.
+# Every alternative carries a right-hand boundary: end-of-token or whitespace,
+# plus a dot-suffix for the rc-file family so .env.production still blocks.
+# Without the boundary, unrelated names like config.environment.yaml,
+# my.netrcfile.txt, .npmrcignore, and id_rsa_public_key_notes.md would
+# false-positive (security review finding, task 25 rework).
 violates_sensitive_redirect() {
     local seg
     seg=$(unwrap_indirection "$1")
-    echo "$seg" | grep -qE '(>>?|tee[[:space:]]+(-a[[:space:]]+)?)[[:space:]]*[^[:space:]]*(\.env|\.aws/credentials|\.netrc|\.npmrc|\.pypirc|id_(rsa|dsa|ecdsa|ed25519)([^.]|$)|\.pem([[:space:]]|$))'
+    echo "$seg" | grep -qE '(>>?|tee[[:space:]]+(-a[[:space:]]+)?)[[:space:]]*[^[:space:]]*((\.env|\.netrc|\.npmrc|\.pypirc)(\.[^[:space:]]+)?([[:space:]]|$)|\.aws/credentials([[:space:]]|$)|id_(rsa|dsa|ecdsa|ed25519)([[:space:]]|$)|\.pem([[:space:]]|$))'
 }
 
 # Blanket-staging guard (review R-13): `git add -A` / `git add --all` /
 # bare `git add .` stage every change in the working tree, including edits
-# from a concurrent session sharing this working tree. Explicit-path forms
-# (`git add src/app.py`) are unaffected.
+# from a concurrent session sharing this working tree. The bare-dot arm also
+# matches dot-slash spellings (`git add ./`, `git add ./.`), which are the
+# same blanket stage (security review finding, task 25 rework). Explicit-path
+# forms (`git add src/app.py`, `git add ./src/app.py`) are unaffected.
 violates_git_add_all() {
     local seg
     seg=$(unwrap_indirection "$1")
@@ -306,7 +313,7 @@ violates_git_add_all() {
     if echo "$seg" | grep -qE '(^|[[:space:]])(-A|--all)([[:space:]]|=|$)'; then
         return 0
     fi
-    echo "$seg" | grep -qE '(^|[[:space:]])git[[:space:]]+add[[:space:]]+\.([[:space:]]|$)'
+    echo "$seg" | grep -qE '(^|[[:space:]])git[[:space:]]+add[[:space:]]+\.[./]*([[:space:]]|$)'
 }
 
 # Pre-scan the command: blank message-arg values so documentation text inside
