@@ -12,7 +12,7 @@ FINDINGS=()
 
 check() {  # $1 file, $2 max-age-days
     local file="$1" max_days="$2" date_str age_days
-    date_str=$(grep -oE '(Last Updated|Snapshot)[:* ]+[0-9]{4}-[0-9]{2}-[0-9]{2}' "$file" \
+    date_str=$(grep -oE '(Last Updated|Snapshot( date)?)[:* ]+[0-9]{4}-[0-9]{2}-[0-9]{2}' "$file" \
         | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}' | head -n1)
     [[ -z "$date_str" ]] && return 0
     age_days=$(( (NOW - $(date -d "$date_str" +%s)) / 86400 ))
