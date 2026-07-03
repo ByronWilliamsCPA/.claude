@@ -1,6 +1,10 @@
 # docs/standards-manifest.yaml
 version: "1.0"
-last_updated: "2026-06-29"
+last_updated: "2026-07-02"
+# 2026-07-02: CI-057 inverted; org-workflow renovate rules must NOT set
+# followTag (frozen v1 tag retirement, ByronWilliamsCPA/.github PR #244).
+# Verify tightened: key-scoped "followTag": absence plus github-actions
+# manager and semver versioning presence, with the williaby org branch.
 # 2026-06-29: Snyk shift-left work (ADR-009). Added FOUND-019 (code repos ship a
 # .snyk scope baseline excluding generated/vendored paths, suggested). Starts at
 # suggested per the policy-execution-gap lesson; promotes to important once the
@@ -2482,10 +2486,23 @@ checks:
       .github/workflows/*.yml). Skip silently when not applicable.
     description: >-
       renovate.json contains a packageRules entry targeting org workflow
-      source repos with followTag set to the floating major version tag
-      (v1). Without this, Renovate either ignores org workflow updates or
-      opens PRs on every non-tagged commit.
-    verify: "content_present: renovate.json, ByronWilliamsCPA/.github"
+      source repos (github-actions manager, semver versioning) and does
+      NOT set followTag. Every push to the source repo's main cuts an
+      immutable vX.Y.Z tag (release-tag.yml) and the org tag-protection
+      ruleset forbids re-pointing v* tags, so no floating major tag
+      exists; a followed tag can never advance and silently freezes all
+      SHA-pin updates. This check originally mandated followTag: "v1";
+      the requirement is inverted as part of retiring the frozen v1 tag
+      (ByronWilliamsCPA/.github PR #244, opened 2026-07-02; the v1 tag
+      itself is already deleted on both orgs).
+    verify: >-
+      content_present: renovate.json, ByronWilliamsCPA/.github (williaby/*
+      repos: williaby/.github).
+      content_present: renovate.json, github-actions.
+      content_present: renovate.json, "versioning": "semver".
+      content_absent: renovate.json, "followTag": (quoted JSON key form
+      only; prose mentions of followTag in rule descriptions must not
+      match).
     source_frameworks:
       - manifest-internal
 
