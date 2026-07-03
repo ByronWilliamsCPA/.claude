@@ -69,13 +69,15 @@ MCP tool bundles (Tier 2 in the MCP loading strategy) are loaded separately when
 
 ## The Flat Agent Directory
 
-All 43 agents live in `.claude/agents/` with no subdirectories. Domain grouping uses filename prefixes (`owasp-web.md`, `owasp-api.md`, `owasp-llm.md`). `setup.sh` creates a single symlink `~/.claude/agents/ → ~/dev/.claude/.claude/agents/`. A nested directory layout would require recursive symlink creation; the flat layout is simpler and makes `ls ~/.claude/agents/` a complete inventory.
+All 59 agents live in `.claude/agents/` with no subdirectories. Domain grouping uses filename prefixes (`owasp-web.md`, `owasp-api.md`, `owasp-llm.md`). `setup.sh` creates a single symlink `~/.claude/agents/ → ~/dev/.claude/.claude/agents/`. A nested directory layout would require recursive symlink creation; the flat layout is simpler and makes `ls ~/.claude/agents/` a complete inventory.
+
+Counts drift; `AGENTS-AND-SKILLS.md` is the registration source of truth, enforced by `tests/unit/test_catalog_registration.py`.
 
 ## See Also
 
 - [ADR-004 Skill vs Agent Boundary](adr/ADR-004-skill-vs-agent-boundary.md): the full classification rubric
 - [MCP Tiered Loading](mcp-tiered-loading.md): Tier 2 agent-bundled MCP tools
-- [Reference → Agents Catalog](../reference/agents.md): the 43 agents and their domains
+- [Reference → Agents Catalog](../reference/agents.md): the 59 agents and their domains
 - [Reference → Skills Catalog](../reference/skills.md): the 40+ skills and their triggers
 - [Contributing → Adding an Agent](../contributing/adding-agents.md)
 - [Contributing → Adding a Skill](../contributing/adding-skills.md)
