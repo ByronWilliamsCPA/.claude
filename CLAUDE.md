@@ -64,8 +64,7 @@ documentation rework.
 │   │   └── CLAUDE.md             # Skill authoring conventions
 │   ├── rules/                    # Operational rules (path-scoped)
 │   ├── standards/                # Detailed specifications
-│   ├── cowork/                   # Cowork session instructions
-│   └── context/                  # Shared context fragments
+│   └── cowork/                   # Cowork session instructions
 ├── docs/
 │   ├── architecture/             # ADRs and system diagrams
 │   ├── development/              # Code quality and workflow guides
