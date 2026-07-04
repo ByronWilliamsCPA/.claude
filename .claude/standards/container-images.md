@@ -51,8 +51,9 @@ ghcr.io/byronwilliamscpa/<prefix>-<name>:<upstream-tag>
 | `ghcr.io/byronwilliamscpa/dhi-python:3.12-debian13` | Python 3.12 runtime (no shell; use as runtime stage `FROM`) |
 | `ghcr.io/byronwilliamscpa/dhi-python:3.12-debian13-dev` | Python 3.12 builder (shell + apt + build tools; use as builder stage `FROM`) |
 | `ghcr.io/byronwilliamscpa/dhi-python:3.11-debian13` | Python 3.11 runtime (no shell) |
-| `ghcr.io/byronwilliamscpa/dhi-node:24-debian13` | Node.js 24 |
-| `ghcr.io/byronwilliamscpa/dhi-node:22-debian13` | Node.js 22 |
+| `ghcr.io/byronwilliamscpa/dhi-node:24-debian13` | Node.js 24 runtime (no shell; use as runtime stage `FROM`) |
+| `ghcr.io/byronwilliamscpa/dhi-node:22-debian13` | Node.js 22 runtime (no shell; use as runtime stage `FROM`) |
+| `ghcr.io/byronwilliamscpa/dhi-node:22-debian13-dev` | Node.js 22 builder (shell + npm; use as builder stage `FROM`) |
 | `ghcr.io/byronwilliamscpa/dhi-traefik:3.6-debian13` | Traefik 3.6 |
 | `ghcr.io/byronwilliamscpa/dhi-traefik:3.5-debian13` | Traefik 3.5 |
 | `ghcr.io/byronwilliamscpa/dhi-grafana:12.3-debian13` | Grafana 12.3 |
