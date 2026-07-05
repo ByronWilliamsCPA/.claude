@@ -1,0 +1,370 @@
+<!-- Plan-status artifact reference template. See plan-status-artifact.md for the
+     full specification. Copy the stylesheet verbatim; replace the body content
+     and the <title> placeholder with facts derived from the target repo's
+     planning documents, HTML-escaped. No external resources (Artifact CSP);
+     no em-dash characters, including &mdash;. Intentionally no <!doctype>,
+     <html>, <head>, or <body> wrapper: the Artifact publisher adds its own
+     document skeleton at deploy time, so this file starts at <title>. -->
+<title>{{PROJECT_NAME}}: Plan Status</title>
+<style>
+  :root {
+    --paper: #F7F6F2;
+    --card: #FFFFFF;
+    --ink: #262A3E;
+    --ink-soft: #5C5F70;
+    --thread: #A93226;
+    --done: #2E7D4F;
+    --done-bg: #E8F2EC;
+    --active: #B45309;
+    --active-bg: #FBF0E1;
+    --pending: #8B8D99;
+    --pending-bg: #EEEEEA;
+    --line: #DDDCD4;
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, monospace;
+  }
+  html { background: var(--paper); }
+  body {
+    font-family: var(--sans);
+    color: var(--ink);
+    line-height: 1.55;
+    margin: 0;
+    padding: 2.5rem 1.25rem 4rem;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; }
+
+  /* ---------- header ---------- */
+  header { margin-bottom: 2rem; }
+  .eyebrow {
+    font-family: var(--sans);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--thread);
+    font-weight: 600;
+    margin: 0 0 0.4rem;
+  }
+  h1 {
+    font-family: var(--serif);
+    font-size: clamp(1.8rem, 4vw, 2.5rem);
+    font-weight: 600;
+    margin: 0 0 0.35rem;
+    text-wrap: balance;
+  }
+  .subtitle { color: var(--ink-soft); font-size: 0.95rem; margin: 0; max-width: 62ch; }
+
+  /* ---------- summary strip ---------- */
+  .summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    overflow: hidden;
+    margin: 1.75rem 0 2.5rem;
+  }
+  .summary > div { background: var(--card); padding: 1rem 1.15rem; }
+  .summary .label {
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 600;
+    margin: 0 0 0.35rem;
+  }
+  .summary .value {
+    font-family: var(--serif);
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+    font-variant-numeric: tabular-nums;
+  }
+  .summary .note { font-size: 0.8rem; color: var(--ink-soft); margin: 0.25rem 0 0; }
+
+  .meter { display: flex; gap: 4px; margin-top: 0.55rem; }
+  .meter span {
+    height: 8px; flex: 1; border-radius: 2px; background: var(--pending-bg);
+    border: 1px solid var(--line);
+  }
+  /* state reads by form, not only color: solid / half-filled / striped / empty */
+  .meter .m-done   { background: var(--done); border-color: var(--done); }
+  .meter .m-partial {
+    background: linear-gradient(90deg, var(--done) 0 50%, var(--done-bg) 50% 100%);
+    border-color: var(--done);
+  }
+  .meter .m-active {
+    background: repeating-linear-gradient(135deg, var(--active) 0 3px, var(--active-bg) 3px 6px);
+    border-color: var(--active);
+  }
+
+  /* ---------- thread timeline ---------- */
+  .track-label {
+    font-family: var(--serif);
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin: 0 0 0.2rem;
+  }
+  .track-sub { color: var(--ink-soft); font-size: 0.85rem; margin: 0 0 1.4rem; max-width: 66ch; }
+
+  .thread { position: relative; padding-left: 2.2rem; }
+  .thread::before {
+    content: "";
+    position: absolute;
+    left: 0.65rem;
+    top: 0.5rem;
+    bottom: 0.5rem;
+    width: 2px;
+    background: var(--thread);
+    opacity: 0.85;
+  }
+  .thread.future::before {
+    background: repeating-linear-gradient(var(--thread) 0 6px, transparent 6px 12px);
+    opacity: 0.5;
+  }
+
+  .phase { position: relative; padding: 0 0 1.6rem; }
+  .phase:last-child { padding-bottom: 0.4rem; }
+  .knot {
+    position: absolute;
+    left: -2.2rem;
+    top: 0.28rem;
+    width: 1.05rem; height: 1.05rem;
+    border-radius: 50%;
+    box-sizing: border-box;
+    background: var(--paper);
+    border: 2.5px solid var(--pending);
+  }
+  .phase.done .knot   { background: var(--done); border-color: var(--done); }
+  .phase.active .knot {
+    background: var(--card); border-color: var(--active); border-width: 3.5px;
+    box-shadow: 0 0 0 4px var(--active-bg);
+  }
+
+  .phase-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.35rem 0.7rem; }
+  .phase-id {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--ink-soft);
+    letter-spacing: 0.04em;
+  }
+  .phase-name { font-family: var(--serif); font-size: 1.08rem; font-weight: 600; }
+  .pill {
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    padding: 0.14rem 0.55rem;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .pill.done    { background: var(--done-bg); color: var(--done); }
+  .pill.active  { background: var(--active-bg); color: var(--active); }
+  .pill.pending { background: var(--pending-bg); color: var(--pending); }
+  .pill.partial { background: var(--done-bg); color: var(--done); outline: 1px dashed var(--done); outline-offset: -1px; }
+
+  .phase-desc { font-size: 0.86rem; color: var(--ink-soft); margin: 0.25rem 0 0; max-width: 66ch; }
+  .phase-desc strong { color: var(--ink); font-weight: 600; }
+
+  /* ---------- current phase card ---------- */
+  .here-tag {
+    display: inline-block;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: #FFF;
+    background: var(--thread);
+    padding: 0.16rem 0.6rem;
+    border-radius: 3px;
+  }
+  .current-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--active);
+    border-radius: 6px;
+    padding: 1rem 1.2rem 1.1rem;
+    margin-top: 0.8rem;
+  }
+  .current-card h3 {
+    font-family: var(--sans);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin: 0 0 0.6rem;
+  }
+  ul.slices { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.45rem; }
+  ul.slices li {
+    display: grid;
+    grid-template-columns: 1.15rem 4.2rem 1fr;
+    gap: 0.5rem;
+    align-items: baseline;
+    font-size: 0.86rem;
+  }
+  ul.slices .tick { font-weight: 700; text-align: center; }
+  ul.slices li.s-done .tick { color: var(--done); }
+  ul.slices li.s-next .tick { color: var(--active); }
+  ul.slices li.s-todo .tick { color: var(--pending); }
+  ul.slices code { font-family: var(--mono); font-size: 0.74rem; color: var(--ink-soft); }
+  ul.slices li.s-done { color: var(--ink-soft); }  /* de-emphasize delivered items; next/todo stay at full ink */
+  ul.slices .why { color: var(--ink-soft); }
+
+  /* ---------- cut lines ---------- */
+  .cutline { display: flex; align-items: center; gap: 0.9rem; margin: 2.2rem 0; }
+  .cutline::before, .cutline::after {
+    content: ""; flex: 1; height: 0;
+    border-top: 2px dashed var(--thread);
+  }
+  .cutline span {
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: 0.92rem;
+    letter-spacing: 0.06em;
+    color: var(--thread);
+    white-space: nowrap;
+  }
+  .cutline small {
+    display: block; text-align: center; font-family: var(--sans);
+    font-weight: 400; letter-spacing: 0; color: var(--ink-soft); font-size: 0.75rem;
+  }
+
+  /* ---------- risks ---------- */
+  .risks {
+    margin-top: 2.6rem;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 1.1rem 1.25rem;
+  }
+  .risks h2 { font-family: var(--serif); font-size: 1.05rem; margin: 0 0 0.6rem; }
+  .risks ul { margin: 0; padding-left: 1.1rem; display: grid; gap: 0.4rem; }
+  .risks li { font-size: 0.85rem; color: var(--ink-soft); }
+  .risks li strong { color: var(--ink); }
+
+  footer {
+    margin-top: 2.2rem;
+    font-size: 0.75rem;
+    color: var(--ink-soft);
+    border-top: 1px solid var(--line);
+    padding-top: 0.8rem;
+  }
+  footer code { font-family: var(--mono); font-size: 0.72rem; }
+  @media (prefers-reduced-motion: no-preference) {
+    .phase.active .knot { animation: pulse 2.4s ease-in-out infinite; }
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 4px var(--active-bg); }
+      50%      { box-shadow: 0 0 0 7px var(--active-bg); }
+    }
+  }
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">{{PROJECT_NAME}} &middot; {{CODENAME}}</p>
+    <h1>{{PAGE_TITLE}}</h1>
+    <p class="subtitle">Where {{PROJECT_SHORT}} stands as of {{AS_OF_DATE}}: what has
+      shipped, the phase now on the critical path, and the road to {{NEXT_MILESTONE}}.</p>
+  </header>
+
+  <section class="summary" aria-label="Status summary">
+    <div>
+      <p class="label">{{TRACK_LABEL}}</p>
+      <p class="value">{{N_DONE}} of {{N_TOTAL}} phases delivered</p>
+      <div class="meter" aria-hidden="true">
+        <!-- one span per phase, in order: m-done (solid), m-partial (half-filled),
+             m-active (striped), or no class (empty = pending) -->
+        <span class="m-done"></span><span class="m-partial"></span><span class="m-active"></span><span></span>
+      </div>
+      <p class="note">{{ONE_LINE_PROGRESS_NOTE}}</p>
+    </div>
+    <div>
+      <p class="label">{{NEXT_RELEASE_LABEL}} needs</p>
+      <p class="value">{{WHAT_REMAINS}}</p>
+      <p class="note">{{WHY_THAT_IS_THE_CRITICAL_PATH}}</p>
+    </div>
+    <div>
+      <p class="label">{{HORIZON_LABEL}}</p>
+      <p class="value">{{HORIZON_ESTIMATE}}</p>
+      <p class="note">{{HORIZON_NOTE}}</p>
+    </div>
+  </section>
+
+  <h2 class="track-label">{{TRACK_HEADING}}</h2>
+  <p class="track-sub">{{TRACK_ONE_LINER}}</p>
+
+  <div class="thread">
+    <div class="phase done">
+      <span class="knot" aria-hidden="true"></span>
+      <div class="phase-head">
+        <span class="phase-id">PHASE 0</span>
+        <span class="phase-name">{{PHASE_NAME}}</span>
+        <span class="pill done">Delivered</span>
+      </div>
+      <!-- bold the single load-bearing fact with <strong>...</strong> -->
+      <p class="phase-desc">{{PHASE_ONE_LINER}}</p>
+    </div>
+
+    <!-- partial phase: reuse "phase done" on the outer div (solid green knot);
+         the pill carries the carve-out, e.g. "Backend only" -->
+    <div class="phase done">
+      <span class="knot" aria-hidden="true"></span>
+      <div class="phase-head">
+        <span class="phase-id">PHASE N</span>
+        <span class="phase-name">{{PARTIAL_PHASE_NAME}}</span>
+        <span class="pill partial">{{CARVE_OUT_LABEL}}</span>
+      </div>
+      <p class="phase-desc">{{PHASE_ONE_LINER}}</p>
+    </div>
+
+    <div class="phase active">
+      <span class="knot" aria-hidden="true"></span>
+      <div class="phase-head">
+        <span class="phase-id">PHASE 1</span>
+        <span class="phase-name">{{CURRENT_PHASE_NAME}}</span>
+        <span class="pill active">In progress</span>
+        <span class="here-tag">You are here</span>
+      </div>
+      <p class="phase-desc">{{WHY_THIS_PHASE_MATTERS_NOW}}</p>
+      <div class="current-card">
+        <h3>{{CURRENT_PHASE_NAME}} build slices</h3>
+        <!-- EVIDENCE cites the proof, e.g. merged in <code>PR #NN</code> -->
+        <ul class="slices">
+          <li class="s-done"><span class="tick">&#10003;</span><code>ID-1</code><span>{{DONE_ITEM}} <span class="why">({{EVIDENCE}})</span></span></li>
+          <li class="s-next"><span class="tick">&#9654;</span><code>ID-2</code><span>{{NEXT_ITEM}}</span></li>
+          <li class="s-todo"><span class="tick">&#9675;</span><code>ID-3</code><span>{{REMAINING_ITEM}}</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="cutline" role="separator">
+    <span>{{RELEASE_NAME}}<small>{{WHAT_THE_CUT_MEANS_IN_ACCEPTANCE_TERMS}}</small></span>
+  </div>
+
+  <!-- future phases: wrap in <div class="thread future"> and use plain
+       <div class="phase"> rows with <span class="pill pending">Planned</span> -->
+  <div class="thread future">
+    <div class="phase">
+      <span class="knot" aria-hidden="true"></span>
+      <div class="phase-head">
+        <span class="phase-id">PHASE 2</span>
+        <span class="phase-name">{{FUTURE_PHASE_NAME}}</span>
+        <span class="pill pending">Planned</span>
+      </div>
+      <p class="phase-desc">{{ONE_LINE_PROMISE}}</p>
+    </div>
+  </div>
+
+  <section class="risks" aria-label="Carried risks">
+    <h2>Carried risks worth watching</h2>
+    <ul>
+      <li><strong>{{RISK_NAME}}.</strong> {{ONE_SENTENCE_WITH_THE_KNOWN_LEVER}}</li>
+    </ul>
+  </section>
+
+  <footer>
+    Sources: {{SOURCE_DOCS}} &middot; status reflects {{DEFAULT_BRANCH}} as of {{AS_OF_DATE}} (through <code>PR #{{LAST_PR}}</code>).
+  </footer>
+</div>
