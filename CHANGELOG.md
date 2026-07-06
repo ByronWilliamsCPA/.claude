@@ -85,6 +85,23 @@
 
 ### Added
 
+* feat(hooks): add hook-source drift detection with a committed allowlist.
+  New `hook-inventory.json` at repo root records every authorized
+  hook-injection source beyond the repo baseline `hooks.json` (installer
+  writes into `~/.claude/settings.json` and enabled-plugin
+  `hooks/hooks.json` files), keyed on (event, matcher, command) tuples so
+  plugin version bumps do not break the allowlist. New
+  `scripts/check-hook-sources.sh` enumerates the live hook surface across
+  the settings plane, the enabled-plugin plane, and dormant plugin caches,
+  and fails (exit 1) on any live hook found in neither the baseline nor the
+  allowlist; missing or malformed inputs abort loudly (exit 2) instead of
+  passing silently. `setup.sh --doctor` runs the checker;
+  `--snapshot` emits unreviewed hooks as allowlist-shaped JSON for review.
+  ADR-010 records the decision and the trust-tier policy (Tier 1 repo
+  baseline, Tier 2 allowlisted advisory, Tier 3 unreviewed untrusted), and
+  the core-directives block in CLAUDE.md, AGENTS.md, and GEMINI.md gains
+  the matching prompt-injection posture for hook-injected session content.
+
 * feat(delegation): restore the delegation mandate inline in `CLAUDE.md`
   (mirrored to `AGENTS.md` and `GEMINI.md`) and reinforce it every session via
   a new `scripts/hooks/delegation-reminder.sh` SessionStart hook registered in

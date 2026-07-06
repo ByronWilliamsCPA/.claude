@@ -187,10 +187,12 @@ git submodule update --remote --merge
 
 Review diffs carefully before committing, applying admission bar item 6 above. Upstream changes can include breaking changes to hook scripts (in `anthropics-plugins`), new skill triggers (in `superpowers`), or changed instruction files (any submodule) that conflict with existing configuration.
 
+Pay specific attention to any `hooks/hooks.json` file in the diff. Some of these trees exist twice on this machine: `superpowers` is both a submodule here and an installed plugin, and it is the plugin cache copy (`~/.claude/plugins/cache/superpowers-dev/superpowers/<version>/`) that Claude Code actually executes, so reviewing the submodule diff alone does not cover the running copy. The same applies to `hookify`, which is currently wired from both the submodule path (via `hooks.json`) and its enabled plugin cache. After updating a submodule or a plugin (`claude plugin update`), run the hook-source drift check; if a hook event, matcher, or command changed, the check fails until the change is reviewed and `hook-inventory.json` is updated in the same commit. See [Hook Pipeline → Hook Sources](hook-pipeline.md#hook-sources) and [ADR-010](adr/ADR-010-hook-source-allowlist.md).
+
 To verify nothing broke after an update:
 
 ```bash
-./setup.sh --doctor
+./setup.sh --doctor       # includes scripts/check-hook-sources.sh
 uv run pytest
 uv run mkdocs build
 ```
