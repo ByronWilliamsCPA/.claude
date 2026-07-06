@@ -92,7 +92,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#the-five-submodules" class="md-skip">
+        <a href="#submodule-inventory" class="md-skip">
           Skip to content
         </a>
       
@@ -1023,10 +1023,71 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#the-five-submodules" class="md-nav__link">
+  <a href="#submodule-inventory" class="md-nav__link">
     <span class="md-ellipsis">
       
-        The Five Submodules
+        Submodule Inventory
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#trust-adjudications-2026-07-06" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Trust Adjudications (2026-07-06)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Trust Adjudications (2026-07-06)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#one-skill-to-rule-them-all" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        one-skill-to-rule-them-all
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jeffallan-claude-skills" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        jeffallan-claude-skills
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#agents-observe" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        agents-observe
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#submodule-admission-bar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Submodule Admission Bar
       
     </span>
   </a>
@@ -2318,10 +2379,71 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#the-five-submodules" class="md-nav__link">
+  <a href="#submodule-inventory" class="md-nav__link">
     <span class="md-ellipsis">
       
-        The Five Submodules
+        Submodule Inventory
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#trust-adjudications-2026-07-06" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Trust Adjudications (2026-07-06)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Trust Adjudications (2026-07-06)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#one-skill-to-rule-them-all" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        one-skill-to-rule-them-all
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jeffallan-claude-skills" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        jeffallan-claude-skills
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#agents-observe" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        agents-observe
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#submodule-admission-bar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Submodule Admission Bar
       
     </span>
   </a>
@@ -2394,45 +2516,176 @@
 
   <h1>Submodule Strategy</h1>
 
-<p>The repo extends Claude's capabilities by incorporating five external trees as git submodules. Each submodule is a separately maintained upstream repository, pinned to a specific commit. <code>setup.sh</code> wires them into the runtime config (<code>~/.claude/</code>) via symlinks, making them first-class citizens of the Claude Code install without vendor-copying their contents.</p>
-<p>For the reasoning behind this design, see <a href="../adr/ADR-005-submodule-extension-model/">ADR-005</a>.</p>
-<h2 id="the-five-submodules">The Five Submodules<a class="headerlink" href="#the-five-submodules" title="Permanent link">&para;</a></h2>
+<p>The repo extends Claude's capabilities by incorporating external trees as git
+submodules under <code>.submodules/</code>. Each submodule is a separately maintained
+upstream repository, pinned to a specific commit (the gitlink). <code>setup.sh</code>
+wires them into the runtime config (<code>~/.claude/</code>) via symlinks, making them
+first-class citizens of the Claude Code install without vendor-copying their
+contents.</p>
+<p>For the reasoning behind this design, see
+<a href="../adr/ADR-005-submodule-extension-model/">ADR-005</a>.</p>
+<p><code>.gitmodules</code> is the authoritative submodule list. The inventory table below
+must cover every entry in it; <code>tests/unit/test_submodule_strategy_sync.py</code>
+fails CI when the two disagree on paths or upstream slugs.</p>
+<h2 id="submodule-inventory">Submodule Inventory<a class="headerlink" href="#submodule-inventory" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
 <th>Submodule path</th>
 <th>Upstream</th>
 <th>What it provides</th>
+<th>Wiring into runtime</th>
+<th>Trust level</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>.submodules/reference-library/</code></td>
 <td><code>ByronWilliamsCPA/reference-library</code></td>
-<td>Agent prompt templates using <code>{{LIBRARY_PATH}}</code> placeholders for parameterized agent paths</td>
+<td>Agent prompt templates using <code>{{LIBRARY_PATH}}</code> placeholders</td>
+<td>Symlinked whole at <code>~/.claude/reference-library/</code>; writing-pipeline agents symlinked into <code>.claude/agents/</code></td>
+<td>First-party (same maintainer)</td>
 </tr>
 <tr>
 <td><code>.submodules/image-generation/</code></td>
 <td><code>williaby/image-generation</code></td>
 <td>Agents and utilities for image generation workflows</td>
+<td><code>diagram-specialist</code> agent symlinked into <code>.claude/agents/</code></td>
+<td>First-party (same maintainer)</td>
 </tr>
 <tr>
 <td><code>.submodules/superpowers/</code></td>
 <td><code>obra/superpowers</code></td>
-<td>Community-maintained skills: brainstorming, writing-plans, TDD, systematic debugging, git-worktrees, review patterns</td>
+<td>Community skills: brainstorming, TDD, systematic debugging, plan execution, review patterns</td>
+<td>Selected skills symlinked into <code>.claude/skills/</code>; several others maintained as deliberate local forks</td>
+<td>Third-party, reviewed; see <a href="../../tool-evals/skills-deep-dive-2026-06/">skills deep dive</a></td>
 </tr>
 <tr>
 <td><code>.submodules/anthropics-skills/</code></td>
 <td><code>anthropics/skills</code></td>
 <td>Official Anthropic skill collection</td>
+<td>docx, pdf, pptx, xlsx, skill-creator symlinked into <code>.claude/skills/</code> (document skills are symlink-only for license reasons)</td>
+<td>Vendor (Anthropic)</td>
 </tr>
 <tr>
 <td><code>.submodules/anthropics-plugins/</code></td>
 <td><code>anthropics/claude-plugins-official</code></td>
-<td>hookify plugin engine and security-guidance hooks used by the hook pipeline</td>
+<td>hookify plugin engine, security-guidance hooks, pr-review-toolkit agents, several skills</td>
+<td>Hook scripts referenced by absolute path from <code>hooks.json</code>; selected skills symlinked into <code>.claude/skills/</code> and agents into <code>.claude/agents/</code></td>
+<td>Vendor (Anthropic)</td>
+</tr>
+<tr>
+<td><code>.submodules/one-skill-to-rule-them-all/</code></td>
+<td><code>rebelytics/one-skill-to-rule-them-all</code></td>
+<td>Upstream source of the task-observer meta-skill</td>
+<td>Not in the load path directly: <code>scripts/apply-task-observer-patches.sh</code> builds <code>.claude/skills/task-observer/SKILL.md</code> from it</td>
+<td>Third-party, reviewed at admission (2026-04-28, pin <code>b6b6954</code>); full integration design in <a href="../../superpowers/specs/2026-04-28-task-observer-design/">task-observer design</a></td>
+</tr>
+<tr>
+<td><code>.submodules/jeffallan-claude-skills/</code></td>
+<td><code>Jeffallan/claude-skills</code></td>
+<td>Community skill collection (66 skills at the reviewed pin); only <code>fastapi-expert</code> is consumed</td>
+<td>One skill symlinked: <code>.claude/skills/fastapi-expert</code>; local delta in first-party <code>.claude/skills/fastapi-expert-extras/</code></td>
+<td>Third-party, reviewed at pin <code>5e8b6b8</code> (2026-07-06); see adjudication below</td>
+</tr>
+<tr>
+<td><code>.submodules/agents-observe/</code></td>
+<td><code>simple10/agents-observe</code></td>
+<td>Per-subagent token attribution dashboard (Claude Code plugin)</td>
+<td>Directory-source marketplace plugin in <code>settings.json</code> (<code>extraKnownMarketplaces</code> plus <code>enabledPlugins</code>); queried by the <code>usage-report</code> skill via REST</td>
+<td>Third-party, security-reviewed at v0.9.11, PASS with required guardrails; see <a href="../../reference/usage-monitoring-survey/">usage monitoring survey</a> and <a href="../../reference/hooks/">hooks reference</a></td>
 </tr>
 </tbody>
 </table>
+<h2 id="trust-adjudications-2026-07-06">Trust Adjudications (2026-07-06)<a class="headerlink" href="#trust-adjudications-2026-07-06" title="Permanent link">&para;</a></h2>
+<p>The three submodules added after the original five-entry table each carry an
+explicit trust decision.</p>
+<h3 id="one-skill-to-rule-them-all"><code>one-skill-to-rule-them-all</code><a class="headerlink" href="#one-skill-to-rule-them-all" title="Permanent link">&para;</a></h3>
+<p>Adjudicated at admission (2026-04-28, the approved integration design below;
+pin <code>b6b6954</code> as of 2026-07-06). The approved integration design
+(<a href="../../superpowers/specs/2026-04-28-task-observer-design/">2026-04-28-task-observer-design.md</a>)
+treats the submodule as a tracked upstream source, never loaded directly: a
+patch script applies three documented transformations and writes the result to
+<code>~/.claude/skills/task-observer/SKILL.md</code>. Upstream updates re-run the patch
+script, so every content change passes through a diff the maintainer sees.
+CC BY 4.0 attribution passes through verbatim.</p>
+<h3 id="jeffallan-claude-skills"><code>jeffallan-claude-skills</code><a class="headerlink" href="#jeffallan-claude-skills" title="Permanent link">&para;</a></h3>
+<p>Adjudicated 2026-07-06 at pin <code>5e8b6b8</code> (tag <code>v0.4.14</code> plus one docs-site-only
+commit that does not touch skill content). Findings:</p>
+<ul>
+<li><code>fastapi-expert</code> (the only wired skill: <code>SKILL.md</code> plus six reference files,
+  about 1,900 lines total) is benign instructional FastAPI content. No tool
+  directives beyond running <code>pytest</code>, no network calls, no embedded
+  instructions targeting the host session. One quality wart (invalid
+  <code>model_config</code> usage in the minimal example) noted; quality, not trust.</li>
+<li><code>.claude/skills/fastapi-expert-extras/</code> is first-party: a local delta
+  built from this repo's own observations, layered on the vendored skill.
+  Verified 2026-07-06.</li>
+<li>The upstream repo carries a <code>CLAUDE.md</code> at its root. Folder-scoped
+  instruction files inside submodules load into any session that reads a file
+  under them, so that file is part of the reviewed surface (see admission bar
+  item 3). Reviewed at pin: benign authoring conventions for the upstream
+  repo itself.</li>
+<li>Snyk attributes 31 npm vulnerabilities to this submodule's
+  <code>site/package.json</code>. That is the upstream docs-site build, never executed
+  here; tracked as not-owned in the
+  <a href="../../security/snyk-findings-inventory-2026-06-28/">Snyk findings inventory</a>.</li>
+</ul>
+<p>Verdict: keep the symlink. Re-review the wired skill directory and the
+upstream instruction files on every pin bump.</p>
+<h3 id="agents-observe"><code>agents-observe</code><a class="headerlink" href="#agents-observe" title="Permanent link">&para;</a></h3>
+<p>Adjudicated at admission (2026-06-11). The submodule is the install mechanism:
+<code>settings.json</code> registers it as a directory-source marketplace plugin, so the
+checked-out working tree is what runs. The full security review (verdict: PASS
+with required guardrails, including unredacted tool-input persistence and an
+unauthenticated <code>0.0.0.0</code> port bind mitigated by WSL2 NAT, a
+host-topology-specific mitigation to re-verify on any non-WSL2 deployment)
+lives in the
+<a href="../../reference/usage-monitoring-survey/">usage monitoring survey</a>; the
+hook-composition analysis (28 events, fire-and-forget wrapper verified unable
+to block tool calls at v0.9.11) lives in the
+<a href="../../reference/hooks/">hooks reference</a>. Do not run <code>claude plugin update</code>
+or bump the pin without re-running that security review.</p>
+<h2 id="submodule-admission-bar">Submodule Admission Bar<a class="headerlink" href="#submodule-admission-bar" title="Permanent link">&para;</a></h2>
+<p>A new submodule (or a pin bump to an existing one) must clear the following
+before merge. The bar exists because submodule content wired into
+<code>.claude/skills/</code>, <code>hooks.json</code>, or <code>settings.json</code> is executable-instruction
+supply chain: it runs inside sessions with the session's full tool access.</p>
+<ol>
+<li><strong>Pin to a reviewed commit.</strong> Prefer a release tag; record the commit and
+   review date in the inventory table. The gitlink is the pin of record.</li>
+<li><strong>Content review at the pin</strong> for everything wired into an instruction or
+   execution path: skill bodies and their reference files, hook scripts,
+   plugin hook registrations. Look for tool directives, network calls, and
+   instructions addressed to the host session rather than the end user.</li>
+<li><strong>Instruction-file review.</strong> Read the submodule's <code>CLAUDE.md</code>, <code>AGENTS.md</code>,
+   and <code>GEMINI.md</code> (root and nested) at the pin. These load into any session
+   that reads a file under the submodule, whether or not the submodule is
+   otherwise wired in. For a submodule wired as a plugin (marketplace or
+   directory source), the auto-load surface is wider: also review its
+   <code>.mcp.json</code> (auto-registers MCP servers), the <code>.claude-plugin/plugin.json</code>
+   marketplace manifest (controls what the plugin discovers and exposes), and
+   any <code>commands/</code>, <code>agents/</code>, or <code>skills/</code> content the manifest wires in.</li>
+<li><strong>Wiring statement.</strong> The inventory table row must say how the submodule
+   reaches <code>~/.claude/</code> (symlink, hook path, plugin marketplace, build
+   artifact) or state explicitly that it is inert.</li>
+<li><strong>Same-PR documentation.</strong> The PR that adds the submodule updates the
+   inventory table; <code>tests/unit/test_submodule_strategy_sync.py</code> enforces
+   coverage of every <code>.gitmodules</code> entry.</li>
+<li><strong>Re-review on bump.</strong> At minimum, diff the wired paths and instruction
+   files between the old and new pins. Submodules with a dedicated security
+   review (currently <code>agents-observe</code>) require that review to be re-run, not
+   only a diff.</li>
+</ol>
+<p><code>#CRITICAL</code> Symlinks and directory-source plugins read the submodule working
+tree, not the pinned gitlink. A manual checkout inside a submodule silently
+floats the reviewed version, and so do uncommitted edits to files inside the
+submodule tree, which <code>git submodule status</code> cannot see (its <code>+</code> prefix
+tracks only the checked-out commit). <code>#VERIFY</code> after any submodule
+operation, both of: <code>git submodule status</code> shows no <code>+</code> prefix (checked-out
+commit matches the gitlink), and <code>git -C .submodules/&lt;name&gt; status
+--porcelain</code> prints nothing (no modified or untracked content), before
+trusting wired content.</p>
 <h2 id="how-setupsh-wires-them">How <code>setup.sh</code> Wires Them<a class="headerlink" href="#how-setupsh-wires-them" title="Permanent link">&para;</a></h2>
 <p>Each submodule under <code>.submodules/</code> is populated by:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>git<span class="w"> </span>submodule<span class="w"> </span>update<span class="w"> </span>--init<span class="w"> </span>--recursive
@@ -2442,11 +2695,12 @@
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>~/.claude/reference-library/<span class="w"> </span>→<span class="w"> </span>~/dev/.claude/.submodules/reference-library/
 </span></code></pre></div>
 <p>This makes the reference library accessible at <code>~/.claude/reference-library/</code>, which is the path the <code>{{LIBRARY_PATH}}</code> placeholder resolves to. Agents in the reference library reference each other using that placeholder; resolving it to <code>~/.claude/reference-library</code> lets them work without hardcoded paths.</p>
-<p>The other submodules (<code>superpowers</code>, <code>anthropics-skills</code>, <code>image-generation</code>) are accessed by Claude Code via the <code>.claude/skills/</code> symlink, which points to <code>.claude/skills/</code> in this repo. Skills from those submodules should be added to <code>.claude/skills/</code> if they need to be reachable at runtime: the submodule content itself is not automatically in the skill load path.</p>
-<p><code>anthropics-plugins</code> is not symlinked into <code>~/.claude/</code>. The hook scripts in <code>hooks.json</code> reference it directly by absolute path:</p>
+<p>The skill-collection submodules (<code>superpowers</code>, <code>anthropics-skills</code>, <code>anthropics-plugins</code>, <code>jeffallan-claude-skills</code>, and <code>image-generation</code> for agents) are reached via per-item symlinks in <code>.claude/skills/</code> and <code>.claude/agents/</code>: the submodule content itself is not automatically in the skill load path, only what is deliberately symlinked in.</p>
+<p><code>anthropics-plugins</code> hook scripts are not symlinked into <code>~/.claude/</code>. The hook entries in <code>hooks.json</code> reference them directly by absolute path:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nv">$HOME</span>/dev/.claude/.submodules/anthropics-plugins/plugins/hookify/...
 </span></code></pre></div>
 <p>This keeps the plugin engine out of the user-visible <code>~/.claude/</code> namespace while making it accessible to the hook pipeline.</p>
+<p><code>one-skill-to-rule-them-all</code> and <code>agents-observe</code> are wired by mechanisms of their own, described in their adjudication sections above (patch-script build artifact and plugin marketplace respectively).</p>
 <h2 id="upstream-update-flow">Upstream Update Flow<a class="headerlink" href="#upstream-update-flow" title="Permanent link">&para;</a></h2>
 <p>To pull upstream changes from any submodule:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nb">cd</span><span class="w"> </span>~/dev/.claude
@@ -2458,7 +2712,7 @@
 <p>To update all submodules at once:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>git<span class="w"> </span>submodule<span class="w"> </span>update<span class="w"> </span>--remote<span class="w"> </span>--merge
 </span></code></pre></div>
-<p>Review diffs carefully before committing. Upstream changes can include breaking changes to hook scripts (in <code>anthropics-plugins</code>) or new skill triggers (in <code>superpowers</code>) that conflict with existing configuration.</p>
+<p>Review diffs carefully before committing, applying admission bar item 6 above. Upstream changes can include breaking changes to hook scripts (in <code>anthropics-plugins</code>), new skill triggers (in <code>superpowers</code>), or changed instruction files (any submodule) that conflict with existing configuration.</p>
 <p>To verify nothing broke after an update:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>./setup.sh<span class="w"> </span>--doctor
 </span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>uv<span class="w"> </span>run<span class="w"> </span>pytest
@@ -2474,7 +2728,10 @@
 <li><a href="../adr/ADR-005-submodule-extension-model/">ADR-005 Submodule Extension Model</a>: why submodules over vendoring or packaging</li>
 <li><a href="../install-model/">Install Model</a>: how <code>setup.sh</code> creates the symlink topology</li>
 <li><a href="../hook-pipeline/">Hook Pipeline</a>: how <code>anthropics-plugins/hookify</code> is used by the hook system</li>
-<li><code>.gitmodules</code>: the five submodule definitions with upstream URLs</li>
+<li><a href="../../superpowers/specs/2026-04-28-task-observer-design/">Task Observer Integration Design</a>: the <code>one-skill-to-rule-them-all</code> adjudication</li>
+<li><a href="../../reference/usage-monitoring-survey/">Usage Monitoring Survey</a>: the <code>agents-observe</code> security review</li>
+<li><a href="../../tool-evals/skills-deep-dive-2026-06/">Skills Deep Dive 2026-06</a>: per-repo verdicts on the skill-collection submodules</li>
+<li><code>.gitmodules</code>: the authoritative submodule list with upstream URLs</li>
 </ul>
 
 
@@ -2498,7 +2755,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 27, 2026 22:56:05 UTC">April 27, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 6, 2026 18:15:00 UTC">July 6, 2026</span>
   </span>
 
     
