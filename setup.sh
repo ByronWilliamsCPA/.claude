@@ -141,10 +141,64 @@ doctor() {
     echo ""
     echo "Settings (${CLAUDE_DIR}/settings.json):"
     if [[ -f "${CLAUDE_DIR}/settings.json" ]]; then
-        if jq -e '.hooks' "${CLAUDE_DIR}/settings.json" >/dev/null 2>&1; then
-            log_ok "hooks merged"
+        # Structural hooks drift check: flatten both hooks.json and
+        # settings.json .hooks to (event, matcher, command) triples and
+        # report drift in BOTH directions. Key-existence alone is not
+        # enough: a clobbered .hooks key still "exists" while missing
+        # entries (senior review 2026-07-01, Critical finding).
+        if ! command -v jq &>/dev/null; then
+            log_warn "jq not found; cannot check hooks drift"
+            broken=$((broken + 1))
+        elif [[ ! -f "${REPO_DIR}/hooks.json" ]]; then
+            log_warn "hooks.json not found at ${REPO_DIR}/hooks.json; cannot check hooks drift"
+            broken=$((broken + 1))
         else
-            log_warn "hooks missing (run setup.sh to merge from hooks.json)"
+            local drift_json line drift_found=0
+            if ! drift_json="$(jq -n \
+                --slurpfile repo "${REPO_DIR}/hooks.json" \
+                --slurpfile live "${CLAUDE_DIR}/settings.json" '
+                def triples($obj): [ ($obj // {}) | to_entries[] as $e
+                    | $e.value[]? as $g | ($g.matcher // "") as $m
+                    | $g.hooks[]? | "\($e.key)[\($m)] \(.command)" ];
+                (triples($repo[0])) as $r
+                | (triples($live[0].hooks)) as $l
+                | {repo_not_live: ($r - $l), live_not_repo: ($l - $r)}')"; then
+                log_warn "could not read hooks.json or settings.json (jq error: invalid JSON or unexpected structure); hooks drift check skipped"
+                broken=$((broken + 1))
+                drift_json='{"repo_not_live":[],"live_not_repo":[]}'
+                drift_found=1
+            fi
+
+            while IFS= read -r line; do
+                [[ -n "$line" ]] || continue
+                log_warn "hook in hooks.json but not live: ${line} (run setup.sh)"
+                broken=$((broken + 1))
+                drift_found=1
+            done < <(jq -r '.repo_not_live[]' <<< "$drift_json")
+
+            # Live-only entries referencing a repo-owned path mean a
+            # repo-owned hook was registered directly in settings.json and
+            # never backported; that is exactly the drift class that caused
+            # the 2026-07-01 incident. Match both the symlinked scripts dir
+            # (~/.claude/scripts/) and any path into the repo clone
+            # (~/dev/.claude/, covering submodule plugin hooks). Other
+            # live-only entries belong to foreign installers (e.g.
+            # codebase-memory-mcp) and are expected: the union merge
+            # preserves them.
+            while IFS= read -r line; do
+                [[ -n "$line" ]] || continue
+                if [[ "$line" == *"/.claude/scripts/"* || "$line" == *"/dev/.claude/"* ]]; then
+                    log_warn "live-only hook references a repo script (backport to hooks.json): ${line}"
+                    broken=$((broken + 1))
+                else
+                    log_info "live-only hook (foreign installer, preserved by merge): ${line}"
+                fi
+                drift_found=1
+            done < <(jq -r '.live_not_repo[]' <<< "$drift_json")
+
+            if (( drift_found == 0 )); then
+                log_ok "hooks in sync with hooks.json"
+            fi
         fi
         if jq -e '.claudeMdExcludes' "${CLAUDE_DIR}/settings.json" >/dev/null 2>&1; then
             log_ok "claudeMdExcludes present"
@@ -299,6 +353,34 @@ backup_settings() {
     return 0
 }
 
+# Union-merge repo hooks.json into settings.json .hooks without deleting
+# entries written by other installers.
+#
+# #CRITICAL: ~/.claude/settings.json .hooks has MULTIPLE WRITERS: this
+# script, codebase-memory-mcp's installer (SessionStart entries and the
+# Grep|Glob code-discovery gate), and occasional direct edits. This merge
+# must never remove an entry it does not recognize; a previous
+# replace-assignment here (`.hooks = $h[0]`) silently deleted live
+# security-control hooks (senior review 2026-07-01, Critical finding).
+# #VERIFY: tests/test_setup_hooks.bats asserts foreign entries survive and
+# the merge is idempotent; `setup.sh --doctor` reports drift in both
+# directions between hooks.json and settings.json.
+# #ASSUME: no concurrent writer lands between the jq read and the mv rename
+# (lost-update race across the acknowledged writers); acceptable for
+# interactive setup.sh runs. #VERIFY: revisit if setup.sh ever runs
+# unattended or in parallel with an installer.
+#
+# Semantics: hook identity is the (event, matcher, command) triple; the
+# dedupe below is computed per event type over (matcher, command) pairs.
+# Repo groups are emitted verbatim per event type (repo is authoritative
+# for its own entries, so timeout/statusMessage edits propagate); settings
+# groups follow with repo-known hooks filtered out; groups whose hooks
+# array is empty (pre-existing or emptied by the dedupe) are dropped.
+# Event types present only in settings keep all their hook entries,
+# though group objects are re-serialized and event keys re-sorted.
+# Removing a hook from hooks.json therefore never removes it from a live
+# settings.json; deliberate removals show up in `--doctor` as live-only
+# drift and are handled manually.
 merge_hooks() {
     local hooks_source="${REPO_DIR}/hooks.json"
     local settings="${CLAUDE_DIR}/settings.json"
@@ -314,17 +396,72 @@ merge_hooks() {
     fi
 
     if (( DRY_RUN )); then
-        echo "  [dry]  jq merge hooks.json -> ${settings/#$HOME/~}"
+        if [[ -f "$settings" ]]; then
+            echo "  [dry]  jq union-merge hooks.json -> ${settings/#$HOME/~} (preserves foreign entries)"
+        else
+            echo "  [dry]  create ${settings/#$HOME/~} from hooks.json"
+        fi
         return 0
     fi
 
-    if [[ -f "$settings" ]]; then
-        jq --slurpfile h "$hooks_source" '.hooks = $h[0]' "$settings" > "${settings}.tmp" \
-            && mv "${settings}.tmp" "$settings"
-        log_ok "settings.json hooks updated from hooks.json"
-    else
-        jq -n --slurpfile h "$hooks_source" '{hooks: $h[0]}' > "$settings"
+    if [[ ! -f "$settings" ]]; then
+        # Write via a temp file so a jq failure (malformed hooks.json)
+        # cannot leave a truncated 0-byte settings.json behind.
+        if ! jq -n --slurpfile h "$hooks_source" '{hooks: $h[0]}' > "${settings}.tmp"; then
+            rm -f "${settings}.tmp"
+            log_error "settings.json create failed (jq error: invalid JSON or unexpected structure in hooks.json)"
+            exit 4
+        fi
+        mv "${settings}.tmp" "$settings"
         log_ok "settings.json created with hooks"
+        return 0
+    fi
+
+    # Reject an empty or non-object settings.json before merging: jq on
+    # empty input runs the filter zero times and exits 0, which would
+    # otherwise report "already current" on a corrupt file forever.
+    if ! jq -e 'type == "object"' "$settings" >/dev/null 2>&1; then
+        log_error "settings.json is empty or not a JSON object; refusing to merge. Restore from a settings.json.bak.* backup or delete it to recreate from hooks.json"
+        exit 4
+    fi
+
+    jq --slurpfile h "$hooks_source" '
+        ($h[0]) as $repo
+        | (.hooks // {}) as $live
+        | .hooks = (
+            (($repo | keys) + ($live | keys) | unique)
+            | map(
+                . as $ev
+                | ($repo[$ev] // []) as $rg
+                | ($live[$ev] // []) as $lg
+                | ([ $rg[] as $g | ($g.matcher // "") as $m
+                     | $g.hooks[]? | [$m, .command] ]) as $rid
+                | ($lg
+                   | map( . as $g
+                          | ($g.matcher // "") as $m
+                          | $g + { hooks: (($g.hooks // []) | map(
+                                .command as $c
+                                | select(any($rid[]; . == [$m, $c]) | not)
+                            )) }
+                        )
+                   | map(select(.hooks | length > 0))
+                  ) as $foreign
+                | { key: $ev, value: ($rg + $foreign) }
+              )
+            | from_entries
+          )
+    ' "$settings" > "${settings}.tmp" || {
+        rm -f "${settings}.tmp"
+        log_error "hooks merge failed (jq error: invalid JSON or unexpected structure in settings.json or hooks.json); settings.json left unchanged"
+        exit 4
+    }
+
+    if cmp -s "$settings" "${settings}.tmp"; then
+        rm -f "${settings}.tmp"
+        log_skip "settings.json hooks already current"
+    else
+        mv "${settings}.tmp" "$settings"
+        log_ok "settings.json hooks union-merged from hooks.json (foreign entries preserved)"
     fi
 }
 

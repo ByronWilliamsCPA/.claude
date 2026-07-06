@@ -63,6 +63,17 @@
       ]
     },
     {
+      "matcher": "Edit|Write|MultiEdit",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "bash $HOME/.claude/scripts/snyk-dep-reminder.sh",
+          "timeout": 5,
+          "statusMessage": "Checking dependency manifest changes..."
+        }
+      ]
+    },
+    {
       "hooks": [
         {
           "type": "command",

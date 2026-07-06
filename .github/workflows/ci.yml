@@ -67,13 +67,39 @@ jobs:
         run: uv run pytest tests/unit/test_manifest_consistency.py -v --no-cov
 
   # ==========================================================================
+  # setup.sh hook-merge tests: bats suite guarding merge_hooks() union-merge
+  # semantics and the doctor drift check. Scoped to the one bats file; the
+  # reusable Python workflow does not discover or run bats tests.
+  # ==========================================================================
+  setup-hooks-tests:
+    name: Setup hooks tests (bats)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411  # v2.19.4
+        with:
+          egress-policy: audit
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - name: Install bats
+        # Local install (not -g): global npm installs hit EACCES on the
+        # runner's /usr/local without sudo, and this mirrors the documented
+        # local invocation (npx --no-install bats).
+        run: npm install --no-save bats@1.13.0
+      - name: Run setup.sh hook merge tests
+        run: npx --no-install bats tests/test_setup_hooks.bats
+
+  # ==========================================================================
   # CI Gate: aggregates the CI result; must pass for branch protection
   # ==========================================================================
   ci-gate:
     name: CI Gate
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    needs: [ci, manifest-consistency]
+    needs: [ci, manifest-consistency, setup-hooks-tests]
     if: always()
     steps:
       - name: Harden runner
@@ -84,6 +110,7 @@ jobs:
         env:
           CI_RESULT: ${{ needs.ci.result }}
           MANIFEST_RESULT: ${{ needs.manifest-consistency.result }}
+          SETUP_HOOKS_RESULT: ${{ needs.setup-hooks-tests.result }}
         run: |
           if [ "$CI_RESULT" != "success" ]; then
             echo "::error::CI Gate failed: CI result is $CI_RESULT"
@@ -91,6 +118,10 @@ jobs:
           fi
           if [ "$MANIFEST_RESULT" != "success" ]; then
             echo "::error::CI Gate failed: manifest-consistency result is $MANIFEST_RESULT"
+            exit 1
+          fi
+          if [ "$SETUP_HOOKS_RESULT" != "success" ]; then
+            echo "::error::CI Gate failed: setup-hooks-tests result is $SETUP_HOOKS_RESULT"
             exit 1
           fi
           echo "CI Gate passed"

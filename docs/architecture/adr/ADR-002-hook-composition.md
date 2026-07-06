@@ -29,13 +29,22 @@ This ADR documents the source-of-truth decision, the composition pattern, and th
 
 ## Decision
 
-`hooks.json` at repo root is the authoritative definition of all hooks. `setup.sh` merges it into `~/.claude/settings.json` using:
+`hooks.json` at repo root is the authoritative definition of all repo-owned hooks. `setup.sh` merges it into `~/.claude/settings.json`.
 
-```bash
-jq --slurpfile h "$hooks_source" '.hooks = $h[0]' "$settings"
-```
-
-This wholesale replaces the `.hooks` key in `settings.json` with the contents of `hooks.json` on every `setup.sh` run. Consequences: direct edits to `settings.json`'s hooks block are always clobbered; all hook changes go into `hooks.json` and are committed.
+> **Amended 2026-07-06.** The original decision used a replace-assignment
+> (`.hooks = $h[0]`), which wholesale-replaced the `.hooks` key on every
+> `setup.sh` run. That held only while `setup.sh` was the sole writer. By
+> 2026-07 at least three writers targeted `settings.json .hooks` (setup.sh,
+> the codebase-memory-mcp installer, direct edits), and the replace semantics
+> silently deleted the other writers' entries (senior review 2026-07-01,
+> Critical finding). `merge_hooks()` now performs a union merge: hook identity
+> is the (event, matcher, command) triple, deduplicated per event type over
+> (matcher, command) pairs; `hooks.json` entries are authoritative for their
+> own identities, and unrecognized `settings.json` entries are preserved. Removals from `hooks.json` no longer propagate
+> automatically; `setup.sh --doctor` reports live-only drift for manual
+> action. The rule "all repo-owned hook changes go into `hooks.json` and are
+> committed" still stands; direct edits registering repo scripts are flagged
+> by `--doctor` as unbackported.
 
 ### Composition of hook arrays
 
@@ -45,15 +54,17 @@ Current hook definitions by type:
 
 **PreToolUse** (fires before each tool call, in this order):
 
-1. **Secrets file guard**: matcher `Edit|Write`. Blocks writes to `.env` and `settings.local.json` with exit code 2.
-2. **Planning bridge gate**: matcher `Skill`. Calls `scripts/planning-bridge-gate.sh` before any Skill invocation to enforce plan-approval workflow.
-3. **Security guidance reminder**: matcher `Edit|Write|MultiEdit`. Runs `security_reminder_hook.py` from `anthropics-plugins/security-guidance` to surface security patterns.
-4. **hookify PreToolUse**: no matcher (all tools). Dispatches to the hookify plugin engine, which runs any plugins registered for PreToolUse events.
+1. **Bash command guard**: matcher `Bash`. Runs `scripts/bash-pre-hook.sh` to block bypass flags (`--no-verify`, `--no-gpg-sign`, admin merges, force-push to protected branches).
+2. **Sensitive file guard**: matcher `Edit|Write|MultiEdit`. Runs `scripts/sensitive-file-guard.sh`; blocks writes to `.env` and `settings.local.json` with exit code 2.
+3. **Planning bridge gate**: matcher `Skill`. Calls `scripts/planning-bridge-gate.sh` before any Skill invocation to enforce plan-approval workflow.
+4. **Security guidance reminder**: matcher `Edit|Write|MultiEdit`. Runs `security_reminder_hook.py` from `anthropics-plugins/security-guidance` to surface security patterns.
+5. **hookify PreToolUse**: no matcher (all tools). Dispatches to the hookify plugin engine, which runs any plugins registered for PreToolUse events.
 
 **PostToolUse** (fires after each tool call, in this order):
 
-1. **py310-compat-check**: matcher `Edit|Write`. Checks modified Python files for syntax incompatible with Python 3.10.
-2. **hookify PostToolUse**: no matcher (all tools). Dispatches to hookify plugin engine for PostToolUse plugins.
+1. **py310-compat-check**: matcher `(Edit|Write)`. Checks modified Python files for syntax incompatible with Python 3.10.
+2. **snyk-dep-reminder**: matcher `Edit|Write|MultiEdit`. Runs `scripts/snyk-dep-reminder.sh` to surface a Snyk scan reminder when dependency manifests change.
+3. **hookify PostToolUse**: no matcher (all tools). Dispatches to hookify plugin engine for PostToolUse plugins.
 
 **Stop** (fires at end of model turn):
 
@@ -72,12 +83,14 @@ User sends message
   → UserPromptSubmit[1]: pr-review-reminder.py
   → Model processes prompt, issues tool calls
     → For each tool call:
-        → PreToolUse[matcher]: secrets guard (if Edit|Write)
+        → PreToolUse[matcher]: bash command guard (if Bash)
+        → PreToolUse[matcher]: sensitive file guard (if Edit|Write|MultiEdit)
         → PreToolUse[matcher]: planning gate (if Skill)
         → PreToolUse[matcher]: security reminder (if Edit|Write|MultiEdit)
         → PreToolUse[no-matcher]: hookify pretooluse.py
         → Tool executes
         → PostToolUse[matcher]: py310-compat-check (if Edit|Write)
+        → PostToolUse[matcher]: snyk-dep-reminder (if Edit|Write|MultiEdit)
         → PostToolUse[no-matcher]: hookify posttooluse.py
   → Model finishes turn
     → Stop[no-matcher]: hookify stop.py
@@ -106,7 +119,7 @@ Exit codes from hook scripts determine whether the tool call proceeds: exit 0 al
 
 ### Negative
 
-- Contributors who do not know about `hooks.json` will edit `settings.json` directly and lose their changes on the next `setup.sh` run. The `--doctor` flag surfaces broken symlinks but not settings.json drift.
+- Contributors who do not know about `hooks.json` may still edit `settings.json` directly. Since the 2026-07-06 amendment those edits survive the merge, but they are unversioned; `setup.sh --doctor` flags live-only entries that reference repo-owned paths as unbackported.
 - `setup.sh` must be re-run after every change to `hooks.json`. The hooks do not take effect until the jq merge runs.
 
 ### Neutral
