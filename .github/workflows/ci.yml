@@ -85,9 +85,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
       - name: Install bats
-        run: npm install -g bats@1.13.0
+        # Local install (not -g): global npm installs hit EACCES on the
+        # runner's /usr/local without sudo, and this mirrors the documented
+        # local invocation (npx --no-install bats).
+        run: npm install --no-save bats@1.13.0
       - name: Run setup.sh hook merge tests
-        run: bats tests/test_setup_hooks.bats
+        run: npx --no-install bats tests/test_setup_hooks.bats
 
   # ==========================================================================
   # CI Gate: aggregates the CI result; must pass for branch protection
