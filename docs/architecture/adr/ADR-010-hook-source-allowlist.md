@@ -108,6 +108,14 @@ Alongside the mechanism, we adopt a trust-tier policy for injected content:
   hook changes now require touching `hook-inventory.json` in the same PR.
   The check is machine-local (it reads `~/.claude/`), so CI cannot run it;
   it only fires when someone runs `setup.sh --doctor`.
+- **Negative (threat model)**: the mechanism detects drift; it does not
+  prevent it, and it is not tamper-proof. An attacker with write access to
+  `~/.claude/` can register a hook and also edit the symlinked checker
+  script, the local allowlist copy, or `enabledPlugins`, so the check is a
+  tripwire against accidental and unsophisticated drift, not a security
+  boundary against an adversary who already holds that write access. Hooks
+  execute at session start regardless; detection happens only at the next
+  doctor run.
 - **Neutral**: the checker trusts `enabledPlugins` in
   `~/.claude/settings.json` as the definition of "live" for plugins, and
   reports cached-but-disabled plugins with hooks as informational only.
@@ -124,4 +132,6 @@ Alongside the mechanism, we adopt a trust-tier policy for injected content:
 - [ADR-008 Two-Tier Scanner Allowlist](ADR-008-scanner-allowlist-tiers.md):
   prior art for allowlist-with-tiers in this repo.
 - `docs/reviews/senior-review-repo-2026-07-01.md`: the originating finding
-  ("Three distinct hook-registration mechanisms exist...").
+  ("Three distinct hook-registration mechanisms exist..."). Local-only
+  reference: `docs/reviews/` is gitignored by design (see PR #252), so this
+  file exists only on the machine where the review ran.
