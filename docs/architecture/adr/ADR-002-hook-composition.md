@@ -29,13 +29,22 @@ This ADR documents the source-of-truth decision, the composition pattern, and th
 
 ## Decision
 
-`hooks.json` at repo root is the authoritative definition of all hooks. `setup.sh` merges it into `~/.claude/settings.json` using:
+`hooks.json` at repo root is the authoritative definition of all repo-owned hooks. `setup.sh` merges it into `~/.claude/settings.json`.
 
-```bash
-jq --slurpfile h "$hooks_source" '.hooks = $h[0]' "$settings"
-```
-
-This wholesale replaces the `.hooks` key in `settings.json` with the contents of `hooks.json` on every `setup.sh` run. Consequences: direct edits to `settings.json`'s hooks block are always clobbered; all hook changes go into `hooks.json` and are committed.
+> **Amended 2026-07-06.** The original decision used a replace-assignment
+> (`.hooks = $h[0]`), which wholesale-replaced the `.hooks` key on every
+> `setup.sh` run. That held only while `setup.sh` was the sole writer. By
+> 2026-07 at least three writers targeted `settings.json .hooks` (setup.sh,
+> the codebase-memory-mcp installer, direct edits), and the replace semantics
+> silently deleted the other writers' entries (senior review 2026-07-01,
+> Critical finding). `merge_hooks()` now performs a union merge: hook identity
+> is the pair (group matcher, hook command); `hooks.json` entries are
+> authoritative for their own identities, and unrecognized `settings.json`
+> entries are preserved. Removals from `hooks.json` no longer propagate
+> automatically; `setup.sh --doctor` reports live-only drift for manual
+> action. The rule "all repo-owned hook changes go into `hooks.json` and are
+> committed" still stands; direct edits registering repo scripts are flagged
+> by `--doctor` as unbackported.
 
 ### Composition of hook arrays
 
