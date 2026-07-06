@@ -22,7 +22,7 @@ For the reasoning behind this design, see
 
 `.gitmodules` is the authoritative submodule list. The inventory table below
 must cover every entry in it; `tests/unit/test_submodule_strategy_sync.py`
-fails CI when the two disagree.
+fails CI when the two disagree on paths or upstream slugs.
 
 ## Submodule Inventory
 
@@ -33,8 +33,8 @@ fails CI when the two disagree.
 | `.submodules/superpowers/` | `obra/superpowers` | Community skills: brainstorming, TDD, systematic debugging, plan execution, review patterns | Selected skills symlinked into `.claude/skills/`; several others maintained as deliberate local forks | Third-party, reviewed; see [skills deep dive](../tool-evals/skills-deep-dive-2026-06.md) |
 | `.submodules/anthropics-skills/` | `anthropics/skills` | Official Anthropic skill collection | docx, pdf, pptx, xlsx, skill-creator symlinked into `.claude/skills/` (document skills are symlink-only for license reasons) | Vendor (Anthropic) |
 | `.submodules/anthropics-plugins/` | `anthropics/claude-plugins-official` | hookify plugin engine, security-guidance hooks, pr-review-toolkit agents, several skills | Hook scripts referenced by absolute path from `hooks.json`; selected skills symlinked into `.claude/skills/` and agents into `.claude/agents/` | Vendor (Anthropic) |
-| `.submodules/one-skill-to-rule-them-all/` | `rebelytics/one-skill-to-rule-them-all` | Upstream source of the task-observer meta-skill | Not in the load path directly: `scripts/apply-task-observer-patches.sh` builds `.claude/skills/task-observer/SKILL.md` from it | Third-party, reviewed; full integration design in [task-observer design](../superpowers/specs/2026-04-28-task-observer-design.md) |
-| `.submodules/jeffallan-claude-skills/` | `Jeffallan/claude-skills` | Community skill collection (65+ skills); only `fastapi-expert` is consumed | One skill symlinked: `.claude/skills/fastapi-expert`; local delta in first-party `.claude/skills/fastapi-expert-extras/` | Third-party, reviewed at pin `5e8b6b8` (2026-07-06); see adjudication below |
+| `.submodules/one-skill-to-rule-them-all/` | `rebelytics/one-skill-to-rule-them-all` | Upstream source of the task-observer meta-skill | Not in the load path directly: `scripts/apply-task-observer-patches.sh` builds `.claude/skills/task-observer/SKILL.md` from it | Third-party, reviewed at admission (2026-04-28, pin `b6b6954`); full integration design in [task-observer design](../superpowers/specs/2026-04-28-task-observer-design.md) |
+| `.submodules/jeffallan-claude-skills/` | `Jeffallan/claude-skills` | Community skill collection (66 skills at the reviewed pin); only `fastapi-expert` is consumed | One skill symlinked: `.claude/skills/fastapi-expert`; local delta in first-party `.claude/skills/fastapi-expert-extras/` | Third-party, reviewed at pin `5e8b6b8` (2026-07-06); see adjudication below |
 | `.submodules/agents-observe/` | `simple10/agents-observe` | Per-subagent token attribution dashboard (Claude Code plugin) | Directory-source marketplace plugin in `settings.json` (`extraKnownMarketplaces` plus `enabledPlugins`); queried by the `usage-report` skill via REST | Third-party, security-reviewed at v0.9.11, PASS with required guardrails; see [usage monitoring survey](../reference/usage-monitoring-survey.md) and [hooks reference](../reference/hooks.md) |
 
 ## Trust Adjudications (2026-07-06)
@@ -44,7 +44,8 @@ explicit trust decision.
 
 ### `one-skill-to-rule-them-all`
 
-Adjudicated at admission. The approved integration design
+Adjudicated at admission (2026-04-28, the approved integration design below;
+pin `b6b6954` as of 2026-07-06). The approved integration design
 ([2026-04-28-task-observer-design.md](../superpowers/specs/2026-04-28-task-observer-design.md))
 treats the submodule as a tracked upstream source, never loaded directly: a
 patch script applies three documented transformations and writes the result to
@@ -62,9 +63,9 @@ commit that does not touch skill content). Findings:
   directives beyond running `pytest`, no network calls, no embedded
   instructions targeting the host session. One quality wart (invalid
   `model_config` usage in the minimal example) noted; quality, not trust.
-- `.claude/skills/fastapi-expert-extras/` is genuinely first-party: a local
-  delta built from this repo's own observations, layered on the vendored
-  skill. Verified 2026-07-06.
+- `.claude/skills/fastapi-expert-extras/` is first-party: a local delta
+  built from this repo's own observations, layered on the vendored skill.
+  Verified 2026-07-06.
 - The upstream repo carries a `CLAUDE.md` at its root. Folder-scoped
   instruction files inside submodules load into any session that reads a file
   under them, so that file is part of the reviewed surface (see admission bar
@@ -84,7 +85,9 @@ Adjudicated at admission (2026-06-11). The submodule is the install mechanism:
 `settings.json` registers it as a directory-source marketplace plugin, so the
 checked-out working tree is what runs. The full security review (verdict: PASS
 with required guardrails, including unredacted tool-input persistence and an
-unauthenticated `0.0.0.0` port bind mitigated by WSL2 NAT) lives in the
+unauthenticated `0.0.0.0` port bind mitigated by WSL2 NAT, a
+host-topology-specific mitigation to re-verify on any non-WSL2 deployment)
+lives in the
 [usage monitoring survey](../reference/usage-monitoring-survey.md); the
 hook-composition analysis (28 events, fire-and-forget wrapper verified unable
 to block tool calls at v0.9.11) lives in the
@@ -107,7 +110,11 @@ supply chain: it runs inside sessions with the session's full tool access.
 3. **Instruction-file review.** Read the submodule's `CLAUDE.md`, `AGENTS.md`,
    and `GEMINI.md` (root and nested) at the pin. These load into any session
    that reads a file under the submodule, whether or not the submodule is
-   otherwise wired in.
+   otherwise wired in. For a submodule wired as a plugin (marketplace or
+   directory source), the auto-load surface is wider: also review its
+   `.mcp.json` (auto-registers MCP servers), the `.claude-plugin/plugin.json`
+   marketplace manifest (controls what the plugin discovers and exposes), and
+   any `commands/`, `agents/`, or `skills/` content the manifest wires in.
 4. **Wiring statement.** The inventory table row must say how the submodule
    reaches `~/.claude/` (symlink, hook path, plugin marketplace, build
    artifact) or state explicitly that it is inert.
@@ -121,9 +128,13 @@ supply chain: it runs inside sessions with the session's full tool access.
 
 `#CRITICAL` Symlinks and directory-source plugins read the submodule working
 tree, not the pinned gitlink. A manual checkout inside a submodule silently
-floats the reviewed version. `#VERIFY` after any submodule operation:
-`git submodule status` must show no `+` prefix (working tree matches the
-gitlink) before trusting wired content.
+floats the reviewed version, and so do uncommitted edits to files inside the
+submodule tree, which `git submodule status` cannot see (its `+` prefix
+tracks only the checked-out commit). `#VERIFY` after any submodule
+operation, both of: `git submodule status` shows no `+` prefix (checked-out
+commit matches the gitlink), and `git -C .submodules/<name> status
+--porcelain` prints nothing (no modified or untracked content), before
+trusting wired content.
 
 ## How `setup.sh` Wires Them
 
