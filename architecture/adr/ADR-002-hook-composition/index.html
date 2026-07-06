@@ -2539,23 +2539,38 @@
 <p>A third problem: within a single tool invocation, several hooks fire in a defined order. That order is a behavioral contract. A <code>PreToolUse</code> that runs before the secrets check would silently allow edits that the secrets check is supposed to block.</p>
 <p>This ADR documents the source-of-truth decision, the composition pattern, and the execution ordering contract.</p>
 <h2 id="decision">Decision<a class="headerlink" href="#decision" title="Permanent link">&para;</a></h2>
-<p><code>hooks.json</code> at repo root is the authoritative definition of all hooks. <code>setup.sh</code> merges it into <code>~/.claude/settings.json</code> using:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>jq<span class="w"> </span>--slurpfile<span class="w"> </span>h<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$hooks_source</span><span class="s2">&quot;</span><span class="w"> </span><span class="s1">&#39;.hooks = $h[0]&#39;</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$settings</span><span class="s2">&quot;</span>
-</span></code></pre></div>
-<p>This wholesale replaces the <code>.hooks</code> key in <code>settings.json</code> with the contents of <code>hooks.json</code> on every <code>setup.sh</code> run. Consequences: direct edits to <code>settings.json</code>'s hooks block are always clobbered; all hook changes go into <code>hooks.json</code> and are committed.</p>
+<p><code>hooks.json</code> at repo root is the authoritative definition of all repo-owned hooks. <code>setup.sh</code> merges it into <code>~/.claude/settings.json</code>.</p>
+<blockquote>
+<p><strong>Amended 2026-07-06.</strong> The original decision used a replace-assignment
+(<code>.hooks = $h[0]</code>), which wholesale-replaced the <code>.hooks</code> key on every
+<code>setup.sh</code> run. That held only while <code>setup.sh</code> was the sole writer. By
+2026-07 at least three writers targeted <code>settings.json .hooks</code> (setup.sh,
+the codebase-memory-mcp installer, direct edits), and the replace semantics
+silently deleted the other writers' entries (senior review 2026-07-01,
+Critical finding). <code>merge_hooks()</code> now performs a union merge: hook identity
+is the (event, matcher, command) triple, deduplicated per event type over
+(matcher, command) pairs; <code>hooks.json</code> entries are authoritative for their
+own identities, and unrecognized <code>settings.json</code> entries are preserved. Removals from <code>hooks.json</code> no longer propagate
+automatically; <code>setup.sh --doctor</code> reports live-only drift for manual
+action. The rule "all repo-owned hook changes go into <code>hooks.json</code> and are
+committed" still stands; direct edits registering repo scripts are flagged
+by <code>--doctor</code> as unbackported.</p>
+</blockquote>
 <h3 id="composition-of-hook-arrays">Composition of hook arrays<a class="headerlink" href="#composition-of-hook-arrays" title="Permanent link">&para;</a></h3>
 <p>Each hook type in <code>hooks.json</code> is an array of hook entries. Entries within an array execute in order. An entry may have a <code>matcher</code> (a regex matching the tool name) or no matcher (applies to all tool invocations within that hook type). Matcher-specific entries fire only when the matched tool is called; no-matcher entries fire on every call.</p>
 <p>Current hook definitions by type:</p>
 <p><strong>PreToolUse</strong> (fires before each tool call, in this order):</p>
 <ol>
-<li><strong>Secrets file guard</strong>: matcher <code>Edit|Write</code>. Blocks writes to <code>.env</code> and <code>settings.local.json</code> with exit code 2.</li>
+<li><strong>Bash command guard</strong>: matcher <code>Bash</code>. Runs <code>scripts/bash-pre-hook.sh</code> to block bypass flags (<code>--no-verify</code>, <code>--no-gpg-sign</code>, admin merges, force-push to protected branches).</li>
+<li><strong>Sensitive file guard</strong>: matcher <code>Edit|Write|MultiEdit</code>. Runs <code>scripts/sensitive-file-guard.sh</code>; blocks writes to <code>.env</code> and <code>settings.local.json</code> with exit code 2.</li>
 <li><strong>Planning bridge gate</strong>: matcher <code>Skill</code>. Calls <code>scripts/planning-bridge-gate.sh</code> before any Skill invocation to enforce plan-approval workflow.</li>
 <li><strong>Security guidance reminder</strong>: matcher <code>Edit|Write|MultiEdit</code>. Runs <code>security_reminder_hook.py</code> from <code>anthropics-plugins/security-guidance</code> to surface security patterns.</li>
 <li><strong>hookify PreToolUse</strong>: no matcher (all tools). Dispatches to the hookify plugin engine, which runs any plugins registered for PreToolUse events.</li>
 </ol>
 <p><strong>PostToolUse</strong> (fires after each tool call, in this order):</p>
 <ol>
-<li><strong>py310-compat-check</strong>: matcher <code>Edit|Write</code>. Checks modified Python files for syntax incompatible with Python 3.10.</li>
+<li><strong>py310-compat-check</strong>: matcher <code>(Edit|Write)</code>. Checks modified Python files for syntax incompatible with Python 3.10.</li>
+<li><strong>snyk-dep-reminder</strong>: matcher <code>Edit|Write|MultiEdit</code>. Runs <code>scripts/snyk-dep-reminder.sh</code> to surface a Snyk scan reminder when dependency manifests change.</li>
 <li><strong>hookify PostToolUse</strong>: no matcher (all tools). Dispatches to hookify plugin engine for PostToolUse plugins.</li>
 </ol>
 <p><strong>Stop</strong> (fires at end of model turn):</p>
@@ -2568,20 +2583,22 @@
 <li><strong>PR review reminder</strong>: runs <code>scripts/pr-review-reminder.py</code> to detect PR review intent and inject reminders.</li>
 </ol>
 <h3 id="execution-ordering-across-a-conversation-turn">Execution ordering across a conversation turn<a class="headerlink" href="#execution-ordering-across-a-conversation-turn" title="Permanent link">&para;</a></h3>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>User sends message
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>  → UserPromptSubmit[0]: hookify userpromptsubmit.py
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>  → UserPromptSubmit[1]: pr-review-reminder.py
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>  → Model processes prompt, issues tool calls
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    → For each tool call:
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>        → PreToolUse[matcher]: secrets guard (if Edit|Write)
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>        → PreToolUse[matcher]: planning gate (if Skill)
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>        → PreToolUse[matcher]: security reminder (if Edit|Write|MultiEdit)
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>        → PreToolUse[no-matcher]: hookify pretooluse.py
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>        → Tool executes
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>        → PostToolUse[matcher]: py310-compat-check (if Edit|Write)
-</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>        → PostToolUse[no-matcher]: hookify posttooluse.py
-</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>  → Model finishes turn
-</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>    → Stop[no-matcher]: hookify stop.py
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>User sends message
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>  → UserPromptSubmit[0]: hookify userpromptsubmit.py
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>  → UserPromptSubmit[1]: pr-review-reminder.py
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>  → Model processes prompt, issues tool calls
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    → For each tool call:
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>        → PreToolUse[matcher]: bash command guard (if Bash)
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>        → PreToolUse[matcher]: sensitive file guard (if Edit|Write|MultiEdit)
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>        → PreToolUse[matcher]: planning gate (if Skill)
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>        → PreToolUse[matcher]: security reminder (if Edit|Write|MultiEdit)
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>        → PreToolUse[no-matcher]: hookify pretooluse.py
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>        → Tool executes
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>        → PostToolUse[matcher]: py310-compat-check (if Edit|Write)
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>        → PostToolUse[matcher]: snyk-dep-reminder (if Edit|Write|MultiEdit)
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>        → PostToolUse[no-matcher]: hookify posttooluse.py
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>  → Model finishes turn
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>    → Stop[no-matcher]: hookify stop.py
 </span></code></pre></div>
 <p>Exit codes from hook scripts determine whether the tool call proceeds: exit 0 allows, exit 2 blocks with an error message, exit 1 is a hook-level failure.</p>
 <h2 id="alternatives-considered">Alternatives Considered<a class="headerlink" href="#alternatives-considered" title="Permanent link">&para;</a></h2>
@@ -2599,7 +2616,7 @@
 </ul>
 <h3 id="negative">Negative<a class="headerlink" href="#negative" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Contributors who do not know about <code>hooks.json</code> will edit <code>settings.json</code> directly and lose their changes on the next <code>setup.sh</code> run. The <code>--doctor</code> flag surfaces broken symlinks but not settings.json drift.</li>
+<li>Contributors who do not know about <code>hooks.json</code> may still edit <code>settings.json</code> directly. Since the 2026-07-06 amendment those edits survive the merge, but they are unversioned; <code>setup.sh --doctor</code> flags live-only entries that reference repo-owned paths as unbackported.</li>
 <li><code>setup.sh</code> must be re-run after every change to <code>hooks.json</code>. The hooks do not take effect until the jq merge runs.</li>
 </ul>
 <h3 id="neutral">Neutral<a class="headerlink" href="#neutral" title="Permanent link">&para;</a></h3>
@@ -2641,7 +2658,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 27, 2026 22:56:05 UTC">April 27, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 6, 2026 21:47:32 UTC">July 6, 2026</span>
   </span>
 
     
