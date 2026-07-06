@@ -49,7 +49,7 @@ The practical difference: when you want something to happen automatically from a
 
 ### Rules and Standards (not dispatched)
 
-Rules (`.claude/rules/`) are not dispatched: they are loaded at session start via `CLAUDE.md` references and remain active throughout the session. Standards (`.claude/standards/`) are never dispatched or auto-loaded; they are read on demand via file reads when a task requires reference material.
+Rules (`.claude/rules/`) are not dispatched: `CLAUDE.md` points to them with "see `.claude/rules/X.md`" references, but nothing in Claude Code auto-loads the target file into the system prompt. A rule enters context only when Claude reads it by following one of those pointers, or when a hook prints equivalent content directly (the `delegation-reminder` SessionStart hook, for instance, prints a hardcoded summary of the delegation core, the same content inlined in `CLAUDE.md`, every session rather than depending on a pointer being followed). Standards (`.claude/standards/`) are never dispatched and never auto-loaded; `CLAUDE.md` points to several of them with the same "see" references it uses for rules, and they are read on demand via file reads when a task, or an agent's own prompt, requires the reference material.
 
 ## The Tool Restriction Model for Agents
 
