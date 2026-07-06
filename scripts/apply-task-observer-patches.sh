@@ -24,7 +24,13 @@ OUTPUT="${HOME}/.claude/skills/task-observer/SKILL.md"
 # SKILL.md output verbatim (so the consumer sees a concrete path) but is now
 # portable across user accounts.
 REPO_PATH="${REPO_ROOT}"
-MANIFEST_PATH="${REPO_PATH}/skill-observations/available-skills.md"
+# Task-observer runtime files live in the fixed workspace ~/.claude/ regardless
+# of where this repo is cloned (CLAUDE.md "Task observation" override), and
+# generate-skills-manifest.sh writes the manifest there. Deriving this path
+# from REPO_PATH pointed the installed SKILL.md at the repo clone instead.
+# REPO_PATH itself stays repo-relative: the skill-updates staging area it feeds
+# is project-relative by design.
+MANIFEST_PATH="${HOME}/.claude/skill-observations/available-skills.md"
 STRIP_SECTION="### Without Persistent Storage"
 
 if [[ ! -f "${UPSTREAM}" ]]; then
