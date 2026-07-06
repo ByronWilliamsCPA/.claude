@@ -67,7 +67,9 @@
       "hooks": [
         {
           "type": "command",
-          "command": "bash $HOME/.claude/scripts/snyk-dep-reminder.sh"
+          "command": "bash $HOME/.claude/scripts/snyk-dep-reminder.sh",
+          "timeout": 5,
+          "statusMessage": "Checking dependency manifest changes..."
         }
       ]
     },
@@ -84,12 +86,6 @@
   "Stop": [
     {
       "hooks": [
-        {
-          "type": "command",
-          "command": "bash $HOME/.claude/scripts/session-length-warning.sh",
-          "timeout": 10,
-          "statusMessage": "Checking session length..."
-        },
         {
           "type": "command",
           "command": "CLAUDE_PLUGIN_ROOT=$HOME/dev/.claude/.submodules/anthropics-plugins/plugins/hookify python3 $HOME/dev/.claude/.submodules/anthropics-plugins/plugins/hookify/hooks/stop.py",

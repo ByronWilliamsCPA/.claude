@@ -6,7 +6,9 @@
 # silently deleting hooks written by other installers (codebase-memory-mcp
 # SessionStart entries, direct edits). These tests pin the union-merge
 # semantics: repo hooks.json entries are authoritative for their own
-# (matcher, command) identities; everything else in settings.json survives.
+# per-event (matcher, command) identities, so the effective identity is
+# the (event, matcher, command) triple; everything else in settings.json
+# survives.
 
 load 'helpers/test_helper'
 
@@ -69,21 +71,22 @@ EOF
 
     local settings="$HOME/.claude/settings.json"
 
-    # Foreign entries survive
+    # Foreign entries survive (exact matches: substring assertions on jq
+    # counts also match "10"/"11" and weaken the pin)
     run jq -r '[.hooks.SessionStart[].matcher] | sort | join(",")' "$settings"
-    assert_output_contains "resume,startup"
+    [ "$output" = "resume,startup" ]
     run jq -r '[.hooks.PreToolUse[] | select(.matcher == "Grep|Glob") | .hooks[].command] | length' "$settings"
-    assert_output_contains "1"
+    [ "$output" = "1" ]
 
     # Repo hooks arrived
     run jq -r '[.hooks.PreToolUse[] | .hooks[].command] | map(select(contains("bash-pre-hook.sh"))) | length' "$settings"
-    assert_output_contains "1"
-    run jq -r '[.hooks.Stop[] | .hooks[].command] | map(select(contains("session-length-warning.sh"))) | length' "$settings"
-    assert_output_contains "1"
+    [ "$output" = "1" ]
+    run jq -r '[.hooks.PostToolUse[] | .hooks[].command] | map(select(contains("snyk-dep-reminder.sh"))) | length' "$settings"
+    [ "$output" = "1" ]
 
     # Unrelated top-level keys untouched
     run jq -r '.model' "$settings"
-    assert_output_contains "opus"
+    [ "$output" = "opus" ]
 }
 
 @test "merge is a union: every hooks.json triple is present after merge" {
@@ -98,7 +101,7 @@ EOF
             | $e.value[]? as $g | ($g.matcher // "") as $m
             | $g.hooks[]? | [$e.key, $m, .command] ];
         (triples($repo[0]) - triples($live[0].hooks)) | length'
-    assert_output_contains "0"
+    [ "$output" = "0" ]
 }
 
 # =============================================================================
@@ -127,10 +130,10 @@ EOF
 
     run jq -r '[.hooks.PreToolUse[] | .hooks[] | select(.command | contains("bash-pre-hook.sh"))] | length' \
         "$HOME/.claude/settings.json"
-    assert_output_contains "1"
+    [ "$output" = "1" ]
     run jq -r '[.hooks.PreToolUse[] | .hooks[] | select(.command | contains("bash-pre-hook.sh"))][0].timeout' \
         "$HOME/.claude/settings.json"
-    assert_output_contains "10"
+    [ "$output" = "10" ]
 }
 
 @test "mixed group splits: foreign hook survives when it shares a group with a repo hook" {
@@ -152,10 +155,10 @@ EOF
     run jq -r --arg cmd "$repo_stop_cmd" \
         '[.hooks.Stop[] | .hooks[] | select(.command == $cmd)] | length' \
         "$HOME/.claude/settings.json"
-    assert_output_contains "1"
+    [ "$output" = "1" ]
     run jq -r '[.hooks.Stop[] | .hooks[] | select(.command == "echo foreign-stop-hook")] | length' \
         "$HOME/.claude/settings.json"
-    assert_output_contains "1"
+    [ "$output" = "1" ]
 }
 
 # =============================================================================
@@ -191,7 +194,38 @@ EOF
         --slurpfile repo "$HOOKS_JSON" \
         --slurpfile live "$HOME/.claude/settings.json" \
         '$repo[0] == $live[0].hooks'
-    assert_output_contains "true"
+    [ "$output" = "true" ]
+}
+
+# =============================================================================
+# merge_hooks: failure paths (must abort loudly, never corrupt settings.json)
+# =============================================================================
+
+@test "merge aborts with exit 4 on invalid settings.json and leaves it unchanged" {
+    echo '{ not json' > "$HOME/.claude/settings.json"
+    local before
+    before="$(sha256sum "$HOME/.claude/settings.json" | cut -d' ' -f1)"
+
+    run bash "$SETUP_SH"
+    [ "$status" -eq 4 ]
+    assert_output_contains "refusing to merge"
+
+    local after
+    after="$(sha256sum "$HOME/.claude/settings.json" | cut -d' ' -f1)"
+    [ "$before" = "$after" ]
+    [ ! -f "$HOME/.claude/settings.json.tmp" ]
+}
+
+@test "merge aborts with exit 4 on empty settings.json instead of reporting current" {
+    # jq on empty input exits 0 with empty output; without the type guard
+    # the merge would log "already current" on a corrupt file forever.
+    : > "$HOME/.claude/settings.json"
+
+    run bash "$SETUP_SH"
+    [ "$status" -eq 4 ]
+    assert_output_contains "refusing to merge"
+    assert_output_not_contains "already current"
+    [ ! -s "$HOME/.claude/settings.json" ]
 }
 
 # =============================================================================

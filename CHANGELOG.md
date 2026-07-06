@@ -190,6 +190,22 @@
 
 ### Fixed
 
+* fix(setup): harden the hooks union-merge shipped in PR #274 based on review
+  findings. `hooks.json` drops the Stop-event `session-length-warning.sh` entry
+  (the script exists nowhere in the tree, history, or live machine; merging the
+  entry would register a permanently failing hook) and aligns the backported
+  snyk-dep-reminder entry with PR #254's `timeout: 5`. `setup.sh` now writes
+  the fresh-create path through a temp file so a malformed `hooks.json` cannot
+  leave a truncated `settings.json`, aborts the merge with exit 4 when
+  `settings.json` is empty or not a JSON object instead of silently reporting
+  "already current", and replaces the jq 1.6-only `IN()` builtin with an
+  `any()` equivalent so the merge works on jq 1.5. Documentation (ADR-002,
+  install-model.md) is corrected to describe hook identity as the
+  (event, matcher, command) triple and to state the actual preservation
+  semantics (empty groups pruned, group objects re-serialized). Adds two bats
+  failure-path tests (invalid and empty `settings.json`) and a CI job that
+  runs `tests/test_setup_hooks.bats`, which previously never ran in CI.
+
 * fix(snyk): correct the documented Snyk MCP tool names, which did not exist on
   the running server, so an agent following the standard called non-existent
   tools and silently scanned nothing. Replaces `snyk_test` with `snyk_sca_scan`

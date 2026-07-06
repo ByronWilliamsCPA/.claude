@@ -163,7 +163,7 @@ doctor() {
                 (triples($repo[0])) as $r
                 | (triples($live[0].hooks)) as $l
                 | {repo_not_live: ($r - $l), live_not_repo: ($l - $r)}')"; then
-                log_warn "could not parse hooks.json or settings.json; hooks drift check skipped"
+                log_warn "could not read hooks.json or settings.json (jq error: invalid JSON or unexpected structure); hooks drift check skipped"
                 broken=$((broken + 1))
                 drift_json='{"repo_not_live":[],"live_not_repo":[]}'
                 drift_found=1
@@ -176,15 +176,18 @@ doctor() {
                 drift_found=1
             done < <(jq -r '.repo_not_live[]' <<< "$drift_json")
 
-            # Live-only entries referencing a repo script mean a repo-owned
-            # hook was registered directly in settings.json and never
-            # backported; that is exactly the drift class that caused the
-            # 2026-07-01 incident. Other live-only entries belong to
-            # foreign installers (e.g. codebase-memory-mcp) and are
-            # expected: the union merge preserves them.
+            # Live-only entries referencing a repo-owned path mean a
+            # repo-owned hook was registered directly in settings.json and
+            # never backported; that is exactly the drift class that caused
+            # the 2026-07-01 incident. Match both the symlinked scripts dir
+            # (~/.claude/scripts/) and any path into the repo clone
+            # (~/dev/.claude/, covering submodule plugin hooks). Other
+            # live-only entries belong to foreign installers (e.g.
+            # codebase-memory-mcp) and are expected: the union merge
+            # preserves them.
             while IFS= read -r line; do
                 [[ -n "$line" ]] || continue
-                if [[ "$line" == *"/.claude/scripts/"* ]]; then
+                if [[ "$line" == *"/.claude/scripts/"* || "$line" == *"/dev/.claude/"* ]]; then
                     log_warn "live-only hook references a repo script (backport to hooks.json): ${line}"
                     broken=$((broken + 1))
                 else
@@ -362,12 +365,19 @@ backup_settings() {
 # #VERIFY: tests/test_setup_hooks.bats asserts foreign entries survive and
 # the merge is idempotent; `setup.sh --doctor` reports drift in both
 # directions between hooks.json and settings.json.
+# #ASSUME: no concurrent writer lands between the jq read and the mv rename
+# (lost-update race across the acknowledged writers); acceptable for
+# interactive setup.sh runs. #VERIFY: revisit if setup.sh ever runs
+# unattended or in parallel with an installer.
 #
-# Semantics: hook identity is the pair (group matcher, hook command).
+# Semantics: hook identity is the (event, matcher, command) triple; the
+# dedupe below is computed per event type over (matcher, command) pairs.
 # Repo groups are emitted verbatim per event type (repo is authoritative
 # for its own entries, so timeout/statusMessage edits propagate); settings
-# groups follow with repo-known hooks filtered out, emptied groups
-# dropped. Event types present only in settings pass through untouched.
+# groups follow with repo-known hooks filtered out; groups whose hooks
+# array is empty (pre-existing or emptied by the dedupe) are dropped.
+# Event types present only in settings keep all their hook entries,
+# though group objects are re-serialized and event keys re-sorted.
 # Removing a hook from hooks.json therefore never removes it from a live
 # settings.json; deliberate removals show up in `--doctor` as live-only
 # drift and are handled manually.
@@ -386,14 +396,33 @@ merge_hooks() {
     fi
 
     if (( DRY_RUN )); then
-        echo "  [dry]  jq union-merge hooks.json -> ${settings/#$HOME/~} (preserves foreign entries)"
+        if [[ -f "$settings" ]]; then
+            echo "  [dry]  jq union-merge hooks.json -> ${settings/#$HOME/~} (preserves foreign entries)"
+        else
+            echo "  [dry]  create ${settings/#$HOME/~} from hooks.json"
+        fi
         return 0
     fi
 
     if [[ ! -f "$settings" ]]; then
-        jq -n --slurpfile h "$hooks_source" '{hooks: $h[0]}' > "$settings"
+        # Write via a temp file so a jq failure (malformed hooks.json)
+        # cannot leave a truncated 0-byte settings.json behind.
+        if ! jq -n --slurpfile h "$hooks_source" '{hooks: $h[0]}' > "${settings}.tmp"; then
+            rm -f "${settings}.tmp"
+            log_error "settings.json create failed (jq error: invalid JSON or unexpected structure in hooks.json)"
+            exit 4
+        fi
+        mv "${settings}.tmp" "$settings"
         log_ok "settings.json created with hooks"
         return 0
+    fi
+
+    # Reject an empty or non-object settings.json before merging: jq on
+    # empty input runs the filter zero times and exits 0, which would
+    # otherwise report "already current" on a corrupt file forever.
+    if ! jq -e 'type == "object"' "$settings" >/dev/null 2>&1; then
+        log_error "settings.json is empty or not a JSON object; refusing to merge. Restore from a settings.json.bak.* backup or delete it to recreate from hooks.json"
+        exit 4
     fi
 
     jq --slurpfile h "$hooks_source" '
@@ -412,7 +441,7 @@ merge_hooks() {
                           | ($g.matcher // "") as $m
                           | $g + { hooks: (($g.hooks // []) | map(
                                 .command as $c
-                                | select(([$m, $c] | IN($rid[])) | not)
+                                | select(any($rid[]; . == [$m, $c]) | not)
                             )) }
                         )
                    | map(select(.hooks | length > 0))
@@ -423,7 +452,7 @@ merge_hooks() {
           )
     ' "$settings" > "${settings}.tmp" || {
         rm -f "${settings}.tmp"
-        log_error "hooks merge failed (invalid JSON in settings.json or hooks.json); settings.json left unchanged"
+        log_error "hooks merge failed (jq error: invalid JSON or unexpected structure in settings.json or hooks.json); settings.json left unchanged"
         exit 4
     }
 
