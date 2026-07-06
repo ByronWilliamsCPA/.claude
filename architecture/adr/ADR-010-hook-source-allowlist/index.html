@@ -12,31 +12,27 @@
         <meta name="author" content="Byron Williams">
       
       
-        <link rel="canonical" href="https://claude-config.readthedocs.io/architecture/adr/">
+        <link rel="canonical" href="https://claude-config.readthedocs.io/architecture/adr/ADR-010-hook-source-allowlist/">
       
       
-        <link rel="prev" href="../diagrams/">
-      
-      
-        <link rel="next" href="ADR-001-two-layer-symlink-install/">
       
       
         
       
       
-      <link rel="icon" href="../../assets/images/favicon.png">
+      <link rel="icon" href="../../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
-        <title>Architecture Decision Records - Claude Code Configuration</title>
+        <title>ADR-010: Hook-Source Allowlist and Trust Tiers - Claude Code Configuration</title>
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -55,9 +51,9 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
     
-    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
   
@@ -92,7 +88,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#process" class="md-skip">
+        <a href="#context" class="md-skip">
           Skip to content
         </a>
       
@@ -106,7 +102,7 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="Claude Code Configuration" class="md-header__button md-logo" aria-label="Claude Code Configuration" data-md-component="logo">
+    <a href="../../.." title="Claude Code Configuration" class="md-header__button md-logo" aria-label="Claude Code Configuration" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -126,7 +122,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Architecture Decision Records
+              ADR-010: Hook-Source Allowlist and Trust Tiers
             
           </span>
         </div>
@@ -239,7 +235,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../.." class="md-tabs__link">
+      <a href="../../.." class="md-tabs__link">
         
   
   
@@ -260,7 +256,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../getting-started/" class="md-tabs__link">
+        <a href="../../../getting-started/" class="md-tabs__link">
           
   
   
@@ -278,13 +274,11 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="../" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../../" class="md-tabs__link">
           
   
   
@@ -306,7 +300,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../reference/" class="md-tabs__link">
+        <a href="../../../reference/" class="md-tabs__link">
           
   
   
@@ -328,7 +322,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../contributing/" class="md-tabs__link">
+        <a href="../../../contributing/" class="md-tabs__link">
           
   
   
@@ -350,7 +344,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../project/roadmap/" class="md-tabs__link">
+        <a href="../../../project/roadmap/" class="md-tabs__link">
           
   
   
@@ -386,7 +380,7 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="Claude Code Configuration" class="md-nav__button md-logo" aria-label="Claude Code Configuration" data-md-component="logo">
+    <a href="../../.." title="Claude Code Configuration" class="md-nav__button md-logo" aria-label="Claude Code Configuration" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -416,7 +410,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../.." class="md-nav__link">
+      <a href="../../.." class="md-nav__link">
         
   
   
@@ -485,7 +479,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../getting-started/" class="md-nav__link ">
+            <a href="../../../getting-started/" class="md-nav__link ">
               
   
   
@@ -536,7 +530,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../getting-started/install/" class="md-nav__link">
+      <a href="../../../getting-started/install/" class="md-nav__link">
         
   
   
@@ -571,7 +565,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../getting-started/first-agent/" class="md-nav__link">
+      <a href="../../../getting-started/first-agent/" class="md-nav__link">
         
   
   
@@ -606,7 +600,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../getting-started/first-skill/" class="md-nav__link">
+      <a href="../../../getting-started/first-skill/" class="md-nav__link">
         
   
   
@@ -641,7 +635,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../getting-started/picking/" class="md-nav__link">
+      <a href="../../../getting-started/picking/" class="md-nav__link">
         
   
   
@@ -676,7 +670,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../getting-started/troubleshooting/" class="md-nav__link">
+      <a href="../../../getting-started/troubleshooting/" class="md-nav__link">
         
   
   
@@ -715,8 +709,6 @@
       
   
   
-    
-  
   
   
     
@@ -746,23 +738,22 @@
     
     
       
-        
-        
-      
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../" class="md-nav__link ">
+            <a href="../../" class="md-nav__link ">
               
   
   
@@ -787,13 +778,13 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="">
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -813,7 +804,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../install-model/" class="md-nav__link">
+      <a href="../../install-model/" class="md-nav__link">
         
   
   
@@ -848,7 +839,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../hook-pipeline/" class="md-nav__link">
+      <a href="../../hook-pipeline/" class="md-nav__link">
         
   
   
@@ -883,7 +874,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../agent-dispatch/" class="md-nav__link">
+      <a href="../../agent-dispatch/" class="md-nav__link">
         
   
   
@@ -918,7 +909,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../mcp-tiered-loading/" class="md-nav__link">
+      <a href="../../mcp-tiered-loading/" class="md-nav__link">
         
   
   
@@ -953,7 +944,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../submodule-strategy/" class="md-nav__link">
+      <a href="../../submodule-strategy/" class="md-nav__link">
         
   
   
@@ -988,7 +979,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../rules-vs-standards/" class="md-nav__link">
+      <a href="../../rules-vs-standards/" class="md-nav__link">
         
   
   
@@ -1023,7 +1014,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../diagrams/" class="md-nav__link">
+      <a href="../../diagrams/" class="md-nav__link">
         
   
   
@@ -1055,8 +1046,6 @@
                 
   
   
-    
-  
   
   
     
@@ -1088,21 +1077,20 @@
       
       
         
-          
-          
-        
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_9" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_9" >
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="./" class="md-nav__link md-nav__link--active">
+            <a href="../" class="md-nav__link ">
               
   
   
@@ -1127,13 +1115,13 @@
             </a>
             
               
-              <label class="md-nav__link md-nav__link--active" for="__nav_3_9" id="__nav_3_9_label" tabindex="">
+              <label class="md-nav__link " for="__nav_3_9" id="__nav_3_9_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_9_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_9_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3_9">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1153,7 +1141,7 @@
   
   
     <li class="md-nav__item">
-      <a href="ADR-001-two-layer-symlink-install/" class="md-nav__link">
+      <a href="../ADR-001-two-layer-symlink-install/" class="md-nav__link">
         
   
   
@@ -1188,7 +1176,7 @@
   
   
     <li class="md-nav__item">
-      <a href="ADR-002-hook-composition/" class="md-nav__link">
+      <a href="../ADR-002-hook-composition/" class="md-nav__link">
         
   
   
@@ -1223,7 +1211,7 @@
   
   
     <li class="md-nav__item">
-      <a href="ADR-003-tiered-mcp-loading/" class="md-nav__link">
+      <a href="../ADR-003-tiered-mcp-loading/" class="md-nav__link">
         
   
   
@@ -1258,7 +1246,7 @@
   
   
     <li class="md-nav__item">
-      <a href="ADR-004-skill-vs-agent-boundary/" class="md-nav__link">
+      <a href="../ADR-004-skill-vs-agent-boundary/" class="md-nav__link">
         
   
   
@@ -1293,7 +1281,7 @@
   
   
     <li class="md-nav__item">
-      <a href="ADR-005-submodule-extension-model/" class="md-nav__link">
+      <a href="../ADR-005-submodule-extension-model/" class="md-nav__link">
         
   
   
@@ -1328,7 +1316,7 @@
   
   
     <li class="md-nav__item">
-      <a href="ADR-006-rules-vs-standards/" class="md-nav__link">
+      <a href="../ADR-006-rules-vs-standards/" class="md-nav__link">
         
   
   
@@ -1363,7 +1351,7 @@
   
   
     <li class="md-nav__item">
-      <a href="ADR-007-dual-audience-docs/" class="md-nav__link">
+      <a href="../ADR-007-dual-audience-docs/" class="md-nav__link">
         
   
   
@@ -1398,7 +1386,7 @@
   
   
     <li class="md-nav__item">
-      <a href="ADR-008-scanner-allowlist-tiers/" class="md-nav__link">
+      <a href="../ADR-008-scanner-allowlist-tiers/" class="md-nav__link">
         
   
   
@@ -1483,7 +1471,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../reference/" class="md-nav__link ">
+            <a href="../../../reference/" class="md-nav__link ">
               
   
   
@@ -1534,7 +1522,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/agents/" class="md-nav__link">
+      <a href="../../../reference/agents/" class="md-nav__link">
         
   
   
@@ -1569,7 +1557,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/skills/" class="md-nav__link">
+      <a href="../../../reference/skills/" class="md-nav__link">
         
   
   
@@ -1604,7 +1592,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/hooks/" class="md-nav__link">
+      <a href="../../../reference/hooks/" class="md-nav__link">
         
   
   
@@ -1639,7 +1627,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/mcp/" class="md-nav__link">
+      <a href="../../../reference/mcp/" class="md-nav__link">
         
   
   
@@ -1674,7 +1662,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/" class="md-nav__link">
+      <a href="../../../api-reference/" class="md-nav__link">
         
   
   
@@ -1753,7 +1741,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../contributing/" class="md-nav__link ">
+            <a href="../../../contributing/" class="md-nav__link ">
               
   
   
@@ -1804,7 +1792,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../contributing/adding-agents/" class="md-nav__link">
+      <a href="../../../contributing/adding-agents/" class="md-nav__link">
         
   
   
@@ -1839,7 +1827,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../contributing/adding-skills/" class="md-nav__link">
+      <a href="../../../contributing/adding-skills/" class="md-nav__link">
         
   
   
@@ -1874,7 +1862,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../contributing/adding-hooks/" class="md-nav__link">
+      <a href="../../../contributing/adding-hooks/" class="md-nav__link">
         
   
   
@@ -1909,7 +1897,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../contributing/writing-adrs/" class="md-nav__link">
+      <a href="../../../contributing/writing-adrs/" class="md-nav__link">
         
   
   
@@ -1944,7 +1932,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../contributing/writing-diagrams/" class="md-nav__link">
+      <a href="../../../contributing/writing-diagrams/" class="md-nav__link">
         
   
   
@@ -1979,7 +1967,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../frontmatter-standard/" class="md-nav__link">
+      <a href="../../../frontmatter-standard/" class="md-nav__link">
         
   
   
@@ -2083,7 +2071,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../project/roadmap/" class="md-nav__link">
+      <a href="../../../project/roadmap/" class="md-nav__link">
         
   
   
@@ -2118,7 +2106,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../project/changelog/" class="md-nav__link">
+      <a href="../../../project/changelog/" class="md-nav__link">
         
   
   
@@ -2153,7 +2141,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../project/license/" class="md-nav__link">
+      <a href="../../../project/license/" class="md-nav__link">
         
   
   
@@ -2213,10 +2201,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#process" class="md-nav__link">
+  <a href="#context" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Process
+        Context
       
     </span>
   </a>
@@ -2224,10 +2212,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#index" class="md-nav__link">
+  <a href="#decision" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Index
+        Decision
       
     </span>
   </a>
@@ -2235,10 +2223,32 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#see-also" class="md-nav__link">
+  <a href="#alternatives-considered" class="md-nav__link">
     <span class="md-ellipsis">
       
-        See Also
+        Alternatives Considered
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#consequences" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Consequences
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
       
     </span>
   </a>
@@ -2265,94 +2275,125 @@
   
 
 
-  <h1>Index</h1>
+  <h1>ADR-010: Hook-Source Allowlist and Trust Tiers</h1>
 
-<p>Architecture Decision Records (ADRs) capture load-bearing design choices so future maintainers can understand <em>why</em> something is the way it is: not just <em>what</em> it is.</p>
-<h2 id="process">Process<a class="headerlink" href="#process" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p><strong>Status</strong>: Proposed</p>
+<p><strong>Decision date</strong>: 2026-07-06</p>
+<p><strong>Deciders</strong>: Byron Williams</p>
+</blockquote>
+<h2 id="context">Context<a class="headerlink" href="#context" title="Permanent link">&para;</a></h2>
+<p>The 2026-07-06 senior architecture review found that Claude Code executes
+hooks from at least three independent, uncoordinated registration mechanisms,
+of which only one was documented or checked:</p>
 <ol>
-<li>A decision is load-bearing if silently changing it would break behavior, break the install, or break the mental model a reader needs.</li>
-<li>New ADRs use the slim template at <code>docs/architecture/adr/_template.md</code> (excluded from the built site; open it directly in the repo). The verbose reference variant at <code>docs/ADRs/adr-template.md</code> remains for unusually consequential decisions.</li>
-<li>ADRs are numbered sequentially. Once published, the title and number do not change: supersede with a new ADR instead.</li>
-<li>Every ADR carries <code>schema_type: common</code> frontmatter. The <code>status:</code> field is for the doc itself (<code>draft</code> / <code>in-review</code> / <code>published</code>); the ADR's decision status (<code>Proposed</code> / <code>Accepted</code> / <code>Deprecated</code> / <code>Superseded</code>) lives in a body banner near the top.</li>
+<li>This repo's <code>hooks.json</code>, merged into <code>~/.claude/settings.json</code> by
+   <code>setup.sh</code> (documented in ADR-002 and <code>hook-pipeline.md</code>).</li>
+<li>Direct writes to <code>~/.claude/settings.json</code> by tool installers
+   (<code>codebase-memory-mcp install</code> wrote a <code>SessionStart</code> reminder and a
+   <code>PreToolUse</code> gate) and by manual wiring (the Snyk dependency reminder).</li>
+<li>Each enabled plugin's own <code>hooks/hooks.json</code> under
+   <code>~/.claude/plugins/cache/&lt;marketplace&gt;/&lt;plugin&gt;/&lt;version&gt;/hooks/</code>
+   (the <code>superpowers</code> plugin injects directive-toned session-start content
+   this way; <code>agents-observe</code> registers a hook on every event Claude Code
+   exposes; <code>hookify</code> registers four).</li>
 </ol>
-<h2 id="index">Index<a class="headerlink" href="#index" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>#</th>
-<th>Title</th>
-<th>Decision Status</th>
-<th>Topic</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><a href="ADR-001-two-layer-symlink-install/">001</a></td>
-<td>Two-Layer Symlink Install</td>
-<td>Accepted</td>
-<td>Install model</td>
-</tr>
-<tr>
-<td><a href="ADR-002-hook-composition/">002</a></td>
-<td>Hook Composition and Ordering</td>
-<td>Accepted</td>
-<td>Hook system</td>
-</tr>
-<tr>
-<td><a href="ADR-003-tiered-mcp-loading/">003</a></td>
-<td>Tiered MCP Loading Strategy</td>
-<td>Accepted</td>
-<td>MCP context budget</td>
-</tr>
-<tr>
-<td><a href="ADR-004-skill-vs-agent-boundary/">004</a></td>
-<td>Skill vs Agent Boundary</td>
-<td>Accepted</td>
-<td>Capability taxonomy</td>
-</tr>
-<tr>
-<td><a href="ADR-005-submodule-extension-model/">005</a></td>
-<td>Submodule Extension Model</td>
-<td>Accepted</td>
-<td>External integration</td>
-</tr>
-<tr>
-<td><a href="ADR-006-rules-vs-standards/">006</a></td>
-<td>Rules vs Standards Boundary</td>
-<td>Accepted</td>
-<td>Context injection</td>
-</tr>
-<tr>
-<td><a href="ADR-007-dual-audience-docs/">007</a></td>
-<td>Dual-Audience Documentation Structure</td>
-<td>Accepted</td>
-<td>Documentation layout</td>
-</tr>
-<tr>
-<td><a href="ADR-008-scanner-allowlist-tiers/">008</a></td>
-<td>Two-Tier Scanner Allowlist for CI-007/007b</td>
-<td>Proposed</td>
-<td>Compliance / CI security</td>
-</tr>
-<tr>
-<td><a href="ADR-009-snyk-role-and-provenance/">009</a></td>
-<td>Snyk Role Consolidation, Always-On Authoring, and Dependency Provenance</td>
-<td>Proposed</td>
-<td>Security tooling</td>
-</tr>
-<tr>
-<td><a href="ADR-010-hook-source-allowlist/">010</a></td>
-<td>Hook-Source Allowlist and Trust Tiers</td>
-<td>Proposed</td>
-<td>Hook system / security</td>
-</tr>
-</tbody>
-</table>
-<h2 id="see-also">See Also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
+<p>Session-start injections carry real behavioral authority over the agent, yet
+this repo applied more suspicion to fetched web content (the OWASP LLM01
+untrusted-content rule in <code>CLAUDE.md</code>) than to its own session-start pipeline.
+A new or changed injection source, whether from a plugin update, a tool
+installer, or an attacker with write access to <code>~/.claude/</code>, was invisible:
+nothing enumerated the live hook surface or compared it to a reviewed state.</p>
+<p>Independent verification during this work confirmed the "three mechanisms"
+framing was a floor, not a ceiling: 34 plugin <code>hooks.json</code> files exist across
+the cache and marketplace directories, one enabled plugin double-registers
+hooks already wired via the submodule path, and the live <code>settings.json</code>
+diverged from the repo baseline in seven hook registrations.</p>
+<h2 id="decision">Decision<a class="headerlink" href="#decision" title="Permanent link">&para;</a></h2>
+<p>We will commit an allowlist of every authorized hook source
+(<code>hook-inventory.json</code> at repo root) and enumerate the live hook surface
+against it at doctor time (<code>scripts/check-hook-sources.sh</code>, run by
+<code>setup.sh --doctor</code>), keying each hook on its plugin or source name, hook
+event, matcher, and command string rather than on filesystem paths.</p>
+<p>Alongside the mechanism, we adopt a trust-tier policy for injected content:</p>
 <ul>
-<li><a href="../../frontmatter-standard/">Frontmatter Standard</a></li>
-<li><a href="../../contributing/writing-adrs/">Writing ADRs</a></li>
-<li><a href="../">Architecture Overview</a></li>
+<li><strong>Tier 1 (binding)</strong>: <code>CLAUDE.md</code>, <code>.claude/rules/</code>, and hooks defined in
+  the repo baseline <code>hooks.json</code>. Committed, reviewed in PRs, authoritative.</li>
+<li><strong>Tier 2 (accepted tooling, advisory on conflict)</strong>: hooks listed in
+  <code>hook-inventory.json</code>: installer additions and enabled-plugin hooks that
+  were reviewed once when allowlisted. Their injected content guides
+  workflow, but where it conflicts with Tier 1 the Tier 1 rule wins, and the
+  agent should name the conflict rather than silently picking a side. This
+  holds regardless of the injected content's tone; the <code>superpowers</code>
+  injection styles itself "not negotiable" yet its own instruction hierarchy
+  concedes that user instructions take precedence.</li>
+<li><strong>Tier 3 (unreviewed)</strong>: any live hook absent from both the baseline and
+  the allowlist. The checker fails, and until the source is reviewed its
+  injected content is treated as untrusted data under the same OWASP LLM01
+  posture as fetched web content.</li>
+</ul>
+<h2 id="alternatives-considered">Alternatives Considered<a class="headerlink" href="#alternatives-considered" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Documentation only</strong> (rewrite <code>hook-pipeline.md</code>, no checker): rejected.
+  Drift had already happened silently at least three times (codebase-memory
+  installer writes, Snyk manual wiring, plugin-registered session hooks);
+  prose does not detect the fourth.</li>
+<li><strong>Hard enforcement</strong> (<code>setup.sh</code> prunes any live hook not allowlisted):
+  rejected for now. Pruning is destructive, would break tool installers
+  mid-cycle, and interacts with the known replace-semantics defect in
+  <code>merge_hooks()</code> (a repo <code>hooks.json</code> merge currently wipes installer
+  additions; fix owned by the <code>fix/setup-merge-hooks-protocol</code> branch).
+  Detection with a failing doctor is sufficient until merge semantics are
+  fixed; revisit pruning afterward.</li>
+<li><strong>Path-keyed allowlist</strong>: rejected. Plugin cache paths embed the plugin
+  version (<code>.../superpowers/5.0.7/...</code>), so every plugin update would break
+  the allowlist without any behavioral change. Plugin hook commands are
+  written against <code>${CLAUDE_PLUGIN_ROOT}</code> and are version-independent, so
+  keying on (plugin, event, matcher, command) survives version bumps and
+  still catches real command changes.</li>
+<li><strong>Treat plugin-injected content as fully binding (single tier)</strong>:
+  rejected. It would let any plugin update rewrite agent behavior with the
+  same authority as reviewed repo rules, inverting the repo's own
+  prompt-injection posture.</li>
+</ul>
+<h2 id="consequences">Consequences<a class="headerlink" href="#consequences" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Positive</strong>: a new hook from any source (installer, plugin update, manual
+  edit, or malicious write) becomes a visible doctor failure instead of a
+  silent behavioral change. Plugin version bumps that do not change hook
+  commands need no allowlist edit. A changed hook command fails the check
+  until re-reviewed, which is the desired review gate.</li>
+<li><strong>Negative</strong>: the allowlist is one more artifact to maintain; intentional
+  hook changes now require touching <code>hook-inventory.json</code> in the same PR.
+  The check is machine-local (it reads <code>~/.claude/</code>), so CI cannot run it;
+  it only fires when someone runs <code>setup.sh --doctor</code>.</li>
+<li><strong>Negative (threat model)</strong>: the mechanism detects drift; it does not
+  prevent it, and it is not tamper-proof. An attacker with write access to
+  <code>~/.claude/</code> can register a hook and also edit the symlinked checker
+  script, the local allowlist copy, or <code>enabledPlugins</code>, so the check is a
+  tripwire against accidental and unsophisticated drift, not a security
+  boundary against an adversary who already holds that write access. Hooks
+  execute at session start regardless; detection happens only at the next
+  doctor run.</li>
+<li><strong>Neutral</strong>: the checker trusts <code>enabledPlugins</code> in
+  <code>~/.claude/settings.json</code> as the definition of "live" for plugins, and
+  reports cached-but-disabled plugins with hooks as informational only.
+  Project-level <code>.claude/settings.json</code> hooks in other repos are out of
+  scope; they are reviewable in each repo's own tree.</li>
+</ul>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>hook-inventory.json</code> (the allowlist), <code>scripts/check-hook-sources.sh</code>
+  (the enumerator), <code>setup.sh</code> <code>doctor()</code> (the integration point).</li>
+<li><a href="../../hook-pipeline/">Hook Pipeline</a>: hook-source taxonomy and trust tiers.</li>
+<li><a href="../ADR-002-hook-composition/">ADR-002 Hook Composition and Ordering</a>:
+  the repo-baseline merge this decision extends.</li>
+<li><a href="../ADR-008-scanner-allowlist-tiers/">ADR-008 Two-Tier Scanner Allowlist</a>:
+  prior art for allowlist-with-tiers in this repo.</li>
+<li><code>docs/reviews/senior-review-repo-2026-07-01.md</code>: the originating finding
+  ("Three distinct hook-registration mechanisms exist..."). Local-only
+  reference: <code>docs/reviews/</code> is gitignored by design (see PR #252), so this
+  file exists only on the machine where the review ran.</li>
 </ul>
 
 
@@ -2386,7 +2427,7 @@
     <span class="md-icon" title="Created">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 11, 2026 22:24:49 UTC">April 11, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 6, 2026 19:20:03 UTC">July 6, 2026</span>
   </span>
 
     
@@ -2463,10 +2504,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
     
   </body>

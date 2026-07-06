@@ -2436,6 +2436,7 @@
   <h1>Adding a Hook</h1>
 
 <p>Before adding a hook, read <a href="../../architecture/adr/ADR-002-hook-composition/">ADR-002</a>. Key constraint: <code>~/.claude/settings.json</code>'s hooks block is overwritten on every <code>setup.sh</code> run. All hook changes go into <code>hooks.json</code> at repo root.</p>
+<p>Hooks that do not come from this repo (a tool installer writing into <code>~/.claude/settings.json</code>, or an enabled plugin shipping its own <code>hooks/hooks.json</code>) must instead be recorded in the allowlist <code>hook-inventory.json</code> at repo root, in the same change that reviews them. <code>setup.sh --doctor</code> runs <code>scripts/check-hook-sources.sh</code> and fails on any live hook found in neither <code>hooks.json</code> nor the allowlist. The check reads the local machine's live state, so it runs at doctor time on each machine rather than in CI, and it detects drift after the fact rather than preventing it. See <a href="../../architecture/adr/ADR-010-hook-source-allowlist/">ADR-010</a> and <a href="../../architecture/hook-pipeline/#hook-sources">Hook Pipeline → Hook Sources</a>.</p>
 <h2 id="pick-a-hook-type">Pick a Hook Type<a class="headerlink" href="#pick-a-hook-type" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -2582,7 +2583,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 6, 2026 18:26:47 UTC">July 6, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 6, 2026 19:20:03 UTC">July 6, 2026</span>
   </span>
 
     

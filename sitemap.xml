@@ -149,6 +149,10 @@
          <lastmod>2026-07-06</lastmod>
     </url>
     <url>
+         <loc>https://claude-config.readthedocs.io/architecture/adr/ADR-010-hook-source-allowlist/</loc>
+         <lastmod>2026-07-06</lastmod>
+    </url>
+    <url>
          <loc>https://claude-config.readthedocs.io/architecture/diagrams/</loc>
          <lastmod>2026-07-06</lastmod>
     </url>

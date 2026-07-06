@@ -2713,8 +2713,9 @@ trusting wired content.</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>git<span class="w"> </span>submodule<span class="w"> </span>update<span class="w"> </span>--remote<span class="w"> </span>--merge
 </span></code></pre></div>
 <p>Review diffs carefully before committing, applying admission bar item 6 above. Upstream changes can include breaking changes to hook scripts (in <code>anthropics-plugins</code>), new skill triggers (in <code>superpowers</code>), or changed instruction files (any submodule) that conflict with existing configuration.</p>
+<p>Pay specific attention to any <code>hooks/hooks.json</code> file in the diff. Some of these trees exist twice on this machine: <code>superpowers</code> is both a submodule here and an installed plugin, and it is the plugin cache copy (<code>~/.claude/plugins/cache/superpowers-dev/superpowers/&lt;version&gt;/</code>) that Claude Code actually executes, so reviewing the submodule diff alone does not cover the running copy. The same applies to <code>hookify</code>, which is currently wired from both the submodule path (via <code>hooks.json</code>) and its enabled plugin cache. After updating a submodule or a plugin (<code>claude plugin update</code>), run the hook-source drift check; if a hook event, matcher, or command changed, the check fails until the change is reviewed and <code>hook-inventory.json</code> is updated in the same commit. See <a href="../hook-pipeline/#hook-sources">Hook Pipeline → Hook Sources</a> and <a href="../adr/ADR-010-hook-source-allowlist/">ADR-010</a>.</p>
 <p>To verify nothing broke after an update:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>./setup.sh<span class="w"> </span>--doctor
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>./setup.sh<span class="w"> </span>--doctor<span class="w">       </span><span class="c1"># includes scripts/check-hook-sources.sh</span>
 </span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>uv<span class="w"> </span>run<span class="w"> </span>pytest
 </span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>uv<span class="w"> </span>run<span class="w"> </span>mkdocs<span class="w"> </span>build
 </span></code></pre></div>
@@ -2755,7 +2756,7 @@ trusting wired content.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 6, 2026 18:15:00 UTC">July 6, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 6, 2026 19:20:03 UTC">July 6, 2026</span>
   </span>
 
     

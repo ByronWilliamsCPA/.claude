@@ -2401,7 +2401,7 @@
 <p><strong>Layer 1: the repository</strong> (<code>~/dev/.claude</code>):</p>
 <p>This is where you work. It is a standard git repository with submodules, a Python toolchain (<code>pyproject.toml</code>, <code>uv.lock</code>), pre-commit hooks, and all the tooling a maintainer needs. You run <code>git</code>, <code>uv run pytest</code>, <code>pre-commit</code>, and <code>mkdocs</code> here.</p>
 <p><strong>Layer 2: the runtime config</strong> (<code>~/.claude/</code>):</p>
-<p>This is where Claude Code reads. It contains a mix of real files and symlinks. The symlinks point into Layer 1. The one genuine file is <code>settings.json</code>, which is machine-local state (API keys, merged hooks) that is never committed.</p>
+<p>This is where Claude Code reads. It contains a mix of real files and symlinks. The symlinks point into Layer 1. <code>settings.json</code> is a genuine machine-local file that is never committed, and it holds more than the merged hooks: tool installers (for example <code>codebase-memory-mcp install</code>) write hook entries directly into it, and its <code>enabledPlugins</code> key controls which plugin-registered hooks Claude Code loads from <code>~/.claude/plugins/cache/</code>. The committed allowlist <code>hook-inventory.json</code> plus <code>scripts/check-hook-sources.sh</code> track these out-of-repo additions; see <a href="../hook-pipeline/#hook-sources">Hook Pipeline → Hook Sources</a>. Other genuine runtime-managed content in Layer 2 includes <code>plugins/</code>, <code>projects/</code>, and installer-owned directories such as <code>~/.claude/hooks/</code>.</p>
 <p><code>setup.sh</code> creates Layer 2 from Layer 1. Running it again is always safe: every operation is idempotent.</p>
 <h2 id="diagram">Diagram<a class="headerlink" href="#diagram" title="Permanent link">&para;</a></h2>
 <p><img alt="Install layer component diagram" src="../diagrams/install_layer.svg" /></p>
@@ -2453,12 +2453,12 @@
 </tbody>
 </table>
 <p>All use <code>ln -sfn</code> (force-replace, no-dereference), so re-running after a structural change is safe.</p>
-<p><strong>4. Hook merge</strong>: reads <code>hooks.json</code> from the repo root and uses <code>jq</code> to write its contents into the <code>.hooks</code> key of <code>~/.claude/settings.json</code>. If <code>settings.json</code> does not exist, it creates one. If it exists, it merges in-place, preserving all other keys (API keys, model preferences). A timestamped backup is created before any write.</p>
+<p><strong>4. Hook merge</strong>: reads <code>hooks.json</code> from the repo root and uses <code>jq</code> to write its contents into the <code>.hooks</code> key of <code>~/.claude/settings.json</code>. If <code>settings.json</code> does not exist, it creates one. If it exists, other top-level keys (API keys, model preferences, <code>enabledPlugins</code>) are preserved, but the <code>.hooks</code> key itself is <strong>replaced wholesale</strong>, not merged: any hook a tool installer added directly to <code>settings.json</code> is wiped by the next <code>setup.sh</code> run. This is a known defect; the fix is owned by the <code>fix/setup-merge-hooks-protocol</code> branch, and until it lands the hook-source drift check reports the wipe as a stale-allowlist warning. A timestamped backup is created before any write.</p>
 <p><strong>5. claudeMdExcludes merge</strong>: adds two path patterns to <code>settings.json</code>'s <code>.claudeMdExcludes</code> array: one for <code>~/dev/.claude/CLAUDE.md</code> and one for <code>~/dev/.claude/.claude/**</code>. This prevents Claude Code from double-loading the repo-local CLAUDE.md. Deduplicates before writing.</p>
 <h2 id="verifying-the-install">Verifying the Install<a class="headerlink" href="#verifying-the-install" title="Permanent link">&para;</a></h2>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>./setup.sh<span class="w"> </span>--doctor
 </span></code></pre></div>
-<p>The doctor mode prints every expected symlink, its current target, and whether the target exists. Broken symlinks, dangling targets, and drift from the expected topology are all reported. It also checks whether <code>settings.json</code> has the hooks block and <code>claudeMdExcludes</code> merged in.</p>
+<p>The doctor mode prints every expected symlink, its current target, and whether the target exists. Broken symlinks, dangling targets, and drift from the expected topology are all reported. It also checks whether <code>settings.json</code> has the hooks block and <code>claudeMdExcludes</code> merged in, runs <code>scripts/check-hook-sources.sh</code> to diff every live hook source (settings.json entries and enabled-plugin hooks) against the committed allowlist <code>hook-inventory.json</code>, and verifies the expected vendored plugins are installed. An unreviewed hook source fails the doctor run.</p>
 <h2 id="see-also">See Also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
 <ul>
 <li><a href="../adr/ADR-001-two-layer-symlink-install/">ADR-001 Two-Layer Symlink Install</a>: why this design</li>
@@ -2488,7 +2488,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 28, 2026 04:12:57 UTC">April 28, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 6, 2026 19:20:03 UTC">July 6, 2026</span>
   </span>
 
     

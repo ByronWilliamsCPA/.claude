@@ -1045,6 +1045,39 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#hook-sources" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hook Sources
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#drift-detection-the-hook-source-allowlist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Drift Detection: the Hook-Source Allowlist
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#trust-tiers-for-injected-content" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Trust Tiers for Injected Content
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#see-also" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2528,6 +2561,39 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#hook-sources" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hook Sources
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#drift-detection-the-hook-source-allowlist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Drift Detection: the Hook-Source Allowlist
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#trust-tiers-for-injected-content" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Trust Tiers for Injected Content
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#see-also" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2560,8 +2626,8 @@
 
   <h1>Hook Pipeline</h1>
 
-<p>Claude Code fires hooks at five points during a session. These hooks enforce quality gates, route behavioral rules, and extend Claude's capabilities without requiring model-level changes. The hook definitions live in <code>hooks.json</code> at repo root and are merged into <code>~/.claude/settings.json</code> by <code>setup.sh</code>.</p>
-<p>For the design decisions behind this system, see <a href="../adr/ADR-002-hook-composition/">ADR-002</a>.</p>
+<p>Claude Code fires hooks at five points during a session. These hooks enforce quality gates, route behavioral rules, and extend Claude's capabilities without requiring model-level changes. The repo-managed hook definitions live in <code>hooks.json</code> at repo root and are merged into <code>~/.claude/settings.json</code> by <code>setup.sh</code>; that file is the baseline, but it is not the only source Claude Code executes hooks from. See <a href="#hook-sources">Hook Sources</a> below for the full taxonomy and the drift check that guards it.</p>
+<p>For the design decisions behind this system, see <a href="../adr/ADR-002-hook-composition/">ADR-002</a> and <a href="../adr/ADR-010-hook-source-allowlist/">ADR-010</a>.</p>
 <h2 id="the-five-hook-types">The Five Hook Types<a class="headerlink" href="#the-five-hook-types" title="Permanent link">&para;</a></h2>
 <p><strong>UserPromptSubmit</strong>: fires immediately after the user sends a message, before Claude processes it. Used for: injecting context, detecting intent signals (PR review reminder), running the hookify user prompt pipeline.</p>
 <p><strong>PreToolUse</strong>: fires before each tool call Claude attempts. Each entry in the <code>PreToolUse</code> array can have a matcher regex targeting specific tools. Used for: secrets file guard (Edit/Write), planning bridge gate (Skill), security reminder (Edit/Write/MultiEdit), hookify dispatch (all tools).</p>
@@ -2737,10 +2803,56 @@
 <li>Test with a Claude Code session.</li>
 </ol>
 <p>For the full workflow, see <a href="../../contributing/adding-hooks/">Contributing → Adding a Hook</a>.</p>
+<h2 id="hook-sources">Hook Sources<a class="headerlink" href="#hook-sources" title="Permanent link">&para;</a></h2>
+<p><code>hooks.json</code> describes only the repo-managed baseline. Claude Code assembles the live hook surface from three planes:</p>
+<p><strong>1. Repo baseline</strong> (<code>hooks.json</code> → <code>~/.claude/settings.json</code>): the entries documented in this page's tables. Committed, PR-reviewed, merged by <code>setup.sh</code>.</p>
+<p><strong>2. Direct <code>settings.json</code> writes</strong>: tool installers and manual wiring add hooks straight into <code>~/.claude/settings.json</code> without touching this repo. Known writers: <code>codebase-memory-mcp install</code> (a <code>PreToolUse</code> gate on <code>Grep|Glob</code>, and historically a <code>SessionStart</code> reminder since replaced by the repo-managed <code>scripts/hooks/cbm-context-reminder.sh</code>), and the 2026-06-29 Snyk rollout (<code>snyk-dep-reminder.sh</code> on <code>PostToolUse</code>). Caveat: <code>setup.sh</code>'s <code>merge_hooks()</code> currently replaces the whole <code>.hooks</code> key from <code>hooks.json</code>, so these additions are wiped on every setup run until the <code>fix/setup-merge-hooks-protocol</code> work lands; the drift check below reports the wipe when it happens.</p>
+<p><strong>3. Plugin-registered hooks</strong>: every enabled plugin (per <code>enabledPlugins</code> in <code>~/.claude/settings.json</code>) can ship its own <code>hooks/hooks.json</code> under <code>~/.claude/plugins/cache/&lt;marketplace&gt;/&lt;plugin&gt;/&lt;version&gt;/hooks/</code>. Claude Code loads these without any reference to this repo. Currently: <code>superpowers</code> (a <code>SessionStart</code> injection of the using-superpowers skill text), <code>hookify</code> (four events), and <code>agents-observe</code> (a telemetry observer on every hook event Claude Code exposes). Plugin caches for disabled plugins (for example <code>bushido@han</code>) are dormant and inert, and the <code>.codex/hooks.json</code> variant some plugins ship targets Codex, not Claude Code.</p>
+<p>Known redundancy: <code>hookify</code> is wired twice, once from the <code>anthropics-plugins</code> submodule path via <code>hooks.json</code> and once from its enabled plugin cache copy, so each hookify event currently dispatches twice per firing. Deduplication (dropping one of the two wirings) is an open decision; both copies are allowlisted in the meantime.</p>
+<p>Project-level <code>.claude/settings.json</code> hooks in other repos are a fourth plane, out of scope here: they are visible in each repo's own tree and review flow.</p>
+<h2 id="drift-detection-the-hook-source-allowlist">Drift Detection: the Hook-Source Allowlist<a class="headerlink" href="#drift-detection-the-hook-source-allowlist" title="Permanent link">&para;</a></h2>
+<p><code>hook-inventory.json</code> at repo root is the committed allowlist of every authorized hook source beyond the baseline. <code>scripts/check-hook-sources.sh</code> (run standalone or via <code>setup.sh --doctor</code>) flattens every live hook into an (event, matcher, command) tuple across all three planes and diffs it against baseline plus allowlist:</p>
+<ul>
+<li>A live hook absent from both is an <strong>unreviewed injection source</strong>: the check fails (exit 1). Review the source, then either remove the hook or add it to the allowlist in the same change that reviews it.</li>
+<li>An allowlisted entry no longer live is reported as <strong>stale</strong> (warning): a plugin was disabled, an installer entry was removed, or <code>merge_hooks()</code> wiped it.</li>
+<li><code>--snapshot</code> prints the current live state in allowlist JSON shape, for bootstrapping or updating the inventory after an intentional change.</li>
+</ul>
+<p>Tuples key on the command string as written (plugin commands use <code>${CLAUDE_PLUGIN_ROOT}</code>, which is version-independent), so plugin version bumps pass untouched while any changed hook command fails until re-reviewed. The check reads <code>~/.claude/</code> and is therefore machine-local: it runs at doctor time, not in CI.</p>
+<h2 id="trust-tiers-for-injected-content">Trust Tiers for Injected Content<a class="headerlink" href="#trust-tiers-for-injected-content" title="Permanent link">&para;</a></h2>
+<p>Hook output, especially at <code>SessionStart</code>, lands in Claude's context with real behavioral authority. Authority follows review, not injection path or tone:</p>
+<table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Sources</th>
+<th>Authority</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1: binding</td>
+<td><code>CLAUDE.md</code>, <code>.claude/rules/</code>, baseline <code>hooks.json</code> hooks</td>
+<td>Authoritative; committed and PR-reviewed</td>
+</tr>
+<tr>
+<td>2: accepted tooling</td>
+<td>Sources listed in <code>hook-inventory.json</code> (installer additions, enabled-plugin hooks)</td>
+<td>Guides workflow; on conflict with Tier 1, Tier 1 wins and the agent names the conflict</td>
+</tr>
+<tr>
+<td>3: unreviewed</td>
+<td>Any live hook not in baseline or allowlist</td>
+<td>Untrusted data under the OWASP LLM01 posture until reviewed</td>
+</tr>
+</tbody>
+</table>
+<p>The directive tone of injected content does not promote it: the <code>superpowers</code> session-start block styles itself "not negotiable", yet its own instruction hierarchy places user instructions first, which is consistent with this policy. Rationale and alternatives: <a href="../adr/ADR-010-hook-source-allowlist/">ADR-010</a>.</p>
 <h2 id="see-also">See Also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="../adr/ADR-002-hook-composition/">ADR-002 Hook Composition and Ordering</a>: why hooks.json is the source of truth</li>
+<li><a href="../adr/ADR-002-hook-composition/">ADR-002 Hook Composition and Ordering</a>: why hooks.json is the source of truth for the repo baseline</li>
+<li><a href="../adr/ADR-010-hook-source-allowlist/">ADR-010 Hook-Source Allowlist and Trust Tiers</a>: drift detection and injected-content policy</li>
 <li><a href="../install-model/">Install Model</a>: how hooks.json gets merged into settings.json</li>
+<li><a href="../submodule-strategy/">Submodule Strategy</a>: reviewing plugin and submodule updates that can change hooks</li>
 <li><a href="../../contributing/adding-hooks/">Contributing → Adding a Hook</a>: step-by-step hook authoring guide</li>
 </ul>
 
@@ -2765,7 +2877,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 6, 2026 18:26:47 UTC">July 6, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 6, 2026 19:20:03 UTC">July 6, 2026</span>
   </span>
 
     
