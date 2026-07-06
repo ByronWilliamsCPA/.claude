@@ -17,6 +17,8 @@ tags:
 > **Decision date**: 2026-04-11
 >
 > **Deciders**: Byron Williams
+>
+> **Amended**: 2026-07-06 (loading-semantics correction; see Amendment below)
 
 ## Context
 
@@ -93,6 +95,26 @@ The rules/standards boundary has security implications that motivated its design
 
 NIST SSDF PW.2.1 (design with security in mind) and OpenSSF Scorecard coverage apply
 to the standards manifest system that enforces checks on this architecture.
+
+## Amendment (2026-07-06): Loading-Semantics Correction
+
+The Context section describes rules as "session-injected" and states that Claude
+Code "reads `CLAUDE.md` at session start and loads the referenced rules into the
+system prompt," that rules "are all loaded at session start," and that standards
+"are never referenced from `CLAUDE.md`." Those mechanism claims are incorrect
+and are superseded: no mechanism in Claude Code auto-loads a referenced file
+into the system prompt, and `CLAUDE.md` carries "see" pointers to several
+standards. A rule influences a session only when Claude follows its `CLAUDE.md`
+pointer on a relevant turn, or when a hook prints equivalent content directly
+(as the `delegation-reminder` SessionStart hook does for the delegation core).
+
+The decision itself stands: two directories with different discovery
+conventions, chosen by how broadly the content applies. Only the
+loading-mechanism rationale is corrected. The Security Considerations points
+that lean on guaranteed injection ("visible in every session's context") are
+correspondingly weaker: a `CLAUDE.md` pointer raises the odds a rule is read,
+but it is not a guarantee. Current semantics are documented in
+[rules-vs-standards.md](../rules-vs-standards.md).
 
 ## References
 

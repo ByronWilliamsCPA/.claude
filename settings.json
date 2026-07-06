@@ -104,48 +104,62 @@
     ],
     "SessionStart": [
       {
+        "matcher": "startup",
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude/scripts/keyword-tool-trigger.sh --reset"
+            "command": "bash $HOME/.claude/scripts/hooks/cbm-context-reminder.sh",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "bash $HOME/.claude/scripts/hooks/delegation-reminder.sh",
+            "timeout": 15
           }
         ]
       },
       {
+        "matcher": "resume",
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude/scripts/run-superpowers-session-start.sh"
+            "command": "bash $HOME/.claude/scripts/hooks/cbm-context-reminder.sh",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "bash $HOME/.claude/scripts/hooks/delegation-reminder.sh",
+            "timeout": 15
           }
         ]
       },
       {
+        "matcher": "clear",
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude/scripts/session-start-rules.sh",
-            "timeout": 10,
-            "statusMessage": "Detecting session context..."
+            "command": "bash $HOME/.claude/scripts/hooks/cbm-context-reminder.sh",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "bash $HOME/.claude/scripts/hooks/delegation-reminder.sh",
+            "timeout": 15
           }
         ]
       },
       {
+        "matcher": "compact",
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude/scripts/generate-skills-manifest.sh",
-            "timeout": 10,
-            "statusMessage": "Generating skills manifest..."
-          }
-        ]
-      },
-      {
-        "hooks": [
+            "command": "bash $HOME/.claude/scripts/hooks/cbm-context-reminder.sh",
+            "timeout": 10
+          },
           {
             "type": "command",
-            "command": "bash $HOME/.claude/scripts/install-cli-tools.sh",
-            "timeout": 30,
-            "statusMessage": "Installing preferred CLI tools (ast-grep)..."
+            "command": "bash $HOME/.claude/scripts/hooks/delegation-reminder.sh",
+            "timeout": 15
           }
         ]
       }

@@ -85,6 +85,16 @@
 
 ### Added
 
+* feat(delegation): restore the delegation mandate inline in `CLAUDE.md`
+  (mirrored to `AGENTS.md` and `GEMINI.md`) and reinforce it every session via
+  a new `scripts/hooks/delegation-reminder.sh` SessionStart hook registered in
+  `hooks.json`; add `scripts/hooks/cbm-context-reminder.sh` as the repo-managed
+  replacement for the binary-managed codebase-memory session reminder; fix
+  `generate-skills-manifest.sh` to write `available-skills.md` to the fixed
+  `~/.claude/skill-observations/` workspace instead of the repo clone; correct
+  architecture docs (`rules-vs-standards.md`, `agent-dispatch.md`,
+  `hook-pipeline.md`, ADR-006 amendment) that claimed rules auto-load into the
+  system prompt at session start.
 * feat(diagrams): add a plan-status HTML artifact mode to the
   diagram-maintenance skill and agent. A fifth mode authors a self-contained
   "thread timeline" status page from a repo's phased project plan (delivered

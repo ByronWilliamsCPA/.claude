@@ -20,7 +20,7 @@ Before adding a hook, read [ADR-002](../architecture/adr/ADR-002-hook-compositio
 | `PreToolUse` | Before each tool call Claude attempts | Blocking gates, security checks, behavioral guards |
 | `PostToolUse` | After each tool call completes | Compatibility checks, usage tracking |
 | `Stop` | When Claude finishes its turn | Cleanup, session logging |
-| `SessionStart` | When a new Claude Code session opens | Session initialization (not currently used) |
+| `SessionStart` | When a session opens, resumes, clears, or compacts (per matcher) | Context injection: stdout on exit 0 becomes session context (see `scripts/hooks/`) |
 
 ## Exit Codes
 

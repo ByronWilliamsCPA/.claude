@@ -22,7 +22,7 @@ The authoritative hook definition is `hooks.json` at repo root. It is merged int
 | `PreToolUse` | Before each tool call Claude attempts | Quality gates, security checks, behavioral guards |
 | `PostToolUse` | After each tool call completes | Compatibility checks, usage tracking |
 | `Stop` | When Claude finishes its turn | Cleanup, logging |
-| `SessionStart` | When a new Claude Code session opens | Session initialization (reserved for future use) |
+| `SessionStart` | When a session opens, resumes, clears, or compacts (per matcher) | Context injection: stdout on exit 0 becomes session context (delegation and codebase-memory reminders) |
 
 ## Current Hook Scripts
 
@@ -81,7 +81,7 @@ Plugins enabled through `enabledPlugins` contribute hooks from their own `hooks/
 - Blocking semantics apply per hook regardless of source: any PreToolUse hook that exits 2 or returns a deny decision blocks the tool call. Observability hooks must therefore be fire-and-forget (exit 0 on every code path, nothing written to stdout).
 - Latency is cumulative: each matching registration is one process spawn per event, so a plugin adds its own spawns on top of the repo-managed ones.
 
-As of 2026-06, `hooks.json` defines 10 repo-managed commands across PreToolUse (5), PostToolUse (2), Stop (1), and UserPromptSubmit (2), and `settings.json` carries additional entries including four SessionStart commands. The hookify and security-guidance plugins ship under `.submodules/anthropics-plugins` but are wired as command entries in `hooks.json` (legacy wiring), so they count as repo-managed hooks, not plugin-system hooks.
+As of 2026-07, `hooks.json` defines 18 repo-managed command entries across PreToolUse (5), PostToolUse (2), Stop (1), UserPromptSubmit (2), and SessionStart (8: `cbm-context-reminder.sh` and `delegation-reminder.sh`, each registered under the startup, resume, clear, and compact matchers). The hookify and security-guidance plugins ship under `.submodules/anthropics-plugins` but are wired as command entries in `hooks.json` (legacy wiring), so they count as repo-managed hooks, not plugin-system hooks.
 
 ### agents-observe (pinned v0.9.11)
 
