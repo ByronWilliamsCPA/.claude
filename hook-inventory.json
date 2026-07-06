@@ -1,0 +1,148 @@
+{
+  "version": 1,
+  "updated": "2026-07-06",
+  "description": "Allowlist of every authorized hook-injection source beyond the repo baseline (hooks.json). Verified by scripts/check-hook-sources.sh, which setup.sh --doctor runs. A live hook absent from both hooks.json and this file is an unreviewed injection source and fails the check. Trust policy: docs/architecture/hook-pipeline.md (Trust Tiers); decision record: docs/architecture/adr/ADR-010-hook-source-allowlist.md.",
+  "settings_additions": [
+    {
+      "source": "codebase-memory-mcp installer",
+      "event": "PreToolUse",
+      "matcher": "Grep|Glob",
+      "command": "~/.claude/hooks/cbm-code-discovery-gate",
+      "reviewed": "2026-07-06",
+      "notes": "Binary-managed; augments Grep/Glob with graph context, never blocks. The installer's companion SessionStart hook (~/.claude/hooks/cbm-session-reminder) was replaced by the repo-managed cbm-context-reminder.sh below; if a codebase-memory-mcp upgrade re-adds it, the checker will flag it for re-review."
+    },
+    {
+      "source": "manual wiring, 2026-06-29 Snyk shift-left rollout",
+      "event": "PostToolUse",
+      "matcher": "Edit|Write|MultiEdit",
+      "command": "bash ~/.claude/scripts/snyk-dep-reminder.sh",
+      "reviewed": "2026-07-06",
+      "notes": "Repo-owned script wired live but never folded into hooks.json. Fold-back belongs with the fix/setup-merge-hooks-protocol work; remove this entry once it lands in hooks.json."
+    },
+    {
+      "source": "feat/delegation-restoration (pending merge)",
+      "event": "SessionStart",
+      "matcher": "startup",
+      "command": "bash ~/.claude/scripts/hooks/cbm-context-reminder.sh",
+      "reviewed": "2026-07-06",
+      "notes": "Becomes repo baseline when feat/delegation-restoration merges its hooks.json SessionStart block; this entry is then redundant and removable."
+    },
+    {
+      "source": "feat/delegation-restoration (pending merge)",
+      "event": "SessionStart",
+      "matcher": "startup",
+      "command": "bash ~/.claude/scripts/hooks/delegation-reminder.sh",
+      "reviewed": "2026-07-06"
+    },
+    {
+      "source": "feat/delegation-restoration (pending merge)",
+      "event": "SessionStart",
+      "matcher": "resume",
+      "command": "bash ~/.claude/scripts/hooks/cbm-context-reminder.sh",
+      "reviewed": "2026-07-06"
+    },
+    {
+      "source": "feat/delegation-restoration (pending merge)",
+      "event": "SessionStart",
+      "matcher": "resume",
+      "command": "bash ~/.claude/scripts/hooks/delegation-reminder.sh",
+      "reviewed": "2026-07-06"
+    },
+    {
+      "source": "feat/delegation-restoration (pending merge)",
+      "event": "SessionStart",
+      "matcher": "clear",
+      "command": "bash ~/.claude/scripts/hooks/cbm-context-reminder.sh",
+      "reviewed": "2026-07-06"
+    },
+    {
+      "source": "feat/delegation-restoration (pending merge)",
+      "event": "SessionStart",
+      "matcher": "clear",
+      "command": "bash ~/.claude/scripts/hooks/delegation-reminder.sh",
+      "reviewed": "2026-07-06"
+    },
+    {
+      "source": "feat/delegation-restoration (pending merge)",
+      "event": "SessionStart",
+      "matcher": "compact",
+      "command": "bash ~/.claude/scripts/hooks/cbm-context-reminder.sh",
+      "reviewed": "2026-07-06"
+    },
+    {
+      "source": "feat/delegation-restoration (pending merge)",
+      "event": "SessionStart",
+      "matcher": "compact",
+      "command": "bash ~/.claude/scripts/hooks/delegation-reminder.sh",
+      "reviewed": "2026-07-06"
+    }
+  ],
+  "plugins": {
+    "superpowers@superpowers-dev": [
+      {
+        "event": "SessionStart",
+        "matcher": "startup|clear|compact",
+        "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/run-hook.cmd\" session-start",
+        "notes": "Injects the using-superpowers skill text. Directive tone notwithstanding, this content is Tier 2 (advisory on conflict with CLAUDE.md or rules); the injected skill itself concedes user instructions take precedence."
+      }
+    ],
+    "hookify@claude-plugins-official": [
+      {
+        "event": "PreToolUse",
+        "matcher": "*",
+        "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/pretooluse.py\"",
+        "notes": "KNOWN REDUNDANCY: hooks.json also wires hookify from the anthropics-plugins submodule, so each hookify event currently runs twice (submodule copy plus plugin-cache copy). Deduplication decision pending; see hook-pipeline.md."
+      },
+      {
+        "event": "PostToolUse",
+        "matcher": "*",
+        "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/posttooluse.py\""
+      },
+      {
+        "event": "Stop",
+        "matcher": "*",
+        "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/stop.py\""
+      },
+      {
+        "event": "UserPromptSubmit",
+        "matcher": "*",
+        "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/userpromptsubmit.py\""
+      }
+    ],
+    "agents-observe@agents-observe": [
+      {
+        "event": "SessionStart",
+        "matcher": "*",
+        "command": "node ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/observe_cli.mjs hook-autostart",
+        "notes": "Telemetry plugin; registers a passthrough observer on every hook event Claude Code exposes. The .codex/hooks.json variant in the same cache is for Codex and is ignored by the checker."
+      },
+      { "event": "Setup", "matcher": "*", "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/hook.sh" },
+      { "event": "SessionEnd", "matcher": "*", "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/hook.sh" },
+      { "event": "UserPromptSubmit", "matcher": "*", "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/hook.sh" },
+      { "event": "UserPromptExpansion", "matcher": "*", "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/hook.sh" },
+      { "event": "PreToolUse", "matcher": "*", "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/hook.sh" },
+      { "event": "PostToolUse", "matcher": "*", "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/hook.sh" },
+      { "event": "PostToolUseFailure", "matcher": "*", "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/hook.sh" },
+      { "event": "PostToolBatch", "matcher": "*", "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/hook.sh" },
+      { "event": "PermissionRequest", "matcher": "*", "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/hook.sh" },
+      { "event": "PermissionDenied", "matcher": "*", "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/hook.sh" },
+      { "event": "Stop", "matcher": "*", "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/hook.sh" },
+      { "event": "StopFailure", "matcher": "*", "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/hook.sh" },
+      { "event": "SubagentStart", "matcher": "*", "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/hook.sh" },
+      { "event": "SubagentStop", "matcher": "*", "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/hook.sh" },
+      { "event": "TeammateIdle", "matcher": "*", "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/hook.sh" },
+      { "event": "TaskCreated", "matcher": "*", "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/hook.sh" },
+      { "event": "TaskCompleted", "matcher": "*", "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/hook.sh" },
+      { "event": "Notification", "matcher": "*", "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/hook.sh" },
+      { "event": "InstructionsLoaded", "matcher": "*", "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/hook.sh" },
+      { "event": "ConfigChange", "matcher": "*", "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/hook.sh" },
+      { "event": "CwdChanged", "matcher": "*", "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/hook.sh" },
+      { "event": "FileChanged", "matcher": "*", "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/hook.sh" },
+      { "event": "PreCompact", "matcher": "*", "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/hook.sh" },
+      { "event": "PostCompact", "matcher": "*", "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/hook.sh" },
+      { "event": "Elicitation", "matcher": "*", "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/hook.sh" },
+      { "event": "ElicitationResult", "matcher": "*", "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/hook.sh" },
+      { "event": "WorktreeRemove", "matcher": "*", "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/hook.sh" }
+    ]
+  }
+}

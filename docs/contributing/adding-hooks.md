@@ -12,6 +12,8 @@ tags:
 
 Before adding a hook, read [ADR-002](../architecture/adr/ADR-002-hook-composition.md). Key constraint: `~/.claude/settings.json`'s hooks block is overwritten on every `setup.sh` run. All hook changes go into `hooks.json` at repo root.
 
+Hooks that do not come from this repo (a tool installer writing into `~/.claude/settings.json`, or an enabled plugin shipping its own `hooks/hooks.json`) must instead be recorded in the allowlist `hook-inventory.json` at repo root, in the same change that reviews them. `setup.sh --doctor` runs `scripts/check-hook-sources.sh` and fails on any live hook found in neither `hooks.json` nor the allowlist. See [ADR-010](../architecture/adr/ADR-010-hook-source-allowlist.md) and [Hook Pipeline → Hook Sources](../architecture/hook-pipeline.md#hook-sources).
+
 ## Pick a Hook Type
 
 | Hook type | Fires when | Typical use |

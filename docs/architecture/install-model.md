@@ -25,7 +25,7 @@ This is where you work. It is a standard git repository with submodules, a Pytho
 
 **Layer 2: the runtime config** (`~/.claude/`):
 
-This is where Claude Code reads. It contains a mix of real files and symlinks. The symlinks point into Layer 1. The one genuine file is `settings.json`, which is machine-local state (API keys, merged hooks) that is never committed.
+This is where Claude Code reads. It contains a mix of real files and symlinks. The symlinks point into Layer 1. `settings.json` is a genuine machine-local file that is never committed, and it holds more than the merged hooks: tool installers (for example `codebase-memory-mcp install`) write hook entries directly into it, and its `enabledPlugins` key controls which plugin-registered hooks Claude Code loads from `~/.claude/plugins/cache/`. The committed allowlist `hook-inventory.json` plus `scripts/check-hook-sources.sh` track these out-of-repo additions; see [Hook Pipeline → Hook Sources](hook-pipeline.md#hook-sources). Other genuine runtime-managed content in Layer 2 includes `plugins/`, `projects/`, and installer-owned directories such as `~/.claude/hooks/`.
 
 `setup.sh` creates Layer 2 from Layer 1. Running it again is always safe: every operation is idempotent.
 
@@ -56,7 +56,7 @@ This is where Claude Code reads. It contains a mix of real files and symlinks. T
 
 All use `ln -sfn` (force-replace, no-dereference), so re-running after a structural change is safe.
 
-**4. Hook merge**: reads `hooks.json` from the repo root and uses `jq` to write its contents into the `.hooks` key of `~/.claude/settings.json`. If `settings.json` does not exist, it creates one. If it exists, it merges in-place, preserving all other keys (API keys, model preferences). A timestamped backup is created before any write.
+**4. Hook merge**: reads `hooks.json` from the repo root and uses `jq` to write its contents into the `.hooks` key of `~/.claude/settings.json`. If `settings.json` does not exist, it creates one. If it exists, other top-level keys (API keys, model preferences, `enabledPlugins`) are preserved, but the `.hooks` key itself is **replaced wholesale**, not merged: any hook a tool installer added directly to `settings.json` is wiped by the next `setup.sh` run. This is a known defect; the fix is owned by the `fix/setup-merge-hooks-protocol` branch, and until it lands the hook-source drift check reports the wipe as a stale-allowlist warning. A timestamped backup is created before any write.
 
 **5. claudeMdExcludes merge**: adds two path patterns to `settings.json`'s `.claudeMdExcludes` array: one for `~/dev/.claude/CLAUDE.md` and one for `~/dev/.claude/.claude/**`. This prevents Claude Code from double-loading the repo-local CLAUDE.md. Deduplicates before writing.
 
@@ -66,7 +66,7 @@ All use `ln -sfn` (force-replace, no-dereference), so re-running after a structu
 ./setup.sh --doctor
 ```
 
-The doctor mode prints every expected symlink, its current target, and whether the target exists. Broken symlinks, dangling targets, and drift from the expected topology are all reported. It also checks whether `settings.json` has the hooks block and `claudeMdExcludes` merged in.
+The doctor mode prints every expected symlink, its current target, and whether the target exists. Broken symlinks, dangling targets, and drift from the expected topology are all reported. It also checks whether `settings.json` has the hooks block and `claudeMdExcludes` merged in, runs `scripts/check-hook-sources.sh` to diff every live hook source (settings.json entries and enabled-plugin hooks) against the committed allowlist `hook-inventory.json`, and verifies the expected vendored plugins are installed. An unreviewed hook source fails the doctor run.
 
 ## See Also
 

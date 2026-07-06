@@ -156,6 +156,18 @@ doctor() {
     fi
 
     echo ""
+    echo "Hook sources (scripts/check-hook-sources.sh):"
+    if command -v jq &>/dev/null; then
+        # Exit 1 means an unreviewed hook-injection source is live; exit 2
+        # means the checker could not run. Both need attention.
+        if ! "${REPO_DIR}/scripts/check-hook-sources.sh"; then
+            broken=$((broken + 1))
+        fi
+    else
+        log_warn "jq not found; skipping hook-source drift check"
+    fi
+
+    echo ""
     echo "Vendored plugins (claude plugin list):"
     if command -v claude >/dev/null 2>&1; then
         local expected_plugins=(
