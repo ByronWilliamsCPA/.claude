@@ -2375,8 +2375,8 @@
 <p>Two directories under <code>.claude/</code> look identical from the filesystem but behave completely differently at runtime. Knowing the difference is required before adding any new behavioral file to the repo.</p>
 <p>For the design decisions behind this split, see <a href="../adr/ADR-006-rules-vs-standards/">ADR-006</a>.</p>
 <h2 id="two-directories-two-loading-semantics">Two Directories, Two Loading Semantics<a class="headerlink" href="#two-directories-two-loading-semantics" title="Permanent link">&para;</a></h2>
-<p><strong><code>.claude/rules/</code></strong>: session-injected behavior.</p>
-<p>Rule files are referenced from <code>CLAUDE.md</code> using explicit paths. When Claude Code starts a session, it reads <code>CLAUDE.md</code> and loads the referenced rule files into the system prompt. Every rule file in <code>rules/</code> that is referenced from <code>CLAUDE.md</code> is active from the very first turn of every session.</p>
+<p><strong><code>.claude/rules/</code></strong>: pointer-referenced, read on demand.</p>
+<p>Rule files are referenced from <code>CLAUDE.md</code> using explicit "see <code>.claude/rules/X.md</code>" pointers. No mechanism in Claude Code auto-loads a rule file into the system prompt at session start. A rule file only enters context when Claude reads it, either by following one of these CLAUDE.md pointers while the surrounding instruction is relevant to the current turn, or because a hook prints equivalent content directly (the <code>delegation-reminder</code> SessionStart hook, for example, prints a hardcoded summary of the delegation core, mirrored inline in <code>CLAUDE.md</code>, rather than relying on Claude to go read <code>supervisor.md</code>).</p>
 <p>Current rules:</p>
 <table>
 <thead>
@@ -2415,7 +2415,7 @@
 <tr>
 <td><code>supervisor.md</code></td>
 <td>All sessions</td>
-<td>Agent assignment patterns for common task types</td>
+<td>Reference material for agent assignment patterns and reviewer model pins; its delegation core is now inlined directly in CLAUDE.md and reinforced every session by the <code>delegation-reminder</code> SessionStart hook, rather than depended on as a stand-alone auto-load</td>
 </tr>
 <tr>
 <td><code>pre-commit.md</code></td>
@@ -2425,7 +2425,7 @@
 </tbody>
 </table>
 <p><strong><code>.claude/standards/</code></strong>: on-demand reference material.</p>
-<p>Standards are never referenced from <code>CLAUDE.md</code>. Nothing loads them automatically. They are read when a specific task requires the information they contain: either because the model decides to look them up, or because an agent's prompt instructs it to consult a specific standard.</p>
+<p>Several standards carry <code>CLAUDE.md</code> "see" pointers of the same form used for rules (<code>packages.md</code> and the MCP setup guides, among others), but nothing loads any of them automatically. They are read when a specific task requires the information they contain: because the model follows a pointer or decides to look them up, or because an agent's prompt instructs it to consult a specific standard.</p>
 <p>Current standards:</p>
 <table>
 <thead>
@@ -2448,15 +2448,15 @@
 <h2 id="how-to-decide-where-a-new-file-belongs">How to Decide Where a New File Belongs<a class="headerlink" href="#how-to-decide-where-a-new-file-belongs" title="Permanent link">&para;</a></h2>
 <p>Ask this single question:</p>
 <blockquote>
-<p><strong>Must this content influence behavior in every session, from the very first turn?</strong></p>
+<p><strong>Does this content need a <code>CLAUDE.md</code> pointer so Claude reads it whenever the surrounding instruction is relevant?</strong></p>
 </blockquote>
-<p>If yes: place it in <code>.claude/rules/</code> and add a reference to it from <code>CLAUDE.md</code>. If no: place it in <code>.claude/standards/</code>.</p>
-<p>The question is intentionally conservative. If the content is needed in <em>most</em> sessions but not <em>all</em>, it still belongs in <code>standards/</code>. Load it on demand in the sessions where it applies rather than paying its context cost in sessions where it does not. The cost of an occasional missed lookup is lower than the cost of constant context bloat.</p>
-<p>When adding a rule, also consider whether it should be path-scoped. Rules that apply only to Python files can include a note like <code>&gt; path-scoped to Python files</code> near the top. This is a social convention for reviewers, not a technical filter: Claude Code loads all referenced rules at session start regardless of what files the session touches.</p>
+<p>If yes: place it in <code>.claude/rules/</code> and add a <code>see .claude/rules/X.md</code> reference from <code>CLAUDE.md</code> next to the instruction it supports. If no: place it in <code>.claude/standards/</code>, discovered through an agent's own prompt, an ad hoc lookup, or (for several standards) a <code>CLAUDE.md</code> "see" pointer beside the instruction it supports. The split is a filing convention for how broadly the content applies, not a loading mechanism; neither directory is ever auto-loaded.</p>
+<p>The question is intentionally conservative. If the content is needed in <em>most</em> sessions but not <em>all</em>, it still belongs in <code>standards/</code>. A <code>CLAUDE.md</code> pointer raises the odds Claude reads a file on a relevant turn, but it is never a guarantee either way, so a pointer to content that is only occasionally useful buys little and adds a permanent line to <code>CLAUDE.md</code>. Reserve <code>rules/</code> for content tied to a recurring, nameable trigger (a file type, an operation) that CLAUDE.md's prose can name next to the pointer.</p>
+<p>When adding a rule, also consider whether it should be path-scoped. Rules that apply only to Python files can include a <code>paths:</code> frontmatter header (see <code>python.md</code>, <code>testing.md</code>) or a <code>&gt; path-scoped to Python files</code> note near the top. This is a documentation convention for reviewers and for CLAUDE.md's pointer text, not a technical filter: nothing in Claude Code restricts a rule file's visibility by path, and nothing loads it automatically regardless of path.</p>
 <h2 id="why-mixing-them-is-a-bug">Why Mixing Them Is a Bug<a class="headerlink" href="#why-mixing-them-is-a-bug" title="Permanent link">&para;</a></h2>
-<p><strong>Standard mis-filed as a rule</strong>: The content loads into every session's system prompt. <code>writing-quality.md</code> contains detailed quality thresholds relevant only when editing prose. If it were in <code>rules/</code>, it would consume context tokens on every coding session, every debugging session, every git operation. Multiply by several mis-filed standards and the context budget impact matches the pre-tiered-MCP problem described in <a href="../mcp-tiered-loading/">MCP Tiered Loading</a>.</p>
-<p><strong>Rule mis-filed as a standards</strong>: The behavior silently stops firing. If <code>git-workflow.md</code> were in <code>standards/</code>, there would be nothing in the session context to enforce commit signing, conventional commit format, or branch naming. The rule simply does not exist from the session's perspective. This failure mode is invisible: the file passes all syntax checks, builds without warnings, and looks correct in the docs site.</p>
-<p>Both failure modes are silent. There is no runtime error when a file is in the wrong directory. Human review of any new addition to either directory is the only gate.</p>
+<p><strong>Standard mis-filed as a rule</strong>: <code>CLAUDE.md</code> gains a pointer implying the content is broadly relevant. <code>writing-quality.md</code> contains detailed quality thresholds relevant only when editing prose. If it were pointed to from <code>rules/</code> the way <code>python.md</code> or <code>writing.md</code> are, Claude becomes more likely to read it on turns that do not need it (coding, debugging, git operations), burning context on a lookup the turn did not require. Multiply by several mis-filed standards and the wasted-read pattern matches the pre-tiered-MCP problem described in <a href="../mcp-tiered-loading/">MCP Tiered Loading</a>.</p>
+<p><strong>Rule mis-filed as a standard</strong>: There is no <code>CLAUDE.md</code> pointer prompting a read at all. If <code>git-workflow.md</code> were in <code>standards/</code>, nothing would cue Claude to consult it before a commit; the behavior it enforces (commit signing, conventional commit format, branch naming) would depend entirely on Claude discovering the file unprompted. This failure mode is invisible: the file passes all syntax checks, builds without warnings, and looks correct in the docs site.</p>
+<p>Both failure modes are silent. There is no runtime error when a file is in the wrong directory, only reduced odds that the right content gets read at the right time. Human review of any new addition to either directory is the only gate.</p>
 <h2 id="see-also">See Also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
 <ul>
 <li><a href="../adr/ADR-006-rules-vs-standards/">ADR-006 Rules vs Standards Boundary</a>: why this split exists</li>
@@ -2486,7 +2486,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 27, 2026 22:56:05 UTC">April 27, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 6, 2026 18:26:47 UTC">July 6, 2026</span>
   </span>
 
     

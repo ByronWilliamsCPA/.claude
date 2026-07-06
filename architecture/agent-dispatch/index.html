@@ -2521,7 +2521,7 @@
 <li>The parent conversation continues with the agent's result in hand.</li>
 </ol>
 <h3 id="rules-and-standards-not-dispatched">Rules and Standards (not dispatched)<a class="headerlink" href="#rules-and-standards-not-dispatched" title="Permanent link">&para;</a></h3>
-<p>Rules (<code>.claude/rules/</code>) are not dispatched: they are loaded at session start via <code>CLAUDE.md</code> references and remain active throughout the session. Standards (<code>.claude/standards/</code>) are never dispatched or auto-loaded; they are read on demand via file reads when a task requires reference material.</p>
+<p>Rules (<code>.claude/rules/</code>) are not dispatched: <code>CLAUDE.md</code> points to them with "see <code>.claude/rules/X.md</code>" references, but nothing in Claude Code auto-loads the target file into the system prompt. A rule enters context only when Claude reads it by following one of those pointers, or when a hook prints equivalent content directly (the <code>delegation-reminder</code> SessionStart hook, for instance, prints a hardcoded summary of the delegation core, the same content inlined in <code>CLAUDE.md</code>, every session rather than depending on a pointer being followed). Standards (<code>.claude/standards/</code>) are never dispatched and never auto-loaded; <code>CLAUDE.md</code> points to several of them with the same "see" references it uses for rules, and they are read on demand via file reads when a task, or an agent's own prompt, requires the reference material.</p>
 <h2 id="the-tool-restriction-model-for-agents">The Tool Restriction Model for Agents<a class="headerlink" href="#the-tool-restriction-model-for-agents" title="Permanent link">&para;</a></h2>
 <p>Each agent file carries a <code>tools:</code> field in its YAML frontmatter listing the built-in Claude Code tools it can use:</p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nn">---</span>
@@ -2565,7 +2565,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 27, 2026 22:56:05 UTC">April 27, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 6, 2026 18:26:47 UTC">July 6, 2026</span>
   </span>
 
     

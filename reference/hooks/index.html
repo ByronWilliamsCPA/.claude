@@ -2581,8 +2581,8 @@
 </tr>
 <tr>
 <td><code>SessionStart</code></td>
-<td>When a new Claude Code session opens</td>
-<td>Session initialization (reserved for future use)</td>
+<td>When a session opens, resumes, clears, or compacts (per matcher)</td>
+<td>Context injection: stdout on exit 0 becomes session context (delegation and codebase-memory reminders)</td>
 </tr>
 </tbody>
 </table>
@@ -2719,7 +2719,7 @@
 <li>Blocking semantics apply per hook regardless of source: any PreToolUse hook that exits 2 or returns a deny decision blocks the tool call. Observability hooks must therefore be fire-and-forget (exit 0 on every code path, nothing written to stdout).</li>
 <li>Latency is cumulative: each matching registration is one process spawn per event, so a plugin adds its own spawns on top of the repo-managed ones.</li>
 </ul>
-<p>As of 2026-06, <code>hooks.json</code> defines 10 repo-managed commands across PreToolUse (5), PostToolUse (2), Stop (1), and UserPromptSubmit (2), and <code>settings.json</code> carries additional entries including four SessionStart commands. The hookify and security-guidance plugins ship under <code>.submodules/anthropics-plugins</code> but are wired as command entries in <code>hooks.json</code> (legacy wiring), so they count as repo-managed hooks, not plugin-system hooks.</p>
+<p>As of 2026-07, <code>hooks.json</code> defines 18 repo-managed command entries across PreToolUse (5), PostToolUse (2), Stop (1), UserPromptSubmit (2), and SessionStart (8: <code>cbm-context-reminder.sh</code> and <code>delegation-reminder.sh</code>, each registered under the startup, resume, clear, and compact matchers). The hookify and security-guidance plugins ship under <code>.submodules/anthropics-plugins</code> but are wired as command entries in <code>hooks.json</code> (legacy wiring), so they count as repo-managed hooks, not plugin-system hooks.</p>
 <h3 id="agents-observe-pinned-v0911">agents-observe (pinned v0.9.11)<a class="headerlink" href="#agents-observe-pinned-v0911" title="Permanent link">&para;</a></h3>
 <p>The agents-observe plugin (<code>.submodules/agents-observe</code>, pinned at tag v0.9.11) is the first true plugin-system hook contributor. Its <code>hooks/hooks.json</code> registers exactly one command on each of 28 events, including SubagentStart and SubagentStop (the events that drive per-subagent token attribution) plus PreToolUse and PostToolUse on every tool call; the 28 also include the install-time <code>Setup</code> lifecycle event, which runs once at plugin install rather than per session. It overlaps with repo-managed hooks on five events: PreToolUse, PostToolUse, Stop, UserPromptSubmit, and SessionStart. On each overlapping event both sources fire independently, and the plugin adds one process spawn per event. With the plugin enabled, each tool call therefore carries six PreToolUse spawns (five repo-managed plus the plugin wrapper) and three PostToolUse spawns; the wrapper backgrounds its node process, so the added synchronous cost is one fork-and-exec per event, typically single-digit milliseconds. For latency-sensitive sessions (tight subagent loops with hundreds of tool calls), disable the plugin by setting the <code>enabledPlugins</code> entry for <code>agents-observe@agents-observe</code> to <code>false</code>.</p>
 <p>27 of the 28 registrations run <code>hooks/scripts/hook.sh</code>, a 9-line wrapper that reads stdin, backgrounds the node CLI with stdout and stderr discarded to <code>/dev/null</code>, and ends in an unconditional <code>exit 0</code>. It never writes to stdout, so no code path can block a tool call or emit a permission decision (verified at v0.9.11; re-verify after any submodule bump). Two caveats:</p>
@@ -2757,7 +2757,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 11, 2026 15:48:58 UTC">June 11, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 6, 2026 18:26:47 UTC">July 6, 2026</span>
   </span>
 
     

@@ -963,6 +963,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#sessionstart" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SessionStart
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#userpromptsubmit" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2435,6 +2446,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#sessionstart" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SessionStart
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#userpromptsubmit" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2545,7 +2567,7 @@
 <p><strong>PreToolUse</strong>: fires before each tool call Claude attempts. Each entry in the <code>PreToolUse</code> array can have a matcher regex targeting specific tools. Used for: secrets file guard (Edit/Write), planning bridge gate (Skill), security reminder (Edit/Write/MultiEdit), hookify dispatch (all tools).</p>
 <p><strong>PostToolUse</strong>: fires after each tool call completes. Used for: Python 3.10 compatibility check (Edit/Write), hookify dispatch (all tools).</p>
 <p><strong>Stop</strong>: fires when Claude finishes its turn (before control returns to the user). Used for: hookify stop handler.</p>
-<p><strong>SessionStart</strong>: fires once when a new Claude Code session opens. Not currently defined in <code>hooks.json</code>: available for future use.</p>
+<p><strong>SessionStart</strong>: fires when a session opens, and again on resume, <code>clear</code>, or <code>compact</code>, depending on which matcher a given hook registers. Two repo-managed hooks are wired here (<code>scripts/hooks/delegation-reminder.sh</code>, <code>scripts/hooks/cbm-context-reminder.sh</code>), alongside SessionStart hooks contributed by installed plugins. No <code>.claude/rules/*.md</code> file is injected at this point or any other; rules enter context only when Claude follows a <code>CLAUDE.md</code> pointer to one, or a hook prints its content directly, which is exactly what these two hooks do.</p>
 <h2 id="diagram">Diagram<a class="headerlink" href="#diagram" title="Permanent link">&para;</a></h2>
 <p><img alt="Hook pipeline sequence diagram" src="../diagrams/hook_pipeline.svg" /></p>
 <h2 id="execution-order-across-a-turn">Execution Order Across a Turn<a class="headerlink" href="#execution-order-across-a-turn" title="Permanent link">&para;</a></h2>
@@ -2579,6 +2601,40 @@
 </span></code></pre></div>
 <p>Array position determines execution order within each hook type. Matcher-specific entries run only when their regex matches the tool being called.</p>
 <h2 id="per-hook-responsibilities">Per-Hook Responsibilities<a class="headerlink" href="#per-hook-responsibilities" title="Permanent link">&para;</a></h2>
+<h3 id="sessionstart">SessionStart<a class="headerlink" href="#sessionstart" title="Permanent link">&para;</a></h3>
+<p>Fires once per session-open event, before the turn cycle described above begins; it is not part of the per-turn sequence.</p>
+<table>
+<thead>
+<tr>
+<th>Matcher</th>
+<th>Script</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>startup\|resume\|clear\|compact</code></td>
+<td><code>scripts/hooks/cbm-context-reminder.sh</code></td>
+<td>Repo-managed; listed first in <code>hooks.json</code>, so it runs first. Prints the codebase-memory-mcp discovery protocol (prefer <code>search_graph</code>/<code>trace_path</code>/<code>get_code_snippet</code>/<code>get_architecture</code> over Grep/Glob for code exploration). Replaces the binary-managed <code>~/.claude/hooks/cbm-session-reminder</code> entry that <code>codebase-memory-mcp install</code> writes, so the wording survives a binary upgrade</td>
+</tr>
+<tr>
+<td><code>startup\|resume\|clear\|compact</code></td>
+<td><code>scripts/hooks/delegation-reminder.sh</code></td>
+<td>Repo-managed. Prints the delegation protocol reminder (dispatch subagents for exploration, well-specified implementation, and review; never silently absorb a failed dispatch inline) and refreshes the task-observer skills manifest, warning on stdout if the refresh fails</td>
+</tr>
+<tr>
+<td><code>startup\|clear\|compact</code></td>
+<td>superpowers plugin session-start command</td>
+<td>Plugin-provided; not defined in this repo's <code>hooks.json</code></td>
+</tr>
+<tr>
+<td>(all matchers)</td>
+<td>agents-observe plugin telemetry auto-start</td>
+<td>Plugin-provided; not defined in this repo's <code>hooks.json</code></td>
+</tr>
+</tbody>
+</table>
+<p>Neither repo-managed hook, nor either plugin hook, loads a file from <code>.claude/rules/</code>. A rule file reaches context only through a <code>CLAUDE.md</code> pointer Claude chooses to follow, or through a hook that prints equivalent content directly: <code>delegation-reminder.sh</code> prints a hardcoded summary of the delegation core (mirrored inline in <code>CLAUDE.md</code>, not read from <code>supervisor.md</code> at runtime), and <code>cbm-context-reminder.sh</code> does the same for the codebase-memory discovery protocol.</p>
 <h3 id="userpromptsubmit">UserPromptSubmit<a class="headerlink" href="#userpromptsubmit" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
@@ -2709,7 +2765,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 27, 2026 22:56:05 UTC">April 27, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 6, 2026 18:26:47 UTC">July 6, 2026</span>
   </span>
 
     
