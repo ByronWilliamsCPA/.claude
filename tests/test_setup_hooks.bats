@@ -72,9 +72,12 @@ EOF
     local settings="$HOME/.claude/settings.json"
 
     # Foreign entries survive (exact matches: substring assertions on jq
-    # counts also match "10"/"11" and weaken the pin)
-    run jq -r '[.hooks.SessionStart[].matcher] | sort | join(",")' "$settings"
-    [ "$output" = "resume,startup" ]
+    # counts also match "10"/"11" and weaken the pin). hooks.json defines
+    # its own SessionStart groups since PR #272, so assert the foreign
+    # commands specifically rather than pinning the event's matcher list.
+    run jq -r '[.hooks.SessionStart[] | .hooks[].command]
+        | map(select(contains("cbm-session-reminder"))) | length' "$settings"
+    [ "$output" = "2" ]
     run jq -r '[.hooks.PreToolUse[] | select(.matcher == "Grep|Glob") | .hooks[].command] | length' "$settings"
     [ "$output" = "1" ]
 
