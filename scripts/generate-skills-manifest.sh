@@ -3,13 +3,16 @@
 # ~/.claude/skills/ and extracting frontmatter descriptions.
 # Replaces Cowork's <available_skills> system prompt injection for Claude Code environments.
 # Silent on success.
+#
+# Output goes to the task-observer runtime workspace, which is ALWAYS
+# ~/.claude/skill-observations/ regardless of where this script physically
+# lives (CLAUDE.md "Task observation" section). Deriving the output dir from
+# the script path wrote the manifest into the repo clone instead, which is
+# why task-observer never found it.
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
-REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
-
 SKILLS_DIR="${HOME}/.claude/skills"
-OBS_DIR="${REPO_ROOT}/skill-observations"
+OBS_DIR="${HOME}/.claude/skill-observations"
 OUTPUT="${OBS_DIR}/available-skills.md"
 
 mkdir -p "${OBS_DIR}"

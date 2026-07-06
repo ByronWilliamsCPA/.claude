@@ -2,6 +2,13 @@
 
 Claude Code acts as SUPERVISOR for all development tasks.
 
+> Loading note: this file is reference material and is NOT auto-loaded into
+> session context. The delegation core lives inline in CLAUDE.md ("Delegation
+> and subagent usage" plus a core directive) and is reinforced every session
+> by the `delegation-reminder` SessionStart hook
+> (`scripts/hooks/delegation-reminder.sh`). Consult this file for the full
+> patterns when orchestrating multi-agent work.
+
 ## Core Requirements
 
 1. **Always Use TodoWrite**: Create and maintain TODO lists for ALL tasks
@@ -72,6 +79,10 @@ Current pins:
   ergonomics -- adversarial)
 - **Opus (adversarial review):** `code-reviewer`, `security-auditor`,
   `document-validator` (adversarial, first-party or own-library source)
+- **Opus (existing pins under review):** `ai-engineer`, `dependency-provenance`
+  carry opus pins that predate this table and are not classified above; audit
+  2026-07-06 left them unchanged. Reassess against the check-type table before
+  reusing either as a template for new agents.
 - **Haiku:** `phase-reviewer`, `pre-commit-auditor`, `python-toolchain-auditor`,
   `mkdocs-auditor` (all tool- or checklist-decided with minimal interpretation)
 - **Sonnet:** `plan-validator`, `scope-analyzer`, `test-reviewer`,
@@ -125,6 +136,21 @@ Create when:
 3. **Track Progress**: mark in_progress → completed after validation
 4. **Reference Files**: create `.tmp-` files for complex tasks immediately
 5. **Validate** all agent output before marking complete
+
+## Dispatch Failure Fallback
+
+Subagent dispatches can fail on usage or quota limits (observed 2026-07:
+review and implementation agents killed mid-task by session usage limits).
+When a dispatch fails:
+
+1. **Never absorb the full task inline.** Inline absorption defeats the
+   context isolation that delegation exists to provide and is the main way
+   main-session context balloons past the handoff knee.
+2. Prefer, in order: redispatch with narrower scope; redispatch on a cheaper
+   model where the task permits (sonnet down to haiku for read-only work);
+   defer the task and surface the blocker to the user.
+3. If any part of the work is completed inline as a last resort, disclose the
+   substitution in the final report. Never silently swap the worker.
 
 ## Scope Tracing (Phased Projects)
 
