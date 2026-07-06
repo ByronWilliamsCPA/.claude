@@ -19,7 +19,7 @@ tags:
 
 ## Context
 
-The repo integrates external capability trees that are maintained upstream and should receive updates independently of this repo's own development. Five such trees are in active use:
+The repo integrates external capability trees that are maintained upstream and should receive updates independently of this repo's own development. Five such trees were in active use at decision time (the set has since grown; `.gitmodules` and [submodule-strategy.md](../submodule-strategy.md) are the authoritative current inventory):
 
 | Submodule | Upstream | What it provides |
 | --- | --- | --- |
@@ -77,12 +77,12 @@ git commit -m "chore(submodules): update <name> to latest upstream"
 
 ## References
 
-- `.gitmodules`: the five submodule definitions with upstream URLs
+- `.gitmodules`: the authoritative submodule definitions with upstream URLs
 - `setup.sh`: `ensure_submodules()` function handles init; symlink targets reference submodule paths
 - `.submodules/reference-library/`: agent templates
 - `.submodules/superpowers/`: community skills
 - `.submodules/anthropics-skills/`: official Anthropic skills
 - `.submodules/anthropics-plugins/`: hookify and security-guidance
 - `.submodules/image-generation/`: image generation utilities
-- `docs/architecture/submodule-strategy.md`: narrative explanation of the five submodules
+- `docs/architecture/submodule-strategy.md`: narrative explanation of each submodule, its trust level, and the admission bar
 - [ADR-001](ADR-001-two-layer-symlink-install.md): the two-layer install model that wires submodules into `~/.claude/`
