@@ -19,7 +19,7 @@ For the design decisions behind this split, see [ADR-006](adr/ADR-006-rules-vs-s
 
 **`.claude/rules/`**: pointer-referenced, read on demand.
 
-Rule files are referenced from `CLAUDE.md` using explicit "see `.claude/rules/X.md`" pointers. No mechanism in Claude Code auto-loads a rule file into the system prompt at session start. A rule file only enters context when Claude reads it, either by following one of these CLAUDE.md pointers while the surrounding instruction is relevant to the current turn, or because a hook explicitly injects its content (the `delegation-reminder` SessionStart hook, for example, prints the `supervisor.md` delegation core directly rather than relying on Claude to go read the file).
+Rule files are referenced from `CLAUDE.md` using explicit "see `.claude/rules/X.md`" pointers. No mechanism in Claude Code auto-loads a rule file into the system prompt at session start. A rule file only enters context when Claude reads it, either by following one of these CLAUDE.md pointers while the surrounding instruction is relevant to the current turn, or because a hook prints equivalent content directly (the `delegation-reminder` SessionStart hook, for example, prints a hardcoded summary of the delegation core, mirrored inline in `CLAUDE.md`, rather than relying on Claude to go read `supervisor.md`).
 
 Current rules:
 
@@ -35,7 +35,7 @@ Current rules:
 
 **`.claude/standards/`**: on-demand reference material.
 
-Standards are never referenced from `CLAUDE.md`. Nothing loads them automatically. They are read when a specific task requires the information they contain: either because the model decides to look them up, or because an agent's prompt instructs it to consult a specific standard.
+Several standards carry `CLAUDE.md` "see" pointers of the same form used for rules (`packages.md` and the MCP setup guides, among others), but nothing loads any of them automatically. They are read when a specific task requires the information they contain: because the model follows a pointer or decides to look them up, or because an agent's prompt instructs it to consult a specific standard.
 
 Current standards:
 
@@ -50,7 +50,7 @@ Ask this single question:
 
 > **Does this content need a `CLAUDE.md` pointer so Claude reads it whenever the surrounding instruction is relevant?**
 
-If yes: place it in `.claude/rules/` and add a `see .claude/rules/X.md` reference from `CLAUDE.md` next to the instruction it supports. If no: place it in `.claude/standards/`, where it is discovered only through an agent's own prompt or an ad hoc lookup, never through a `CLAUDE.md` pointer.
+If yes: place it in `.claude/rules/` and add a `see .claude/rules/X.md` reference from `CLAUDE.md` next to the instruction it supports. If no: place it in `.claude/standards/`, discovered through an agent's own prompt, an ad hoc lookup, or (for several standards) a `CLAUDE.md` "see" pointer beside the instruction it supports. The split is a filing convention for how broadly the content applies, not a loading mechanism; neither directory is ever auto-loaded.
 
 The question is intentionally conservative. If the content is needed in *most* sessions but not *all*, it still belongs in `standards/`. A `CLAUDE.md` pointer raises the odds Claude reads a file on a relevant turn, but it is never a guarantee either way, so a pointer to content that is only occasionally useful buys little and adds a permanent line to `CLAUDE.md`. Reserve `rules/` for content tied to a recurring, nameable trigger (a file type, an operation) that CLAUDE.md's prose can name next to the pointer.
 

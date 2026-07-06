@@ -73,12 +73,12 @@ Fires once per session-open event, before the turn cycle described above begins;
 
 | Matcher | Script | What it does |
 | --- | --- | --- |
-| `startup\|resume\|clear\|compact` | `scripts/hooks/delegation-reminder.sh` | Repo-managed. Prints the delegation protocol reminder (dispatch subagents for exploration, well-specified implementation, and review; never silently absorb a failed dispatch inline) and silently refreshes the task-observer skills manifest |
-| `startup\|resume\|clear\|compact` | `scripts/hooks/cbm-context-reminder.sh` | Repo-managed. Prints the codebase-memory-mcp discovery protocol (prefer `search_graph`/`trace_path`/`get_code_snippet`/`get_architecture` over Grep/Glob for code exploration). Replaces the binary-managed `~/.claude/hooks/cbm-session-reminder` entry that `codebase-memory-mcp install` writes, so the wording survives a binary upgrade |
+| `startup\|resume\|clear\|compact` | `scripts/hooks/cbm-context-reminder.sh` | Repo-managed; listed first in `hooks.json`, so it runs first. Prints the codebase-memory-mcp discovery protocol (prefer `search_graph`/`trace_path`/`get_code_snippet`/`get_architecture` over Grep/Glob for code exploration). Replaces the binary-managed `~/.claude/hooks/cbm-session-reminder` entry that `codebase-memory-mcp install` writes, so the wording survives a binary upgrade |
+| `startup\|resume\|clear\|compact` | `scripts/hooks/delegation-reminder.sh` | Repo-managed. Prints the delegation protocol reminder (dispatch subagents for exploration, well-specified implementation, and review; never silently absorb a failed dispatch inline) and refreshes the task-observer skills manifest, warning on stdout if the refresh fails |
 | `startup\|clear\|compact` | superpowers plugin session-start command | Plugin-provided; not defined in this repo's `hooks.json` |
 | (all matchers) | agents-observe plugin telemetry auto-start | Plugin-provided; not defined in this repo's `hooks.json` |
 
-Neither repo-managed hook, nor either plugin hook, loads a file from `.claude/rules/`. A rule file reaches context only through a `CLAUDE.md` pointer Claude chooses to follow, or through a hook that prints rule content directly, which is what `delegation-reminder.sh` does for the `supervisor.md` delegation core and what `cbm-context-reminder.sh` does for the codebase-memory discovery protocol.
+Neither repo-managed hook, nor either plugin hook, loads a file from `.claude/rules/`. A rule file reaches context only through a `CLAUDE.md` pointer Claude chooses to follow, or through a hook that prints equivalent content directly: `delegation-reminder.sh` prints a hardcoded summary of the delegation core (mirrored inline in `CLAUDE.md`, not read from `supervisor.md` at runtime), and `cbm-context-reminder.sh` does the same for the codebase-memory discovery protocol.
 
 ### UserPromptSubmit
 
