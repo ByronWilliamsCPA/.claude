@@ -4,8 +4,10 @@
 # cbm-session-reminder entry in settings.json so the wording survives
 # codebase-memory-mcp binary upgrades (which rewrite that file).
 #
-# Registered in ~/.claude/settings.json under hooks.SessionStart with matchers
-# startup|resume|clear|compact.
+# Registered under hooks.SessionStart with matchers startup|resume|clear|compact.
+# Canonical source: hooks.json in this repo; setup.sh merge_hooks() regenerates
+# the live ~/.claude/settings.json hooks block from it, so edit hooks.json, not
+# the live file.
 set -uo pipefail
 
 cat <<'EOF'
