@@ -167,3 +167,13 @@ Net: keep `frontend-designer` as the default builder, and prioritize action 2
 (the parallel polish-pass review structure, starting with the accessibility
 sub-agent) over the other ported patterns, since this trial demonstrates its
 value directly rather than by inspection alone.
+
+**Human tie-breaker.** After viewing both rendered mockups without knowing
+which was which, the repo owner independently preferred Option 1
+(`frontend-designer`), matching the judge panel's majority call and aggregate
+score. This is the strongest signal in the trial: an automated rubric can be
+gamed or miss taste, but the person who has to ship the page picking the same
+option the panel picked is direct confirmation, not just statistical
+agreement. Outstanding follow-up before this output is usable as a real
+starting point: fix the five contrast failures listed above in
+`arm-a-frontend-designer.html` and re-verify against the WCAG formula.
