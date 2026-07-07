@@ -125,7 +125,7 @@ Source: nextlevelbuilder/ui-ux-pro-max (adapted, generalized from React Native)
 
 | Rule | Standard |
 |------|----------|
-| `color-contrast` | Minimum 4.5:1 for normal text, 3:1 for large text (WCAG AA) |
+| `color-contrast` | Minimum 4.5:1 for normal text, 3:1 for large text (WCAG AA). **Compute it, never eyeball it**: run `scripts/wcag-contrast.py FG BG` (or `--batch` with a JSON list) for every distinct text/background and UI-component color pairing actually used -- including hover, active, and focus-state color overrides, not just the resting state. A 2026-07-07 trial found five undetected AA failures in agent-delivered output whose own summary claimed contrast had been "verified by hand"; an LLM estimating hex contrast by eye is unreliable, the ratio is a deterministic computation, so a tool call replaces the estimate. Cite the script's printed ratio as evidence in the Pre-Delivery Checklist, not an unverified claim. |
 | `focus-states` | Visible focus rings (2-4px) on all interactive elements |
 | `alt-text` | Descriptive alt text for meaningful images |
 | `aria-labels` | aria-label for icon-only buttons |
@@ -358,7 +358,17 @@ Apply these when writing, reviewing, or refactoring React/Next.js code.
 3. **Component Architecture**: Plan component hierarchy and data flow
 4. **Implementation**: Build with production-grade code following all guidelines
 5. **Polish Pass**: Verify against UX Checklist priorities 1-5 (CRITICAL + HIGH)
-6. **Accessibility Audit**: Run through Priority 1 checklist completely
+6. **Accessibility Audit**: Run through Priority 1 checklist completely, computing
+   every contrast pair with `scripts/wcag-contrast.py` (see `color-contrast` above)
+7. **Independent re-check for real brand colors**: if the deliverable uses
+   specific, non-default brand colors (not plain black/white/gray), a
+   same-agent self-review is the weakest point in this workflow -- the author
+   is anchored on their own choices. Where feasible, have a fresh-context
+   pass (a separate `a11y`-mode invocation, or the `frontend-designer` agent's
+   Accessibility Audit mode run as its own dispatch rather than inline) verify
+   contrast independently before calling the work done, mirroring the blind
+   accessibility-judge pattern that caught the 2026-07-07 regression a
+   same-pass self-review missed
 
 ### Mode: Review (`review`)
 
@@ -374,8 +384,11 @@ Apply these when writing, reviewing, or refactoring React/Next.js code.
 2. Run through Priority 1 (Accessibility) completely
 3. Check Priority 2 (Touch & Interaction) for interactive elements
 4. Check Priority 8 (Forms & Feedback) for any form elements
-5. Verify color contrast, focus states, aria attributes, keyboard navigation
-6. Output findings grouped by severity
+5. Verify color contrast (computed via `scripts/wcag-contrast.py` for every
+   pairing found in the file, including hover/active/focus overrides), focus
+   states, aria attributes, keyboard navigation
+6. Output findings grouped by severity, citing the script's printed ratio for
+   any contrast finding
 
 ### Mode: Performance (`perf`)
 
@@ -398,7 +411,10 @@ Apply these when writing, reviewing, or refactoring React/Next.js code.
 Before delivering any frontend work:
 
 - [ ] Design direction is clear and intentional (not generic)
-- [ ] Color contrast meets WCAG AA (4.5:1 text, 3:1 large text)
+- [ ] Color contrast meets WCAG AA (4.5:1 text, 3:1 large text) -- **computed via
+      `scripts/wcag-contrast.py`, not estimated**, for every color pairing used
+      (resting, hover, active, focus); paste the script's PASS/FAIL lines as
+      evidence, do not just check the box
 - [ ] All interactive elements have visible focus states
 - [ ] Touch targets >= 44x44px
 - [ ] No horizontal scroll on mobile

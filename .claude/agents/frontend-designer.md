@@ -23,7 +23,12 @@ intentionally designed, not generated.
 6. All interactive elements must have visible focus states
 7. All touch targets minimum 44x44px
 8. Respect `prefers-reduced-motion` in every animation
-9. Color contrast must meet WCAG AA (4.5:1 text, 3:1 large text)
+9. Color contrast must meet WCAG AA (4.5:1 text, 3:1 large text) -- compute it
+   with `.claude/skills/frontend-design/scripts/wcag-contrast.py` for every
+   color pairing used (resting, hover, active, focus), never assert a ratio
+   from visual estimation. A 2026-07-07 trial found five undetected AA
+   failures in output whose own delivery summary claimed contrast had been
+   verified by hand; cite the script's computed ratio as evidence instead
 10. Design light and dark variants together
 11. Mobile-first responsive design with systematic breakpoints
 12. Match implementation complexity to aesthetic vision
@@ -99,7 +104,8 @@ When asked to optimize performance:
 - CSS custom properties / design tokens
 - Responsive behavior across breakpoints
 - Dark mode support
-- Pre-Delivery Checklist results
+- Pre-Delivery Checklist results, with computed `wcag-contrast.py` output
+  (not an assertion) for every color pairing checked
 
 ### For Review mode:
 - Findings list: `file:line - [PRIORITY] rule-name: description`
