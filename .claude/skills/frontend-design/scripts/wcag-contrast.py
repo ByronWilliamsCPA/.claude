@@ -28,6 +28,19 @@ import json
 import sys
 
 
+class InvalidHexColorError(ValueError):
+    """A color argument is not a valid 3- or 6-digit hex string."""
+
+
+def _validate_hex(color: str) -> str:
+    stripped = color.lstrip("#")
+    if len(stripped) not in (3, 6) or not all(
+        c in "0123456789abcdefABCDEF" for c in stripped
+    ):
+        raise InvalidHexColorError(f"not a valid 3- or 6-digit hex color: {color!r}")
+    return stripped
+
+
 def _linearize(channel: float) -> float:
     if channel <= 0.04045:
         return channel / 12.92
@@ -35,7 +48,7 @@ def _linearize(channel: float) -> float:
 
 
 def relative_luminance(hex_color: str) -> float:
-    hex_color = hex_color.lstrip("#")
+    hex_color = _validate_hex(hex_color)
     if len(hex_color) == 3:
         hex_color = "".join(c * 2 for c in hex_color)
     r, g, b = (int(hex_color[i : i + 2], 16) / 255 for i in (0, 2, 4))
@@ -50,11 +63,15 @@ def contrast_ratio(fg: str, bg: str) -> float:
 
 
 def check_pair(fg: str, bg: str, large: bool, label: str) -> bool:
-    ratio = contrast_ratio(fg, bg)
+    tag = f" ({label})" if label else ""
+    try:
+        ratio = contrast_ratio(fg, bg)
+    except InvalidHexColorError as exc:
+        print(f"FAIL: {fg} on {bg}{tag} = invalid input ({exc})")
+        return False
     threshold = 3.0 if large else 4.5
     passed = ratio >= threshold
     status = "PASS" if passed else "FAIL"
-    tag = f" ({label})" if label else ""
     print(f"{status}: {fg} on {bg}{tag} = {ratio:.2f}:1 (need >= {threshold}:1)")
     return passed
 

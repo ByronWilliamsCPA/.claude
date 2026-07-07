@@ -54,7 +54,12 @@ CAPTURED_TS="${CAPTURED_LINE#Captured: }"
 
 STALE=0
 if [[ -n "$CAPTURED_TS" ]] && command -v date &>/dev/null; then
+    # GNU date (-d) first; BSD/macOS date has no -d, so fall back to its -j -f
+    # form parsing the known ISO-8601 UTC format precompact-handoff.sh writes.
     CAPTURED_EPOCH=$(date -u -d "$CAPTURED_TS" +%s 2>/dev/null || true)
+    if [[ -z "$CAPTURED_EPOCH" ]]; then
+        CAPTURED_EPOCH=$(date -u -j -f "%Y-%m-%dT%H:%M:%SZ" "$CAPTURED_TS" +%s 2>/dev/null || true)
+    fi
     if [[ -n "$CAPTURED_EPOCH" ]]; then
         NOW_EPOCH=$(date -u +%s 2>/dev/null || true)
         if [[ -n "$NOW_EPOCH" ]]; then

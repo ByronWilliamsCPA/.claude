@@ -42,14 +42,27 @@ FILE_PATH=$(jq -r '.tool_input.file_path // .tool_input.path // empty' 2>/dev/nu
 [[ -z "$FILE_PATH" ]] && exit 0
 [[ -f "$FILE_PATH" ]] || exit 0
 
-# Does the path look like a test file?
+# Does the path look like a test file? Match conventional test directories and
+# filename patterns specifically, not a bare `*test*`/`*spec*` substring, which
+# false-positives on ordinary files whose name happens to contain that
+# substring (docs/latest.md, src/contest_rules.py, attestation.md).
+IS_TEST_FILE=0
 case "$FILE_PATH" in
-    *test*|*spec*|*_test.*|*.test.*)
-        ;;
-    *)
-        exit 0
+    */tests/*|*/test/*|*/__tests__/*|*/spec/*|tests/*|test/*|__tests__/*|spec/*)
+        IS_TEST_FILE=1
         ;;
 esac
+
+if [[ "$IS_TEST_FILE" -eq 0 ]]; then
+    BASENAME="${FILE_PATH##*/}"
+    case "$BASENAME" in
+        test_*.py|*_test.py|*_test.go|*.test.ts|*.test.tsx|*.test.js|*.test.jsx|*.test.mjs|*.test.cjs|*.spec.ts|*.spec.tsx|*.spec.js|*.spec.jsx|*_spec.rb|Test*.java|*Test.java|*Tests.java)
+            IS_TEST_FILE=1
+            ;;
+    esac
+fi
+
+[[ "$IS_TEST_FILE" -eq 0 ]] && exit 0
 
 MATCH=$(grep -nE '(\.skip\(|xit\(|xdescribe\(|@pytest\.mark\.skip|#\[ignore\]|t\.Skip\()' "$FILE_PATH" 2>/dev/null || true)
 

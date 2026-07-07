@@ -8,7 +8,6 @@ tags:
   - tooling
   - evaluation
   - skills
-  - design
 ---
 
 **Date:** 2026-07-07
