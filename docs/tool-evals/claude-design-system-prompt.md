@@ -113,3 +113,57 @@ adding as focused, standalone gains:
    target (redundant with our existing design architecture).
 6. Preserve MIT attribution (project name, author, source URL, commit) in a
    comment at the top of whichever file absorbs each ported pattern.
+
+## Trial results (real-brief A/B test, 2026-07-07)
+
+Ran one live A/B trial rather than deciding on inspection alone: both systems
+built the same real brief (the cyo-adventure project's primary landing page,
+`byronwilliamscpa/cyo-adventure`, live at cyo.williamshome.family) against the
+same real shipped design tokens, same model (sonnet), same brief text. Arm A
+was our existing `frontend-designer` agent, unmodified. Arm B was a
+general-purpose agent instructed to read and adopt `claude/system-prompt.md`
+plus the ai-slop-check / hierarchy-rhythm-review / accessibility-audit /
+interaction-states-pass / polish-pass skills as its sole operating philosophy
+for the task. Five blind judges (no attribution given) scored the two static
+HTML outputs against a fixed rubric.
+
+| Dimension | frontend-designer (existing) | design-system-prompt | Winner |
+| --- | --- | --- | --- |
+| Genericness / AI-slop | 8 | 5 | frontend-designer |
+| Hierarchy & rhythm | 8 | 6 | frontend-designer |
+| Holistic preference | 8 | 6 | frontend-designer |
+| Interaction states | 7 | 8 | design-system-prompt |
+| Accessibility | 5 | 7 | design-system-prompt |
+| **Total** | **36** | **32** | **frontend-designer (existing)** |
+
+**Result: do not replace.** The existing `frontend-designer` agent won 3 of 5
+dimensions and the aggregate score, primarily on the two dimensions closest to
+this repo's actual complaint about generic AI design (genericness and
+holistic creative judgment) -- it produced a specific concept (a signpost
+divider that literalizes the "choose your own adventure" fork, a
+brand-native "Bedtime Mode" toggle instead of a generic dark-mode switch)
+where the design-system-prompt arm produced a competent but template-shaped
+two-card layout. This is a real signal against wholesale replacement, though
+it is a single trial (one brief, one model, no repeated sampling), so treat it
+as directional, not conclusive.
+
+**But a concrete, actionable gap surfaced regardless of the overall winner.**
+The design-system-prompt arm's accessibility win was not close and was
+independently verified: the frontend-designer output has five measured WCAG
+AA contrast failures (e.g. the tagline's `--color-ink-muted` on
+`--color-bg`, hand-computed at ~4.19:1 against the state of the actual
+`background`/`ink-muted` hex values, confirmed by recomputing the WCAG
+relative-luminance formula directly rather than trusting the judge's
+arithmetic) even though that agent's own delivery summary claimed contrast
+had been "checked by hand... verified >=4.5:1." That is a real self-verification
+failure in the existing agent's Pre-Delivery Checklist step, not a
+close-call judgment disagreement. This is independent empirical support for
+Recommended action 2 above (port `polish-pass`'s pattern of a dedicated,
+parallel accessibility-audit agent into `frontend-design`'s review mode): a
+single self-review pass missed exactly the kind of quantitative violation a
+narrow, focused audit agent is built to catch.
+
+Net: keep `frontend-designer` as the default builder, and prioritize action 2
+(the parallel polish-pass review structure, starting with the accessibility
+sub-agent) over the other ported patterns, since this trial demonstrates its
+value directly rather than by inspection alone.
