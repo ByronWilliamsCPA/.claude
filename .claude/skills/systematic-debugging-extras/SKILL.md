@@ -1,6 +1,6 @@
 ---
 name: systematic-debugging-extras
-description: Local delta on top of the vendored systematic-debugging skill. Adds numeric premise-probing, sibling-consumer falsification for shared components, data-semantics verification before applying a prescribed transform, proxy-input discipline, and newly-reachable-path testing after a guard is removed. Use alongside systematic-debugging when investigating any bug, all-zero/constant metric, a "shared component is broken" diagnosis, a brief that prescribes a transform or fix mechanism, a finding built on stand-in data, or a fix that removes a guard. Triggers on: debug, root cause, all-zeros metric, shared workflow broken, difference the cumulative, proxy data, removed a guard.
+description: Local delta on top of the vendored systematic-debugging skill. Adds numeric premise-probing, sibling-consumer falsification for shared components, data-semantics verification before applying a prescribed transform, proxy-input discipline, newly-reachable-path testing after a guard is removed, and named alarms for abandoning the current approach entirely rather than continuing to patch it. Use alongside systematic-debugging when investigating any bug, all-zero/constant metric, a "shared component is broken" diagnosis, a brief that prescribes a transform or fix mechanism, a finding built on stand-in data, a fix that removes a guard, or when two straight patches have each fixed the prior patch's symptom. Triggers on: debug, root cause, all-zeros metric, shared workflow broken, difference the cumulative, proxy data, removed a guard, patch-on-patch, come too far to restart.
 ---
 
 # systematic-debugging-extras
@@ -28,3 +28,17 @@ When an analysis rests on a proxy, sample, or stand-in for a blocked real input,
 ## Removing a guard makes downstream code reachable for the first time
 
 A bug-causing condition can double as accidental protection for code downstream of it. When a fix removes a guard or makes a previously-unreachable path reachable, run the end-to-end scenario in the exact trigger condition, not just unit tests. Fixing a `max([])` crash on an empty-survivor set let scoring proceed over the full field, which then KeyError'd in a downstream function on a candidate missing from a stale artifact; unit tests passed and only the real trigger condition exposed the second failure. Verify the whole newly-live path, not just the line you changed.
+
+## Named alarms for abandoning the loop entirely, not just the current hypothesis
+
+systematic-debugging's reproduce-hypothesize-fix loop assumes the approach is sound and only the specific defect is unknown. Sometimes the approach itself is the defect, and no amount of careful hypothesis-testing inside a wrong plan converges. Treat any of these as a stop signal, not background noise, and switch from debugging the current line to replanning the approach:
+
+- The last two changes each fixed the symptom the previous change introduced (patch-on-patch, not narrowing toward a root cause)
+- The design keeps growing special cases to route around the same recurring conflict
+- Fixing this requires fighting or monkey-patching the framework rather than working with it
+- A "small fix" has now spread edits across many unrelated files
+- You cannot explain why a line exists beyond "it made the error go away"
+- Three attempts have failed on the same error
+- You catch yourself thinking "I've come too far to restart"
+
+When one fires: stop making incremental edits, name what the current approach got right (understanding of the problem, ruled-out branches) so it isn't lost, revert or discard the accumulated patches, and replan from the corrected understanding rather than continuing to layer fixes onto a plan that is itself the bug. Code built on a wrong approach is cheap to discard; the understanding that revealed the approach was wrong is the only part worth keeping.

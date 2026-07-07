@@ -109,19 +109,36 @@ Do not submodule or bulk-adopt; the licence gate blocks it and most of the
 content duplicates what this repo already has. Reimplement (not copy) three
 specific skill ideas and one hook pattern, in our own words:
 
-1. Write a new `.claude/skills/self-consistency-check/SKILL.md` (or fold into
-   an existing design/planning skill) capturing the pairwise-constraint-sweep
-   + fresh-context-cold-read + N-version-divergence technique for catching
-   cross-requirement conflicts before code exists. This is the strongest single
-   find in the collection and has no equivalent in our tree.
-2. Consider a `predictive-execution` addition to `systematic-debugging-extras`
-   or as its own skill: predict the outcome of a consequential command before
-   running it, and treat "passed when I expected failure" as equally
-   suspicious as an outright failure.
-3. Fold the named alarm list from `course-correction` (two patches each fixing
-   the prior patch's symptom, fighting the framework, "I've come too far to
-   restart") into `systematic-debugging-extras` or `doubt-driven-development`
-   as an explicit trigger list, rather than adding a whole new skill.
+1. **Done.** Folded into `writing-plans/SKILL.md`'s existing "Self-Review"
+   checklist as item 10 (pairwise-constraint sweep, fresh-context cold read via
+   `doubt-driven-development`'s existing Step 3 dispatch mechanism instead of
+   re-implementing a new fresh-context-reviewer path, and N-version divergence
+   on the hard kernel), rather than a new `.claude/skills/self-consistency-check/`
+   entry. Fold-in, not a new skill: `writing-plans` already fires at exactly the
+   right moment ("you have a spec/plan, before touching code"), so this adds
+   zero new lines to every session's always-visible skill list, only growing a
+   skill body that loads on demand when `writing-plans` itself is invoked.
+2. **Analyzed, not implemented.** The genuinely novel content in
+   `predictive-execution` is thin once measured against what already exists:
+   the predict-then-compare mechanic is `test-driven-development`'s core loop
+   for the test-writing case, and general result verification is already
+   covered by `doubt-driven-development` and CLAUDE.md's "no success claim
+   without an executed run" rule. The one point neither covers is specific:
+   treat an unexpectedly-passing result as equally suspicious as a failing one,
+   not just a relief. That is a single sentence, not a skill's worth of
+   content, and it does not fit Pattern B's "trigger at a specific moment"
+   shape either, fable5 itself frames it as an ambient, continuous habit,
+   which argues against a dedicated on-demand skill. Not worth a new skill
+   entry or a forced fold-in; skipped rather than diluting an unrelated
+   skill's focus for one sentence of marginal, mostly-already-covered value.
+3. **Done.** Folded the named alarm list from `course-correction` (two patches
+   each fixing the prior patch's symptom, fighting the framework, a "small
+   fix" spreading across many files, three failed attempts on the same error,
+   "I've come too far to restart") into `systematic-debugging-extras` as a new
+   section, framed as the exit condition from `systematic-debugging`'s normal
+   reproduce-hypothesize-fix loop for when the approach itself, not the current
+   hypothesis, is the defect. Also a fold-in, not a new skill, for the same
+   zero-skill-list-tax reason as item 1.
 4. Extend `scripts/bash-pre-hook.sh` (or add a sibling PreToolUse hook) with
    the chmod/chown-recursive-on-root, SQL DROP/TRUNCATE, curl-pipe-to-shell,
    and workspace-scoped `rm -rf` pattern checks from `pre-tool-guard.py`.
