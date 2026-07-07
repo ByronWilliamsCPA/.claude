@@ -54,7 +54,10 @@ tooling to strip.
 | `skills/predictive-execution` | PORTABLE (pure prose) | `.claude/skills/` -- no explicit predict-then-compare discipline; adjacent to but distinct from `systematic-debugging` | FITS | Medium-High |
 | `skills/course-correction` | PORTABLE (pure prose) | `.claude/skills/` -- partial overlap with `doubt-driven-development` and `systematic-debugging-extras`, but the named alarm list (patch-on-patch, "too far to restart") is not written down anywhere in our tree | FITS | Medium |
 | `hooks/pre-tool-guard.py` chmod/chown/SQL-DROP/curl-pipe-shell/workspace-scoped-rm patterns | PORTABLE (Python stdlib only: `json`, `os`, `re`, `subprocess`, `sys`) | `scripts/bash-pre-hook.sh` covers git force-push/reset --hard only; these five pattern classes are a real gap in our PreToolUse guard | FITS | Medium-High |
-| `hooks/delivery-gate.sh` (evidence-log Stop gate) | PORTABLE (bash + python3, no framework) | Overlaps `scripts/stop-pre-commit-hook.sh`, which already force-runs pre-commit at Stop -- our mechanism is stronger (executes verification) vs. theirs (checks a log for whether verification happened) | FITS | Low (redundant) |
+| `hooks/post-edit-verify.sh` test-skip-marker detector (the `.skip`/`xit(`/`@pytest.mark.skip`/`#[ignore]` grep on edited test files) | PORTABLE (bash + grep, no framework) | No hook enforces our own written CLAUDE.md rule ("never propose `pytest.mark.skip`... as the solution") mechanically; this is a real, net-new gap | FITS | High |
+| `hooks/post-edit-verify.sh` per-file lint/typecheck-and-block (ruff/rustfmt/eslint on the single touched file, exit 2 to force an immediate fix) | PORTABLE (bash, shells out to existing linters) | Partially overlaps our `PostToolUse(Edit\|Write)` hooks (ruff --fix, shellcheck) in `settings.json`, but ours are advisory (`\|\| true`, never block) and lack TS/JS (eslint) and Rust (rustfmt) coverage; theirs blocks (exit 2) and covers those two languages | FITS | Medium |
+| `hooks/pre-compact-handoff.sh` + `hooks/session-loader.sh` (paired PreCompact writer / SessionStart reader) | PORTABLE (bash + python3, no framework) | Real gap: nothing auto-captures state at the moment of an unattended autocompact. Complements, does not replace, the manual `/handoff` skill -- CLAUDE.md itself calls autocompact "lossy... the backstop, not the plan," and this pair is a cheap safety net for exactly that unattended case | FITS | Medium-High |
+| `hooks/delivery-gate.sh` + `hooks/evidence-log.sh` (evidence-log Stop gate) | PORTABLE (bash + python3, no framework) | Revised from the initial pass: `scripts/stop-pre-commit-hook.sh` only runs `pre-commit` (lint/format-focused; this repo's own config runs one narrow pytest case, not a general suite), while their evidence log checks for ANY test/build command (pytest, cargo test, jest, go test, tsc, make, etc.) actually invoked since the last code edit -- a broader, more repo-agnostic check our hook does not do. Real but partial gap; adopting it as-is also imports a new `WORKING_NOTES.md` per-project convention that duplicates our existing `~/.claude/logs/handoffs/` location (see Recommended actions) | FITS | Medium |
 | `hooks/pre-tool-guard.py` secret-in-staged-diff check | PORTABLE | Overlaps `detect-secrets`/TruffleHog pre-commit hooks already required by `PC-HOOK-STAGED-SCOPE` | FITS | Low (redundant) |
 | `skills/integrity-guardrails` | PORTABLE (pure prose) | Overlaps CLAUDE.md core directives, `doubt-driven-development`, `receiving-code-review-extras` | FITS | Low (convergent, not a gap) |
 | `skills/context-economy` | PORTABLE (pure prose) | Overlaps CLAUDE.md's "Delegation and subagent usage" and "Session length" sections almost line for line | FITS | Low (convergent, not a gap) |
@@ -124,9 +127,39 @@ specific skill ideas and one hook pattern, in our own words:
    and workspace-scoped `rm -rf` pattern checks from `pre-tool-guard.py`.
    Reimplement the regexes; do not copy the file verbatim given the licence
    gate.
-5. Skip the delivery-gate.sh evidence-log mechanism, the secret-in-diff check,
-   `integrity-guardrails`, `context-economy`, and the remaining skills/agents:
-   confirmed overlap with existing mechanisms that are equal or stronger.
-6. Run the collection's own `evals/ab-harness/` (conceptually, not by copying
-   it) if we want empirical evidence any of this actually beats baseline
-   before investing further; the upstream repo itself has not done this yet.
+5. Add a new `PostToolUse(Edit|Write|MultiEdit)` hook (reimplemented, not
+   copied) that greps the just-edited file for a test-skip/ignore marker
+   (`.skip`, `xit(`, `@pytest.mark.skip`, `#[ignore]`, `t.Skip(`) when the path
+   looks like a test file, and blocks (exit 2) with a reminder that this
+   mechanically enforces the existing CLAUDE.md "fix the actual issue, never
+   propose `pytest.mark.skip`" rule, which today has no automated check. This
+   is the single highest-value hook in the collection: no license concern
+   blocks a from-scratch reimplementation, since the check itself is a handful
+   of grep patterns, not their expression of it.
+6. Consider extending the existing `PostToolUse(Edit|Write)` block in
+   `settings.json` to also run `eslint`/`rustfmt` on the single touched file
+   for TS/JS/Rust (matching the ruff coverage already present for Python), and
+   decide deliberately whether that check should block (exit 2, matching
+   `post-edit-verify.sh`) or stay advisory like the current ruff/shellcheck
+   entries -- note the deliberate inconsistency this introduces either way.
+7. Add a PreCompact hook (reimplemented) that writes a short auto-handoff
+   block (git branch, dirty-file count/list, last verification command seen)
+   to a durable path when compaction fires, as a backstop for the unattended
+   autocompact case. Target our existing `~/.claude/logs/handoffs/` convention
+   rather than introducing a new `WORKING_NOTES.md` file at the project root,
+   to avoid running two parallel session-state file conventions side by side.
+   Pair it with a matching `SessionStart` hook (alongside
+   `delegation-reminder.sh`/`cbm-context-reminder.sh`) that surfaces the most
+   recent auto-handoff entry, if one exists, as session-start context.
+8. Skip the delivery-gate.sh + evidence-log.sh Stop-gate pair as a direct
+   port: the underlying idea (verify a real test/build command ran, not just
+   lint) is sound, but adopting it as specified requires committing to their
+   `WORKING_NOTES.md` convention, which action 7 deliberately avoids
+   duplicating. Revisit only if action 7's simpler auto-handoff proves
+   insufficient and a dedicated per-project state file is wanted anyway.
+9. Skip the secret-in-diff check, `integrity-guardrails`, `context-economy`,
+   and the remaining skills/agents: confirmed overlap with existing
+   mechanisms that are equal or stronger.
+10. Run the collection's own `evals/ab-harness/` (conceptually, not by copying
+    it) if we want empirical evidence any of this actually beats baseline
+    before investing further; the upstream repo itself has not done this yet.
