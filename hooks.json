@@ -50,6 +50,17 @@
           "timeout": 10
         }
       ]
+    },
+    {
+      "matcher": "Bash",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "bash $HOME/.claude/scripts/destructive-command-guard.sh",
+          "timeout": 10,
+          "statusMessage": "Checking for destructive command patterns..."
+        }
+      ]
     }
   ],
   "PostToolUse": [
@@ -74,6 +85,17 @@
       ]
     },
     {
+      "matcher": "Edit|Write|MultiEdit",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "bash $HOME/.claude/scripts/test-skip-guard.sh",
+          "timeout": 5,
+          "statusMessage": "Checking for test-skip/ignore markers..."
+        }
+      ]
+    },
+    {
       "hooks": [
         {
           "type": "command",
@@ -94,6 +116,18 @@
       ]
     }
   ],
+  "PreCompact": [
+    {
+      "hooks": [
+        {
+          "type": "command",
+          "command": "bash $HOME/.claude/scripts/hooks/precompact-handoff.sh",
+          "timeout": 10,
+          "statusMessage": "Capturing auto-handoff snapshot before compaction..."
+        }
+      ]
+    }
+  ],
   "SessionStart": [
     {
       "matcher": "startup",
@@ -107,6 +141,11 @@
           "type": "command",
           "command": "bash $HOME/.claude/scripts/hooks/delegation-reminder.sh",
           "timeout": 15
+        },
+        {
+          "type": "command",
+          "command": "bash $HOME/.claude/scripts/hooks/handoff-resume-reminder.sh",
+          "timeout": 10
         }
       ]
     },
@@ -122,6 +161,11 @@
           "type": "command",
           "command": "bash $HOME/.claude/scripts/hooks/delegation-reminder.sh",
           "timeout": 15
+        },
+        {
+          "type": "command",
+          "command": "bash $HOME/.claude/scripts/hooks/handoff-resume-reminder.sh",
+          "timeout": 10
         }
       ]
     },
@@ -137,6 +181,11 @@
           "type": "command",
           "command": "bash $HOME/.claude/scripts/hooks/delegation-reminder.sh",
           "timeout": 15
+        },
+        {
+          "type": "command",
+          "command": "bash $HOME/.claude/scripts/hooks/handoff-resume-reminder.sh",
+          "timeout": 10
         }
       ]
     },
@@ -152,6 +201,11 @@
           "type": "command",
           "command": "bash $HOME/.claude/scripts/hooks/delegation-reminder.sh",
           "timeout": 15
+        },
+        {
+          "type": "command",
+          "command": "bash $HOME/.claude/scripts/hooks/handoff-resume-reminder.sh",
+          "timeout": 10
         }
       ]
     }

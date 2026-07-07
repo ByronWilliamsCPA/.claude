@@ -10,21 +10,23 @@ tags:
   - technical
 ---
 
-Claude Code fires hooks at five points during a session. These hooks enforce quality gates, route behavioral rules, and extend Claude's capabilities without requiring model-level changes. The repo-managed hook definitions live in `hooks.json` at repo root and are merged into `~/.claude/settings.json` by `setup.sh`; that file is the baseline, but it is not the only source Claude Code executes hooks from. See [Hook Sources](#hook-sources) below for the full taxonomy and the drift check that guards it.
+Claude Code fires hooks at six points during a session. These hooks enforce quality gates, route behavioral rules, and extend Claude's capabilities without requiring model-level changes. The repo-managed hook definitions live in `hooks.json` at repo root and are merged into `~/.claude/settings.json` by `setup.sh`; that file is the baseline, but it is not the only source Claude Code executes hooks from. See [Hook Sources](#hook-sources) below for the full taxonomy and the drift check that guards it.
 
 For the design decisions behind this system, see [ADR-002](adr/ADR-002-hook-composition.md) and [ADR-010](adr/ADR-010-hook-source-allowlist.md).
 
-## The Five Hook Types
+## The Six Hook Types
 
 **UserPromptSubmit**: fires immediately after the user sends a message, before Claude processes it. Used for: injecting context, detecting intent signals (PR review reminder), running the hookify user prompt pipeline.
 
-**PreToolUse**: fires before each tool call Claude attempts. Each entry in the `PreToolUse` array can have a matcher regex targeting specific tools. Used for: secrets file guard (Edit/Write), planning bridge gate (Skill), security reminder (Edit/Write/MultiEdit), hookify dispatch (all tools).
+**PreToolUse**: fires before each tool call Claude attempts. Each entry in the `PreToolUse` array can have a matcher regex targeting specific tools. Used for: secrets file guard (Edit/Write), planning bridge gate (Skill), security reminder (Edit/Write/MultiEdit), destructive-command guard (Bash), hookify dispatch (all tools).
 
-**PostToolUse**: fires after each tool call completes. Used for: Python 3.10 compatibility check (Edit/Write), hookify dispatch (all tools).
+**PostToolUse**: fires after each tool call completes. Used for: Python 3.10 compatibility check (Edit/Write), test-skip-marker guard (Edit/Write/MultiEdit), hookify dispatch (all tools).
 
 **Stop**: fires when Claude finishes its turn (before control returns to the user). Used for: hookify stop handler.
 
-**SessionStart**: fires when a session opens, and again on resume, `clear`, or `compact`, depending on which matcher a given hook registers. Two repo-managed hooks are wired here (`scripts/hooks/delegation-reminder.sh`, `scripts/hooks/cbm-context-reminder.sh`), alongside SessionStart hooks contributed by installed plugins. No `.claude/rules/*.md` file is injected at this point or any other; rules enter context only when Claude follows a `CLAUDE.md` pointer to one, or a hook prints its content directly, which is exactly what these two hooks do.
+**PreCompact**: fires immediately before Claude Code compacts the conversation, whether triggered automatically (approaching the context limit) or manually (`/compact`). Used for: writing a cheap, objective auto-handoff snapshot as a backstop for the unattended-autocompact case.
+
+**SessionStart**: fires when a session opens, and again on resume, `clear`, or `compact`, depending on which matcher a given hook registers. Three repo-managed hooks are wired here (`scripts/hooks/delegation-reminder.sh`, `scripts/hooks/cbm-context-reminder.sh`, `scripts/hooks/handoff-resume-reminder.sh`), alongside SessionStart hooks contributed by installed plugins. No `.claude/rules/*.md` file is injected at this point or any other; rules enter context only when Claude follows a `CLAUDE.md` pointer to one, or a hook prints its content directly, which is exactly what these hooks do.
 
 ## Diagram
 
@@ -40,27 +42,38 @@ User sends message
   → UserPromptSubmit[1]: pr-review-reminder.py
 
   Model processes, issues tool calls:
+    For each Bash call:
+      → PreToolUse[0]: bash-pre-hook.sh (matcher: Bash)
+      → PreToolUse[4]: hookify pretooluse.py (all tools)
+      → PreToolUse[5]: destructive-command-guard.sh (matcher: Bash)
+      → Tool executes
+      → PostToolUse[3]: hookify posttooluse.py (all tools)
+
     For each Write or Edit call:
-      → PreToolUse[0]: secrets file guard (matcher: Edit|Write)
-      → PreToolUse[2]: security reminder (matcher: Edit|Write|MultiEdit)
-      → PreToolUse[3]: hookify pretooluse.py (all tools)
+      → PreToolUse[1]: secrets file guard (matcher: Edit|Write|MultiEdit)
+      → PreToolUse[3]: security reminder (matcher: Edit|Write|MultiEdit)
+      → PreToolUse[4]: hookify pretooluse.py (all tools)
       → Tool executes
       → PostToolUse[0]: py310-compat-check (matcher: Edit|Write)
-      → PostToolUse[1]: hookify posttooluse.py (all tools)
+      → PostToolUse[2]: test-skip-guard.sh (matcher: Edit|Write|MultiEdit)
+      → PostToolUse[3]: hookify posttooluse.py (all tools)
 
     For each Skill call:
-      → PreToolUse[1]: planning bridge gate (matcher: Skill)
-      → PreToolUse[3]: hookify pretooluse.py (all tools)
+      → PreToolUse[2]: planning bridge gate (matcher: Skill)
+      → PreToolUse[4]: hookify pretooluse.py (all tools)
       → Tool executes
-      → PostToolUse[1]: hookify posttooluse.py (all tools)
+      → PostToolUse[3]: hookify posttooluse.py (all tools)
 
     For any other tool call:
-      → PreToolUse[3]: hookify pretooluse.py (all tools)
+      → PreToolUse[4]: hookify pretooluse.py (all tools)
       → Tool executes
-      → PostToolUse[1]: hookify posttooluse.py (all tools)
+      → PostToolUse[3]: hookify posttooluse.py (all tools)
 
   Model turn ends
     → Stop[0]: hookify stop.py
+
+  If context is compacted (auto or manual), separately from the turn cycle:
+    → PreCompact[0]: precompact-handoff.sh
 ```
 
 Array position determines execution order within each hook type. Matcher-specific entries run only when their regex matches the tool being called.
@@ -75,10 +88,11 @@ Fires once per session-open event, before the turn cycle described above begins;
 | --- | --- | --- |
 | `startup\|resume\|clear\|compact` | `scripts/hooks/cbm-context-reminder.sh` | Repo-managed; listed first in `hooks.json`, so it runs first. Prints the codebase-memory-mcp discovery protocol (prefer `search_graph`/`trace_path`/`get_code_snippet`/`get_architecture` over Grep/Glob for code exploration). Replaces the binary-managed `~/.claude/hooks/cbm-session-reminder` entry that `codebase-memory-mcp install` writes, so the wording survives a binary upgrade |
 | `startup\|resume\|clear\|compact` | `scripts/hooks/delegation-reminder.sh` | Repo-managed. Prints the delegation protocol reminder (dispatch subagents for exploration, well-specified implementation, and review; never silently absorb a failed dispatch inline) and refreshes the task-observer skills manifest, warning on stdout if the refresh fails |
+| `startup\|resume\|clear\|compact` | `scripts/hooks/handoff-resume-reminder.sh` | Repo-managed. Checks for the single overwritten backstop file `~/.claude/logs/handoffs/auto-precompact-latest.md` written by `precompact-handoff.sh` and, if present, prints its branch/dirty-count/timestamp content as session-start context, labeled STALE past 48 hours. Prints nothing when the file does not exist. Complements, does not replace, the manual `/handoff` skill's timestamped archive |
 | `startup\|clear\|compact` | superpowers plugin session-start command | Plugin-provided; not defined in this repo's `hooks.json` |
 | (all matchers) | agents-observe plugin telemetry auto-start | Plugin-provided; not defined in this repo's `hooks.json` |
 
-Neither repo-managed hook, nor either plugin hook, loads a file from `.claude/rules/`. A rule file reaches context only through a `CLAUDE.md` pointer Claude chooses to follow, or through a hook that prints equivalent content directly: `delegation-reminder.sh` prints a hardcoded summary of the delegation core (mirrored inline in `CLAUDE.md`, not read from `supervisor.md` at runtime), and `cbm-context-reminder.sh` does the same for the codebase-memory discovery protocol.
+None of the repo-managed hooks, nor either plugin hook, loads a file from `.claude/rules/`. A rule file reaches context only through a `CLAUDE.md` pointer Claude chooses to follow, or through a hook that prints equivalent content directly: `delegation-reminder.sh` prints a hardcoded summary of the delegation core (mirrored inline in `CLAUDE.md`, not read from `supervisor.md` at runtime), `cbm-context-reminder.sh` does the same for the codebase-memory discovery protocol, and `handoff-resume-reminder.sh` prints the auto-precompact backstop file's own content verbatim.
 
 ### UserPromptSubmit
 
@@ -94,6 +108,7 @@ Neither repo-managed hook, nor either plugin hook, loads a file from `.claude/ru
 | `Edit\|Write` | Inline bash | Blocks writes to `.env` and `settings.local.json` with exit code 2 |
 | `Skill` | `scripts/planning-bridge-gate.sh` | Enforces plan-approval workflow before any Skill invocation |
 | `Edit\|Write\|MultiEdit` | `security_reminder_hook.py` | Surfaces OWASP-style security reminders when editing files |
+| `Bash` | `scripts/destructive-command-guard.sh` | Sibling guard to `bash-pre-hook.sh`. Blocks (exit 2) recursive chmod/chown on a root/home/cwd/glob target, SQL DROP/TRUNCATE, curl/wget piped into a shell interpreter, and recursive force-delete (`rm` with both a recursive and a force flag) targeting a root/home/cwd/glob path or any absolute path outside `$CLAUDE_PROJECT_DIR`/`$PWD` |
 | (all tools) | `hookify/hooks/pretooluse.py` | Dispatches to hookify plugin engine |
 
 ### PostToolUse
@@ -101,6 +116,7 @@ Neither repo-managed hook, nor either plugin hook, loads a file from `.claude/ru
 | Matcher | Script | What it does |
 | --- | --- | --- |
 | `Edit\|Write` | `scripts/py310-compat-check.sh` | Checks modified Python files for syntax that breaks on Python 3.10 |
+| `Edit\|Write\|MultiEdit` | `scripts/test-skip-guard.sh` | Mechanically enforces CLAUDE.md's "never propose `pytest.mark.skip` to silence a failing test" rule. When the edited path looks like a test file, greps its post-edit contents for a skip/ignore marker (`.skip(`, `xit(`, `xdescribe(`, `@pytest.mark.skip`, `#[ignore]`, `t.Skip(`) and blocks (exit 2) with a reminder if found |
 | (all tools) | `hookify/hooks/posttooluse.py` | Dispatches to hookify plugin engine |
 
 ### Stop
@@ -108,6 +124,14 @@ Neither repo-managed hook, nor either plugin hook, loads a file from `.claude/ru
 | Script | What it does |
 | --- | --- |
 | `hookify/hooks/stop.py` | Dispatches to hookify plugin engine's stop handlers |
+
+### PreCompact
+
+Fires immediately before context compaction, whether triggered automatically or via manual `/compact`; not part of the per-turn tool cycle described above.
+
+| Script | What it does |
+| --- | --- |
+| `scripts/hooks/precompact-handoff.sh` | Writes cheap, objective state (git branch, dirty-file count, first ~8 changed paths, UTC timestamp) to the single overwritten file `~/.claude/logs/handoffs/auto-precompact-latest.md`. Always exits 0; never blocks compaction. This is the backstop for the unattended-autocompact case CLAUDE.md names directly ("autocompact... lossy... the backstop, not the plan"), read back by `handoff-resume-reminder.sh` at the next `SessionStart`. It is deliberately a single overwritten file, not a timestamped archive, so it never collides with the manual `/handoff` skill's `handoff-<ts>.md` convention |
 
 ## hookify Dispatch
 
