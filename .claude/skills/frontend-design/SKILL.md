@@ -39,6 +39,24 @@ Before writing any code, commit to a clear aesthetic direction:
 **CRITICAL**: Choose a clear conceptual direction and execute it with precision.
 Bold maximalism and refined minimalism both work -- the key is intentionality, not intensity.
 
+### Greenfield only: propose 4 distinct directions
+
+When there is no existing brand, design-system tokens, or reference site to extend
+(true greenfield), propose **4 distinct visual directions** instead of committing to
+one alone, each specified concretely:
+
+- Background hex / accent hex
+- Display + body typeface pairing
+- One-line rationale tied to the brief
+
+The four must not share a palette family (four takes on warm-cream is one direction,
+not four), and at least one must be deliberately off-distribution from the obvious
+choice. Let the user pick, or state a clear recommendation if asked to decide.
+
+This does **not** apply when real tokens or brand colors are given: extend those
+directly (see `.claude/rules/design.md`, "Verify output against real tokens") rather
+than proposing alternatives to a brand that already exists.
+
 Then implement working code (HTML/CSS/JS, React, Vue, Svelte, etc.) that is:
 - Production-grade and functional
 - Visually striking and memorable
@@ -48,7 +66,14 @@ Then implement working code (HTML/CSS/JS, React, Vue, Svelte, etc.) that is:
 ## Arguments
 
 - (none) -- Design thinking + full implementation
-- `review` -- Review existing UI against UX checklist and aesthetics guidelines
+- `wireframe` -- Low-fidelity exploration: 3+ structurally distinct layout variations before hi-fi
+- `prototype` -- Build an interactive, clickable version of an already-chosen direction
+- `variations` -- Produce 3+ hi-fi variations across named axes of an established direction
+- `review [--focus accessibility|ai-slop|hierarchy-rhythm|interaction-states]` -- Review
+  existing UI against UX checklist and aesthetics guidelines; `--focus` scopes a single
+  invocation to one dimension (see Mode: Review)
+- `polish-pass` -- Orchestrator-dispatched parallel review: four scoped `review --focus`
+  invocations run concurrently and are aggregated (see Mode: Polish Pass)
 - `a11y` -- Focused accessibility audit (WCAG AA compliance)
 - `perf` -- Performance optimization pass (React/Next.js focus)
 - `fix <file>` -- Fix UI/UX issues in a specific file
@@ -98,15 +123,59 @@ Create atmosphere and depth rather than defaulting to solid colors. Gradient mes
 noise textures, geometric patterns, layered transparencies, dramatic shadows, decorative
 borders, custom cursors, grain overlays.
 
+### Hierarchy & Rhythm
+
+Two qualities separate "intentional" from "generic AI-generated" work: hierarchy (what
+gets looked at first, second, third) and rhythm (repetition with strategic variation).
+
+- **Hierarchy**: primary/secondary/tertiary distinguishable by size, color, weight,
+  position, and density; a first-time viewer should know what to look at and what to do
+  within 5 seconds. Flag reversed hierarchy (unimportant elements loudest or most
+  prominent) and flat hierarchy (everything the same size, color, and weight).
+- **Rhythm**: spacing and type values snap to one consistent scale (4pt/8dp multiples;
+  a fixed type scale like 12/14/16/18/24/32); repeated elements (cards, list items,
+  feature blocks) share structure exactly rather than being subtly, accidentally
+  different; the design breaks its own pattern once, deliberately, rather than staying
+  uniform for its full length or varying every section.
+- **Palette discipline**: 3-5 colors plus tints/shades. Flag 8+ distinct colors, or
+  near-duplicate blues/grays used inconsistently across the file.
+
 ### Anti-Patterns (NEVER Use)
 
-- Overused fonts: Inter, Roboto, Arial, Space Grotesk, system fonts
-- Cliched color schemes: purple gradients on white backgrounds
-- Predictable layouts and cookie-cutter component patterns
-- Generic AI-generated aesthetics ("AI slop")
-- Emoji as structural icons -- use SVG icons (Heroicons, Lucide)
-- Mixing filled and outline icon styles at the same hierarchy level
-- Raw hex colors in components -- use semantic color tokens
+Each rule states the positive default first, then the concrete tell to detect and replace it.
+
+- **Typography.** Default: a distinctive display font paired with a refined body font,
+  chosen with intent. Detect & replace: Inter, Roboto, Arial, Space Grotesk, or a bare
+  system-font stack used as a silent default.
+- **Gradients.** Default: a flat color from the design system, or a subtle on-tone
+  two-stop gradient. Detect & replace: rainbow or 3+ color gradients; saturated
+  purple-to-pink, orange-to-pink, or other trendy blends on heroes, buttons, or large
+  surfaces.
+- **Layout.** Default: a composition considered for this brief, with distinct
+  components and deliberate asymmetry or density where earned. Detect & replace: the
+  same centered-card-on-gradient shape and cookie-cutter component patterns that
+  repeat across unrelated AI-generated outputs; generic AI-generated aesthetics
+  ("AI slop") overall.
+- **Emoji.** Default: no emoji, unless the brand already uses them, the emoji is
+  functional (a status or category marker), or the user asked. Detect & replace:
+  emoji used as structural icons, prepended to headlines or buttons, or as filler
+  bullets -- use SVG icons (Heroicons, Lucide) instead. Never mix filled and outline
+  icon styles at the same hierarchy level.
+- **Cards.** Default: subtle shadow, thin all-around border, or background
+  separation. Reserve `border-left: 4px solid` for semantic emphasis (callouts,
+  alerts, status). Detect & replace: `border-radius: 12px` paired with
+  `border-left: 4px solid` used as the *default* card style -- this specific
+  combination reads as "default SaaS template," not a considered choice.
+- **Imagery.** Default, in order: real photography (licensed or brand assets);
+  professional illustration; an honest placeholder (striped background, monospace
+  label like `product shot (1200x800)`). Detect & replace: generic "AI-style"
+  character art (giant heads, flat-color blobs, identical posing), or
+  placeholder-quality decoration presented as final.
+- **Color tokens.** Default: every color traces to a semantic token
+  (`--color-primary`, `--color-surface`) or design-system variable. Detect &
+  replace: raw hex values written directly in component code -- five slightly
+  different blues across one file means colors were invented inline instead of
+  reused from tokens.
 
 ### Implementation Complexity Rule
 
@@ -351,13 +420,29 @@ Apply these when writing, reviewing, or refactoring React/Next.js code.
 
 ## Workflow
 
+### Mode: Wireframe (`wireframe`)
+
+1. Confirm what's being explored (screen, flow, or nav pattern), constraints
+   (mobile/desktop, greenfield/existing), the axis of variation (layout, density,
+   step count, CTA placement), and the count (3 minimum, 5-6 ceiling)
+2. Stay strictly low-fidelity: greyscale only, system sans, labeled boxes for content
+   areas, striped placeholders for imagery, skeleton or ipsum copy -- no brand color
+   or real content yet
+3. Produce 3+ variations differing on the established axis, ordered from most
+   by-the-book to most novel; write down each variation's distinguishing structure
+   before sketching it
+4. Annotate 2-4 points per variation, placed next to it rather than in a separate doc
+5. Capture the chosen direction (or hybrid), what was explicitly rejected, and any
+   new constraints surfaced; hand off to Mode: Build or Mode: Make a Prototype for
+   the hi-fi follow-up
+
 ### Mode: Build (default)
 
 1. **Design Thinking**: Establish bold aesthetic direction (see Design Thinking section)
 2. **Design System**: Define tokens -- colors, typography, spacing, shadows, radii
 3. **Component Architecture**: Plan component hierarchy and data flow
 4. **Implementation**: Build with production-grade code following all guidelines
-5. **Polish Pass**: Verify against UX Checklist priorities 1-5 (CRITICAL + HIGH)
+5. **Self-Review Pass**: Verify against UX Checklist priorities 1-5 (CRITICAL + HIGH)
 6. **Accessibility Audit**: Run through Priority 1 checklist completely, computing
    every contrast pair with `scripts/wcag-contrast.py` (see `color-contrast` above)
 7. **Independent re-check for real brand colors**: if the deliverable uses
@@ -368,15 +453,95 @@ Apply these when writing, reviewing, or refactoring React/Next.js code.
    Accessibility Audit mode run as its own dispatch rather than inline) verify
    contrast independently before calling the work done, mirroring the blind
    accessibility-judge pattern that caught the 2026-07-07 regression a
-   same-pass self-review missed
+   same-pass self-review missed. For a full pre-ship gate, run Mode: Polish
+   Pass instead of this accessibility-only check: it dispatches all four
+   review dimensions (accessibility, ai-slop, hierarchy-rhythm,
+   interaction-states) in parallel rather than accessibility alone.
 
-### Mode: Review (`review`)
+### Mode: Make a Prototype (`prototype`)
+
+Distinct from Mode: Build's single final artifact: this builds an interactive,
+clickable version of a direction that is already chosen (from Mode: Wireframe, a
+prior Build, or an existing design).
+
+1. Confirm the flow (screens, entry point, goal state), fidelity, device frame, and
+   the design system to build against; if none exists, run Design Thinking first
+2. Map screens and state as a comment block before building: the screen list with
+   transitions, and the state variables that drive them
+3. Build screen-by-screen with hi-fi visuals matching the design system and
+   plausible real content (not Lorem ipsum); one primary CTA per screen
+4. Wire every interaction, not just the happy path: navigation, form validation
+   (empty/invalid/valid), loading states with faked latency, success/error
+   feedback, and visible state changes
+5. Persist meaningful state (current screen, form drafts) across reload via
+   `localStorage`; verify the full flow by walking it, including keyboard
+   navigation and focus behavior
+6. Summarize what flows work, what's faked (e.g., a `setTimeout` stand-in for a
+   real request), and what's open for the user to decide
+
+### Mode: Generate Variations (`variations`)
+
+Produces hi-fi options across an *already-established* direction, for comparison;
+use Mode: Wireframe instead for pre-direction, low-fidelity exploration.
+
+1. Confirm what's being varied (screen, component, or flow), the existing design
+   context to root variations in (unless told to break free of it), the count
+   (default 3, 5-6 ceiling), and any axis preference
+2. Pick 2-4 axes to vary across (visual treatment, layout, interaction model,
+   density, tone) and specify each variation concretely before building it --
+   distinct palette, type pairing, and layout skeleton per variation
+3. Build in order from by-the-book (safe, matches existing conventions) to refined
+   (one or two dimensions pushed further) to novel (a genuinely different take);
+   cover both ends rather than clustering near the safe end
+4. Present all variations in a single file or canvas -- never scattered
+   `v1.html`/`v2.html`/`v3.html`
+5. Caption each variation in one sentence and end with a clear recommendation; the
+   user decides, but state an opinion rather than treating all options as equal
+
+### Mode: Review (`review [--focus <dimension>]`)
 
 1. Read the target files
 2. Check against **Aesthetics Guidelines** -- is the design distinctive or generic?
 3. Run through **UX Checklist** priorities 1-5 (CRITICAL and HIGH)
 4. Check **Performance Patterns** if React/Next.js
 5. Output findings as `file:line - [PRIORITY] rule-name: description`
+
+`--focus` scopes a single invocation to one dimension instead of the full review,
+so it can run as one of four concurrent dispatches under Mode: Polish Pass:
+
+| `--focus` value | Scope |
+| --- | --- |
+| `accessibility` | Priority 1 (Accessibility) checklist, completely |
+| `ai-slop` | Anti-Patterns section + the AI-Slop Detection Rubric (see `frontend-designer.md`) |
+| `hierarchy-rhythm` | Hierarchy & Rhythm section (Part 1) + Priority 6 rows bearing on hierarchy (`weight-hierarchy`, `font-scale`) |
+| `interaction-states` | Priority 2 (Touch & Interaction) + the `state-clarity`/`elevation-consistent` rows of Priority 4 (Style Selection) |
+
+When called with `--focus`, report every finding including low-confidence and
+low-severity ones, each with a confidence and severity estimate (see Mode: Polish
+Pass, step 3); the aggregation step, not this dispatch, filters and prioritizes.
+
+### Mode: Polish Pass (Parallel Review)
+
+**Orchestrator-only**: this mode is run from the calling session, which has the
+Agent tool, not from inside a single `frontend-designer` invocation -- that agent's
+tool set has no Agent tool for sub-dispatch. See `.claude/rules/design.md`,
+"Parallel polish-pass review dispatch," for the full orchestrator procedure.
+
+1. Confirm scope: the file or component that just finished a Build or Fix pass
+2. Dispatch `frontend-designer` four times concurrently, in a single message, one
+   call per `review --focus` value: `accessibility`, `ai-slop`, `hierarchy-rhythm`,
+   `interaction-states` -- each targeting the same file(s)
+3. Instruct every dispatch to report every finding, including low-confidence and
+   low-severity ones, each tagged with a confidence and severity estimate --
+   coverage over filtering; prioritization happens in step 4, not inside any one
+   dispatch
+4. Wait for all four, merge duplicate findings across dimensions (e.g., a removed
+   focus ring surfacing from both `accessibility` and `interaction-states`), and
+   group into Blockers (accessibility/WCAG failures), Quality issues (AI slop,
+   broken hierarchy, missing interaction states), and Polish recommendations
+   (subtler tone/spacing suggestions)
+5. Fix blockers and quality issues; report the aggregated, deduped, prioritized
+   result to the user rather than four separate agent transcripts
 
 ### Mode: Accessibility (`a11y`)
 
@@ -442,3 +607,4 @@ This skill synthesizes guidance from:
 - [Anthropic Skills: frontend-design](https://github.com/anthropics/skills) -- Creative direction, anti-slop aesthetics
 - [Vercel Labs: react-best-practices](https://github.com/vercel-labs/agent-skills) -- 69 React/Next.js performance rules (MIT)
 - [nextlevelbuilder: ui-ux-pro-max](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) -- 99 UX guidelines, accessibility, interaction patterns
+- [Trystan-SA: claude-design-system-prompt](https://github.com/Trystan-SA/claude-design-system-prompt) (MIT, commit `3c3ddb0`) -- Anti-Patterns detect-and-replace format and the card/imagery entries; the Wireframe, Make a Prototype, and Generate Variations workflow modes; the Polish Pass parallel-review structure; the greenfield 4-directions aesthetic protocol

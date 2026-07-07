@@ -302,7 +302,9 @@ form-submission automation URLs.
 **[frontend-designer](/.claude/agents/frontend-designer.md)**
 Expert frontend designer for distinctive, production-grade UI/UX. Covers creative direction,
 accessible component design, React performance patterns, and anti-generic-AI aesthetics. Supports
-build, review, a11y audit, and performance optimization modes.
+wireframe, prototype, variations, build, review (with focus-scoped dispatch for parallel
+polish-pass review across accessibility/ai-slop/hierarchy-rhythm/interaction-states), a11y audit,
+and performance optimization modes.
 
 ### Documentation & Research
 
@@ -608,7 +610,8 @@ degrading", "rules file".
 **[/frontend-design](/.claude/skills/frontend-design/SKILL.md)**
 Creates distinctive, production-grade frontend interfaces with high design quality. Covers creative
 direction, accessible components, React performance patterns, and anti-generic-AI aesthetics.
-Activates on: "build UI", "create component", "design page".
+Modes: wireframe, prototype, variations, build (default), review (`--focus` scoped for parallel
+polish-pass dispatch), a11y, perf, fix. Activates on: "build UI", "create component", "design page".
 
 ### Infrastructure & Diagrams
 
