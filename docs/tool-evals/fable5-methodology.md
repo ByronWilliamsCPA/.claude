@@ -139,34 +139,32 @@ specific skill ideas and one hook pattern, in our own words:
    reproduce-hypothesize-fix loop for when the approach itself, not the current
    hypothesis, is the defect. Also a fold-in, not a new skill, for the same
    zero-skill-list-tax reason as item 1.
-4. Extend `scripts/bash-pre-hook.sh` (or add a sibling PreToolUse hook) with
-   the chmod/chown-recursive-on-root, SQL DROP/TRUNCATE, curl-pipe-to-shell,
-   and workspace-scoped `rm -rf` pattern checks from `pre-tool-guard.py`.
-   Reimplement the regexes; do not copy the file verbatim given the licence
-   gate.
-5. Add a new `PostToolUse(Edit|Write|MultiEdit)` hook (reimplemented, not
-   copied) that greps the just-edited file for a test-skip/ignore marker
+4. **Done.** Added `scripts/destructive-command-guard.sh` as a sibling
+   PreToolUse hook (matcher `Bash`) with the chmod/chown-recursive-on-root,
+   SQL DROP/TRUNCATE, curl-pipe-to-shell, and workspace-scoped `rm -rf`
+   pattern checks, reimplemented from scratch rather than copied given the
+   licence gate.
+5. **Done.** Added `scripts/test-skip-guard.sh` as a new
+   `PostToolUse(Edit|Write|MultiEdit)` hook (reimplemented, not copied) that
+   greps the just-edited file for a test-skip/ignore marker
    (`.skip`, `xit(`, `@pytest.mark.skip`, `#[ignore]`, `t.Skip(`) when the path
    looks like a test file, and blocks (exit 2) with a reminder that this
    mechanically enforces the existing CLAUDE.md "fix the actual issue, never
-   propose `pytest.mark.skip`" rule, which today has no automated check. This
-   is the single highest-value hook in the collection: no license concern
-   blocks a from-scratch reimplementation, since the check itself is a handful
-   of grep patterns, not their expression of it.
+   propose `pytest.mark.skip`" rule, which previously had no automated check.
 6. Consider extending the existing `PostToolUse(Edit|Write)` block in
    `settings.json` to also run `eslint`/`rustfmt` on the single touched file
    for TS/JS/Rust (matching the ruff coverage already present for Python), and
    decide deliberately whether that check should block (exit 2, matching
    `post-edit-verify.sh`) or stay advisory like the current ruff/shellcheck
    entries -- note the deliberate inconsistency this introduces either way.
-7. Add a PreCompact hook (reimplemented) that writes a short auto-handoff
-   block (git branch, dirty-file count/list, last verification command seen)
-   to a durable path when compaction fires, as a backstop for the unattended
-   autocompact case. Target our existing `~/.claude/logs/handoffs/` convention
-   rather than introducing a new `WORKING_NOTES.md` file at the project root,
-   to avoid running two parallel session-state file conventions side by side.
-   Pair it with a matching `SessionStart` hook (alongside
-   `delegation-reminder.sh`/`cbm-context-reminder.sh`) that surfaces the most
+7. **Done.** Added `scripts/hooks/precompact-handoff.sh` (reimplemented) as a
+   new `PreCompact` hook writing a short auto-handoff block (git branch,
+   dirty-file count, first ~8 changed paths, UTC timestamp) to the existing
+   `~/.claude/logs/handoffs/` convention as a single overwritten file
+   (`auto-precompact-latest.md`), rather than introducing a new
+   `WORKING_NOTES.md` file at the project root. Paired with a matching
+   `SessionStart` hook, `scripts/hooks/handoff-resume-reminder.sh` (alongside
+   `delegation-reminder.sh`/`cbm-context-reminder.sh`), that surfaces the most
    recent auto-handoff entry, if one exists, as session-start context.
 8. Skip the delivery-gate.sh + evidence-log.sh Stop-gate pair as a direct
    port: the underlying idea (verify a real test/build command ran, not just

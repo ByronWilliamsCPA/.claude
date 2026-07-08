@@ -93,25 +93,29 @@ two parallel "how to do design work" systems invites drift. The five
 procedural skills that are missing and clean of licence/host issues are worth
 adding as focused, standalone gains:
 
-1. Add `wireframe`, `make-a-prototype`, and `generate-variations` as new named
-   modes (or sibling workflow files) under `frontend-design/`, giving Build
-   mode explicit low-fi and hi-fi-variation phases it currently lacks.
-2. Port `polish-pass`'s parallel-four-agent umbrella structure into
-   `frontend-design`'s `review` mode: launch `accessibility-audit`,
-   `ai-slop-check`, `hierarchy-rhythm-review`, and `interaction-states-pass`
-   concurrently via the Agent tool, then aggregate/dedupe before reporting,
-   replacing the current single-pass review mode.
-3. Upgrade the `Anti-Patterns (NEVER Use)` section using `ai-slop-check.md`'s
-   more specific detect-and-replace rules (the named SaaS-card-border tell,
-   the placeholder-imagery ordering, etc.), attributing both source projects.
-4. Sharpen `frontend-aesthetic-direction` guidance with the "4 distinct
-   directions, no shared palette family, one off-distribution" protocol.
+1. **Done.** Added `wireframe`, `prototype`, and `variations` as new named
+   modes under `frontend-design/`, giving Build mode explicit low-fi and
+   hi-fi-variation phases it previously lacked.
+2. **Done.** Ported `polish-pass`'s parallel-four-agent umbrella structure
+   into `frontend-design` as Mode: Polish Pass: the orchestrator launches
+   `frontend-designer` in `review --focus` mode across
+   `accessibility`/`ai-slop`/`hierarchy-rhythm`/`interaction-states`
+   concurrently via the Agent tool, then aggregates/dedupes before reporting,
+   replacing single-pass self-review as the standard pre-ship gate.
+3. **Done.** Upgraded the `Anti-Patterns (NEVER Use)` section to a
+   positive-default-then-detect-and-replace format using `ai-slop-check.md`'s
+   more specific rules (the named SaaS-card-border tell, the
+   placeholder-imagery ordering, etc.), attributing both source projects.
+4. **Done.** Sharpened greenfield aesthetic-direction guidance with the "4
+   distinct directions, no shared palette family, one off-distribution"
+   protocol, scoped explicitly to true greenfield work (no existing tokens or
+   brand to extend).
 5. Skip `make-tweakable.md` (wrong host environment), `discovery-questions.md`
    (redundant with `brainstorming`), the `codex/` variant (redundant with
    `claude/`), and the 20-chapter `system-prompt.md` as a wholesale adoption
    target (redundant with our existing design architecture).
-6. Preserve MIT attribution (project name, author, source URL, commit) in a
-   comment at the top of whichever file absorbs each ported pattern.
+6. **Done.** Preserved MIT attribution (project name, author, source URL,
+   commit) in `frontend-design/SKILL.md`'s Attribution section.
 
 ## Trial results (real-brief A/B test, 2026-07-07)
 

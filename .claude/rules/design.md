@@ -101,6 +101,12 @@ four review dimensions and replaces it as the standard pre-ship gate; use
 the accessibility-only version above only when a full Polish Pass is out of
 scope for the task at hand.
 
+**Size floor**: reserve the full four-dispatch Polish Pass for a component or
+screen, not a trivial single-property tweak (a color value, a margin, one
+line of copy). A change that small does not carry enough surface area to
+justify four parallel reviews; fix it directly and use judgment on where the
+line falls for a borderline case.
+
 ### Dispatch
 
 In a single message, invoke the Agent tool four times concurrently, each

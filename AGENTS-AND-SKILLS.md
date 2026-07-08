@@ -610,8 +610,9 @@ degrading", "rules file".
 **[/frontend-design](/.claude/skills/frontend-design/SKILL.md)**
 Creates distinctive, production-grade frontend interfaces with high design quality. Covers creative
 direction, accessible components, React performance patterns, and anti-generic-AI aesthetics.
-Modes: wireframe, prototype, variations, build (default), review (`--focus` scoped for parallel
-polish-pass dispatch), a11y, perf, fix. Activates on: "build UI", "create component", "design page".
+Modes: wireframe, prototype, variations, build (default), review (`--focus` scoped), polish-pass
+(orchestrator-dispatched parallel review across all four focus dimensions, aggregated), a11y,
+perf, fix. Activates on: "build UI", "create component", "design page".
 
 ### Infrastructure & Diagrams
 
