@@ -1,0 +1,180 @@
+---
+title: "Tool Eval: fable5-methodology"
+schema_type: common
+status: published
+owner: core-maintainer
+purpose: "Evaluation of the fable5-methodology skill/agent/hook collection against this configuration, with a port-versus-ignore recommendation."
+tags:
+  - tooling
+  - evaluation
+  - skills
+  - agents
+  - hooks
+---
+
+**Date:** 2026-07-07
+**Source:** <https://github.com/UnpaidAttention/fable5-methodology> (main, commit `bcc2eaca7046c400f22c0c5234e5cca07441939c`, inspected 2026-07-07)
+**Verdict:** PORT PATTERNS (a small set of specific elements) | IGNORE (the bulk of the collection, which overlaps what we already have)
+
+## Characterization
+
+A prose-plus-machinery methodology collection presented as "Claude Fable 5
+documenting its own working process so a weaker model can execute it cold."
+Four layers: prose (`PLAYBOOK.md`, `AUDIT.md`, `INTEGRITY.md`, `MEMORY.md`,
+`README.md`), 26 on-demand skills, 4 subagents (builder, code-reviewer,
+qa-verifier, research-scout), 6 lifecycle hooks (destructive-command guard,
+a Stop-time verification gate, an evidence logger, a post-edit verifier, a
+pre-compact handoff writer, a session loader), and 4 stack standards
+(PostgreSQL, Python, Rust, TypeScript/Node). Explicitly candid that it has
+not been benchmarked head-to-head against baseline yet (an A/B harness exists
+in `evals/ab-harness/` but has not been run). Stated scale target: any Claude
+Code session doing hands-on engineering work, not a specific language or app
+type.
+
+## Value core vs. peripheral LOC
+
+The whole repo is loadable content; there is no peripheral UI or build
+tooling to strip.
+
+| Segment | LOC | Notes |
+| --- | --- | --- |
+| Skills (26) | 2,403 | `skills/*/SKILL.md` |
+| Top-level prose | 2,375 | `PLAYBOOK.md`, `README.md`, `AUDIT.md`, `INTEGRITY.md`, `MEMORY.md`, `GRADING_RUBRIC.md`, `TASK_BRIEFING_TEMPLATE.md` |
+| Evals | 794 | `evals/eval-01..05/`, `evals/ab-harness/` |
+| Hooks | 481 | `hooks/*.sh`, `hooks/pre-tool-guard.py` |
+| Stacks | 378 | `stacks/*.md` |
+| Agents (4) | 292 | `agents/*.md` |
+| **Total** | ~6,723 | `install.sh` and `.gitignore` excluded (peripheral) |
+
+## Candidate element table
+
+| Element | Portable? | Maps to our gap | Fits delivery model? | Value-to-effort |
+| --- | --- | --- | --- | --- |
+| `skills/self-consistency-check` | PORTABLE (pure prose) | `.claude/skills/` -- no equivalent pre-code pairwise-conflict + cold-read + N-version-divergence check exists | FITS | High |
+| `skills/predictive-execution` | PORTABLE (pure prose) | `.claude/skills/` -- no explicit predict-then-compare discipline; adjacent to but distinct from `systematic-debugging` | FITS | Medium-High |
+| `skills/course-correction` | PORTABLE (pure prose) | `.claude/skills/` -- partial overlap with `doubt-driven-development` and `systematic-debugging-extras`, but the named alarm list (patch-on-patch, "too far to restart") is not written down anywhere in our tree | FITS | Medium |
+| `hooks/pre-tool-guard.py` chmod/chown/SQL-DROP/curl-pipe-shell/workspace-scoped-rm patterns | PORTABLE (Python stdlib only: `json`, `os`, `re`, `subprocess`, `sys`) | `scripts/bash-pre-hook.sh` covers git force-push/reset --hard only; these five pattern classes are a real gap in our PreToolUse guard | FITS | Medium-High |
+| `hooks/post-edit-verify.sh` test-skip-marker detector (the `.skip`/`xit(`/`@pytest.mark.skip`/`#[ignore]` grep on edited test files) | PORTABLE (bash + grep, no framework) | No hook enforces our own written CLAUDE.md rule ("never propose `pytest.mark.skip`... as the solution") mechanically; this is a real, net-new gap | FITS | High |
+| `hooks/post-edit-verify.sh` per-file lint/typecheck-and-block (ruff/rustfmt/eslint on the single touched file, exit 2 to force an immediate fix) | PORTABLE (bash, shells out to existing linters) | Partially overlaps our `PostToolUse(Edit\|Write)` hooks (ruff --fix, shellcheck) in `settings.json`, but ours are advisory (`\|\| true`, never block) and lack TS/JS (eslint) and Rust (rustfmt) coverage; theirs blocks (exit 2) and covers those two languages | FITS | Medium |
+| `hooks/pre-compact-handoff.sh` + `hooks/session-loader.sh` (paired PreCompact writer / SessionStart reader) | PORTABLE (bash + python3, no framework) | Real gap: nothing auto-captures state at the moment of an unattended autocompact. Complements, does not replace, the manual `/handoff` skill -- CLAUDE.md itself calls autocompact "lossy... the backstop, not the plan," and this pair is a cheap safety net for exactly that unattended case | FITS | Medium-High |
+| `hooks/delivery-gate.sh` + `hooks/evidence-log.sh` (evidence-log Stop gate) | PORTABLE (bash + python3, no framework) | Revised from the initial pass: `scripts/stop-pre-commit-hook.sh` only runs `pre-commit` (lint/format-focused; this repo's own config runs one narrow pytest case, not a general suite), while their evidence log checks for ANY test/build command (pytest, cargo test, jest, go test, tsc, make, etc.) actually invoked since the last code edit -- a broader, more repo-agnostic check our hook does not do. Real but partial gap; adopting it as-is also imports a new `WORKING_NOTES.md` per-project convention that duplicates our existing `~/.claude/logs/handoffs/` location (see Recommended actions) | FITS | Medium |
+| `hooks/pre-tool-guard.py` secret-in-staged-diff check | PORTABLE | Overlaps `detect-secrets`/TruffleHog pre-commit hooks already required by `PC-HOOK-STAGED-SCOPE` | FITS | Low (redundant) |
+| `skills/integrity-guardrails` | PORTABLE (pure prose) | Overlaps CLAUDE.md core directives, `doubt-driven-development`, `receiving-code-review-extras` | FITS | Low (convergent, not a gap) |
+| `skills/context-economy` | PORTABLE (pure prose) | Overlaps CLAUDE.md's "Delegation and subagent usage" and "Session length" sections almost line for line | FITS | Low (convergent, not a gap) |
+| `skills/uncertainty-management` | PORTABLE (pure prose) | Adjacent to RAD (`#CRITICAL`/`#ASSUME`/`#EDGE`/`#VERIFY`) but tags conversational claims rather than code; marginal | FITS | Low-Medium |
+| `skills/session-state-management` | PORTABLE (pure prose) | Overlaps `/handoff` and the CLAUDE.md "Compact Instructions" section; theirs is continuous (`WORKING_NOTES.md` updated every milestone) vs. ours is endpoint-triggered | FITS | Low-Medium |
+| Remaining 20 skills, 4 agents, 4 stack docs, evals harness | PORTABLE | No confirmed gap after sampling; substantial content overlap with our existing skill/rule set (see Convergent-validation notes) | FITS | Low |
+
+## Licence
+
+**No licence file.** The README states this explicitly: "No license is
+included yet, which means all rights reserved by default." This blocks
+wholesale inclusion (submodule or verbatim file copy) outright, regardless of
+technical quality. Any adoption must be a from-scratch reimplementation of the
+*idea* in our own words, not a copy of their prose, until the upstream author
+adds a licence. This gate alone rules out SUBMODULE for the whole repo.
+
+## Relationship classification
+
+HOMOGENEOUS LOADABLE CONTENT. Skills, agents, and hooks are loaded by Claude
+Code exactly the way ours are (`.claude/skills/`, `.claude/agents/`,
+`hooks.json`-registered scripts). No inverted-host relationship.
+
+## Convergent-validation notes
+
+The collection independently arrived at several things we already do, which
+raises confidence in both designs rather than surfacing action items:
+
+- **PreToolUse destructive-command guard + Stop-time verification gate** as a
+  two-hook pattern, matching `scripts/bash-pre-hook.sh` (git-scoped) and
+  `scripts/stop-pre-commit-hook.sh` (pre-commit-scoped).
+- **Fail-safe-open hook design** (`sys.exit(0)` on any internal error so a bug
+  in the guard never bricks the session), matching our own hooks' explicit
+  fail-safe comments.
+- **Context-as-scarce-resource discipline**: delegate bulk reads to subagents,
+  externalize durable facts to disk, read at the right altitude. This is our
+  CLAUDE.md "Delegation and subagent usage" section restated independently.
+- **No-success-claim-without-a-run** and **failures-lead** reporting norms,
+  matching our doubt-driven-development / receiving-code-review-extras posture.
+- **Load-on-demand skills, always-on prose floor** (their `CLAUDE.md` master
+  plus on-demand skills) mirrors our Pattern A/B skill architecture split.
+- **Tiered ceremony to task size** ("a one-line fix skips the chain a schema
+  change runs in full") matches our own scope-tracing and gate-calibration
+  instincts, though we do not have it written down as explicitly as their
+  PLAYBOOK.md §17.3.
+
+## Recommended actions
+
+Do not submodule or bulk-adopt; the licence gate blocks it and most of the
+content duplicates what this repo already has. Reimplement (not copy) three
+specific skill ideas and one hook pattern, in our own words:
+
+1. **Done.** Folded into `writing-plans/SKILL.md`'s existing "Self-Review"
+   checklist as item 10 (pairwise-constraint sweep, fresh-context cold read via
+   `doubt-driven-development`'s existing Step 3 dispatch mechanism instead of
+   re-implementing a new fresh-context-reviewer path, and N-version divergence
+   on the hard kernel), rather than a new `.claude/skills/self-consistency-check/`
+   entry. Fold-in, not a new skill: `writing-plans` already fires at exactly the
+   right moment ("you have a spec/plan, before touching code"), so this adds
+   zero new lines to every session's always-visible skill list, only growing a
+   skill body that loads on demand when `writing-plans` itself is invoked.
+2. **Analyzed, not implemented.** The genuinely novel content in
+   `predictive-execution` is thin once measured against what already exists:
+   the predict-then-compare mechanic is `test-driven-development`'s core loop
+   for the test-writing case, and general result verification is already
+   covered by `doubt-driven-development` and CLAUDE.md's "no success claim
+   without an executed run" rule. The one point neither covers is specific:
+   treat an unexpectedly-passing result as equally suspicious as a failing one,
+   not just a relief. That is a single sentence, not a skill's worth of
+   content, and it does not fit Pattern B's "trigger at a specific moment"
+   shape either, fable5 itself frames it as an ambient, continuous habit,
+   which argues against a dedicated on-demand skill. Not worth a new skill
+   entry or a forced fold-in; skipped rather than diluting an unrelated
+   skill's focus for one sentence of marginal, mostly-already-covered value.
+3. **Done.** Folded the named alarm list from `course-correction` (two patches
+   each fixing the prior patch's symptom, fighting the framework, a "small
+   fix" spreading across many files, three failed attempts on the same error,
+   "I've come too far to restart") into `systematic-debugging-extras` as a new
+   section, framed as the exit condition from `systematic-debugging`'s normal
+   reproduce-hypothesize-fix loop for when the approach itself, not the current
+   hypothesis, is the defect. Also a fold-in, not a new skill, for the same
+   zero-skill-list-tax reason as item 1.
+4. **Done.** Added `scripts/destructive-command-guard.sh` as a sibling
+   PreToolUse hook (matcher `Bash`) with the chmod/chown-recursive-on-root,
+   SQL DROP/TRUNCATE, curl-pipe-to-shell, and workspace-scoped `rm -rf`
+   pattern checks, reimplemented from scratch rather than copied given the
+   licence gate.
+5. **Done.** Added `scripts/test-skip-guard.sh` as a new
+   `PostToolUse(Edit|Write|MultiEdit)` hook (reimplemented, not copied) that
+   greps the just-edited file for a test-skip/ignore marker
+   (`.skip`, `xit(`, `@pytest.mark.skip`, `#[ignore]`, `t.Skip(`) when the path
+   looks like a test file, and blocks (exit 2) with a reminder that this
+   mechanically enforces the existing CLAUDE.md "fix the actual issue, never
+   propose `pytest.mark.skip`" rule, which previously had no automated check.
+6. Consider extending the existing `PostToolUse(Edit|Write)` block in
+   `settings.json` to also run `eslint`/`rustfmt` on the single touched file
+   for TS/JS/Rust (matching the ruff coverage already present for Python), and
+   decide deliberately whether that check should block (exit 2, matching
+   `post-edit-verify.sh`) or stay advisory like the current ruff/shellcheck
+   entries -- note the deliberate inconsistency this introduces either way.
+7. **Done.** Added `scripts/hooks/precompact-handoff.sh` (reimplemented) as a
+   new `PreCompact` hook writing a short auto-handoff block (git branch,
+   dirty-file count, first ~8 changed paths, UTC timestamp) to the existing
+   `~/.claude/logs/handoffs/` convention as a single overwritten file
+   (`auto-precompact-latest.md`), rather than introducing a new
+   `WORKING_NOTES.md` file at the project root. Paired with a matching
+   `SessionStart` hook, `scripts/hooks/handoff-resume-reminder.sh` (alongside
+   `delegation-reminder.sh`/`cbm-context-reminder.sh`), that surfaces the most
+   recent auto-handoff entry, if one exists, as session-start context.
+8. Skip the delivery-gate.sh + evidence-log.sh Stop-gate pair as a direct
+   port: the underlying idea (verify a real test/build command ran, not just
+   lint) is sound, but adopting it as specified requires committing to their
+   `WORKING_NOTES.md` convention, which action 7 deliberately avoids
+   duplicating. Revisit only if action 7's simpler auto-handoff proves
+   insufficient and a dedicated per-project state file is wanted anyway.
+9. Skip the secret-in-diff check, `integrity-guardrails`, `context-economy`,
+   and the remaining skills/agents: confirmed overlap with existing
+   mechanisms that are equal or stronger.
+10. Run the collection's own `evals/ab-harness/` (conceptually, not by copying
+    it) if we want empirical evidence any of this actually beats baseline
+    before investing further; the upstream repo itself has not done this yet.

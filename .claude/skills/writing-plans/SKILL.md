@@ -256,6 +256,12 @@ After writing the complete plan, look at the spec with fresh eyes and check the 
 
 **9. pytest config sanity:** If the plan preserves or migrates `[tool.pytest.*]` sections in `pyproject.toml`, verify with `pytest --collect-only -q 2>&1 | head -5` that no namespace conflict exists between `[tool.pytest]` (native TOML) and `[tool.pytest.ini_options]` (INI format). Plugin-config sections like `[tool.pytest.benchmark]` must use the hyphenated form `[tool.pytest-benchmark]` to avoid this conflict.
 
+**10. Cross-requirement consistency sweep, for plans with 4+ interacting constraints or a schema/interface decision (skip for a single-constraint or trivial plan):** Enumerating requirements and edge cases makes a conflict between them *visible*; it does not make it *noticed*, since noticing requires holding two items in mind at once while a linear read only holds one. Three techniques force the combination a linear read skips over:
+
+    - **Pairwise sweep:** list every constraint, requirement, and edge case (C1..Cn); for every PLAUSIBLE pair (bound it to pairs that could plausibly interact, not a blind N-squared), mark it compatible or CONFLICT with one clause why. Every CONFLICT gets resolved in the plan now, or logged as an explicit open decision; a found-but-unresolved conflict is still a win, it is a bug caught before code exists.
+    - **Fresh-context cold read:** for a plan with several interacting requirements, invoke the `doubt-driven-development` skill's Step 3 (dispatch a fresh-context reviewer) against the finished plan alone, withholding your own reasoning trace, and ask exactly: "Which two statements here cannot both be true? Which requirement has no handling for which edge case? What does this design assume that it never states?" A reader who never walked the path that produced the plan is structurally positioned to see what you can't, because you are anchored on it and they are not.
+    - **N-version divergence, for the hard kernel only:** identify the roughly 20% of the plan that decides the outcome (the hard kernel), and dispatch 2-3 subagents to solve just that piece independently, each blind to the others' attempts. Where they agree, you're probably safe. Where they diverge is the load-bearing, uncertain decision, exactly the spot a single pass would have committed to blindly; investigate every divergence rather than picking one arbitrarily.
+
 If you find issues, fix them inline; no need to re-review. If you find a spec requirement with no task, add the task.
 
 ## Execution Handoff

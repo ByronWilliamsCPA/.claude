@@ -85,6 +85,34 @@
 
 ### Added
 
+* feat(hooks): add three hooks and correct hook documentation to match.
+  `scripts/destructive-command-guard.sh` (PreToolUse, `Bash`) blocks recursive
+  chmod/chown on a root/home/cwd/glob target, SQL DROP/TRUNCATE, curl/wget
+  piped into a shell interpreter, and recursive force-delete outside the
+  project workspace. `scripts/test-skip-guard.sh` (PostToolUse,
+  `Edit|Write|MultiEdit`) mechanically enforces CLAUDE.md's rule against
+  proposing `pytest.mark.skip`/`xit`/`xdescribe`/`#[ignore]` to silence a
+  failing test. The new `scripts/hooks/precompact-handoff.sh` (`PreCompact`,
+  a new hook type) and `scripts/hooks/handoff-resume-reminder.sh`
+  (`SessionStart`) pair writes and reads back a single overwritten
+  auto-handoff snapshot as a backstop for the unattended-autocompact case,
+  distinct from the manual `/handoff` skill's timestamped archive. Rewrites
+  `docs/architecture/hook-pipeline.md` (diagram, per-event tables, and hook
+  source provenance) and updates `docs/architecture/adr/ADR-002-hook-composition.md`,
+  `docs/reference/hooks.md`, and `docs/contributing/adding-hooks.md` for the
+  new `PreCompact` hook type and the three new entries.
+
+* feat(frontend-design): add Wireframe, Make a Prototype, and Generate
+  Variations workflow modes, and a parallel Polish Pass review pattern:
+  `frontend-designer`'s Review mode gains a `--focus` dimension
+  (accessibility/ai-slop/hierarchy-rhythm/interaction-states) that the
+  orchestrator dispatches four times concurrently and aggregates, replacing
+  same-pass self-review as the standard pre-ship gate (`rules/design.md`).
+  Adds `scripts/wcag-contrast.py` (a stdlib-only WCAG relative-luminance
+  calculator) so contrast is computed rather than estimated by eye, after a
+  2026-07-07 A/B trial found five undetected AA contrast failures in output
+  whose own delivery summary claimed contrast had been verified by hand.
+
 * feat(hooks): add hook-source drift detection with a committed allowlist.
   New `hook-inventory.json` at repo root records every authorized
   hook-injection source beyond the repo baseline `hooks.json` (installer

@@ -19,7 +19,7 @@ tags:
 
 ## Context
 
-Claude Code supports five hook types: `PreToolUse`, `PostToolUse`, `Stop`, `UserPromptSubmit`, and `SessionStart`. Hook configuration lives in `~/.claude/settings.json` under the `hooks` key. The immediate problem: `settings.json` is machine-local state. If a developer edits the hooks block directly in `settings.json`, those changes are lost the next time `setup.sh` runs, because `setup.sh` overwrites the hooks block from `hooks.json`.
+Claude Code supports six hook types: `PreToolUse`, `PostToolUse`, `Stop`, `UserPromptSubmit`, `SessionStart`, and `PreCompact`. Hook configuration lives in `~/.claude/settings.json` under the `hooks` key. The immediate problem: `settings.json` is machine-local state. If a developer edits the hooks block directly in `settings.json`, those changes are lost the next time `setup.sh` runs, because `setup.sh` overwrites the hooks block from `hooks.json`.
 
 A second problem: this repo needs both generic hooks (the hookify plugin dispatch engine from `anthropics-plugins`) and project-specific behavioral gates (secrets file guard, planning bridge gate, Python compatibility check, PR review reminder). These need to compose cleanly without one overwriting the other.
 
@@ -59,16 +59,22 @@ Current hook definitions by type:
 3. **Planning bridge gate**: matcher `Skill`. Calls `scripts/planning-bridge-gate.sh` before any Skill invocation to enforce plan-approval workflow.
 4. **Security guidance reminder**: matcher `Edit|Write|MultiEdit`. Runs `security_reminder_hook.py` from `anthropics-plugins/security-guidance` to surface security patterns.
 5. **hookify PreToolUse**: no matcher (all tools). Dispatches to the hookify plugin engine, which runs any plugins registered for PreToolUse events.
+6. **Destructive-command guard**: matcher `Bash`. Runs `scripts/destructive-command-guard.sh`, a sibling to `bash-pre-hook.sh` that blocks recursive chmod/chown on a root/home/cwd/glob target, SQL DROP/TRUNCATE, curl/wget piped into a shell interpreter, and recursive force-delete targeting a root/home/cwd/glob path or any path outside the project workspace.
 
 **PostToolUse** (fires after each tool call, in this order):
 
 1. **py310-compat-check**: matcher `(Edit|Write)`. Checks modified Python files for syntax incompatible with Python 3.10.
 2. **snyk-dep-reminder**: matcher `Edit|Write|MultiEdit`. Runs `scripts/snyk-dep-reminder.sh` to surface a Snyk scan reminder when dependency manifests change.
-3. **hookify PostToolUse**: no matcher (all tools). Dispatches to hookify plugin engine for PostToolUse plugins.
+3. **test-skip-guard**: matcher `Edit|Write|MultiEdit`. Runs `scripts/test-skip-guard.sh`, which mechanically enforces CLAUDE.md's "never propose `pytest.mark.skip` to silence a failing test" rule by grepping post-edit test-file contents for a skip/ignore marker and blocking (exit 2) if found.
+4. **hookify PostToolUse**: no matcher (all tools). Dispatches to hookify plugin engine for PostToolUse plugins.
 
 **Stop** (fires at end of model turn):
 
 1. **hookify Stop**: dispatches to hookify plugin engine's stop handler.
+
+**PreCompact** (fires immediately before context compaction, automatic or manual):
+
+1. **precompact-handoff**: no matcher. Runs `scripts/hooks/precompact-handoff.sh`, which writes a cheap, objective auto-handoff snapshot (git branch, dirty-file count, first ~8 changed paths, UTC timestamp) to a single overwritten file as a backstop for the unattended-autocompact case; always exits 0 and never blocks compaction.
 
 **UserPromptSubmit** (fires on each user message, in this order):
 
@@ -88,12 +94,16 @@ User sends message
         → PreToolUse[matcher]: planning gate (if Skill)
         → PreToolUse[matcher]: security reminder (if Edit|Write|MultiEdit)
         → PreToolUse[no-matcher]: hookify pretooluse.py
+        → PreToolUse[matcher]: destructive-command guard (if Bash)
         → Tool executes
         → PostToolUse[matcher]: py310-compat-check (if Edit|Write)
         → PostToolUse[matcher]: snyk-dep-reminder (if Edit|Write|MultiEdit)
+        → PostToolUse[matcher]: test-skip-guard (if Edit|Write|MultiEdit)
         → PostToolUse[no-matcher]: hookify posttooluse.py
   → Model finishes turn
     → Stop[no-matcher]: hookify stop.py
+  → If context is compacted (auto or manual), separately from the turn cycle:
+    → PreCompact[no-matcher]: precompact-handoff.sh
 ```
 
 Exit codes from hook scripts determine whether the tool call proceeds: exit 0 allows, exit 2 blocks with an error message, exit 1 is a hook-level failure.
