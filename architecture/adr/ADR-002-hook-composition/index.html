@@ -2534,7 +2534,7 @@
 <p><strong>Deciders</strong>: Byron Williams</p>
 </blockquote>
 <h2 id="context">Context<a class="headerlink" href="#context" title="Permanent link">&para;</a></h2>
-<p>Claude Code supports five hook types: <code>PreToolUse</code>, <code>PostToolUse</code>, <code>Stop</code>, <code>UserPromptSubmit</code>, and <code>SessionStart</code>. Hook configuration lives in <code>~/.claude/settings.json</code> under the <code>hooks</code> key. The immediate problem: <code>settings.json</code> is machine-local state. If a developer edits the hooks block directly in <code>settings.json</code>, those changes are lost the next time <code>setup.sh</code> runs, because <code>setup.sh</code> overwrites the hooks block from <code>hooks.json</code>.</p>
+<p>Claude Code supports six hook types: <code>PreToolUse</code>, <code>PostToolUse</code>, <code>Stop</code>, <code>UserPromptSubmit</code>, <code>SessionStart</code>, and <code>PreCompact</code>. Hook configuration lives in <code>~/.claude/settings.json</code> under the <code>hooks</code> key. The immediate problem: <code>settings.json</code> is machine-local state. If a developer edits the hooks block directly in <code>settings.json</code>, those changes are lost the next time <code>setup.sh</code> runs, because <code>setup.sh</code> overwrites the hooks block from <code>hooks.json</code>.</p>
 <p>A second problem: this repo needs both generic hooks (the hookify plugin dispatch engine from <code>anthropics-plugins</code>) and project-specific behavioral gates (secrets file guard, planning bridge gate, Python compatibility check, PR review reminder). These need to compose cleanly without one overwriting the other.</p>
 <p>A third problem: within a single tool invocation, several hooks fire in a defined order. That order is a behavioral contract. A <code>PreToolUse</code> that runs before the secrets check would silently allow edits that the secrets check is supposed to block.</p>
 <p>This ADR documents the source-of-truth decision, the composition pattern, and the execution ordering contract.</p>
@@ -2566,16 +2566,22 @@ by <code>--doctor</code> as unbackported.</p>
 <li><strong>Planning bridge gate</strong>: matcher <code>Skill</code>. Calls <code>scripts/planning-bridge-gate.sh</code> before any Skill invocation to enforce plan-approval workflow.</li>
 <li><strong>Security guidance reminder</strong>: matcher <code>Edit|Write|MultiEdit</code>. Runs <code>security_reminder_hook.py</code> from <code>anthropics-plugins/security-guidance</code> to surface security patterns.</li>
 <li><strong>hookify PreToolUse</strong>: no matcher (all tools). Dispatches to the hookify plugin engine, which runs any plugins registered for PreToolUse events.</li>
+<li><strong>Destructive-command guard</strong>: matcher <code>Bash</code>. Runs <code>scripts/destructive-command-guard.sh</code>, a sibling to <code>bash-pre-hook.sh</code> that blocks recursive chmod/chown on a root/home/cwd/glob target, SQL DROP/TRUNCATE, curl/wget piped into a shell interpreter, and recursive force-delete targeting a root/home/cwd/glob path or any path outside the project workspace.</li>
 </ol>
 <p><strong>PostToolUse</strong> (fires after each tool call, in this order):</p>
 <ol>
 <li><strong>py310-compat-check</strong>: matcher <code>(Edit|Write)</code>. Checks modified Python files for syntax incompatible with Python 3.10.</li>
 <li><strong>snyk-dep-reminder</strong>: matcher <code>Edit|Write|MultiEdit</code>. Runs <code>scripts/snyk-dep-reminder.sh</code> to surface a Snyk scan reminder when dependency manifests change.</li>
+<li><strong>test-skip-guard</strong>: matcher <code>Edit|Write|MultiEdit</code>. Runs <code>scripts/test-skip-guard.sh</code>, which mechanically enforces CLAUDE.md's "never propose <code>pytest.mark.skip</code> to silence a failing test" rule by grepping post-edit test-file contents for a skip/ignore marker and blocking (exit 2) if found.</li>
 <li><strong>hookify PostToolUse</strong>: no matcher (all tools). Dispatches to hookify plugin engine for PostToolUse plugins.</li>
 </ol>
 <p><strong>Stop</strong> (fires at end of model turn):</p>
 <ol>
 <li><strong>hookify Stop</strong>: dispatches to hookify plugin engine's stop handler.</li>
+</ol>
+<p><strong>PreCompact</strong> (fires immediately before context compaction, automatic or manual):</p>
+<ol>
+<li><strong>precompact-handoff</strong>: no matcher. Runs <code>scripts/hooks/precompact-handoff.sh</code>, which writes a cheap, objective auto-handoff snapshot (git branch, dirty-file count, first ~8 changed paths, UTC timestamp) to a single overwritten file as a backstop for the unattended-autocompact case; always exits 0 and never blocks compaction.</li>
 </ol>
 <p><strong>UserPromptSubmit</strong> (fires on each user message, in this order):</p>
 <ol>
@@ -2593,12 +2599,16 @@ by <code>--doctor</code> as unbackported.</p>
 </span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>        → PreToolUse[matcher]: planning gate (if Skill)
 </span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>        → PreToolUse[matcher]: security reminder (if Edit|Write|MultiEdit)
 </span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>        → PreToolUse[no-matcher]: hookify pretooluse.py
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>        → Tool executes
-</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>        → PostToolUse[matcher]: py310-compat-check (if Edit|Write)
-</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>        → PostToolUse[matcher]: snyk-dep-reminder (if Edit|Write|MultiEdit)
-</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>        → PostToolUse[no-matcher]: hookify posttooluse.py
-</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>  → Model finishes turn
-</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>    → Stop[no-matcher]: hookify stop.py
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>        → PreToolUse[matcher]: destructive-command guard (if Bash)
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>        → Tool executes
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>        → PostToolUse[matcher]: py310-compat-check (if Edit|Write)
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>        → PostToolUse[matcher]: snyk-dep-reminder (if Edit|Write|MultiEdit)
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>        → PostToolUse[matcher]: test-skip-guard (if Edit|Write|MultiEdit)
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>        → PostToolUse[no-matcher]: hookify posttooluse.py
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>  → Model finishes turn
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>    → Stop[no-matcher]: hookify stop.py
+</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>  → If context is compacted (auto or manual), separately from the turn cycle:
+</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>    → PreCompact[no-matcher]: precompact-handoff.sh
 </span></code></pre></div>
 <p>Exit codes from hook scripts determine whether the tool call proceeds: exit 0 allows, exit 2 blocks with an error message, exit 1 is a hook-level failure.</p>
 <h2 id="alternatives-considered">Alternatives Considered<a class="headerlink" href="#alternatives-considered" title="Permanent link">&para;</a></h2>
@@ -2658,7 +2668,7 @@ by <code>--doctor</code> as unbackported.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 6, 2026 21:47:32 UTC">July 6, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 8, 2026 12:52:11 UTC">July 8, 2026</span>
   </span>
 
     

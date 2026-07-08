@@ -92,7 +92,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#the-five-hook-types" class="md-skip">
+        <a href="#the-six-hook-types" class="md-skip">
           Skip to content
         </a>
       
@@ -918,10 +918,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#the-five-hook-types" class="md-nav__link">
+  <a href="#the-six-hook-types" class="md-nav__link">
     <span class="md-ellipsis">
       
-        The Five Hook Types
+        The Six Hook Types
       
     </span>
   </a>
@@ -1011,6 +1011,17 @@
     <span class="md-ellipsis">
       
         Stop
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#precompact" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PreCompact
       
     </span>
   </a>
@@ -2434,10 +2445,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#the-five-hook-types" class="md-nav__link">
+  <a href="#the-six-hook-types" class="md-nav__link">
     <span class="md-ellipsis">
       
-        The Five Hook Types
+        The Six Hook Types
       
     </span>
   </a>
@@ -2527,6 +2538,17 @@
     <span class="md-ellipsis">
       
         Stop
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#precompact" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PreCompact
       
     </span>
   </a>
@@ -2626,14 +2648,15 @@
 
   <h1>Hook Pipeline</h1>
 
-<p>Claude Code fires hooks at five points during a session. These hooks enforce quality gates, route behavioral rules, and extend Claude's capabilities without requiring model-level changes. The repo-managed hook definitions live in <code>hooks.json</code> at repo root and are merged into <code>~/.claude/settings.json</code> by <code>setup.sh</code>; that file is the baseline, but it is not the only source Claude Code executes hooks from. See <a href="#hook-sources">Hook Sources</a> below for the full taxonomy and the drift check that guards it.</p>
+<p>Claude Code fires hooks at six points during a session. These hooks enforce quality gates, route behavioral rules, and extend Claude's capabilities without requiring model-level changes. The repo-managed hook definitions live in <code>hooks.json</code> at repo root and are merged into <code>~/.claude/settings.json</code> by <code>setup.sh</code>; that file is the baseline, but it is not the only source Claude Code executes hooks from. See <a href="#hook-sources">Hook Sources</a> below for the full taxonomy and the drift check that guards it.</p>
 <p>For the design decisions behind this system, see <a href="../adr/ADR-002-hook-composition/">ADR-002</a> and <a href="../adr/ADR-010-hook-source-allowlist/">ADR-010</a>.</p>
-<h2 id="the-five-hook-types">The Five Hook Types<a class="headerlink" href="#the-five-hook-types" title="Permanent link">&para;</a></h2>
+<h2 id="the-six-hook-types">The Six Hook Types<a class="headerlink" href="#the-six-hook-types" title="Permanent link">&para;</a></h2>
 <p><strong>UserPromptSubmit</strong>: fires immediately after the user sends a message, before Claude processes it. Used for: injecting context, detecting intent signals (PR review reminder), running the hookify user prompt pipeline.</p>
-<p><strong>PreToolUse</strong>: fires before each tool call Claude attempts. Each entry in the <code>PreToolUse</code> array can have a matcher regex targeting specific tools. Used for: secrets file guard (Edit/Write), planning bridge gate (Skill), security reminder (Edit/Write/MultiEdit), hookify dispatch (all tools).</p>
-<p><strong>PostToolUse</strong>: fires after each tool call completes. Used for: Python 3.10 compatibility check (Edit/Write), hookify dispatch (all tools).</p>
+<p><strong>PreToolUse</strong>: fires before each tool call Claude attempts. Each entry in the <code>PreToolUse</code> array can have a matcher regex targeting specific tools. Used for, in <code>hooks.json</code> array order: bash command guard (Bash), secrets file guard (Edit/Write/MultiEdit), planning bridge gate (Skill), security reminder (Edit/Write/MultiEdit), hookify dispatch (all tools), destructive-command guard (Bash).</p>
+<p><strong>PostToolUse</strong>: fires after each tool call completes. Used for, in <code>hooks.json</code> array order: Python 3.10 compatibility check (Edit/Write), Snyk dependency-manifest reminder (Edit/Write/MultiEdit), test-skip-marker guard (Edit/Write/MultiEdit), hookify dispatch (all tools).</p>
 <p><strong>Stop</strong>: fires when Claude finishes its turn (before control returns to the user). Used for: hookify stop handler.</p>
-<p><strong>SessionStart</strong>: fires when a session opens, and again on resume, <code>clear</code>, or <code>compact</code>, depending on which matcher a given hook registers. Two repo-managed hooks are wired here (<code>scripts/hooks/delegation-reminder.sh</code>, <code>scripts/hooks/cbm-context-reminder.sh</code>), alongside SessionStart hooks contributed by installed plugins. No <code>.claude/rules/*.md</code> file is injected at this point or any other; rules enter context only when Claude follows a <code>CLAUDE.md</code> pointer to one, or a hook prints its content directly, which is exactly what these two hooks do.</p>
+<p><strong>PreCompact</strong>: fires immediately before Claude Code compacts the conversation, whether triggered automatically (approaching the context limit) or manually (<code>/compact</code>). Used for: writing a cheap, objective auto-handoff snapshot as a backstop for the unattended-autocompact case.</p>
+<p><strong>SessionStart</strong>: fires when a session opens, and again on resume, <code>clear</code>, or <code>compact</code>, depending on which matcher a given hook registers. Three repo-managed hooks are wired here (<code>scripts/hooks/delegation-reminder.sh</code>, <code>scripts/hooks/cbm-context-reminder.sh</code>, <code>scripts/hooks/handoff-resume-reminder.sh</code>), alongside SessionStart hooks contributed by installed plugins. No <code>.claude/rules/*.md</code> file is injected at this point or any other; rules enter context only when Claude follows a <code>CLAUDE.md</code> pointer to one, or a hook prints its content directly, which is exactly what these hooks do.</p>
 <h2 id="diagram">Diagram<a class="headerlink" href="#diagram" title="Permanent link">&para;</a></h2>
 <p><img alt="Hook pipeline sequence diagram" src="../diagrams/hook_pipeline.svg" /></p>
 <h2 id="execution-order-across-a-turn">Execution Order Across a Turn<a class="headerlink" href="#execution-order-across-a-turn" title="Permanent link">&para;</a></h2>
@@ -2643,27 +2666,39 @@
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>  → UserPromptSubmit[1]: pr-review-reminder.py
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
 </span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>  Model processes, issues tool calls:
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    For each Write or Edit call:
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>      → PreToolUse[0]: secrets file guard (matcher: Edit|Write)
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>      → PreToolUse[2]: security reminder (matcher: Edit|Write|MultiEdit)
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>      → PreToolUse[3]: hookify pretooluse.py (all tools)
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    For each Bash call:
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>      → PreToolUse[0]: bash-pre-hook.sh (matcher: Bash)
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>      → PreToolUse[4]: hookify pretooluse.py (all tools)
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>      → PreToolUse[5]: destructive-command-guard.sh (matcher: Bash)
 </span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>      → Tool executes
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>      → PostToolUse[0]: py310-compat-check (matcher: Edit|Write)
-</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>      → PostToolUse[1]: hookify posttooluse.py (all tools)
-</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>
-</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>    For each Skill call:
-</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>      → PreToolUse[1]: planning bridge gate (matcher: Skill)
-</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>      → PreToolUse[3]: hookify pretooluse.py (all tools)
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>      → PostToolUse[3]: hookify posttooluse.py (all tools)
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>    For each Write or Edit call:
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>      → PreToolUse[1]: secrets file guard (matcher: Edit|Write|MultiEdit)
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>      → PreToolUse[3]: security reminder (matcher: Edit|Write|MultiEdit)
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>      → PreToolUse[4]: hookify pretooluse.py (all tools)
 </span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>      → Tool executes
-</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>      → PostToolUse[1]: hookify posttooluse.py (all tools)
-</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>
-</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>    For any other tool call:
-</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>      → PreToolUse[3]: hookify pretooluse.py (all tools)
-</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>      → Tool executes
-</span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>      → PostToolUse[1]: hookify posttooluse.py (all tools)
-</span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>
-</span><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>  Model turn ends
-</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>    → Stop[0]: hookify stop.py
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>      → PostToolUse[0]: py310-compat-check (matcher: Edit|Write)
+</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>      → PostToolUse[1]: snyk-dep-reminder.sh (matcher: Edit|Write|MultiEdit)
+</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>      → PostToolUse[2]: test-skip-guard.sh (matcher: Edit|Write|MultiEdit)
+</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>      → PostToolUse[3]: hookify posttooluse.py (all tools)
+</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>
+</span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>    For each Skill call:
+</span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>      → PreToolUse[2]: planning bridge gate (matcher: Skill)
+</span><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>      → PreToolUse[4]: hookify pretooluse.py (all tools)
+</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>      → Tool executes
+</span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>      → PostToolUse[3]: hookify posttooluse.py (all tools)
+</span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>
+</span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>    For any other tool call:
+</span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>      → PreToolUse[4]: hookify pretooluse.py (all tools)
+</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>      → Tool executes
+</span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>      → PostToolUse[3]: hookify posttooluse.py (all tools)
+</span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>
+</span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>  Model turn ends
+</span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>    → Stop[0]: hookify stop.py
+</span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>
+</span><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>  If context is compacted (auto or manual), separately from the turn cycle:
+</span><span id="__span-0-38"><a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>    → PreCompact[0]: precompact-handoff.sh
 </span></code></pre></div>
 <p>Array position determines execution order within each hook type. Matcher-specific entries run only when their regex matches the tool being called.</p>
 <h2 id="per-hook-responsibilities">Per-Hook Responsibilities<a class="headerlink" href="#per-hook-responsibilities" title="Permanent link">&para;</a></h2>
@@ -2689,6 +2724,11 @@
 <td>Repo-managed. Prints the delegation protocol reminder (dispatch subagents for exploration, well-specified implementation, and review; never silently absorb a failed dispatch inline) and refreshes the task-observer skills manifest, warning on stdout if the refresh fails</td>
 </tr>
 <tr>
+<td><code>startup\|resume\|clear\|compact</code></td>
+<td><code>scripts/hooks/handoff-resume-reminder.sh</code></td>
+<td>Repo-managed. Checks for the single overwritten backstop file <code>~/.claude/logs/handoffs/auto-precompact-latest.md</code> written by <code>precompact-handoff.sh</code> and, if present, prints its branch/dirty-count/timestamp content as session-start context, labeled STALE past 48 hours. Prints nothing when the file does not exist. Complements, does not replace, the manual <code>/handoff</code> skill's timestamped archive</td>
+</tr>
+<tr>
 <td><code>startup\|clear\|compact</code></td>
 <td>superpowers plugin session-start command</td>
 <td>Plugin-provided; not defined in this repo's <code>hooks.json</code></td>
@@ -2700,7 +2740,7 @@
 </tr>
 </tbody>
 </table>
-<p>Neither repo-managed hook, nor either plugin hook, loads a file from <code>.claude/rules/</code>. A rule file reaches context only through a <code>CLAUDE.md</code> pointer Claude chooses to follow, or through a hook that prints equivalent content directly: <code>delegation-reminder.sh</code> prints a hardcoded summary of the delegation core (mirrored inline in <code>CLAUDE.md</code>, not read from <code>supervisor.md</code> at runtime), and <code>cbm-context-reminder.sh</code> does the same for the codebase-memory discovery protocol.</p>
+<p>None of the repo-managed hooks, nor either plugin hook, loads a file from <code>.claude/rules/</code>. A rule file reaches context only through a <code>CLAUDE.md</code> pointer Claude chooses to follow, or through a hook that prints equivalent content directly: <code>delegation-reminder.sh</code> prints a hardcoded summary of the delegation core (mirrored inline in <code>CLAUDE.md</code>, not read from <code>supervisor.md</code> at runtime), <code>cbm-context-reminder.sh</code> does the same for the codebase-memory discovery protocol, and <code>handoff-resume-reminder.sh</code> prints the auto-precompact backstop file's own content verbatim.</p>
 <h3 id="userpromptsubmit">UserPromptSubmit<a class="headerlink" href="#userpromptsubmit" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
@@ -2731,9 +2771,14 @@
 </thead>
 <tbody>
 <tr>
-<td><code>Edit\|Write</code></td>
-<td>Inline bash</td>
-<td>Blocks writes to <code>.env</code> and <code>settings.local.json</code> with exit code 2</td>
+<td><code>Bash</code></td>
+<td><code>scripts/bash-pre-hook.sh</code></td>
+<td>Blocks (exit 2) bypass flags and destructive git operations: <code>gh pr merge --admin</code>, <code>git --no-verify</code>/<code>--no-gpg-sign</code>, force-push to <code>main</code>/<code>master</code>/<code>develop</code>, and <code>git reset --hard</code> when <code>HEAD</code> is on one of those protected branches</td>
+</tr>
+<tr>
+<td><code>Edit\|Write\|MultiEdit</code></td>
+<td><code>scripts/sensitive-file-guard.sh</code></td>
+<td>Blocks (exit 2) writes to credential and secret-bearing paths: <code>.env</code> files, <code>settings.local.json</code>, SSH private keys, AWS credentials, package/registry tokens (<code>.netrc</code>, <code>.npmrc</code>, <code>.pypirc</code>, <code>.docker/config.json</code>), TLS/GPG private material, secrets baselines, and gcloud credential files</td>
 </tr>
 <tr>
 <td><code>Skill</code></td>
@@ -2749,6 +2794,11 @@
 <td>(all tools)</td>
 <td><code>hookify/hooks/pretooluse.py</code></td>
 <td>Dispatches to hookify plugin engine</td>
+</tr>
+<tr>
+<td><code>Bash</code></td>
+<td><code>scripts/destructive-command-guard.sh</code></td>
+<td>Sibling guard to <code>bash-pre-hook.sh</code>. Blocks (exit 2) recursive chmod/chown on a root/home/cwd/glob target, SQL DROP/TRUNCATE, curl/wget piped into a shell interpreter, and recursive force-delete (<code>rm</code> with both a recursive and a force flag) targeting a root/home/cwd/glob path, a parent-directory path (<code>..</code>), or any absolute path outside <code>$CLAUDE_PROJECT_DIR</code>/<code>$PWD</code>. Pattern-based and best-effort, not a shell parser: indirect invocations (environment-assignment prefixes, backslash line continuations, <code>xargs</code>/<code>find -exec</code>, <code>bash -c</code> wrappers, downloaded-then-executed scripts) can evade it, so treat it as a safety net rather than a security boundary</td>
 </tr>
 </tbody>
 </table>
@@ -2766,6 +2816,16 @@
 <td><code>Edit\|Write</code></td>
 <td><code>scripts/py310-compat-check.sh</code></td>
 <td>Checks modified Python files for syntax that breaks on Python 3.10</td>
+</tr>
+<tr>
+<td><code>Edit\|Write\|MultiEdit</code></td>
+<td><code>scripts/snyk-dep-reminder.sh</code></td>
+<td>Prints a reminder to run <code>snyk_package_health_check</code>/<code>snyk_sca_scan</code> via the Snyk MCP Server when a dependency manifest (<code>pyproject.toml</code>, <code>uv.lock</code>, <code>requirements*.txt</code>) is modified. Repo baseline (<code>hooks.json</code>), not a direct <code>settings.json</code> write</td>
+</tr>
+<tr>
+<td><code>Edit\|Write\|MultiEdit</code></td>
+<td><code>scripts/test-skip-guard.sh</code></td>
+<td>Mechanically enforces CLAUDE.md's "never propose <code>pytest.mark.skip</code> to silence a failing test" rule. When the edited path looks like a test file, greps its post-edit contents for a skip/ignore marker (<code>.skip(</code>, <code>xit(</code>, <code>xdescribe(</code>, <code>@pytest.mark.skip</code>, <code>#[ignore]</code>, <code>t.Skip(</code>) and blocks (exit 2) with a reminder if found</td>
 </tr>
 <tr>
 <td>(all tools)</td>
@@ -2789,6 +2849,22 @@
 </tr>
 </tbody>
 </table>
+<h3 id="precompact">PreCompact<a class="headerlink" href="#precompact" title="Permanent link">&para;</a></h3>
+<p>Fires immediately before context compaction, whether triggered automatically or via manual <code>/compact</code>; not part of the per-turn tool cycle described above.</p>
+<table>
+<thead>
+<tr>
+<th>Script</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>scripts/hooks/precompact-handoff.sh</code></td>
+<td>Writes cheap, objective state (git branch, dirty-file count, first ~8 changed paths, UTC timestamp) to the single overwritten file <code>~/.claude/logs/handoffs/auto-precompact-latest.md</code>. Always exits 0; never blocks compaction. This is the backstop for the unattended-autocompact case CLAUDE.md names directly ("autocompact... lossy... the backstop, not the plan"), read back by <code>handoff-resume-reminder.sh</code> at the next <code>SessionStart</code>. It is deliberately a single overwritten file, not a timestamped archive, so it never collides with the manual <code>/handoff</code> skill's <code>handoff-&lt;ts&gt;.md</code> convention</td>
+</tr>
+</tbody>
+</table>
 <h2 id="hookify-dispatch">hookify Dispatch<a class="headerlink" href="#hookify-dispatch" title="Permanent link">&para;</a></h2>
 <p>hookify is a plugin engine from the <code>anthropics-plugins</code> submodule (<code>claude-plugins-official</code>). It provides a shared rule engine that multiple plugins can hook into without each needing its own top-level hook entry. When hookify's <code>pretooluse.py</code> fires, it reads the list of registered plugins from <code>CLAUDE_PLUGIN_ROOT</code> and dispatches to each one's handler.</p>
 <p>The <code>CLAUDE_PLUGIN_ROOT</code> environment variable is set inline in each hookify hook entry in <code>hooks.json</code>:</p>
@@ -2806,7 +2882,7 @@
 <h2 id="hook-sources">Hook Sources<a class="headerlink" href="#hook-sources" title="Permanent link">&para;</a></h2>
 <p><code>hooks.json</code> describes only the repo-managed baseline. Claude Code assembles the live hook surface from three planes:</p>
 <p><strong>1. Repo baseline</strong> (<code>hooks.json</code> → <code>~/.claude/settings.json</code>): the entries documented in this page's tables. Committed, PR-reviewed, merged by <code>setup.sh</code>.</p>
-<p><strong>2. Direct <code>settings.json</code> writes</strong>: tool installers and manual wiring add hooks straight into <code>~/.claude/settings.json</code> without touching this repo. Known writers: <code>codebase-memory-mcp install</code> (a <code>PreToolUse</code> gate on <code>Grep|Glob</code>, and historically a <code>SessionStart</code> reminder since replaced by the repo-managed <code>scripts/hooks/cbm-context-reminder.sh</code>), and the 2026-06-29 Snyk rollout (<code>snyk-dep-reminder.sh</code> on <code>PostToolUse</code>). Caveat: <code>setup.sh</code>'s <code>merge_hooks()</code> currently replaces the whole <code>.hooks</code> key from <code>hooks.json</code>, so these additions are wiped on every setup run until the <code>fix/setup-merge-hooks-protocol</code> work lands; the drift check below reports the wipe when it happens.</p>
+<p><strong>2. Direct <code>settings.json</code> writes</strong>: tool installers and manual wiring add hooks straight into <code>~/.claude/settings.json</code> without touching this repo. Known writer: <code>codebase-memory-mcp install</code> (a <code>PreToolUse</code> gate on <code>Grep|Glob</code>, and historically a <code>SessionStart</code> reminder since replaced by the repo-managed <code>scripts/hooks/cbm-context-reminder.sh</code>). The 2026-06-29 Snyk rollout's <code>snyk-dep-reminder.sh</code> is a repo-baseline hook (<code>hooks.json</code> → <code>PostToolUse</code>), not a direct write; it belongs in plane 1 above, not here. <code>setup.sh</code>'s <code>merge_hooks()</code> performs a union merge keyed on the (event, matcher, command) triple (amended 2026-07-06, <a href="../adr/ADR-002-hook-composition/">ADR-002</a>), so a direct write like this one survives a <code>setup.sh</code> run instead of being wiped; the drift check below flags it as unbackported if it is never folded into <code>hooks.json</code>.</p>
 <p><strong>3. Plugin-registered hooks</strong>: every enabled plugin (per <code>enabledPlugins</code> in <code>~/.claude/settings.json</code>) can ship its own <code>hooks/hooks.json</code> under <code>~/.claude/plugins/cache/&lt;marketplace&gt;/&lt;plugin&gt;/&lt;version&gt;/hooks/</code>. Claude Code loads these without any reference to this repo. Currently: <code>superpowers</code> (a <code>SessionStart</code> injection of the using-superpowers skill text), <code>hookify</code> (four events), and <code>agents-observe</code> (a telemetry observer on every hook event Claude Code exposes). Plugin caches for disabled plugins (for example <code>bushido@han</code>) are dormant and inert, and the <code>.codex/hooks.json</code> variant some plugins ship targets Codex, not Claude Code.</p>
 <p>Known redundancy: <code>hookify</code> is wired twice, once from the <code>anthropics-plugins</code> submodule path via <code>hooks.json</code> and once from its enabled plugin cache copy, so each hookify event currently dispatches twice per firing. Deduplication (dropping one of the two wirings) is an open decision; both copies are allowlisted in the meantime.</p>
 <p>Project-level <code>.claude/settings.json</code> hooks in other repos are a fourth plane, out of scope here: they are visible in each repo's own tree and review flow.</p>
@@ -2814,7 +2890,7 @@
 <p><code>hook-inventory.json</code> at repo root is the committed allowlist of every authorized hook source beyond the baseline. <code>scripts/check-hook-sources.sh</code> (run standalone or via <code>setup.sh --doctor</code>) flattens every live hook into an (event, matcher, command) tuple across all three planes and diffs it against baseline plus allowlist:</p>
 <ul>
 <li>A live hook absent from both is an <strong>unreviewed injection source</strong>: the check fails (exit 1). Review the source, then either remove the hook or add it to the allowlist in the same change that reviews it.</li>
-<li>An allowlisted entry no longer live is reported as <strong>stale</strong> (warning): a plugin was disabled, an installer entry was removed, or <code>merge_hooks()</code> wiped it.</li>
+<li>An allowlisted entry no longer live is reported as <strong>stale</strong> (warning): a plugin was disabled, or an installer entry was removed or edited by hand.</li>
 <li><code>--snapshot</code> prints the current live state in allowlist JSON shape, for bootstrapping or updating the inventory after an intentional change.</li>
 </ul>
 <p>Tuples key on the command string as written (plugin commands use <code>${CLAUDE_PLUGIN_ROOT}</code>, which is version-independent), so plugin version bumps pass untouched while any changed hook command fails until re-reviewed. The check reads <code>~/.claude/</code> and is therefore machine-local: it runs at doctor time, not in CI.</p>
@@ -2877,7 +2953,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 6, 2026 19:20:03 UTC">July 6, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 8, 2026 12:52:11 UTC">July 8, 2026</span>
   </span>
 
     

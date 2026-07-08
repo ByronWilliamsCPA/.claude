@@ -12,13 +12,9 @@
         <meta name="author" content="Byron Williams">
       
       
-        <link rel="canonical" href="https://claude-config.readthedocs.io/reference/hooks/">
+        <link rel="canonical" href="https://claude-config.readthedocs.io/tool-evals/fable5-methodology/">
       
       
-        <link rel="prev" href="../skills/">
-      
-      
-        <link rel="next" href="../mcp/">
       
       
         
@@ -29,7 +25,7 @@
     
     
       
-        <title>Hooks Reference - Claude Code Configuration</title>
+        <title>Tool Eval: fable5-methodology - Claude Code Configuration</title>
       
     
     
@@ -92,7 +88,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#hook-types" class="md-skip">
+        <a href="#characterization" class="md-skip">
           Skip to content
         </a>
       
@@ -126,7 +122,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Hooks Reference
+              Tool Eval: fable5-methodology
             
           </span>
         </div>
@@ -300,13 +296,11 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="../" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../../reference/" class="md-tabs__link">
           
   
   
@@ -1439,8 +1433,6 @@
       
   
   
-    
-  
   
   
     
@@ -1464,23 +1456,22 @@
     
     
       
-        
-        
-      
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../" class="md-nav__link ">
+            <a href="../../reference/" class="md-nav__link ">
               
   
   
@@ -1505,13 +1496,13 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1531,7 +1522,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../agents/" class="md-nav__link">
+      <a href="../../reference/agents/" class="md-nav__link">
         
   
   
@@ -1566,7 +1557,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../skills/" class="md-nav__link">
+      <a href="../../reference/skills/" class="md-nav__link">
         
   
   
@@ -1598,42 +1589,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Hooks
-  
-
-    
-  </span>
-  
-  
-    
-  
-  
-    <span class="md-status md-status--draft"></span>
-  
-
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../reference/hooks/" class="md-nav__link">
         
   
   
@@ -1656,157 +1615,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#hook-types" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Hook Types
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#current-hook-scripts" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Current Hook Scripts
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Current Hook Scripts">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#userpromptsubmit" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        UserPromptSubmit
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#pretooluse" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        PreToolUse
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#posttooluse" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        PostToolUse
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#stop" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Stop
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#hook-exit-codes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Hook Exit Codes
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#adding-a-hook" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Adding a Hook
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#plugin-hooks-vs-repo-managed-hooks" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Plugin Hooks vs Repo-Managed Hooks
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Plugin Hooks vs Repo-Managed Hooks">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#agents-observe-pinned-v0911" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        agents-observe (pinned v0.9.11)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#see-also" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        See Also
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1819,7 +1627,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../mcp/" class="md-nav__link">
+      <a href="../../reference/mcp/" class="md-nav__link">
         
   
   
@@ -2393,10 +2201,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#hook-types" class="md-nav__link">
+  <a href="#characterization" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Hook Types
+        Characterization
       
     </span>
   </a>
@@ -2404,71 +2212,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#current-hook-scripts" class="md-nav__link">
+  <a href="#value-core-vs-peripheral-loc" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Current Hook Scripts
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Current Hook Scripts">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#userpromptsubmit" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        UserPromptSubmit
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#pretooluse" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        PreToolUse
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#posttooluse" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        PostToolUse
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#stop" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Stop
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#hook-exit-codes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Hook Exit Codes
+        Value core vs. peripheral LOC
       
     </span>
   </a>
@@ -2476,10 +2223,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#adding-a-hook" class="md-nav__link">
+  <a href="#candidate-element-table" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Adding a Hook
+        Candidate element table
       
     </span>
   </a>
@@ -2487,38 +2234,43 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#plugin-hooks-vs-repo-managed-hooks" class="md-nav__link">
+  <a href="#licence" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Plugin Hooks vs Repo-Managed Hooks
+        Licence
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Plugin Hooks vs Repo-Managed Hooks">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#agents-observe-pinned-v0911" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        agents-observe (pinned v0.9.11)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#see-also" class="md-nav__link">
+  <a href="#relationship-classification" class="md-nav__link">
     <span class="md-ellipsis">
       
-        See Also
+        Relationship classification
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#convergent-validation-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Convergent-validation notes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommended-actions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommended actions
       
     </span>
   </a>
@@ -2545,196 +2297,293 @@
   
 
 
-  <h1>Hooks</h1>
+  <h1>Tool Eval: fable5-methodology</h1>
 
-<p>Hooks are shell commands or Python scripts that fire at defined points in a Claude Code conversation turn. They enforce quality gates, extend behavior, and integrate project-specific logic without requiring model-level changes.</p>
-<p>The authoritative hook definition is <code>hooks.json</code> at repo root. It is merged into <code>~/.claude/settings.json</code> by <code>setup.sh</code>. For the design decisions behind this approach, see <a href="../../architecture/adr/ADR-002-hook-composition/">ADR-002</a>. For the full turn-level execution sequence, see <a href="../../architecture/hook-pipeline/">Architecture → Hook Pipeline</a>.</p>
-<h2 id="hook-types">Hook Types<a class="headerlink" href="#hook-types" title="Permanent link">&para;</a></h2>
+<p><strong>Date:</strong> 2026-07-07
+<strong>Source:</strong> <a href="https://github.com/UnpaidAttention/fable5-methodology">https://github.com/UnpaidAttention/fable5-methodology</a> (main, commit <code>bcc2eaca7046c400f22c0c5234e5cca07441939c</code>, inspected 2026-07-07)
+<strong>Verdict:</strong> PORT PATTERNS (a small set of specific elements) | IGNORE (the bulk of the collection, which overlaps what we already have)</p>
+<h2 id="characterization">Characterization<a class="headerlink" href="#characterization" title="Permanent link">&para;</a></h2>
+<p>A prose-plus-machinery methodology collection presented as "Claude Fable 5
+documenting its own working process so a weaker model can execute it cold."
+Four layers: prose (<code>PLAYBOOK.md</code>, <code>AUDIT.md</code>, <code>INTEGRITY.md</code>, <code>MEMORY.md</code>,
+<code>README.md</code>), 26 on-demand skills, 4 subagents (builder, code-reviewer,
+qa-verifier, research-scout), 6 lifecycle hooks (destructive-command guard,
+a Stop-time verification gate, an evidence logger, a post-edit verifier, a
+pre-compact handoff writer, a session loader), and 4 stack standards
+(PostgreSQL, Python, Rust, TypeScript/Node). Explicitly candid that it has
+not been benchmarked head-to-head against baseline yet (an A/B harness exists
+in <code>evals/ab-harness/</code> but has not been run). Stated scale target: any Claude
+Code session doing hands-on engineering work, not a specific language or app
+type.</p>
+<h2 id="value-core-vs-peripheral-loc">Value core vs. peripheral LOC<a class="headerlink" href="#value-core-vs-peripheral-loc" title="Permanent link">&para;</a></h2>
+<p>The whole repo is loadable content; there is no peripheral UI or build
+tooling to strip.</p>
 <table>
 <thead>
 <tr>
-<th>Type</th>
-<th>Fires when</th>
-<th>Use for</th>
+<th>Segment</th>
+<th>LOC</th>
+<th>Notes</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>UserPromptSubmit</code></td>
-<td>User sends a message, before Claude processes it</td>
-<td>Context injection, intent detection</td>
+<td>Skills (26)</td>
+<td>2,403</td>
+<td><code>skills/*/SKILL.md</code></td>
 </tr>
 <tr>
-<td><code>PreToolUse</code></td>
-<td>Before each tool call Claude attempts</td>
-<td>Quality gates, security checks, behavioral guards</td>
+<td>Top-level prose</td>
+<td>2,375</td>
+<td><code>PLAYBOOK.md</code>, <code>README.md</code>, <code>AUDIT.md</code>, <code>INTEGRITY.md</code>, <code>MEMORY.md</code>, <code>GRADING_RUBRIC.md</code>, <code>TASK_BRIEFING_TEMPLATE.md</code></td>
 </tr>
 <tr>
-<td><code>PostToolUse</code></td>
-<td>After each tool call completes</td>
-<td>Compatibility checks, usage tracking</td>
+<td>Evals</td>
+<td>794</td>
+<td><code>evals/eval-01..05/</code>, <code>evals/ab-harness/</code></td>
 </tr>
 <tr>
-<td><code>Stop</code></td>
-<td>When Claude finishes its turn</td>
-<td>Cleanup, logging</td>
+<td>Hooks</td>
+<td>481</td>
+<td><code>hooks/*.sh</code>, <code>hooks/pre-tool-guard.py</code></td>
 </tr>
 <tr>
-<td><code>SessionStart</code></td>
-<td>When a session opens, resumes, clears, or compacts (per matcher)</td>
-<td>Context injection: stdout on exit 0 becomes session context (delegation and codebase-memory reminders)</td>
+<td>Stacks</td>
+<td>378</td>
+<td><code>stacks/*.md</code></td>
+</tr>
+<tr>
+<td>Agents (4)</td>
+<td>292</td>
+<td><code>agents/*.md</code></td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td>~6,723</td>
+<td><code>install.sh</code> and <code>.gitignore</code> excluded (peripheral)</td>
 </tr>
 </tbody>
 </table>
-<h2 id="current-hook-scripts">Current Hook Scripts<a class="headerlink" href="#current-hook-scripts" title="Permanent link">&para;</a></h2>
-<h3 id="userpromptsubmit">UserPromptSubmit<a class="headerlink" href="#userpromptsubmit" title="Permanent link">&para;</a></h3>
+<h2 id="candidate-element-table">Candidate element table<a class="headerlink" href="#candidate-element-table" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>Script</th>
-<th>Matcher</th>
-<th>Purpose</th>
+<th>Element</th>
+<th>Portable?</th>
+<th>Maps to our gap</th>
+<th>Fits delivery model?</th>
+<th>Value-to-effort</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>anthropics-plugins/.../userpromptsubmit.py</code></td>
-<td>(all)</td>
-<td>hookify plugin engine dispatch</td>
+<td><code>skills/self-consistency-check</code></td>
+<td>PORTABLE (pure prose)</td>
+<td><code>.claude/skills/</code> -- no equivalent pre-code pairwise-conflict + cold-read + N-version-divergence check exists</td>
+<td>FITS</td>
+<td>High</td>
 </tr>
 <tr>
-<td><code>scripts/pr-review-reminder.py</code></td>
-<td>(all)</td>
-<td>Detects PR review intent and injects reminders</td>
+<td><code>skills/predictive-execution</code></td>
+<td>PORTABLE (pure prose)</td>
+<td><code>.claude/skills/</code> -- no explicit predict-then-compare discipline; adjacent to but distinct from <code>systematic-debugging</code></td>
+<td>FITS</td>
+<td>Medium-High</td>
+</tr>
+<tr>
+<td><code>skills/course-correction</code></td>
+<td>PORTABLE (pure prose)</td>
+<td><code>.claude/skills/</code> -- partial overlap with <code>doubt-driven-development</code> and <code>systematic-debugging-extras</code>, but the named alarm list (patch-on-patch, "too far to restart") is not written down anywhere in our tree</td>
+<td>FITS</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td><code>hooks/pre-tool-guard.py</code> chmod/chown/SQL-DROP/curl-pipe-shell/workspace-scoped-rm patterns</td>
+<td>PORTABLE (Python stdlib only: <code>json</code>, <code>os</code>, <code>re</code>, <code>subprocess</code>, <code>sys</code>)</td>
+<td><code>scripts/bash-pre-hook.sh</code> covers git force-push/reset --hard only; these five pattern classes are a real gap in our PreToolUse guard</td>
+<td>FITS</td>
+<td>Medium-High</td>
+</tr>
+<tr>
+<td><code>hooks/post-edit-verify.sh</code> test-skip-marker detector (the <code>.skip</code>/<code>xit(</code>/<code>@pytest.mark.skip</code>/<code>#[ignore]</code> grep on edited test files)</td>
+<td>PORTABLE (bash + grep, no framework)</td>
+<td>No hook enforces our own written CLAUDE.md rule ("never propose <code>pytest.mark.skip</code>... as the solution") mechanically; this is a real, net-new gap</td>
+<td>FITS</td>
+<td>High</td>
+</tr>
+<tr>
+<td><code>hooks/post-edit-verify.sh</code> per-file lint/typecheck-and-block (ruff/rustfmt/eslint on the single touched file, exit 2 to force an immediate fix)</td>
+<td>PORTABLE (bash, shells out to existing linters)</td>
+<td>Partially overlaps our <code>PostToolUse(Edit\|Write)</code> hooks (ruff --fix, shellcheck) in <code>settings.json</code>, but ours are advisory (<code>\|\| true</code>, never block) and lack TS/JS (eslint) and Rust (rustfmt) coverage; theirs blocks (exit 2) and covers those two languages</td>
+<td>FITS</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td><code>hooks/pre-compact-handoff.sh</code> + <code>hooks/session-loader.sh</code> (paired PreCompact writer / SessionStart reader)</td>
+<td>PORTABLE (bash + python3, no framework)</td>
+<td>Real gap: nothing auto-captures state at the moment of an unattended autocompact. Complements, does not replace, the manual <code>/handoff</code> skill -- CLAUDE.md itself calls autocompact "lossy... the backstop, not the plan," and this pair is a cheap safety net for exactly that unattended case</td>
+<td>FITS</td>
+<td>Medium-High</td>
+</tr>
+<tr>
+<td><code>hooks/delivery-gate.sh</code> + <code>hooks/evidence-log.sh</code> (evidence-log Stop gate)</td>
+<td>PORTABLE (bash + python3, no framework)</td>
+<td>Revised from the initial pass: <code>scripts/stop-pre-commit-hook.sh</code> only runs <code>pre-commit</code> (lint/format-focused; this repo's own config runs one narrow pytest case, not a general suite), while their evidence log checks for ANY test/build command (pytest, cargo test, jest, go test, tsc, make, etc.) actually invoked since the last code edit -- a broader, more repo-agnostic check our hook does not do. Real but partial gap; adopting it as-is also imports a new <code>WORKING_NOTES.md</code> per-project convention that duplicates our existing <code>~/.claude/logs/handoffs/</code> location (see Recommended actions)</td>
+<td>FITS</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td><code>hooks/pre-tool-guard.py</code> secret-in-staged-diff check</td>
+<td>PORTABLE</td>
+<td>Overlaps <code>detect-secrets</code>/TruffleHog pre-commit hooks already required by <code>PC-HOOK-STAGED-SCOPE</code></td>
+<td>FITS</td>
+<td>Low (redundant)</td>
+</tr>
+<tr>
+<td><code>skills/integrity-guardrails</code></td>
+<td>PORTABLE (pure prose)</td>
+<td>Overlaps CLAUDE.md core directives, <code>doubt-driven-development</code>, <code>receiving-code-review-extras</code></td>
+<td>FITS</td>
+<td>Low (convergent, not a gap)</td>
+</tr>
+<tr>
+<td><code>skills/context-economy</code></td>
+<td>PORTABLE (pure prose)</td>
+<td>Overlaps CLAUDE.md's "Delegation and subagent usage" and "Session length" sections almost line for line</td>
+<td>FITS</td>
+<td>Low (convergent, not a gap)</td>
+</tr>
+<tr>
+<td><code>skills/uncertainty-management</code></td>
+<td>PORTABLE (pure prose)</td>
+<td>Adjacent to RAD (<code>#CRITICAL</code>/<code>#ASSUME</code>/<code>#EDGE</code>/<code>#VERIFY</code>) but tags conversational claims rather than code; marginal</td>
+<td>FITS</td>
+<td>Low-Medium</td>
+</tr>
+<tr>
+<td><code>skills/session-state-management</code></td>
+<td>PORTABLE (pure prose)</td>
+<td>Overlaps <code>/handoff</code> and the CLAUDE.md "Compact Instructions" section; theirs is continuous (<code>WORKING_NOTES.md</code> updated every milestone) vs. ours is endpoint-triggered</td>
+<td>FITS</td>
+<td>Low-Medium</td>
+</tr>
+<tr>
+<td>Remaining 20 skills, 4 agents, 4 stack docs, evals harness</td>
+<td>PORTABLE</td>
+<td>No confirmed gap after sampling; substantial content overlap with our existing skill/rule set (see Convergent-validation notes)</td>
+<td>FITS</td>
+<td>Low</td>
 </tr>
 </tbody>
 </table>
-<h3 id="pretooluse">PreToolUse<a class="headerlink" href="#pretooluse" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Script</th>
-<th>Matcher</th>
-<th>Purpose</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Inline bash</td>
-<td><code>Edit\|Write</code></td>
-<td>Blocks writes to <code>.env</code> and <code>settings.local.json</code></td>
-</tr>
-<tr>
-<td><code>scripts/planning-bridge-gate.sh</code></td>
-<td><code>Skill</code></td>
-<td>Enforces plan-approval before Skill invocations</td>
-</tr>
-<tr>
-<td><code>anthropics-plugins/.../security_reminder_hook.py</code></td>
-<td><code>Edit\|Write\|MultiEdit</code></td>
-<td>OWASP security pattern reminders on file edits</td>
-</tr>
-<tr>
-<td><code>anthropics-plugins/.../pretooluse.py</code></td>
-<td>(all)</td>
-<td>hookify plugin engine dispatch</td>
-</tr>
-</tbody>
-</table>
-<h3 id="posttooluse">PostToolUse<a class="headerlink" href="#posttooluse" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Script</th>
-<th>Matcher</th>
-<th>Purpose</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>scripts/py310-compat-check.sh</code></td>
-<td><code>Edit\|Write</code></td>
-<td>Checks modified Python files for Python 3.10 incompatibilities</td>
-</tr>
-<tr>
-<td><code>anthropics-plugins/.../posttooluse.py</code></td>
-<td>(all)</td>
-<td>hookify plugin engine dispatch</td>
-</tr>
-</tbody>
-</table>
-<h3 id="stop">Stop<a class="headerlink" href="#stop" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Script</th>
-<th>Matcher</th>
-<th>Purpose</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>anthropics-plugins/.../stop.py</code></td>
-<td>(all)</td>
-<td>hookify plugin engine stop handler</td>
-</tr>
-</tbody>
-</table>
-<h2 id="hook-exit-codes">Hook Exit Codes<a class="headerlink" href="#hook-exit-codes" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Exit code</th>
-<th>Meaning</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>0</code></td>
-<td>Allow: the tool call proceeds</td>
-</tr>
-<tr>
-<td><code>2</code></td>
-<td>Block: the tool call is aborted; stderr is shown as an error message</td>
-</tr>
-<tr>
-<td><code>1</code></td>
-<td>Hook failure: treated as an error in the hook script itself</td>
-</tr>
-</tbody>
-</table>
-<h2 id="adding-a-hook">Adding a Hook<a class="headerlink" href="#adding-a-hook" title="Permanent link">&para;</a></h2>
+<h2 id="licence">Licence<a class="headerlink" href="#licence" title="Permanent link">&para;</a></h2>
+<p><strong>No licence file.</strong> The README states this explicitly: "No license is
+included yet, which means all rights reserved by default." This blocks
+wholesale inclusion (submodule or verbatim file copy) outright, regardless of
+technical quality. Any adoption must be a from-scratch reimplementation of the
+<em>idea</em> in our own words, not a copy of their prose, until the upstream author
+adds a licence. This gate alone rules out SUBMODULE for the whole repo.</p>
+<h2 id="relationship-classification">Relationship classification<a class="headerlink" href="#relationship-classification" title="Permanent link">&para;</a></h2>
+<p>HOMOGENEOUS LOADABLE CONTENT. Skills, agents, and hooks are loaded by Claude
+Code exactly the way ours are (<code>.claude/skills/</code>, <code>.claude/agents/</code>,
+<code>hooks.json</code>-registered scripts). No inverted-host relationship.</p>
+<h2 id="convergent-validation-notes">Convergent-validation notes<a class="headerlink" href="#convergent-validation-notes" title="Permanent link">&para;</a></h2>
+<p>The collection independently arrived at several things we already do, which
+raises confidence in both designs rather than surfacing action items:</p>
+<ul>
+<li><strong>PreToolUse destructive-command guard + Stop-time verification gate</strong> as a
+  two-hook pattern, matching <code>scripts/bash-pre-hook.sh</code> (git-scoped) and
+  <code>scripts/stop-pre-commit-hook.sh</code> (pre-commit-scoped).</li>
+<li><strong>Fail-safe-open hook design</strong> (<code>sys.exit(0)</code> on any internal error so a bug
+  in the guard never bricks the session), matching our own hooks' explicit
+  fail-safe comments.</li>
+<li><strong>Context-as-scarce-resource discipline</strong>: delegate bulk reads to subagents,
+  externalize durable facts to disk, read at the right altitude. This is our
+  CLAUDE.md "Delegation and subagent usage" section restated independently.</li>
+<li><strong>No-success-claim-without-a-run</strong> and <strong>failures-lead</strong> reporting norms,
+  matching our doubt-driven-development / receiving-code-review-extras posture.</li>
+<li><strong>Load-on-demand skills, always-on prose floor</strong> (their <code>CLAUDE.md</code> master
+  plus on-demand skills) mirrors our Pattern A/B skill architecture split.</li>
+<li><strong>Tiered ceremony to task size</strong> ("a one-line fix skips the chain a schema
+  change runs in full") matches our own scope-tracing and gate-calibration
+  instincts, though we do not have it written down as explicitly as their
+  PLAYBOOK.md §17.3.</li>
+</ul>
+<h2 id="recommended-actions">Recommended actions<a class="headerlink" href="#recommended-actions" title="Permanent link">&para;</a></h2>
+<p>Do not submodule or bulk-adopt; the licence gate blocks it and most of the
+content duplicates what this repo already has. Reimplement (not copy) three
+specific skill ideas and one hook pattern, in our own words:</p>
 <ol>
-<li>Write the script and place it in <code>scripts/</code>.</li>
-<li>Add an entry to <code>hooks.json</code> under the appropriate hook type.</li>
-<li>Run <code>./setup.sh</code> to merge <code>hooks.json</code> into <code>~/.claude/settings.json</code>.</li>
-<li>Test in a Claude Code session.</li>
+<li><strong>Done.</strong> Folded into <code>writing-plans/SKILL.md</code>'s existing "Self-Review"
+   checklist as item 10 (pairwise-constraint sweep, fresh-context cold read via
+   <code>doubt-driven-development</code>'s existing Step 3 dispatch mechanism instead of
+   re-implementing a new fresh-context-reviewer path, and N-version divergence
+   on the hard kernel), rather than a new <code>.claude/skills/self-consistency-check/</code>
+   entry. Fold-in, not a new skill: <code>writing-plans</code> already fires at exactly the
+   right moment ("you have a spec/plan, before touching code"), so this adds
+   zero new lines to every session's always-visible skill list, only growing a
+   skill body that loads on demand when <code>writing-plans</code> itself is invoked.</li>
+<li><strong>Analyzed, not implemented.</strong> The genuinely novel content in
+   <code>predictive-execution</code> is thin once measured against what already exists:
+   the predict-then-compare mechanic is <code>test-driven-development</code>'s core loop
+   for the test-writing case, and general result verification is already
+   covered by <code>doubt-driven-development</code> and CLAUDE.md's "no success claim
+   without an executed run" rule. The one point neither covers is specific:
+   treat an unexpectedly-passing result as equally suspicious as a failing one,
+   not just a relief. That is a single sentence, not a skill's worth of
+   content, and it does not fit Pattern B's "trigger at a specific moment"
+   shape either, fable5 itself frames it as an ambient, continuous habit,
+   which argues against a dedicated on-demand skill. Not worth a new skill
+   entry or a forced fold-in; skipped rather than diluting an unrelated
+   skill's focus for one sentence of marginal, mostly-already-covered value.</li>
+<li><strong>Done.</strong> Folded the named alarm list from <code>course-correction</code> (two patches
+   each fixing the prior patch's symptom, fighting the framework, a "small
+   fix" spreading across many files, three failed attempts on the same error,
+   "I've come too far to restart") into <code>systematic-debugging-extras</code> as a new
+   section, framed as the exit condition from <code>systematic-debugging</code>'s normal
+   reproduce-hypothesize-fix loop for when the approach itself, not the current
+   hypothesis, is the defect. Also a fold-in, not a new skill, for the same
+   zero-skill-list-tax reason as item 1.</li>
+<li><strong>Done.</strong> Added <code>scripts/destructive-command-guard.sh</code> as a sibling
+   PreToolUse hook (matcher <code>Bash</code>) with the chmod/chown-recursive-on-root,
+   SQL DROP/TRUNCATE, curl-pipe-to-shell, and workspace-scoped <code>rm -rf</code>
+   pattern checks, reimplemented from scratch rather than copied given the
+   licence gate.</li>
+<li><strong>Done.</strong> Added <code>scripts/test-skip-guard.sh</code> as a new
+   <code>PostToolUse(Edit|Write|MultiEdit)</code> hook (reimplemented, not copied) that
+   greps the just-edited file for a test-skip/ignore marker
+   (<code>.skip</code>, <code>xit(</code>, <code>@pytest.mark.skip</code>, <code>#[ignore]</code>, <code>t.Skip(</code>) when the path
+   looks like a test file, and blocks (exit 2) with a reminder that this
+   mechanically enforces the existing CLAUDE.md "fix the actual issue, never
+   propose <code>pytest.mark.skip</code>" rule, which previously had no automated check.</li>
+<li>Consider extending the existing <code>PostToolUse(Edit|Write)</code> block in
+   <code>settings.json</code> to also run <code>eslint</code>/<code>rustfmt</code> on the single touched file
+   for TS/JS/Rust (matching the ruff coverage already present for Python), and
+   decide deliberately whether that check should block (exit 2, matching
+   <code>post-edit-verify.sh</code>) or stay advisory like the current ruff/shellcheck
+   entries -- note the deliberate inconsistency this introduces either way.</li>
+<li><strong>Done.</strong> Added <code>scripts/hooks/precompact-handoff.sh</code> (reimplemented) as a
+   new <code>PreCompact</code> hook writing a short auto-handoff block (git branch,
+   dirty-file count, first ~8 changed paths, UTC timestamp) to the existing
+   <code>~/.claude/logs/handoffs/</code> convention as a single overwritten file
+   (<code>auto-precompact-latest.md</code>), rather than introducing a new
+   <code>WORKING_NOTES.md</code> file at the project root. Paired with a matching
+   <code>SessionStart</code> hook, <code>scripts/hooks/handoff-resume-reminder.sh</code> (alongside
+   <code>delegation-reminder.sh</code>/<code>cbm-context-reminder.sh</code>), that surfaces the most
+   recent auto-handoff entry, if one exists, as session-start context.</li>
+<li>Skip the delivery-gate.sh + evidence-log.sh Stop-gate pair as a direct
+   port: the underlying idea (verify a real test/build command ran, not just
+   lint) is sound, but adopting it as specified requires committing to their
+   <code>WORKING_NOTES.md</code> convention, which action 7 deliberately avoids
+   duplicating. Revisit only if action 7's simpler auto-handoff proves
+   insufficient and a dedicated per-project state file is wanted anyway.</li>
+<li>Skip the secret-in-diff check, <code>integrity-guardrails</code>, <code>context-economy</code>,
+   and the remaining skills/agents: confirmed overlap with existing
+   mechanisms that are equal or stronger.</li>
+<li>Run the collection's own <code>evals/ab-harness/</code> (conceptually, not by copying
+    it) if we want empirical evidence any of this actually beats baseline
+    before investing further; the upstream repo itself has not done this yet.</li>
 </ol>
-<p>For the full step-by-step workflow, see <a href="../../contributing/adding-hooks/">Contributing → Adding a Hook</a>.</p>
-<h2 id="plugin-hooks-vs-repo-managed-hooks">Plugin Hooks vs Repo-Managed Hooks<a class="headerlink" href="#plugin-hooks-vs-repo-managed-hooks" title="Permanent link">&para;</a></h2>
-<p>Plugins enabled through <code>enabledPlugins</code> contribute hooks from their own <code>hooks/hooks.json</code>. Claude Code loads them alongside the repo-managed hooks defined in <code>hooks.json</code> and the <code>hooks</code> block of <code>settings.json</code>. The two sources compose additively:</p>
-<ul>
-<li>A plugin cannot modify, remove, or reorder repo-managed hooks. Disabling the plugin removes its hooks without touching repo-managed ones.</li>
-<li>When both sources register on the same event, every matching hook from both sources runs. Ordering between the sources is unspecified; do not write hooks that depend on cross-source ordering.</li>
-<li>Blocking semantics apply per hook regardless of source: any PreToolUse hook that exits 2 or returns a deny decision blocks the tool call. Observability hooks must therefore be fire-and-forget (exit 0 on every code path, nothing written to stdout).</li>
-<li>Latency is cumulative: each matching registration is one process spawn per event, so a plugin adds its own spawns on top of the repo-managed ones.</li>
-</ul>
-<p>As of 2026-07, <code>hooks.json</code> defines 26 repo-managed command entries across PreToolUse (6), PostToolUse (4), Stop (1), PreCompact (1), UserPromptSubmit (2), and SessionStart (12: <code>cbm-context-reminder.sh</code>, <code>delegation-reminder.sh</code>, and <code>handoff-resume-reminder.sh</code>, each registered under the startup, resume, clear, and compact matchers). The hookify and security-guidance plugins ship under <code>.submodules/anthropics-plugins</code> but are wired as command entries in <code>hooks.json</code> (legacy wiring), so they count as repo-managed hooks, not plugin-system hooks.</p>
-<h3 id="agents-observe-pinned-v0911">agents-observe (pinned v0.9.11)<a class="headerlink" href="#agents-observe-pinned-v0911" title="Permanent link">&para;</a></h3>
-<p>The agents-observe plugin (<code>.submodules/agents-observe</code>, pinned at tag v0.9.11) is the first true plugin-system hook contributor. Its <code>hooks/hooks.json</code> registers exactly one command on each of 28 events, including SubagentStart and SubagentStop (the events that drive per-subagent token attribution) plus PreToolUse and PostToolUse on every tool call; the 28 also include the install-time <code>Setup</code> lifecycle event, which runs once at plugin install rather than per session. It overlaps with repo-managed hooks on five events: PreToolUse, PostToolUse, Stop, UserPromptSubmit, and SessionStart. On each overlapping event both sources fire independently, and the plugin adds one process spawn per event. With the plugin enabled, each tool call therefore carries seven PreToolUse spawns (six repo-managed plus the plugin wrapper) and five PostToolUse spawns (four repo-managed plus the plugin wrapper); the wrapper backgrounds its node process, so the added synchronous cost is one fork-and-exec per event, typically single-digit milliseconds. For latency-sensitive sessions (tight subagent loops with hundreds of tool calls), disable the plugin by setting the <code>enabledPlugins</code> entry for <code>agents-observe@agents-observe</code> to <code>false</code>.</p>
-<p>27 of the 28 registrations run <code>hooks/scripts/hook.sh</code>, a 9-line wrapper that reads stdin, backgrounds the node CLI with stdout and stderr discarded to <code>/dev/null</code>, and ends in an unconditional <code>exit 0</code>. It never writes to stdout, so no code path can block a tool call or emit a permission decision (verified at v0.9.11; re-verify after any submodule bump). Two caveats:</p>
-<ul>
-<li>The SessionStart registration bypasses the wrapper and runs <code>observe_cli.mjs hook-autostart</code> as a foreground node process. A missing or hung <code>node</code> binary delays session start until the hook timeout; SessionStart is not a tool-gating event, so it still cannot block tool calls.</li>
-<li>Failures inside the backgrounded process are discarded along with its output. If the event spool or database is unwritable, events drop silently instead of surfacing an error; this is the intended trade-off of fire-and-forget observability.</li>
-</ul>
-<h2 id="see-also">See Also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
-<ul>
-<li><code>hooks.json</code> at repo root: the authoritative hook definition</li>
-<li><code>.submodules/agents-observe/hooks/hooks.json</code>: agents-observe plugin hook registrations</li>
-<li><a href="../../architecture/hook-pipeline/">Architecture → Hook Pipeline</a>: turn-level execution diagram and narrative</li>
-<li><a href="../../architecture/adr/ADR-002-hook-composition/">ADR-002 Hook Composition and Ordering</a>: design rationale</li>
-<li><a href="../../contributing/adding-hooks/">Contributing → Adding a Hook</a>: step-by-step authoring guide</li>
-</ul>
 
 
 
@@ -2767,7 +2616,7 @@
     <span class="md-icon" title="Created">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 11, 2026 22:24:49 UTC">April 11, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 8, 2026 12:52:11 UTC">July 8, 2026</span>
   </span>
 
     

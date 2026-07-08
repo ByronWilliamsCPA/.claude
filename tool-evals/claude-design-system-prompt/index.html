@@ -12,13 +12,9 @@
         <meta name="author" content="Byron Williams">
       
       
-        <link rel="canonical" href="https://claude-config.readthedocs.io/reference/hooks/">
+        <link rel="canonical" href="https://claude-config.readthedocs.io/tool-evals/claude-design-system-prompt/">
       
       
-        <link rel="prev" href="../skills/">
-      
-      
-        <link rel="next" href="../mcp/">
       
       
         
@@ -29,7 +25,7 @@
     
     
       
-        <title>Hooks Reference - Claude Code Configuration</title>
+        <title>Tool Eval: claude-design-system-prompt - Claude Code Configuration</title>
       
     
     
@@ -92,7 +88,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#hook-types" class="md-skip">
+        <a href="#characterization" class="md-skip">
           Skip to content
         </a>
       
@@ -126,7 +122,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Hooks Reference
+              Tool Eval: claude-design-system-prompt
             
           </span>
         </div>
@@ -300,13 +296,11 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="../" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../../reference/" class="md-tabs__link">
           
   
   
@@ -1439,8 +1433,6 @@
       
   
   
-    
-  
   
   
     
@@ -1464,23 +1456,22 @@
     
     
       
-        
-        
-      
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../" class="md-nav__link ">
+            <a href="../../reference/" class="md-nav__link ">
               
   
   
@@ -1505,13 +1496,13 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1531,7 +1522,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../agents/" class="md-nav__link">
+      <a href="../../reference/agents/" class="md-nav__link">
         
   
   
@@ -1566,7 +1557,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../skills/" class="md-nav__link">
+      <a href="../../reference/skills/" class="md-nav__link">
         
   
   
@@ -1598,42 +1589,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Hooks
-  
-
-    
-  </span>
-  
-  
-    
-  
-  
-    <span class="md-status md-status--draft"></span>
-  
-
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../reference/hooks/" class="md-nav__link">
         
   
   
@@ -1656,157 +1615,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#hook-types" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Hook Types
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#current-hook-scripts" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Current Hook Scripts
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Current Hook Scripts">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#userpromptsubmit" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        UserPromptSubmit
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#pretooluse" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        PreToolUse
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#posttooluse" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        PostToolUse
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#stop" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Stop
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#hook-exit-codes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Hook Exit Codes
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#adding-a-hook" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Adding a Hook
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#plugin-hooks-vs-repo-managed-hooks" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Plugin Hooks vs Repo-Managed Hooks
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Plugin Hooks vs Repo-Managed Hooks">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#agents-observe-pinned-v0911" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        agents-observe (pinned v0.9.11)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#see-also" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        See Also
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1819,7 +1627,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../mcp/" class="md-nav__link">
+      <a href="../../reference/mcp/" class="md-nav__link">
         
   
   
@@ -2393,10 +2201,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#hook-types" class="md-nav__link">
+  <a href="#characterization" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Hook Types
+        Characterization
       
     </span>
   </a>
@@ -2404,71 +2212,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#current-hook-scripts" class="md-nav__link">
+  <a href="#value-core-vs-peripheral-loc" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Current Hook Scripts
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Current Hook Scripts">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#userpromptsubmit" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        UserPromptSubmit
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#pretooluse" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        PreToolUse
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#posttooluse" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        PostToolUse
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#stop" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Stop
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#hook-exit-codes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Hook Exit Codes
+        Value core vs. peripheral LOC
       
     </span>
   </a>
@@ -2476,10 +2223,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#adding-a-hook" class="md-nav__link">
+  <a href="#candidate-element-table" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Adding a Hook
+        Candidate element table
       
     </span>
   </a>
@@ -2487,38 +2234,54 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#plugin-hooks-vs-repo-managed-hooks" class="md-nav__link">
+  <a href="#licence" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Plugin Hooks vs Repo-Managed Hooks
+        Licence
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Plugin Hooks vs Repo-Managed Hooks">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#agents-observe-pinned-v0911" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        agents-observe (pinned v0.9.11)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#see-also" class="md-nav__link">
+  <a href="#relationship-classification" class="md-nav__link">
     <span class="md-ellipsis">
       
-        See Also
+        Relationship classification
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#convergent-validation-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Convergent-validation notes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommended-actions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommended actions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#trial-results-real-brief-ab-test-2026-07-07" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Trial results (real-brief A/B test, 2026-07-07)
       
     </span>
   </a>
@@ -2545,196 +2308,308 @@
   
 
 
-  <h1>Hooks</h1>
+  <h1>Tool Eval: claude-design-system-prompt</h1>
 
-<p>Hooks are shell commands or Python scripts that fire at defined points in a Claude Code conversation turn. They enforce quality gates, extend behavior, and integrate project-specific logic without requiring model-level changes.</p>
-<p>The authoritative hook definition is <code>hooks.json</code> at repo root. It is merged into <code>~/.claude/settings.json</code> by <code>setup.sh</code>. For the design decisions behind this approach, see <a href="../../architecture/adr/ADR-002-hook-composition/">ADR-002</a>. For the full turn-level execution sequence, see <a href="../../architecture/hook-pipeline/">Architecture → Hook Pipeline</a>.</p>
-<h2 id="hook-types">Hook Types<a class="headerlink" href="#hook-types" title="Permanent link">&para;</a></h2>
+<p><strong>Date:</strong> 2026-07-07
+<strong>Source:</strong> <a href="https://github.com/Trystan-SA/claude-design-system-prompt">https://github.com/Trystan-SA/claude-design-system-prompt</a> (main, commit <code>3c3ddb07d7aa3fef051d83608596470c95cfd8fe</code>, inspected 2026-07-07); user linked <code>claude/system-prompt.md</code> specifically
+<strong>Verdict:</strong> PORT PATTERNS</p>
+<h2 id="characterization">Characterization<a class="headerlink" href="#characterization" title="Permanent link">&para;</a></h2>
+<p>A reverse-engineered system prompt plus 14 procedural skills that turn an LLM
+into an "AI-slop-resistant" design collaborator: a 20-chapter philosophy
+(content discipline, aesthetic discipline, hierarchy/rhythm, accessibility,
+interaction states, system thinking, medium fidelity) paired with skills for
+production (discovery, wireframe, prototype, deck, tweak panel, variations),
+system extraction (design-system-extract, component-extract), and review
+(accessibility, ai-slop, hierarchy/rhythm, interaction-states, polish-pass).
+Ships two variants: <code>claude/</code> (subagent-parallel reviews, calibrated for
+current Fable 5 / Opus 4.7-4.8 instruction-following) and <code>codex/</code> (same
+content, sequential reviews, no subagents). Stack is plain markdown plus
+HTML/CSS/JS examples; no build tooling. Stated scale target: any HTML-output
+design task, explicitly including non-Anthropic models.</p>
+<h2 id="value-core-vs-peripheral-loc">Value core vs. peripheral LOC<a class="headerlink" href="#value-core-vs-peripheral-loc" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>Type</th>
-<th>Fires when</th>
-<th>Use for</th>
+<th>Segment</th>
+<th>LOC</th>
+<th>Notes</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>UserPromptSubmit</code></td>
-<td>User sends a message, before Claude processes it</td>
-<td>Context injection, intent detection</td>
+<td>Value core (<code>claude/</code>)</td>
+<td>1,409</td>
+<td><code>claude/system-prompt.md</code> + 14 <code>claude/skills/*.md</code></td>
 </tr>
 <tr>
-<td><code>PreToolUse</code></td>
-<td>Before each tool call Claude attempts</td>
-<td>Quality gates, security checks, behavioral guards</td>
+<td>Value core (<code>codex/</code>, near-duplicate)</td>
+<td>~1,350 (est.)</td>
+<td>Same content adapted for sequential (non-subagent) execution</td>
 </tr>
 <tr>
-<td><code>PostToolUse</code></td>
-<td>After each tool call completes</td>
-<td>Compatibility checks, usage tracking</td>
+<td>Peripheral mass</td>
+<td>~130</td>
+<td><code>README.md</code>, <code>LICENSE</code></td>
 </tr>
 <tr>
-<td><code>Stop</code></td>
-<td>When Claude finishes its turn</td>
-<td>Cleanup, logging</td>
-</tr>
-<tr>
-<td><code>SessionStart</code></td>
-<td>When a session opens, resumes, clears, or compacts (per matcher)</td>
-<td>Context injection: stdout on exit 0 becomes session context (delegation and codebase-memory reminders)</td>
+<td><strong>Total</strong></td>
+<td>~2,900</td>
+<td>No build tooling, no assets, no examples to strip</td>
 </tr>
 </tbody>
 </table>
-<h2 id="current-hook-scripts">Current Hook Scripts<a class="headerlink" href="#current-hook-scripts" title="Permanent link">&para;</a></h2>
-<h3 id="userpromptsubmit">UserPromptSubmit<a class="headerlink" href="#userpromptsubmit" title="Permanent link">&para;</a></h3>
+<h2 id="candidate-element-table">Candidate element table<a class="headerlink" href="#candidate-element-table" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>Script</th>
-<th>Matcher</th>
-<th>Purpose</th>
+<th>Element</th>
+<th>Portable?</th>
+<th>Maps to our gap</th>
+<th>Fits delivery model?</th>
+<th>Value-to-effort</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>anthropics-plugins/.../userpromptsubmit.py</code></td>
-<td>(all)</td>
-<td>hookify plugin engine dispatch</td>
+<td><code>skills/wireframe.md</code></td>
+<td>PORTABLE (pure prose)</td>
+<td>No low-fi, 3+-variation exploration phase exists in <code>frontend-design/SKILL.md</code>'s Build mode</td>
+<td>FITS</td>
+<td>High</td>
 </tr>
 <tr>
-<td><code>scripts/pr-review-reminder.py</code></td>
-<td>(all)</td>
-<td>Detects PR review intent and injects reminders</td>
+<td><code>skills/make-a-prototype.md</code></td>
+<td>PORTABLE (pure prose)</td>
+<td>No named "interactive clickable prototype" mode distinct from final Build</td>
+<td>FITS</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td><code>skills/generate-variations.md</code></td>
+<td>PORTABLE (pure prose)</td>
+<td>No named hi-fi, 3+-variation-across-axes mode</td>
+<td>FITS</td>
+<td>High</td>
+</tr>
+<tr>
+<td><code>skills/polish-pass.md</code> (+ its 4 sub-review skills: <code>accessibility-audit</code>, <code>ai-slop-check</code>, <code>hierarchy-rhythm-review</code>, <code>interaction-states-pass</code>)</td>
+<td>PORTABLE (pure prose)</td>
+<td>Our <code>frontend-design</code> skill has <code>review</code>/<code>a11y</code>/<code>perf</code>/<code>fix</code> modes but no single umbrella gate that launches all four in parallel and aggregates/dedupes findings before reporting</td>
+<td>FITS</td>
+<td>High</td>
+</tr>
+<tr>
+<td><code>skills/ai-slop-check.md</code> detect-and-replace rule set</td>
+<td>PORTABLE (pure prose)</td>
+<td>Our <code>Anti-Patterns (NEVER Use)</code> section is a 7-bullet list; theirs gives ~10 named rules each with a positive default plus concrete detect/replace guidance (e.g. the <code>border-radius:12px</code> + <code>border-left:4px solid</code> "default SaaS card" tell) -- a strict upgrade in specificity</td>
+<td>FITS</td>
+<td>Medium-High</td>
+</tr>
+<tr>
+<td><code>skills/frontend-aesthetic-direction.md</code></td>
+<td>PORTABLE (pure prose)</td>
+<td>Overlaps but sharpens our existing aesthetic guidance: "propose 4 distinct visual directions, no shared palette family, at least one off-distribution" is more concrete than what we have</td>
+<td>FITS</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td><code>skills/discovery-questions.md</code></td>
+<td>PORTABLE (pure prose)</td>
+<td>Overlaps the <code>brainstorming</code> skill's clarifying-question phase; likely redundant once scoped to design-specific questions</td>
+<td>FITS</td>
+<td>Low</td>
+</tr>
+<tr>
+<td><code>skills/design-system-extract.md</code>, <code>skills/component-extract.md</code></td>
+<td>PORTABLE (pure prose)</td>
+<td>Overlaps <code>DesignSync</code>/<code>/design-sync</code> (Claude Design MCP), which already pulls tokens/components from a real design-system project; their version is model-driven extraction from arbitrary sources (screenshots, existing sites) rather than an MCP round-trip -- complementary, not duplicate</td>
+<td>FITS</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td><code>skills/make-a-deck.md</code></td>
+<td>PORTABLE (pure prose)</td>
+<td>No equivalent; niche (HTML slide decks) but no gap conflict either</td>
+<td>FITS</td>
+<td>Low-Medium</td>
+</tr>
+<tr>
+<td><code>skills/make-tweakable.md</code></td>
+<td>FRAMEWORK-LOCKED (assumes a host canvas that exposes a toolbar toggle and posts <code>{type:'__activate_edit_mode'}</code> via <code>window</code> message listener -- i.e., the claude.ai Design canvas)</td>
+<td>None; we operate in Claude Code / VS Code, not the claude.ai canvas</td>
+<td>FIGHTS</td>
+<td>Low</td>
+</tr>
+<tr>
+<td><code>codex/</code> variant</td>
+<td>PORTABLE but near-duplicate of <code>claude/</code></td>
+<td>None beyond what <code>claude/</code> already covers</td>
+<td>n/a</td>
+<td>Skip (redundant)</td>
+</tr>
+<tr>
+<td>20-chapter <code>system-prompt.md</code> framing itself</td>
+<td>PORTABLE (pure prose)</td>
+<td>Overlaps <code>frontend-design/SKILL.md</code> + <code>frontend-designer</code> agent + <code>.claude/rules/design.md</code>; adopting it wholesale would create two competing "how design work happens" systems</td>
+<td>FITS structurally but redundant as a whole document</td>
+<td>Low (cherry-pick chapters, don't adopt whole)</td>
 </tr>
 </tbody>
 </table>
-<h3 id="pretooluse">PreToolUse<a class="headerlink" href="#pretooluse" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Script</th>
-<th>Matcher</th>
-<th>Purpose</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Inline bash</td>
-<td><code>Edit\|Write</code></td>
-<td>Blocks writes to <code>.env</code> and <code>settings.local.json</code></td>
-</tr>
-<tr>
-<td><code>scripts/planning-bridge-gate.sh</code></td>
-<td><code>Skill</code></td>
-<td>Enforces plan-approval before Skill invocations</td>
-</tr>
-<tr>
-<td><code>anthropics-plugins/.../security_reminder_hook.py</code></td>
-<td><code>Edit\|Write\|MultiEdit</code></td>
-<td>OWASP security pattern reminders on file edits</td>
-</tr>
-<tr>
-<td><code>anthropics-plugins/.../pretooluse.py</code></td>
-<td>(all)</td>
-<td>hookify plugin engine dispatch</td>
-</tr>
-</tbody>
-</table>
-<h3 id="posttooluse">PostToolUse<a class="headerlink" href="#posttooluse" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Script</th>
-<th>Matcher</th>
-<th>Purpose</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>scripts/py310-compat-check.sh</code></td>
-<td><code>Edit\|Write</code></td>
-<td>Checks modified Python files for Python 3.10 incompatibilities</td>
-</tr>
-<tr>
-<td><code>anthropics-plugins/.../posttooluse.py</code></td>
-<td>(all)</td>
-<td>hookify plugin engine dispatch</td>
-</tr>
-</tbody>
-</table>
-<h3 id="stop">Stop<a class="headerlink" href="#stop" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Script</th>
-<th>Matcher</th>
-<th>Purpose</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>anthropics-plugins/.../stop.py</code></td>
-<td>(all)</td>
-<td>hookify plugin engine stop handler</td>
-</tr>
-</tbody>
-</table>
-<h2 id="hook-exit-codes">Hook Exit Codes<a class="headerlink" href="#hook-exit-codes" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Exit code</th>
-<th>Meaning</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>0</code></td>
-<td>Allow: the tool call proceeds</td>
-</tr>
-<tr>
-<td><code>2</code></td>
-<td>Block: the tool call is aborted; stderr is shown as an error message</td>
-</tr>
-<tr>
-<td><code>1</code></td>
-<td>Hook failure: treated as an error in the hook script itself</td>
-</tr>
-</tbody>
-</table>
-<h2 id="adding-a-hook">Adding a Hook<a class="headerlink" href="#adding-a-hook" title="Permanent link">&para;</a></h2>
+<h2 id="licence">Licence<a class="headerlink" href="#licence" title="Permanent link">&para;</a></h2>
+<p>MIT, &copy; 2026 Trystan Sarrade. Clean: no non-commercial carve-outs, no bundled
+asset or font exceptions found in <code>README.md</code>. Safe for direct inclusion with
+attribution preserved on any ported file.</p>
+<h2 id="relationship-classification">Relationship classification<a class="headerlink" href="#relationship-classification" title="Permanent link">&para;</a></h2>
+<p>HOMOGENEOUS LOADABLE CONTENT. The <code>claude/</code> variant is a Claude Code system
+prompt plus skills directory, loaded the same way our <code>.claude/skills/</code> is.
+<code>make-tweakable.md</code> is the one exception: its host-protocol phase assumes it
+runs inside the claude.ai Design canvas app (an INVERTED/HOST dependency for
+that one skill only), not Claude Code itself.</p>
+<h2 id="convergent-validation-notes">Convergent-validation notes<a class="headerlink" href="#convergent-validation-notes" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Both projects independently arrived at "generic AI aesthetic" as a named,
+  actively-detected failure mode (their <code>ai-slop-check</code>, our
+  <code>Anti-Patterns (NEVER Use)</code> section, itself sourced from
+  <code>nextlevelbuilder/ui-ux-pro-max</code> per the existing attribution note in
+  <code>frontend-design/SKILL.md</code>).</li>
+<li>Both use a parallel-subagent-review-then-aggregate pattern for design QA
+  (their <code>polish-pass</code> launching 4 agents; our <code>ui-testing-agent</code> +
+  <code>frontend-designer</code> split of build vs. verify).</li>
+<li>Both explicitly calibrate instruction phrasing to current-generation model
+  behavior (their "conditions instead of quotas" note on Fable 5/Opus 4.7-4.8
+  over-triggering on quota language) -- a useful independent confirmation for
+  any future prompt tuning in our own agents.</li>
+</ul>
+<h2 id="recommended-actions">Recommended actions<a class="headerlink" href="#recommended-actions" title="Permanent link">&para;</a></h2>
+<p>PORT PATTERNS, not submodule: the whole repo's <code>system-prompt.md</code> would
+duplicate our existing <code>frontend-design</code> skill + <code>frontend-designer</code> agent +
+<code>.claude/rules/design.md</code> architecture rather than filling a gap, and running
+two parallel "how to do design work" systems invites drift. The five
+procedural skills that are missing and clean of licence/host issues are worth
+adding as focused, standalone gains:</p>
 <ol>
-<li>Write the script and place it in <code>scripts/</code>.</li>
-<li>Add an entry to <code>hooks.json</code> under the appropriate hook type.</li>
-<li>Run <code>./setup.sh</code> to merge <code>hooks.json</code> into <code>~/.claude/settings.json</code>.</li>
-<li>Test in a Claude Code session.</li>
+<li><strong>Done.</strong> Added <code>wireframe</code>, <code>prototype</code>, and <code>variations</code> as new named
+   modes under <code>frontend-design/</code>, giving Build mode explicit low-fi and
+   hi-fi-variation phases it previously lacked.</li>
+<li><strong>Done.</strong> Ported <code>polish-pass</code>'s parallel-four-agent umbrella structure
+   into <code>frontend-design</code> as Mode: Polish Pass: the orchestrator launches
+   <code>frontend-designer</code> in <code>review --focus</code> mode across
+   <code>accessibility</code>/<code>ai-slop</code>/<code>hierarchy-rhythm</code>/<code>interaction-states</code>
+   concurrently via the Agent tool, then aggregates/dedupes before reporting,
+   replacing single-pass self-review as the standard pre-ship gate.</li>
+<li><strong>Done.</strong> Upgraded the <code>Anti-Patterns (NEVER Use)</code> section to a
+   positive-default-then-detect-and-replace format using <code>ai-slop-check.md</code>'s
+   more specific rules (the named SaaS-card-border tell, the
+   placeholder-imagery ordering, etc.), attributing both source projects.</li>
+<li><strong>Done.</strong> Sharpened greenfield aesthetic-direction guidance with the "4
+   distinct directions, no shared palette family, one off-distribution"
+   protocol, scoped explicitly to true greenfield work (no existing tokens or
+   brand to extend).</li>
+<li>Skip <code>make-tweakable.md</code> (wrong host environment), <code>discovery-questions.md</code>
+   (redundant with <code>brainstorming</code>), the <code>codex/</code> variant (redundant with
+   <code>claude/</code>), and the 20-chapter <code>system-prompt.md</code> as a wholesale adoption
+   target (redundant with our existing design architecture).</li>
+<li><strong>Done.</strong> Preserved MIT attribution (project name, author, source URL,
+   commit) in <code>frontend-design/SKILL.md</code>'s Attribution section.</li>
 </ol>
-<p>For the full step-by-step workflow, see <a href="../../contributing/adding-hooks/">Contributing → Adding a Hook</a>.</p>
-<h2 id="plugin-hooks-vs-repo-managed-hooks">Plugin Hooks vs Repo-Managed Hooks<a class="headerlink" href="#plugin-hooks-vs-repo-managed-hooks" title="Permanent link">&para;</a></h2>
-<p>Plugins enabled through <code>enabledPlugins</code> contribute hooks from their own <code>hooks/hooks.json</code>. Claude Code loads them alongside the repo-managed hooks defined in <code>hooks.json</code> and the <code>hooks</code> block of <code>settings.json</code>. The two sources compose additively:</p>
-<ul>
-<li>A plugin cannot modify, remove, or reorder repo-managed hooks. Disabling the plugin removes its hooks without touching repo-managed ones.</li>
-<li>When both sources register on the same event, every matching hook from both sources runs. Ordering between the sources is unspecified; do not write hooks that depend on cross-source ordering.</li>
-<li>Blocking semantics apply per hook regardless of source: any PreToolUse hook that exits 2 or returns a deny decision blocks the tool call. Observability hooks must therefore be fire-and-forget (exit 0 on every code path, nothing written to stdout).</li>
-<li>Latency is cumulative: each matching registration is one process spawn per event, so a plugin adds its own spawns on top of the repo-managed ones.</li>
-</ul>
-<p>As of 2026-07, <code>hooks.json</code> defines 26 repo-managed command entries across PreToolUse (6), PostToolUse (4), Stop (1), PreCompact (1), UserPromptSubmit (2), and SessionStart (12: <code>cbm-context-reminder.sh</code>, <code>delegation-reminder.sh</code>, and <code>handoff-resume-reminder.sh</code>, each registered under the startup, resume, clear, and compact matchers). The hookify and security-guidance plugins ship under <code>.submodules/anthropics-plugins</code> but are wired as command entries in <code>hooks.json</code> (legacy wiring), so they count as repo-managed hooks, not plugin-system hooks.</p>
-<h3 id="agents-observe-pinned-v0911">agents-observe (pinned v0.9.11)<a class="headerlink" href="#agents-observe-pinned-v0911" title="Permanent link">&para;</a></h3>
-<p>The agents-observe plugin (<code>.submodules/agents-observe</code>, pinned at tag v0.9.11) is the first true plugin-system hook contributor. Its <code>hooks/hooks.json</code> registers exactly one command on each of 28 events, including SubagentStart and SubagentStop (the events that drive per-subagent token attribution) plus PreToolUse and PostToolUse on every tool call; the 28 also include the install-time <code>Setup</code> lifecycle event, which runs once at plugin install rather than per session. It overlaps with repo-managed hooks on five events: PreToolUse, PostToolUse, Stop, UserPromptSubmit, and SessionStart. On each overlapping event both sources fire independently, and the plugin adds one process spawn per event. With the plugin enabled, each tool call therefore carries seven PreToolUse spawns (six repo-managed plus the plugin wrapper) and five PostToolUse spawns (four repo-managed plus the plugin wrapper); the wrapper backgrounds its node process, so the added synchronous cost is one fork-and-exec per event, typically single-digit milliseconds. For latency-sensitive sessions (tight subagent loops with hundreds of tool calls), disable the plugin by setting the <code>enabledPlugins</code> entry for <code>agents-observe@agents-observe</code> to <code>false</code>.</p>
-<p>27 of the 28 registrations run <code>hooks/scripts/hook.sh</code>, a 9-line wrapper that reads stdin, backgrounds the node CLI with stdout and stderr discarded to <code>/dev/null</code>, and ends in an unconditional <code>exit 0</code>. It never writes to stdout, so no code path can block a tool call or emit a permission decision (verified at v0.9.11; re-verify after any submodule bump). Two caveats:</p>
-<ul>
-<li>The SessionStart registration bypasses the wrapper and runs <code>observe_cli.mjs hook-autostart</code> as a foreground node process. A missing or hung <code>node</code> binary delays session start until the hook timeout; SessionStart is not a tool-gating event, so it still cannot block tool calls.</li>
-<li>Failures inside the backgrounded process are discarded along with its output. If the event spool or database is unwritable, events drop silently instead of surfacing an error; this is the intended trade-off of fire-and-forget observability.</li>
-</ul>
-<h2 id="see-also">See Also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
-<ul>
-<li><code>hooks.json</code> at repo root: the authoritative hook definition</li>
-<li><code>.submodules/agents-observe/hooks/hooks.json</code>: agents-observe plugin hook registrations</li>
-<li><a href="../../architecture/hook-pipeline/">Architecture → Hook Pipeline</a>: turn-level execution diagram and narrative</li>
-<li><a href="../../architecture/adr/ADR-002-hook-composition/">ADR-002 Hook Composition and Ordering</a>: design rationale</li>
-<li><a href="../../contributing/adding-hooks/">Contributing → Adding a Hook</a>: step-by-step authoring guide</li>
-</ul>
+<h2 id="trial-results-real-brief-ab-test-2026-07-07">Trial results (real-brief A/B test, 2026-07-07)<a class="headerlink" href="#trial-results-real-brief-ab-test-2026-07-07" title="Permanent link">&para;</a></h2>
+<p>Ran one live A/B trial rather than deciding on inspection alone: both systems
+built the same real brief (the cyo-adventure project's primary landing page,
+<code>byronwilliamscpa/cyo-adventure</code>, live at cyo.williamshome.family) against the
+same real shipped design tokens, same model (sonnet), same brief text. Arm A
+was our existing <code>frontend-designer</code> agent, unmodified. Arm B was a
+general-purpose agent instructed to read and adopt <code>claude/system-prompt.md</code>
+plus the ai-slop-check / hierarchy-rhythm-review / accessibility-audit /
+interaction-states-pass / polish-pass skills as its sole operating philosophy
+for the task. Five blind judges (no attribution given) scored the two static
+HTML outputs against a fixed rubric.</p>
+<table>
+<thead>
+<tr>
+<th>Dimension</th>
+<th>frontend-designer (existing)</th>
+<th>design-system-prompt</th>
+<th>Winner</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Genericness / AI-slop</td>
+<td>8</td>
+<td>5</td>
+<td>frontend-designer</td>
+</tr>
+<tr>
+<td>Hierarchy &amp; rhythm</td>
+<td>8</td>
+<td>6</td>
+<td>frontend-designer</td>
+</tr>
+<tr>
+<td>Holistic preference</td>
+<td>8</td>
+<td>6</td>
+<td>frontend-designer</td>
+</tr>
+<tr>
+<td>Interaction states</td>
+<td>7</td>
+<td>8</td>
+<td>design-system-prompt</td>
+</tr>
+<tr>
+<td>Accessibility</td>
+<td>5</td>
+<td>7</td>
+<td>design-system-prompt</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td><strong>36</strong></td>
+<td><strong>32</strong></td>
+<td><strong>frontend-designer (existing)</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Result: do not replace.</strong> The existing <code>frontend-designer</code> agent won 3 of 5
+dimensions and the aggregate score, primarily on the two dimensions closest to
+this repo's actual complaint about generic AI design (genericness and
+holistic creative judgment) -- it produced a specific concept (a signpost
+divider that literalizes the "choose your own adventure" fork, a
+brand-native "Bedtime Mode" toggle instead of a generic dark-mode switch)
+where the design-system-prompt arm produced a competent but template-shaped
+two-card layout. This is a real signal against wholesale replacement, though
+it is a single trial (one brief, one model, no repeated sampling), so treat it
+as directional, not conclusive.</p>
+<p><strong>But a concrete, actionable gap surfaced regardless of the overall winner.</strong>
+The design-system-prompt arm's accessibility win was not close and was
+independently verified: the frontend-designer output has five measured WCAG
+AA contrast failures (e.g. the tagline's <code>--color-ink-muted</code> on
+<code>--color-bg</code>, hand-computed at ~4.19:1 against the state of the actual
+<code>background</code>/<code>ink-muted</code> hex values, confirmed by recomputing the WCAG
+relative-luminance formula directly rather than trusting the judge's
+arithmetic) even though that agent's own delivery summary claimed contrast
+had been "checked by hand... verified &gt;=4.5:1." That is a real self-verification
+failure in the existing agent's Pre-Delivery Checklist step, not a
+close-call judgment disagreement. This is independent empirical support for
+Recommended action 2 above (port <code>polish-pass</code>'s pattern of a dedicated,
+parallel accessibility-audit agent into <code>frontend-design</code>'s review mode): a
+single self-review pass missed exactly the kind of quantitative violation a
+narrow, focused audit agent is built to catch.</p>
+<p>Net: keep <code>frontend-designer</code> as the default builder, and prioritize action 2
+(the parallel polish-pass review structure, starting with the accessibility
+sub-agent) over the other ported patterns, since this trial demonstrates its
+value directly rather than by inspection alone.</p>
+<p><strong>Human tie-breaker.</strong> After viewing both rendered mockups without knowing
+which was which, the repo owner independently preferred Option 1
+(<code>frontend-designer</code>), matching the judge panel's majority call and aggregate
+score. This is the strongest signal in the trial: an automated rubric can be
+gamed or miss taste, but the person who has to ship the page picking the same
+option the panel picked is direct confirmation, not just statistical
+agreement. Outstanding follow-up before this output is usable as a real
+starting point: fix the five contrast failures listed above in
+<code>arm-a-frontend-designer.html</code> and re-verify against the WCAG formula.</p>
 
 
 
@@ -2767,7 +2642,7 @@
     <span class="md-icon" title="Created">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 11, 2026 22:24:49 UTC">April 11, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 8, 2026 12:52:11 UTC">July 8, 2026</span>
   </span>
 
     
