@@ -67,9 +67,10 @@ jobs:
         run: uv run pytest tests/unit/test_manifest_consistency.py -v --no-cov
 
   # ==========================================================================
-  # setup.sh hook-merge tests: bats suite guarding merge_hooks() union-merge
-  # semantics and the doctor drift check. Scoped to the one bats file; the
-  # reusable Python workflow does not discover or run bats tests.
+  # Hook bats suites: setup.sh merge_hooks() union-merge semantics + doctor
+  # drift check, and the destructive-command-guard PreToolUse guard. Named
+  # explicitly per file; the reusable Python workflow does not discover or run
+  # bats tests.
   # ==========================================================================
   setup-hooks-tests:
     name: Setup hooks tests (bats)
@@ -91,6 +92,8 @@ jobs:
         run: npm install --no-save bats@1.13.0
       - name: Run setup.sh hook merge tests
         run: npx --no-install bats tests/test_setup_hooks.bats
+      - name: Run destructive-command-guard tests
+        run: npx --no-install bats tests/test_destructive_command_guard.bats
 
   # ==========================================================================
   # CI Gate: aggregates the CI result; must pass for branch protection
