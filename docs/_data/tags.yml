@@ -113,4 +113,5 @@ allowed:
   - install
   - agents
   - skills
+  - plugins
   - onboarding

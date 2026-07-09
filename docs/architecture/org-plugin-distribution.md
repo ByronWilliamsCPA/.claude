@@ -84,13 +84,18 @@ item needs to reach the team, clear its license for redistribution first,
 then add it to the manifest with a comment recording that check, following
 the same admission-bar discipline as a new submodule.
 
-This also means any skill written as a delta on a vendored companion (the
-`*-extras` family: `audience-reaction-analyzer-extras`, `brainstorming-extras`,
+This splits the `*-extras` skills, each of which is a delta on a companion
+skill, by whether that companion is vendored or first-party. An `-extras`
+delta on a **vendored** companion stays `exclude` until the companion itself
+is cleared, since the delta alone references concepts it doesn't redefine:
+`audience-reaction-analyzer-extras`, `brainstorming-extras`,
 `code-review-extras`, `executing-plans-extras`, `fastapi-expert-extras`,
 `finishing-a-development-branch-extras`, `pdf-extras`, `pptx-extras`,
-`subagent-driven-development-extras`, `systematic-debugging-extras`,
-`verification-before-completion-extras`) stays `exclude` until its companion
-is cleared, since the delta alone references concepts it doesn't redefine.
+`subagent-driven-development-extras`, `systematic-debugging-extras`, and
+`verification-before-completion-extras`. An `-extras` delta on a
+**first-party** companion ships as `claude-code-only` alongside it, which is
+why `receiving-code-review-extras` and `test-driven-development-extras` are
+classified `claude-code-only` rather than `exclude`.
 
 ## Running the build locally
 
