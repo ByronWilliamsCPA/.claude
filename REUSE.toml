@@ -55,6 +55,7 @@ path = [
     "poetry.lock",  # Dependency lockfile for reproducible builds
     "requirements/**/*.txt",  # Generated from poetry export
     "benchmarks/labelmaps/**/*.yaml",  # Benchmark label mappings
+    "scripts/**/*.yaml",  # Script configs/manifests (top-level *.yaml glob does not cross dirs)
     ".zenodo.json",  # Zenodo metadata for DOI
 ]
 SPDX-License-Identifier = "CC0-1.0"
