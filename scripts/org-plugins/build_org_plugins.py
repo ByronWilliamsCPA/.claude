@@ -168,21 +168,97 @@ def build_plugin(
     return entry, agent_count + skill_count
 
 
+def validate_sources(manifest: dict) -> int:
+    """Resolve every shippable source without copying; return the count.
+
+    Confirms each agent and each non-excluded skill exists, resolves inside
+    the repository, and is not vendored. Powers ``--check``, which catches a
+    manifest that still names a file another change has moved or deleted,
+    before a build (or the downstream rsync --delete) would.
+
+    Args:
+        manifest: The parsed manifest.
+
+    Returns:
+        The number of shippable items (agents plus non-excluded skills).
+
+    Raises:
+        FileNotFoundError: If a listed source does not exist, or a skill has
+            no SKILL.md.
+    """
+    count = 0
+    for agent_name in manifest["agents"]:
+        src = (AGENTS_DIR / f"{agent_name}.md").resolve(strict=True)
+        _reject_unsafe_source(src, agent_name)
+        count += 1
+    for skill_name, classification in manifest["skills"].items():
+        if classification == "exclude":
+            continue
+        src = (SKILLS_DIR / skill_name).resolve(strict=True)
+        _reject_unsafe_source(src, skill_name)
+        if not (src / "SKILL.md").is_file():
+            raise FileNotFoundError(
+                f"skill '{skill_name}' resolved to {src}, which has no SKILL.md"
+            )
+        count += 1
+    return count
+
+
+def _prepare_out_dir(out: Path) -> Path:
+    """Resolve and re-create the output directory, refusing unsafe targets.
+
+    ``--out`` is deleted unconditionally before a build, so a typo such as
+    ``--out ~`` or ``--out /`` would destroy far more than a prior build.
+    Refuse any target that is the repository root or an ancestor of it.
+
+    Args:
+        out: The requested --out path.
+
+    Returns:
+        The resolved, freshly-emptied output directory.
+
+    Raises:
+        ValueError: If the target is the repository root or one of its
+            ancestors (which covers the home directory and filesystem root).
+    """
+    out_dir = out.resolve()
+    if REPO_ROOT.is_relative_to(out_dir):
+        raise ValueError(
+            f"refusing to use {out_dir} as --out; it is the repository root "
+            "or an ancestor, and --out is deleted before every build"
+        )
+    if out_dir.exists():
+        shutil.rmtree(out_dir)
+    out_dir.mkdir(parents=True)
+    return out_dir
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--out",
-        required=True,
         type=Path,
         help="Output directory for the built marketplace tree",
+    )
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help="Validate the manifest and its sources without writing output",
     )
     args = parser.parse_args()
 
     manifest = load_manifest()
-    out_dir: Path = args.out.resolve()
-    if out_dir.exists():
-        shutil.rmtree(out_dir)
-    out_dir.mkdir(parents=True)
+
+    if args.check:
+        count = validate_sources(manifest)
+        if count == 0:
+            raise ValueError("manifest lists no shippable agents or skills")
+        print(f"Manifest OK: {count} shippable sources resolve.")
+        return 0
+
+    if args.out is None:
+        parser.error("--out is required unless --check is given")
+    out_dir = _prepare_out_dir(args.out)
 
     print(f"Building plugins into {out_dir}")
     plugin_entries: list[dict] = []

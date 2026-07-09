@@ -287,6 +287,14 @@ repos:
         pass_filenames: false
         stages: [pre-commit]
 
+      - id: org-plugin-manifest-consistency
+        name: org-plugin manifest sources resolve
+        entry: uv run pytest tests/unit/test_build_org_plugins.py::test_real_manifest_sources_resolve -q --no-cov
+        language: system
+        files: ^(\.claude/(agents|skills)/|scripts/org-plugins/(manifest\.yaml|build_org_plugins\.py))
+        pass_filenames: false
+        stages: [pre-commit]
+
 
   # ============================================================================
   # Python Docstring Coverage
