@@ -62,16 +62,29 @@ def load_manifest() -> dict:
     return manifest
 
 
-def _reject_vendored(resolved_src: Path, name: str) -> None:
-    """Refuse manifest entries that resolve into a vendored submodule.
+def _reject_unsafe_source(resolved_src: Path, name: str) -> None:
+    """Reject manifest entries whose resolved path is unsafe to ship.
+
+    A manifest entry may be a symlink; ``resolve(strict=True)`` follows it
+    without constraining the target. Refuse two cases after resolution: a
+    path that escapes the repository entirely (for example a symlink to
+    ``/etc/passwd``), and a path inside a vendored submodule, whose
+    redistribution is a separate license question this pipeline does not
+    answer.
 
     Args:
         resolved_src: The symlink-resolved source path.
         name: The manifest entry name, used in the error message.
 
     Raises:
-        ValueError: If ``resolved_src`` lies inside ``.submodules/``.
+        ValueError: If ``resolved_src`` is outside the repository or inside
+            ``.submodules/``.
     """
+    if not resolved_src.is_relative_to(REPO_ROOT):
+        raise ValueError(
+            f"'{name}' resolves outside the repository ({resolved_src}); "
+            "refusing to copy content from an unexpected location"
+        )
     if resolved_src.is_relative_to(SUBMODULES_DIR):
         raise ValueError(
             f"'{name}' resolves into .submodules ({resolved_src}); vendored "
@@ -82,7 +95,7 @@ def _reject_vendored(resolved_src: Path, name: str) -> None:
 def copy_agent(name: str, dest_dir: Path) -> None:
     """Copy one agent .md file, following symlinks but rejecting vendored targets."""
     src = (AGENTS_DIR / f"{name}.md").resolve(strict=True)
-    _reject_vendored(src, name)
+    _reject_unsafe_source(src, name)
     dest_dir.mkdir(parents=True, exist_ok=True)
     shutil.copy2(src, dest_dir / f"{name}.md")
 
@@ -90,7 +103,7 @@ def copy_agent(name: str, dest_dir: Path) -> None:
 def copy_skill(name: str, dest_dir: Path) -> None:
     """Copy one skill directory, following symlinks but rejecting vendored targets."""
     src = (SKILLS_DIR / name).resolve(strict=True)
-    _reject_vendored(src, name)
+    _reject_unsafe_source(src, name)
     if not (src / "SKILL.md").is_file():
         raise FileNotFoundError(
             f"skill '{name}' resolved to {src}, which has no SKILL.md"
