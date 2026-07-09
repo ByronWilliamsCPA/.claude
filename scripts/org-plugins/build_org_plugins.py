@@ -32,29 +32,65 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 MANIFEST_PATH = REPO_ROOT / "scripts" / "org-plugins" / "manifest.yaml"
 AGENTS_DIR = REPO_ROOT / ".claude" / "agents"
 SKILLS_DIR = REPO_ROOT / ".claude" / "skills"
+SUBMODULES_DIR = (REPO_ROOT / ".submodules").resolve()
 OWNER_NAME = "Byron Williams"
+REQUIRED_MANIFEST_KEYS = ("agents", "skills", "plugins")
+VALID_SKILL_VALUES = {"portable", "claude-code-only", "exclude"}
 
 
 def load_manifest() -> dict:
-    """Load and lightly validate the classification manifest."""
+    """Load and validate the classification manifest.
+
+    Returns:
+        The parsed manifest mapping.
+
+    Raises:
+        ValueError: If the manifest is not a mapping, omits a required
+            top-level key, or lists an unrecognised skill classification.
+    """
     manifest = yaml.safe_load(MANIFEST_PATH.read_text())
-    valid_skill_values = {"portable", "claude-code-only", "exclude"}
-    bad = {k: v for k, v in manifest["skills"].items() if v not in valid_skill_values}
+    if not isinstance(manifest, dict):
+        raise ValueError(
+            f"manifest.yaml must be a mapping, got {type(manifest).__name__}"
+        )
+    missing = [key for key in REQUIRED_MANIFEST_KEYS if key not in manifest]
+    if missing:
+        raise ValueError(f"manifest.yaml is missing required keys: {missing}")
+    bad = {k: v for k, v in manifest["skills"].items() if v not in VALID_SKILL_VALUES}
     if bad:
         raise ValueError(f"manifest.yaml has invalid skill classifications: {bad}")
     return manifest
 
 
+def _reject_vendored(resolved_src: Path, name: str) -> None:
+    """Refuse manifest entries that resolve into a vendored submodule.
+
+    Args:
+        resolved_src: The symlink-resolved source path.
+        name: The manifest entry name, used in the error message.
+
+    Raises:
+        ValueError: If ``resolved_src`` lies inside ``.submodules/``.
+    """
+    if resolved_src.is_relative_to(SUBMODULES_DIR):
+        raise ValueError(
+            f"'{name}' resolves into .submodules ({resolved_src}); vendored "
+            "content must not ship through the org-plugin pipeline"
+        )
+
+
 def copy_agent(name: str, dest_dir: Path) -> None:
-    """Copy one agent .md file, following symlinks to their real content."""
+    """Copy one agent .md file, following symlinks but rejecting vendored targets."""
     src = (AGENTS_DIR / f"{name}.md").resolve(strict=True)
+    _reject_vendored(src, name)
     dest_dir.mkdir(parents=True, exist_ok=True)
     shutil.copy2(src, dest_dir / f"{name}.md")
 
 
 def copy_skill(name: str, dest_dir: Path) -> None:
-    """Copy one skill directory, following symlinks to their real content."""
+    """Copy one skill directory, following symlinks but rejecting vendored targets."""
     src = (SKILLS_DIR / name).resolve(strict=True)
+    _reject_vendored(src, name)
     if not (src / "SKILL.md").is_file():
         raise FileNotFoundError(
             f"skill '{name}' resolved to {src}, which has no SKILL.md"
@@ -72,8 +108,19 @@ def write_json(path: Path, data: dict) -> None:
 
 def build_plugin(
     plugin_name: str, plugin_spec: dict, manifest: dict, out_dir: Path
-) -> dict:
-    """Build one plugin's directory tree; return its marketplace entry."""
+) -> tuple[dict, int]:
+    """Build one plugin's directory tree.
+
+    Args:
+        plugin_name: The plugin's marketplace name.
+        plugin_spec: The plugin's manifest entry.
+        manifest: The full parsed manifest.
+        out_dir: The build output root.
+
+    Returns:
+        A ``(marketplace_entry, item_count)`` pair where ``item_count`` is the
+        number of agents plus skills copied for this plugin.
+    """
     plugin_dir = out_dir / "plugins" / plugin_name
 
     write_json(
@@ -100,11 +147,12 @@ def build_plugin(
 
     print(f"  {plugin_name}: {agent_count} agents, {skill_count} skills")
 
-    return {
+    entry = {
         "name": plugin_name,
         "source": f"./plugins/{plugin_name}",
         "description": plugin_spec["description"],
     }
+    return entry, agent_count + skill_count
 
 
 def main() -> int:
@@ -124,10 +172,17 @@ def main() -> int:
     out_dir.mkdir(parents=True)
 
     print(f"Building plugins into {out_dir}")
-    plugin_entries = [
-        build_plugin(name, spec, manifest, out_dir)
-        for name, spec in manifest["plugins"].items()
-    ]
+    plugin_entries: list[dict] = []
+    total_items = 0
+    for name, spec in manifest["plugins"].items():
+        entry, item_count = build_plugin(name, spec, manifest, out_dir)
+        plugin_entries.append(entry)
+        total_items += item_count
+    if total_items == 0:
+        raise ValueError(
+            "build copied no agents or skills; refusing to emit an empty tree "
+            "that a downstream rsync --delete would use to wipe the target repo"
+        )
 
     write_json(
         out_dir / ".claude-plugin" / "marketplace.json",
