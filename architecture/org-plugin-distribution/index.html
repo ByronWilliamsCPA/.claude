@@ -12,13 +12,9 @@
         <meta name="author" content="Byron Williams">
       
       
-        <link rel="canonical" href="https://claude-config.readthedocs.io/architecture/adr/">
+        <link rel="canonical" href="https://claude-config.readthedocs.io/architecture/org-plugin-distribution/">
       
       
-        <link rel="prev" href="../diagrams/">
-      
-      
-        <link rel="next" href="ADR-001-two-layer-symlink-install/">
       
       
         
@@ -29,7 +25,7 @@
     
     
       
-        <title>Architecture Decision Records - Claude Code Configuration</title>
+        <title>Org Plugin Distribution - Claude Code Configuration</title>
       
     
     
@@ -92,7 +88,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#process" class="md-skip">
+        <a href="#the-pipeline" class="md-skip">
           Skip to content
         </a>
       
@@ -126,7 +122,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Architecture Decision Records
+              Org Plugin Distribution
             
           </span>
         </div>
@@ -278,12 +274,10 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
+      <li class="md-tabs__item">
         <a href="../" class="md-tabs__link">
           
   
@@ -715,8 +709,6 @@
       
   
   
-    
-  
   
   
     
@@ -746,19 +738,18 @@
     
     
       
-        
-        
-      
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
         
           
           <div class="md-nav__link md-nav__container">
@@ -787,13 +778,13 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="">
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1055,8 +1046,6 @@
                 
   
   
-    
-  
   
   
     
@@ -1088,21 +1077,20 @@
       
       
         
-          
-          
-        
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_9" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_9" >
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="./" class="md-nav__link md-nav__link--active">
+            <a href="../adr/" class="md-nav__link ">
               
   
   
@@ -1127,13 +1115,13 @@
             </a>
             
               
-              <label class="md-nav__link md-nav__link--active" for="__nav_3_9" id="__nav_3_9_label" tabindex="">
+              <label class="md-nav__link " for="__nav_3_9" id="__nav_3_9_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_9_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_9_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3_9">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1153,7 +1141,7 @@
   
   
     <li class="md-nav__item">
-      <a href="ADR-001-two-layer-symlink-install/" class="md-nav__link">
+      <a href="../adr/ADR-001-two-layer-symlink-install/" class="md-nav__link">
         
   
   
@@ -1188,7 +1176,7 @@
   
   
     <li class="md-nav__item">
-      <a href="ADR-002-hook-composition/" class="md-nav__link">
+      <a href="../adr/ADR-002-hook-composition/" class="md-nav__link">
         
   
   
@@ -1223,7 +1211,7 @@
   
   
     <li class="md-nav__item">
-      <a href="ADR-003-tiered-mcp-loading/" class="md-nav__link">
+      <a href="../adr/ADR-003-tiered-mcp-loading/" class="md-nav__link">
         
   
   
@@ -1258,7 +1246,7 @@
   
   
     <li class="md-nav__item">
-      <a href="ADR-004-skill-vs-agent-boundary/" class="md-nav__link">
+      <a href="../adr/ADR-004-skill-vs-agent-boundary/" class="md-nav__link">
         
   
   
@@ -1293,7 +1281,7 @@
   
   
     <li class="md-nav__item">
-      <a href="ADR-005-submodule-extension-model/" class="md-nav__link">
+      <a href="../adr/ADR-005-submodule-extension-model/" class="md-nav__link">
         
   
   
@@ -1328,7 +1316,7 @@
   
   
     <li class="md-nav__item">
-      <a href="ADR-006-rules-vs-standards/" class="md-nav__link">
+      <a href="../adr/ADR-006-rules-vs-standards/" class="md-nav__link">
         
   
   
@@ -1363,7 +1351,7 @@
   
   
     <li class="md-nav__item">
-      <a href="ADR-007-dual-audience-docs/" class="md-nav__link">
+      <a href="../adr/ADR-007-dual-audience-docs/" class="md-nav__link">
         
   
   
@@ -1398,7 +1386,7 @@
   
   
     <li class="md-nav__item">
-      <a href="ADR-008-scanner-allowlist-tiers/" class="md-nav__link">
+      <a href="../adr/ADR-008-scanner-allowlist-tiers/" class="md-nav__link">
         
   
   
@@ -2213,10 +2201,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#process" class="md-nav__link">
+  <a href="#the-pipeline" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Process
+        The pipeline
       
     </span>
   </a>
@@ -2224,10 +2212,54 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#index" class="md-nav__link">
+  <a href="#adding-a-new-agent" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Index
+        Adding a new agent
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#adding-a-new-skill" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adding a new skill
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#vendored-content" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Vendored content
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#running-the-build-locally" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running the build locally
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#one-time-setup-this-pipeline-still-needs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        One-time setup this pipeline still needs
       
     </span>
   </a>
@@ -2265,100 +2297,122 @@
   
 
 
-  <h1>Index</h1>
+  <h1>Org Plugin Distribution</h1>
 
-<p>Architecture Decision Records (ADRs) capture load-bearing design choices so future maintainers can understand <em>why</em> something is the way it is: not just <em>what</em> it is.</p>
-<h2 id="process">Process<a class="headerlink" href="#process" title="Permanent link">&para;</a></h2>
+<p>This repo is public and personal. The team needs shared access to the
+applicable parts of it, but claude.ai's org-wide distribution features (see
+<a href="../adr/ADR-011-org-plugin-distribution/">ADR-011</a> for the full decision and
+alternatives) require a private or internal repo. <code>ByronWilliamsCPA/plugin</code>
+is that repo; this doc covers the mechanics of keeping it in sync.</p>
+<h2 id="the-pipeline">The pipeline<a class="headerlink" href="#the-pipeline" title="Permanent link">&para;</a></h2>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>.claude/agents/*.md, .claude/skills/*/  (this repo)
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>          |
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>          v
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>scripts/org-plugins/manifest.yaml            &lt;- the only thing a human edits
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>          |
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>          v
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>scripts/org-plugins/build_org_plugins.py      &lt;- pure function of the manifest
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>          |
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>          v
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>.github/workflows/sync-org-plugins.yml         &lt;- runs the build, opens/auto-merges a PR
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>          |
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>          v
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>ByronWilliamsCPA/plugin (main, via PR)
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>  .claude-plugin/marketplace.json
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>  plugins/wff-code/   (agents + all first-party skills)  -&gt; Claude Code
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>  plugins/wff-chat/   (portable skills only, no agents)  -&gt; claude.ai chat/Cowork
+</span></code></pre></div>
+<p>The workflow triggers on push to <code>main</code> touching <code>.claude/agents/**</code>,
+<code>.claude/skills/**</code>, or the manifest itself, so a normal PR to this repo is
+the only step needed to update the team's copy. The generated repo is a pure
+build artifact: never edit it by hand, the next sync overwrites it.</p>
+<h2 id="adding-a-new-agent">Adding a new agent<a class="headerlink" href="#adding-a-new-agent" title="Permanent link">&para;</a></h2>
+<p>Add its name to the <code>agents:</code> list in <code>scripts/org-plugins/manifest.yaml</code>.
+There is no per-agent classification: every entry in that list ships in
+<code>wff-code</code> only, since claude.ai chat and Cowork have no subagent-dispatch
+surface. Vendored/symlinked agents (from <code>anthropics-plugins</code>,
+<code>reference-library</code>, <code>image-generation</code>) are deliberately left out; see the
+"Vendored content" section below before adding one.</p>
+<h2 id="adding-a-new-skill">Adding a new skill<a class="headerlink" href="#adding-a-new-skill" title="Permanent link">&para;</a></h2>
+<p>Add <code>&lt;skill-name&gt;: &lt;classification&gt;</code> under <code>skills:</code> in the manifest.
+Classify honestly, this is a trust decision, not a formality:</p>
+<ul>
+<li><strong><code>portable</code></strong>: the skill's SKILL.md and any bundled files have no
+  reference to the Agent/Task tool, TodoWrite, or an <code>mcp__*</code> tool, and don't
+  assume a companion skill that lives elsewhere. Ships in both <code>wff-code</code> and
+  <code>wff-chat</code>.</li>
+<li><strong><code>claude-code-only</code></strong>: everything else that's first-party and safe to
+  ship, it just won't do anything useful outside Claude Code. Ships in
+  <code>wff-code</code> only.</li>
+<li><strong><code>exclude</code></strong>: don't ship anywhere yet. Use this for a skill that's a delta
+  on a vendored companion (see below), or that has a known blocker (a
+  hardcoded local path, an unreviewed dependency).</li>
+</ul>
+<p>An unclassified skill is excluded by default (the build script only copies
+what the manifest lists), so forgetting to classify something withholds it
+rather than leaking it.</p>
+<h2 id="vendored-content">Vendored content<a class="headerlink" href="#vendored-content" title="Permanent link">&para;</a></h2>
+<p>Several skills and agents in this repo are symlinks into <code>.submodules/</code>
+(<code>superpowers</code>, <code>anthropics-skills</code>, <code>anthropics-plugins</code>, <code>reference-library</code>,
+<code>image-generation</code>, <code>jeffallan-claude-skills</code>; see
+<a href="../submodule-strategy/">submodule-strategy.md</a> for the full inventory and
+trust tiers). None of that content ships through this pipeline in v1.
+Re-distributing it into a second repo is a separate license question from the
+one this pipeline answers, don't fold it in silently. If a specific vendored
+item needs to reach the team, clear its license for redistribution first,
+then add it to the manifest with a comment recording that check, following
+the same admission-bar discipline as a new submodule.</p>
+<p>This splits the <code>*-extras</code> skills, each of which is a delta on a companion
+skill, by whether that companion is vendored or first-party. An <code>-extras</code>
+delta on a <strong>vendored</strong> companion stays <code>exclude</code> until the companion itself
+is cleared, since the delta alone references concepts it doesn't redefine:
+<code>audience-reaction-analyzer-extras</code>, <code>brainstorming-extras</code>,
+<code>code-review-extras</code>, <code>executing-plans-extras</code>, <code>fastapi-expert-extras</code>,
+<code>finishing-a-development-branch-extras</code>, <code>pdf-extras</code>, <code>pptx-extras</code>,
+<code>subagent-driven-development-extras</code>, <code>systematic-debugging-extras</code>, and
+<code>verification-before-completion-extras</code>. An <code>-extras</code> delta on a
+<strong>first-party</strong> companion ships as <code>claude-code-only</code> alongside it, which is
+why <code>receiving-code-review-extras</code> and <code>test-driven-development-extras</code> are
+classified <code>claude-code-only</code> rather than <code>exclude</code>.</p>
+<h2 id="running-the-build-locally">Running the build locally<a class="headerlink" href="#running-the-build-locally" title="Permanent link">&para;</a></h2>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>scripts/org-plugins/build_org_plugins.py<span class="w"> </span>--out<span class="w"> </span>/tmp/org-plugin-build
+</span></code></pre></div>
+<p>Inspect <code>/tmp/org-plugin-build</code> before trusting a manifest change; the CI
+workflow runs the identical script.</p>
+<h2 id="one-time-setup-this-pipeline-still-needs">One-time setup this pipeline still needs<a class="headerlink" href="#one-time-setup-this-pipeline-still-needs" title="Permanent link">&para;</a></h2>
 <ol>
-<li>A decision is load-bearing if silently changing it would break behavior, break the install, or break the mental model a reader needs.</li>
-<li>New ADRs use the slim template at <code>docs/architecture/adr/_template.md</code> (excluded from the built site; open it directly in the repo). The verbose reference variant at <code>docs/ADRs/adr-template.md</code> remains for unusually consequential decisions.</li>
-<li>ADRs are numbered sequentially. Once published, the title and number do not change: supersede with a new ADR instead.</li>
-<li>Every ADR carries <code>schema_type: common</code> frontmatter. The <code>status:</code> field is for the doc itself (<code>draft</code> / <code>in-review</code> / <code>published</code>); the ADR's decision status (<code>Proposed</code> / <code>Accepted</code> / <code>Deprecated</code> / <code>Superseded</code>) lives in a body banner near the top.</li>
+<li><strong><code>ORG_PLUGIN_PUSH_TOKEN</code> repo secret</strong> on <code>ByronWilliamsCPA/.claude</code>: a
+   fine-grained PAT scoped to <code>ByronWilliamsCPA/plugin</code> only, with <strong>Contents:
+   Read and write</strong> and <strong>Pull requests: Read and write</strong> (the workflow opens
+   a PR and calls <code>gh pr merge --auto</code>, it needs both). Without it the
+   workflow fails fast with an explicit error rather than proceeding with an
+   under-scoped token.</li>
+<li><strong>"Allow auto-merge" enabled</strong> in <code>ByronWilliamsCPA/plugin</code>'s repository
+   settings (General &gt; Pull Requests). Without it, <code>gh pr merge --auto</code> errors
+   immediately and the workflow falls back to leaving the PR open for a manual
+   merge (it logs a warning, it doesn't fail the run).</li>
+<li><strong><code>ByronWilliamsCPA/plugin</code> excluded from the <code>default-branch-baseline</code>
+   org ruleset.</strong> That ruleset requires three status checks (Security Gate
+   Validation, Dependency &amp; Standards Validation, Check REUSE Compliance) that
+   only run in <code>.claude</code>'s own CI, never in an artifact-only repo, so they would
+   block every sync PR indefinitely. The repo name is listed under the ruleset's
+   <code>conditions.repository_name.exclude</code>; it still inherits the push-baseline and
+   tag-protection rulesets. Re-adding the repo to the baseline reinstates the
+   permanent block.</li>
+<li><strong>Claude Code side</strong>: team members run
+   <code>claude plugin marketplace add ByronWilliamsCPA/plugin</code> once, then
+   <code>/plugin install wff-code@wff-plugins</code>.</li>
+<li><strong>claude.ai side</strong>: an org owner connects <code>ByronWilliamsCPA/plugin</code> as a
+   marketplace source under Organization Settings &gt; Plugins (Libraries),
+   installing the <code>wff-chat</code> plugin, and enables "Sync automatically" so
+   future pushes propagate without a manual re-sync.</li>
 </ol>
-<h2 id="index">Index<a class="headerlink" href="#index" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>#</th>
-<th>Title</th>
-<th>Decision Status</th>
-<th>Topic</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><a href="ADR-001-two-layer-symlink-install/">001</a></td>
-<td>Two-Layer Symlink Install</td>
-<td>Accepted</td>
-<td>Install model</td>
-</tr>
-<tr>
-<td><a href="ADR-002-hook-composition/">002</a></td>
-<td>Hook Composition and Ordering</td>
-<td>Accepted</td>
-<td>Hook system</td>
-</tr>
-<tr>
-<td><a href="ADR-003-tiered-mcp-loading/">003</a></td>
-<td>Tiered MCP Loading Strategy</td>
-<td>Accepted</td>
-<td>MCP context budget</td>
-</tr>
-<tr>
-<td><a href="ADR-004-skill-vs-agent-boundary/">004</a></td>
-<td>Skill vs Agent Boundary</td>
-<td>Accepted</td>
-<td>Capability taxonomy</td>
-</tr>
-<tr>
-<td><a href="ADR-005-submodule-extension-model/">005</a></td>
-<td>Submodule Extension Model</td>
-<td>Accepted</td>
-<td>External integration</td>
-</tr>
-<tr>
-<td><a href="ADR-006-rules-vs-standards/">006</a></td>
-<td>Rules vs Standards Boundary</td>
-<td>Accepted</td>
-<td>Context injection</td>
-</tr>
-<tr>
-<td><a href="ADR-007-dual-audience-docs/">007</a></td>
-<td>Dual-Audience Documentation Structure</td>
-<td>Accepted</td>
-<td>Documentation layout</td>
-</tr>
-<tr>
-<td><a href="ADR-008-scanner-allowlist-tiers/">008</a></td>
-<td>Two-Tier Scanner Allowlist for CI-007/007b</td>
-<td>Proposed</td>
-<td>Compliance / CI security</td>
-</tr>
-<tr>
-<td><a href="ADR-009-snyk-role-and-provenance/">009</a></td>
-<td>Snyk Role Consolidation, Always-On Authoring, and Dependency Provenance</td>
-<td>Proposed</td>
-<td>Security tooling</td>
-</tr>
-<tr>
-<td><a href="ADR-010-hook-source-allowlist/">010</a></td>
-<td>Hook-Source Allowlist and Trust Tiers</td>
-<td>Proposed</td>
-<td>Hook system / security</td>
-</tr>
-<tr>
-<td><a href="ADR-011-org-plugin-distribution/">011</a></td>
-<td>Org-Wide Plugin Distribution</td>
-<td>Proposed</td>
-<td>Plugin system / team distribution</td>
-</tr>
-</tbody>
-</table>
 <h2 id="see-also">See Also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="../../frontmatter-standard/">Frontmatter Standard</a></li>
-<li><a href="../../contributing/writing-adrs/">Writing ADRs</a></li>
-<li><a href="../">Architecture Overview</a></li>
+<li><a href="../adr/ADR-011-org-plugin-distribution/">ADR-011: Org-Wide Plugin Distribution</a></li>
+<li><a href="../submodule-strategy/">Submodule Strategy</a>: the inbound analog of this pipeline</li>
+<li><code>scripts/org-plugins/manifest.yaml</code>, <code>scripts/org-plugins/build_org_plugins.py</code></li>
+<li><code>.github/workflows/sync-org-plugins.yml</code></li>
 </ul>
 
 
@@ -2392,7 +2446,7 @@
     <span class="md-icon" title="Created">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 11, 2026 22:24:49 UTC">April 11, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 9, 2026 19:56:21 UTC">July 9, 2026</span>
   </span>
 
     
