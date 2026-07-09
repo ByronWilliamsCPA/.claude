@@ -209,7 +209,12 @@ def _prepare_out_dir(out: Path) -> Path:
 
     ``--out`` is deleted unconditionally before a build, so a typo such as
     ``--out ~`` or ``--out /`` would destroy far more than a prior build.
-    Refuse any target that is the repository root or an ancestor of it.
+    Refuse the home directory, a filesystem or drive root, and the repository
+    root or any ancestor of it. The first two are named explicitly rather than
+    inferred from the repo location: on a system where the checkout does not
+    live under ``~`` (e.g. a Windows runner with the repo on ``D:`` and the
+    home on ``C:``), ``REPO_ROOT.is_relative_to(home)`` is false, so an ancestor
+    check alone would let ``--out ~`` through and delete the home directory.
 
     Args:
         out: The requested --out path.
@@ -218,14 +223,17 @@ def _prepare_out_dir(out: Path) -> Path:
         The resolved, freshly-emptied output directory.
 
     Raises:
-        ValueError: If the target is the repository root or one of its
-            ancestors (which covers the home directory and filesystem root).
+        ValueError: If the target is the home directory, a filesystem/drive
+            root, or the repository root or one of its ancestors.
     """
     out_dir = out.resolve()
-    if REPO_ROOT.is_relative_to(out_dir):
+    home = Path.home().resolve()
+    drive_root = Path(out_dir.anchor)
+    if out_dir in (home, drive_root) or REPO_ROOT.is_relative_to(out_dir):
         raise ValueError(
-            f"refusing to use {out_dir} as --out; it is the repository root "
-            "or an ancestor, and --out is deleted before every build"
+            f"refusing to use {out_dir} as --out; it is the home directory, a "
+            "filesystem root, or the repository root or an ancestor, and --out "
+            "is deleted before every build"
         )
     if out_dir.exists():
         shutil.rmtree(out_dir)

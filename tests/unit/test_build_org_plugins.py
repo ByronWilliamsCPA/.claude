@@ -110,9 +110,21 @@ def test_prepare_out_dir_refuses_repo_root(mod: types.ModuleType) -> None:
 
 
 def test_prepare_out_dir_refuses_home(mod: types.ModuleType) -> None:
-    """--out at the home directory (an ancestor of the repo) is refused."""
-    with pytest.raises(ValueError, match="repository root or an ancestor"):
+    """--out at the home directory is refused explicitly.
+
+    Named, not inferred from the repo location: on a checkout that does not
+    live under ~ (a Windows runner with the repo on D: and home on C:), an
+    ancestor-only check would let this through and rmtree the home directory.
+    """
+    with pytest.raises(ValueError, match="home directory"):
         mod._prepare_out_dir(Path.home())
+
+
+def test_prepare_out_dir_refuses_filesystem_root(mod: types.ModuleType) -> None:
+    """--out at a filesystem/drive root is refused on every platform."""
+    root = Path(Path.cwd().resolve().anchor)
+    with pytest.raises(ValueError, match="filesystem root"):
+        mod._prepare_out_dir(root)
 
 
 def test_prepare_out_dir_creates_dedicated_dir(
