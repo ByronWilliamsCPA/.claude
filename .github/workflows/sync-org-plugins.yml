@@ -8,12 +8,14 @@
 #
 # Behaviour: checks out both repos, runs scripts/org-plugins/build_org_plugins.py,
 # mirrors the result into a branch on the target repo, opens a PR against main,
-# and enables auto-merge on it. This is a PR, not a direct push, because
-# ByronWilliamsCPA/plugin inherits the org's default-branch-baseline ruleset,
-# which blocks non-PR pushes to main outright. Auto-merge only actually merges
-# once whatever checks/reviews that ruleset requires are satisfied; if it
-# requires a human approval, the PR sits until someone clicks merge, same as
-# sync-org-pins.yml's follow-up PRs in this repo.
+# and enables auto-merge on it. ByronWilliamsCPA/plugin is excluded from the
+# org's default-branch-baseline ruleset, whose required status checks
+# (Security Gate Validation, Dependency & Standards Validation, Check REUSE
+# Compliance) can never run on an artifact-only repo and would otherwise block
+# every sync PR forever. With the baseline off, the PR has no required checks
+# and auto-merge lands it once it is mergeable. The repo still carries the
+# push-baseline and tag-protection rulesets. A PR (rather than a direct push)
+# is kept so each generated update has an auditable diff.
 #
 # Security note: the push token is passed via env:, not ${{ }} interpolation,
 # in any shell command.

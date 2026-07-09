@@ -118,10 +118,18 @@ workflow runs the identical script.
    settings (General > Pull Requests). Without it, `gh pr merge --auto` errors
    immediately and the workflow falls back to leaving the PR open for a manual
    merge (it logs a warning, it doesn't fail the run).
-3. **Claude Code side**: team members run
+3. **`ByronWilliamsCPA/plugin` excluded from the `default-branch-baseline`
+   org ruleset.** That ruleset requires three status checks (Security Gate
+   Validation, Dependency & Standards Validation, Check REUSE Compliance) that
+   only run in `.claude`'s own CI, never in an artifact-only repo, so they would
+   block every sync PR indefinitely. The repo name is listed under the ruleset's
+   `conditions.repository_name.exclude`; it still inherits the push-baseline and
+   tag-protection rulesets. Re-adding the repo to the baseline reinstates the
+   permanent block.
+4. **Claude Code side**: team members run
    `claude plugin marketplace add ByronWilliamsCPA/plugin` once, then
    `/plugin install wff-code@wff-plugins`.
-4. **claude.ai side**: an org owner connects `ByronWilliamsCPA/plugin` as a
+5. **claude.ai side**: an org owner connects `ByronWilliamsCPA/plugin` as a
    marketplace source under Organization Settings > Plugins (Libraries),
    installing the `wff-chat` plugin, and enables "Sync automatically" so
    future pushes propagate without a manual re-sync.
