@@ -34,6 +34,7 @@ Architecture Decision Records (ADRs) capture load-bearing design choices so futu
 | [008](ADR-008-scanner-allowlist-tiers.md) | Two-Tier Scanner Allowlist for CI-007/007b | Proposed | Compliance / CI security |
 | [009](ADR-009-snyk-role-and-provenance.md) | Snyk Role Consolidation, Always-On Authoring, and Dependency Provenance | Proposed | Security tooling |
 | [010](ADR-010-hook-source-allowlist.md) | Hook-Source Allowlist and Trust Tiers | Proposed | Hook system / security |
+| [011](ADR-011-org-plugin-distribution.md) | Org-Wide Plugin Distribution | Proposed | Plugin system / team distribution |
 
 ## See Also
 

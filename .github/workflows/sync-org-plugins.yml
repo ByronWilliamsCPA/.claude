@@ -1,0 +1,169 @@
+# Build the wff-code and wff-chat plugin trees from scripts/org-plugins/manifest.yaml
+# and land them in the private ByronWilliamsCPA/plugin marketplace repo via PR.
+#
+# Triggers:
+#   - push to main touching .claude/agents/**, .claude/skills/**, or the
+#     manifest itself.
+#   - workflow_dispatch: manual run on demand.
+#
+# Behaviour: checks out both repos, runs scripts/org-plugins/build_org_plugins.py,
+# mirrors the result into a branch on the target repo, opens a PR against main,
+# and enables auto-merge on it. ByronWilliamsCPA/plugin is excluded from the
+# org's default-branch-baseline ruleset, whose required status checks
+# (Security Gate Validation, Dependency & Standards Validation, Check REUSE
+# Compliance) can never run on an artifact-only repo and would otherwise block
+# every sync PR forever. With the baseline off, the PR has no required checks
+# and auto-merge lands it once it is mergeable. The repo still carries the
+# push-baseline and tag-protection rulesets. A PR (rather than a direct push)
+# is kept so each generated update has an auditable diff.
+#
+# Security note: the push token is passed via env:, not ${{ }} interpolation,
+# in any shell command.
+
+name: Sync Org Plugins
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.claude/agents/**'
+      - '.claude/skills/**'
+      - 'scripts/org-plugins/manifest.yaml'
+      - 'scripts/org-plugins/build_org_plugins.py'
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: sync-org-plugins
+  cancel-in-progress: false
+
+env:
+  TARGET_REPO: ByronWilliamsCPA/plugin
+
+jobs:
+  sync:
+    name: Build and PR wff-code / wff-chat
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Harden the runner
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411  # v2.19.4
+        with:
+          egress-policy: audit
+
+      - name: Checkout source repo
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7
+        with:
+          path: source
+
+      - name: Verify ORG_PLUGIN_PUSH_TOKEN before doing any work
+        env:
+          PAT: ${{ secrets.ORG_PLUGIN_PUSH_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${PAT:-}" ]; then
+            echo "::error::ORG_PLUGIN_PUSH_TOKEN secret is required (contents:write and pull-requests:write on $TARGET_REPO)."
+            exit 1
+          fi
+
+      - name: Checkout target repo
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7
+        with:
+          repository: ${{ env.TARGET_REPO }}
+          ref: main
+          token: ${{ secrets.ORG_PLUGIN_PUSH_TOKEN }}
+          path: target
+
+      - name: Set up Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1  # v6.3.0
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: source/pyproject.toml
+
+      - name: Install dependencies
+        run: pip install pyyaml==6.0.2
+
+      - name: Build plugin trees
+        run: |
+          set -euo pipefail
+          cd source
+          python3 scripts/org-plugins/build_org_plugins.py --out "$GITHUB_WORKSPACE/build"
+
+      - name: Create sync branch
+        working-directory: target
+        run: |
+          set -euo pipefail
+          git checkout -b "sync/plugins-$(date -u +%Y%m%d-%H%M%S)"
+          echo "SYNC_BRANCH=$(git branch --show-current)" >> "$GITHUB_ENV"
+
+      - name: Guard against an empty build before the destructive mirror
+        run: |
+          set -euo pipefail
+          build="$GITHUB_WORKSPACE/build"
+          test -f "$build/.claude-plugin/marketplace.json" \
+            || { echo "::error::marketplace.json missing from build output."; exit 1; }
+          agents=$(find "$build/plugins" -path '*/agents/*.md' | wc -l)
+          skills=$(find "$build/plugins" -name SKILL.md | wc -l)
+          if [ "$agents" -eq 0 ] || [ "$skills" -eq 0 ]; then
+            echo "::error::Build output has $agents agent files and $skills skills; refusing to rsync --delete into the target (would wipe it)."
+            exit 1
+          fi
+          echo "Build output: $agents agent files, $skills skills; proceeding to mirror."
+
+      - name: Mirror build output into target repo checkout
+        run: |
+          set -euo pipefail
+          rsync -a --delete \
+            --exclude='.git' \
+            "$GITHUB_WORKSPACE/build/" "$GITHUB_WORKSPACE/target/"
+
+      - name: Detect changes
+        id: diff
+        working-directory: target
+        run: |
+          set -euo pipefail
+          git add -A
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No plugin content changes; nothing to PR."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            git diff --cached --stat
+          fi
+
+      - name: Commit and push sync branch
+        if: steps.diff.outputs.changed == 'true'
+        working-directory: target
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore(sync): rebuild wff-code/wff-chat from .claude@${SOURCE_SHA:0:7}"
+          git push origin "$SYNC_BRANCH"
+
+      - name: Open PR and enable auto-merge
+        if: steps.diff.outputs.changed == 'true'
+        working-directory: target
+        env:
+          GH_TOKEN: ${{ secrets.ORG_PLUGIN_PUSH_TOKEN }}
+          SOURCE_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          PR_URL=$(gh pr create \
+            --repo "$TARGET_REPO" \
+            --base main \
+            --head "$SYNC_BRANCH" \
+            --title "chore(sync): rebuild wff-code/wff-chat from .claude@${SOURCE_SHA:0:7}" \
+            --body "Auto-generated by ByronWilliamsCPA/.claude's sync-org-plugins.yml from commit ${SOURCE_SHA}. Rebuilds both plugins from scripts/org-plugins/manifest.yaml; review the diff, this repo is a pure build artifact and should never be hand-edited.")
+          echo "Opened $PR_URL"
+          if gh pr merge --repo "$TARGET_REPO" --auto --squash "$PR_URL"; then
+            echo "Auto-merge enabled; the PR merges once required checks/reviews on $TARGET_REPO are satisfied."
+          else
+            echo "::warning::Could not enable auto-merge on $PR_URL (auto-merge may not be turned on for $TARGET_REPO, or the ruleset needs a manual reviewer). The PR is open; merge it by hand."
+          fi

@@ -1,0 +1,164 @@
+# Classification manifest for org-wide plugin distribution.
+#
+# This is the single source of truth for what leaves this repo and ships to
+# the private plugin repo (target_repo below). scripts/org-plugins/build_org_plugins.py
+# reads this file and nothing else to decide what to copy; it does not infer
+# classification from file contents. Add new agents/skills here deliberately
+# before they can ship org-wide. See docs/architecture/org-plugin-distribution.md
+# for the full rationale and how to update this file.
+#
+# Skill classification values:
+#   portable          - no dependency on Agent/Task, TodoWrite, or MCP tools.
+#                        Ships in both wff-code and wff-chat.
+#   claude-code-only   - depends on Agent/Task, TodoWrite, or MCP tools, or is
+#                        otherwise first-party but only functions in Claude
+#                        Code. Ships in wff-code only.
+#   exclude            - not shipped anywhere. Used for skills that are deltas
+#                        on a vendored/third-party companion (submodule-sourced,
+#                        under its own license) that has not been cleared for
+#                        redistribution into a separate plugin repo, or that
+#                        need a follow-up fix (e.g. a hardcoded local path)
+#                        before they're portable outside this repo.
+#
+# Agents are all claude-code-only by construction (no subagent-dispatch
+# surface exists on claude.ai chat/Cowork), so there's no per-agent
+# classification: the `agents` list below is the full first-party inclusion
+# set for wff-code. Vendored/symlinked agents (anthropics-plugins,
+# reference-library, image-generation submodules) are deliberately excluded
+# from v1 to avoid re-distributing third-party or same-maintainer-but-separately-
+# licensed content through a second channel; add them explicitly here only
+# after a license check, matching the submodule admission bar in
+# docs/architecture/submodule-strategy.md.
+
+target_repo: "ByronWilliamsCPA/plugin"  # confirm after the williaby/plugin transfer completes
+
+plugins:
+  wff-code:
+    description: "Full internal Claude Code toolkit: first-party agents plus all first-party skills"
+    include_agents: true
+    skill_classifications: [portable, claude-code-only]
+  wff-chat:
+    description: "claude.ai chat/Desktop/Cowork-safe skill subset (no agents, no Agent/Task/MCP dependency)"
+    include_agents: false
+    skill_classifications: [portable]
+
+agents:
+  - ai-detection-agent
+  - ai-engineer
+  - api-development-agent
+  - claude-docs-auditor
+  - cleanup-backlog-scout
+  - code-reviewer
+  - compliance-retrospective
+  - compliance-synthesis
+  - database-operations-agent
+  - dependency-provenance
+  - devops-deployment-agent
+  - diagram-maintenance-agent
+  - documentation-writer
+  - frontend-designer
+  - general-compliance-auditor
+  - git-workflow-agent
+  - github-workflow-agent
+  - mkdocs-auditor
+  - mkdocs-specialist
+  - modularization-assistant
+  - openapi-code-enricher
+  - openapi-compliance-agent
+  - ossf-badge-evaluator
+  - ossf-compliance-auditor
+  - owasp-agent
+  - owasp-api
+  - owasp-citizen
+  - owasp-dispatch
+  - owasp-llm
+  - owasp-ml
+  - owasp-web
+  - phase-reviewer
+  - plan-ceo-review
+  - plan-devex-review
+  - plan-validator
+  - postman-test-designer
+  - pre-commit-auditor
+  - project-plan-synthesizer
+  - python-toolchain-auditor
+  - repo-foundations-auditor
+  - research-agent
+  - scope-analyzer
+  - security-auditor
+  - test-engineer
+  - test-reviewer
+  - test-writer
+  - ui-testing-agent
+  - visual-content-generator
+
+skills:
+  # portable: no Agent/Task/TodoWrite/MCP dependency
+  ast-grep: portable
+  ci-fix: portable
+  context-engineering: portable
+  debug-tests: portable
+  deprecation-and-migration: portable
+  doc-audit: portable
+  domain-modeling: portable
+  external-reference-verification: portable
+  frontend-design: portable
+  git: portable
+  observability-and-instrumentation: portable
+  performance-optimization: portable
+  pre-commit-authoring: portable
+  premise-interrogation: portable
+  prototype: portable
+  quality: portable
+  receiving-code-review: portable
+  retro: portable
+  security: portable
+  shipping-and-launch: portable
+  test-driven-development: portable
+  tool-eval: portable
+  using-git-worktrees: portable
+
+  # claude-code-only: needs Agent/Task, TodoWrite, or MCP tools
+  chat-app-handoff-to-repo: claude-code-only
+  codebase-memory: claude-code-only
+  diagram-maintenance: claude-code-only
+  dispatching-parallel-agents: claude-code-only
+  doubt-driven-development: claude-code-only
+  feasibility-check: claude-code-only
+  handoff: claude-code-only
+  health: claude-code-only
+  issue-generation: claude-code-only
+  meta-harness: claude-code-only
+  panel: claude-code-only
+  phase-gate: claude-code-only
+  pipeline-coordinator-reference: claude-code-only
+  pr-review: claude-code-only
+  project-planning: claude-code-only
+  rad: claude-code-only
+  receiving-code-review-extras: claude-code-only
+  repo-compliance: claude-code-only
+  sonarcloud: claude-code-only
+  source-driven-development: claude-code-only
+  task-observer: claude-code-only
+  test-coverage: claude-code-only
+  test-driven-development-extras: claude-code-only
+  testing: claude-code-only
+  triage: claude-code-only
+  usage-report: claude-code-only
+  writing: claude-code-only
+  writing-plans: claude-code-only
+
+  # exclude: delta on a vendored/dangling-submodule companion, not cleared
+  # for redistribution; re-evaluate once the companion's license is checked
+  # and the submodule is verified checked out.
+  audience-reaction-analyzer-extras: exclude
+  brainstorming-extras: exclude
+  code-review-extras: exclude
+  executing-plans-extras: exclude
+  fastapi-expert-extras: exclude
+  finishing-a-development-branch-extras: exclude
+  pdf-extras: exclude
+  pptx-extras: exclude
+  subagent-driven-development-extras: exclude
+  systematic-debugging-extras: exclude
+  verification-before-completion-extras: exclude
