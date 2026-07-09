@@ -1,0 +1,122 @@
+# Build the wff-code and wff-chat plugin trees from scripts/org-plugins/manifest.yaml
+# and push them to the private ByronWilliamsCPA/plugin marketplace repo.
+#
+# Triggers:
+#   - push to main touching .claude/agents/**, .claude/skills/**, or the
+#     manifest itself.
+#   - workflow_dispatch: manual run on demand.
+#
+# Behaviour: checks out both repos, runs scripts/org-plugins/build_org_plugins.py,
+# mirrors the result into the target repo's working tree, and pushes directly to
+# its main branch if anything changed. Pushing straight to main (no PR) is a
+# deliberate choice here, unlike sync-org-pins.yml: the review gate for this
+# workflow is the manifest.yaml change landing on *this* repo's main through the
+# normal branch-protected PR flow, not a second review in the generated repo.
+#
+# Security note: the push token is passed via env:, not ${{ }} interpolation,
+# in any shell command.
+
+name: Sync Org Plugins
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.claude/agents/**'
+      - '.claude/skills/**'
+      - 'scripts/org-plugins/manifest.yaml'
+      - 'scripts/org-plugins/build_org_plugins.py'
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: sync-org-plugins
+  cancel-in-progress: false
+
+env:
+  TARGET_REPO: ByronWilliamsCPA/plugin
+
+jobs:
+  sync:
+    name: Build and push wff-code / wff-chat
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Harden the runner
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411  # v2.19.4
+        with:
+          egress-policy: audit
+
+      - name: Checkout source repo
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7
+        with:
+          path: source
+
+      - name: Verify ORG_PLUGIN_PUSH_TOKEN before doing any work
+        env:
+          PAT: ${{ secrets.ORG_PLUGIN_PUSH_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${PAT:-}" ]; then
+            echo "::error::ORG_PLUGIN_PUSH_TOKEN secret is required (contents:write on $TARGET_REPO)."
+            exit 1
+          fi
+
+      - name: Checkout target repo
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7
+        with:
+          repository: ${{ env.TARGET_REPO }}
+          token: ${{ secrets.ORG_PLUGIN_PUSH_TOKEN }}
+          path: target
+
+      - name: Set up Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1  # v6.3.0
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: source/pyproject.toml
+
+      - name: Install dependencies
+        run: pip install pyyaml
+
+      - name: Build plugin trees
+        run: |
+          set -euo pipefail
+          cd source
+          python3 scripts/org-plugins/build_org_plugins.py --out "$GITHUB_WORKSPACE/build"
+
+      - name: Mirror build output into target repo checkout
+        run: |
+          set -euo pipefail
+          rsync -a --delete \
+            --exclude='.git' \
+            "$GITHUB_WORKSPACE/build/" "$GITHUB_WORKSPACE/target/"
+
+      - name: Detect changes
+        id: diff
+        working-directory: target
+        run: |
+          set -euo pipefail
+          git add -A
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No plugin content changes; nothing to push."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            git diff --cached --stat
+          fi
+
+      - name: Commit and push
+        if: steps.diff.outputs.changed == 'true'
+        working-directory: target
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore(sync): rebuild wff-code/wff-chat from .claude@${SOURCE_SHA:0:7}"
+          git push origin HEAD:main
