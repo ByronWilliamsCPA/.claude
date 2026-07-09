@@ -28,10 +28,10 @@ scripts/org-plugins/manifest.yaml            <- the only thing a human edits
 scripts/org-plugins/build_org_plugins.py      <- pure function of the manifest
           |
           v
-.github/workflows/sync-org-plugins.yml         <- runs the build, pushes the result
+.github/workflows/sync-org-plugins.yml         <- runs the build, opens/auto-merges a PR
           |
           v
-ByronWilliamsCPA/plugin (main)
+ByronWilliamsCPA/plugin (main, via PR)
   .claude-plugin/marketplace.json
   plugins/wff-code/   (agents + all first-party skills)  -> Claude Code
   plugins/wff-chat/   (portable skills only, no agents)  -> claude.ai chat/Cowork
@@ -104,13 +104,19 @@ workflow runs the identical script.
 ## One-time setup this pipeline still needs
 
 1. **`ORG_PLUGIN_PUSH_TOKEN` repo secret** on `ByronWilliamsCPA/.claude`: a
-   fine-grained PAT (or deploy key) with `contents: write` scoped to
-   `ByronWilliamsCPA/plugin` only. Without it the workflow fails fast with an
-   explicit error rather than pushing with an under-scoped token.
-2. **Claude Code side**: team members run
+   fine-grained PAT scoped to `ByronWilliamsCPA/plugin` only, with **Contents:
+   Read and write** and **Pull requests: Read and write** (the workflow opens
+   a PR and calls `gh pr merge --auto`, it needs both). Without it the
+   workflow fails fast with an explicit error rather than proceeding with an
+   under-scoped token.
+2. **"Allow auto-merge" enabled** in `ByronWilliamsCPA/plugin`'s repository
+   settings (General > Pull Requests). Without it, `gh pr merge --auto` errors
+   immediately and the workflow falls back to leaving the PR open for a manual
+   merge (it logs a warning, it doesn't fail the run).
+3. **Claude Code side**: team members run
    `claude plugin marketplace add ByronWilliamsCPA/plugin` once, then
    `/plugin install wff-code@wff-plugins`.
-3. **claude.ai side**: an org owner connects `ByronWilliamsCPA/plugin` as a
+4. **claude.ai side**: an org owner connects `ByronWilliamsCPA/plugin` as a
    marketplace source under Organization Settings > Plugins (Libraries),
    installing the `wff-chat` plugin, and enables "Sync automatically" so
    future pushes propagate without a manual re-sync.

@@ -47,10 +47,16 @@ layered on a vendored companion skill from a third-party submodule.
 
 We will maintain a classification manifest (`scripts/org-plugins/manifest.yaml`)
 in this repo that tags every first-party agent and skill, build two plugins
-from it with `scripts/org-plugins/build_org_plugins.py`, and push the result to
+from it with `scripts/org-plugins/build_org_plugins.py`, and land the result in
 a separate private repo (`ByronWilliamsCPA/plugin`) via a GitHub Action
 (`.github/workflows/sync-org-plugins.yml`) that runs on every push to `main`
-touching `.claude/agents/`, `.claude/skills/`, or the manifest.
+touching `.claude/agents/`, `.claude/skills/`, or the manifest. The workflow
+opens a PR against the target repo's main and enables auto-merge on it, rather
+than pushing directly: `ByronWilliamsCPA/plugin` inherited the org's
+default-branch-baseline ruleset on transfer, which blocks non-PR pushes to
+main outright. Auto-merge only completes once whatever the ruleset requires
+(checks, reviews) is satisfied; otherwise the PR waits for a manual merge,
+same fallback `sync-org-pins.yml` already uses elsewhere in this repo.
 
 - **`wff-code`**: all first-party agents plus all first-party skills not
   explicitly excluded. Distributed via Claude Code's plugin marketplace
@@ -88,10 +94,11 @@ needs its own license check, tracked separately from this decision.
 ## Consequences
 
 - **Positive**: updating the org-wide plugins is a normal PR to this repo
-  (edit `manifest.yaml`, or add/edit an agent or skill); the Action pushes the
-  rebuilt output automatically. No manual zip/upload step for `wff-code`; only
-  `wff-chat`'s claude.ai-side sync additionally requires the org owner to
-  connect the marketplace once in Organization Settings > Plugins.
+  (edit `manifest.yaml`, or add/edit an agent or skill); the Action opens and
+  auto-merges a PR with the rebuilt output on the target repo. No manual
+  zip/upload step for `wff-code`; only `wff-chat`'s claude.ai-side sync
+  additionally requires the org owner to connect the marketplace once in
+  Organization Settings > Plugins.
 - **Negative**: two repos now need to be kept consistent (this one and
   `ByronWilliamsCPA/plugin`); the Action is a new automated push path that
   needs a scoped `ORG_PLUGIN_PUSH_TOKEN` secret with write access to exactly
