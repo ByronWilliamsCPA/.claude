@@ -16,7 +16,7 @@ For the design decisions behind this system, see [ADR-002](adr/ADR-002-hook-comp
 
 ## The Six Hook Types
 
-**UserPromptSubmit**: fires immediately after the user sends a message, before Claude processes it. Used for: injecting context, detecting intent signals (PR review reminder), running the hookify user prompt pipeline.
+**UserPromptSubmit**: fires immediately after the user sends a message, before Claude processes it. Used for: injecting context, detecting intent signals (PR review reminder), the mechanical session-length nudge check, running the hookify user prompt pipeline.
 
 **PreToolUse**: fires before each tool call Claude attempts. Each entry in the `PreToolUse` array can have a matcher regex targeting specific tools. Used for, in `hooks.json` array order: bash command guard (Bash), secrets file guard (Edit/Write/MultiEdit), planning bridge gate (Skill), security reminder (Edit/Write/MultiEdit), hookify dispatch (all tools), destructive-command guard (Bash).
 
@@ -40,6 +40,7 @@ A single user message triggers the following hook sequence:
 User sends message
   → UserPromptSubmit[0]: hookify userpromptsubmit.py
   → UserPromptSubmit[1]: pr-review-reminder.py
+  → UserPromptSubmit[2]: session-length-nudge.py
 
   Model processes, issues tool calls:
     For each Bash call:
@@ -101,6 +102,7 @@ None of the repo-managed hooks, nor either plugin hook, loads a file from `.clau
 | --- | --- |
 | `hookify/hooks/userpromptsubmit.py` | Dispatches to registered hookify plugins for the UserPromptSubmit event |
 | `scripts/pr-review-reminder.py` | Detects when the user's message looks like a PR review request and injects a reminder about the review workflow |
+| `scripts/session-length-nudge.py` | Checks carried tokens against the CLAUDE.md "Session length" soft nudge every turn and injects a once-per-50K-band reminder once past the threshold |
 
 ### PreToolUse
 

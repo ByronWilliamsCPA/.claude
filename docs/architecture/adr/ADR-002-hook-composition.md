@@ -80,6 +80,7 @@ Current hook definitions by type:
 
 1. **hookify UserPromptSubmit**: dispatches to hookify plugin engine. Runs first, before any project-specific logic.
 2. **PR review reminder**: runs `scripts/pr-review-reminder.py` to detect PR review intent and inject reminders.
+3. **Session-length nudge**: runs `scripts/session-length-nudge.py` to mechanically check carried tokens against the CLAUDE.md "Session length" soft nudge and inject a once-per-50K-band reminder.
 
 ### Execution ordering across a conversation turn
 
@@ -87,6 +88,7 @@ Current hook definitions by type:
 User sends message
   → UserPromptSubmit[0]: hookify userpromptsubmit.py
   → UserPromptSubmit[1]: pr-review-reminder.py
+  → UserPromptSubmit[2]: session-length-nudge.py
   → Model processes prompt, issues tool calls
     → For each tool call:
         → PreToolUse[matcher]: bash command guard (if Bash)
@@ -143,6 +145,7 @@ Exit codes from hook scripts determine whether the tool call proceeds: exit 0 al
 - `scripts/planning-bridge-gate.sh`: Skill PreToolUse gate
 - `scripts/py310-compat-check.sh`: Edit/Write PostToolUse compatibility check
 - `scripts/pr-review-reminder.py`: UserPromptSubmit PR review detector
+- `scripts/session-length-nudge.py`: UserPromptSubmit session-length nudge enforcement
 - `.submodules/anthropics-plugins/plugins/hookify/`: the hookify plugin engine
 - `.submodules/anthropics-plugins/plugins/security-guidance/`: security reminder hook
 - `docs/architecture/hook-pipeline.md`: narrative explanation with embedded diagram

@@ -159,7 +159,7 @@ guidance. Do not treat 400K as a target; it is far above the degradation/knee ba
 
 ## D. Recommendations
 
-### Decision 1: autocompaction threshold (FINAL)
+### Decision 1: autocompaction threshold (historical derivation; superseded by Recalibration 2026-07-11)
 
 Treat autocompact as a **lossy backstop set at the quality cliff**, not a forced
 compaction at the economic knee. Express it in absolute tokens via the
@@ -278,8 +278,13 @@ Both thresholds were lowered on user request: handoff nudge 150K -> 100K, autoco
 backstop 375K -> 250K (`CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` 75 -> 50, same
 `CLAUDE_CODE_AUTO_COMPACT_WINDOW=500000`). This is a **policy override, not a
 re-derivation**: the 595-session band analysis in section E is unchanged (86% of
-sessions still peak under ~400K), and no new measurement motivated the change. The
-trigger was that sessions were still frequently exceeding the ~150K soft nudge despite
+sessions still peak under ~400K), and no new measurement motivated the change. Applying
+that same band breakdown (section E: 6% under 10%, 26% 10-20%, 36% 20-30%, 18% 30-40%) to
+the new 250K backstop rather than the original 375K puts autocompaction in reach of
+roughly half of sessions, not only the long tail Decision 1 describes for 375K; the
+2026-07-11 numbers are intentionally more aggressive on top of the same evidence, not
+equally conservative at a lower absolute value. The trigger was that sessions were still
+frequently exceeding the ~150K soft nudge despite
 the advisory text in CLAUDE.md, because that nudge was pure prose the assistant had to
 notice and act on; there was no mechanical check. The user chose a tighter operating
 point rather than waiting for the nudge to be noticed more reliably at the old value.

@@ -36,10 +36,13 @@ context (`input_tokens + cache_read_input_tokens + cache_creation_input_tokens`)
 against the per-model window, the output tokens, and the carry ratio (context per output
 token). From those it derives two signals:
 
-- **Carry-ratio knee (the ~100K nudge signal).** The fill at which the smoothed carry
+- **Carry-ratio knee (the nudge-threshold basis).** The fill at which the smoothed carry
   ratio first reaches a multiple of its early-session baseline, where a turn starts
   carrying a lot of context for little new output. Across 595 local sessions the knee sits
-  at a median of ~17% of a 1M window (~150-200K tokens), p25 13% / p75 20%.
+  at a median of ~17% of a 1M window (~150-200K tokens), p25 13% / p75 20%. The operative
+  ~100K nudge floor (CLAUDE.md "Session length") sits below this median as a deliberate
+  safety margin, not as a re-derived value; see the 2026-07-11 recalibration in
+  `context-window-autocompaction-research.md` for why.
 - **Compaction count (the restart signal).** A compaction leaves no transcript marker, so
   the script detects it as a sustained context drop (>= 50K tokens that does not recover
   the next turn) and counts those per session. This supersedes an earlier draft that left
