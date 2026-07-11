@@ -2223,6 +2223,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#mechanical-enforcement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mechanical enforcement
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#recalibrating" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2281,11 +2292,13 @@
 <p>Two separate triggers, both expressed in absolute carried tokens (not percent of window,
 which misleads on a 1M model):</p>
 <ol>
-<li><strong>Handoff nudge (~150K carried tokens):</strong> the proactive, lossless lever. At a task
+<li><strong>Handoff nudge (~100K carried tokens):</strong> the proactive, lossless lever. At a task
    boundary past the cost knee, Claude offers <code>/compact</code> or <code>/handoff</code>. Operative text:
-   root CLAUDE.md "Session length".</li>
-<li><strong>Autocompact backstop (~375K):</strong> the lossy fallback, set via
-   <code>CLAUDE_CODE_AUTO_COMPACT_WINDOW=500000</code> + <code>CLAUDE_AUTOCOMPACT_PCT_OVERRIDE=75</code>.</li>
+   root CLAUDE.md "Session length". Mechanically backed by a <code>UserPromptSubmit</code> hook,
+   <code>scripts/session-length-nudge.py</code> (see "Mechanical enforcement" below); the prose
+   alone previously depended on Claude noticing the count.</li>
+<li><strong>Autocompact backstop (~250K):</strong> the lossy fallback, set via
+   <code>CLAUDE_CODE_AUTO_COMPACT_WINDOW=500000</code> + <code>CLAUDE_AUTOCOMPACT_PCT_OVERRIDE=50</code>.</li>
 </ol>
 <p>Why absolute tokens, and why these values: see
 <code>docs/development/context-window-autocompaction-research.md</code>.</p>
@@ -2296,10 +2309,13 @@ context (<code>input_tokens + cache_read_input_tokens + cache_creation_input_tok
 against the per-model window, the output tokens, and the carry ratio (context per output
 token). From those it derives two signals:</p>
 <ul>
-<li><strong>Carry-ratio knee (the ~150K nudge signal).</strong> The fill at which the smoothed carry
+<li><strong>Carry-ratio knee (the nudge-threshold basis).</strong> The fill at which the smoothed carry
   ratio first reaches a multiple of its early-session baseline, where a turn starts
   carrying a lot of context for little new output. Across 595 local sessions the knee sits
-  at a median of ~17% of a 1M window (~150-200K tokens), p25 13% / p75 20%.</li>
+  at a median of ~17% of a 1M window (~150-200K tokens), p25 13% / p75 20%. The operative
+  ~100K nudge floor (CLAUDE.md "Session length") sits below this median as a deliberate
+  safety margin, not as a re-derived value; see the 2026-07-11 recalibration in
+  <code>context-window-autocompaction-research.md</code> for why.</li>
 <li><strong>Compaction count (the restart signal).</strong> A compaction leaves no transcript marker, so
   the script detects it as a sustained context drop (&gt;= 50K tokens that does not recover
   the next turn) and counts those per session. This supersedes an earlier draft that left
@@ -2314,13 +2330,27 @@ token). From those it derives two signals:</p>
 <p>The window is auto-detected per session from the model id (1M for current Opus/Sonnet/
 Fable, 200K for Haiku); <code>--window</code> overrides. A peak fill above 100% warns that the window
 is wrong for that model.</p>
+<h2 id="mechanical-enforcement">Mechanical enforcement<a class="headerlink" href="#mechanical-enforcement" title="Permanent link">&para;</a></h2>
+<p><code>scripts/session-length-nudge.py</code>, a <code>UserPromptSubmit</code> hook wired via <code>hooks.json</code>,
+checks carried tokens on every turn against the handoff-nudge threshold
+(<code>SESSION_LENGTH_SOFT_TARGET</code>, default 100,000) so the nudge no longer depends solely on
+Claude noticing the count in <code>/context</code>. It reads the same usage fields as
+<code>iter_usage()</code> in <code>analyze-session-inflection.py</code> from the most recent main-thread
+assistant turn, and once carried tokens cross the threshold it injects a reminder each
+time the session climbs into a new 50K-token band (100K, 150K, 200K, ...), tracked per
+<code>session_id</code> in <code>~/.claude/tmp_cleanup/.session-length-nudge/</code>, so it fires once per band
+rather than every turn. Disable with <code>SESSION_LENGTH_NUDGE_DISABLED=1</code>.</p>
+<p>Keep the threshold constant in the script (<code>DEFAULT_SOFT_TARGET</code>) and the CLAUDE.md
+"Below ~100K" bullet in sync manually; the script cannot read CLAUDE.md prose, so the
+number is necessarily duplicated in both places.</p>
 <h2 id="recalibrating">Recalibrating<a class="headerlink" href="#recalibrating" title="Permanent link">&para;</a></h2>
 <p>Re-run periodically; the knee shifts with project size and working style:</p>
 <ol>
 <li>Read the carry-ratio knee distribution. If the median knee has moved, update the
-   CLAUDE.md nudge floor (currently ~150K) to track it.</li>
+   CLAUDE.md nudge floor (currently ~100K) and <code>SESSION_LENGTH_SOFT_TARGET</code> in
+   <code>scripts/session-length-nudge.py</code> together.</li>
 <li>Review the peak-fill and compaction-count distributions. If most sessions now peak much
-   higher or lower, revisit the ~375K autocompact backstop (and the
+   higher or lower, revisit the ~250K autocompact backstop (and the
    <code>CLAUDE_CODE_AUTO_COMPACT_WINDOW</code> / <code>CLAUDE_AUTOCOMPACT_PCT_OVERRIDE</code> values).</li>
 <li>Record the revised values and the reasoning in the research doc.</li>
 </ol>
@@ -2342,6 +2372,7 @@ is wrong for that model.</p>
 <li><code>docs/development/context-window-autocompaction-research.md</code> (evidence and decisions)</li>
 <li>root <code>CLAUDE.md</code> "Session length" (the operative thresholds)</li>
 <li><code>scripts/analyze-session-inflection.py</code> (the measurement)</li>
+<li><code>scripts/session-length-nudge.py</code> (the mechanical handoff-nudge enforcement)</li>
 </ul>
 
 
@@ -2365,7 +2396,7 @@ is wrong for that model.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 27, 2026 20:12:43 UTC">June 27, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 11, 2026 18:56:16 UTC">July 11, 2026</span>
   </span>
 
     

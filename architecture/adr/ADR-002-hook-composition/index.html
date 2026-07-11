@@ -2587,28 +2587,30 @@ by <code>--doctor</code> as unbackported.</p>
 <ol>
 <li><strong>hookify UserPromptSubmit</strong>: dispatches to hookify plugin engine. Runs first, before any project-specific logic.</li>
 <li><strong>PR review reminder</strong>: runs <code>scripts/pr-review-reminder.py</code> to detect PR review intent and inject reminders.</li>
+<li><strong>Session-length nudge</strong>: runs <code>scripts/session-length-nudge.py</code> to mechanically check carried tokens against the CLAUDE.md "Session length" soft nudge and inject a once-per-50K-band reminder.</li>
 </ol>
 <h3 id="execution-ordering-across-a-conversation-turn">Execution ordering across a conversation turn<a class="headerlink" href="#execution-ordering-across-a-conversation-turn" title="Permanent link">&para;</a></h3>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>User sends message
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>  → UserPromptSubmit[0]: hookify userpromptsubmit.py
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>  → UserPromptSubmit[1]: pr-review-reminder.py
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>  → Model processes prompt, issues tool calls
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    → For each tool call:
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>        → PreToolUse[matcher]: bash command guard (if Bash)
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>        → PreToolUse[matcher]: sensitive file guard (if Edit|Write|MultiEdit)
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>        → PreToolUse[matcher]: planning gate (if Skill)
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>        → PreToolUse[matcher]: security reminder (if Edit|Write|MultiEdit)
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>        → PreToolUse[no-matcher]: hookify pretooluse.py
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>        → PreToolUse[matcher]: destructive-command guard (if Bash)
-</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>        → Tool executes
-</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>        → PostToolUse[matcher]: py310-compat-check (if Edit|Write)
-</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>        → PostToolUse[matcher]: snyk-dep-reminder (if Edit|Write|MultiEdit)
-</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>        → PostToolUse[matcher]: test-skip-guard (if Edit|Write|MultiEdit)
-</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>        → PostToolUse[no-matcher]: hookify posttooluse.py
-</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>  → Model finishes turn
-</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>    → Stop[no-matcher]: hookify stop.py
-</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>  → If context is compacted (auto or manual), separately from the turn cycle:
-</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>    → PreCompact[no-matcher]: precompact-handoff.sh
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>  → UserPromptSubmit[2]: session-length-nudge.py
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>  → Model processes prompt, issues tool calls
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    → For each tool call:
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>        → PreToolUse[matcher]: bash command guard (if Bash)
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>        → PreToolUse[matcher]: sensitive file guard (if Edit|Write|MultiEdit)
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>        → PreToolUse[matcher]: planning gate (if Skill)
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>        → PreToolUse[matcher]: security reminder (if Edit|Write|MultiEdit)
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>        → PreToolUse[no-matcher]: hookify pretooluse.py
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>        → PreToolUse[matcher]: destructive-command guard (if Bash)
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>        → Tool executes
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>        → PostToolUse[matcher]: py310-compat-check (if Edit|Write)
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>        → PostToolUse[matcher]: snyk-dep-reminder (if Edit|Write|MultiEdit)
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>        → PostToolUse[matcher]: test-skip-guard (if Edit|Write|MultiEdit)
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>        → PostToolUse[no-matcher]: hookify posttooluse.py
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>  → Model finishes turn
+</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>    → Stop[no-matcher]: hookify stop.py
+</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>  → If context is compacted (auto or manual), separately from the turn cycle:
+</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>    → PreCompact[no-matcher]: precompact-handoff.sh
 </span></code></pre></div>
 <p>Exit codes from hook scripts determine whether the tool call proceeds: exit 0 allows, exit 2 blocks with an error message, exit 1 is a hook-level failure.</p>
 <h2 id="alternatives-considered">Alternatives Considered<a class="headerlink" href="#alternatives-considered" title="Permanent link">&para;</a></h2>
@@ -2640,6 +2642,7 @@ by <code>--doctor</code> as unbackported.</p>
 <li><code>scripts/planning-bridge-gate.sh</code>: Skill PreToolUse gate</li>
 <li><code>scripts/py310-compat-check.sh</code>: Edit/Write PostToolUse compatibility check</li>
 <li><code>scripts/pr-review-reminder.py</code>: UserPromptSubmit PR review detector</li>
+<li><code>scripts/session-length-nudge.py</code>: UserPromptSubmit session-length nudge enforcement</li>
 <li><code>.submodules/anthropics-plugins/plugins/hookify/</code>: the hookify plugin engine</li>
 <li><code>.submodules/anthropics-plugins/plugins/security-guidance/</code>: security reminder hook</li>
 <li><code>docs/architecture/hook-pipeline.md</code>: narrative explanation with embedded diagram</li>
@@ -2668,7 +2671,7 @@ by <code>--doctor</code> as unbackported.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 8, 2026 12:52:11 UTC">July 8, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 11, 2026 18:56:16 UTC">July 11, 2026</span>
   </span>
 
     
