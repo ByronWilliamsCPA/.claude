@@ -181,7 +181,7 @@ decisions, synthesis, validation of agent output, and user interaction; the
 doing belongs in subagents, which start from a clean, focused context and
 return only their findings. Reading a subagent's report costs hundreds of
 tokens; reading everything the subagent read costs tens of thousands.
-Delegation is the primary lever that keeps a session under the ~150K handoff
+Delegation is the primary lever that keeps a session under the ~100K handoff
 knee (see Session length under Development philosophy).
 
 Dispatch a subagent instead of working inline when:
@@ -319,20 +319,23 @@ raising per-turn cost and inviting context rot. Two separate decisions follow,
 calibrated separately (basis and data:
 `docs/development/context-window-autocompaction-research.md`):
 
-- *Autocompact, the lossy fallback*: Claude Code force-compacts around 375K
+- *Autocompact, the lossy fallback*: Claude Code force-compacts around 250K
   carried tokens (`CLAUDE_CODE_AUTO_COMPACT_WINDOW=500000` +
-  `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE=75`). It is lossy and runs when the model is
+  `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE=50`). It is lossy and runs when the model is
   least sharp, so it is the backstop, not the plan.
 - *Handoff suggestion, the proactive lever*: offer a clean break at the cost
-  knee (~150K carried tokens, where carried context stops paying off), well
-  before the fallback.
+  knee (~100K carried tokens, where carried context stops paying off), well
+  before the fallback. A `UserPromptSubmit` hook (`scripts/session-length-nudge.py`)
+  mechanically checks carried tokens against this threshold every turn and
+  injects a reminder once a new 50K band is crossed, so the offer no longer
+  depends solely on noticing the count.
 
 Track carried tokens (absolute, via `/context`), not percent of window (the
 window varies by model and misleads on 1M). Gate every suggestion on a completed
 task unit so you never interrupt mid-task:
 
-- **Below ~150K carried tokens**: keep working.
-- **~150K to ~300K, and a task unit just finished**: tell the user the session is
+- **Below ~100K carried tokens**: keep working.
+- **~100K to ~200K, and a task unit just finished**: tell the user the session is
   past the point where carried context pays off, and offer both remedies in the
   same message, do not make them ask: "Want a clean break? `/handoff` writes a
   handoff doc plus kickoff prompt and starts a fresh session (best when switching
@@ -340,9 +343,9 @@ task unit so you never interrupt mid-task:
   sheds stale context in place while keeping the thread (best when continuing this
   work, e.g. `/compact keep the auth refactor, drop the test debugging`)." Offer
   once; if declined, do not re-offer until context has grown materially.
-- **Approaching ~300K (nearing the ~375K autocompact)**: recommend acting before
+- **Approaching ~200K (nearing the ~250K autocompact)**: recommend acting before
   starting any new task unit. A steered `/compact` now, or `/handoff` plus a fresh
-  session at a boundary, both beat the unsteered lossy autocompact at 375K. If
+  session at a boundary, both beat the unsteered lossy autocompact at 250K. If
   mid-task, finish the unit first.
 
 Regardless of token count, also start fresh when a genuinely new task begins (new
