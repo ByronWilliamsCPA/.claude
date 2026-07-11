@@ -14,8 +14,9 @@ Carried-token computation mirrors ``scripts/analyze-session-inflection.py``'s
 
 Protocol: reads a JSON event from stdin (expects ``transcript_path`` and
 ``session_id``), writes JSON to stdout with an optional ``systemMessage``
-field. Exits 0 always (never blocks the prompt); any read, parse, or I/O
-failure degrades to a silent no-op rather than surfacing an error.
+field. Exits 0 on any exception raised by its own logic (never blocks the
+prompt); any read, parse, or I/O failure degrades to a silent no-op rather
+than surfacing an error.
 
 Env vars:
     SESSION_LENGTH_SOFT_TARGET: soft-nudge threshold in tokens (default
@@ -44,6 +45,10 @@ STATE_DIR = Path.home() / ".claude" / "tmp_cleanup" / ".session-length-nudge"
 # session_id is expected to be a UUID-like token from Claude Code, but treat
 # it as untrusted input: strip anything that is not safe in a filename so a
 # malformed event can never escape STATE_DIR via path traversal.
+# #EDGE: a session_id containing only unsafe characters collapses to an
+# empty string; _state_file returns None for that case and the hook no-ops.
+# #VERIFY: pass session_id="../../etc/passwd" through _state_file and confirm
+# the resolved path stays under STATE_DIR.
 _UNSAFE_ID_CHARS = re.compile(r"[^A-Za-z0-9_-]")
 
 
@@ -75,44 +80,42 @@ def _last_carried_tokens(transcript_path: str) -> int | None:
     """Return carried tokens for the most recent main-thread assistant turn.
 
     Returns None if the transcript is missing, unreadable, or contains no
-    matching turn.
+    matching turn. Scans from the end of the transcript so a hit near the
+    tail (the common case) skips parsing the earlier bulk of the session.
     """
     path = Path(transcript_path)
-    if not path.is_file():
-        return None
-
-    last_usage: dict | None = None
     try:
+        if not path.is_file():
+            return None
         with path.open(encoding="utf-8") as handle:
-            for raw in handle:
-                stripped = raw.strip()
-                if not stripped:
-                    continue
-                try:
-                    record = json.loads(stripped)
-                except ValueError:
-                    continue
-                if not isinstance(record, dict):
-                    continue
-                if record.get("type") != "assistant" or record.get("isSidechain"):
-                    continue
-                message = record.get("message")
-                if not isinstance(message, dict):
-                    continue
-                usage = message.get("usage")
-                if isinstance(usage, dict):
-                    last_usage = usage
-    except OSError:
+            lines = handle.readlines()
+    except (OSError, UnicodeDecodeError):
         return None
 
-    if last_usage is None:
-        return None
+    for raw in reversed(lines):
+        stripped = raw.strip()
+        if not stripped:
+            continue
+        try:
+            record = json.loads(stripped)
+        except ValueError:
+            continue
+        if not isinstance(record, dict):
+            continue
+        if record.get("type") != "assistant" or record.get("isSidechain"):
+            continue
+        message = record.get("message")
+        if not isinstance(message, dict):
+            continue
+        usage = message.get("usage")
+        if isinstance(usage, dict):
+            return (
+                _as_int(usage.get("input_tokens"))
+                + _as_int(usage.get("cache_read_input_tokens"))
+                + _as_int(usage.get("cache_creation_input_tokens"))
+            )
 
-    return (
-        _as_int(last_usage.get("input_tokens"))
-        + _as_int(last_usage.get("cache_read_input_tokens"))
-        + _as_int(last_usage.get("cache_creation_input_tokens"))
-    )
+    return None
 
 
 def _state_file(session_id: str) -> Path | None:
@@ -124,11 +127,17 @@ def _state_file(session_id: str) -> Path | None:
 
 
 def _last_notified_bucket(state_path: Path) -> int:
-    """Read the last-notified band from the state file; 0 if absent/invalid."""
+    """Read the last-notified band from the state file.
+
+    Returns -1 (a sentinel below any valid non-negative bucket) if the state
+    file is absent or invalid, so a real first crossing whose bucket floors
+    to 0 (carried tokens below BAND_SIZE) is never mistaken for "already
+    notified".
+    """
     try:
         return int(state_path.read_text(encoding="utf-8").strip())
     except (OSError, ValueError):
-        return 0
+        return -1
 
 
 def _record_notified_bucket(state_path: Path, bucket: int) -> None:
@@ -137,14 +146,19 @@ def _record_notified_bucket(state_path: Path, bucket: int) -> None:
         state_path.parent.mkdir(parents=True, exist_ok=True)
         state_path.write_text(str(bucket), encoding="utf-8")
     except OSError:
+        # State persistence is best-effort: a write failure here only means
+        # the reminder may repeat next turn instead of once per band, which
+        # is consistent with this hook's silent-no-op-on-I/O-failure contract.
         pass
 
 
-def _reminder_message(bucket: int) -> str:
+def _reminder_message(bucket: int, threshold: int) -> str:
+    """Build the reminder text for crossing into a newly-notified band."""
+    display = max(bucket, threshold)
     return (
-        f"[session-length-nudge] This session has crossed ~{bucket:,} carried "
-        'tokens, past the CLAUDE.md "Session length" soft nudge (~100K). At '
-        "the next finished task boundary (never mid-task), offer the user the "
+        f"[session-length-nudge] This session has crossed ~{display:,} carried "
+        f'tokens, past the CLAUDE.md "Session length" soft nudge (~{threshold:,}). '
+        "At the next finished task boundary (never mid-task), offer the user the "
         "graduated choice from that section: `/handoff` for a clean break, or "
         "`/compact [instructions]` to shed stale context in place. If you already "
         "offered this and the user declined, do not re-offer until context has "
@@ -163,6 +177,8 @@ def main() -> None:
             os.environ.get("SESSION_LENGTH_SOFT_TARGET", str(DEFAULT_SOFT_TARGET))
         )
     except ValueError:
+        threshold = DEFAULT_SOFT_TARGET
+    if threshold <= 0:
         threshold = DEFAULT_SOFT_TARGET
 
     event = _read_event()
@@ -190,11 +206,14 @@ def main() -> None:
         return
 
     _record_notified_bucket(state_path, bucket)
-    print(json.dumps({"systemMessage": _reminder_message(bucket)}))
+    print(json.dumps({"systemMessage": _reminder_message(bucket, threshold)}))
 
 
 if __name__ == "__main__":
     try:
         main()
     except Exception:
-        print(json.dumps({}))
+        try:
+            print(json.dumps({}))
+        except OSError:
+            pass
