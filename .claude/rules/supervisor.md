@@ -108,8 +108,9 @@ operating mode; `/panel` is the deliberate cross-vendor escalation for
 high-stakes or irreversible changes.
 
 **Vendored-agent exception.** `silent-failure-hunter`, `type-design-analyzer`,
-and `comment-analyzer` are symlinked from the `anthropics-plugins`
-pr-review-toolkit submodule and ship with `model: inherit`. Per the
+`comment-analyzer`, and `pr-test-analyzer` are symlinked from the
+`anthropics-plugins` pr-review-toolkit submodule and ship with
+`model: inherit`. Per the
 submodule-isolation policy, their model is **not** pinned: editing
 vendor-mirror content would drift from upstream and be clobbered on the next
 sync. They are left on `inherit` deliberately. Because `inherit` gives these
@@ -215,9 +216,9 @@ the output before proceeding (e.g., `/commit`, `/quality`, `/git pr`).
 
 | Layer | Role | Example |
 | ----- | ---- | ------- |
-| **Command** | User interaction point; receives intent, dispatches | `/rad-verify-pipeline` |
+| **Command** | User interaction point; receives intent, dispatches | `/code-review` |
 | **Agent** | Domain specialist; preloaded context + tool restrictions | security-auditor |
-| **Skill** | Stateless output generator; called once per invocation | owasp-dispatch |
+| **Skill** | Stateless output generator; called once per invocation | `/quality` |
 
 Commands invoke agents; agents invoke skills. Skills do not invoke agents. See
 [ADR-004](../../docs/architecture/adr/ADR-004-skill-vs-agent-boundary.md) for the

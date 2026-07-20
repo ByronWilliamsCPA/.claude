@@ -41,7 +41,7 @@ From each document, extract:
 
 ### Step 3: Research Best Practices
 
-Use Context7 (`mcp__context7__resolve-library-id` + `mcp__context7__get-library-docs`) to look
+Use Context7 (`mcp__context7__resolve-library-id` + `mcp__context7__query-docs`) to look
 up framework-specific patterns for the primary technology stack identified in the Tech Spec.
 Apply relevant patterns to the phase implementation guidance.
 
@@ -81,14 +81,19 @@ Generate `docs/planning/PROJECT-PLAN.md` with the following sections:
 
 ### Step 6: Expert Validation
 
-Use zen-mcp tiered consensus (`mcp__zen__consensus`) with a Level 2 review assessing:
+Use `Skill("panel")` in tiered-review mode at Level 2, assessing:
 
 - Completeness: does the plan cover all roadmap phases?
 - Feasibility: are phase timelines and scope realistic?
 - Branch strategy: does the branch mapping align with semantic versioning intent?
 - Quality gate coverage: are gates defined for every phase?
 
-Incorporate feedback and re-validate until consensus returns an approval.
+Precondition: `OPENROUTER_API_KEY` must be set. If it is not, degrade to
+single-model verification with the `doubt-driven-development` skill and tag
+the output `VERIFIED-SINGLE-MODEL` so downstream readers know decorrelation
+was not achieved.
+
+Incorporate feedback and re-validate until the panel returns an approval.
 
 ### Step 7: Confirm with User
 
