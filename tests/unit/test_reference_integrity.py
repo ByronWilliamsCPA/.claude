@@ -44,7 +44,8 @@ def test_no_dead_tool_references():
     offenders = []
     for path in live_files():
         rel = str(path.relative_to(ROOT))
-        for i, line in enumerate(path.read_text().splitlines(), 1):
+        text = path.read_text(encoding="utf-8")
+        for i, line in enumerate(text.splitlines(), 1):
             if DEAD_TOKENS.search(line):
                 offenders.append(f"{rel}:{i}: {line.strip()[:80]}")
     assert not offenders, "dead tool references:\n" + "\n".join(offenders)
