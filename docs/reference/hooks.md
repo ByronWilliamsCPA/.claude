@@ -54,6 +54,18 @@ The authoritative hook definition is `hooks.json` at repo root. It is merged int
 | Script | Matcher | Purpose |
 | --- | --- | --- |
 | `anthropics-plugins/.../stop.py` | (all) | hookify plugin engine stop handler |
+| `scripts/hooks/task-observer-flush-check.py` | (all) | Blocks turn end once per session, timeout 10s, when a task-oriented session (20+ tool uses including an Edit/Write/NotebookEdit) logged no new skill observations since its SessionStart baseline |
+
+### SessionStart
+
+This table covers only the SessionStart half of the task-observer hook pair.
+Five repo-managed hooks register on SessionStart; see
+[Architecture → Hook Pipeline](../architecture/hook-pipeline.md) for the full
+roster and run order.
+
+| Script | Matcher | Purpose |
+| --- | --- | --- |
+| `scripts/hooks/task-observer-reminder.sh` | `startup\|resume\|clear\|compact` | Timeout 10s. Writes the current `### Observation` heading count from `~/.claude/skill-observations/log.md` to a per-session baseline file (consumed by the Stop hook above) and prints the task-observation reminder text |
 
 ## Hook Exit Codes
 
@@ -81,7 +93,7 @@ Plugins enabled through `enabledPlugins` contribute hooks from their own `hooks/
 - Blocking semantics apply per hook regardless of source: any PreToolUse hook that exits 2 or returns a deny decision blocks the tool call. Observability hooks must therefore be fire-and-forget (exit 0 on every code path, nothing written to stdout).
 - Latency is cumulative: each matching registration is one process spawn per event, so a plugin adds its own spawns on top of the repo-managed ones.
 
-As of 2026-07, `hooks.json` defines 26 repo-managed command entries across PreToolUse (6), PostToolUse (4), Stop (1), PreCompact (1), UserPromptSubmit (2), and SessionStart (12: `cbm-context-reminder.sh`, `delegation-reminder.sh`, and `handoff-resume-reminder.sh`, each registered under the startup, resume, clear, and compact matchers). The hookify and security-guidance plugins ship under `.submodules/anthropics-plugins` but are wired as command entries in `hooks.json` (legacy wiring), so they count as repo-managed hooks, not plugin-system hooks.
+As of 2026-07, `hooks.json` defines 36 repo-managed command entries across PreToolUse (6), PostToolUse (4), Stop (2), PreCompact (1), UserPromptSubmit (3), and SessionStart (20: `cbm-context-reminder.sh`, `delegation-reminder.sh`, `task-observer-reminder.sh`, `handoff-resume-reminder.sh`, and `harness-doctor.sh`, each registered under the startup, resume, clear, and compact matchers). The hookify and security-guidance plugins ship under `.submodules/anthropics-plugins` but are wired as command entries in `hooks.json` (legacy wiring), so they count as repo-managed hooks, not plugin-system hooks.
 
 ### agents-observe (pinned v0.9.11)
 

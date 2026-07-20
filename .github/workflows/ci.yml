@@ -94,6 +94,8 @@ jobs:
         run: npx --no-install bats tests/test_setup_hooks.bats
       - name: Run destructive-command-guard tests
         run: npx --no-install bats tests/test_destructive_command_guard.bats
+      - name: Run task-observer hook tests
+        run: npx --no-install bats tests/test_task_observer_hooks.bats
 
   # ==========================================================================
   # CI Gate: aggregates the CI result; must pass for branch protection

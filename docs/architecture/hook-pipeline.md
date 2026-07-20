@@ -22,11 +22,11 @@ For the design decisions behind this system, see [ADR-002](adr/ADR-002-hook-comp
 
 **PostToolUse**: fires after each tool call completes. Used for, in `hooks.json` array order: Python 3.10 compatibility check (Edit/Write), Snyk dependency-manifest reminder (Edit/Write/MultiEdit), test-skip-marker guard (Edit/Write/MultiEdit), hookify dispatch (all tools).
 
-**Stop**: fires when Claude finishes its turn (before control returns to the user). Used for: hookify stop handler.
+**Stop**: fires when Claude finishes its turn (before control returns to the user). Used for: hookify stop handler, task-observer flush check.
 
 **PreCompact**: fires immediately before Claude Code compacts the conversation, whether triggered automatically (approaching the context limit) or manually (`/compact`). Used for: writing a cheap, objective auto-handoff snapshot as a backstop for the unattended-autocompact case.
 
-**SessionStart**: fires when a session opens, and again on resume, `clear`, or `compact`, depending on which matcher a given hook registers. Three repo-managed hooks are wired here (`scripts/hooks/delegation-reminder.sh`, `scripts/hooks/cbm-context-reminder.sh`, `scripts/hooks/handoff-resume-reminder.sh`), alongside SessionStart hooks contributed by installed plugins. No `.claude/rules/*.md` file is injected at this point or any other; rules enter context only when Claude follows a `CLAUDE.md` pointer to one, or a hook prints its content directly, which is exactly what these hooks do.
+**SessionStart**: fires when a session opens, and again on resume, `clear`, or `compact`, depending on which matcher a given hook registers. Five repo-managed hooks are wired here, in `hooks.json` order: `scripts/hooks/cbm-context-reminder.sh`, `scripts/hooks/delegation-reminder.sh`, `scripts/hooks/task-observer-reminder.sh`, `scripts/hooks/handoff-resume-reminder.sh`, and `scripts/hooks/harness-doctor.sh`, alongside SessionStart hooks contributed by installed plugins. No `.claude/rules/*.md` file is injected at this point or any other; rules enter context only when Claude follows a `CLAUDE.md` pointer to one, or a hook prints its content directly, which is exactly what these hooks do.
 
 ## Diagram
 
@@ -73,6 +73,7 @@ User sends message
 
   Model turn ends
     → Stop[0]: hookify stop.py
+    → Stop[1]: task-observer-flush-check.py
 
   If context is compacted (auto or manual), separately from the turn cycle:
     → PreCompact[0]: precompact-handoff.sh
@@ -90,7 +91,9 @@ Fires once per session-open event, before the turn cycle described above begins;
 | --- | --- | --- |
 | `startup\|resume\|clear\|compact` | `scripts/hooks/cbm-context-reminder.sh` | Repo-managed; listed first in `hooks.json`, so it runs first. Prints the codebase-memory-mcp discovery protocol (prefer `search_graph`/`trace_path`/`get_code_snippet`/`get_architecture` over Grep/Glob for code exploration). Replaces the binary-managed `~/.claude/hooks/cbm-session-reminder` entry that `codebase-memory-mcp install` writes, so the wording survives a binary upgrade |
 | `startup\|resume\|clear\|compact` | `scripts/hooks/delegation-reminder.sh` | Repo-managed. Prints the delegation protocol reminder (dispatch subagents for exploration, well-specified implementation, and review; never silently absorb a failed dispatch inline) and refreshes the task-observer skills manifest, warning on stdout if the refresh fails |
+| `startup\|resume\|clear\|compact` | `scripts/hooks/task-observer-reminder.sh` | Repo-managed. Writes the current `~/.claude/skill-observations/log.md` observation count to `~/.claude/skill-observations/.state/<session_id>.baseline` (skipped when the session id fails a `[A-Za-z0-9._-]{1,128}` allowlist), prunes state files older than 14 days, and prints the task-observation reminder text. Runs after `delegation-reminder.sh` so the skills manifest that hook regenerates is already fresh. Its companion `scripts/hooks/task-observer-flush-check.py` (Stop, see below) reads this baseline back |
 | `startup\|resume\|clear\|compact` | `scripts/hooks/handoff-resume-reminder.sh` | Repo-managed. Checks for the single overwritten backstop file `~/.claude/logs/handoffs/auto-precompact-latest.md` written by `precompact-handoff.sh` and, if present, prints its branch/dirty-count/timestamp content as session-start context, labeled STALE past 48 hours. Prints nothing when the file does not exist. Complements, does not replace, the manual `/handoff` skill's timestamped archive |
+| `startup\|resume\|clear\|compact` | `scripts/hooks/harness-doctor.sh` | Repo-managed. Prints a one-line inventory of live versus degraded protections to stderr so the session can reason about which gates actually exist rather than trusting the docs (review R-12). Advisory: always exits 0, fails open. Tested by `tests/scripts/test_harness_doctor.bats` |
 | `startup\|clear\|compact` | superpowers plugin session-start command | Plugin-provided; not defined in this repo's `hooks.json` |
 | (all matchers) | agents-observe plugin telemetry auto-start | Plugin-provided; not defined in this repo's `hooks.json` |
 
@@ -129,6 +132,7 @@ None of the repo-managed hooks, nor either plugin hook, loads a file from `.clau
 | Script | What it does |
 | --- | --- |
 | `hookify/hooks/stop.py` | Dispatches to hookify plugin engine's stop handlers |
+| `scripts/hooks/task-observer-flush-check.py` | Reads the SessionStart baseline written by `scripts/hooks/task-observer-reminder.sh` and blocks turn end once, only when the session made 20 or more tool calls including at least one Edit/Write/NotebookEdit, and the live observation count has not grown past the baseline. Fails open (prints nothing, exits 0) on a missing baseline, an already-fired nudge marker, `stop_hook_active: true`, or any read/parse error |
 
 ### PreCompact
 
