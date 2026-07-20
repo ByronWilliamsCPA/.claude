@@ -49,10 +49,12 @@ because our config and tool identifiers point at the fork; do not rename these
 references to `pal`. Multi-model panel reviews have moved to the `/panel` skill
 (OpenRouter-based; `.claude/skills/panel/`), which supersedes the zen/pal
 `consensus` and `tiered_consensus` tools. Those tools remain available from the
-now-frozen server; the `project-planning` skill still calls `consensus` pending
-migration, while `pr-review` has already moved to the `/panel` skill. New
-work should use the `/panel` skill. Apart from that one legacy `consensus`
-call, the server's active tools are `chat`, `thinkdeep`, and `codereview`.
+now-frozen server, but no skill or agent calls `consensus` or
+`tiered_consensus` anymore: `project-planning`, `pr-review`, and the `rad`
+verify workflow all route through the `/panel` skill. New work should use the
+`/panel` skill. `mcp__pal__chat` is still called directly by the `rad`
+SKILL.md front matter and by the `mkdocs-auditor` and `mkdocs-specialist`
+agents; the server's active tools are `chat`, `thinkdeep`, and `codereview`.
 
 ### Three cost lanes
 
@@ -141,7 +143,7 @@ Loaded automatically when specific skills are invoked:
 |-------|-----------------|
 | `/git` (commit prep) | `zen.precommit`, `github.repos` |
 | `/git` (PR prep) | `zen.codereview`, `github.pull_requests`, `github.issues`, `sentry.list_releases` |
-| `/project-planning` | `zen.planner`, `zen.consensus`, `mermaid.*` (consensus tool retained pending the skill's migration to the `/panel` skill) |
+| `/project-planning` | `zen.planner`, `mermaid.*` (the skill's review step migrated off `zen.consensus` to the `/panel` skill; see `.claude/skills/project-planning/SKILL.md`) |
 
 ### Snyk MCP Server (always-on authoring)
 

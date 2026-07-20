@@ -295,6 +295,13 @@ repos:
         pass_filenames: false
         stages: [pre-commit]
 
+      - id: lint-agent-frontmatter
+        name: lint-agent-frontmatter
+        entry: python3 scripts/lint-agent-frontmatter.py
+        language: system
+        files: ^\.claude/agents/.*\.md$
+        stages: [pre-commit]
+
 
   # ============================================================================
   # Python Docstring Coverage

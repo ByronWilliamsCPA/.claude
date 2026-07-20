@@ -146,6 +146,11 @@
           "type": "command",
           "command": "bash $HOME/.claude/scripts/hooks/handoff-resume-reminder.sh",
           "timeout": 10
+        },
+        {
+          "type": "command",
+          "command": "bash $HOME/.claude/scripts/harness-doctor.sh",
+          "timeout": 10
         }
       ]
     },
@@ -165,6 +170,11 @@
         {
           "type": "command",
           "command": "bash $HOME/.claude/scripts/hooks/handoff-resume-reminder.sh",
+          "timeout": 10
+        },
+        {
+          "type": "command",
+          "command": "bash $HOME/.claude/scripts/harness-doctor.sh",
           "timeout": 10
         }
       ]
@@ -186,6 +196,11 @@
           "type": "command",
           "command": "bash $HOME/.claude/scripts/hooks/handoff-resume-reminder.sh",
           "timeout": 10
+        },
+        {
+          "type": "command",
+          "command": "bash $HOME/.claude/scripts/harness-doctor.sh",
+          "timeout": 10
         }
       ]
     },
@@ -205,6 +220,11 @@
         {
           "type": "command",
           "command": "bash $HOME/.claude/scripts/hooks/handoff-resume-reminder.sh",
+          "timeout": 10
+        },
+        {
+          "type": "command",
+          "command": "bash $HOME/.claude/scripts/harness-doctor.sh",
           "timeout": 10
         }
       ]

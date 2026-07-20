@@ -55,6 +55,19 @@ Breaks down monolithic code, configs, and documentation into maintainable compon
 architectural opportunities, generates phased execution plans, and validates that refactored modules
 preserve existing behavior.
 
+**[senior-architecture-reviewer](/.claude/agents/senior-architecture-reviewer.md)** (Fable pin)
+Principal-level systems reviewer for architecture, implementation plans, specs, and external audit
+rubrics. Judges soundness, blast radius, and hidden coupling; never implements. Invoked by
+`/senior-review`. One of three agents sanctioned to spend Fable budget; reserve it for irreversible
+or high-blast-radius design decisions and use `code-reviewer` (opus) for routine review.
+
+**[migration-engineer](/.claude/agents/migration-engineer.md)** (Fable pin)
+Executes large codebase migrations that span many files and must land coherently or not at all
+(framework and major-version upgrades, API surface renames, module extractions). Enumerates every
+site before transforming, migrates one representative per class, then sweeps and reconciles counts.
+Runs in an isolated worktree. Declines and names a cheaper agent when the migration is small enough
+for `general-purpose` or `modularization-assistant`.
+
 ### PR Review Toolkit (vendored)
 
 Six specialists from the `pr-review-toolkit` plugin, dispatched by `/pr-review`. They are symlinks
@@ -358,6 +371,12 @@ Post-pipeline analysis agent. Reads a finished document from the perspective of 
 and predicts how they will interpret, react to, and act on the content. Identifies gaps in
 persuasion, comprehension, and accessibility.
 
+**[audience-reaction-analyzer-extras](/.claude/skills/audience-reaction-analyzer-extras/SKILL.md)**
+Local delta on top of the vendored `audience-reaction-analyzer` agent. Adds a spec-diff-first
+method for completeness and gap review: diff the deliverable against its own governing
+outline/spec/TOC before judging completeness, and verify every "X is missing" claim with a
+search. Activates on: "gap review", "completeness review", "what is missing", "spec-diff review".
+
 ### Diagrams & Visuals
 
 **[diagram-maintenance-agent](/.claude/agents/diagram-maintenance-agent.md)**
@@ -447,11 +466,49 @@ the user through importing OPEN observations into the canonical global log at
 `~/.claude/skill-observations/log.md`. Use after recovering from a misconfigured task-observer
 session that wrote observations to a project-local path instead of the global log.
 
+**[/session-report](/.claude/skills/session-report/SKILL.md)** _(vendored: anthropics-plugins)_
+Generates an explorable, self-contained HTML report of Claude Code session usage (tokens, cache,
+subagents, skills, expensive prompts) from local `~/.claude/projects` transcripts. Complements
+`/usage-report`'s terminal summary with a browsable artifact.
+
+**[/claude-automation-recommender](/.claude/skills/claude-automation-recommender/SKILL.md)** _(vendored: anthropics-plugins)_
+Analyzes a codebase and recommends Claude Code automations (hooks, subagents, skills, plugins,
+MCP servers). Read-only: outputs recommendations without creating or modifying files. Use when
+first setting up Claude Code for a project or auditing existing automation coverage.
+
+**[/claude-md-improver](/.claude/skills/claude-md-improver/SKILL.md)** _(vendored: anthropics-plugins)_
+Audits and improves CLAUDE.md files across a repository: scans for every CLAUDE.md, evaluates
+quality against templates, outputs a quality report, then makes targeted updates on approval.
+Activates on: "CLAUDE.md maintenance", "project memory optimization".
+
+**[chat-app-handoff-to-repo](/.claude/skills/chat-app-handoff-to-repo/SKILL.md)**
+Converts a Claude chat-app project download into a standards-aligned git repo: de-baggage the
+download, add OpenSSF baseline files, build `pyproject.toml` from the cookiecutter template
+source of truth, wire pre-commit, and make a signed init commit. Activates on: "chat-app
+handoff", "chat app download", "convert project download to repo", "scaffold repo from handoff".
+
+**[/codebase-memory](/.claude/skills/codebase-memory/SKILL.md)**
+Reference skill for querying the codebase-memory-mcp knowledge graph: structural code queries,
+call-chain tracing, dead-code and high-fan-out detection, and Cypher query syntax. Requires the
+binary-managed `codebase-memory-mcp` server (see `docs/getting-started/codebase-memory-mcp.md`);
+falls back to Grep/Glob discovery when the server is absent. Activates on: "explore the
+codebase", "trace the call chain", "find callers of", "impact analysis", "dead code".
+
+**[writing-rules](/.claude/skills/writing-rules/SKILL.md)** _(vendored: anthropics-plugins, hookify)_
+Reference for authoring `hookify` rule files: YAML frontmatter format, pattern matching syntax,
+and message conventions for `.claude/hookify.{rule-name}.local.md` files. Activates on: "create a
+hookify rule", "write a hook rule", "configure hookify".
+
 ### Code Quality
 
 **[/quality](/.claude/skills/quality/SKILL.md)**
 Runs code quality checks: ruff formatting, ruff linting with auto-fix, BasedPyright type checking,
 markdownlint, and yamllint. Activates on: "quality check", "lint", "format code".
+
+**[/ci-fix](/.claude/skills/ci-fix/SKILL.md)**
+Full CI gate sequence with an auto-fix loop: ruff format, ruff lint, qlty check, pre-commit,
+pytest, bandit, and pip-audit in order, fixing what it can and reporting blockers. Activates on:
+"fix ci", "fix gates", "all gates green", "pre-commit failing", "gates failing".
 
 **[/ast-grep](/.claude/skills/ast-grep/SKILL.md)**
 Structural code search and multi-file refactoring with ast-grep: meta-variable patterns (`$X`,
@@ -530,10 +587,21 @@ with a mandatory PII/secret redaction gate before anything is created. Adapted f
 `/spec` and mattpocock `to-issues` concepts (MIT). Activates on: "file an issue", "turn this into an
 issue", "issue from conversation".
 
+**[/feasibility-check](/.claude/skills/feasibility-check/SKILL.md)**
+Lightweight single-agent feasibility gate between `brainstorming` and `writing-plans`. Dispatches
+one Sonnet agent with the spec as context and returns a GO / CONDITIONAL GO / DEFER decision with
+brief rationale in under 5 minutes.
+
 **[/project-planning](/.claude/skills/project-planning/SKILL.md)**
 Generates project planning documents: Product Vision Statement (PVS), Architecture Decision Records
 (ADRs), Technical Specification, and Roadmap. Activates on: "project plan", "generate plan",
 "new project".
+
+**[/doc-audit](/.claude/skills/doc-audit/SKILL.md)**
+Documentation health audit: scans markdown docs for frontmatter violations, broken internal
+links, count-claim drift, and stale version references. Outputs a terminal summary table and
+writes `docs/audit-report.md`. Activates on: "audit docs", "frontmatter audit", "broken links",
+"stale docs", "documentation health".
 
 **[/tool-eval](/.claude/skills/tool-eval/SKILL.md)**
 Evaluates an external tool or repo against our `~/.claude` setup and produces a decision: SUBMODULE,
@@ -605,6 +673,28 @@ and the inline-planning pattern. Repointed to our scoped CLAUDE.md and tiered MC
 loading. Activates on: "context engineering", "new session setup", "output quality
 degrading", "rules file".
 
+**[external-reference-verification](/.claude/skills/external-reference-verification/SKILL.md)**
+Verifies facts or data against external authoritative sources when the named source may be
+unreachable or untrustworthy: ranked source fallbacks and per-source extraction adapters.
+Activates on: "verify against", "check answer key", "source is blocked", "Cloudflare 403".
+
+**[pipeline-coordinator-reference](/.claude/skills/pipeline-coordinator-reference/SKILL.md)** _(non-user-invokable)_
+Reference showing the Command -> Agent -> Skill coordinator pattern with explicit Data Contract
+blocks between pipeline stages, using the test-coverage pipeline as the concrete example. Consulted
+by agents building or auditing a multi-stage coordinator pipeline, not invoked directly.
+
+### Backend Development
+
+**[fastapi-expert](/.claude/skills/fastapi-expert/SKILL.md)** _(vendored: jeffallan-claude-skills)_
+Builds high-performance async Python APIs with FastAPI and Pydantic V2: REST endpoints, Pydantic
+models, JWT authentication, async SQLAlchemy, WebSocket endpoints, and OpenAPI documentation.
+
+**[fastapi-expert-extras](/.claude/skills/fastapi-expert-extras/SKILL.md)**
+Local delta on top of the vendored `fastapi-expert` skill. Adds a mandatory source-reading step
+before authoring an OpenAPI spec, and the Protocol-based structural-typing pattern for
+parallel-module contracts. Activates on: "openapi spec", "document existing api", "parallel
+module contract", "Protocol typing".
+
 ### Frontend
 
 **[/frontend-design](/.claude/skills/frontend-design/SKILL.md)**
@@ -613,6 +703,23 @@ direction, accessible components, React performance patterns, and anti-generic-A
 Modes: wireframe, prototype, variations, build (default), review (`--focus` scoped), polish-pass
 (orchestrator-dispatched parallel review across all four focus dimensions, aggregated), a11y,
 perf, fix. Activates on: "build UI", "create component", "design page".
+
+### Document Tools
+
+`docx`, `pdf`, `pptx`, and `xlsx` are vendored from `.submodules/anthropics-skills` (see
+"Local vs. vendored entries" above). `docx` and `xlsx` are vendored with no local delta; `pdf`
+and `pptx` each have a local `-extras` sibling carrying only the delta.
+
+**[pdf-extras](/.claude/skills/pdf-extras/SKILL.md)**
+Local delta on top of the vendored `pdf` skill. Adds an environment sanity gate to run before
+any PDF extraction loop: confirm the documented path and package manager against the filesystem
+rather than trusting a possibly-stale CLAUDE.md. Activates on: "pdf extraction", "pdfplumber",
+"pymupdf".
+
+**[pptx-extras](/.claude/skills/pptx-extras/SKILL.md)**
+Local delta on top of the vendored `pptx` skill. Adds a "plainness is the requirement" exception
+so a mandated institutional house style overrides the skill's decorative design defaults.
+Activates on: "house style deck", "institutional template", "regulated presentation".
 
 ### Infrastructure & Diagrams
 
@@ -665,6 +772,12 @@ Socratic pre-implementation design workflow. Explores context, asks one clarifyi
 time, proposes 2-3 architectural approaches, generates a spec document, and chains to
 `writing-plans`. Hard rule: no code until design is approved.
 
+**[brainstorming-extras](/.claude/skills/brainstorming-extras/SKILL.md)**
+Local delta on top of the vendored `brainstorming` skill. Adds scope-drift handling when a user
+appends free-text requirements to a structured answer, and a batched-decision pattern for
+owner-gated choices that block the critical path. Activates on: "scope drift", "batched
+decisions", "owner-gated decision", "recommended defaults".
+
 **[writing-plans](.claude/skills/writing-plans/SKILL.md)**
 Creates granular task-by-task implementation plans. Each task targets 2-5 minutes, follows TDD,
 includes exact file paths and complete code blocks. Plan is saved to
@@ -676,10 +789,22 @@ includes exact file paths and complete code blocks. Plan is saved to
 Loads a written plan, creates a TodoWrite task list, and executes tasks sequentially. Stops
 immediately on blockers and chains to `finishing-a-development-branch` on completion.
 
+**[executing-plans-extras](/.claude/skills/executing-plans-extras/SKILL.md)**
+Local delta on top of the vendored `executing-plans` skill. Adds a DONE_WITH_CONCERNS protocol
+for exact-content steps that fail an environment-specific parse check, and a pre-commit
+lever-direction probe for steps that prescribe a value to hit a metric. Activates on: "exact
+file content", "parse check failed", "change X to achieve Y", "plan step environment mismatch".
+
 **[subagent-driven-development](/.submodules/superpowers/skills/subagent-driven-development/SKILL.md)**
 Three-subagent review pattern per task: (1) Implementer executes and self-reviews, (2) Spec-compliance
 reviewer independently verifies against spec with adversarial skepticism, (3) Code-quality reviewer
 validates cleanliness. Never skips review loops.
+
+**[subagent-driven-development-extras](/.claude/skills/subagent-driven-development-extras/SKILL.md)**
+Local delta on top of the vendored `subagent-driven-development` skill. Adds a two-transport rule
+for reviewer feedback: blocking findings get the fix/re-review loop, accepted-minor findings ride
+forward as a preamble commit in the next dispatch. Activates on: "reviewer follow-ups", "approve
+with minor", "non-blocking review", "preamble commit".
 
 **[dispatching-parallel-agents](.claude/skills/dispatching-parallel-agents/SKILL.md)**
 Assigns independent tasks to parallel subagents when 3+ independent problems exist simultaneously.
@@ -696,15 +821,40 @@ Enforces technical verification before acting on any review feedback. Five verif
 suggestion. Explicitly prohibits performative agreement. Permits pushback when reviewer is incorrect
 or has insufficient context.
 
+**[receiving-code-review-extras](/.claude/skills/receiving-code-review-extras/SKILL.md)**
+Local delta on top of the vendored `receiving-code-review` skill. Adds code-as-arbiter
+adjudication when a review and a status board (or two reviews) conflict, and constraint-first
+remedy re-derivation when a finding's implied fix would violate a standing user constraint.
+Activates on: "conflicting reviews", "review vs status board", "finding implies forbidden fix",
+"standing constraint".
+
+**[code-review-extras](/.claude/skills/code-review-extras/SKILL.md)**
+Local delta on top of the vendored `code-review` skill. Adds a reference-graph pre-read pass
+(imported? config read?), a whole-file residuals scan for rule-remediation PRs, and
+cross-referencing ADR factual claims against authoritative code comments. Activates on: "code
+review", "remediation PR residuals", "ADR factual accuracy", "defined but unreferenced".
+
 ### Testing & Quality
 
 **[test-driven-development](.claude/skills/test-driven-development/SKILL.md)**
 Enforces red-green-refactor discipline. Iron Law: no production code without a failing test first.
 Any pre-existing production code must be deleted and re-implemented test-first.
 
+**[test-driven-development-extras](/.claude/skills/test-driven-development-extras/SKILL.md)**
+Local delta on top of the vendored `test-driven-development` skill. Adds GREEN-step lint
+discipline, shared-definition extraction for comparable metrics, autofix-hook edit ordering, and
+an empirical design-falsification step for metrics. Activates on: "GREEN step", "new metric",
+"comparable metric", "autofix stripped my import".
+
 **[verification-before-completion](/.submodules/superpowers/skills/verification-before-completion/SKILL.md)**
 Universal evidence gate. No completion claim without running verification commands and reading their
 output. Prevents optimistic "it should work" declarations.
+
+**[verification-before-completion-extras](/.claude/skills/verification-before-completion-extras/SKILL.md)**
+Local delta on top of the vendored `verification-before-completion` skill. Adds
+artifact-anchored, consumer-derived, and dependency-graph verification patterns for handoffs,
+derived numbers, templated deliverables, and detector checks. Activates on: "completion claim",
+"accept handoff", "derive statistic", "does the guard work".
 
 ### Debugging
 
@@ -712,6 +862,12 @@ output. Prevents optimistic "it should work" declarations.
 Four-phase framework: root cause investigation → pattern analysis → hypothesis testing →
 implementation. No fixes without root cause first. Escalates to architectural review after 3 failed
 fixes.
+
+**[systematic-debugging-extras](/.claude/skills/systematic-debugging-extras/SKILL.md)**
+Local delta on top of the vendored `systematic-debugging` skill. Adds numeric premise-probing,
+sibling-consumer falsification for shared components, data-semantics verification before applying
+a prescribed transform, proxy-input discipline, and newly-reachable-path testing after a guard is
+removed. Activates on: "all-zeros metric", "shared workflow broken", "proxy data", "removed a guard".
 
 ### Git Workflow
 
@@ -723,6 +879,12 @@ dependencies, and runs baseline tests before any work begins.
 Branch completion workflow presenting four options: merge locally / create PR / keep branch / discard
 work. Runs full test suite first. Cleans up worktrees only for merge and discard. Requires typed
 confirmation before discarding.
+
+**[finishing-a-development-branch-extras](/.claude/skills/finishing-a-development-branch-extras/SKILL.md)**
+Local delta on top of the vendored `finishing-a-development-branch` skill. Promotes the `gh api`
+PR-creation fallback, fixes version-bump-before-build ordering for semantic-release workflows, and
+requires reconciling all independent reviews before declaring complete. Activates on: "gh pr create
+blocked", "PSR", "semantic release", "declare complete".
 
 ### Skill Development
 
@@ -752,6 +914,8 @@ default system prompt.
 | Research a library/framework | `research-agent` |
 | Build LLM/RAG feature | `ai-engineer` |
 | Refactor large file | `modularization-assistant` |
+| Migrate many files at once, all-or-nothing | `migration-engineer` (Fable) |
+| Judge an architecture or plan before building | `/senior-review` (Fable) |
 | Verify code assumptions | `/rad` skill |
 | Plan a new project | `/project-planning` skill → `project-plan-synthesizer` agent |
 | Design before coding | `brainstorming` skill |

@@ -73,10 +73,11 @@ opus is design and adversarial judgment; haiku is cheap read-only lookup.
 
 Current pins:
 
-- **Opus (design/synthesis):** `project-plan-synthesizer` (synthesizes four
-  planning docs into a project plan -- reconciliation judgment), `plan-ceo-review`
-  (challenges problem framing -- adversarial), `plan-devex-review` (challenges
-  ergonomics -- adversarial)
+- **Fable (gated, exactly three):** `senior-architecture-reviewer`,
+  `project-plan-synthesizer`, `migration-engineer`. See "Fable 5 pins" below
+  before adding a fourth.
+- **Opus (design/synthesis):** `plan-ceo-review` (challenges problem framing
+  -- adversarial), `plan-devex-review` (challenges ergonomics -- adversarial)
 - **Opus (adversarial review):** `code-reviewer`, `security-auditor`,
   `document-validator` (adversarial, first-party or own-library source)
 - **Opus (existing pins under review):** `ai-engineer`, `dependency-provenance`
@@ -88,7 +89,7 @@ Current pins:
 - **Sonnet:** `plan-validator`, `scope-analyzer`, `test-reviewer`,
   `general-compliance-auditor`, and all implementation agents (checklist- or
   tool-decided)
-- **Inherit (vendor exception):** the three vendor-mirror agents below
+- **Inherit (vendor exception):** the four vendor-mirror agents below
 
 **Skills inherit the session model.** Skills (`brainstorming`, `writing-plans`,
 `project-planning`, etc.) run as instructions in the calling session -- they
@@ -108,8 +109,9 @@ operating mode; `/panel` is the deliberate cross-vendor escalation for
 high-stakes or irreversible changes.
 
 **Vendored-agent exception.** `silent-failure-hunter`, `type-design-analyzer`,
-and `comment-analyzer` are symlinked from the `anthropics-plugins`
-pr-review-toolkit submodule and ship with `model: inherit`. Per the
+`comment-analyzer`, and `pr-test-analyzer` are symlinked from the
+`anthropics-plugins` pr-review-toolkit submodule and ship with
+`model: inherit`. Per the
 submodule-isolation policy, their model is **not** pinned: editing
 vendor-mirror content would drift from upstream and be clobbered on the next
 sync. They are left on `inherit` deliberately. Because `inherit` gives these
@@ -118,6 +120,39 @@ independent pass comes from `/panel` (cross-vendor), not from the subagent
 itself. When adopting any new agent from a vendored source, decide its pin
 against the table above before wiring it in; if it cannot be pinned at source,
 route its independence through `/panel` and note the exception here.
+
+## Fable 5 pins
+
+Fable 5 costs $10/$50 per MTok, 2x Opus 4.8, and draws on an allocation
+capped at 50% of weekly usage. It is reached two ways and no others:
+
+1. **Explicit opt-in.** You name it: `model: "fable"` on an Agent dispatch,
+   or a session started on Fable.
+2. **Exactly three pinned agents**, listed below. No fourth agent gets a
+   `model: fable` pin without an explicit decision to widen this list.
+
+| Agent | Why it earns 2x | Edits? |
+| --- | --- | --- |
+| `senior-architecture-reviewer` | Judgment on irreversible design, where being wrong is expensive and the error is non-obvious | No, report only |
+| `project-plan-synthesizer` | Long-horizon synthesis reconciling four planning docs into one coherent plan | No, writes the plan |
+| `migration-engineer` | Large migrations that must land coherently across many files in one long autonomous run | Yes, in a worktree |
+
+The first two are judgment-only, which is Anthropic's stated Fable sweet
+spot. `migration-engineer` is the deliberate exception: it does
+implementation, accepted because a half-applied migration costs more than the
+premium. Its own cost gate requires it to decline and name a cheaper agent
+when the migration is small enough for `general-purpose` or
+`modularization-assistant`.
+
+**The standard remains opus for design and review, sonnet for
+implementation.** Fable is escalation, not a better default. Before pinning
+or dispatching Fable, confirm the work is long-horizon or irreversible; if
+Opus has not been tried and has not stalled, use Opus.
+
+**`inherit` silently becomes Fable.** When the session runs on Fable, every
+`model: inherit` agent runs on Fable too, at 2x, including the four
+vendor-mirror agents that cannot be pinned at source. Audit `inherit` agents
+before starting a long Fable session.
 
 ## Temporary Reference Files
 
@@ -215,9 +250,9 @@ the output before proceeding (e.g., `/commit`, `/quality`, `/git pr`).
 
 | Layer | Role | Example |
 | ----- | ---- | ------- |
-| **Command** | User interaction point; receives intent, dispatches | `/rad-verify-pipeline` |
+| **Command** | User interaction point; receives intent, dispatches | `/code-review` |
 | **Agent** | Domain specialist; preloaded context + tool restrictions | security-auditor |
-| **Skill** | Stateless output generator; called once per invocation | owasp-dispatch |
+| **Skill** | Stateless output generator; called once per invocation | `/quality` |
 
 Commands invoke agents; agents invoke skills. Skills do not invoke agents. See
 [ADR-004](../../docs/architecture/adr/ADR-004-skill-vs-agent-boundary.md) for the

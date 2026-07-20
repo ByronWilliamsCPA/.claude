@@ -17,6 +17,16 @@ set -euo pipefail
 LOG_FILE="${HOME}/.claude/logs/planning-bridge-gate.log"
 mkdir -p "$(dirname "$LOG_FILE")" || true
 
+# Security (audit M-07): logs may capture spec/ADR paths; restrict
+# permissions on first creation. Surface the fallback to stderr so the
+# operator notices when the permission backstop silently failed.
+if [[ ! -f "$LOG_FILE" ]]; then
+    : > "$LOG_FILE"
+    if ! chmod 600 "$LOG_FILE" 2>/dev/null; then
+        echo "[planning-bridge-gate] WARN: chmod 600 ${LOG_FILE} failed; redaction is the only secret defense" >&2
+    fi
+fi
+
 log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" >> "$LOG_FILE" || true
     return 0

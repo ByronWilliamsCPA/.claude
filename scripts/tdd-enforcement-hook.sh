@@ -14,8 +14,31 @@ TDD_LOG="$HOME/.claude/logs/tdd-enforcement.log"
 HOOK_DEBUG_LOG="$HOME/.claude/logs/hook-debug.log"
 PROJECT_ROOT="${CLAUDE_PROJECT_DIR:-$(pwd)}"
 
+# TDD enforcement is opt-in per project. Global enforcement blocked edits
+# in repos with no test conventions (including this config repo) and
+# unconditionally blocked languages with no TEST_FILES mapping.
+if [[ ! -f "${PROJECT_ROOT}/.claude/tdd-enforce" ]]; then
+    exit 0
+fi
+
 # Log directory creation must not block tool calls on failure
 mkdir -p "$(dirname "$TDD_LOG")" || true
+
+# Security (audit M-07): logs may capture file paths and tool names; restrict
+# permissions on first creation. Surface the fallback to stderr so the
+# operator notices when the permission backstop silently failed.
+if [[ ! -f "$TDD_LOG" ]]; then
+    : > "$TDD_LOG"
+    if ! chmod 600 "$TDD_LOG" 2>/dev/null; then
+        echo "[tdd-enforcement-hook] WARN: chmod 600 ${TDD_LOG} failed; redaction is the only secret defense" >&2
+    fi
+fi
+if [[ ! -f "$HOOK_DEBUG_LOG" ]]; then
+    : > "$HOOK_DEBUG_LOG"
+    if ! chmod 600 "$HOOK_DEBUG_LOG" 2>/dev/null; then
+        echo "[tdd-enforcement-hook] WARN: chmod 600 ${HOOK_DEBUG_LOG} failed; redaction is the only secret defense" >&2
+    fi
+fi
 
 log_tdd() {
     local timestamp
@@ -86,6 +109,13 @@ case "$TOOL_NAME" in
                                 "${DIR_NAME}/tests/${BASE_NAME}.test.${EXT}"
                                 "${DIR_NAME}/../tests/${BASE_NAME}.test.${EXT}"
                             )
+                            ;;
+                        *)
+                            # No test-location convention for this language;
+                            # warn instead of blocking on an empty candidate list.
+                            log_tdd "ALLOW" "NO_CONVENTION" "$FILE_PATH"
+                            echo "TDD note: no test-location convention for .$EXT; not enforced." >&2
+                            exit 0
                             ;;
                     esac
 

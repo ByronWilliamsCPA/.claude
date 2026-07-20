@@ -20,6 +20,16 @@ set -euo pipefail
 LOG_FILE="${HOME}/.claude/logs/py310-compat-check.log"
 mkdir -p "$(dirname "$LOG_FILE")"
 
+# Security (audit M-07): findings may capture snippets of scanned source;
+# restrict permissions on first creation. Surface the fallback to stderr so
+# the operator notices when the permission backstop silently failed.
+if [[ ! -f "$LOG_FILE" ]]; then
+    : > "$LOG_FILE"
+    if ! chmod 600 "$LOG_FILE" 2>/dev/null; then
+        echo "[py310-compat-check] WARN: chmod 600 ${LOG_FILE} failed; redaction is the only secret defense" >&2
+    fi
+fi
+
 log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" >> "$LOG_FILE" || true
 }
