@@ -4,8 +4,9 @@ description: >
   Synthesizes the four initial planning documents (PVS, ADR, Tech Spec, Roadmap) into a
   comprehensive PROJECT-PLAN.md with semantic release-aligned phase branches, quality gates,
   and TodoWrite integration. Invoke after the project-planning skill generates the initial
-  documents and before Phase 1 development begins.
-model: opus
+  documents and before Phase 1 development begins. One of three agents pinned to Fable 5;
+  long-horizon synthesis across four source documents is what justifies the 2x cost.
+model: fable
 tools: ["Read", "Write", "Edit", "Grep", "Glob", "Bash", "TodoWrite"]
 ---
 

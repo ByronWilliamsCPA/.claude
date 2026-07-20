@@ -55,6 +55,19 @@ Breaks down monolithic code, configs, and documentation into maintainable compon
 architectural opportunities, generates phased execution plans, and validates that refactored modules
 preserve existing behavior.
 
+**[senior-architecture-reviewer](/.claude/agents/senior-architecture-reviewer.md)** (Fable pin)
+Principal-level systems reviewer for architecture, implementation plans, specs, and external audit
+rubrics. Judges soundness, blast radius, and hidden coupling; never implements. Invoked by
+`/senior-review`. One of three agents sanctioned to spend Fable budget; reserve it for irreversible
+or high-blast-radius design decisions and use `code-reviewer` (opus) for routine review.
+
+**[migration-engineer](/.claude/agents/migration-engineer.md)** (Fable pin)
+Executes large codebase migrations that span many files and must land coherently or not at all
+(framework and major-version upgrades, API surface renames, module extractions). Enumerates every
+site before transforming, migrates one representative per class, then sweeps and reconciles counts.
+Runs in an isolated worktree. Declines and names a cheaper agent when the migration is small enough
+for `general-purpose` or `modularization-assistant`.
+
 ### PR Review Toolkit (vendored)
 
 Six specialists from the `pr-review-toolkit` plugin, dispatched by `/pr-review`. They are symlinks
@@ -752,6 +765,8 @@ default system prompt.
 | Research a library/framework | `research-agent` |
 | Build LLM/RAG feature | `ai-engineer` |
 | Refactor large file | `modularization-assistant` |
+| Migrate many files at once, all-or-nothing | `migration-engineer` (Fable) |
+| Judge an architecture or plan before building | `/senior-review` (Fable) |
 | Verify code assumptions | `/rad` skill |
 | Plan a new project | `/project-planning` skill → `project-plan-synthesizer` agent |
 | Design before coding | `brainstorming` skill |

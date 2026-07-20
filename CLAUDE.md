@@ -224,6 +224,12 @@ case specify `model: opus` in the agent prompt. The Agent tool also accepts
 `model: fable`; reserve it for explicit user request or tasks meeting the
 Fable row above, since each fable subagent runs at 2x Opus cost.
 
+Fable is reachable exactly two ways: explicit opt-in, or one of the three
+pinned agents (`senior-architecture-reviewer`, `project-plan-synthesizer`,
+`migration-engineer`). No fourth agent gets a `model: fable` pin without a
+deliberate decision to widen that list. Gate and rationale:
+`.claude/rules/supervisor.md` ("Fable 5 pins").
+
 When the interactive session itself runs on Fable 5, agents with
 `model: inherit` also run on Fable. Audit `inherit` agents before long
 sessions if cost matters; pin them to `sonnet` when frontier reasoning adds
