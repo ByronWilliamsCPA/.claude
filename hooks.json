@@ -112,6 +112,11 @@
           "type": "command",
           "command": "CLAUDE_PLUGIN_ROOT=$HOME/dev/.claude/.submodules/anthropics-plugins/plugins/hookify python3 $HOME/dev/.claude/.submodules/anthropics-plugins/plugins/hookify/hooks/stop.py",
           "timeout": 10
+        },
+        {
+          "type": "command",
+          "command": "python3 $HOME/.claude/scripts/hooks/task-observer-flush-check.py",
+          "timeout": 10
         }
       ]
     }
@@ -144,6 +149,11 @@
         },
         {
           "type": "command",
+          "command": "bash $HOME/.claude/scripts/hooks/task-observer-reminder.sh",
+          "timeout": 10
+        },
+        {
+          "type": "command",
           "command": "bash $HOME/.claude/scripts/hooks/handoff-resume-reminder.sh",
           "timeout": 10
         },
@@ -166,6 +176,11 @@
           "type": "command",
           "command": "bash $HOME/.claude/scripts/hooks/delegation-reminder.sh",
           "timeout": 15
+        },
+        {
+          "type": "command",
+          "command": "bash $HOME/.claude/scripts/hooks/task-observer-reminder.sh",
+          "timeout": 10
         },
         {
           "type": "command",
@@ -194,6 +209,11 @@
         },
         {
           "type": "command",
+          "command": "bash $HOME/.claude/scripts/hooks/task-observer-reminder.sh",
+          "timeout": 10
+        },
+        {
+          "type": "command",
           "command": "bash $HOME/.claude/scripts/hooks/handoff-resume-reminder.sh",
           "timeout": 10
         },
@@ -216,6 +236,11 @@
           "type": "command",
           "command": "bash $HOME/.claude/scripts/hooks/delegation-reminder.sh",
           "timeout": 15
+        },
+        {
+          "type": "command",
+          "command": "bash $HOME/.claude/scripts/hooks/task-observer-reminder.sh",
+          "timeout": 10
         },
         {
           "type": "command",
