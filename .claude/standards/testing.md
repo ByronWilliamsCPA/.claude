@@ -937,53 +937,93 @@ configuration against these requirements.
 
 ### 16.2 Test-Type Flags (MUST)
 
-Projects MUST define Codecov flags that mirror their test directory structure.
-Each test type that runs as a separate CI job or nox/tox session MUST have
-a corresponding flag with its own status check.
+Flags are a single axis: they answer "how was this code tested" (test
+type). One uploaded report maps to exactly one flag (see the upload rule
+below). "Which module" is a code-area question and belongs in components
+(§16.3), not flags. Flag names MUST be the lowercase pytest marker name
+from §15 (`unit`, `integration`, `contract`, `e2e`, `security`, `api`,
+`perf`, `smoke`, `auth`); legacy synonyms (`performance`↔`perf`, `stress`)
+map to the canonical marker.
 
-- **Required flags** (when test type exists in project):
+Each test type that runs as a separate CI job or nox session MUST have a
+corresponding flag with its own status check. The flag set is tiered by
+what the project ships:
 
-  | Flag Name | Maps To | Target | Carryforward |
-  |-----------|---------|--------|--------------|
-  | `unit` | `tests/unit/` | 85% | true |
-  | `integration` | `tests/integration/` | 75% | true |
-  | `contract` | `tests/contract/` | 70% | true |
-  | `e2e` | `tests/e2e/` | informational | true |
-  | `security` | `tests/security/` | informational | true |
+- **Baseline flags** (every repo; blocking):
 
-- Each flag MUST have a corresponding `coverage.status.project.<flag>`
-  entry with an independent target:
+  | Flag | Maps to (marker / dir) | Project | Patch | Carryforward |
+  |------|------------------------|---------|-------|--------------|
+  | `unit` | `unit` / `tests/unit/` | 85% | 90% | true |
+  | `integration` | `integration` / `tests/integration/` | 75% | 70% | true |
+  | `contract` | `contract` / `tests/contract/` | 70% | 70% | true |
+
+- **Production-app flags** (any user-facing or deployed service; blocking).
+  For a shipped service, end-to-end, security, and API coverage are NOT
+  optional: when the test type exists, its flag MUST be blocking, not
+  `informational`.
+
+  | Flag | Maps to | Project | Patch | Carryforward |
+  |------|---------|---------|-------|--------------|
+  | `e2e` | `e2e` / `tests/e2e/` | 70% | 70% | true |
+  | `security` | `security` / `tests/security/` | auto | 80% | true |
+  | `api` | API tests (Postman/newman, schemathesis) / `tests/api/` | 75% | 75% | true |
+
+- **Informational flags** (track a trend, never block):
+
+  | Flag | Maps to | Status |
+  |------|---------|--------|
+  | `perf` (a.k.a. `performance`) | `perf` / `tests/performance/` | informational |
+  | `smoke` | `smoke` | informational |
+  | `accessibility` | frontend a11y / `tests/accessibility/` | informational |
+
+- **Upload rule (single axis):** each uploaded report MUST map to exactly
+  one flag via `-F <flag>` / `flags: <flag>`. Uploading one report under
+  multiple flags produces incorrect metrics, and the total distinct-flag
+  count is capped by the Codecov plan tier (exceeding it errors the upload),
+  so keep the set lean: only declare flags an uploader actually produces.
+
+- **Full-stack / multi-runner exception (surface flags):** when a surface's
+  test runner cannot split by test type (e.g. a Vitest frontend that runs
+  all component tests in one pass), a single surface flag (`frontend`,
+  `design-system`, `backend`) is permitted IN PLACE OF test-type flags for
+  that surface. The code-area split is still carried by components (§16.3).
+  Do not mix axes: a given report is flagged by test type OR by surface,
+  never both.
+
+- **Per-type attribution without extra uploads:** to slice one test run by
+  type without one upload per type, set a coverage context from the test
+  path, via coverage.py `dynamic_context` or a `pytest_runtest_setup` hook
+  that exports `COVERAGE_CONTEXT` (the pattern the PromptCraft coverage
+  tooling uses). This is complementary to flags: it enriches a single report
+  but does not change the one-report-one-flag upload rule. Producing one
+  flag per type still requires one report per type, which the
+  nox-session-per-type pattern (`nox -s unit`, `nox -s integration`, ...,
+  each with its own `--cov-fail-under`) is the canonical way to generate.
+
+- Each flag MUST have a `coverage.status.project.<flag>` entry (or a
+  `flag_management.individual_flags` entry) with its target:
 
   ```yaml
   flags:
-    unit:
-      paths: [src/]
-      carryforward: true
-    integration:
-      paths: [src/]
-      carryforward: true
+    unit: { paths: [src/], carryforward: true }
+    integration: { paths: [src/], carryforward: true }
+    e2e: { paths: [src/], carryforward: true }
+    security: { paths: [src/], carryforward: true }
 
   coverage:
     status:
       project:
-        default:
-          target: auto
-          threshold: 1%
-        unit:
-          target: 85%
-          flags: [unit]
-        integration:
-          target: 75%
-          flags: [integration]
+        default: { target: auto, threshold: 1% }
+        unit: { target: 85%, flags: [unit] }
+        integration: { target: 75%, flags: [integration] }
+        e2e: { target: 70%, flags: [e2e] }          # production: blocking, not informational
+        security: { target: auto, flags: [security] }
   ```
-
-- CI uploads MUST use the `-F <flag>` parameter and each report MUST map
-  to exactly one flag. Uploading one report with multiple flags produces
-  incorrect metrics.
 
 - **Python version flags** (e.g., `python-3.11`, `python-3.12`) are
   OPTIONAL but RECOMMENDED for matrix builds. When used, set
-  `after_n_builds` to the matrix size to prevent premature status checks.
+  `after_n_builds` to the number of coverage uploads to prevent premature
+  status checks.
 
 ### 16.3 Component-Level Coverage Targets (MUST)
 
@@ -1007,8 +1047,9 @@ model from §6 (Coverage Thresholds).
         paths: [src/<module>/]
   ```
 
-- **Critical modules** (auth, payment, data processing, cryptography) MUST
-  have component-level overrides with 90% project target and 95% patch target:
+- **Critical modules** (auth, payment, data-processing/generation pipelines,
+  content moderation/safety, cryptography) MUST have component-level
+  overrides with 90% project target and 95% patch target:
 
   ```yaml
   - component_id: auth

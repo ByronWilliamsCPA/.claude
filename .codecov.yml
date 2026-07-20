@@ -14,15 +14,86 @@ coverage:
         threshold: 1%
         informational: false
 
+# Test-type flags (single axis: one report -> one flag; see standards/testing.md
+# section 16.2). `paths` scopes which source files count toward each flag.
+# Baseline flags (unit/integration/contract) are blocking everywhere; the
+# production-app flags (e2e/security/api) are blocking for shipped services.
 flags:
   unit:
     paths:
-      - tests/unit/
+      - src/
     carryforward: true
   integration:
     paths:
-      - tests/integration/
+      - src/
     carryforward: true
+  contract:
+    paths:
+      - src/
+    carryforward: true
+  e2e:
+    paths:
+      - src/
+    carryforward: true
+  security:
+    paths:
+      - src/
+    carryforward: true
+  api:
+    paths:
+      - src/
+    carryforward: true
+
+# Per-flag targets. Dormant flags (no uploader yet) get if_not_found: success
+# so a missing report is treated as a pass, not a failure.
+flag_management:
+  default_rules:
+    carryforward: true
+    statuses:
+      - type: project
+        target: auto
+        threshold: 1%
+        if_not_found: success
+  individual_flags:
+    - name: unit
+      statuses:
+        - type: project
+          target: 85%
+          threshold: 1%
+        - type: patch
+          target: 90%
+          threshold: 1%
+    - name: integration
+      statuses:
+        - type: project
+          target: 75%
+          threshold: 2%
+        - type: patch
+          target: 70%
+          threshold: 5%
+    - name: contract
+      statuses:
+        - type: project
+          target: 70%
+          threshold: 2%
+    - name: e2e   # production: blocking, not informational
+      statuses:
+        - type: project
+          target: 70%
+          threshold: 5%
+    - name: security   # production: blocking, not informational
+      statuses:
+        - type: project
+          target: auto
+          threshold: 2%
+        - type: patch
+          target: 80%
+          threshold: 5%
+    - name: api   # production: blocking when an API is served
+      statuses:
+        - type: project
+          target: 75%
+          threshold: 2%
 
 comment:
   layout: "reach,diff,flags,files"
