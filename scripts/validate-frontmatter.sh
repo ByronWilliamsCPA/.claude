@@ -16,6 +16,15 @@ LOG_FILE="${HOME}/.claude/logs/validate-frontmatter.log"
 
 log() {
     mkdir -p "$(dirname "$LOG_FILE")"
+    # Security (audit M-07): logs may capture file paths; restrict
+    # permissions on first creation. Surface the fallback to stderr so the
+    # operator notices when the permission backstop silently failed.
+    if [[ ! -f "$LOG_FILE" ]]; then
+        : > "$LOG_FILE"
+        if ! chmod 600 "$LOG_FILE" 2>/dev/null; then
+            echo "[validate-frontmatter] WARN: chmod 600 ${LOG_FILE} failed; redaction is the only secret defense" >&2
+        fi
+    fi
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" >> "$LOG_FILE"
 }
 
