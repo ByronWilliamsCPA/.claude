@@ -67,10 +67,12 @@ jobs:
         run: uv run pytest tests/unit/test_manifest_consistency.py -v --no-cov
 
   # ==========================================================================
-  # Hook bats suites: setup.sh merge_hooks() union-merge semantics + doctor
-  # drift check, and the destructive-command-guard PreToolUse guard. Named
-  # explicitly per file; the reusable Python workflow does not discover or run
-  # bats tests.
+  # Every bats suite under tests/, discovered recursively: setup.sh
+  # merge_hooks() union-merge semantics, the hook-source drift check, the
+  # PreToolUse guards, and the task-observer hook pair. The reusable Python
+  # workflow does not discover or run bats tests, so this job is their only
+  # enforcement point. The job id stays setup-hooks-tests because the check
+  # name is referenced by branch protection.
   # ==========================================================================
   setup-hooks-tests:
     name: Setup hooks tests (bats)
@@ -90,12 +92,11 @@ jobs:
         # runner's /usr/local without sudo, and this mirrors the documented
         # local invocation (npx --no-install bats).
         run: npm install --no-save bats@1.13.0
-      - name: Run setup.sh hook merge tests
-        run: npx --no-install bats tests/test_setup_hooks.bats
-      - name: Run destructive-command-guard tests
-        run: npx --no-install bats tests/test_destructive_command_guard.bats
-      - name: Run task-observer hook tests
-        run: npx --no-install bats tests/test_task_observer_hooks.bats
+      - name: Run bats suites
+        # Recursive discovery, not a hand-maintained file list. The list form
+        # ran 2 of the repo's 7 suites for months: a suite added without also
+        # editing this file was green locally and unenforced in CI.
+        run: npx --no-install bats -r tests/
 
   # ==========================================================================
   # CI Gate: aggregates the CI result; must pass for branch protection
