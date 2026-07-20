@@ -2654,9 +2654,9 @@
 <p><strong>UserPromptSubmit</strong>: fires immediately after the user sends a message, before Claude processes it. Used for: injecting context, detecting intent signals (PR review reminder), the mechanical session-length nudge check, running the hookify user prompt pipeline.</p>
 <p><strong>PreToolUse</strong>: fires before each tool call Claude attempts. Each entry in the <code>PreToolUse</code> array can have a matcher regex targeting specific tools. Used for, in <code>hooks.json</code> array order: bash command guard (Bash), secrets file guard (Edit/Write/MultiEdit), planning bridge gate (Skill), security reminder (Edit/Write/MultiEdit), hookify dispatch (all tools), destructive-command guard (Bash).</p>
 <p><strong>PostToolUse</strong>: fires after each tool call completes. Used for, in <code>hooks.json</code> array order: Python 3.10 compatibility check (Edit/Write), Snyk dependency-manifest reminder (Edit/Write/MultiEdit), test-skip-marker guard (Edit/Write/MultiEdit), hookify dispatch (all tools).</p>
-<p><strong>Stop</strong>: fires when Claude finishes its turn (before control returns to the user). Used for: hookify stop handler.</p>
+<p><strong>Stop</strong>: fires when Claude finishes its turn (before control returns to the user). Used for: hookify stop handler, task-observer flush check.</p>
 <p><strong>PreCompact</strong>: fires immediately before Claude Code compacts the conversation, whether triggered automatically (approaching the context limit) or manually (<code>/compact</code>). Used for: writing a cheap, objective auto-handoff snapshot as a backstop for the unattended-autocompact case.</p>
-<p><strong>SessionStart</strong>: fires when a session opens, and again on resume, <code>clear</code>, or <code>compact</code>, depending on which matcher a given hook registers. Three repo-managed hooks are wired here (<code>scripts/hooks/delegation-reminder.sh</code>, <code>scripts/hooks/cbm-context-reminder.sh</code>, <code>scripts/hooks/handoff-resume-reminder.sh</code>), alongside SessionStart hooks contributed by installed plugins. No <code>.claude/rules/*.md</code> file is injected at this point or any other; rules enter context only when Claude follows a <code>CLAUDE.md</code> pointer to one, or a hook prints its content directly, which is exactly what these hooks do.</p>
+<p><strong>SessionStart</strong>: fires when a session opens, and again on resume, <code>clear</code>, or <code>compact</code>, depending on which matcher a given hook registers. Five repo-managed hooks are wired here, in <code>hooks.json</code> order: <code>scripts/hooks/cbm-context-reminder.sh</code>, <code>scripts/hooks/delegation-reminder.sh</code>, <code>scripts/hooks/task-observer-reminder.sh</code>, <code>scripts/hooks/handoff-resume-reminder.sh</code>, and <code>scripts/hooks/harness-doctor.sh</code>, alongside SessionStart hooks contributed by installed plugins. No <code>.claude/rules/*.md</code> file is injected at this point or any other; rules enter context only when Claude follows a <code>CLAUDE.md</code> pointer to one, or a hook prints its content directly, which is exactly what these hooks do.</p>
 <h2 id="diagram">Diagram<a class="headerlink" href="#diagram" title="Permanent link">&para;</a></h2>
 <p><img alt="Hook pipeline sequence diagram" src="../diagrams/hook_pipeline.svg" /></p>
 <h2 id="execution-order-across-a-turn">Execution Order Across a Turn<a class="headerlink" href="#execution-order-across-a-turn" title="Permanent link">&para;</a></h2>
@@ -2697,9 +2697,10 @@
 </span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>
 </span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>  Model turn ends
 </span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>    → Stop[0]: hookify stop.py
-</span><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>
-</span><span id="__span-0-38"><a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>  If context is compacted (auto or manual), separately from the turn cycle:
-</span><span id="__span-0-39"><a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>    → PreCompact[0]: precompact-handoff.sh
+</span><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>    → Stop[1]: task-observer-flush-check.py
+</span><span id="__span-0-38"><a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>
+</span><span id="__span-0-39"><a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>  If context is compacted (auto or manual), separately from the turn cycle:
+</span><span id="__span-0-40"><a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>    → PreCompact[0]: precompact-handoff.sh
 </span></code></pre></div>
 <p>Array position determines execution order within each hook type. Matcher-specific entries run only when their regex matches the tool being called.</p>
 <h2 id="per-hook-responsibilities">Per-Hook Responsibilities<a class="headerlink" href="#per-hook-responsibilities" title="Permanent link">&para;</a></h2>
@@ -2726,8 +2727,18 @@
 </tr>
 <tr>
 <td><code>startup\|resume\|clear\|compact</code></td>
+<td><code>scripts/hooks/task-observer-reminder.sh</code></td>
+<td>Repo-managed. Writes the current <code>~/.claude/skill-observations/log.md</code> observation count to <code>~/.claude/skill-observations/.state/&lt;session_id&gt;.baseline</code> (skipped when the session id fails a <code>[A-Za-z0-9._-]{1,128}</code> allowlist), prunes state files older than 14 days, and prints the task-observation reminder text. Runs after <code>delegation-reminder.sh</code> so the skills manifest that hook regenerates is already fresh. Its companion <code>scripts/hooks/task-observer-flush-check.py</code> (Stop, see below) reads this baseline back</td>
+</tr>
+<tr>
+<td><code>startup\|resume\|clear\|compact</code></td>
 <td><code>scripts/hooks/handoff-resume-reminder.sh</code></td>
 <td>Repo-managed. Checks for the single overwritten backstop file <code>~/.claude/logs/handoffs/auto-precompact-latest.md</code> written by <code>precompact-handoff.sh</code> and, if present, prints its branch/dirty-count/timestamp content as session-start context, labeled STALE past 48 hours. Prints nothing when the file does not exist. Complements, does not replace, the manual <code>/handoff</code> skill's timestamped archive</td>
+</tr>
+<tr>
+<td><code>startup\|resume\|clear\|compact</code></td>
+<td><code>scripts/hooks/harness-doctor.sh</code></td>
+<td>Repo-managed. Prints a one-line inventory of live versus degraded protections to stderr so the session can reason about which gates actually exist rather than trusting the docs (review R-12). Advisory: always exits 0, fails open. Tested by <code>tests/scripts/test_harness_doctor.bats</code></td>
 </tr>
 <tr>
 <td><code>startup\|clear\|compact</code></td>
@@ -2852,6 +2863,10 @@
 <td><code>hookify/hooks/stop.py</code></td>
 <td>Dispatches to hookify plugin engine's stop handlers</td>
 </tr>
+<tr>
+<td><code>scripts/hooks/task-observer-flush-check.py</code></td>
+<td>Reads the SessionStart baseline written by <code>scripts/hooks/task-observer-reminder.sh</code> and blocks turn end once, only when the session made 20 or more tool calls including at least one Edit/Write/NotebookEdit, and the live observation count has not grown past the baseline. Fails open (prints nothing, exits 0) on a missing baseline, an already-fired nudge marker, <code>stop_hook_active: true</code>, or any read/parse error</td>
+</tr>
 </tbody>
 </table>
 <h3 id="precompact">PreCompact<a class="headerlink" href="#precompact" title="Permanent link">&para;</a></h3>
@@ -2958,7 +2973,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 11, 2026 18:56:16 UTC">July 11, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 20, 2026 23:51:13 UTC">July 20, 2026</span>
   </span>
 
     
