@@ -34,7 +34,7 @@ VENDOR_EXCEPTIONS = {
 REVIEWER_SHAPE = re.compile(r"\breview|audit|validat|verif", re.IGNORECASE)
 
 
-def parse_frontmatter(text):
+def parse_frontmatter(text: str) -> dict[str, str]:
     """Parse the YAML-ish frontmatter block from an agent markdown file.
 
     Args:
@@ -57,7 +57,7 @@ def parse_frontmatter(text):
     return fields
 
 
-def lint(path):
+def lint(path: Path) -> tuple[list[str], list[str]]:
     """Lint a single agent markdown file against rules R1-R4.
 
     R1 and R2 are demoted from error to a "vendored: "-prefixed warning when
@@ -81,7 +81,11 @@ def lint(path):
         # context instead of raising FileNotFoundError on the first one.
         return errors, warnings
     prefix = "vendored: " if vendored else ""
-    fm = parse_frontmatter(path.read_text())
+    # encoding is explicit because agent frontmatter contains non-ASCII text.
+    # Path.read_text() otherwise defaults to the locale encoding, which is
+    # cp1252 on Windows runners and raises UnicodeDecodeError there while
+    # passing on Linux and macOS.
+    fm = parse_frontmatter(path.read_text(encoding="utf-8"))
     missing = [k for k in ("name", "description", "model", "tools") if k not in fm]
     if missing:
         finding = f"R1 {path.name}: {prefix}missing {', '.join(missing)}"
@@ -105,7 +109,7 @@ def lint(path):
     return errors, warnings
 
 
-def main(argv):
+def main(argv: list[str]) -> int:
     """Lint all agent markdown files given on the command line.
 
     Args:
