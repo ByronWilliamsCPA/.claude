@@ -202,7 +202,8 @@ GitHub Actions runs on every push:
    - `BREAKING CHANGE:` - Breaking changes (major version bump)
 
 3. **Document Breaking Changes**
-   - Update CHANGELOG.md
+   - Put a `BREAKING CHANGE:` footer in the commit message so python-semantic-release
+     records it in the generated changelog at release (do not hand-edit CHANGELOG.md)
    - Add migration guide if needed
    - Notify downstream project maintainers
 

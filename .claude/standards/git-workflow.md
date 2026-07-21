@@ -232,55 +232,29 @@ Follow Semantic Versioning (SemVer):
 - **PATCH**: Bug fixes (1.0.0 → 1.0.1)
 
 ### Release Process
-```bash
-# Create release branch
-git checkout main
-git pull origin main
-git checkout -b release/v1.2.0
 
-# Update version numbers
-# Update CHANGELOG.md
-# Run final tests
+Releases are automated by python-semantic-release (PSR). Do not create release branches,
+hand-edit version numbers, or hand-edit `CHANGELOG.md`. Merging Conventional Commits to
+`main` drives the version bump, changelog generation, and signed tag through the Semantic
+Release workflow:
 
-# Commit version bump
-git commit -m "chore: bump version to 1.2.0"
+- `fix:` commits produce a PATCH release, `feat:` a MINOR, and a `!` marker or
+  `BREAKING CHANGE:` footer a MAJOR.
+- The changelog is rendered from the commit history at release time, so there is no
+  hand-maintained `[Unreleased]` section (see `ByronWilliamsCPA/.github` PR #288, which
+  retired the per-PR changelog gate because those edits conflicted under the merge queue).
 
-# Create and push tag
-git tag -s v1.2.0 -m "Release version 1.2.0"
-git push origin v1.2.0
-
-# Create release PR
-git push -u origin release/v1.2.0
-```
+To cut a release, ensure `main` is green and let the Semantic Release workflow run (or
+trigger it via `workflow_dispatch`).
 
 ### Changelog Maintenance
 
-```markdown
-# Changelog
-
-## [1.2.0] - 2023-12-01
-
-### Added
-- New user authentication system
-- OAuth2 integration with Google
-
-### Changed
-- Improved error handling in API responses
-- Updated dependencies to latest versions
-
-### Deprecated
-- Old authentication method (will be removed in v2.0.0)
-
-### Removed
-- Legacy configuration options
-
-### Fixed
-- Database connection timeout issues
-- Memory leak in data processing
-
-### Security
-- Updated dependencies to address CVE-2023-12345
-```
+The changelog is generated, not maintained by hand. PSR renders it from Conventional
+Commit messages at release time, so the quality of a release entry depends entirely on the
+quality of the commit subject and body. Security fixes MUST name the CVE in the commit
+message (for example, `fix: resolve CVE-2023-12345 in dependency X`) so the identifier
+surfaces in the generated changelog, satisfying the OpenSSF "identify each vulnerability in
+the change log" criterion without any manual edit.
 
 ## Hotfix Workflow
 
