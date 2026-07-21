@@ -545,7 +545,6 @@ Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for:
 - [ ] All tests pass with 80%+ coverage
 - [ ] BasedPyright type checking passes
 - [ ] Docstrings added for new public APIs
-- [ ] CHANGELOG.md updated (if significant change)
 - [ ] Commits follow conventional commit format
 
 ## Versioning

@@ -1986,7 +1986,8 @@ checks:
     override_eligible: true
     description: >-
       Verify security fix commits reference corresponding regression test
-      additions. For each CHANGELOG entry citing a CVE or security fix,
+      additions. For each security-fix commit citing a CVE (the changelog is
+      generated from these commit messages by python-semantic-release),
       a tests/ file should be modified in the same or adjacent commit.
     verify: >-
       git_commit_association: CHANGELOG.md entries matching /CVE-|security fix/i

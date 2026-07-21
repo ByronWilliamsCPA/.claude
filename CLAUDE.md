@@ -302,7 +302,7 @@ Required files in every project: `LICENSE`, `SECURITY.md`, `CONTRIBUTING.md`,
 
 Before any release: CHANGELOG updated, no vulnerabilities older than 60 days,
 tests pass above 80% coverage, version tag follows SemVer. New features:
-write tests first, document security implications, update CHANGELOG.
+write tests first, document security implications.
 
 ## Scoped context
 

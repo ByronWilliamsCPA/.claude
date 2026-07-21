@@ -86,23 +86,19 @@ use `feat:`.
 Document the choice in the PR description so the next contributor sees the
 classification logic, not just the result.
 
-## CHANGELOG conventions
+## CHANGELOG
 
-CHANGELOG entries follow the same type derivation. The section headers must match:
-
-- `fix(compliance):` -> `### Fix` section under `[Unreleased]`
-- `feat(compliance):` -> `### Feat` section under `[Unreleased]`
-- `feat!(compliance):` -> `### Breaking` section under `[Unreleased]`; include a
-  `BREAKING CHANGE:` footer in the commit message describing what consumers must do
-- `docs(compliance):` -> no CHANGELOG entry required for editorial changes to existing
-  manifest entries (typo fixes, rewording, `notes:` additions). When a `docs(compliance):`
-  commit adds an entirely new doc that explains manifest policy or design (e.g., a new
-  standard like this file, a new ADR), log a CHANGELOG entry under `### Docs` so
-  consumers can find the new reference.
-
-When a combined PR (per the inseparability exception above) is classified `fix:`,
-the CHANGELOG entry should still describe both halves in the body so consumers
-can see the full scope of what changed.
+Do not hand-write CHANGELOG entries and do not edit `CHANGELOG.md` in a manifest PR. The
+changelog is generated at release time by python-semantic-release from the Conventional
+Commit history, so a correctly typed commit is the only input required (see
+`ByronWilliamsCPA/.github` PR #288, which retired the per-PR changelog gate because those
+edits conflicted under the squash + all-green merge queue). The commit type derived above
+is what feeds the release changelog: `feat(compliance):` renders under features,
+`fix(compliance):` under fixes, and `feat!(compliance):` under breaking changes (with a
+`BREAKING CHANGE:` footer in the commit message describing what consumers must do). Editorial
+`docs(compliance):` edits do not surface. For a combined `fix:` PR (per the inseparability
+exception above), describe both halves in the commit body so the rendered entry captures the
+full scope.
 
 ## Decision authority
 
