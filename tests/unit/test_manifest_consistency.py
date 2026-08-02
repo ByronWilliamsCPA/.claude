@@ -29,6 +29,13 @@ VALID_SEVERITIES: frozenset[str] = frozenset({"critical", "important", "suggeste
 
 # Known ``domain`` values. Extracted from the manifest on 2026-05-28. When a new
 # domain is introduced, add it here in the same commit and note why.
+#
+# ``operations`` added 2026-08-02: OPS-* checks covering deployed-system posture
+# (runtime config attestation, service credential scoping, log redaction,
+# security event logging and alerting, backups and tested restore,
+# anti-automation, managed-service console config). Every other domain closes
+# over the git tree; this one covers controls that live in a dashboard, a
+# connection string, a log stream, or an outbound alerting channel.
 VALID_DOMAINS: frozenset[str] = frozenset(
     {
         "api",
@@ -36,6 +43,7 @@ VALID_DOMAINS: frozenset[str] = frozenset(
         "claude_docs",
         "foundations",
         "mkdocs",
+        "operations",
         "ossf",
         "pre_commit",
         "repo_settings",
@@ -44,9 +52,13 @@ VALID_DOMAINS: frozenset[str] = frozenset(
 )
 
 # Known ``applies_to`` values. The manifest scopes API checks via ``applies_to:
-# api_repos`` and MkDocs checks via ``applies_to: docs_repos`` (publishesDocs=true
-# repos only). Extend this set in the same commit that adds a new applicability scope.
-VALID_APPLIES_TO: frozenset[str] = frozenset({"api_repos", "docs_repos"})
+# api_repos``, MkDocs checks via ``applies_to: docs_repos`` (publishesDocs=true
+# repos only), and operations checks via ``applies_to: deployed_repos``
+# (isDeployed=true repos only). Extend this set in the same commit that adds a
+# new applicability scope.
+VALID_APPLIES_TO: frozenset[str] = frozenset(
+    {"api_repos", "deployed_repos", "docs_repos"}
+)
 
 # IDs deliberately exempt from the critical-implies-non-overridable rule.
 # Each entry requires a comment explaining the exception. Keep this empty: a
@@ -302,6 +314,153 @@ def test_applies_to_known() -> None:
         f"checks with unknown applies_to (allowed: {sorted(VALID_APPLIES_TO)}): "
         f"{_ids(offenders)}"
     )
+
+
+def _domain_agent_rows(text: str) -> set[str]:
+    """Return the first-column values of the repo-compliance Domain Agents table.
+
+    Locates the table by its exact header row (``| Domain | Agent | Checks |``)
+    and reads the contiguous body rows that follow, so tables elsewhere in the
+    document cannot satisfy the caller's membership check.
+
+    Args:
+        text: Full contents of the repo-compliance SKILL.md.
+
+    Returns:
+        The set of domain names listed in the table's first column. Empty when
+        the header row is absent.
+    """
+    lines = text.splitlines()
+    header = "| Domain | Agent | Checks |"
+    try:
+        index = lines.index(header)
+    except ValueError:
+        return set()
+    rows: set[str] = set()
+    # Skip the header and its separator row, then read until the table ends.
+    for line in lines[index + 2 :]:
+        if not line.startswith("|"):
+            break
+        cell = line.split("|")[1].strip()
+        if cell:
+            rows.add(cell)
+    return rows
+
+
+def test_applies_to_scopes_are_defined_in_the_compliance_script() -> None:
+    """Every manifest ``applies_to`` scope has a matching SCOPE_DEFINITION.
+
+    Wiring a scoped domain takes several coupled edits across the manifest, the
+    compliance script, the consistency enums, and the skill docs. Missing any one
+    leaves the domain invisible. This asserts the manifest-to-script half: a
+    scope the script cannot resolve would fall through to no evaluation at all.
+    """
+    from tests.unit._load_check_repo_compliance import load_module
+
+    crc = load_module()
+    manifest_scopes = {
+        value
+        for check in CHECKS
+        for value in (
+            check["applies_to"]
+            if isinstance(check.get("applies_to"), list)
+            else [check.get("applies_to")]
+        )
+        if value is not None
+    }
+    missing = sorted(manifest_scopes - set(crc.SCOPE_DEFINITIONS))
+    assert not missing, (
+        "applies_to scopes used in the manifest but absent from "
+        f"SCOPE_DEFINITIONS in scripts/check-repo-compliance.py: {missing}. "
+        "Add a ScopeDefinition binding each to its catalog flag."
+    )
+
+
+def test_scope_definitions_agree_with_manifest_domains() -> None:
+    """Each scope's declared domain matches the domain of the checks using it.
+
+    A ``ScopeDefinition`` that names the wrong domain reports skipped-check
+    counts against a domain that does not own those checks, which makes the
+    applicability summary quietly wrong.
+    """
+    from tests.unit._load_check_repo_compliance import load_module
+
+    crc = load_module()
+    offenders: list[str] = []
+    for scope, definition in crc.SCOPE_DEFINITIONS.items():
+        domains = {
+            c.get("domain")
+            for c in CHECKS
+            if scope
+            in (
+                c["applies_to"]
+                if isinstance(c.get("applies_to"), list)
+                else [c.get("applies_to")]
+            )
+        }
+        if not domains:
+            # No checks carry this scope yet; a scope may be defined ahead of
+            # its checks landing. Nothing to disagree with.
+            continue
+        if domains != {definition.domain}:
+            offenders.append(
+                f"{scope}: ScopeDefinition says {definition.domain!r}, "
+                f"manifest checks say {sorted(str(d) for d in domains)}"
+            )
+    assert not offenders, "scope/domain disagreement: " + "; ".join(offenders)
+
+
+def test_scoped_domains_have_an_agent_in_the_skill_table() -> None:
+    """Every manifest domain appears in the repo-compliance Domain Agents table.
+
+    A domain with checks but no agent row is never dispatched, so its checks are
+    defined and never evaluated. That is the same class of defect as a silent
+    applies_to skip: the audit reports clean because nothing ran.
+    """
+    skill = (
+        Path(__file__).resolve().parents[2]
+        / ".claude"
+        / "skills"
+        / "repo-compliance"
+        / "SKILL.md"
+    )
+    # Parse the Domain Agents table's first column rather than substring-matching
+    # the document. Two looser anchors were tried and both were unfalsifiable:
+    # searching the whole file, and slicing the "## Domain Agents" section, each
+    # still match a "| <domain> |" cell in the applies_to scope table that lives
+    # in the same section. A guard that cannot fail is worse than no guard, which
+    # is the whole reason this test exists.
+    listed = _domain_agent_rows(skill.read_text(encoding="utf-8"))
+
+    domains = {str(c.get("domain")) for c in CHECKS}
+    # repo_settings is deliberately produced by repo-foundations-auditor under
+    # the foundations row rather than carrying its own table row.
+    domains.discard("repo_settings")
+    missing = sorted(domains - listed)
+    assert not missing, (
+        f"domains with manifest checks but no row in {skill.name} "
+        f"Domain Agents table (rows found: {sorted(listed)}): {missing}"
+    )
+
+
+def test_domain_agent_rows_parser_reads_only_the_agent_table() -> None:
+    """The table parser ignores other pipe tables in the same document.
+
+    Guards the guard: if this parser ever widens to match any pipe table, the
+    coverage test above silently stops failing.
+    """
+    doc = (
+        "## Domain Agents\n\n"
+        "| Domain | Agent | Checks |\n"
+        "|--------|-------|--------|\n"
+        "| ci | devops | CI-* |\n"
+        "| ossf | ossf-auditor | OSSF-* |\n"
+        "\n### Some Subsection\n\n"
+        "| Scope | Flag | Domain | Checks |\n"
+        "| --- | --- | --- | --- |\n"
+        "| deployed_repos | isDeployed | operations | OPS-* |\n"
+    )
+    assert _domain_agent_rows(doc) == {"ci", "ossf"}
 
 
 def test_date_fields_parse_when_present() -> None:

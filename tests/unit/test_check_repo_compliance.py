@@ -123,7 +123,15 @@ def test_branch_protection_exempt_fallback_when_catalog_missing():
 @pytest.mark.unit
 def test_check_repo_marks_exempt_repos_na_for_branch_protection(monkeypatch) -> None:
     """check_repo sets bp_4/bp_5 to N/A and ci_020 to PASS for exempt repos."""
-    catalog = {"williaby/homelab-agent-configs": {"branchProtectionExempt": True}}
+    # servesApi: false keeps the api_repos scope an explicit SKIP, so this test
+    # exercises branch-protection exemption without also tripping the UNKNOWN
+    # applies_to path.
+    catalog = {
+        "williaby/homelab-agent-configs": {
+            "branchProtectionExempt": True,
+            "api": {"servesApi": False},
+        }
+    }
 
     mock_sig_calls: list[object] = []
     mock_admins_calls: list[object] = []
@@ -139,7 +147,6 @@ def test_check_repo_marks_exempt_repos_na_for_branch_protection(monkeypatch) -> 
     monkeypatch.setattr(crc, "file_exists", lambda *a, **kw: True)
     monkeypatch.setattr(crc, "_signatures_enforced", fake_sig)
     monkeypatch.setattr(crc, "_admins_enforced", fake_admins)
-    monkeypatch.setattr(crc, "applies_to_api_repos", lambda *a, **kw: False)
 
     result = crc.check_repo("williaby", "homelab-agent-configs", catalog)
 
@@ -159,10 +166,13 @@ def test_check_repo_fails_ci020_when_renovate_missing(monkeypatch) -> None:
     monkeypatch.setattr(crc, "file_exists", lambda *a, **kw: False)
     monkeypatch.setattr(crc, "_signatures_enforced", lambda *a, **kw: False)
     monkeypatch.setattr(crc, "_admins_enforced", lambda *a, **kw: False)
-    monkeypatch.setattr(crc, "applies_to_api_repos", lambda *a, **kw: False)
 
+    # Empty catalog: the repo is absent, so every applies_to scope resolves
+    # UNKNOWN and the API columns report UNK rather than a silent N/A.
     result = crc.check_repo("ByronWilliamsCPA", "test-repo", {})
     assert result.ci_020 == "FAIL"
+    assert result.api_001_openapi_spec == "UNK"
+    assert result.scopes["api_repos"].applicability is crc.Applicability.UNKNOWN
 
 
 @pytest.mark.unit
@@ -211,3 +221,240 @@ def test_admins_enforced_returns_true_when_no_bypass(monkeypatch) -> None:
     monkeypatch.setattr(crc, "gh", fake_gh)
     result = crc._admins_enforced("testorg", "testrepo", "main")
     assert result is True
+
+
+# --------------------------------------------------------------------------- #
+# applies_to scope resolution (tri-state)                                     #
+# --------------------------------------------------------------------------- #
+
+
+@pytest.mark.unit
+def test_resolve_applicability_returns_applies_only_for_literal_true() -> None:
+    """resolve_applicability yields APPLIES only when the flag is literal True."""
+    catalog = {"org/repo": {"api": {"servesApi": True}}}
+
+    verdict = crc.resolve_applicability("org/repo", catalog, "api_repos")
+
+    assert verdict.applicability is crc.Applicability.APPLIES
+    assert verdict.raw_value is True
+
+
+@pytest.mark.unit
+def test_resolve_applicability_returns_skip_only_for_literal_false() -> None:
+    """resolve_applicability yields SKIP only when the flag is literal False."""
+    catalog = {"org/repo": {"api": {"servesApi": False}}}
+
+    verdict = crc.resolve_applicability("org/repo", catalog, "api_repos")
+
+    assert verdict.applicability is crc.Applicability.SKIP
+    assert verdict.raw_value is False
+
+
+@pytest.mark.unit
+def test_resolve_applicability_unknown_when_flag_absent_from_entry() -> None:
+    """A missing flag key resolves to UNKNOWN, naming the flag in the reason."""
+    catalog = {"org/repo": {}}
+
+    verdict = crc.resolve_applicability("org/repo", catalog, "api_repos")
+
+    assert verdict.applicability is crc.Applicability.UNKNOWN
+    assert "api.servesApi" in verdict.reason
+    assert "populate" in verdict.reason
+
+
+@pytest.mark.unit
+def test_resolve_applicability_unknown_when_flag_is_none() -> None:
+    """A flag explicitly set to null resolves to UNKNOWN, not SKIP."""
+    catalog = {"org/repo": {"api": {"servesApi": None}}}
+
+    verdict = crc.resolve_applicability("org/repo", catalog, "api_repos")
+
+    assert verdict.applicability is crc.Applicability.UNKNOWN
+    assert "null" in verdict.reason
+
+
+@pytest.mark.parametrize("raw_value", ["yes", 1, 0])
+@pytest.mark.unit
+def test_resolve_applicability_unknown_for_non_boolean_values(raw_value) -> None:
+    """Non-boolean flag values resolve to UNKNOWN, including int 1 and int 0.
+
+    Python treats ``1 == True`` and ``0 == False``, so this pins the
+    implementation's ``is True`` / ``is False`` identity checks: an int flag
+    must never be silently coerced into APPLIES or SKIP.
+    """
+    catalog = {"org/repo": {"api": {"servesApi": raw_value}}}
+
+    verdict = crc.resolve_applicability("org/repo", catalog, "api_repos")
+
+    assert verdict.applicability is crc.Applicability.UNKNOWN
+    assert verdict.raw_value == raw_value
+
+
+@pytest.mark.unit
+def test_resolve_applicability_unknown_when_slug_absent_from_catalog() -> None:
+    """A repo slug missing from the catalog entirely resolves to UNKNOWN."""
+    verdict = crc.resolve_applicability("org/missing-repo", {}, "api_repos")
+
+    assert verdict.applicability is crc.Applicability.UNKNOWN
+    assert "org/missing-repo" in verdict.reason
+
+
+@pytest.mark.parametrize(
+    ("entry", "expected"),
+    [
+        (
+            {"api": {"servesApi": True}},
+            "APPLIES",
+        ),
+        (
+            {"api": None},
+            "UNKNOWN",
+        ),
+        (
+            {"api": {}},
+            "UNKNOWN",
+        ),
+    ],
+)
+@pytest.mark.unit
+def test_resolve_applicability_nested_flag_path(entry, expected) -> None:
+    """Nested flag paths (e.g. api.servesApi) resolve through intermediate dicts."""
+    catalog = {"org/repo": entry}
+
+    verdict = crc.resolve_applicability("org/repo", catalog, "api_repos")
+
+    assert verdict.applicability.value == expected
+
+
+@pytest.mark.unit
+def test_read_flag_missing_path_returns_none_and_not_found() -> None:
+    """_read_flag reports found=False for a path absent from the entry."""
+    value, found = crc._read_flag({}, ("api", "servesApi"))
+
+    assert value is None
+    assert found is False
+
+
+@pytest.mark.unit
+def test_read_flag_present_null_returns_none_and_found() -> None:
+    """_read_flag distinguishes a null value present at the path from absent."""
+    value, found = crc._read_flag({"api": {"servesApi": None}}, ("api", "servesApi"))
+
+    assert value is None
+    assert found is True
+
+
+@pytest.mark.unit
+def test_assert_scopes_reachable_flags_scope_with_zero_applies_repos() -> None:
+    """Regression guard for the MkDocs silent-skip defect.
+
+    A scope where every repo resolves to SKIP or UNKNOWN (never APPLIES) must
+    surface as an unreachable-scope problem line, since that is exactly the
+    fleet-wide state the MkDocs domain shipped in: publishesDocs absent or
+    false everywhere, so all MKDOCS-* checks silently never ran.
+    """
+    results = [
+        crc.RepoResult(slug="org/repo1", branch="main"),
+    ]
+    results[0].scopes = {
+        "api_repos": crc.ScopeVerdict(
+            "api_repos",
+            crc.Applicability.APPLIES,
+            raw_value=True,
+            reason="in scope",
+        ),
+        "docs_repos": crc.ScopeVerdict(
+            "docs_repos",
+            crc.Applicability.SKIP,
+            raw_value=False,
+            reason="explicitly out of scope",
+        ),
+        "deployed_repos": crc.ScopeVerdict(
+            "deployed_repos",
+            crc.Applicability.APPLIES,
+            raw_value=True,
+            reason="in scope",
+        ),
+    }
+
+    problems = crc.assert_scopes_reachable(results, {})
+
+    assert len(problems) == 1
+    assert "docs_repos" in problems[0]
+    assert "mkdocs" in problems[0]
+
+
+@pytest.mark.unit
+def test_assert_scopes_reachable_no_problem_when_at_least_one_applies() -> None:
+    """A scope with at least one APPLIES repo produces no problem line."""
+    results = [
+        crc.RepoResult(slug="org/repo1", branch="main"),
+    ]
+    results[0].scopes = {
+        "api_repos": crc.ScopeVerdict(
+            "api_repos",
+            crc.Applicability.APPLIES,
+            raw_value=True,
+            reason="in scope",
+        ),
+        "docs_repos": crc.ScopeVerdict(
+            "docs_repos",
+            crc.Applicability.APPLIES,
+            raw_value=True,
+            reason="in scope",
+        ),
+        "deployed_repos": crc.ScopeVerdict(
+            "deployed_repos",
+            crc.Applicability.APPLIES,
+            raw_value=True,
+            reason="in scope",
+        ),
+    }
+
+    problems = crc.assert_scopes_reachable(results, {})
+
+    assert problems == []
+
+
+@pytest.mark.unit
+def test_assert_scopes_reachable_empty_results_returns_no_problems() -> None:
+    """No repos means no fleet to assert reach against, so nothing is flagged."""
+    problems = crc.assert_scopes_reachable([], {})
+
+    assert problems == []
+
+
+@pytest.mark.unit
+def test_render_scope_summary_always_emits_skip_line_even_when_zero() -> None:
+    """render_scope_summary prints a SKIP line per scope, even with zero skips."""
+    lines = crc.render_scope_summary([], {})
+
+    assert any("SKIP (publishesDocs: false)" in line for line in lines)
+
+
+@pytest.mark.unit
+def test_render_scope_summary_lists_unknown_repos_with_reason() -> None:
+    """render_scope_summary lists each UNKNOWN repo slug with its reason."""
+    result = crc.RepoResult(slug="org/unclear-repo", branch="main")
+    reason = "publishesDocs absent from catalog entry; populate it"
+    result.scopes = {
+        "docs_repos": crc.ScopeVerdict(
+            "docs_repos", crc.Applicability.UNKNOWN, None, reason
+        ),
+    }
+
+    lines = crc.render_scope_summary([result], {})
+
+    assert any(f"org/unclear-repo: {reason}" in line for line in lines)
+
+
+@pytest.mark.unit
+def test_load_manifest_scope_checks_includes_docs_and_api_scopes() -> None:
+    """The real manifest yields non-empty, sorted check-ID lists for both scopes."""
+    scope_checks = crc.load_manifest_scope_checks()
+
+    assert "docs_repos" in scope_checks
+    assert "api_repos" in scope_checks
+    for ids in scope_checks.values():
+        assert len(ids) > 0
+        assert ids == sorted(ids)

@@ -136,7 +136,9 @@
         "_note": "null sourceTemplate means repo was not generated from a cookiecutter template. driftScore 0 = in sync."
       },
       "publishesDocs": false,
-      "_publishesDocsNote": "Top-level boolean flag (default false). Set to true for repos that deploy a public documentation site (GitHub Pages or equivalent). When true, the MkDocs compliance domain (MKDOCS-001 through MKDOCS-011, MKDOCS-013, MKDOCS-014) is evaluated for that repo. Mirrors the api.servesApi flag pattern. Owner must explicitly set to true; do not infer from mkdocs.yml presence alone."
+      "_publishesDocsNote": "Top-level boolean flag (default false). Set to true for repos that deploy a public documentation site (GitHub Pages or equivalent). When true, the MkDocs compliance domain (MKDOCS-001 through MKDOCS-011, MKDOCS-013, MKDOCS-014) is evaluated for that repo. Mirrors the api.servesApi flag pattern. Owner must explicitly set to true; do not infer from mkdocs.yml presence alone.",
+      "isDeployed": null,
+      "_isDeployedNote": "Top-level tri-state flag. true for repos that run as a long-lived deployed service; false for libraries, templates, and config repos; null means undeclared. When true, the operations compliance domain (OPS-001 onward) is evaluated for that repo. Mirrors the publishesDocs pattern. null is not a skip: the runner reports UNKNOWN so an unpopulated catalog is visible."
     },
     "typeProfiles": {
       "python-package": {
@@ -436,7 +438,9 @@
       "usesDocker": false,
       "migrationPhase": "complete",
       "publishesDocs": false,
-      "_publishesDocsNote": "Has docs.yml workflow but site is not confirmed as publicly deployed. Owner should set publishesDocs: true if GitHub Pages is active for this repo."
+      "_publishesDocsNote": "Has docs.yml workflow but site is not confirmed as publicly deployed. Owner should set publishesDocs: true if GitHub Pages is active for this repo.",
+      "isDeployed": null,
+      "_isDeployedBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves deployed_repos to UNKNOWN and reports a finding, rather than skipping the operations domain silently. Re-test: does this repo run as a long-lived deployed service with a runtime config, a data store, or an outbound alerting channel? A library, template, or config repo is false. Do not infer from repositoryType alone: the label is known to drift."
     },
     {
       "org": "ByronWilliamsCPA",
@@ -621,7 +625,11 @@
         }
       },
       "usesDocker": false,
-      "migrationPhase": "complete"
+      "migrationPhase": "complete",
+      "publishesDocs": null,
+      "_publishesDocsBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves docs_repos to UNKNOWN and reports a finding, rather than skipping the MkDocs domain silently. Re-test: does this repo deploy a docs site (GitHub Pages or equivalent)? Do not infer from mkdocs.yml presence alone.",
+      "isDeployed": null,
+      "_isDeployedBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves deployed_repos to UNKNOWN and reports a finding, rather than skipping the operations domain silently. Re-test: does this repo run as a long-lived deployed service with a runtime config, a data store, or an outbound alerting channel? A library, template, or config repo is false. Do not infer from repositoryType alone: the label is known to drift."
     },
     {
       "org": "ByronWilliamsCPA",
@@ -650,7 +658,11 @@
           "sourceTemplate": null,
           "driftScore": null
         }
-      }
+      },
+      "publishesDocs": null,
+      "_publishesDocsBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves docs_repos to UNKNOWN and reports a finding, rather than skipping the MkDocs domain silently. Re-test: does this repo deploy a docs site (GitHub Pages or equivalent)? Do not infer from mkdocs.yml presence alone.",
+      "isDeployed": null,
+      "_isDeployedBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves deployed_repos to UNKNOWN and reports a finding, rather than skipping the operations domain silently. Re-test: does this repo run as a long-lived deployed service with a runtime config, a data store, or an outbound alerting channel? A library, template, or config repo is false. Do not infer from repositoryType alone: the label is known to drift."
     },
     {
       "org": "ByronWilliamsCPA",
@@ -809,7 +821,11 @@
         }
       },
       "usesDocker": true,
-      "migrationPhase": "complete"
+      "migrationPhase": "complete",
+      "publishesDocs": null,
+      "_publishesDocsBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves docs_repos to UNKNOWN and reports a finding, rather than skipping the MkDocs domain silently. Re-test: does this repo deploy a docs site (GitHub Pages or equivalent)? Do not infer from mkdocs.yml presence alone.",
+      "isDeployed": null,
+      "_isDeployedBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves deployed_repos to UNKNOWN and reports a finding, rather than skipping the operations domain silently. Re-test: does this repo run as a long-lived deployed service with a runtime config, a data store, or an outbound alerting channel? A library, template, or config repo is false. Do not infer from repositoryType alone: the label is known to drift."
     },
     {
       "org": "ByronWilliamsCPA",
@@ -954,7 +970,11 @@
         }
       },
       "usesDocker": false,
-      "migrationPhase": "complete"
+      "migrationPhase": "complete",
+      "publishesDocs": null,
+      "_publishesDocsBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves docs_repos to UNKNOWN and reports a finding, rather than skipping the MkDocs domain silently. Re-test: does this repo deploy a docs site (GitHub Pages or equivalent)? Do not infer from mkdocs.yml presence alone.",
+      "isDeployed": null,
+      "_isDeployedBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves deployed_repos to UNKNOWN and reports a finding, rather than skipping the operations domain silently. Re-test: does this repo run as a long-lived deployed service with a runtime config, a data store, or an outbound alerting channel? A library, template, or config repo is false. Do not infer from repositoryType alone: the label is known to drift."
     },
     {
       "org": "ByronWilliamsCPA",
@@ -1087,7 +1107,11 @@
         }
       },
       "usesDocker": false,
-      "migrationPhase": "complete"
+      "migrationPhase": "complete",
+      "publishesDocs": null,
+      "_publishesDocsBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves docs_repos to UNKNOWN and reports a finding, rather than skipping the MkDocs domain silently. Re-test: does this repo deploy a docs site (GitHub Pages or equivalent)? Do not infer from mkdocs.yml presence alone.",
+      "isDeployed": null,
+      "_isDeployedBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves deployed_repos to UNKNOWN and reports a finding, rather than skipping the operations domain silently. Re-test: does this repo run as a long-lived deployed service with a runtime config, a data store, or an outbound alerting channel? A library, template, or config repo is false. Do not infer from repositoryType alone: the label is known to drift."
     },
     {
       "org": "ByronWilliamsCPA",
@@ -1232,7 +1256,11 @@
         }
       },
       "usesDocker": false,
-      "migrationPhase": "complete"
+      "migrationPhase": "complete",
+      "publishesDocs": null,
+      "_publishesDocsBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves docs_repos to UNKNOWN and reports a finding, rather than skipping the MkDocs domain silently. Re-test: does this repo deploy a docs site (GitHub Pages or equivalent)? Do not infer from mkdocs.yml presence alone.",
+      "isDeployed": null,
+      "_isDeployedBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves deployed_repos to UNKNOWN and reports a finding, rather than skipping the operations domain silently. Re-test: does this repo run as a long-lived deployed service with a runtime config, a data store, or an outbound alerting channel? A library, template, or config repo is false. Do not infer from repositoryType alone: the label is known to drift."
     },
     {
       "org": "ByronWilliamsCPA",
@@ -1411,7 +1439,11 @@
         }
       },
       "usesDocker": true,
-      "migrationPhase": "complete"
+      "migrationPhase": "complete",
+      "publishesDocs": null,
+      "_publishesDocsBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves docs_repos to UNKNOWN and reports a finding, rather than skipping the MkDocs domain silently. Re-test: does this repo deploy a docs site (GitHub Pages or equivalent)? Do not infer from mkdocs.yml presence alone.",
+      "isDeployed": null,
+      "_isDeployedBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves deployed_repos to UNKNOWN and reports a finding, rather than skipping the operations domain silently. Re-test: does this repo run as a long-lived deployed service with a runtime config, a data store, or an outbound alerting channel? A library, template, or config repo is false. Do not infer from repositoryType alone: the label is known to drift."
     },
     {
       "org": "ByronWilliamsCPA",
@@ -1580,7 +1612,11 @@
         }
       },
       "usesDocker": false,
-      "migrationPhase": "complete"
+      "migrationPhase": "complete",
+      "publishesDocs": null,
+      "_publishesDocsBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves docs_repos to UNKNOWN and reports a finding, rather than skipping the MkDocs domain silently. Re-test: does this repo deploy a docs site (GitHub Pages or equivalent)? Do not infer from mkdocs.yml presence alone.",
+      "isDeployed": null,
+      "_isDeployedBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves deployed_repos to UNKNOWN and reports a finding, rather than skipping the operations domain silently. Re-test: does this repo run as a long-lived deployed service with a runtime config, a data store, or an outbound alerting channel? A library, template, or config repo is false. Do not infer from repositoryType alone: the label is known to drift."
     },
     {
       "org": "ByronWilliamsCPA",
@@ -1748,7 +1784,11 @@
         }
       },
       "usesDocker": true,
-      "migrationPhase": "complete"
+      "migrationPhase": "complete",
+      "publishesDocs": null,
+      "_publishesDocsBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves docs_repos to UNKNOWN and reports a finding, rather than skipping the MkDocs domain silently. Re-test: does this repo deploy a docs site (GitHub Pages or equivalent)? Do not infer from mkdocs.yml presence alone.",
+      "isDeployed": null,
+      "_isDeployedBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves deployed_repos to UNKNOWN and reports a finding, rather than skipping the operations domain silently. Re-test: does this repo run as a long-lived deployed service with a runtime config, a data store, or an outbound alerting channel? A library, template, or config repo is false. Do not infer from repositoryType alone: the label is known to drift."
     },
     {
       "org": "ByronWilliamsCPA",
@@ -1905,7 +1945,11 @@
         }
       },
       "usesDocker": true,
-      "migrationPhase": "complete"
+      "migrationPhase": "complete",
+      "publishesDocs": null,
+      "_publishesDocsBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves docs_repos to UNKNOWN and reports a finding, rather than skipping the MkDocs domain silently. Re-test: does this repo deploy a docs site (GitHub Pages or equivalent)? Do not infer from mkdocs.yml presence alone.",
+      "isDeployed": null,
+      "_isDeployedBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves deployed_repos to UNKNOWN and reports a finding, rather than skipping the operations domain silently. Re-test: does this repo run as a long-lived deployed service with a runtime config, a data store, or an outbound alerting channel? A library, template, or config repo is false. Do not infer from repositoryType alone: the label is known to drift."
     },
     {
       "org": "ByronWilliamsCPA",
@@ -2055,7 +2099,11 @@
         }
       },
       "usesDocker": false,
-      "migrationPhase": "complete"
+      "migrationPhase": "complete",
+      "publishesDocs": null,
+      "_publishesDocsBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves docs_repos to UNKNOWN and reports a finding, rather than skipping the MkDocs domain silently. Re-test: does this repo deploy a docs site (GitHub Pages or equivalent)? Do not infer from mkdocs.yml presence alone.",
+      "isDeployed": null,
+      "_isDeployedBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves deployed_repos to UNKNOWN and reports a finding, rather than skipping the operations domain silently. Re-test: does this repo run as a long-lived deployed service with a runtime config, a data store, or an outbound alerting channel? A library, template, or config repo is false. Do not infer from repositoryType alone: the label is known to drift."
     },
     {
       "org": "ByronWilliamsCPA",
@@ -2084,7 +2132,11 @@
           "sourceTemplate": null,
           "driftScore": null
         }
-      }
+      },
+      "publishesDocs": null,
+      "_publishesDocsBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves docs_repos to UNKNOWN and reports a finding, rather than skipping the MkDocs domain silently. Re-test: does this repo deploy a docs site (GitHub Pages or equivalent)? Do not infer from mkdocs.yml presence alone.",
+      "isDeployed": null,
+      "_isDeployedBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves deployed_repos to UNKNOWN and reports a finding, rather than skipping the operations domain silently. Re-test: does this repo run as a long-lived deployed service with a runtime config, a data store, or an outbound alerting channel? A library, template, or config repo is false. Do not infer from repositoryType alone: the label is known to drift."
     },
     {
       "org": "ByronWilliamsCPA",
@@ -2239,7 +2291,11 @@
         }
       },
       "usesDocker": false,
-      "migrationPhase": "complete"
+      "migrationPhase": "complete",
+      "publishesDocs": null,
+      "_publishesDocsBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves docs_repos to UNKNOWN and reports a finding, rather than skipping the MkDocs domain silently. Re-test: does this repo deploy a docs site (GitHub Pages or equivalent)? Do not infer from mkdocs.yml presence alone.",
+      "isDeployed": null,
+      "_isDeployedBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves deployed_repos to UNKNOWN and reports a finding, rather than skipping the operations domain silently. Re-test: does this repo run as a long-lived deployed service with a runtime config, a data store, or an outbound alerting channel? A library, template, or config repo is false. Do not infer from repositoryType alone: the label is known to drift."
     },
     {
       "org": "ByronWilliamsCPA",
@@ -2398,7 +2454,11 @@
         }
       },
       "usesDocker": true,
-      "migrationPhase": "complete"
+      "migrationPhase": "complete",
+      "publishesDocs": null,
+      "_publishesDocsBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves docs_repos to UNKNOWN and reports a finding, rather than skipping the MkDocs domain silently. Re-test: does this repo deploy a docs site (GitHub Pages or equivalent)? Do not infer from mkdocs.yml presence alone.",
+      "isDeployed": null,
+      "_isDeployedBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves deployed_repos to UNKNOWN and reports a finding, rather than skipping the operations domain silently. Re-test: does this repo run as a long-lived deployed service with a runtime config, a data store, or an outbound alerting channel? A library, template, or config repo is false. Do not infer from repositoryType alone: the label is known to drift."
     },
     {
       "org": "ByronWilliamsCPA",
@@ -2527,7 +2587,11 @@
         }
       },
       "usesDocker": false,
-      "migrationPhase": "complete"
+      "migrationPhase": "complete",
+      "publishesDocs": null,
+      "_publishesDocsBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves docs_repos to UNKNOWN and reports a finding, rather than skipping the MkDocs domain silently. Re-test: does this repo deploy a docs site (GitHub Pages or equivalent)? Do not infer from mkdocs.yml presence alone.",
+      "isDeployed": null,
+      "_isDeployedBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves deployed_repos to UNKNOWN and reports a finding, rather than skipping the operations domain silently. Re-test: does this repo run as a long-lived deployed service with a runtime config, a data store, or an outbound alerting channel? A library, template, or config repo is false. Do not infer from repositoryType alone: the label is known to drift."
     },
     {
       "org": "ByronWilliamsCPA",
@@ -2656,7 +2720,11 @@
         }
       },
       "usesDocker": false,
-      "migrationPhase": "complete"
+      "migrationPhase": "complete",
+      "publishesDocs": null,
+      "_publishesDocsBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves docs_repos to UNKNOWN and reports a finding, rather than skipping the MkDocs domain silently. Re-test: does this repo deploy a docs site (GitHub Pages or equivalent)? Do not infer from mkdocs.yml presence alone.",
+      "isDeployed": null,
+      "_isDeployedBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves deployed_repos to UNKNOWN and reports a finding, rather than skipping the operations domain silently. Re-test: does this repo run as a long-lived deployed service with a runtime config, a data store, or an outbound alerting channel? A library, template, or config repo is false. Do not infer from repositoryType alone: the label is known to drift."
     },
     {
       "org": "ByronWilliamsCPA",
@@ -2813,7 +2881,11 @@
         }
       },
       "usesDocker": true,
-      "migrationPhase": "complete"
+      "migrationPhase": "complete",
+      "publishesDocs": null,
+      "_publishesDocsBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves docs_repos to UNKNOWN and reports a finding, rather than skipping the MkDocs domain silently. Re-test: does this repo deploy a docs site (GitHub Pages or equivalent)? Do not infer from mkdocs.yml presence alone.",
+      "isDeployed": null,
+      "_isDeployedBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves deployed_repos to UNKNOWN and reports a finding, rather than skipping the operations domain silently. Re-test: does this repo run as a long-lived deployed service with a runtime config, a data store, or an outbound alerting channel? A library, template, or config repo is false. Do not infer from repositoryType alone: the label is known to drift."
     },
     {
       "org": "ByronWilliamsCPA",
@@ -2951,7 +3023,11 @@
         }
       },
       "usesDocker": false,
-      "migrationPhase": "complete"
+      "migrationPhase": "complete",
+      "publishesDocs": null,
+      "_publishesDocsBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves docs_repos to UNKNOWN and reports a finding, rather than skipping the MkDocs domain silently. Re-test: does this repo deploy a docs site (GitHub Pages or equivalent)? Do not infer from mkdocs.yml presence alone.",
+      "isDeployed": null,
+      "_isDeployedBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves deployed_repos to UNKNOWN and reports a finding, rather than skipping the operations domain silently. Re-test: does this repo run as a long-lived deployed service with a runtime config, a data store, or an outbound alerting channel? A library, template, or config repo is false. Do not infer from repositoryType alone: the label is known to drift."
     },
     {
       "org": "williaby",
@@ -3081,7 +3157,11 @@
       },
       "usesDocker": false,
       "migrationPhase": null,
-      "branchProtectionExempt": true
+      "branchProtectionExempt": true,
+      "publishesDocs": null,
+      "_publishesDocsBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves docs_repos to UNKNOWN and reports a finding, rather than skipping the MkDocs domain silently. Re-test: does this repo deploy a docs site (GitHub Pages or equivalent)? Do not infer from mkdocs.yml presence alone.",
+      "isDeployed": null,
+      "_isDeployedBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves deployed_repos to UNKNOWN and reports a finding, rather than skipping the operations domain silently. Re-test: does this repo run as a long-lived deployed service with a runtime config, a data store, or an outbound alerting channel? A library, template, or config repo is false. Do not infer from repositoryType alone: the label is known to drift."
     },
     {
       "org": "williaby",
@@ -3210,7 +3290,11 @@
         }
       },
       "usesDocker": false,
-      "migrationPhase": "pending"
+      "migrationPhase": "pending",
+      "publishesDocs": null,
+      "_publishesDocsBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves docs_repos to UNKNOWN and reports a finding, rather than skipping the MkDocs domain silently. Re-test: does this repo deploy a docs site (GitHub Pages or equivalent)? Do not infer from mkdocs.yml presence alone.",
+      "isDeployed": null,
+      "_isDeployedBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves deployed_repos to UNKNOWN and reports a finding, rather than skipping the operations domain silently. Re-test: does this repo run as a long-lived deployed service with a runtime config, a data store, or an outbound alerting channel? A library, template, or config repo is false. Do not infer from repositoryType alone: the label is known to drift."
     },
     {
       "org": "williaby",
@@ -3339,7 +3423,11 @@
         }
       },
       "usesDocker": false,
-      "migrationPhase": "pending"
+      "migrationPhase": "pending",
+      "publishesDocs": null,
+      "_publishesDocsBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves docs_repos to UNKNOWN and reports a finding, rather than skipping the MkDocs domain silently. Re-test: does this repo deploy a docs site (GitHub Pages or equivalent)? Do not infer from mkdocs.yml presence alone.",
+      "isDeployed": null,
+      "_isDeployedBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves deployed_repos to UNKNOWN and reports a finding, rather than skipping the operations domain silently. Re-test: does this repo run as a long-lived deployed service with a runtime config, a data store, or an outbound alerting channel? A library, template, or config repo is false. Do not infer from repositoryType alone: the label is known to drift."
     },
     {
       "org": "williaby",
@@ -3468,7 +3556,11 @@
         }
       },
       "usesDocker": false,
-      "migrationPhase": "pending"
+      "migrationPhase": "pending",
+      "publishesDocs": null,
+      "_publishesDocsBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves docs_repos to UNKNOWN and reports a finding, rather than skipping the MkDocs domain silently. Re-test: does this repo deploy a docs site (GitHub Pages or equivalent)? Do not infer from mkdocs.yml presence alone.",
+      "isDeployed": null,
+      "_isDeployedBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves deployed_repos to UNKNOWN and reports a finding, rather than skipping the operations domain silently. Re-test: does this repo run as a long-lived deployed service with a runtime config, a data store, or an outbound alerting channel? A library, template, or config repo is false. Do not infer from repositoryType alone: the label is known to drift."
     },
     {
       "org": "williaby",
@@ -3610,7 +3702,11 @@
         }
       },
       "usesDocker": true,
-      "migrationPhase": "complete"
+      "migrationPhase": "complete",
+      "publishesDocs": null,
+      "_publishesDocsBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves docs_repos to UNKNOWN and reports a finding, rather than skipping the MkDocs domain silently. Re-test: does this repo deploy a docs site (GitHub Pages or equivalent)? Do not infer from mkdocs.yml presence alone.",
+      "isDeployed": null,
+      "_isDeployedBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves deployed_repos to UNKNOWN and reports a finding, rather than skipping the operations domain silently. Re-test: does this repo run as a long-lived deployed service with a runtime config, a data store, or an outbound alerting channel? A library, template, or config repo is false. Do not infer from repositoryType alone: the label is known to drift."
     },
     {
       "org": "williaby",
@@ -3771,7 +3867,11 @@
         }
       },
       "usesDocker": false,
-      "migrationPhase": "pending"
+      "migrationPhase": "pending",
+      "publishesDocs": null,
+      "_publishesDocsBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves docs_repos to UNKNOWN and reports a finding, rather than skipping the MkDocs domain silently. Re-test: does this repo deploy a docs site (GitHub Pages or equivalent)? Do not infer from mkdocs.yml presence alone.",
+      "isDeployed": null,
+      "_isDeployedBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves deployed_repos to UNKNOWN and reports a finding, rather than skipping the operations domain silently. Re-test: does this repo run as a long-lived deployed service with a runtime config, a data store, or an outbound alerting channel? A library, template, or config repo is false. Do not infer from repositoryType alone: the label is known to drift."
     },
     {
       "org": "williaby",
@@ -3920,7 +4020,11 @@
         }
       },
       "usesDocker": true,
-      "migrationPhase": "complete"
+      "migrationPhase": "complete",
+      "publishesDocs": null,
+      "_publishesDocsBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves docs_repos to UNKNOWN and reports a finding, rather than skipping the MkDocs domain silently. Re-test: does this repo deploy a docs site (GitHub Pages or equivalent)? Do not infer from mkdocs.yml presence alone.",
+      "isDeployed": null,
+      "_isDeployedBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves deployed_repos to UNKNOWN and reports a finding, rather than skipping the operations domain silently. Re-test: does this repo run as a long-lived deployed service with a runtime config, a data store, or an outbound alerting channel? A library, template, or config repo is false. Do not infer from repositoryType alone: the label is known to drift."
     },
     {
       "org": "williaby",
@@ -4049,7 +4153,11 @@
         }
       },
       "usesDocker": false,
-      "migrationPhase": "pending"
+      "migrationPhase": "pending",
+      "publishesDocs": null,
+      "_publishesDocsBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves docs_repos to UNKNOWN and reports a finding, rather than skipping the MkDocs domain silently. Re-test: does this repo deploy a docs site (GitHub Pages or equivalent)? Do not infer from mkdocs.yml presence alone.",
+      "isDeployed": null,
+      "_isDeployedBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves deployed_repos to UNKNOWN and reports a finding, rather than skipping the operations domain silently. Re-test: does this repo run as a long-lived deployed service with a runtime config, a data store, or an outbound alerting channel? A library, template, or config repo is false. Do not infer from repositoryType alone: the label is known to drift."
     },
     {
       "org": "williaby",
@@ -4182,7 +4290,11 @@
         }
       },
       "usesDocker": false,
-      "migrationPhase": "pending"
+      "migrationPhase": "pending",
+      "publishesDocs": null,
+      "_publishesDocsBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves docs_repos to UNKNOWN and reports a finding, rather than skipping the MkDocs domain silently. Re-test: does this repo deploy a docs site (GitHub Pages or equivalent)? Do not infer from mkdocs.yml presence alone.",
+      "isDeployed": null,
+      "_isDeployedBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves deployed_repos to UNKNOWN and reports a finding, rather than skipping the operations domain silently. Re-test: does this repo run as a long-lived deployed service with a runtime config, a data store, or an outbound alerting channel? A library, template, or config repo is false. Do not infer from repositoryType alone: the label is known to drift."
     },
     {
       "org": "williaby",
@@ -4312,7 +4424,11 @@
         }
       },
       "usesDocker": false,
-      "migrationPhase": "pending"
+      "migrationPhase": "pending",
+      "publishesDocs": null,
+      "_publishesDocsBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves docs_repos to UNKNOWN and reports a finding, rather than skipping the MkDocs domain silently. Re-test: does this repo deploy a docs site (GitHub Pages or equivalent)? Do not infer from mkdocs.yml presence alone.",
+      "isDeployed": null,
+      "_isDeployedBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves deployed_repos to UNKNOWN and reports a finding, rather than skipping the operations domain silently. Re-test: does this repo run as a long-lived deployed service with a runtime config, a data store, or an outbound alerting channel? A library, template, or config repo is false. Do not infer from repositoryType alone: the label is known to drift."
     },
     {
       "org": "williaby",
@@ -4437,7 +4553,11 @@
       },
       "branchProtectionExempt": true,
       "branchProtectionExemptReason": "Structural nuances in this repo require no branch protection. Exempt by design; do not flag in audits.",
-      "usesDocker": false
+      "usesDocker": false,
+      "publishesDocs": null,
+      "_publishesDocsBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves docs_repos to UNKNOWN and reports a finding, rather than skipping the MkDocs domain silently. Re-test: does this repo deploy a docs site (GitHub Pages or equivalent)? Do not infer from mkdocs.yml presence alone.",
+      "isDeployed": null,
+      "_isDeployedBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves deployed_repos to UNKNOWN and reports a finding, rather than skipping the operations domain silently. Re-test: does this repo run as a long-lived deployed service with a runtime config, a data store, or an outbound alerting channel? A library, template, or config repo is false. Do not infer from repositoryType alone: the label is known to drift."
     },
     {
       "org": "williaby",
@@ -4567,7 +4687,11 @@
         }
       },
       "usesDocker": false,
-      "migrationPhase": "pending"
+      "migrationPhase": "pending",
+      "publishesDocs": null,
+      "_publishesDocsBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves docs_repos to UNKNOWN and reports a finding, rather than skipping the MkDocs domain silently. Re-test: does this repo deploy a docs site (GitHub Pages or equivalent)? Do not infer from mkdocs.yml presence alone.",
+      "isDeployed": null,
+      "_isDeployedBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves deployed_repos to UNKNOWN and reports a finding, rather than skipping the operations domain silently. Re-test: does this repo run as a long-lived deployed service with a runtime config, a data store, or an outbound alerting channel? A library, template, or config repo is false. Do not infer from repositoryType alone: the label is known to drift."
     },
     {
       "org": "williaby",
@@ -4725,7 +4849,11 @@
         }
       },
       "usesDocker": true,
-      "migrationPhase": "complete"
+      "migrationPhase": "complete",
+      "publishesDocs": null,
+      "_publishesDocsBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves docs_repos to UNKNOWN and reports a finding, rather than skipping the MkDocs domain silently. Re-test: does this repo deploy a docs site (GitHub Pages or equivalent)? Do not infer from mkdocs.yml presence alone.",
+      "isDeployed": null,
+      "_isDeployedBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves deployed_repos to UNKNOWN and reports a finding, rather than skipping the operations domain silently. Re-test: does this repo run as a long-lived deployed service with a runtime config, a data store, or an outbound alerting channel? A library, template, or config repo is false. Do not infer from repositoryType alone: the label is known to drift."
     },
     {
       "org": "williaby",
@@ -4854,7 +4982,11 @@
         }
       },
       "usesDocker": false,
-      "migrationPhase": "pending"
+      "migrationPhase": "pending",
+      "publishesDocs": null,
+      "_publishesDocsBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves docs_repos to UNKNOWN and reports a finding, rather than skipping the MkDocs domain silently. Re-test: does this repo deploy a docs site (GitHub Pages or equivalent)? Do not infer from mkdocs.yml presence alone.",
+      "isDeployed": null,
+      "_isDeployedBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves deployed_repos to UNKNOWN and reports a finding, rather than skipping the operations domain silently. Re-test: does this repo run as a long-lived deployed service with a runtime config, a data store, or an outbound alerting channel? A library, template, or config repo is false. Do not infer from repositoryType alone: the label is known to drift."
     },
     {
       "org": "williaby",
@@ -5026,7 +5158,11 @@
         }
       },
       "usesDocker": true,
-      "migrationPhase": "pending"
+      "migrationPhase": "pending",
+      "publishesDocs": null,
+      "_publishesDocsBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves docs_repos to UNKNOWN and reports a finding, rather than skipping the MkDocs domain silently. Re-test: does this repo deploy a docs site (GitHub Pages or equivalent)? Do not infer from mkdocs.yml presence alone.",
+      "isDeployed": null,
+      "_isDeployedBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves deployed_repos to UNKNOWN and reports a finding, rather than skipping the operations domain silently. Re-test: does this repo run as a long-lived deployed service with a runtime config, a data store, or an outbound alerting channel? A library, template, or config repo is false. Do not infer from repositoryType alone: the label is known to drift."
     },
     {
       "org": "williaby",
@@ -5155,7 +5291,11 @@
         }
       },
       "usesDocker": false,
-      "migrationPhase": "pending"
+      "migrationPhase": "pending",
+      "publishesDocs": null,
+      "_publishesDocsBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves docs_repos to UNKNOWN and reports a finding, rather than skipping the MkDocs domain silently. Re-test: does this repo deploy a docs site (GitHub Pages or equivalent)? Do not infer from mkdocs.yml presence alone.",
+      "isDeployed": null,
+      "_isDeployedBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves deployed_repos to UNKNOWN and reports a finding, rather than skipping the operations domain silently. Re-test: does this repo run as a long-lived deployed service with a runtime config, a data store, or an outbound alerting channel? A library, template, or config repo is false. Do not infer from repositoryType alone: the label is known to drift."
     },
     {
       "org": "williaby",
@@ -5284,7 +5424,11 @@
         }
       },
       "usesDocker": false,
-      "migrationPhase": "pending"
+      "migrationPhase": "pending",
+      "publishesDocs": null,
+      "_publishesDocsBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves docs_repos to UNKNOWN and reports a finding, rather than skipping the MkDocs domain silently. Re-test: does this repo deploy a docs site (GitHub Pages or equivalent)? Do not infer from mkdocs.yml presence alone.",
+      "isDeployed": null,
+      "_isDeployedBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves deployed_repos to UNKNOWN and reports a finding, rather than skipping the operations domain silently. Re-test: does this repo run as a long-lived deployed service with a runtime config, a data store, or an outbound alerting channel? A library, template, or config repo is false. Do not infer from repositoryType alone: the label is known to drift."
     },
     {
       "org": "williaby",
@@ -5417,7 +5561,11 @@
         }
       },
       "usesDocker": false,
-      "migrationPhase": "pending"
+      "migrationPhase": "pending",
+      "publishesDocs": null,
+      "_publishesDocsBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves docs_repos to UNKNOWN and reports a finding, rather than skipping the MkDocs domain silently. Re-test: does this repo deploy a docs site (GitHub Pages or equivalent)? Do not infer from mkdocs.yml presence alone.",
+      "isDeployed": null,
+      "_isDeployedBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves deployed_repos to UNKNOWN and reports a finding, rather than skipping the operations domain silently. Re-test: does this repo run as a long-lived deployed service with a runtime config, a data store, or an outbound alerting channel? A library, template, or config repo is false. Do not infer from repositoryType alone: the label is known to drift."
     },
     {
       "org": "williaby",
@@ -5547,7 +5695,11 @@
       },
       "usesDocker": false,
       "migrationPhase": null,
-      "branchProtectionExempt": true
+      "branchProtectionExempt": true,
+      "publishesDocs": null,
+      "_publishesDocsBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves docs_repos to UNKNOWN and reports a finding, rather than skipping the MkDocs domain silently. Re-test: does this repo deploy a docs site (GitHub Pages or equivalent)? Do not infer from mkdocs.yml presence alone.",
+      "isDeployed": null,
+      "_isDeployedBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves deployed_repos to UNKNOWN and reports a finding, rather than skipping the operations domain silently. Re-test: does this repo run as a long-lived deployed service with a runtime config, a data store, or an outbound alerting channel? A library, template, or config repo is false. Do not infer from repositoryType alone: the label is known to drift."
     },
     {
       "org": "williaby",
@@ -5677,7 +5829,11 @@
       },
       "usesDocker": false,
       "migrationPhase": null,
-      "branchProtectionExempt": true
+      "branchProtectionExempt": true,
+      "publishesDocs": null,
+      "_publishesDocsBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves docs_repos to UNKNOWN and reports a finding, rather than skipping the MkDocs domain silently. Re-test: does this repo deploy a docs site (GitHub Pages or equivalent)? Do not infer from mkdocs.yml presence alone.",
+      "isDeployed": null,
+      "_isDeployedBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves deployed_repos to UNKNOWN and reports a finding, rather than skipping the operations domain silently. Re-test: does this repo run as a long-lived deployed service with a runtime config, a data store, or an outbound alerting channel? A library, template, or config repo is false. Do not infer from repositoryType alone: the label is known to drift."
     },
     {
       "org": "williaby",
@@ -5815,7 +5971,11 @@
         }
       },
       "usesDocker": false,
-      "migrationPhase": "pending"
+      "migrationPhase": "pending",
+      "publishesDocs": null,
+      "_publishesDocsBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves docs_repos to UNKNOWN and reports a finding, rather than skipping the MkDocs domain silently. Re-test: does this repo deploy a docs site (GitHub Pages or equivalent)? Do not infer from mkdocs.yml presence alone.",
+      "isDeployed": null,
+      "_isDeployedBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves deployed_repos to UNKNOWN and reports a finding, rather than skipping the operations domain silently. Re-test: does this repo run as a long-lived deployed service with a runtime config, a data store, or an outbound alerting channel? A library, template, or config repo is false. Do not infer from repositoryType alone: the label is known to drift."
     },
     {
       "org": "williaby",
@@ -5969,7 +6129,11 @@
         }
       },
       "usesDocker": true,
-      "migrationPhase": "pending"
+      "migrationPhase": "pending",
+      "publishesDocs": null,
+      "_publishesDocsBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves docs_repos to UNKNOWN and reports a finding, rather than skipping the MkDocs domain silently. Re-test: does this repo deploy a docs site (GitHub Pages or equivalent)? Do not infer from mkdocs.yml presence alone.",
+      "isDeployed": null,
+      "_isDeployedBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves deployed_repos to UNKNOWN and reports a finding, rather than skipping the operations domain silently. Re-test: does this repo run as a long-lived deployed service with a runtime config, a data store, or an outbound alerting channel? A library, template, or config repo is false. Do not infer from repositoryType alone: the label is known to drift."
     },
     {
       "org": "williaby",
@@ -6098,7 +6262,11 @@
         }
       },
       "usesDocker": false,
-      "migrationPhase": "pending"
+      "migrationPhase": "pending",
+      "publishesDocs": null,
+      "_publishesDocsBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves docs_repos to UNKNOWN and reports a finding, rather than skipping the MkDocs domain silently. Re-test: does this repo deploy a docs site (GitHub Pages or equivalent)? Do not infer from mkdocs.yml presence alone.",
+      "isDeployed": null,
+      "_isDeployedBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves deployed_repos to UNKNOWN and reports a finding, rather than skipping the operations domain silently. Re-test: does this repo run as a long-lived deployed service with a runtime config, a data store, or an outbound alerting channel? A library, template, or config repo is false. Do not infer from repositoryType alone: the label is known to drift."
     },
     {
       "org": "williaby",
@@ -6232,7 +6400,11 @@
         }
       },
       "usesDocker": true,
-      "migrationPhase": "pending"
+      "migrationPhase": "pending",
+      "publishesDocs": null,
+      "_publishesDocsBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves docs_repos to UNKNOWN and reports a finding, rather than skipping the MkDocs domain silently. Re-test: does this repo deploy a docs site (GitHub Pages or equivalent)? Do not infer from mkdocs.yml presence alone.",
+      "isDeployed": null,
+      "_isDeployedBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves deployed_repos to UNKNOWN and reports a finding, rather than skipping the operations domain silently. Re-test: does this repo run as a long-lived deployed service with a runtime config, a data store, or an outbound alerting channel? A library, template, or config repo is false. Do not infer from repositoryType alone: the label is known to drift."
     },
     {
       "org": "williaby",
@@ -6361,7 +6533,11 @@
         }
       },
       "usesDocker": false,
-      "migrationPhase": "pending"
+      "migrationPhase": "pending",
+      "publishesDocs": null,
+      "_publishesDocsBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves docs_repos to UNKNOWN and reports a finding, rather than skipping the MkDocs domain silently. Re-test: does this repo deploy a docs site (GitHub Pages or equivalent)? Do not infer from mkdocs.yml presence alone.",
+      "isDeployed": null,
+      "_isDeployedBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves deployed_repos to UNKNOWN and reports a finding, rather than skipping the operations domain silently. Re-test: does this repo run as a long-lived deployed service with a runtime config, a data store, or an outbound alerting channel? A library, template, or config repo is false. Do not infer from repositoryType alone: the label is known to drift."
     },
     {
       "org": "williaby",
@@ -6505,7 +6681,11 @@
         }
       },
       "usesDocker": true,
-      "migrationPhase": "pending"
+      "migrationPhase": "pending",
+      "publishesDocs": null,
+      "_publishesDocsBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves docs_repos to UNKNOWN and reports a finding, rather than skipping the MkDocs domain silently. Re-test: does this repo deploy a docs site (GitHub Pages or equivalent)? Do not infer from mkdocs.yml presence alone.",
+      "isDeployed": null,
+      "_isDeployedBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves deployed_repos to UNKNOWN and reports a finding, rather than skipping the operations domain silently. Re-test: does this repo run as a long-lived deployed service with a runtime config, a data store, or an outbound alerting channel? A library, template, or config repo is false. Do not infer from repositoryType alone: the label is known to drift."
     }
   ]
 }

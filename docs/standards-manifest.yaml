@@ -1849,6 +1849,344 @@ checks:
     applies_to: api_repos
     override_eligible: true
 
+  # =========================================================================
+  # Operations Domain (applies_to: deployed_repos -- skipped for isDeployed=false)
+  #
+  # Why this domain exists: every other assurance loop in this fleet closes over
+  # the git tree. Bandit, CodeQL, OSV-Scanner, Snyk, SonarCloud, Trivy, Scorecard,
+  # SLSA, SBOM and every OWASP specialist agent read a source repository. A
+  # control that lives in a dashboard, a connection string, a log stream, an
+  # outbound alerting channel, or a different repository is invisible to all of
+  # them. A downstream project with 34 workflows, ~14 blocking PR checks, an
+  # 8-finder red-team review and a 15-item Definition of Done scored 5/10 on a
+  # basic operational checklist for exactly this reason: no bot protection, a
+  # table-owner (BYPASSRLS) database role, no log redaction, no attack alerting,
+  # and no backups or restore drill. None of those are detectable from a tree.
+  #
+  # Verifiability rule for this domain: every verify names a DURABLE ARTIFACT,
+  # not an assertion of intent. Not "backups are configured" but "a restore-drill
+  # log exists, dated within N months". Not "alerting exists" but "an alert-rule
+  # file exists and carries a test-fire timestamp". A check whose verify can be
+  # satisfied by claiming a control is present cannot fail, and a check that
+  # cannot fail manufactures false coverage. That is the same defect as a hollow
+  # OWASP category, in a new costume.
+  #
+  # Attestation checks carry a max_evidence_age_days field. The clock belongs on
+  # the EVIDENCE, not on the remediation: deferred work with a phase home is
+  # legitimate, but a claimed control with no dated evidence behind it is not.
+  #
+  # All checks start at severity: suggested with override_eligible: true per the
+  # define-before-reach rule (feedback_policy_execution_gap.md). Promote to
+  # important only after a fleet sweep shows reach. Reach is currently zero:
+  # isDeployed is null on all 45 catalog entries pending owner declaration, so
+  # this domain resolves UNKNOWN fleet-wide and the sweep reports it loudly
+  # rather than skipping it. See docs/reference/github-repos.json.
+  #
+  # Human-facing narrative companions (do NOT fold these checks into them; a
+  # skill leaves no trace in the master log, gets no delta caching, no fleet
+  # escalation at the 3-repo threshold, and no staleness detection):
+  #   .claude/skills/shipping-and-launch/SKILL.md
+  #   .claude/skills/observability-and-instrumentation/SKILL.md
+  # =========================================================================
+
+  - id: OPS-001
+    domain: operations
+    severity: suggested
+    description: "Deployed runtime configuration is attested in a dated document"
+    verify: >-
+      file_exists: docs/operations/runtime-config.md AND it enumerates every
+      runtime-affecting setting the deployed process reads (environment
+      variables, feature flags, connection targets) with the value CLASS in
+      production (not the value itself), AND carries a verified_on date within
+      max_evidence_age_days. Nothing else in this repo verifies what the running
+      process is actually configured with, only what is in the tree.
+    applies_to: deployed_repos
+    override_eligible: true
+    max_evidence_age_days: 180
+    check_family: operational-posture
+    source_frameworks:
+      - NIST SSDF PO.5.1
+      - SOC 2 CC7.1
+    notes: >-
+      Cross-reference: shipping-and-launch SKILL.md "Infrastructure" section
+      ("Environment variables set in production"), which is the human-facing
+      narrative for a single deploy. This check is the durable, logged,
+      fleet-escalating half. Deliberately asks for the value CLASS (set/unset,
+      secret-manager-sourced/plaintext), never the value: see the
+      defang-secret-shaped-strings rule in repo-compliance SKILL.md.
+
+  - id: OPS-002
+    domain: operations
+    severity: suggested
+    description: "Application data-store role is documented and is not the table owner"
+    verify: >-
+      file_exists: docs/operations/service-credentials.md AND for each data store
+      it names the role the deployed application connects as, the privileges
+      granted to that role, and an explicit statement that the role is NOT the
+      table owner, NOT a superuser, and does NOT hold BYPASSRLS; AND carries a
+      verified_on date within max_evidence_age_days. Least privilege exists in
+      this manifest only for GitHub Actions tokens (CI-*); this is the service
+      credential half.
+    applies_to: deployed_repos
+    override_eligible: true
+    max_evidence_age_days: 180
+    check_family: operational-posture
+    source_frameworks:
+      - SOC 2 CC6.1
+      - OWASP ASVS V1.2 Authentication Architecture
+      - CIS PostgreSQL Benchmark
+    notes: >-
+      The motivating failure: an application connecting as the table-owner
+      `postgres` role, which holds BYPASSRLS. Row-level security was enabled and
+      therefore reported as present, but was disarmed at the connection. Enabled
+      is not effective. See OPS-003 for the policy half of the same control.
+
+  - id: OPS-003
+    domain: operations
+    severity: suggested
+    description: "Row-level security, where claimed, is proven effective in both directions"
+    verify: >-
+      not_applicable_unless the repo claims row-level security or equivalent
+      tenant isolation. When claimed, require a committed test that asserts BOTH
+      directions against the deployed role: (a) a tenant cannot read another
+      tenant's row, and (b) the tenant CAN read its own row. Record the
+      precondition that makes this check not applicable when it is skipped.
+    applies_to: deployed_repos
+    override_eligible: true
+    check_family: operational-posture
+    source_frameworks:
+      - OWASP API Security API01:2023 BOLA
+      - SOC 2 CC6.1
+    notes: >-
+      RLS fails in two opposite ways that both look like "RLS: enabled" on a
+      checklist. A BYPASSRLS or owner role disarms every policy (see OPS-002); a
+      table with RLS enabled and no policies denies everything, which is often
+      mistaken for a working deny-by-default. Only a two-direction test
+      distinguishes working isolation from either failure. A `not applicable`
+      verdict here must carry a falsifiable precondition plus the command that
+      re-tests it, so the verdict un-asserts itself when the schema changes.
+
+  - id: OPS-004
+    domain: operations
+    severity: suggested
+    description: "Application logs redact secrets, proven by a test"
+    verify: >-
+      A redaction filter is installed on the application logger AND a committed
+      test asserts that a known secret-shaped input (token, password, API key,
+      full DSN, session cookie) does not appear in emitted log output. Presence
+      of a redaction helper without a test asserting its effect does not satisfy
+      this check.
+    applies_to: deployed_repos
+    override_eligible: true
+    check_family: operational-posture
+    source_frameworks:
+      - OWASP Top 10 A09:2025 Security Logging and Alerting Failures
+      - OWASP ASVS V7 Error Handling and Logging
+      - SOC 2 CC6.7
+    notes: >-
+      Secret scanners (detect-secrets, TruffleHog, gitleaks, Snyk) read source at
+      commit time. None reads runtime output, so a secret that reaches a log
+      stream is invisible to every gate in this manifest. The durable artifact is
+      the test, not the filter: a filter with no test is an untested claim.
+
+  - id: OPS-005
+    domain: operations
+    severity: suggested
+    description: "Security-relevant events are logged against a documented taxonomy"
+    verify: >-
+      file_exists: docs/operations/security-events.md enumerating the security
+      events this application emits, at minimum authentication failure,
+      authorization denial, rate-limit trip, and input-validation rejection; AND
+      each named event is greppable in application source as an actual logging
+      call. A taxonomy documenting events the code never emits fails this check.
+    applies_to: deployed_repos
+    override_eligible: true
+    check_family: operational-posture
+    source_frameworks:
+      - OWASP Top 10 A09:2025 Security Logging and Alerting Failures
+      - OWASP ASVS V7.2 Log Processing
+      - NIST SP 800-92
+    notes: >-
+      This is the detection half of OWASP A09. The owasp-web agent lists
+      A09:2025 in its categories table but has no detection pattern for it and
+      cannot acquire one: source analysis cannot observe a log stream. A09 is
+      annotated NOT STATICALLY DETECTABLE in that agent and points here.
+
+  - id: OPS-006
+    domain: operations
+    severity: suggested
+    description: "Security alerts exist, route to a human, and have been test-fired"
+    verify: >-
+      An alert-rule definition is committed (not configured only in a vendor
+      console) covering at least authentication-failure spikes and
+      authorization-denial spikes, AND it names the destination channel that
+      receives it, AND a recorded test-fire timestamp within
+      max_evidence_age_days proves the path from rule to human actually works.
+      A rule with no test-fire record does not satisfy this check.
+    applies_to: deployed_repos
+    override_eligible: true
+    max_evidence_age_days: 180
+    check_family: operational-posture
+    source_frameworks:
+      - OWASP Top 10 A09:2025 Security Logging and Alerting Failures
+      - SOC 2 CC7.2
+      - Google SRE Workbook, Alerting on SLOs
+    notes: >-
+      "No alerting when an attack occurs, at all" was one of five failures in the
+      motivating audit, and it survived multiple security reviews because no
+      agent in this fleet can reach an outbound notification channel. An alert
+      that pages nobody is not alerting, which is why the destination and the
+      test-fire are both required. Cross-reference: shipping-and-launch
+      "Observability" ("Symptom-based alerts created and test-fired") and the
+      observability-and-instrumentation skill.
+
+  - id: OPS-007
+    domain: operations
+    severity: suggested
+    description: "Automated backups are inventoried with schedule, retention, and destination"
+    verify: >-
+      file_exists: docs/operations/backup-inventory.md naming every stateful
+      store the application depends on, and for each: backup schedule, retention
+      window, destination, and whether the destination is in a different failure
+      domain than the primary. A store present in the application but absent from
+      the inventory fails this check.
+    applies_to: deployed_repos
+    override_eligible: true
+    max_evidence_age_days: 365
+    check_family: operational-posture
+    source_frameworks:
+      - SOC 2 A1.2
+      - NIST SP 800-34
+    notes: >-
+      Backups have zero coverage anywhere in this fleet: the only prior `backup`
+      reference in the whole standards tree is GPG private-key backup. This check
+      records intent; OPS-008 is the one that proves the intent works.
+
+  - id: OPS-008
+    domain: operations
+    severity: suggested
+    description: "A restore drill has actually been performed and logged"
+    verify: >-
+      file_exists: docs/operations/restore-drill-log.md with at least one dated
+      entry within max_evidence_age_days recording: date, source backup
+      identifier, target environment, elapsed restore time, and the verification
+      step that confirmed the restored data was usable. An untested backup is an
+      unproven backup; "backups are configured" does not satisfy this check.
+    applies_to: deployed_repos
+    override_eligible: true
+    max_evidence_age_days: 180
+    check_family: operational-posture
+    source_frameworks:
+      - SOC 2 A1.3
+      - NIST SP 800-34
+    notes: >-
+      Deliberately separated from OPS-007 so a configured-but-never-tested backup
+      cannot pass by proximity. This is the canonical durable-artifact check in
+      this domain: the verify names a dated log entry, not a state of the world
+      that an auditor could assert without evidence.
+
+  - id: OPS-009
+    domain: operations
+    severity: suggested
+    description: "Public write paths carry an anti-automation control"
+    verify: >-
+      For every unauthenticated endpoint that creates state (signup, password
+      reset, contact and feedback forms, invite acceptance, public API writes),
+      an anti-automation control is named and located: CAPTCHA or equivalent
+      challenge, per-IP or per-identifier rate limit, or proof-of-work. Enumerate
+      the public write paths first, then map each to its control; an unmapped
+      path is a finding.
+    applies_to: deployed_repos
+    override_eligible: true
+    check_family: operational-posture
+    source_frameworks:
+      - OWASP ASVS V11 Business Logic
+      - OWASP Automated Threats OAT-019 Account Creation
+      - OWASP API Security API04:2023 Unrestricted Resource Consumption
+    notes: >-
+      Bot protection has zero coverage in this fleet: `captcha` and
+      `bot protection` return no hits across agents, skills, rules, standards, or
+      any other manifest check. Frequently the control lives in a vendor console
+      rather than the repo, in which case OPS-012 governs whether it is
+      reviewable. Cross-reference: shipping-and-launch "Security" section, which
+      covers rate limiting on authentication endpoints but not signup or public
+      forms.
+
+  - id: OPS-010
+    domain: operations
+    severity: suggested
+    description: "Runtime secrets are sourced from a secret manager, not baked into the artifact"
+    verify: >-
+      docs/operations/runtime-config.md (see OPS-001) records, for each secret
+      the deployed process reads, the mechanism that supplies it at runtime, AND
+      no deployment artifact in this repo (Dockerfile, compose file, chart,
+      workflow) copies a populated .env file or embeds a literal credential.
+      Record the secret NAME and mechanism only, never the value.
+    applies_to: deployed_repos
+    override_eligible: true
+    check_family: operational-posture
+    source_frameworks:
+      - OWASP ASVS V6 Stored Cryptography
+      - SOC 2 CC6.1
+      - NIST SSDF PW.9.1
+    notes: >-
+      Partially statically detectable, which is why the artifact half is kept
+      alongside the attestation half: a Dockerfile COPY of .env is greppable, but
+      a platform environment variable set by hand in a hosting dashboard is not.
+
+  - id: OPS-011
+    domain: operations
+    severity: suggested
+    description: "Authentication endpoints are rate limited, with the limit recorded"
+    verify: >-
+      Login, token refresh, password reset request, and MFA verification each
+      carry a rate limit, and the configured limit (requests per window, scope
+      key) is recorded in docs/operations/runtime-config.md. Where the limit is
+      enforced by a managed auth provider rather than application code, OPS-012
+      governs whether that setting is reviewable.
+    applies_to: deployed_repos
+    override_eligible: true
+    check_family: operational-posture
+    source_frameworks:
+      - OWASP ASVS V2.2 General Authenticator Security
+      - OWASP API Security API04:2023 Unrestricted Resource Consumption
+    notes: >-
+      shipping-and-launch "Security" already lists "Rate limiting on
+      authentication endpoints" as a pre-launch checkbox. This check makes the
+      configured value recorded and auditable rather than a one-time yes/no at
+      deploy time, and covers the managed-provider case that a source scan
+      cannot see.
+
+  - id: OPS-012
+    domain: operations
+    severity: suggested
+    description: "Managed-service console settings are versioned and pushed by CI"
+    verify: >-
+      For every managed service this application depends on (auth provider,
+      database platform, payment processor, email or SMS sender, CDN or WAF), a
+      config file representing its settings is committed AND a workflow actually
+      pushes it (for example a `supabase config push` step). A committed config
+      file that no workflow applies governs local development only and does not
+      satisfy this check. Enumerate at minimum: bot-protection settings, auth
+      rate limits, JWT expiry, session timebox, password policy, webhook signing
+      secrets (name and rotation date only, never the value), and OAuth redirect
+      URI allowlists.
+    applies_to: deployed_repos
+    override_eligible: true
+    check_family: operational-posture
+    source_frameworks:
+      - SOC 2 CC8.1
+      - NIST SSDF PO.3.2
+    notes: >-
+      The motivating case: `supabase/config.toml` was committed but
+      `supabase config push` appeared in no workflow, so the file governed local
+      development only while captcha settings, auth rate limits, JWT expiry,
+      session timebox, and password policy all lived unversioned in a vendor
+      dashboard, invisible to every audit and reviewable by nobody. This
+      generalizes to any repo with a managed-service dependency. The
+      committed-but-never-applied shape is the same fail-open pattern as the
+      silent-skip pre-commit wrapper documented in repo-compliance SKILL.md.
+
   # ── Framework Gap Analysis Additions (2026-05-14) ────────────────────────────
   # Source: 9-agent framework gap analysis against OWASP/NIST SSDF/OpenSSF/SLSA/
   # GitHub Security/DORA/SOC 2/CNCF Security TAG.
