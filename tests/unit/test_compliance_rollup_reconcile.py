@@ -383,3 +383,59 @@ def test_reconcile_skips_archived_repos(tmp_path: Path) -> None:
 
     assert result.walked == 0
     assert not jsonl.exists(), "archived repos must not cause any writes"
+
+
+@pytest.mark.parametrize(
+    "value",
+    [">-", ">", ">+", "|", "|-", "|+", "", "   ", "\n\t "],
+)
+def test_is_degenerate_pattern_rejects_scalar_markers_and_blanks(value: str) -> None:
+    """YAML block-scalar markers and blanks are parse artifacts, not descriptions.
+
+    An earlier parser emitted ``pattern: ">-"`` into the committed master log for
+    20 candidates across four sessions and four repos. The synthesis agent groups
+    patterns by fuzzy match and promotes anything seen in 3+ sessions across 2+
+    repos, so that single artifact would have ranked first and presented a parse
+    bug as the report's headline insight.
+    """
+    from scripts.compliance_rollup_reconcile import is_degenerate_pattern
+
+    assert is_degenerate_pattern(value)
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        ".editorconfig absent from project root",
+        "No em-dash characters in .claude/**/*.md files",
+        ">- but with real trailing text",
+    ],
+)
+def test_is_degenerate_pattern_accepts_real_descriptions(value: str) -> None:
+    """A genuine description is never rejected, including one that starts with '>-'."""
+    from scripts.compliance_rollup_reconcile import is_degenerate_pattern
+
+    assert not is_degenerate_pattern(value)
+
+
+def test_parse_candidates_falls_back_to_id_on_degenerate_description() -> None:
+    """A candidate with an unparseable description stays traceable via its ID.
+
+    Dropping the candidate would lose the signal; keeping the raw marker would
+    pollute trending. The fallback preserves the proposed manifest ID so a
+    reviewer can still trace the entry back to its origin.
+    """
+    from scripts.compliance_rollup_reconcile import _parse_unclassified_candidates
+
+    text = (
+        "## Proposed Manifest Additions\n\n"
+        "```yaml\n"
+        "id: FOUND-999\n"
+        'description: ""\n'
+        "```\n"
+    )
+    candidates = _parse_unclassified_candidates(text)
+
+    assert len(candidates) == 1
+    assert candidates[0]["proposed_manifest_id"] == "FOUND-999"
+    assert candidates[0]["pattern"] == "(no description parsed) FOUND-999"

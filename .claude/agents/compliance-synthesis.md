@@ -39,6 +39,19 @@ fleet-wide insights, writes a weekly synthesis report.
    distinct repos. Promote groups appearing in three or more distinct
    sessions across two or more distinct repos.
 
+   **Exclude degenerate patterns before grouping.** A `pattern` that is
+   empty, whitespace-only, or a bare YAML block-scalar marker (`>-`, `>`,
+   `|`, `|-`, `|+`, `>+`) is a parse artifact, not a description. The
+   committed master log carries 20 such rows from an earlier parser
+   version, spread across four sessions and four repos, which is exactly
+   the shape that ranks first under the promotion rule above. Grouping
+   them would make a parse bug the headline insight of the report.
+   Exclude them from trending, and report the count once under
+   Data Quality with the affected `session_date` and `repo` values so the
+   pollution stays visible instead of being silently dropped. The
+   producer-side guard is `is_degenerate_pattern` in
+   `scripts/compliance_rollup_reconcile.py`; these rows predate it.
+
    **Stuck manifest candidates.** For each unique
    `proposed_manifest_id` seen anywhere in the window: check whether
    that ID exists in the standards manifest at
@@ -53,9 +66,20 @@ fleet-wide insights, writes a weekly synthesis report.
 
    **Coverage and override hotspots.** Coverage: for every catalog repo
    not archived, find the newest `session_date`. Flag any older than
-   60 days. Overrides: count `totals.overrides_applied` per check ID
-   across the window. Flag check IDs overridden in four or more
-   distinct repos.
+   60 days.
+
+   Overrides: `totals.overrides_applied` is a scalar integer per session
+   entry, not a per-check map, and `findings_by_check` items carry only
+   `{id, severity, remediation_status}` with no override field. No
+   producer writes a check-ID-to-override association anywhere, so the
+   per-check grouping this insight originally specified cannot be
+   computed from the current schema. Until a producer emits it, report
+   the scalar total per session and repo and label it explicitly as
+   "not attributable to specific check IDs (schema gap)". Do NOT invent
+   an attribution by inference. Raise the schema gap once under
+   Data Quality rather than silently emitting an empty insight, because
+   an insight that always returns nothing is indistinguishable from one
+   that found nothing to report.
 
 4. For each insight with actionable items, spot-check 1-2 supporting
    per-repo files via `Read` to confirm the master log is not stale.
