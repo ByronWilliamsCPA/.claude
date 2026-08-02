@@ -1904,6 +1904,9 @@ checks:
     override_eligible: true
     max_evidence_age_days: 180
     check_family: operational-posture
+    verification_class: RUNTIME-CONFIG
+    sp_category: SP-09
+    mechanism: unproven
     source_frameworks:
       - NIST SSDF PO.5.1
       - SOC 2 CC7.1
@@ -1931,6 +1934,9 @@ checks:
     override_eligible: true
     max_evidence_age_days: 180
     check_family: operational-posture
+    verification_class: RUNTIME-CONFIG
+    sp_category: SP-02
+    mechanism: unproven
     source_frameworks:
       - SOC 2 CC6.1
       - OWASP ASVS V1.2 Authentication Architecture
@@ -1954,6 +1960,9 @@ checks:
     applies_to: deployed_repos
     override_eligible: true
     check_family: operational-posture
+    verification_class: DYNAMIC
+    sp_category: SP-02
+    mechanism: unproven
     source_frameworks:
       - OWASP API Security API01:2023 BOLA
       - SOC 2 CC6.1
@@ -1979,6 +1988,9 @@ checks:
     applies_to: deployed_repos
     override_eligible: true
     check_family: operational-posture
+    verification_class: DYNAMIC
+    sp_category: SP-11
+    mechanism: unproven
     source_frameworks:
       - OWASP Top 10 A09:2025 Security Logging and Alerting Failures
       - OWASP ASVS V7 Error Handling and Logging
@@ -2002,6 +2014,9 @@ checks:
     applies_to: deployed_repos
     override_eligible: true
     check_family: operational-posture
+    verification_class: STATIC
+    sp_category: SP-11
+    mechanism: unproven
     source_frameworks:
       - OWASP Top 10 A09:2025 Security Logging and Alerting Failures
       - OWASP ASVS V7.2 Log Processing
@@ -2027,6 +2042,9 @@ checks:
     override_eligible: true
     max_evidence_age_days: 180
     check_family: operational-posture
+    verification_class: RUNTIME-CONFIG
+    sp_category: SP-11
+    mechanism: unproven
     source_frameworks:
       - OWASP Top 10 A09:2025 Security Logging and Alerting Failures
       - SOC 2 CC7.2
@@ -2054,6 +2072,9 @@ checks:
     override_eligible: true
     max_evidence_age_days: 365
     check_family: operational-posture
+    verification_class: MANUAL
+    sp_category: SP-16
+    mechanism: unproven
     source_frameworks:
       - SOC 2 A1.2
       - NIST SP 800-34
@@ -2076,6 +2097,9 @@ checks:
     override_eligible: true
     max_evidence_age_days: 180
     check_family: operational-posture
+    verification_class: MANUAL
+    sp_category: SP-16
+    mechanism: unproven
     source_frameworks:
       - SOC 2 A1.3
       - NIST SP 800-34
@@ -2099,6 +2123,9 @@ checks:
     applies_to: deployed_repos
     override_eligible: true
     check_family: operational-posture
+    verification_class: DYNAMIC
+    sp_category: SP-04
+    mechanism: unproven
     source_frameworks:
       - OWASP ASVS V11 Business Logic
       - OWASP Automated Threats OAT-019 Account Creation
@@ -2125,6 +2152,9 @@ checks:
     applies_to: deployed_repos
     override_eligible: true
     check_family: operational-posture
+    verification_class: RUNTIME-CONFIG
+    sp_category: SP-08
+    mechanism: unproven
     source_frameworks:
       - OWASP ASVS V6 Stored Cryptography
       - SOC 2 CC6.1
@@ -2147,6 +2177,9 @@ checks:
     applies_to: deployed_repos
     override_eligible: true
     check_family: operational-posture
+    verification_class: RUNTIME-CONFIG
+    sp_category: SP-04
+    mechanism: unproven
     source_frameworks:
       - OWASP ASVS V2.2 General Authenticator Security
       - OWASP API Security API04:2023 Unrestricted Resource Consumption
@@ -2174,6 +2207,9 @@ checks:
     applies_to: deployed_repos
     override_eligible: true
     check_family: operational-posture
+    verification_class: RUNTIME-CONFIG
+    sp_category: SP-09
+    mechanism: unproven
     source_frameworks:
       - SOC 2 CC8.1
       - NIST SSDF PO.3.2

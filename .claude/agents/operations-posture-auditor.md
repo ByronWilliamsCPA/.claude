@@ -103,6 +103,69 @@ two states look identical on a checklist. Recording
 `grep -rn 'set_cookie\|Set-Cookie' src/` lets the verdict un-assert itself the
 moment someone adds a cookie.
 
+## The verification vantage rule
+
+**A control that describes posture at a trust boundary must be verified from
+outside that boundary. A check that runs inside the boundary it is testing is a
+hollow check by construction.**
+
+This is not a refinement of the evidence rule, it is a separate failure mode.
+The evidence rule catches a check with no artifact behind it. The vantage rule
+catches a check that produced a confident artifact from the wrong side, which is
+worse: the result looks like measurement.
+
+Worked example, from the audit that produced this rule. Public DNS for a
+production hostname was measured from a workstation on the operator's LAN and
+returned an RFC1918 address from `1.1.1.1`, `8.8.8.8`, and `9.9.9.9`, reading as
+"the record is not proxied." The measurement was fabricated: split-horizon DNS
+transparently intercepted all outbound port-53 traffic and answered locally
+regardless of the destination queried. The tell was that queries addressed to the
+zone's own authoritative nameservers returned the same private answer, which
+those servers cannot produce. The true state was the exact opposite of the
+measurement.
+
+Apply it concretely:
+
+- Edge, WAF, TLS, DNS, rate-limit, and origin-reachability checks must run from a
+  hosted runner or an external probe, never from a developer machine or from
+  inside the network being tested.
+- A database role check must read `current_user` from the **deployed** session,
+  not from a test fixture that sets the role it wants to see. A fixture that
+  forces the role it is asserting cannot observe the production role at all.
+- An alert-delivery check must be acknowledged at the **destination**, not
+  confirmed by observing that a logger was called.
+- When the only available vantage is inside the boundary, the correct output is
+  `status: unknown` with the vantage named as the blocker. Do not downgrade to an
+  inside measurement and report it as a result.
+
+Record the vantage on every finding. A finding with no vantage is not
+reproducible and cannot be trusted on re-audit.
+
+## Control planes and the layer model
+
+Repository-scoped review reaches three of the five layers a control can live in:
+
+| Layer | Example | Reachable from the repo? |
+| --- | --- | --- |
+| L1 source | middleware, validators | Yes |
+| L2 dependency graph | CVEs in pinned deps | Yes |
+| L3 built container | image CVEs, build args | Yes |
+| **L4 deployed runtime config** | reverse-proxy middleware, firewall rules, DNS proxy status | **No** |
+| **L5 operational capability** | WAF state, RLS effectiveness, bucket policy | **No** |
+
+Every OPS check exists because its control lives at L4 or L5. When a control is
+provided by an out-of-repo plane rather than implemented here, it is *inherited*,
+and an inherited control must carry three things or it is unrecorded:
+
+1. A named owner (which plane, which repo, which account provides it).
+2. A stated applies-today verdict.
+3. A named re-validation trigger.
+
+"Does not apply, by design, for this release tier" is a legitimate verdict.
+Going unrecorded is not. An inherited control with no owner is the shape that
+lets a control be documented as working while being structurally unable to
+function.
+
 ## Evidence gathering
 
 Prefer local file inspection first (the `docs/operations/` attestation files),
@@ -173,6 +236,22 @@ FINDING:
   status: fail
   current_value: docs/operations/restore-drill-log.md absent
   evidence_tier: local
+  vantage: repository working tree
+```
+
+Wrong-vantage result, which must never be reported as a pass or a fail:
+
+```yaml
+FINDING:
+  id: OPS-002
+  severity: suggested
+  description: deployed data-store role could not be verified from a valid vantage
+  status: unknown
+  current_value: >-
+    the only reachable session is a local test fixture that sets the role it
+    asserts, so it cannot observe the production role
+  blocker: no vantage outside the boundary; needs a hosted runner or deployed probe
+  vantage: inside the boundary under test (invalid for this check)
 ```
 
 Staleness failure, which must be distinguished from absence:

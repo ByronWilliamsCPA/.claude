@@ -316,6 +316,154 @@ def test_applies_to_known() -> None:
     )
 
 
+# Verification classes from .claude/standards/assurance-spine.md. The class
+# records HOW a control must be verified, which is the axis the whole operations
+# domain exists on: STATIC is the only one a source scanner can reach.
+VALID_VERIFICATION_CLASSES: frozenset[str] = frozenset(
+    {"STATIC", "DYNAMIC", "RUNTIME-CONFIG", "MANUAL"}
+)
+
+# The seventeen assurance-spine categories, SP-01 through SP-17.
+VALID_SP_CATEGORIES: frozenset[str] = frozenset(f"SP-{n:02d}" for n in range(1, 18))
+
+
+def _ops_checks() -> list[dict[str, Any]]:
+    """Return every check in the ``operations`` domain."""
+    return [c for c in CHECKS if c.get("domain") == "operations"]
+
+
+def _declared_classes(check: dict[str, Any]) -> list[str]:
+    """Split a possibly-composite ``verification_class`` into its parts.
+
+    The assurance register uses composite forms such as ``STATIC + DYNAMIC``
+    where a control is asserted from source and then exercised against a running
+    system. Both halves must be valid.
+
+    Args:
+        check: A manifest check mapping.
+
+    Returns:
+        The individual class tokens, or an empty list when the field is absent
+        or not a string.
+    """
+    raw = check.get("verification_class")
+    if not isinstance(raw, str):
+        return []
+    return [part.strip() for part in raw.split("+") if part.strip()]
+
+
+def test_operations_checks_declare_a_verification_class() -> None:
+    """Every OPS check states how it must be verified.
+
+    Without the class, nothing records that a check needs a running system or a
+    vendor control plane, and the domain silently reads as more source-checkable
+    than it is. Composite forms (``STATIC + DYNAMIC``) are allowed; every part
+    must be a known class.
+    """
+    offenders = [
+        c.get("id")
+        for c in _ops_checks()
+        if not _declared_classes(c)
+        or any(part not in VALID_VERIFICATION_CLASSES for part in _declared_classes(c))
+    ]
+    assert not offenders, (
+        f"operations checks with a missing or unknown verification_class "
+        f"(allowed: {sorted(VALID_VERIFICATION_CLASSES)}, composites joined "
+        f"with '+'): {sorted(offenders)}"
+    )
+
+
+def test_operations_checks_declare_a_mechanism_status() -> None:
+    """Every OPS check records whether its mechanism has ever been proven.
+
+    Per the assurance spine's instantiation contract, an automated check enters
+    at ``mechanism: unproven`` and is promoted only once a negative control has
+    demonstrably tripped it. A check with no mechanism field is asserting an
+    ability to fail that nobody has observed.
+    """
+    offenders = [
+        c.get("id")
+        for c in _ops_checks()
+        if c.get("mechanism") not in {"unproven", "proven"}
+    ]
+    assert not offenders, (
+        "operations checks with a missing or unknown mechanism "
+        f"(allowed: proven, unproven): {sorted(offenders)}"
+    )
+
+
+def test_mechanism_proven_requires_a_negative_control_fixture() -> None:
+    """A check may claim ``mechanism: proven`` only with a fixture behind it.
+
+    This is the anti-hollow rule turned into a gate. Promotion to ``proven``
+    means a deliberate violation was demonstrated to trip the check, and the
+    durable artifact of that demonstration is a defect fixture in the auditor
+    regression corpus. Without this, ``proven`` is self-certification: a field
+    an author can set to make a warning go away, which is precisely the failure
+    mode the spine's status model exists to surface.
+    """
+    fixtures_dir = (
+        Path(__file__).resolve().parents[2]
+        / "data"
+        / "test_fixtures"
+        / "compliance_auditor"
+    )
+    offenders = [
+        str(c.get("id"))
+        for c in CHECKS
+        if c.get("mechanism") == "proven"
+        and not (fixtures_dir / f"defect_{c.get('id')}").is_dir()
+    ]
+    assert not offenders, (
+        "checks claiming mechanism: proven with no negative-control fixture at "
+        f"data/test_fixtures/compliance_auditor/defect_<ID>/: {offenders}. "
+        "Either add the fixture demonstrating the check can fail, or return the "
+        "check to mechanism: unproven."
+    )
+
+
+def test_operations_checks_map_to_a_spine_category() -> None:
+    """Every OPS check maps to an assurance-spine category.
+
+    The spine is the coverage denominator. A check with no ``sp_category``
+    cannot contribute to a coverage matrix, so a gap it was meant to close stays
+    invisible.
+    """
+    offenders = [
+        c.get("id")
+        for c in _ops_checks()
+        if c.get("sp_category") not in VALID_SP_CATEGORIES
+    ]
+    assert not offenders, (
+        f"operations checks with a missing or unknown sp_category "
+        f"(allowed SP-01..SP-17): {sorted(offenders)}"
+    )
+
+
+def test_operations_domain_is_not_predominantly_static() -> None:
+    """The operations domain must keep reaching past the git tree.
+
+    This domain exists because every other assurance loop in the fleet closes
+    over a source repository, so a control living in a dashboard, a connection
+    string, a log stream, or an alerting channel is invisible to all of them. If
+    OPS checks drift into mostly-STATIC, the domain has quietly become another
+    source scanner and the original gap reopens with a compliance badge on top.
+
+    The threshold is deliberately loose: some genuinely static evidence belongs
+    here (a committed taxonomy, a committed alert rule). What must not happen is
+    the domain becoming majority-STATIC.
+    """
+    ops = _ops_checks()
+    assert ops, "operations domain has no checks"
+    static = [c.get("id") for c in ops if c.get("verification_class") == "STATIC"]
+    assert len(static) * 2 < len(ops), (
+        f"{len(static)} of {len(ops)} operations checks are STATIC. This domain "
+        f"covers what source analysis structurally cannot reach; a majority-STATIC "
+        f"operations domain has lost its reason to exist. STATIC checks: "
+        f"{sorted(static)}"
+    )
+
+
 def _domain_agent_rows(text: str) -> set[str]:
     """Return the first-column values of the repo-compliance Domain Agents table.
 
