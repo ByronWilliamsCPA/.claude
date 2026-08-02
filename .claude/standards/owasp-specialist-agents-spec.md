@@ -198,6 +198,88 @@ All six specialists follow the same structural template. Each contains:
 
 Below are the full definitions for each specialist.
 
+**Authority note.** The agent bodies reproduced in sections 5.3 through 5.8
+below are a design-time snapshot, not the running definitions. The shipped files
+under `.claude/agents/owasp-*.md` are authoritative, and the category coverage
+rule above is enforced against those files by
+`tests/unit/test_owasp_agent_consistency.py`. The snapshots below still show the
+pre-2026-08-02 detection-pattern sets and therefore still exhibit the hollow
+categories the rule now forbids; read them for structure, never copy their
+coverage. When editing a specialist, edit the agent file first and treat any
+update here as documentation that follows.
+
+
+---
+
+#### Category coverage rule (mandatory)
+
+Every category listed in a specialist's `## Your Categories` table MUST either:
+
+1. carry **at least one detection pattern** in that agent's
+   `### Detection Patterns` section, or
+2. be explicitly annotated **`NOT STATICALLY DETECTABLE`** with a pointer to the
+   control that does cover it.
+
+There is no third option. A category that is listed but has neither is a
+**hollow category**: the review returns clean, and a reader concludes the
+category was evaluated when nothing evaluated it.
+
+**Why this rule exists.** `owasp-web` listed `A09:2025 Security Logging and
+Alerting Failures` in its table and defined detection patterns for A01, A05,
+A07 and A10 only. A09 had zero patterns, zero remediation guidance, and
+appeared nowhere else in the agent body. An A09 review therefore returned
+clean by construction. Two of the five failures in the 2026-08 downstream audit
+(no secret redaction in application logs, and no alerting on attacks at all)
+fall squarely under A09 and survived multiple security reviews behind that
+false clean. A 2026-08-02 sweep found the problem was systemic, not local to
+A09: **37 of 60 listed categories across the six specialists were hollow**, and
+`owasp-citizen` had no detection-patterns section at all.
+
+The governing principle: **a check that is named but cannot fail is worse than a
+check that is absent.** An absent check leaves a visible hole. A hollow check
+manufactures false coverage and stops people looking.
+
+**Annotation format.** When a category is genuinely not detectable from source,
+say so and route it:
+
+```markdown
+**A09 Security Logging and Alerting Failures:** NOT STATICALLY DETECTABLE
+
+- Source analysis cannot observe a log stream, an alert rule, or an outbound
+  notification channel. The absence of a logging call is detectable; the
+  absence of alerting on that log is not.
+- Covered by: standards manifest `OPS-*` checks (domain: operations), evaluated
+  by the `operations-posture-auditor` agent. Specifically `OPS-005`, `OPS-006`,
+  `OPS-004`.
+- Statically detectable sub-signals only: authentication and authorization
+  failure branches that emit no log call; exception handlers that swallow
+  without logging.
+```
+
+The `Covered by:` line is required, not optional. An annotation with no pointer
+is a licence to skip the category, which produces the same false coverage as
+leaving it hollow.
+
+**Why these six agents cannot close the gap themselves.** All six specialists
+carry `tools: ["Read", "Grep", "Glob"]`, which makes reaching a running system
+impossible by construction. That toolset ceiling is the mechanical reason
+runtime controls are invisible to them, and it is deliberate: a source reviewer
+should not hold credentials. The `operations` domain exists to cover what they
+structurally cannot, and `operations-posture-auditor` is granted `Bash` for
+exactly that reason.
+
+**Enforcement.** `tests/unit/test_owasp_agent_consistency.py` asserts, for each
+of the six specialists, that the categories table and the detection-patterns
+section enumerate the same set, that no pattern references an unlisted
+category, and that every `NOT STATICALLY DETECTABLE` annotation carries a
+`Covered by:` pointer. Adding a category to a table without a pattern now fails
+the build.
+
+**Two spec copies.** This document exists at both
+`.claude/standards/owasp-specialist-agents-spec.md` and
+`docs/architecture/specs/owasp-specialist-agents-spec.md`. They are not
+symlinked and will drift silently. Apply every change to both.
+
 ---
 
 ### 5.3 owasp-web — Web Applications Top 10 (2025)
