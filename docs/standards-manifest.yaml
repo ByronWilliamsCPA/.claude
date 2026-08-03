@@ -1955,8 +1955,14 @@ checks:
       not_applicable_unless the repo claims row-level security or equivalent
       tenant isolation. When claimed, require a committed test that asserts BOTH
       directions against the deployed role: (a) a tenant cannot read another
-      tenant's row, and (b) the tenant CAN read its own row. Record the
-      precondition that makes this check not applicable when it is skipped.
+      tenant's row, and (b) the tenant CAN read its own row. A committed test is
+      necessary but not sufficient: also require a dated execution-result
+      artifact naming the role the queries actually ran as and the outcome of
+      each direction, because a test that has never run against the deployed
+      role proves only that someone wrote it. Fail the check when that artifact
+      is absent, when it does not name the role, when either direction is
+      missing, or when its date is older than 90 days. Record the precondition
+      that makes this check not applicable when it is skipped.
     applies_to: deployed_repos
     override_eligible: true
     check_family: operational-posture
@@ -2035,9 +2041,15 @@ checks:
       An alert-rule definition is committed (not configured only in a vendor
       console) covering at least authentication-failure spikes and
       authorization-denial spikes, AND it names the destination channel that
-      receives it, AND a recorded test-fire timestamp within
-      max_evidence_age_days proves the path from rule to human actually works.
-      A rule with no test-fire record does not satisfy this check.
+      receives it, AND a durable committed log at
+      `docs/operations/alert-test-fire-log.md` records the test-fire. Each
+      log row must carry four fields: the test-fire timestamp, the identity of
+      the alert rule fired, the destination channel it was delivered to, and
+      the delivery result observed at that destination. A row missing any of
+      the four is not a test-fire record. The most recent row for a given rule
+      must fall within max_evidence_age_days. A rule with no such row does not
+      satisfy this check, and neither does a timestamp asserted in prose with
+      no artifact behind it.
     applies_to: deployed_repos
     override_eligible: true
     max_evidence_age_days: 180
@@ -2170,11 +2182,16 @@ checks:
     severity: suggested
     description: "Authentication endpoints are rate limited, with the limit recorded"
     verify: >-
-      Login, token refresh, password reset request, and MFA verification each
-      carry a rate limit, and the configured limit (requests per window, scope
-      key) is recorded in docs/operations/runtime-config.md. Where the limit is
-      enforced by a managed auth provider rather than application code, OPS-012
-      governs whether that setting is reviewable.
+      Scope this check to the authentication endpoints the service actually
+      exposes, drawn from login, token refresh, password reset request, and MFA
+      verification. Each exposed endpoint carries a rate limit, and the
+      configured limit (requests per window, scope key) is recorded in
+      docs/operations/runtime-config.md. An endpoint the service does not
+      expose is not a finding; record which of the four are exposed so the
+      exclusion is falsifiable rather than assumed. This check is not
+      applicable only when the service exposes none of the four. Where the
+      limit is enforced by a managed auth provider rather than application
+      code, OPS-012 governs whether that setting is reviewable.
     applies_to: deployed_repos
     override_eligible: true
     check_family: operational-posture

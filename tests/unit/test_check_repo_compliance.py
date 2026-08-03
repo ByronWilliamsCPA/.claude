@@ -464,3 +464,36 @@ def test_load_manifest_scope_checks_covers_every_defined_scope() -> None:
     for ids in scope_checks.values():
         assert len(ids) > 0
         assert ids == sorted(ids)
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize(
+    ("body", "root_type"),
+    [
+        ("- CI-001\n- CI-002\n", "list"),
+        ("just a string\n", "str"),
+        ("", "NoneType"),
+    ],
+    ids=["sequence-root", "scalar-root", "empty-file"],
+)
+def test_load_manifest_scope_checks_degrades_on_non_mapping_root(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    tmp_path,
+    body: str,
+    root_type: str,
+) -> None:
+    """A valid YAML document that is not a mapping degrades, it does not crash.
+
+    `yaml.safe_load` happily returns a list, a bare scalar, or `None`. None of
+    those carries `.get`, so an unguarded read raises AttributeError and kills
+    the whole fleet sweep over a malformed manifest. The documented behaviour
+    for an unreadable manifest is an unknown scope count, and a differently
+    malformed manifest must land in the same place rather than in a traceback.
+    """
+    manifest = tmp_path / "standards-manifest.yaml"
+    manifest.write_text(body, encoding="utf-8")
+    monkeypatch.setattr(crc, "MANIFEST_PATH", manifest)
+
+    assert crc.load_manifest_scope_checks() == {}
+    assert root_type in capsys.readouterr().err

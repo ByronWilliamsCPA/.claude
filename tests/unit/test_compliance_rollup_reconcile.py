@@ -469,3 +469,44 @@ def test_parse_candidates_treats_yaml_null_description_as_degenerate(
     assert candidates[0]["proposed_manifest_id"] == "FOUND-998"
     assert candidates[0]["pattern"] == "(no description parsed) FOUND-998"
     assert "None" not in candidates[0]["pattern"]
+
+
+@pytest.mark.parametrize(
+    ("yaml_value", "stringified"),
+    [
+        ("[]", "[]"),
+        ("{}", "{}"),
+        ("no", "False"),
+        ("0", "0"),
+        ("\n  - a\n  - b", "'a'"),
+    ],
+    ids=["empty-sequence", "empty-mapping", "bare-no", "zero", "sequence"],
+)
+def test_parse_candidates_rejects_non_string_descriptions(
+    yaml_value: str, stringified: str
+) -> None:
+    """Only a YAML string can be prose; every other node takes the ID fallback.
+
+    A description is human text, so the type that carries it is `str`. Each
+    other node `safe_load` can produce here stringifies into something that
+    reads as real text and survives the degeneracy guard: an empty sequence
+    becomes `"[]"`, a bare `no` becomes `"False"`, `0` becomes `"0"`. Any of
+    them would then enter the master log as a groupable pattern and could
+    surface as a trending insight. Accepting `str` alone closes the whole
+    class rather than the one instance that was first noticed.
+    """
+    from scripts.compliance_rollup_reconcile import _parse_unclassified_candidates
+
+    text = (
+        "## Proposed Manifest Additions\n\n"
+        "```yaml\n"
+        "id: FOUND-997\n"
+        f"description: {yaml_value}\n"
+        "```\n"
+    )
+    candidates = _parse_unclassified_candidates(text)
+
+    assert len(candidates) == 1
+    assert candidates[0]["proposed_manifest_id"] == "FOUND-997"
+    assert candidates[0]["pattern"] == "(no description parsed) FOUND-997"
+    assert stringified not in candidates[0]["pattern"]

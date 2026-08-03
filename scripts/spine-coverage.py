@@ -67,6 +67,27 @@ def load_checks() -> list[dict[str, Any]]:
     return data.get("checks", []) or []
 
 
+def category_text(check: dict[str, Any]) -> str:
+    """Return a check's ``sp_category`` normalized to a comparable string.
+
+    Absence is the only thing that maps to ``""``. A falsey-but-present value
+    (``0``, ``False``) is a malformed mapping, not a missing one, so it must
+    survive normalization and be reported as invalid rather than quietly
+    joining the absent pile. Every caller classifies through this one function
+    so the mapped total, the invalid list, and the rendered rows cannot
+    disagree about what a given value means.
+
+    Args:
+        check: A manifest check mapping.
+
+    Returns:
+        The stripped string form of ``sp_category``, or ``""`` when the field
+        is absent, null, or blank.
+    """
+    category = check.get("sp_category")
+    return "" if category is None else str(category).strip()
+
+
 def build_coverage(checks: list[dict[str, Any]]) -> dict[str, list[str]]:
     """Group check IDs by their declared spine category.
 
@@ -79,13 +100,25 @@ def build_coverage(checks: list[dict[str, Any]]) -> dict[str, list[str]]:
     """
     coverage: dict[str, list[str]] = defaultdict(list)
     for check in checks:
-        category = check.get("sp_category")
         # Only known categories count. An unrecognised value (a typo such as
         # SP-99) would otherwise inflate the mapped total while never appearing
         # in any row, hiding an invalid mapping behind a better-looking number.
-        if category and str(category) in SPINE:
-            coverage[str(category)].append(str(check.get("id")))
+        category = category_text(check)
+        if category in SPINE:
+            coverage[category].append(str(check.get("id")))
     return {sp: sorted(coverage.get(sp, [])) for sp in SPINE}
+
+
+def mapped_count(checks: list[dict[str, Any]]) -> int:
+    """Count checks whose ``sp_category`` names a real spine category.
+
+    Args:
+        checks: Manifest check mappings.
+
+    Returns:
+        The number of checks that land in a row of the report.
+    """
+    return sum(1 for check in checks if category_text(check) in SPINE)
 
 
 def invalid_categories(checks: list[dict[str, Any]]) -> dict[str, list[str]]:
@@ -99,9 +132,9 @@ def invalid_categories(checks: list[dict[str, Any]]) -> dict[str, list[str]]:
     """
     invalid: dict[str, list[str]] = defaultdict(list)
     for check in checks:
-        category = check.get("sp_category")
-        if category and str(category) not in SPINE:
-            invalid[str(category)].append(str(check.get("id")))
+        category = category_text(check)
+        if category and category not in SPINE:
+            invalid[category].append(str(check.get("id")))
     return {k: sorted(v) for k, v in sorted(invalid.items())}
 
 
@@ -115,11 +148,11 @@ def render(checks: list[dict[str, Any]], coverage: dict[str, list[str]]) -> list
     Returns:
         Report lines.
     """
-    mapped = sum(1 for c in checks if str(c.get("sp_category", "")) in SPINE)
+    mapped = mapped_count(checks)
     classes = Counter(
         str(c.get("verification_class", "UNDECLARED"))
         for c in checks
-        if str(c.get("sp_category", "")) in SPINE
+        if category_text(c) in SPINE
     )
     invalid = invalid_categories(checks)
     header = (
@@ -188,9 +221,7 @@ def main() -> int:
             json.dumps(
                 {
                     "total_checks": len(checks),
-                    "mapped_checks": sum(
-                        1 for c in checks if str(c.get("sp_category", "")) in SPINE
-                    ),
+                    "mapped_checks": mapped_count(checks),
                     "invalid_categories": invalid_categories(checks),
                     "coverage": coverage,
                     "uncovered": [sp for sp, ids in coverage.items() if not ids],

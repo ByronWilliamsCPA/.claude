@@ -51,6 +51,13 @@ _TABLE_ROW = re.compile(r"^\|\s*([A-Z]{1,4}\d{2})(?::\d{4})?\s*\|")
 # `**A09 Security Logging and Alerting Failures:** NOT STATICALLY DETECTABLE`.
 _PATTERN_LABEL = re.compile(r"^\*\*([A-Z]{1,4}\d{2})(?::\d{4})?\s")
 
+# The section heading, anchored to the start of a line. A substring search would
+# also match the phrase written inside a sentence, which would hand the coverage
+# gate a section that does not exist. The trailing `.*` admits the qualifier some
+# agents carry (`### Detection Patterns (Python-specific)`) without admitting the
+# same words mid-sentence.
+_DETECTION_HEADING = re.compile(r"^### Detection Patterns\b.*$", re.MULTILINE)
+
 pytestmark = pytest.mark.unit
 
 
@@ -100,15 +107,21 @@ def detection_patterns_section(text: str) -> str:
     coverage gate without a real pattern entry. That would make the gate
     unfalsifiable, which is the exact defect it exists to catch.
 
+    The heading match is anchored to the start of a line. An unanchored
+    substring search also matches the phrase written inside a sentence, which
+    would hand the coverage gate a section that does not exist and let any
+    bolded label after that prose satisfy it.
+
     Args:
         text: Full agent definition contents.
 
     Returns:
         The section text, or ``""`` when the heading is absent.
     """
-    start = text.find("### Detection Patterns")
-    if start == -1:
+    heading = _DETECTION_HEADING.search(text)
+    if heading is None:
         return ""
+    start = heading.start()
     end = text.find("\n## ", start + 1)
     return text[start:] if end == -1 else text[start:end]
 
@@ -196,7 +209,9 @@ def test_undetectable_categories_name_the_covering_control(agent: str) -> None:
     if not undetectable:
         pytest.skip(f"{agent} annotates no categories as undetectable")
 
-    lines = text.splitlines()
+    # Scan the section, not the file: a "Covered by:" line written in unrelated
+    # prose elsewhere would otherwise satisfy an entry that carries no pointer.
+    lines = detection_patterns_section(text).splitlines()
     offenders: list[str] = []
     for index, line in enumerate(lines):
         match = _PATTERN_LABEL.match(line)
@@ -231,10 +246,11 @@ def test_a09_is_annotated_undetectable_and_points_at_the_operations_domain() -> 
         "owasp-web must annotate A09 as NOT STATICALLY DETECTABLE; source "
         "analysis cannot observe a log stream or an alerting channel"
     )
-    # Scope the OPS- assertion to the A09 entry body. A file-wide search would
-    # be satisfied by any other category's pointer, so the intended regression
-    # (deleting A09's pointer) would still pass.
-    lines = text.splitlines()
+    # Scope the OPS- assertion to the A09 entry body inside the detection
+    # section. A file-wide search would be satisfied by any other category's
+    # pointer, or by an OPS- mention in unrelated prose, so the intended
+    # regression (deleting A09's pointer) would still pass.
+    lines = detection_patterns_section(text).splitlines()
     a09_body: list[str] = []
     for index, line in enumerate(lines):
         match = _PATTERN_LABEL.match(line)
@@ -286,3 +302,29 @@ def test_parsers_are_anchored_and_falsifiable() -> None:
     )
     assert undetectable_categories(doc) == set()
     assert "OPS-" not in detection_patterns_section(doc)
+
+
+def test_inline_heading_text_does_not_create_a_detection_section() -> None:
+    """The heading must be a real heading, not the phrase used in a sentence.
+
+    An unanchored substring search treats a prose mention of "### Detection
+    Patterns" as the start of the section, after which every bolded label to
+    the end of the document counts as covered. That is the hollow-coverage
+    failure this module exists to catch, arriving through the parser instead
+    of through the agent file.
+    """
+    doc = (
+        "## Your Categories\n\n"
+        "| ID | Category | Key CWEs |\n"
+        "|----|----------|----------|\n"
+        "| A01:2025 | Broken Access Control | CWE-200 |\n"
+        "\n## Review Method\n\n"
+        "This agent has no ### Detection Patterns section yet; write one.\n\n"
+        "**A01 Broken Access Control:** NOT STATICALLY DETECTABLE\n\n"
+        "- Covered by: OPS-005\n"
+    )
+    assert detection_patterns_section(doc) == "", (
+        "an inline mention of the heading text must not open a section"
+    )
+    assert categories_with_patterns(doc) == set()
+    assert undetectable_categories(doc) == set()

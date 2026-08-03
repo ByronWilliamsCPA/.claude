@@ -288,8 +288,18 @@ def load_manifest_scope_checks() -> dict[str, list[str]]:
             f"warning: manifest at {MANIFEST_PATH} unreadable: {exc}", file=sys.stderr
         )
         return {}
+    # safe_load returns whatever the document is: a list, a scalar, or None for
+    # an empty file. Only a mapping has `.get`, so anything else must exit here
+    # or the sweep dies on AttributeError instead of degrading to unknown counts.
+    if not isinstance(data, dict):
+        print(
+            f"warning: manifest at {MANIFEST_PATH} has a non-mapping root "
+            f"({type(data).__name__}), scope counts unknown",
+            file=sys.stderr,
+        )
+        return {}
     scoped: dict[str, list[str]] = {}
-    for check in (data or {}).get("checks", []) or []:
+    for check in data.get("checks", []) or []:
         if not isinstance(check, dict):
             continue
         raw = check.get("applies_to")

@@ -458,6 +458,10 @@ def test_operations_domain_is_not_predominantly_static() -> None:
     # Count through _declared_classes, not the raw field: "STATIC " or
     # "STATIC + STATIC" would otherwise escape the count and silently
     # under-report, making this majority guard unfalsifiable by formatting.
+    # The equality is deliberate, not a containment test: a composite such as
+    # "STATIC + DYNAMIC" does reach past the source tree, so it is not part of
+    # the drift this guard measures and must not count toward the static
+    # majority. Only a check whose sole declared class is STATIC counts.
     static = [c.get("id") for c in ops if _declared_classes(c) == ["STATIC"]]
     assert len(static) * 2 < len(ops), (
         f"{len(static)} of {len(ops)} operations checks are STATIC. This domain "

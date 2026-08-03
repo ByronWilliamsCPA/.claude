@@ -47,6 +47,19 @@ fleet-wide insights, writes a weekly synthesis report.
    Data Quality with the affected `session_date` and `repo` values so the
    pollution stays visible instead of being silently dropped.
 
+   **The parser fallback is a parse artifact too.** When a description
+   is unusable, `scripts/compliance_rollup_reconcile.py` writes
+   `"(no description parsed) <proposed_manifest_id>"` so the candidate
+   stays traceable to its origin. That string is neither empty nor a
+   block-scalar marker, so the filter above does not catch it, and every
+   fallback row for the same ID normalizes to the same text: exactly the
+   shape that ranks first under the promotion rule. Treat any pattern
+   beginning `(no description parsed)` as excluded from trending, count
+   it separately from the marker rows, and list its affected
+   `session_date` and `repo` values under Data Quality. A rising fallback
+   count is a producer-side parse problem, which is a different finding
+   from a recurring real pattern and must not be reported as one.
+
    `#ASSUME`: the committed master log carries 20 such rows from an
    earlier parser version, spread across four sessions and four repos,
    which is exactly the shape that ranks first under the promotion rule
@@ -83,10 +96,22 @@ fleet-wide insights, writes a weekly synthesis report.
 
    Overrides: `totals.overrides_applied` is a scalar integer per session
    entry, not a per-check map, and `findings_by_check` items carry only
-   `{id, severity, remediation_status}` with no override field. No
-   producer writes a check-ID-to-override association anywhere, so the
-   per-check grouping this insight originally specified cannot be
-   computed from the current schema. Until a producer emits it, report
+   `{id, severity, remediation_status}` with no override field.
+
+   `#ASSUME`: no producer writes a check-ID-to-override association
+   anywhere, so the per-check grouping this insight originally specified
+   cannot be computed from the current schema. That was read off the
+   producers once, at authoring time; if one later emits the
+   association, the scalar-only rule below turns from honest into
+   suppressive and hides attribution that is now observable.
+   `#VERIFY`: before applying the rule, grep the master-log producers
+   (`scripts/compliance_rollup_reconcile.py` and the
+   `compliance-retrospective` agent's output schema) for an override
+   field on `findings_by_check` items. If one exists, report the real
+   per-check attribution and raise the stale rule as a Data Quality
+   finding against this file.
+
+   Until a producer emits it, report
    the scalar total per session and repo and label it explicitly as
    "not attributable to specific check IDs (schema gap)". Do NOT invent
    an attribution by inference. Raise the schema gap once under
@@ -170,7 +195,16 @@ rather than observed.>
 
 <Schema gaps and staleness noticed while computing the insights above,
 one line each. The override attribution gap belongs here whenever the
-Override volume section is non-empty.>
+Override volume section is non-empty.
+
+Two parse-artifact counts are mandatory whenever either is non-zero,
+reported separately because they have different causes: the number of
+excluded block-scalar-marker patterns with their affected
+`(session_date, repo)` pairs, and the number of
+`(no description parsed)` fallback patterns with theirs. A fallback
+count that is rising, or that carries a `session_date` later than the
+producer guard's introduction, is an open producer-side parse bug and
+must be recommended for a fix rather than logged as history.>
 
 ## Recommended actions for next sprint
 

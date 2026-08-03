@@ -199,12 +199,15 @@ def _parse_unclassified_candidates(text: str) -> list[dict[str, str]]:
             if not item_id:
                 continue
             raw_description = item.get("description")
-            # yaml.safe_load turns `description: null` into None, and
-            # str(None) is "None": a non-degenerate string that would
-            # enter the log as a real pattern. Normalize before testing.
-            description = ""
-            if raw_description is not None:
-                description = str(raw_description).strip()
+            # A description is prose, so only a YAML string can be one. Every
+            # other node type safe_load can produce here stringifies into
+            # something that reads as real text and passes the degeneracy test:
+            # null becomes "None", an empty sequence becomes "[]", a bare `no`
+            # becomes "False". Each would enter the master log as a groupable
+            # pattern. Accept str alone and let the rest take the ID fallback.
+            description = (
+                raw_description.strip() if isinstance(raw_description, str) else ""
+            )
             if is_degenerate_pattern(description):
                 # Fall back to the manifest ID so the candidate stays traceable
                 # instead of entering the log as an ungroupable parse artifact.
