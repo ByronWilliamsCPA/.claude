@@ -80,9 +80,29 @@ def build_coverage(checks: list[dict[str, Any]]) -> dict[str, list[str]]:
     coverage: dict[str, list[str]] = defaultdict(list)
     for check in checks:
         category = check.get("sp_category")
-        if category:
+        # Only known categories count. An unrecognised value (a typo such as
+        # SP-99) would otherwise inflate the mapped total while never appearing
+        # in any row, hiding an invalid mapping behind a better-looking number.
+        if category and str(category) in SPINE:
             coverage[str(category)].append(str(check.get("id")))
     return {sp: sorted(coverage.get(sp, [])) for sp in SPINE}
+
+
+def invalid_categories(checks: list[dict[str, Any]]) -> dict[str, list[str]]:
+    """Return check IDs grouped by any ``sp_category`` value not in the spine.
+
+    Args:
+        checks: Manifest check mappings.
+
+    Returns:
+        Mapping of unrecognised category value to the check IDs using it.
+    """
+    invalid: dict[str, list[str]] = defaultdict(list)
+    for check in checks:
+        category = check.get("sp_category")
+        if category and str(category) not in SPINE:
+            invalid[str(category)].append(str(check.get("id")))
+    return {k: sorted(v) for k, v in sorted(invalid.items())}
 
 
 def render(checks: list[dict[str, Any]], coverage: dict[str, list[str]]) -> list[str]:
@@ -95,12 +115,13 @@ def render(checks: list[dict[str, Any]], coverage: dict[str, list[str]]) -> list
     Returns:
         Report lines.
     """
-    mapped = sum(1 for c in checks if c.get("sp_category"))
+    mapped = sum(1 for c in checks if str(c.get("sp_category", "")) in SPINE)
     classes = Counter(
         str(c.get("verification_class", "UNDECLARED"))
         for c in checks
-        if c.get("sp_category")
+        if str(c.get("sp_category", "")) in SPINE
     )
+    invalid = invalid_categories(checks)
     header = (
         f"manifest checks: {len(checks)}   mapped to a spine category: "
         f"{mapped}   unmapped: {len(checks) - mapped}"
@@ -135,6 +156,9 @@ def render(checks: list[dict[str, Any]], coverage: dict[str, list[str]]) -> list
         ]
     )
     lines.extend(f"  {sp}  {SPINE[sp]}" for sp in uncovered)
+    if invalid:
+        lines.extend(["", "INVALID sp_category VALUES (not in SP-01..SP-17):"])
+        lines.extend(f"  {value}  {ids}" for value, ids in invalid.items())
     lines.extend(
         [
             "",
@@ -164,7 +188,10 @@ def main() -> int:
             json.dumps(
                 {
                     "total_checks": len(checks),
-                    "mapped_checks": sum(1 for c in checks if c.get("sp_category")),
+                    "mapped_checks": sum(
+                        1 for c in checks if str(c.get("sp_category", "")) in SPINE
+                    ),
+                    "invalid_categories": invalid_categories(checks),
                     "coverage": coverage,
                     "uncovered": [sp for sp, ids in coverage.items() if not ids],
                 },

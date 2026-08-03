@@ -41,16 +41,29 @@ fleet-wide insights, writes a weekly synthesis report.
 
    **Exclude degenerate patterns before grouping.** A `pattern` that is
    empty, whitespace-only, or a bare YAML block-scalar marker (`>-`, `>`,
-   `|`, `|-`, `|+`, `>+`) is a parse artifact, not a description. The
-   committed master log carries 20 such rows from an earlier parser
-   version, spread across four sessions and four repos, which is exactly
-   the shape that ranks first under the promotion rule above. Grouping
-   them would make a parse bug the headline insight of the report.
-   Exclude them from trending, and report the count once under
+   `|`, `|-`, `|+`, `>+`) is a parse artifact, not a description.
+   Grouping them would make a parse bug the headline insight of the
+   report. Exclude them from trending, and report the count once under
    Data Quality with the affected `session_date` and `repo` values so the
-   pollution stays visible instead of being silently dropped. The
-   producer-side guard is `is_degenerate_pattern` in
-   `scripts/compliance_rollup_reconcile.py`; these rows predate it.
+   pollution stays visible instead of being silently dropped.
+
+   `#ASSUME`: the committed master log carries 20 such rows from an
+   earlier parser version, spread across four sessions and four repos,
+   which is exactly the shape that ranks first under the promotion rule
+   above. That count and spread were measured once, at authoring time.
+   `#VERIFY`: recount before citing. Filter `master-log.jsonl` for
+   `unclassified_candidates[*].pattern` values matching the degenerate
+   set and report the observed count and the distinct
+   `(session_date, repo)` pairs you actually found, not the number
+   above. If they disagree, report what you measured and note the drift.
+
+   `#ASSUME`: the producer-side guard is `is_degenerate_pattern` in
+   `scripts/compliance_rollup_reconcile.py`, and these rows predate it,
+   so no new ones should appear.
+   `#VERIFY`: confirm that function still exists and still covers the
+   marker set above; if any degenerate row carries a `session_date`
+   later than the guard's introduction, the guard has a hole and that
+   is itself a Data Quality finding, not a historical artifact.
 
    **Stuck manifest candidates.** For each unique
    `proposed_manifest_id` seen anywhere in the window: check whether
@@ -64,7 +77,7 @@ fleet-wide insights, writes a weekly synthesis report.
    with `remediation_status: open` more than 14 days after the original
    proposal, surface as a follow-through gap.
 
-   **Coverage and override hotspots.** Coverage: for every catalog repo
+   **Coverage and override volume.** Coverage: for every catalog repo
    not archived, find the newest `session_date`. Flag any older than
    60 days.
 
@@ -143,11 +156,21 @@ status table (Resolved / Still open / Not re-audited), recommendation.>
 
 <Table: repo, last audit date, days stale. Sorted descending.>
 
-## Override hotspots
+## Override volume
 
-<Per check ID exceeding threshold: check description, repos overriding,
-count, recommendation (narrow check scope / accept as standard
-exception / other).>
+<Table: repo, session date, `totals.overrides_applied`. Sorted
+descending by count. Append this line verbatim so a reader cannot
+mistake the scalar for per-check attribution: "Not attributable to
+specific check IDs (schema gap; see Data quality)." Do NOT write a
+per-check-ID breakdown here: no producer emits the check-ID-to-override
+association it would require, so any such table would be inferred
+rather than observed.>
+
+## Data quality
+
+<Schema gaps and staleness noticed while computing the insights above,
+one line each. The override attribution gap belongs here whenever the
+Override volume section is non-empty.>
 
 ## Recommended actions for next sprint
 

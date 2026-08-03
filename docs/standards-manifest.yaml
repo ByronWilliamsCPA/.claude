@@ -2067,7 +2067,8 @@ checks:
       store the application depends on, and for each: backup schedule, retention
       window, destination, and whether the destination is in a different failure
       domain than the primary. A store present in the application but absent from
-      the inventory fails this check.
+      the inventory fails this check. The document must carry a verified_on date
+      within max_evidence_age_days.
     applies_to: deployed_repos
     override_eligible: true
     max_evidence_age_days: 365

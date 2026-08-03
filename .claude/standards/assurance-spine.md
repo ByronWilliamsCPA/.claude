@@ -334,6 +334,14 @@ The state layer is the fastest-moving part of this catalog and the part most lik
 US State Privacy Legislation Tracker and the Bloomberg Law tracker; the refresh is register row
 material, not a footnote.
 
+`#ASSUME`: every count, effective date, and litigation status in the table below is a snapshot
+taken 2026-08-02, not current fact. The half-life of this layer is months.
+`#VERIFY`: before citing any row of this table in a register, a scoping memo, or a compliance
+claim, re-check that family against the IAPP US State Privacy Legislation Tracker and the
+Bloomberg Law state privacy tracker, and record the date of that re-check. Track litigation
+status separately from enactment status: an enacted-but-enjoined design code reads as in force
+here and may not be.
+
 | Family | Status as verified | What it adds |
 |---|---|---|
 | **Comprehensive consumer privacy** | **20 states have laws on the books as of Feb 2026**, counting Florida's narrower scope. Indiana, Kentucky, and Rhode Island took effect 1 Jan 2026; Connecticut, Arkansas, and Utah changes 1 Jul 2026 | Notice; access, delete, correct, portability; opt-out of sale, sharing, and targeted advertising; sensitive-data opt-in or opt-out depending on state; **universal opt-out signal (Global Privacy Control) recognition** in a growing subset; data-protection assessments for high-risk processing; processor contract terms; profiling opt-out. Cure periods are sunsetting, so enforcement risk is rising even where the substantive law is unchanged |
@@ -379,6 +387,13 @@ quietly wrong.
 | US federal sectoral | Slow, but rule amendments matter | Annual, plus on any FTC or sector-regulator rulemaking |
 | **US state** | **Months** | **Quarterly**, against IAPP and Bloomberg trackers. Track litigation status separately from enactment status: several minors' design codes are enacted and partially enjoined |
 | EU phased regimes (AI Act, CRA, NIS2) | Known dates, moving guidance | Semi-annual, against the phase calendar |
+
+`#ASSUME`: the framework-version facts in this file (ASVS 5.0.0 at 17 chapters, AISVS 1.0 at
+12 chapters plus 3 appendices, MASVS 2.1.0, PCI DSS 4.0.1, and the AC.1-AC.14 inventory) were
+read from the primary documents on 2026-08-02 and are correct only for those editions.
+`#VERIFY`: on any major release of a named framework, re-read its chapter and requirement list
+from the standard itself, never from a summary, and update both the framework table and every
+`framework ref` cell that cites it. The 14-chapter canary above is the failure this catches.
 
 Two standing rules that follow from the table:
 

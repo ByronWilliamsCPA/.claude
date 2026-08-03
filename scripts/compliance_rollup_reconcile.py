@@ -198,7 +198,13 @@ def _parse_unclassified_candidates(text: str) -> list[dict[str, str]]:
             item_id = item.get("id")
             if not item_id:
                 continue
-            description = str(item.get("description", "")).strip()
+            raw_description = item.get("description")
+            # yaml.safe_load turns `description: null` into None, and
+            # str(None) is "None": a non-degenerate string that would
+            # enter the log as a real pattern. Normalize before testing.
+            description = ""
+            if raw_description is not None:
+                description = str(raw_description).strip()
             if is_degenerate_pattern(description):
                 # Fall back to the manifest ID so the candidate stays traceable
                 # instead of entering the log as an ungroupable parse artifact.

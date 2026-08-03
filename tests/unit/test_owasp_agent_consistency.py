@@ -92,6 +92,27 @@ def categories_in_table(text: str) -> set[str]:
     }
 
 
+def detection_patterns_section(text: str) -> str:
+    """Return the ``### Detection Patterns`` section body, or an empty string.
+
+    Anchoring matters: scanning the whole document lets a bolded category label
+    written anywhere (a prose aside, a mode section, an example) satisfy the
+    coverage gate without a real pattern entry. That would make the gate
+    unfalsifiable, which is the exact defect it exists to catch.
+
+    Args:
+        text: Full agent definition contents.
+
+    Returns:
+        The section text, or ``""`` when the heading is absent.
+    """
+    start = text.find("### Detection Patterns")
+    if start == -1:
+        return ""
+    end = text.find("\n## ", start + 1)
+    return text[start:] if end == -1 else text[start:end]
+
+
 def categories_with_patterns(text: str) -> set[str]:
     """Return the bare category IDs that carry a detection-pattern entry.
 
@@ -99,11 +120,12 @@ def categories_with_patterns(text: str) -> set[str]:
         text: Full agent definition contents.
 
     Returns:
-        Bare category IDs appearing as a bolded pattern label.
+        Bare category IDs appearing as a bolded pattern label inside the
+        detection-patterns section.
     """
     return {
         match.group(1)
-        for line in text.splitlines()
+        for line in detection_patterns_section(text).splitlines()
         if (match := _PATTERN_LABEL.match(line))
     }
 
@@ -119,7 +141,7 @@ def undetectable_categories(text: str) -> set[str]:
     """
     return {
         match.group(1)
-        for line in text.splitlines()
+        for line in detection_patterns_section(text).splitlines()
         if (match := _PATTERN_LABEL.match(line)) and "NOT STATICALLY DETECTABLE" in line
     }
 
@@ -209,8 +231,22 @@ def test_a09_is_annotated_undetectable_and_points_at_the_operations_domain() -> 
         "owasp-web must annotate A09 as NOT STATICALLY DETECTABLE; source "
         "analysis cannot observe a log stream or an alerting channel"
     )
-    assert "OPS-" in text, (
-        "owasp-web's A09 annotation must point at the operations domain "
+    # Scope the OPS- assertion to the A09 entry body. A file-wide search would
+    # be satisfied by any other category's pointer, so the intended regression
+    # (deleting A09's pointer) would still pass.
+    lines = text.splitlines()
+    a09_body: list[str] = []
+    for index, line in enumerate(lines):
+        match = _PATTERN_LABEL.match(line)
+        if not (match and match.group(1) == "A09"):
+            continue
+        for following in lines[index + 1 :]:
+            if _PATTERN_LABEL.match(following) or following.startswith("#"):
+                break
+            a09_body.append(following)
+        break
+    assert "OPS-" in "\n".join(a09_body), (
+        "owasp-web's A09 annotation body must point at the operations domain "
         "(OPS-* checks) that covers the gap"
     )
 
@@ -235,9 +271,18 @@ def test_parsers_are_anchored_and_falsifiable() -> None:
         "\n### Detection Patterns\n\n"
         "**A01 Broken Access Control:**\n\n"
         "- a signal\n"
+        "\n## Mode: review-tests\n\n"
+        "**A02 Security Misconfiguration:** NOT STATICALLY DETECTABLE\n\n"
+        "- Covered by: OPS-005\n"
     )
     assert categories_in_table(doc) == {"A01", "A02"}, (
         "categories parser must read only the Your Categories section"
     )
-    assert categories_with_patterns(doc) == {"A01"}
+    # A02's label and its OPS- pointer sit OUTSIDE the detection section, so
+    # neither parser may see them. Before scoping, both did, which meant a
+    # deleted pattern could be satisfied by an unrelated mention elsewhere.
+    assert categories_with_patterns(doc) == {"A01"}, (
+        "pattern parser must ignore labels outside the Detection Patterns section"
+    )
     assert undetectable_categories(doc) == set()
+    assert "OPS-" not in detection_patterns_section(doc)

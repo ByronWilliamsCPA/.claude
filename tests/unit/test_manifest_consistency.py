@@ -455,7 +455,10 @@ def test_operations_domain_is_not_predominantly_static() -> None:
     """
     ops = _ops_checks()
     assert ops, "operations domain has no checks"
-    static = [c.get("id") for c in ops if c.get("verification_class") == "STATIC"]
+    # Count through _declared_classes, not the raw field: "STATIC " or
+    # "STATIC + STATIC" would otherwise escape the count and silently
+    # under-report, making this majority guard unfalsifiable by formatting.
+    static = [c.get("id") for c in ops if _declared_classes(c) == ["STATIC"]]
     assert len(static) * 2 < len(ops), (
         f"{len(static)} of {len(ops)} operations checks are STATIC. This domain "
         f"covers what source analysis structurally cannot reach; a majority-STATIC "

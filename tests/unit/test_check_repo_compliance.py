@@ -449,12 +449,18 @@ def test_render_scope_summary_lists_unknown_repos_with_reason() -> None:
 
 
 @pytest.mark.unit
-def test_load_manifest_scope_checks_includes_docs_and_api_scopes() -> None:
-    """The real manifest yields non-empty, sorted check-ID lists for both scopes."""
+def test_load_manifest_scope_checks_covers_every_defined_scope() -> None:
+    """The real manifest yields non-empty, sorted check-ID lists for every scope.
+
+    Asserting against SCOPE_DEFINITIONS rather than a hardcoded pair means a
+    scope that loses all its manifest checks fails here instead of vanishing
+    from the mapping unnoticed. A loop over ``scope_checks.values()`` alone
+    cannot catch that: the missing scope simply never enters the loop.
+    """
     scope_checks = crc.load_manifest_scope_checks()
 
-    assert "docs_repos" in scope_checks
-    assert "api_repos" in scope_checks
+    missing = sorted(set(crc.SCOPE_DEFINITIONS) - set(scope_checks))
+    assert not missing, f"scopes defined but carried by no manifest check: {missing}"
     for ids in scope_checks.values():
         assert len(ids) > 0
         assert ids == sorted(ids)

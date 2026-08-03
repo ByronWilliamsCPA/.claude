@@ -62,7 +62,7 @@ Agents to dispatch simultaneously (skip any whose domain is in SKIP_DOMAINS):
 - `ossf-compliance-auditor` (OSSF-* and SCORECARD:* checks) -- domain: `ossf`
 - `general-compliance-auditor` (all checks as negative filter, freeform review) -- never skipped
 - `mkdocs-auditor` in audit mode (MKDOCS-* checks; skipped automatically when no mkdocs.yml is present in the project root) -- domain: `mkdocs`
-- `operations-posture-auditor` (OPS-* checks; applies_to `deployed_repos`, gated on the catalog `isDeployed` flag) -- domain: `operations`
+- `operations-posture-auditor` (OPS-* checks; applies_to `deployed_repos`. Skipped ONLY when the catalog `isDeployed` flag is explicitly `false`; absent, `null`, and non-boolean values still dispatch it so it emits the UNKNOWN finding) -- domain: `operations`
 
 > Note: REPO-* checks carry `domain: repo_settings` in the manifest but are produced by `repo-foundations-auditor`, which is dispatched under `domain: foundations`. A `SKIP_DOMAINS` entry of either `foundations` or `repo_settings` therefore skips the REPO-* checks, and any retrospective grouping should treat `repo_settings` findings as belonging to the foundations agent.
 
@@ -129,7 +129,7 @@ Dispatch agents by domain in dependency order:
 5. `claude-docs-auditor` (claude_docs: no dependencies)
 6. `ossf-compliance-auditor` (ossf: no dependencies)
 7. `mkdocs-auditor` in remediate mode (mkdocs: no dependencies; skipped automatically when no mkdocs.yml is present)
-8. `operations-posture-auditor` in remediation mode (operations: no dependencies; skipped when the catalog `isDeployed` flag is not `true`). Its remediations are attestation scaffolds under `docs/operations/`, never live changes to a deployed system, a database role, or a vendor console. It must never rotate a credential, alter a database grant, or push a managed-service config; those are operator actions. It emits ACTION lines describing the scaffold it wrote and the operator step still required.
+8. `operations-posture-auditor` in remediation mode (operations: no dependencies; skipped ONLY when `isDeployed` is explicitly `false`. Absent, `null`, and non-boolean values must still dispatch the agent so it emits the UNKNOWN finding; treating an undeclared flag as a skip reinstates the silent-skip defect this domain was built alongside, and all 45 catalog entries currently carry `isDeployed: null`). Its remediations are attestation scaffolds under `docs/operations/`, never live changes to a deployed system, a database role, or a vendor console. It must never rotate a credential, alter a database grant, or push a managed-service config; those are operator actions. It emits ACTION lines describing the scaffold it wrote and the operator step still required.
 
 Collect ACTION lines from each agent and present a summary of all changes made.
 

@@ -30,6 +30,18 @@ from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
 
+# The sweep's core checks read JSON only. Manifest-derived scope counts are the
+# one feature that needs YAML, and they degrade to an unknown count rather than
+# taking the whole sweep down. Imported at module level (not inside the
+# function) so the optional dependency is declared in one place and no per-call
+# lint suppression is needed.
+try:
+    import yaml
+
+    _YAML_AVAILABLE = True
+except ImportError:  # pragma: no cover - pyyaml is optional for the sweep
+    _YAML_AVAILABLE = False
+
 _GH = shutil.which("gh") or "gh"
 
 ORGS = ["ByronWilliamsCPA", "williaby"]
@@ -265,12 +277,8 @@ def load_manifest_scope_checks() -> dict[str, list[str]]:
     Returns:
         Mapping of scope name to the sorted check IDs scoped to it.
     """
-    try:
-        import yaml  # noqa: PLC0415  (optional at import time; sweep runs without it)
-    except ImportError as exc:
-        print(
-            f"warning: pyyaml unavailable, scope counts unknown: {exc}", file=sys.stderr
-        )
+    if not _YAML_AVAILABLE:
+        print("warning: pyyaml unavailable, scope counts unknown", file=sys.stderr)
         return {}
     try:
         with MANIFEST_PATH.open(encoding="utf-8") as handle:
@@ -343,8 +351,16 @@ def render_scope_summary(
     lines = ["", "APPLICABILITY BY SCOPE", "-" * 60]
     for scope, definition in sorted(SCOPE_DEFINITIONS.items()):
         check_ids = scope_checks.get(scope, [])
-        per_repo = len(check_ids) if check_ids else 0
-        count_label = str(per_repo) if check_ids else "?"
+        # An unreadable manifest means the per-repo check count is UNKNOWN, not
+        # zero. Rendering it as 0 would print a definitive "0 check evaluations
+        # skipped" for a quantity nobody measured, which is the same hollow
+        # reporting this whole summary exists to prevent.
+        count_label = str(len(check_ids)) if check_ids else "?"
+
+        def skipped_label(repos: int, ids: list[str] = check_ids) -> str:
+            """Render the skipped-evaluation count, or ``?`` when unmeasurable."""
+            return str(repos * len(ids)) if ids else "?"
+
         buckets: dict[Applicability, list[RepoResult]] = {
             state: [] for state in Applicability
         }
@@ -362,11 +378,12 @@ def render_scope_summary(
         lines.append(f"  APPLIES  {applies:>3} repo(s)")
         lines.append(
             f"  SKIP ({definition.flag_name}: false)  {skipped:>3} repo(s), "
-            f"{skipped * per_repo} check evaluations skipped"
+            f"{skipped_label(skipped)} check evaluations skipped"
         )
         lines.append(
             f"  UNKNOWN  {unknown:>3} repo(s), "
-            f"{unknown * per_repo} check evaluations skipped -- catalog needs populating"
+            f"{skipped_label(unknown)} check evaluations skipped "
+            f"-- catalog needs populating"
         )
         for result in buckets[Applicability.UNKNOWN]:
             verdict = result.scopes[scope]

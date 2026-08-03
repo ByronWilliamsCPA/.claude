@@ -86,7 +86,7 @@ Checks carrying a `mechanism:` field follow one rule:
 self-certification, a field an author sets to silence a warning, which is the
 exact failure mode the status model exists to surface.
 
-This generalizes the existing regression-fixture requirement below. That rule
+This generalizes the regression-fixture requirement in the preceding section. That rule
 applies the fixture obligation only to `critical` + `override_eligible: false`
 checks. The mechanism field extends the *concept* to any check that opts in,
 without making a fixture mandatory for all 197: the honest default is to admit a

@@ -439,3 +439,33 @@ def test_parse_candidates_falls_back_to_id_on_degenerate_description() -> None:
     assert len(candidates) == 1
     assert candidates[0]["proposed_manifest_id"] == "FOUND-999"
     assert candidates[0]["pattern"] == "(no description parsed) FOUND-999"
+
+
+@pytest.mark.parametrize("null_form", ["null", "~", ""])
+def test_parse_candidates_treats_yaml_null_description_as_degenerate(
+    null_form: str,
+) -> None:
+    """A YAML null description takes the traceable ID fallback, not "None".
+
+    `yaml.safe_load` turns `description: null`, `description: ~`, and a bare
+    `description:` into Python `None`, and `str(None).strip()` is `"None"`.
+    That string is not whitespace and is not a block-scalar marker, so the
+    degenerate guard would pass it through and a literal `None` would enter
+    trending as a real pattern. Normalizing before the guard is what keeps
+    that from happening; this test fails if the normalization is removed.
+    """
+    from scripts.compliance_rollup_reconcile import _parse_unclassified_candidates
+
+    text = (
+        "## Proposed Manifest Additions\n\n"
+        "```yaml\n"
+        "id: FOUND-998\n"
+        f"description: {null_form}\n"
+        "```\n"
+    )
+    candidates = _parse_unclassified_candidates(text)
+
+    assert len(candidates) == 1
+    assert candidates[0]["proposed_manifest_id"] == "FOUND-998"
+    assert candidates[0]["pattern"] == "(no description parsed) FOUND-998"
+    assert "None" not in candidates[0]["pattern"]
