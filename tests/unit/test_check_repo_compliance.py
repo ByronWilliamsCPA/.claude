@@ -3,10 +3,14 @@
 from __future__ import annotations
 
 import json
+from typing import TYPE_CHECKING
 
 import pytest
 
 from tests.unit._load_check_repo_compliance import load_module
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 crc = load_module()
 
@@ -479,7 +483,7 @@ def test_load_manifest_scope_checks_covers_every_defined_scope() -> None:
 def test_load_manifest_scope_checks_degrades_on_non_mapping_root(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
-    tmp_path,
+    tmp_path: Path,
     body: str,
     root_type: str,
 ) -> None:

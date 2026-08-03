@@ -99,6 +99,38 @@ def categories_in_table(text: str) -> set[str]:
     }
 
 
+def _blank_fenced_blocks(text: str) -> str:
+    """Return ``text`` with every fenced code block's contents blanked out.
+
+    A line anchor distinguishes a heading from prose but not from a
+    heading-shaped line inside a fenced block. An agent file that documents
+    the required layout by showing `### Detection Patterns` inside a fence
+    would otherwise have that example parsed as its real section, and the
+    example's labels would satisfy the coverage gate. The `## ` section
+    boundary carries the same risk in reverse: a fenced `## ` line would end
+    the real section early and hide the entries after it.
+
+    Lines are replaced rather than deleted so byte offsets stay aligned with
+    the original, which keeps slicing by match position correct.
+
+    Args:
+        text: Full agent definition contents.
+
+    Returns:
+        The same text with fence-interior lines (and the fence markers
+        themselves) replaced by empty lines.
+    """
+    out: list[str] = []
+    in_fence = False
+    for line in text.splitlines():
+        if line.lstrip().startswith(("```", "~~~")):
+            in_fence = not in_fence
+            out.append("")
+            continue
+        out.append("" if in_fence else line)
+    return "\n".join(out)
+
+
 def detection_patterns_section(text: str) -> str:
     """Return the ``### Detection Patterns`` section body, or an empty string.
 
@@ -107,10 +139,11 @@ def detection_patterns_section(text: str) -> str:
     coverage gate without a real pattern entry. That would make the gate
     unfalsifiable, which is the exact defect it exists to catch.
 
-    The heading match is anchored to the start of a line. An unanchored
-    substring search also matches the phrase written inside a sentence, which
-    would hand the coverage gate a section that does not exist and let any
-    bolded label after that prose satisfy it.
+    The heading match is anchored to the start of a line, and fenced code
+    blocks are blanked first. An unanchored substring search matches the
+    phrase written inside a sentence; a line anchor alone still matches a
+    heading shown as an example inside a fence. Both would hand the coverage
+    gate a section that does not exist.
 
     Args:
         text: Full agent definition contents.
@@ -118,12 +151,13 @@ def detection_patterns_section(text: str) -> str:
     Returns:
         The section text, or ``""`` when the heading is absent.
     """
-    heading = _DETECTION_HEADING.search(text)
+    scannable = _blank_fenced_blocks(text)
+    heading = _DETECTION_HEADING.search(scannable)
     if heading is None:
         return ""
     start = heading.start()
-    end = text.find("\n## ", start + 1)
-    return text[start:] if end == -1 else text[start:end]
+    end = scannable.find("\n## ", start + 1)
+    return scannable[start:] if end == -1 else scannable[start:end]
 
 
 def categories_with_patterns(text: str) -> set[str]:
@@ -328,3 +362,52 @@ def test_inline_heading_text_does_not_create_a_detection_section() -> None:
     )
     assert categories_with_patterns(doc) == set()
     assert undetectable_categories(doc) == set()
+
+
+def test_fenced_heading_does_not_create_a_detection_section() -> None:
+    """A heading shown as an example inside a fence is not a real heading.
+
+    Line anchoring alone does not separate a heading from a heading-shaped
+    line inside a fenced block, so an agent file that documents its own
+    required layout would have the example parsed as its section and the
+    example's labels would satisfy the coverage gate.
+    """
+    doc = (
+        "## Your Categories\n\n"
+        "| ID | Category | Key CWEs |\n"
+        "|----|----------|----------|\n"
+        "| A01:2025 | Broken Access Control | CWE-200 |\n"
+        "\n## Review Method\n\n"
+        "Write the section using this layout:\n\n"
+        "```markdown\n"
+        "### Detection Patterns\n\n"
+        "**A01 Broken Access Control:** NOT STATICALLY DETECTABLE\n\n"
+        "- Covered by: OPS-005\n"
+        "```\n"
+    )
+    assert detection_patterns_section(doc) == "", (
+        "a fenced example heading must not open a section"
+    )
+    assert categories_with_patterns(doc) == set()
+    assert undetectable_categories(doc) == set()
+
+
+def test_fenced_boundary_does_not_truncate_the_detection_section() -> None:
+    """A fenced ``## `` line must not end the real section early.
+
+    Blanking fences protects the boundary search as well as the heading
+    search. Without it, an illustrative `## ` line inside a fenced block
+    would cut the section short and silently drop every entry after it,
+    under-reporting coverage instead of over-reporting it.
+    """
+    doc = (
+        "### Detection Patterns\n\n"
+        "**A01 Broken Access Control:** grep for missing authz decorators\n\n"
+        "```text\n"
+        "## Example Heading Inside A Fence\n"
+        "```\n\n"
+        "**A02 Cryptographic Failures:** grep for MD5 and SHA-1\n"
+    )
+    assert categories_with_patterns(doc) == {"A01", "A02"}, (
+        "a fenced '## ' line must not truncate the section"
+    )

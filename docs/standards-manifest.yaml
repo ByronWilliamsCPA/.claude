@@ -1957,12 +1957,15 @@ checks:
       directions against the deployed role: (a) a tenant cannot read another
       tenant's row, and (b) the tenant CAN read its own row. A committed test is
       necessary but not sufficient: also require a dated execution-result
-      artifact naming the role the queries actually ran as and the outcome of
-      each direction, because a test that has never run against the deployed
-      role proves only that someone wrote it. Fail the check when that artifact
-      is absent, when it does not name the role, when either direction is
-      missing, or when its date is older than 90 days. Record the precondition
-      that makes this check not applicable when it is skipped.
+      artifact, at the fixed path docs/operations/rls-verification-log.md,
+      because a test that has never run against the deployed role proves only
+      that someone wrote it. Each row carries four fields: the run date, the
+      deployed role the queries ran as, the cross-tenant read outcome, and the
+      same-tenant read outcome. Fail the check when that file is absent, when
+      the most recent row omits any of the four, or when its date is older than
+      90 days. A result asserted in prose with no committed row does not
+      satisfy this check. Record the precondition that makes this check not
+      applicable when it is skipped.
     applies_to: deployed_repos
     override_eligible: true
     check_family: operational-posture
@@ -2132,7 +2135,14 @@ checks:
       an anti-automation control is named and located: CAPTCHA or equivalent
       challenge, per-IP or per-identifier rate limit, or proof-of-work. Enumerate
       the public write paths first, then map each to its control; an unmapped
-      path is a finding.
+      path is a finding. Record the enumeration and the mapping in a committed
+      inventory at docs/operations/public-write-paths.md, one row per
+      unauthenticated state-creating endpoint naming the endpoint, the control
+      protecting it, and where that control is enforced. An enumeration that
+      exists only in an audit narrative is not reviewable and does not satisfy
+      this check: without the committed inventory, two auditors reach different
+      verdicts and a path that was never listed reads identically to one that
+      has no control.
     applies_to: deployed_repos
     override_eligible: true
     check_family: operational-posture

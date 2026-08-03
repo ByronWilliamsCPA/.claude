@@ -53,12 +53,24 @@ fleet-wide insights, writes a weekly synthesis report.
    stays traceable to its origin. That string is neither empty nor a
    block-scalar marker, so the filter above does not catch it, and every
    fallback row for the same ID normalizes to the same text: exactly the
-   shape that ranks first under the promotion rule. Treat any pattern
-   beginning `(no description parsed)` as excluded from trending, count
-   it separately from the marker rows, and list its affected
-   `session_date` and `repo` values under Data Quality. A rising fallback
-   count is a producer-side parse problem, which is a different finding
-   from a recurring real pattern and must not be reported as one.
+   shape that ranks first under the promotion rule.
+
+   Classify a row as a fallback only when its `pattern` equals
+   `"(no description parsed) "` followed by that same candidate's own
+   `proposed_manifest_id`, and use that one predicate for exclusion, for
+   the Data Quality count, and for the `#VERIFY` step below. A prefix
+   test is the wrong shape here: the producer accepts arbitrary strings,
+   so a real description that happens to open with those words would be
+   discarded as an artifact, and a report that silently drops real
+   candidates is a worse failure than the pollution this rule prevents.
+   Matching the ID as well as the prefix is what makes the row
+   self-identifying rather than merely prefix-shaped.
+
+   Exclude fallback rows from trending, count them separately from the
+   marker rows, and list their affected `session_date` and `repo` values
+   under Data Quality. A rising fallback count is a producer-side parse
+   problem, which is a different finding from a recurring real pattern
+   and must not be reported as one.
 
    `#ASSUME`: the committed master log carries 20 such rows from an
    earlier parser version, spread across four sessions and four repos,
@@ -200,8 +212,10 @@ Override volume section is non-empty.
 Two parse-artifact counts are mandatory whenever either is non-zero,
 reported separately because they have different causes: the number of
 excluded block-scalar-marker patterns with their affected
-`(session_date, repo)` pairs, and the number of
-`(no description parsed)` fallback patterns with theirs. A fallback
+`(session_date, repo)` pairs, and the number of fallback patterns with
+theirs, counted with the exact predicate above (`pattern` equals
+`"(no description parsed) "` plus that candidate's own
+`proposed_manifest_id`), never a bare prefix test. A fallback
 count that is rising, or that carries a `session_date` later than the
 producer guard's introduction, is an open producer-side parse bug and
 must be recommended for a fix rather than logged as history.>

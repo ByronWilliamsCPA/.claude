@@ -64,17 +64,31 @@ def test_unknown_category_is_not_counted_as_mapped() -> None:
 
 
 def test_absent_category_stays_unmapped() -> None:
-    """A check with no `sp_category` contributes to no row and no total."""
+    """A check with no usable `sp_category` contributes to no row and no total.
+
+    Four spellings of "not stated" are covered: the key omitted, an explicit
+    `null`, an empty string, and whitespace only. `category_text` normalizes
+    all four to blank, so all four must land on the unmapped pile rather than
+    in the invalid list. Reporting a blank as invalid would flood the
+    diagnostic with rows that name no wrong value and hide the real ones.
+    """
     mod = _load_module()
-    checks = [{"id": "FOUND-001"}, {"id": "FOUND-002", "sp_category": None}]
+    checks: list[dict[str, Any]] = [
+        {"id": "FOUND-001"},
+        {"id": "FOUND-002", "sp_category": None},
+        {"id": "FOUND-003", "sp_category": ""},
+        {"id": "FOUND-004", "sp_category": "   "},
+    ]
 
     coverage = mod.build_coverage(checks)
     assert all(ids == [] for ids in coverage.values())
-    assert mod.invalid_categories(checks) == {}
+    assert mod.invalid_categories(checks) == {}, (
+        "a blank category is unstated, not a wrong value"
+    )
 
     rendered = "\n".join(mod.render(checks, coverage))
     assert "mapped to a spine category: 0" in rendered
-    assert "unmapped: 2" in rendered
+    assert "unmapped: 4" in rendered
 
 
 @pytest.mark.parametrize("category", [0, False])
