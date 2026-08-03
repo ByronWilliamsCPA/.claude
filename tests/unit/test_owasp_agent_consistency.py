@@ -148,8 +148,10 @@ def _blank_fenced_blocks(text: str) -> str:
     early, and the real closing ``~~~`` would flip it open again, blanking
     everything after it in the document instead of just the fence interior.
 
-    Lines are replaced rather than deleted so byte offsets stay aligned with
-    the original, which keeps slicing by match position correct.
+    Lines are replaced rather than deleted so line numbering is preserved.
+    Callers must search and slice the returned text, never the original: the
+    blanked copy is internally consistent but its byte offsets do not
+    correspond to the input's.
 
     Args:
         text: Full agent definition contents.
