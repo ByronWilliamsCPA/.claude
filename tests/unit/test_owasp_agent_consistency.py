@@ -58,6 +58,9 @@ _PATTERN_LABEL = re.compile(r"^\*\*([A-Z]{1,4}\d{2})(?::\d{4})?\s")
 # same words mid-sentence.
 _DETECTION_HEADING = re.compile(r"^### Detection Patterns\b.*$", re.MULTILINE)
 
+# Same anchoring rule for the categories table heading.
+_CATEGORIES_HEADING = re.compile(r"^## Your Categories\b.*$", re.MULTILINE)
+
 pytestmark = pytest.mark.unit
 
 
@@ -87,11 +90,19 @@ def categories_in_table(text: str) -> set[str]:
         Bare category IDs, e.g. ``{"A01", "A02", ...}``. Empty when the section
         is absent.
     """
-    start = text.find("## Your Categories")
-    if start == -1:
+    # The anchor must be a real level-two heading, not the phrase written in a
+    # sentence and not a heading shown as an example inside a fence. A bare
+    # `.find` accepts both, so a documented layout example could become the
+    # section this gate reads, and its illustrative rows would stand in for the
+    # real table. Fence-blanking first, then matching at a line start, is the
+    # same protection detection_patterns_section already applies.
+    scannable = _blank_fenced_blocks(text)
+    heading = _CATEGORIES_HEADING.search(scannable)
+    if heading is None:
         return set()
-    end = text.find("\n## ", start + 1)
-    section = text[start:] if end == -1 else text[start:end]
+    start = heading.start()
+    end = scannable.find("\n## ", start + 1)
+    section = scannable[start:] if end == -1 else scannable[start:end]
     return {
         match.group(1)
         for line in section.splitlines()
@@ -510,4 +521,36 @@ def test_owasp_agents_tuple_matches_the_agent_files_on_disk() -> None:
         "OWASP_AGENTS is out of sync with the owasp-*.md specialist files on "
         f"disk. On disk but unlisted: {sorted(on_disk - listed)}. Listed but "
         f"missing from disk: {sorted(listed - on_disk)}."
+    )
+
+
+def test_categories_table_anchor_ignores_prose_and_fences() -> None:
+    """Only a real level-two heading may anchor the categories table.
+
+    Two ways a fake table could stand in for the real one: the phrase written
+    inside a sentence, and a heading shown as an example inside a fence. Either
+    would let illustrative rows define what the coverage gate believes the
+    agent owns, which is the unfalsifiable-gate defect this module exists to
+    prevent.
+    """
+    inline = "\n".join(
+        [
+            "Prose that mentions the ## Your Categories table in passing.",
+            "| A99 | Fake Row | CWE-000 |",
+        ]
+    )
+    assert categories_in_table(inline) == set(), "prose must not anchor the table"
+
+    fenced = "\n".join(
+        [
+            "```markdown",
+            "## Your Categories",
+            "| A99 | Fake Row | CWE-000 |",
+            "```",
+            "## Your Categories",
+            "| A01 | Broken Access Control | CWE-200 |",
+        ]
+    )
+    assert categories_in_table(fenced) == {"A01"}, (
+        "a fenced example must not replace the real categories table"
     )

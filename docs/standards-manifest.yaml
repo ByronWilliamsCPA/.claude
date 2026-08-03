@@ -1978,11 +1978,12 @@ checks:
       deployed role the queries ran as, the cross-tenant read outcome, and the
       same-tenant read outcome. Fail the check when that file is absent, when
       the most recent row omits any of the four, or when its date is older than
-      90 days. A result asserted in prose with no committed row does not
+      max_evidence_age_days. A result asserted in prose with no committed row does not
       satisfy this check. Record the precondition that makes this check not
       applicable when it is skipped.
     applies_to: deployed_repos
     override_eligible: true
+    max_evidence_age_days: 90
     check_family: operational-posture
     verification_class: DYNAMIC
     sp_category: SP-02
