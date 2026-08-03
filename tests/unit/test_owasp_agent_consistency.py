@@ -25,6 +25,7 @@ that does cover it.
 from __future__ import annotations
 
 import re
+from dataclasses import dataclass
 from pathlib import Path
 
 import pytest
@@ -204,21 +205,76 @@ def detection_patterns_section(text: str) -> str:
     return scannable[start:] if end == -1 else scannable[start:end]
 
 
-def categories_with_patterns(text: str) -> set[str]:
-    """Return the bare category IDs that carry a detection-pattern entry.
+@dataclass(frozen=True)
+class _PatternEntry:
+    """One bolded category entry inside the detection-patterns section.
+
+    Attributes:
+        category: Bare category ID, e.g. ``A01``.
+        undetectable: Whether the label carries the undetectable annotation.
+        has_body: Whether the entry carries at least one non-empty body line
+            beneath its label.
+    """
+
+    category: str
+    undetectable: bool
+    has_body: bool
+
+
+def _pattern_entries(text: str) -> list[_PatternEntry]:
+    """Split the detection-patterns section into per-category entries.
+
+    The label alone is not the entry. A bolded label with nothing beneath it
+    is a heading for content that was never written, and counting it as
+    coverage is the same hollow-check defect this module exists to catch, one
+    level in: the gate would report the category as handled while a reader
+    following the label finds nothing to run.
 
     Args:
         text: Full agent definition contents.
 
     Returns:
-        Bare category IDs appearing as a bolded pattern label inside the
-        detection-patterns section.
+        One entry per bolded label found in the section, in document order.
     """
-    return {
-        match.group(1)
-        for line in detection_patterns_section(text).splitlines()
-        if (match := _PATTERN_LABEL.match(line))
-    }
+    lines = detection_patterns_section(text).splitlines()
+    entries: list[_PatternEntry] = []
+    for index, line in enumerate(lines):
+        match = _PATTERN_LABEL.match(line)
+        if not match:
+            continue
+        body: list[str] = []
+        for following in lines[index + 1 :]:
+            if _PATTERN_LABEL.match(following) or following.startswith("#"):
+                break
+            body.append(following)
+        # Content sits in either of two legitimate places: trailing the label
+        # on its own line (`**A09 ...:** NOT STATICALLY DETECTABLE`, and the
+        # one-line pattern form), or as bullets beneath it. Counting only the
+        # latter would call every inline entry hollow, which is the opposite
+        # error and would fire on the real agent files.
+        inline = line.split("**", 2)[2] if line.count("**") >= 2 else ""
+        entries.append(
+            _PatternEntry(
+                category=match.group(1),
+                undetectable="NOT STATICALLY DETECTABLE" in line,
+                has_body=bool(inline.strip()) or any(item.strip() for item in body),
+            )
+        )
+    return entries
+
+
+def categories_with_patterns(text: str) -> set[str]:
+    """Return the bare category IDs that carry a detection-pattern entry.
+
+    A label with an empty body does not count. See :func:`_pattern_entries`.
+
+    Args:
+        text: Full agent definition contents.
+
+    Returns:
+        Bare category IDs whose entry carries actual content.
+    """
+    return {entry.category for entry in _pattern_entries(text) if entry.has_body}
 
 
 def undetectable_categories(text: str) -> set[str]:
@@ -230,11 +286,7 @@ def undetectable_categories(text: str) -> set[str]:
     Returns:
         Bare category IDs whose pattern label carries the annotation.
     """
-    return {
-        match.group(1)
-        for line in detection_patterns_section(text).splitlines()
-        if (match := _PATTERN_LABEL.match(line)) and "NOT STATICALLY DETECTABLE" in line
-    }
+    return {entry.category for entry in _pattern_entries(text) if entry.undetectable}
 
 
 @pytest.mark.parametrize("agent", OWASP_AGENTS)
@@ -301,7 +353,14 @@ def test_undetectable_categories_name_the_covering_control(agent: str) -> None:
             if _PATTERN_LABEL.match(following) or following.startswith("#"):
                 break
             body.append(following)
-        if "Covered by:" not in "\n".join(body):
+        # The pointer must name something. A bare "Covered by:" with nothing
+        # after the colon satisfies a substring test while telling the reader
+        # exactly as little as no annotation at all.
+        pointer = next(
+            (item.split("Covered by:", 1)[1] for item in body if "Covered by:" in item),
+            None,
+        )
+        if pointer is None or not pointer.strip():
             offenders.append(match.group(1))
     assert not offenders, (
         f"{agent}: categories annotated NOT STATICALLY DETECTABLE with no "
@@ -553,4 +612,45 @@ def test_categories_table_anchor_ignores_prose_and_fences() -> None:
     )
     assert categories_in_table(fenced) == {"A01"}, (
         "a fenced example must not replace the real categories table"
+    )
+
+
+def test_a_label_with_no_content_is_not_coverage() -> None:
+    """A bolded label with an empty body is a hollow entry, not a pattern.
+
+    This is the module's own defect class turned on itself: the gate reported
+    a category as covered because a heading for it existed, while a reader
+    following that heading finds nothing to run. Both legitimate content
+    positions must still count, inline after the label and bullets beneath it,
+    or the fix would flag the real agent files instead.
+    """
+    hollow = "### Detection Patterns\n\n**A01 Broken Access Control:**\n\n## Next\n"
+    assert categories_with_patterns(hollow) == set(), (
+        "a label with nothing under it must not count as a detection pattern"
+    )
+
+    inline = "### Detection Patterns\n\n**A01 Broken Access Control:** grep authz\n"
+    assert categories_with_patterns(inline) == {"A01"}
+
+    bulleted = (
+        "### Detection Patterns\n\n**A01 Broken Access Control:**\n\n- grep authz\n"
+    )
+    assert categories_with_patterns(bulleted) == {"A01"}
+
+
+def test_an_empty_covered_by_pointer_is_rejected() -> None:
+    """`Covered by:` with nothing after it points nowhere.
+
+    A substring test is satisfied by the words alone, which tells a reader
+    exactly as little as omitting the annotation entirely.
+    """
+    lines = detection_patterns_section(
+        "### Detection Patterns\n\n"
+        "**A09 Logging:** NOT STATICALLY DETECTABLE\n\n"
+        "- Covered by:   \n"
+    ).splitlines()
+    body = [item for item in lines if "Covered by:" in item]
+    assert body, "fixture must contain the pointer line"
+    assert not body[0].split("Covered by:", 1)[1].strip(), (
+        "fixture models an empty pointer; the gate must treat this as missing"
     )
