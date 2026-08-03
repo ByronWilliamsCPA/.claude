@@ -72,15 +72,34 @@ fleet-wide insights, writes a weekly synthesis report.
    problem, which is a different finding from a recurring real pattern
    and must not be reported as one.
 
-   `#ASSUME`: the committed master log carries 20 such rows from an
-   earlier parser version, spread across four sessions and four repos,
-   which is exactly the shape that ranks first under the promotion rule
-   above. That count and spread were measured once, at authoring time.
-   `#VERIFY`: recount before citing. Filter `master-log.jsonl` for
-   `unclassified_candidates[*].pattern` values matching the degenerate
-   set and report the observed count and the distinct
-   `(session_date, repo)` pairs you actually found, not the number
-   above. If they disagree, report what you measured and note the drift.
+   The two artifact classes need separate assumptions and separate
+   verification steps, because they are found by different predicates. A
+   single `#VERIFY` keyed on the marker set cannot see a fallback row at
+   all: lines above establish that the marker filter does not catch
+   `"(no description parsed) ..."`. Pointing the fallback claim at the
+   marker predicate would return zero every time and read as evidence
+   that there is no fallback problem, which is a verification step that
+   cannot fail, the exact defect this whole rule set exists to remove.
+
+   `#ASSUME` (markers): the committed master log carries 20 block-scalar
+   marker rows from an earlier parser version, spread across four
+   sessions and four repos, the shape that ranks first under the
+   promotion rule above. Measured once, at authoring time.
+   `#VERIFY` (markers): recount before citing. Filter
+   `master-log.jsonl` for `unclassified_candidates[*].pattern` values in
+   the block-scalar marker set (`>-`, `>`, `|`, `|-`, `|+`, `>+`), plus
+   empty and whitespace-only values, and report the observed count and
+   the distinct `(session_date, repo)` pairs you actually found, not the
+   number above. If they disagree, report what you measured and note the
+   drift.
+
+   `#ASSUME` (fallback): the fallback-row count is unmeasured. No number
+   is asserted here, because none was taken.
+   `#VERIFY` (fallback): count them with the exact-equality predicate
+   defined above, `pattern` equal to `"(no description parsed) "` plus
+   that same candidate's own `proposed_manifest_id`, never the marker
+   set and never a bare prefix test. Report the count and the distinct
+   `(session_date, repo)` pairs separately from the marker figures.
 
    `#ASSUME`: the producer-side guard is `is_degenerate_pattern` in
    `scripts/compliance_rollup_reconcile.py`, and these rows predate it,
