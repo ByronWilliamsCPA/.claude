@@ -116,7 +116,22 @@ def load_checks() -> list[dict[str, Any]]:
             file=sys.stderr,
         )
         return []
-    return data.get("checks", []) or []
+    checks = data.get("checks") or []
+    # The root guard above stops one layer short: `checks: not-a-list` and a
+    # list of bare scalars (`- CI-001` instead of `- id: CI-001`) both survive
+    # it and then die on `.get` inside build_coverage. The second is a
+    # plausible hand-edit, not a contrived input, so the contract is enforced
+    # where it is declared rather than trusted downstream.
+    if not isinstance(checks, list) or not all(
+        isinstance(check, dict) for check in checks
+    ):
+        print(
+            f"warning: manifest at {MANIFEST_PATH} has a `checks` value that is "
+            "not a list of mappings, no checks loaded",
+            file=sys.stderr,
+        )
+        return []
+    return checks
 
 
 def category_text(check: dict[str, Any]) -> str:

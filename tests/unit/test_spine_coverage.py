@@ -297,3 +297,65 @@ def test_cli_survives_and_reports_when_manifest_is_unreadable(
     captured = capsys.readouterr()
     assert "warning" in captured.err
     assert "manifest checks: 0" in captured.out
+
+
+@pytest.mark.parametrize(
+    "body",
+    [
+        "checks: not-a-list\n",
+        "checks:\n  - CI-001\n  - CI-002\n",
+        "checks:\n  - id: CI-001\n  - plain-scalar\n",
+        "checks: 42\n",
+    ],
+    ids=["scalar-checks", "list-of-scalars", "mixed-list", "int-checks"],
+)
+def test_load_checks_rejects_a_checks_value_that_is_not_mappings(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    tmp_path: Path,
+    body: str,
+) -> None:
+    """A mapping root is not enough; `checks` itself must hold mappings.
+
+    The non-mapping root guard stops one layer short. `checks: not-a-list` and
+    a list of bare scalars both pass it, are returned despite the declared
+    `list[dict[str, Any]]`, and then raise AttributeError on `.get` inside
+    build_coverage. That breaks the module's always-exit-0 contract in the same
+    way an unguarded read did. A list of bare IDs is a plausible hand-edit, so
+    this is not a contrived input.
+
+    Args:
+        monkeypatch: Redirects the module's manifest path.
+        capsys: Captures the stderr warning.
+        tmp_path: Holds the malformed manifest.
+        body: Manifest contents to write.
+    """
+    mod = _load_module()
+    manifest = tmp_path / "standards-manifest.yaml"
+    manifest.write_text(body, encoding="utf-8")
+    monkeypatch.setattr(mod, "MANIFEST_PATH", manifest)
+
+    checks = mod.load_checks()
+    assert checks == []
+    assert "not a list of mappings" in capsys.readouterr().err
+    # The contract the crash actually violated: downstream must survive.
+    assert mod.build_coverage(checks) == {sp: [] for sp in mod.SPINE}
+
+
+def test_load_checks_still_reads_a_well_formed_manifest(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """The guard must not reject the shape the real manifest uses.
+
+    Args:
+        monkeypatch: Redirects the module's manifest path.
+        tmp_path: Holds the manifest.
+    """
+    mod = _load_module()
+    manifest = tmp_path / "standards-manifest.yaml"
+    manifest.write_text(
+        "checks:\n  - id: OPS-001\n    sp_category: SP-09\n", encoding="utf-8"
+    )
+    monkeypatch.setattr(mod, "MANIFEST_PATH", manifest)
+
+    assert mod.load_checks() == [{"id": "OPS-001", "sp_category": "SP-09"}]

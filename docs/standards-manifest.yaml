@@ -7,7 +7,7 @@ last_updated: "2026-08-03"
 # attestation, log secret redaction, alerting rules with a test-fire
 # timestamp, endpoint rate limiting, managed-service console settings).
 # Every OPS check starts at mechanism: unproven and carries the new
-# assurance-spine fields, sp_category (which of the 16 structural
+# assurance-spine fields, sp_category (which of the 17 structural
 # categories the check's evidence belongs to) and verification_class
 # (STATIC, DYNAMIC, RUNTIME-CONFIG, or MANUAL), so the manifest records how
 # a check's claim is actually substantiated rather than only whether it
