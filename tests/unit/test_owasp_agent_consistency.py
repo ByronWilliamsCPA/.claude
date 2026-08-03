@@ -99,6 +99,23 @@ def categories_in_table(text: str) -> set[str]:
     }
 
 
+def _fence_marker(stripped_line: str) -> tuple[str, int] | None:
+    """Return the fence delimiter character and run length, if any.
+
+    Args:
+        stripped_line: A line with leading whitespace already removed.
+
+    Returns:
+        A ``(character, length)`` pair when the line opens with a run of
+        three or more backticks or three or more tildes, or ``None`` when
+        the line opens no fence.
+    """
+    for char in ("`", "~"):
+        if stripped_line.startswith(char * 3):
+            return char, len(stripped_line) - len(stripped_line.lstrip(char))
+    return None
+
+
 def _blank_fenced_blocks(text: str) -> str:
     """Return ``text`` with every fenced code block's contents blanked out.
 
@@ -109,6 +126,15 @@ def _blank_fenced_blocks(text: str) -> str:
     example's labels would satisfy the coverage gate. The `## ` section
     boundary carries the same risk in reverse: a fenced `## ` line would end
     the real section early and hide the entries after it.
+
+    The fence toggle tracks the opening delimiter's character and run
+    length, and only closes on a line carrying the same character with a run
+    at least as long as the opener, matching CommonMark's fence-closing
+    rule. A toggle that flips on any backtick or tilde line loses parity the
+    moment one fence type nests inside the other: a literal triple-backtick
+    line quoted inside a tilde-fenced block would flip the state closed
+    early, and the real closing ``~~~`` would flip it open again, blanking
+    everything after it in the document instead of just the fence interior.
 
     Lines are replaced rather than deleted so byte offsets stay aligned with
     the original, which keeps slicing by match position correct.
@@ -121,13 +147,20 @@ def _blank_fenced_blocks(text: str) -> str:
         themselves) replaced by empty lines.
     """
     out: list[str] = []
-    in_fence = False
+    fence_char: str | None = None
+    fence_len = 0
     for line in text.splitlines():
-        if line.lstrip().startswith(("```", "~~~")):
-            in_fence = not in_fence
-            out.append("")
+        marker = _fence_marker(line.lstrip())
+        if fence_char is None:
+            if marker is not None:
+                fence_char, fence_len = marker
+                out.append("")
+                continue
+            out.append(line)
             continue
-        out.append("" if in_fence else line)
+        if marker is not None and marker[0] == fence_char and marker[1] >= fence_len:
+            fence_char, fence_len = None, 0
+        out.append("")
     return "\n".join(out)
 
 
@@ -410,4 +443,71 @@ def test_fenced_boundary_does_not_truncate_the_detection_section() -> None:
     )
     assert categories_with_patterns(doc) == {"A01", "A02"}, (
         "a fenced '## ' line must not truncate the section"
+    )
+
+
+def test_tilde_fence_containing_a_backtick_line_keeps_toggle_parity() -> None:
+    """A tilde-fenced block nested with a backtick line must still close.
+
+    The fence toggle must track which delimiter opened the block, not flip on
+    any backtick or tilde line. A toggle that ignores the opening character
+    loses parity here: the interior backtick line would flip the state closed
+    early, then the real closing ``~~~`` would flip it open again, and
+    everything after it in the document would be wrongly blanked instead of
+    just the fence interior.
+    """
+    doc = (
+        "### Detection Patterns\n\n"
+        "**A01 Broken Access Control:** grep for missing authz decorators\n\n"
+        "~~~text\n"
+        "``` this triple-backtick line is literal text, not a real fence\n"
+        "~~~\n\n"
+        "**A02 Cryptographic Failures:** grep for MD5 and SHA-1\n"
+    )
+    assert categories_with_patterns(doc) == {"A01", "A02"}, (
+        "a backtick line nested inside a tilde fence must not break fence toggle parity"
+    )
+
+
+def test_backtick_fence_containing_a_tilde_line_keeps_toggle_parity() -> None:
+    """A backtick-fenced block nested with a tilde line must still close.
+
+    Mirrors the tilde-containing-backtick case in the other direction: the
+    interior ``~~~`` line must not be treated as a closer for a backtick
+    fence, and the real closing backtick line must not be treated as a fresh
+    opener.
+    """
+    doc = (
+        "### Detection Patterns\n\n"
+        "**A01 Broken Access Control:** grep for missing authz decorators\n\n"
+        "```text\n"
+        "~~~ this tilde line is literal text, not a real fence\n"
+        "```\n\n"
+        "**A02 Cryptographic Failures:** grep for MD5 and SHA-1\n"
+    )
+    assert categories_with_patterns(doc) == {"A01", "A02"}, (
+        "a tilde line nested inside a backtick fence must not break fence toggle parity"
+    )
+
+
+def test_owasp_agents_tuple_matches_the_agent_files_on_disk() -> None:
+    """``OWASP_AGENTS`` must track the specialist files actually on disk.
+
+    The tuple is hand-maintained and never reconciled against the agents
+    directory. A future ``owasp-*.md`` specialist added without a matching
+    tuple entry would silently receive zero coverage from every test in this
+    module, since parametrization only iterates the tuple's own entries.
+    ``owasp-dispatch`` is excluded because it is a router with no categories
+    table of its own, per the module-level comment on ``OWASP_AGENTS``.
+    """
+    on_disk = {
+        path.stem
+        for path in AGENTS_DIR.glob("owasp-*.md")
+        if path.stem != "owasp-dispatch"
+    }
+    listed = set(OWASP_AGENTS)
+    assert on_disk == listed, (
+        "OWASP_AGENTS is out of sync with the owasp-*.md specialist files on "
+        f"disk. On disk but unlisted: {sorted(on_disk - listed)}. Listed but "
+        f"missing from disk: {sorted(listed - on_disk)}."
     )

@@ -148,7 +148,7 @@ def test_check_repo_marks_exempt_repos_na_for_branch_protection(monkeypatch) -> 
         mock_admins_calls.append(args)
         return True
 
-    monkeypatch.setattr(crc, "file_exists", lambda *a, **kw: True)
+    monkeypatch.setattr(crc, "file_exists", lambda *a, **kw: crc.Presence.PRESENT)
     monkeypatch.setattr(crc, "_signatures_enforced", fake_sig)
     monkeypatch.setattr(crc, "_admins_enforced", fake_admins)
 
@@ -167,7 +167,7 @@ def test_check_repo_marks_exempt_repos_na_for_branch_protection(monkeypatch) -> 
 @pytest.mark.unit
 def test_check_repo_fails_ci020_when_renovate_missing(monkeypatch) -> None:
     """check_repo sets ci_020 to FAIL when renovate.json is absent."""
-    monkeypatch.setattr(crc, "file_exists", lambda *a, **kw: False)
+    monkeypatch.setattr(crc, "file_exists", lambda *a, **kw: crc.Presence.ABSENT)
     monkeypatch.setattr(crc, "_signatures_enforced", lambda *a, **kw: False)
     monkeypatch.setattr(crc, "_admins_enforced", lambda *a, **kw: False)
 
@@ -177,6 +177,185 @@ def test_check_repo_fails_ci020_when_renovate_missing(monkeypatch) -> None:
     assert result.ci_020 == "FAIL"
     assert result.api_001_openapi_spec == "UNK"
     assert result.scopes["api_repos"].applicability is crc.Applicability.UNKNOWN
+
+
+# --------------------------------------------------------------------------- #
+# file_exists tri-state (Presence)                                            #
+# --------------------------------------------------------------------------- #
+
+
+@pytest.mark.parametrize(
+    ("fake_gh_result", "expected_presence", "expected_render"),
+    [
+        (
+            ({"sha": "abc123", "name": "renovate.json"}, None),
+            crc.Presence.PRESENT,
+            "PASS",
+        ),
+        (
+            (None, "gh: Not Found (HTTP 404)"),
+            crc.Presence.ABSENT,
+            "FAIL",
+        ),
+        (
+            (None, "gh: API rate limit exceeded for user ID 123. (HTTP 403)"),
+            crc.Presence.UNKNOWN,
+            "UNK",
+        ),
+    ],
+    ids=["file-present", "file-genuinely-absent", "api-error-indeterminate"],
+)
+@pytest.mark.unit
+def test_file_exists_distinguishes_three_outcomes(
+    monkeypatch, fake_gh_result, expected_presence, expected_render
+) -> None:
+    """file_exists returns PRESENT, ABSENT, or UNKNOWN, never conflating the last two.
+
+    The API-error case is the point of this change: a transient ``gh()``
+    failure (rate limit, expired auth, 5xx) must render as the established
+    "UNK" convention, distinct from the "FAIL" a confirmed HTTP 404 produces.
+    Asserting the rendered string, not just "not PASS", pins that distinction.
+    """
+    monkeypatch.setattr(crc, "gh", lambda path: fake_gh_result)
+
+    result = crc.file_exists("org", "repo", "renovate.json", "main")
+
+    assert result is expected_presence
+    assert crc._render_presence(result) == expected_render
+
+
+@pytest.mark.unit
+def test_file_exists_unknown_is_not_absent(monkeypatch) -> None:
+    """UNKNOWN and ABSENT are distinct members, not two names for the same value.
+
+    Regression guard: a naive fix could collapse every ``gh()`` error (404
+    included) onto one enum member. This pins that a non-404 failure lands
+    on a value that is identity-distinct from the genuinely-absent case.
+    """
+    monkeypatch.setattr(
+        crc, "gh", lambda path: (None, "gh: Internal Server Error (HTTP 500)")
+    )
+
+    result = crc.file_exists("org", "repo", "renovate.json", "main")
+
+    assert result is crc.Presence.UNKNOWN
+    assert result is not crc.Presence.ABSENT
+    assert result is not crc.Presence.PRESENT
+
+
+@pytest.mark.parametrize(
+    ("presence", "expected"),
+    [
+        (crc.Presence.PRESENT, "PASS"),
+        (crc.Presence.ABSENT, "FAIL"),
+        (crc.Presence.UNKNOWN, "UNK"),
+    ],
+    ids=["present", "absent", "unknown"],
+)
+@pytest.mark.unit
+def test_apply_api_checks_renders_all_three_outcomes(
+    monkeypatch, presence, expected
+) -> None:
+    """_apply_api_checks renders PASS/FAIL/UNK uniformly across API-001..003.
+
+    This is the caller the defect names directly: an API outage mid-sweep on
+    an API-001..003 probe must render "UNK", not a confident "FAIL", while
+    the PRESENT and ABSENT cases preserve the pre-fix PASS/FAIL rendering
+    exactly.
+    """
+    monkeypatch.setattr(crc, "file_exists", lambda *a, **kw: presence)
+    result = crc.RepoResult(slug="org/api-repo", branch="main")
+
+    crc._apply_api_checks(result, "org", "api-repo", {})
+
+    assert result.api_001_openapi_spec == expected
+    assert result.api_002_postman_collection == expected
+    assert result.api_003_ci_workflow == expected
+
+
+@pytest.mark.parametrize(
+    (
+        "renovate_presence",
+        "dependabot_presence",
+        "expected_ci_020",
+        "expected_ci_021",
+    ),
+    [
+        (crc.Presence.PRESENT, crc.Presence.ABSENT, "PASS", "PASS"),
+        (crc.Presence.PRESENT, crc.Presence.PRESENT, "PASS", "FAIL"),
+        (crc.Presence.PRESENT, crc.Presence.UNKNOWN, "PASS", "UNK"),
+        (crc.Presence.ABSENT, None, "FAIL", "N/A"),
+        (crc.Presence.UNKNOWN, None, "UNK", "UNK"),
+    ],
+    ids=[
+        "renovate-present-dependabot-absent",
+        "renovate-present-dependabot-present",
+        "renovate-present-dependabot-indeterminate",
+        "renovate-absent-skips-dependabot-probe",
+        "renovate-indeterminate-skips-dependabot-probe",
+    ],
+)
+@pytest.mark.unit
+def test_check_repo_ci020_ci021_tri_state_cascade(
+    monkeypatch,
+    renovate_presence,
+    dependabot_presence,
+    expected_ci_020,
+    expected_ci_021,
+) -> None:
+    """CI-020/CI-021 propagate PASS/FAIL/UNK correctly through the cascade.
+
+    CI-021 depends on CI-020's result to decide whether the dependabot.yml
+    probe even applies. An indeterminate renovate.json probe must not be
+    treated as "no renovate present" (which would wrongly render CI-021 as
+    N/A) and must not trigger the dependabot probe at all, since whether that
+    probe applies is itself unknown.
+    """
+
+    def fake_file_exists(org, repo, path, branch):
+        if path == "renovate.json":
+            return renovate_presence
+        if path == ".github/dependabot.yml":
+            if dependabot_presence is None:
+                msg = "dependabot.yml must not be probed when renovate is FAIL/UNK"
+                raise AssertionError(msg)
+            return dependabot_presence
+        msg = f"unexpected file_exists call for path={path}"
+        raise AssertionError(msg)
+
+    monkeypatch.setattr(crc, "file_exists", fake_file_exists)
+    monkeypatch.setattr(crc, "_signatures_enforced", lambda *a, **kw: True)
+    monkeypatch.setattr(crc, "_admins_enforced", lambda *a, **kw: True)
+
+    result = crc.check_repo("org", "repo", {})
+
+    assert result.ci_020 == expected_ci_020
+    assert result.ci_021 == expected_ci_021
+
+
+@pytest.mark.unit
+def test_check_repo_ci021_na_when_renovate_ignored_regardless_of_presence(
+    monkeypatch,
+) -> None:
+    """RENOVATE_IGNORED short-circuits CI-021 to N/A even when renovate.json
+    is present, without probing dependabot.yml at all.
+    """
+    slug = next(iter(crc.RENOVATE_IGNORED))
+    org, repo = slug.split("/", 1)
+
+    def fake_file_exists(org, repo, path, branch):
+        if path == "renovate.json":
+            return crc.Presence.PRESENT
+        msg = f"unexpected file_exists call for path={path}"
+        raise AssertionError(msg)
+
+    monkeypatch.setattr(crc, "file_exists", fake_file_exists)
+    monkeypatch.setattr(crc, "_signatures_enforced", lambda *a, **kw: True)
+    monkeypatch.setattr(crc, "_admins_enforced", lambda *a, **kw: True)
+
+    result = crc.check_repo(org, repo, {})
+
+    assert result.ci_021 == "N/A"
 
 
 @pytest.mark.unit

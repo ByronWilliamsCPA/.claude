@@ -185,3 +185,115 @@ def test_cli_json_output_carries_the_same_numbers(
     assert payload["coverage"]["SP-11"] == ["OPS-002"]
     assert "SP-99" not in payload["coverage"]
     assert len(payload["uncovered"]) == 15
+
+
+# `load_checks()` must degrade to an empty list on every way the manifest read
+# can fail, rather than letting FileNotFoundError, a YAML parse error, or an
+# AttributeError on a non-mapping root escape and crash a diagnostic that
+# documents itself as always exiting 0. Each test below points MANIFEST_PATH
+# at a controlled fixture (never the real manifest) and asserts on the actual
+# observable contract: a zero-check return, a stderr warning naming the
+# failure, and `main()` still exiting 0 and printing a report.
+
+
+def test_load_checks_reports_missing_manifest(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """A manifest path that does not exist degrades to no checks, not a crash."""
+    mod = _load_module()
+    missing = tmp_path / "does-not-exist.yaml"
+    monkeypatch.setattr(mod, "MANIFEST_PATH", missing)
+
+    assert mod.load_checks() == []
+
+    err = capsys.readouterr().err
+    assert "warning" in err
+    assert str(missing) in err
+
+
+def test_load_checks_reports_malformed_yaml(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Unparseable YAML degrades to no checks instead of raising ScannerError."""
+    mod = _load_module()
+    bad_yaml = tmp_path / "manifest.yaml"
+    bad_yaml.write_text("checks: [unterminated\n", encoding="utf-8")
+    monkeypatch.setattr(mod, "MANIFEST_PATH", bad_yaml)
+
+    assert mod.load_checks() == []
+
+    err = capsys.readouterr().err
+    assert "warning" in err
+    assert "malformed" in err
+
+
+def test_load_checks_reports_non_mapping_root(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """A bare-list YAML root degrades to no checks instead of AttributeError.
+
+    ``data.get("checks", [])`` on a plain list raises ``AttributeError: 'list'
+    object has no attribute 'get'`` with no guard; the isinstance check is
+    what turns that crash into a named, recoverable warning.
+    """
+    mod = _load_module()
+    list_root = tmp_path / "manifest.yaml"
+    list_root.write_text("- OPS-001\n- OPS-002\n", encoding="utf-8")
+    monkeypatch.setattr(mod, "MANIFEST_PATH", list_root)
+
+    assert mod.load_checks() == []
+
+    err = capsys.readouterr().err
+    assert "warning" in err
+    assert "non-mapping root" in err
+
+
+def test_load_checks_reports_missing_pyyaml(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """A PyYAML-absent environment degrades to no checks instead of ImportError.
+
+    The real crash happens at module import time (`import yaml` used to be
+    unconditional at module scope); this test exercises the equivalent
+    degraded state by flipping the availability flag the deferred import
+    sets, which is the only part of that failure mode `load_checks` can
+    observe once the module has already loaded.
+    """
+    mod = _load_module()
+    monkeypatch.setattr(mod, "_YAML_AVAILABLE", False)
+
+    assert mod.load_checks() == []
+
+    err = capsys.readouterr().err
+    assert "warning" in err
+    assert "pyyaml" in err.lower()
+
+
+def test_cli_survives_and_reports_when_manifest_is_unreadable(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """`main()` still exits 0 and renders a report when the manifest is gone.
+
+    This is the end-to-end version of the four `load_checks` tests above: it
+    confirms the degraded path reaches `main` and does not merely stay
+    contained inside `load_checks` itself.
+    """
+    mod = _load_module()
+    missing = tmp_path / "does-not-exist.yaml"
+    monkeypatch.setattr(mod, "MANIFEST_PATH", missing)
+    monkeypatch.setattr(mod.sys, "argv", ["spine-coverage.py"], raising=True)
+
+    assert mod.main() == 0, "an unreadable manifest must not change the exit code"
+
+    captured = capsys.readouterr()
+    assert "warning" in captured.err
+    assert "manifest checks: 0" in captured.out

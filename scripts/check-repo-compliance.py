@@ -636,9 +636,76 @@ def _admins_enforced(org: str, repo: str, branch: str) -> bool:
         return False
 
 
-def file_exists(org: str, repo: str, path: str, branch: str) -> bool:
-    data, _err = gh(f"repos/{org}/{repo}/contents/{path}?ref={branch}")
-    return data is not None and "sha" in data
+class Presence(enum.Enum):
+    """Tri-state result of a file-existence probe against the GitHub API.
+
+    A ``gh()`` failure (rate limit, expired auth, transient 5xx) and a
+    genuinely absent file both collapse to a falsy result if only PRESENT
+    and ABSENT are modeled. UNKNOWN keeps that distinction: a probe that
+    could not be answered is never rendered as a confident FAIL.
+    """
+
+    PRESENT = "PRESENT"
+    ABSENT = "ABSENT"
+    UNKNOWN = "UNKNOWN"
+
+
+# `gh api` reports HTTP-level failures on stderr as `gh: <message> (HTTP
+# <code>)` and exits non-zero for a 404 exactly as it does for a rate limit,
+# an expired token, or a 5xx. gh() collapses all of those to (None, err), so
+# only a confirmed 404 means genuine absence; every other status, or a
+# non-HTTP failure (network error, malformed JSON) with no status at all, is
+# indeterminate. check-required-checks.py uses the same substring convention
+# for the identical gh-404-vs-real-failure distinction.
+_NOT_FOUND_MARKER = "(HTTP 404)"
+
+
+def _is_not_found_error(err: str) -> bool:
+    """Return True if a ``gh()`` error message reports an HTTP 404.
+
+    Args:
+        err: The error string returned by :func:`gh`.
+
+    Returns:
+        True when the error text reports HTTP 404, else False.
+    """
+    return _NOT_FOUND_MARKER in err
+
+
+def file_exists(org: str, repo: str, path: str, branch: str) -> Presence:
+    """Probe whether a file exists at ``path`` on ``branch``.
+
+    Args:
+        org: GitHub organization name.
+        repo: Repository name.
+        path: Repository-relative file path to probe.
+        branch: Branch name to check.
+
+    Returns:
+        PRESENT when the API call succeeded and the file was found. ABSENT
+        when the API call succeeded and found no file, or failed with a
+        confirmed HTTP 404. UNKNOWN when the ``gh()`` call failed for any
+        other reason and existence could not be determined.
+    """
+    data, err = gh(f"repos/{org}/{repo}/contents/{path}?ref={branch}")
+    if err is not None:
+        return Presence.ABSENT if _is_not_found_error(err) else Presence.UNKNOWN
+    return Presence.PRESENT if data is not None and "sha" in data else Presence.ABSENT
+
+
+def _render_presence(presence: Presence) -> str:
+    """Render a :class:`Presence` verdict as a PASS/FAIL/UNK report string.
+
+    Args:
+        presence: The probe outcome to render.
+
+    Returns:
+        ``"UNK"`` when the probe was indeterminate, otherwise ``"PASS"`` for
+        PRESENT and ``"FAIL"`` for ABSENT.
+    """
+    if presence is Presence.UNKNOWN:
+        return "UNK"
+    return "PASS" if presence is Presence.PRESENT else "FAIL"
 
 
 def check_repo(org: str, repo: str, catalog: dict) -> RepoResult:
@@ -647,16 +714,25 @@ def check_repo(org: str, repo: str, catalog: dict) -> RepoResult:
     result = RepoResult(slug=slug, branch=branch)
 
     # CI-020: renovate.json present
-    has_renovate = file_exists(org, repo, "renovate.json", branch)
-    result.ci_020 = "PASS" if has_renovate else "FAIL"
+    renovate_presence = file_exists(org, repo, "renovate.json", branch)
+    result.ci_020 = _render_presence(renovate_presence)
 
     # CI-021: dependabot.yml absent when Renovate active
     if slug in RENOVATE_IGNORED:
         result.ci_021 = "N/A"
         result.notes.append("Renovate ignored; dependabot.yml coexistence expected")
-    elif has_renovate:
-        has_dependabot = file_exists(org, repo, ".github/dependabot.yml", branch)
-        result.ci_021 = "FAIL" if has_dependabot else "PASS"
+    elif renovate_presence is Presence.UNKNOWN:
+        # Cannot tell whether the coexistence check even applies without
+        # first knowing whether renovate.json is present.
+        result.ci_021 = "UNK"
+    elif renovate_presence is Presence.PRESENT:
+        dependabot_presence = file_exists(org, repo, ".github/dependabot.yml", branch)
+        if dependabot_presence is Presence.UNKNOWN:
+            result.ci_021 = "UNK"
+        else:
+            result.ci_021 = (
+                "FAIL" if dependabot_presence is Presence.PRESENT else "PASS"
+            )
     else:
         result.ci_021 = "N/A"  # no Renovate, so CI-020 gap is the issue
 
@@ -706,22 +782,18 @@ def _apply_api_checks(result: RepoResult, org: str, repo: str, catalog: dict) ->
     api_info = catalog.get(result.slug, {}).get("api") or {}
 
     # API-001: openapi.yaml present
-    result.api_001_openapi_spec = (
-        "PASS" if file_exists(org, repo, "docs/api/openapi.yaml", branch) else "FAIL"
+    result.api_001_openapi_spec = _render_presence(
+        file_exists(org, repo, "docs/api/openapi.yaml", branch)
     )
 
     # API-002: postman-collection.json present
-    result.api_002_postman_collection = (
-        "PASS"
-        if file_exists(org, repo, "docs/api/postman-collection.json", branch)
-        else "FAIL"
+    result.api_002_postman_collection = _render_presence(
+        file_exists(org, repo, "docs/api/postman-collection.json", branch)
     )
 
     # API-003: CI workflow present
-    result.api_003_ci_workflow = (
-        "PASS"
-        if file_exists(org, repo, ".github/workflows/postman-api-tests.yml", branch)
-        else "FAIL"
+    result.api_003_ci_workflow = _render_presence(
+        file_exists(org, repo, ".github/workflows/postman-api-tests.yml", branch)
     )
 
     # API-004: lastAudited within 90 days

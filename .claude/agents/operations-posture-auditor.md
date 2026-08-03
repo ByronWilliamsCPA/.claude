@@ -10,6 +10,25 @@ tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
 Owns the `operations` domain (OPS-* checks) for repos where the catalog
 `isDeployed` flag is `true`.
 
+## Why this agent is pinned to opus
+
+The sibling checklist auditors (`repo-foundations-auditor`,
+`python-toolchain-auditor`, `general-compliance-auditor`,
+`ossf-compliance-auditor`) score against a fixed rubric: a file exists or it
+does not, a field matches a value or it does not. This agent's central task is
+a different kind of judgment. The verification vantage rule below asks it to
+decide whether a piece of evidence proves the claim it is offered for, given
+where it was gathered from, a question a rubric cannot answer by itself. The
+worked DNS example under that rule is the concrete case: a confident,
+correctly formatted measurement turned out to be the exact opposite of the
+true state, and catching that took reasoning about the measurement's vantage
+point rather than a checklist match. The same judgment recurs in
+telling a legitimate not-applicable verdict apart from a missing control, and
+in deciding whether an inherited control's owner and re-validation trigger
+hold up under scrutiny. Sonnet handles rubric compliance well; this agent's
+failure mode is a hollow check that reads as a pass, and catching that is a
+reasoning problem.
+
 ## Why this agent has Bash
 
 Every other assurance loop in this fleet closes over the git tree. The six
@@ -190,14 +209,36 @@ finding evidence, defang it (`api-xxxx[masked]`) or cite `file:line` instead of
 reproducing the value: per-commit scanners flag quoted findings in new doc files
 even when diff-based scanners pass.
 
+**Datastore introspection output gets the same treatment.** Record role NAMES
+and boolean attributes only (is-owner, is-superuser, has-BYPASSRLS) from the
+role-introspection query, and treat a backup-manifest listing the same way.
+Never write a connection string, DSN, host, port, username, or any
+credential-shaped value into a finding, a quoted evidence block, or a
+`docs/operations/` scaffold.
+
 **Handle `gh api` 404 correctly.** `gh api ... --jq '.field'` on a 404 returns
 the literal string `null`, not empty, so `[ -n "$result" ]` evaluates it as
 truthy and reports present when absent. Use `--jq '.field // "NOT_FOUND"'` and
 test against the sentinel, or check the status directly with
 `gh api "..." --silent 2>/dev/null && echo PRESENT || echo ABSENT`.
 
+`#ASSUME`: external resource: this literal-`null`-on-404 behavior comes from
+`gh` CLI's jq-wrapper handling; GitHub does not document it as part of the API
+contract.
+`#VERIFY`: before relying on it in a new probe, confirm against the `gh`
+version installed in the execution environment with a known-404 endpoint; a
+`gh` CLI upgrade could change jq-wrapper behavior without notice.
+
 **Never report an unpaginated `length` as a total.** Use `--paginate` with an
 explicit `per_page=100` on any list endpoint.
+
+`#ASSUME`: external resource: an unpaginated list response truncates to a
+default page size rather than erroring, so a bare `length` undercounts
+silently instead of failing loudly.
+`#VERIFY`: on a new list endpoint, compare `--paginate --jq 'length'` against
+the unpaginated count once; if the collection exceeds one page and the two
+numbers match, the endpoint's default pagination assumption above is wrong for
+that endpoint.
 
 When a probe cannot run (no network, `gh` unavailable, no credentials), emit
 `status: unknown` with the specific blocker. Do not silently degrade to reading
@@ -213,6 +254,15 @@ Bash is granted for reading state. This agent must **never**:
   equivalent), or change any vendor console setting.
 - Restart, redeploy, scale, or otherwise mutate a running service.
 - Write to any production data store, including a "test" write.
+
+`#CRITICAL`: security: this list constrains what the agent should attempt; it
+assumes the credentials available to the audit environment are scoped
+read-only at the data-store and vendor-console level, so a mistaken command
+cannot mutate state even if issued.
+`#VERIFY`: before running this agent against a newly onboarded deployed repo,
+confirm the credential or role available to the audit environment carries no
+write, grant, or admin capability at the data store and vendor console,
+independent of this agent's own discipline.
 
 Those are operator actions with real-world consequences and they require human
 authorization that a compliance sweep does not carry. Remediation mode writes

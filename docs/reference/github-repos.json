@@ -437,8 +437,8 @@
       },
       "usesDocker": false,
       "migrationPhase": "complete",
-      "publishesDocs": false,
-      "_publishesDocsNote": "Has docs.yml workflow but site is not confirmed as publicly deployed. Owner should set publishesDocs: true if GitHub Pages is active for this repo.",
+      "publishesDocs": null,
+      "_publishesDocsBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves docs_repos to UNKNOWN and reports a finding, rather than skipping the MkDocs domain silently. Re-test: this repo has a docs.yml workflow, but is the resulting site confirmed as publicly deployed (GitHub Pages or equivalent)? Do not infer from workflow presence alone.",
       "isDeployed": null,
       "_isDeployedBasis": "unpopulated: requires owner declaration. Set true or false explicitly. Until set, the compliance runner resolves deployed_repos to UNKNOWN and reports a finding, rather than skipping the operations domain silently. Re-test: does this repo run as a long-lived deployed service with a runtime config, a data store, or an outbound alerting channel? A library, template, or config repo is false. Do not infer from repositoryType alone: the label is known to drift."
     },

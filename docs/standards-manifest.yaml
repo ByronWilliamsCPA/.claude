@@ -1,6 +1,21 @@
 # docs/standards-manifest.yaml
 version: "1.0"
-last_updated: "2026-07-02"
+last_updated: "2026-08-03"
+# 2026-08-03: Operations posture assurance. Added the operations domain,
+# OPS-001 through OPS-012, covering runtime-only controls the six read-only
+# OWASP specialist agents cannot statically verify (deployed config
+# attestation, log secret redaction, alerting rules with a test-fire
+# timestamp, endpoint rate limiting, managed-service console settings).
+# Every OPS check starts at mechanism: unproven and carries the new
+# assurance-spine fields, sp_category (which of the 16 structural
+# categories the check's evidence belongs to) and verification_class
+# (STATIC, DYNAMIC, RUNTIME-CONFIG, or MANUAL), so the manifest records how
+# a check's claim is actually substantiated rather than only whether it
+# passes. Evaluated by the new operations-posture-auditor agent, the only
+# OWASP-adjacent agent granted Bash to reach runtime state. Cross-reference:
+# .claude/standards/owasp-specialist-agents-spec.md and
+# docs/architecture/specs/owasp-specialist-agents-spec.md section 4
+# ("Category coverage rule").
 # 2026-07-02: CI-057 inverted; org-workflow renovate rules must NOT set
 # followTag (frozen v1 tag retirement, ByronWilliamsCPA/.github PR #244).
 # Verify tightened: key-scoped "followTag": absence plus github-actions

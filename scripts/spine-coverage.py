@@ -13,7 +13,11 @@ than as a question nobody asked.
 
 Exit code is 0 always: this is a diagnostic, not a gate. Uncovered categories
 are expected while the mapping is incomplete, and failing the build on them
-would only pressure people into mapping checks dishonestly.
+would only pressure people into mapping checks dishonestly. This extends to
+the manifest read itself: a missing file, malformed YAML, a non-mapping
+root, or an absent PyYAML dependency all degrade to a stderr warning and a
+zero-check report instead of a crash, since a diagnostic that dies on a bad
+input is worse than one that says plainly what it could not read.
 
 Usage:
   python3 scripts/spine-coverage.py
@@ -29,7 +33,16 @@ from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any
 
-import yaml
+# This report is a diagnostic that must never crash the caller. Deferred
+# import so a missing PyYAML degrades to a stderr warning in load_checks()
+# instead of failing the whole script at import time, mirroring the same
+# guard in check-repo-compliance.py.
+try:
+    import yaml
+
+    _YAML_AVAILABLE = True
+except ImportError:  # pragma: no cover - pyyaml is optional for this diagnostic
+    _YAML_AVAILABLE = False
 
 MANIFEST_PATH = Path(__file__).parent.parent / "docs/standards-manifest.yaml"
 
@@ -59,11 +72,50 @@ SPINE: dict[str, str] = {
 def load_checks() -> list[dict[str, Any]]:
     """Parse the manifest and return its check list.
 
+    Degrades to an empty list, with a warning on stderr, instead of raising
+    when PyYAML is unavailable, the manifest file cannot be read, the YAML is
+    malformed, or the parsed document is not a mapping. A crash here would
+    contradict the module's documented contract of always exiting 0, and an
+    empty list printed with no explanation would look like a clean "nothing
+    mapped" result instead of "the manifest could not be read".
+
     Returns:
-        Every check mapping under the ``checks`` key.
+        Every check mapping under the ``checks`` key, or an empty list when
+        the manifest could not be parsed.
     """
-    with MANIFEST_PATH.open(encoding="utf-8") as handle:
-        data = yaml.safe_load(handle)
+    if not _YAML_AVAILABLE:
+        print(
+            "warning: pyyaml is not installed, spine coverage cannot be "
+            "computed; install pyyaml to restore this report",
+            file=sys.stderr,
+        )
+        return []
+    try:
+        with MANIFEST_PATH.open(encoding="utf-8") as handle:
+            data = yaml.safe_load(handle)
+    except OSError as exc:
+        print(
+            f"warning: manifest at {MANIFEST_PATH} could not be read: {exc}",
+            file=sys.stderr,
+        )
+        return []
+    except yaml.YAMLError as exc:
+        print(
+            f"warning: manifest at {MANIFEST_PATH} is malformed YAML: {exc}",
+            file=sys.stderr,
+        )
+        return []
+    # safe_load returns whatever the document is: a list, a scalar, or None
+    # for an empty file. Only a mapping has `.get`, so anything else must
+    # exit here or the report dies on AttributeError instead of degrading to
+    # a zero-check result.
+    if not isinstance(data, dict):
+        print(
+            f"warning: manifest at {MANIFEST_PATH} has a non-mapping root "
+            f"({type(data).__name__}), no checks loaded",
+            file=sys.stderr,
+        )
+        return []
     return data.get("checks", []) or []
 
 
@@ -205,6 +257,12 @@ def render(checks: list[dict[str, Any]], coverage: dict[str, list[str]]) -> list
 
 def main() -> int:
     """Print the spine coverage report.
+
+    A manifest that cannot be read or parsed (missing file, malformed YAML,
+    non-mapping root, or PyYAML absent) does not raise: ``load_checks``
+    degrades to an empty list and prints a warning to stderr, and this
+    function still renders and exits normally on the resulting zero-check
+    report.
 
     Returns:
         Always 0. This is a diagnostic, not a gate.
