@@ -680,3 +680,72 @@ def test_load_manifest_scope_checks_degrades_on_non_mapping_root(
 
     assert crc.load_manifest_scope_checks() == {}
     assert root_type in capsys.readouterr().err
+
+
+@pytest.mark.parametrize(
+    ("failures", "unreachable", "unknown", "expected"),
+    [
+        (0, 0, 0, 0),
+        (3, 0, 0, 1),
+        (0, 2, 0, 2),
+        (0, 0, 45, 2),
+        (0, 2, 45, 2),
+        (3, 2, 45, 1),
+    ],
+    ids=[
+        "clean",
+        "failures-only",
+        "unreachable-only",
+        "unknown-only",
+        "both-incomplete",
+        "failures-outrank-incomplete",
+    ],
+)
+def test_sweep_exit_code_separates_failure_from_incompleteness(
+    failures: int, unreachable: int, unknown: int, expected: int
+) -> None:
+    """A missing verdict exits 2, a real failure exits 1, and neither exits 0.
+
+    The distinction is the point. "3 repos fail BP-4" is actionable on the
+    repos; "the catalog never said whether MkDocs applies" is actionable on the
+    catalog. Collapsing both to 1 forces the operator to read the log to learn
+    which they have, and collapsing incompleteness to 0 is the defect this PR
+    exists to remove: the fleet-wide MkDocs skip reported a clean audit.
+
+    Args:
+        failures: Repos failing an applicable check.
+        unreachable: Scopes no repo satisfies.
+        unknown: Repos carrying an UNKNOWN applicability.
+        expected: Required exit code.
+    """
+    mod = load_module()
+
+    assert (
+        mod.sweep_exit_code(
+            failures=failures,
+            unreachable_scopes=unreachable,
+            unknown_scope_repos=unknown,
+        )
+        == expected
+    )
+
+
+def test_sweep_exit_code_never_reports_incompleteness_as_success() -> None:
+    """No combination of missing verdicts can produce exit 0.
+
+    Guards the property directly rather than trusting the parametrized cases to
+    have enumerated every shape: exit 0 must require both counts at zero.
+    """
+    mod = load_module()
+
+    for unreachable in range(3):
+        for unknown in range(3):
+            code = mod.sweep_exit_code(
+                failures=0,
+                unreachable_scopes=unreachable,
+                unknown_scope_repos=unknown,
+            )
+            clean = unreachable == 0 and unknown == 0
+            assert (code == 0) is clean, (
+                f"unreachable={unreachable} unknown={unknown} gave {code}"
+            )

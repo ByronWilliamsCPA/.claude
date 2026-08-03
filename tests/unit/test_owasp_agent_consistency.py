@@ -656,3 +656,178 @@ def test_an_empty_covered_by_pointer_is_rejected() -> None:
     assert not body[0].split("Covered by:", 1)[1].strip(), (
         "fixture models an empty pointer; the gate must treat this as missing"
     )
+
+
+# The spec exists in two committed copies with deliberately different framing:
+# the docs/ copy carries MkDocs frontmatter and an implementation-status table,
+# and its em-dashes were normalized while the .claude/ copy's were not (the
+# no-em-dash hook excludes .claude/ pending the L-05 backlog). Byte equality is
+# therefore the wrong invariant, and asserting it would fail on differences that
+# are supposed to exist.
+SPEC_PATHS: tuple[Path, ...] = (
+    Path(__file__).resolve().parents[2]
+    / ".claude"
+    / "standards"
+    / "owasp-specialist-agents-spec.md",
+    Path(__file__).resolve().parents[2]
+    / "docs"
+    / "architecture"
+    / "specs"
+    / "owasp-specialist-agents-spec.md",
+)
+
+# Section headings introducing an embedded agent snapshot, e.g.
+# "### 5.3 owasp-web - Web Applications Top 10 (2025)". Only the numbering and
+# slug are anchored; the trailing prose differs between copies.
+_SPEC_SNAPSHOT_HEADING = re.compile(r"^###\s+\d+\.\d+\s+(owasp-[a-z]+)\b", re.MULTILINE)
+
+
+def spec_snapshots(text: str) -> dict[str, str]:
+    """Return each embedded agent snapshot in a spec copy, keyed by agent slug.
+
+    The spec quotes each agent file verbatim inside a fenced block. That fenced
+    copy is what goes stale: an agent gains a detection pattern and the snapshot
+    illustrating it keeps showing the old shape, so the spec ends up documenting
+    a rule its own example violates.
+
+    Extraction is the inverse of :func:`_blank_fenced_blocks`, and reuses
+    :func:`_fence_marker` so the CommonMark closing rule (same character, at
+    least as long) applies here too.
+
+    Args:
+        text: Full contents of one spec copy.
+
+    Returns:
+        Mapping of agent slug to the snapshot body, excluding fence markers.
+    """
+    lines = text.splitlines()
+    heads = [
+        (match.group(1), text[: match.start()].count("\n"))
+        for match in _SPEC_SNAPSHOT_HEADING.finditer(text)
+    ]
+    snapshots: dict[str, str] = {}
+    for slug, head_line in heads:
+        fence: tuple[str, int] | None = None
+        body: list[str] = []
+        for line in lines[head_line + 1 :]:
+            marker = _fence_marker(line.lstrip())
+            if fence is None:
+                if marker is not None:
+                    fence = marker
+                continue
+            if marker is not None and marker[0] == fence[0] and marker[1] >= fence[1]:
+                break
+            body.append(line)
+        if body:
+            snapshots[slug] = "\n".join(body)
+    return snapshots
+
+
+def _spec_id(path: Path) -> str:
+    """Name a spec copy by its distinguishing parent directory.
+
+    Args:
+        path: One entry from :data:`SPEC_PATHS`.
+
+    Returns:
+        A short test id, ``standards`` or ``specs``.
+    """
+    return path.parent.name
+
+
+@pytest.mark.parametrize("spec_path", SPEC_PATHS, ids=_spec_id)
+def test_spec_snapshots_hold_the_rule_the_spec_itself_states(spec_path: Path) -> None:
+    """Every category in an embedded snapshot is covered, in both spec copies.
+
+    The spec added a mandatory coverage rule while its own embedded snapshots
+    still showed the pre-fix shape, including an ``A09`` row with no patterns:
+    a document stating a rule 82 lines above an example that breaks it. The
+    snapshots were corrected by hand, and nothing asserted the correction, so
+    the same drift could recur silently.
+
+    This applies the agent-file rule to the quoted copies, which is the only
+    thing that makes the spec's example binding rather than decorative.
+
+    Args:
+        spec_path: One committed copy of the specification.
+    """
+    snapshots = spec_snapshots(spec_path.read_text(encoding="utf-8"))
+    assert set(snapshots) == set(OWASP_AGENTS), (
+        f"{_spec_id(spec_path)} embeds {sorted(snapshots)}, expected all six"
+    )
+
+    gaps = {
+        slug: sorted(
+            categories_in_table(body)
+            - categories_with_patterns(body)
+            - undetectable_categories(body)
+        )
+        for slug, body in snapshots.items()
+    }
+    assert not any(gaps.values()), (
+        f"uncovered categories in {_spec_id(spec_path)}: {gaps}"
+    )
+
+
+@pytest.mark.parametrize("spec_path", SPEC_PATHS, ids=_spec_id)
+def test_spec_snapshots_list_the_same_categories_as_the_agents(
+    spec_path: Path,
+) -> None:
+    """A snapshot that drops or invents a category no longer documents the agent.
+
+    Coverage alone would pass a snapshot that quietly lists five categories
+    instead of ten, since five-of-five is still complete. Tying the sets to the
+    real agent files is what makes the snapshot a description of the agent
+    rather than an independent document that merely looks consistent.
+
+    Args:
+        spec_path: One committed copy of the specification.
+    """
+    snapshots = spec_snapshots(spec_path.read_text(encoding="utf-8"))
+    mismatches = {
+        slug: {
+            "spec": sorted(categories_in_table(snapshots[slug])),
+            "agent": sorted(categories_in_table(_agent_text(slug))),
+        }
+        for slug in OWASP_AGENTS
+        if categories_in_table(snapshots[slug])
+        != categories_in_table(_agent_text(slug))
+    }
+    assert not mismatches, (
+        f"{_spec_id(spec_path)} drifted from the agents: {mismatches}"
+    )
+
+
+def test_spec_snapshot_extractor_is_falsifiable() -> None:
+    """The extractor must find real snapshots and reject a hollowed one.
+
+    Guarding the guard. If ``spec_snapshots`` silently returned ``{}`` the two
+    tests above would assert over nothing and pass forever, which is the exact
+    failure mode this PR was opened to remove and which it has already shipped
+    once.
+    """
+    for path in SPEC_PATHS:
+        assert len(spec_snapshots(path.read_text(encoding="utf-8"))) == 6
+
+    forged = (
+        "### 5.3 owasp-web - Web Applications Top 10 (2025)\n\n"
+        "```markdown\n"
+        "## Your Categories\n\n"
+        "| ID | Category | Key CWEs |\n"
+        "|----|----------|----------|\n"
+        "| A01 | Broken Access Control | CWE-200 |\n"
+        "| A09 | Security Logging Failures | CWE-778 |\n\n"
+        "### Detection Patterns\n\n"
+        "**A01 Broken Access Control:** `@app.route` without an auth decorator\n"
+        "```\n"
+    )
+    body = spec_snapshots(forged)["owasp-web"]
+    uncovered = (
+        categories_in_table(body)
+        - categories_with_patterns(body)
+        - undetectable_categories(body)
+    )
+    assert uncovered == {"A09"}, (
+        "a snapshot listing A09 with no pattern must read as uncovered; "
+        "this is the exact shape the spec shipped with"
+    )

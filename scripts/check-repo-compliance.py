@@ -9,8 +9,18 @@ Checks the most drift-prone standards from docs/standards-manifest.yaml:
   API-001..005: OpenAPI/Postman compliance (api.servesApi=true repos only)
 
 Run this weekly (or after any org-wide change) to catch repos that fall out of
-alignment before they accumulate. Prints a compact table and exits non-zero if
-any repo fails a non-waived check.
+alignment before they accumulate. Prints a compact table.
+
+Fleet-mode exit codes:
+  0  every scope evaluated, no repo fails a non-waived check
+  1  at least one repo fails a check that applies to it
+  2  the audit could not reach a verdict: a scope resolved UNKNOWN for some
+     repo, or no repo in the fleet satisfies a scope at all
+
+Code 2 is a catalog problem, not a repo problem, and is kept distinct so an
+operator can tell "repos regressed" from "the catalog never said whether this
+domain applies". Both are non-zero: an unevaluated domain must not report as a
+clean audit.
 
 Usage:
   python3 scripts/check-repo-compliance.py
@@ -1022,6 +1032,46 @@ def _run_local_audit(args: argparse.Namespace, parser: argparse.ArgumentParser) 
     return 0 if result["status"] == "pass" else 1
 
 
+# Fleet-mode exit codes. A compliance regression and an audit that could not
+# reach a verdict are different facts and must not share a code: "3 repos fail
+# BP-4" is actionable on the repos, "the catalog never said whether MkDocs
+# applies" is actionable on the catalog, and a single non-zero code forces the
+# operator to read the log to tell which they have.
+#
+# Both are non-zero on purpose. Any incompleteness has to stop a `&&` chain,
+# because exiting 0 on a domain that was never evaluated is precisely how the
+# fleet-wide MkDocs skip survived unnoticed.
+EXIT_OK = 0
+EXIT_FAILURES = 1
+EXIT_INCOMPLETE = 2
+
+
+def sweep_exit_code(
+    *, failures: int, unreachable_scopes: int, unknown_scope_repos: int
+) -> int:
+    """Decide a fleet sweep's exit code from its three outcome counts.
+
+    Split out of ``main`` so the rule can be driven directly. Deciding this
+    inline would make it reachable only by mocking an entire sweep, and a gate
+    that is expensive to exercise is one that gets asserted loosely or not at
+    all.
+
+    Args:
+        failures: Repos failing at least one check that applies to them.
+        unreachable_scopes: Scopes no repo in the fleet satisfies.
+        unknown_scope_repos: Repos with at least one UNKNOWN applicability.
+
+    Returns:
+        ``EXIT_FAILURES`` when any repo fails, else ``EXIT_INCOMPLETE`` when any
+        verdict is missing, else ``EXIT_OK``.
+    """
+    if failures:
+        return EXIT_FAILURES
+    if unreachable_scopes or unknown_scope_repos:
+        return EXIT_INCOMPLETE
+    return EXIT_OK
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Repo compliance sweep")
     parser.add_argument("--org", help="Limit to one org")
@@ -1164,9 +1214,16 @@ def main() -> int:
         "API-001..005=OpenAPI/Postman compliance (api_repos only)"
     )
 
-    # An unreachable scope fails the sweep. A domain that is never evaluated is
-    # not a passing audit, and exiting 0 on one is how the MkDocs gap survived.
-    return 1 if failures or scope_problems else 0
+    # Failures outrank incompleteness: a known-bad repo is the more urgent
+    # signal, and the incompleteness is still printed above either way. An
+    # unreachable scope and an UNKNOWN applicability are both "no verdict
+    # reached", so both land on EXIT_INCOMPLETE rather than masquerading as a
+    # compliance result.
+    return sweep_exit_code(
+        failures=failures,
+        unreachable_scopes=len(scope_problems),
+        unknown_scope_repos=unknown_scopes,
+    )
 
 
 if __name__ == "__main__":
