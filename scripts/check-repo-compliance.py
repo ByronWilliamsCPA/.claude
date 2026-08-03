@@ -9,8 +9,18 @@ Checks the most drift-prone standards from docs/standards-manifest.yaml:
   API-001..005: OpenAPI/Postman compliance (api.servesApi=true repos only)
 
 Run this weekly (or after any org-wide change) to catch repos that fall out of
-alignment before they accumulate. Prints a compact table and exits non-zero if
-any repo fails a non-waived check.
+alignment before they accumulate. Prints a compact table.
+
+Fleet-mode exit codes:
+  0  every scope evaluated, no repo fails a non-waived check
+  1  at least one repo fails a check that applies to it
+  2  the audit could not reach a verdict: a scope resolved UNKNOWN for some
+     repo, or no repo in the fleet satisfies a scope at all
+
+Code 2 is a catalog problem, not a repo problem, and is kept distinct so an
+operator can tell "repos regressed" from "the catalog never said whether this
+domain applies". Both are non-zero: an unevaluated domain must not report as a
+clean audit.
 
 Usage:
   python3 scripts/check-repo-compliance.py
@@ -20,6 +30,7 @@ Usage:
 
 import argparse
 import datetime
+import enum
 import json
 import re
 import shutil
@@ -29,11 +40,24 @@ from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
 
+# The sweep's core checks read JSON only. Manifest-derived scope counts are the
+# one feature that needs YAML, and they degrade to an unknown count rather than
+# taking the whole sweep down. Imported at module level (not inside the
+# function) so the optional dependency is declared in one place and no per-call
+# lint suppression is needed.
+try:
+    import yaml
+
+    _YAML_AVAILABLE = True
+except ImportError:  # pragma: no cover - pyyaml is optional for the sweep
+    _YAML_AVAILABLE = False
+
 _GH = shutil.which("gh") or "gh"
 
 ORGS = ["ByronWilliamsCPA", "williaby"]
 
 CATALOG_PATH = Path(__file__).parent.parent / "docs/reference/github-repos.json"
+MANIFEST_PATH = Path(__file__).parent.parent / "docs/standards-manifest.yaml"
 
 # Repos where Renovate is intentionally ignored; dependabot.yml coexistence is expected
 RENOVATE_IGNORED = {"williaby/dart-frog-paludarium", "williaby/homelab-agent-configs"}
@@ -99,27 +123,202 @@ def load_catalog() -> dict:
     return catalog
 
 
-def applies_to_api_repos(org: str, repo: str, catalog: dict) -> bool:
-    """Return True if the repo serves an API (api.servesApi == true).
+# --------------------------------------------------------------------------- #
+# applies_to scope resolution (tri-state)                                      #
+#                                                                              #
+# An `applies_to` scope is decided by a catalog flag. Coercing an absent or    #
+# null flag to False silently reclassifies "nobody has said" as "does not      #
+# apply", which skips the domain and renders an audit indistinguishable from   #
+# a passing one. The MkDocs domain shipped in exactly that state: publishesDocs#
+# is absent on 44 of 45 catalog entries and false on the 45th, so all 14       #
+# MKDOCS-* checks evaluated to a silent skip fleet-wide.                       #
+#                                                                              #
+# Only an explicit `false` means "does not apply". Absent, null, and           #
+# non-boolean values resolve to UNKNOWN, which is a finding: the catalog needs #
+# populating.                                                                  #
+# --------------------------------------------------------------------------- #
 
-    Handles the case where the `api` key is present but null (returns False).
+
+class Applicability(enum.Enum):
+    """Tri-state verdict for whether an ``applies_to`` scope covers a repo."""
+
+    APPLIES = "APPLIES"
+    SKIP = "SKIP"
+    UNKNOWN = "UNKNOWN"
+
+
+@dataclass(frozen=True)
+class ScopeDefinition:
+    """Binds an ``applies_to`` scope to the catalog flag that decides it.
+
+    Attributes:
+        scope: The ``applies_to`` value used in the standards manifest.
+        flag_path: Key path into a catalog entry, e.g. ``("api", "servesApi")``.
+        domain: The manifest ``domain`` whose checks this scope gates.
     """
-    entry = catalog.get(f"{org}/{repo}", {})
-    api = entry.get("api") or {}
-    return bool(api.get("servesApi", False))
+
+    scope: str
+    flag_path: tuple[str, ...]
+    domain: str
+
+    @property
+    def flag_name(self) -> str:
+        """Dotted catalog flag name, for display in SKIP/UNKNOWN lines."""
+        return ".".join(self.flag_path)
 
 
-def applies_to_docs_repos(org: str, repo: str, catalog: dict) -> bool:
-    """Return True if the repo publishes a documentation site (publishesDocs == true).
+SCOPE_DEFINITIONS: dict[str, ScopeDefinition] = {
+    "api_repos": ScopeDefinition("api_repos", ("api", "servesApi"), "api"),
+    "docs_repos": ScopeDefinition("docs_repos", ("publishesDocs",), "mkdocs"),
+    "deployed_repos": ScopeDefinition("deployed_repos", ("isDeployed",), "operations"),
+}
 
-    Mirrors the servesApi pattern: reads a top-level boolean field on the catalog
-    entry. Repos without the field or with publishesDocs: false are excluded from
-    MkDocs domain checks (MKDOCS-001 through MKDOCS-011, MKDOCS-013, MKDOCS-014).
-    MKDOCS-012 (CI build step) is intentionally excluded from this gate because it
-    belongs in the CI domain and will migrate there in a future PR.
+
+@dataclass(frozen=True)
+class ScopeVerdict:
+    """Outcome of resolving one ``applies_to`` scope against one repo.
+
+    Attributes:
+        scope: The scope that was resolved.
+        applicability: APPLIES, SKIP, or UNKNOWN.
+        raw_value: The catalog flag value as found, for the audit line.
+        reason: Human-readable basis, shown on SKIP and UNKNOWN lines.
     """
-    entry = catalog.get(f"{org}/{repo}", {})
-    return bool(entry.get("publishesDocs", False))
+
+    scope: str
+    applicability: Applicability
+    raw_value: object
+    reason: str
+
+    @property
+    def definition(self) -> ScopeDefinition:
+        """The scope definition this verdict was resolved against."""
+        return SCOPE_DEFINITIONS[self.scope]
+
+
+def _read_flag(entry: dict, flag_path: tuple[str, ...]) -> tuple[object, bool]:
+    """Walk ``flag_path`` through ``entry``.
+
+    Args:
+        entry: A catalog repo entry.
+        flag_path: Sequence of keys to descend.
+
+    Returns:
+        ``(value, found)``. ``found`` is False when any key along the path is
+        absent, which is distinct from a path that resolves to ``None``.
+    """
+    cursor: object = entry
+    for key in flag_path:
+        if not isinstance(cursor, dict) or key not in cursor:
+            return None, False
+        cursor = cursor[key]
+    return cursor, True
+
+
+def resolve_applicability(slug: str, catalog: dict, scope: str) -> ScopeVerdict:
+    """Resolve one ``applies_to`` scope for one repo.
+
+    Absent, null, and non-boolean flag values all resolve to UNKNOWN so an
+    unpopulated catalog surfaces as a finding instead of a silent skip. Only an
+    explicit ``false`` yields SKIP.
+
+    Args:
+        slug: Repo slug in ``org/repo`` form.
+        catalog: Catalog mapping from :func:`load_catalog`.
+        scope: A key of :data:`SCOPE_DEFINITIONS`.
+
+    Returns:
+        The :class:`ScopeVerdict` for this repo and scope.
+
+    Raises:
+        KeyError: If ``scope`` is not a known ``applies_to`` scope.
+    """
+    definition = SCOPE_DEFINITIONS[scope]
+    entry = catalog.get(slug)
+    if entry is None:
+        return ScopeVerdict(
+            scope,
+            Applicability.UNKNOWN,
+            None,
+            f"{slug} absent from catalog; add an entry and set {definition.flag_name}",
+        )
+    value, found = _read_flag(entry, definition.flag_path)
+    if not found:
+        return ScopeVerdict(
+            scope,
+            Applicability.UNKNOWN,
+            None,
+            f"{definition.flag_name} absent from catalog entry; populate it",
+        )
+    if value is None:
+        return ScopeVerdict(
+            scope,
+            Applicability.UNKNOWN,
+            None,
+            f"{definition.flag_name} is null; populate it with an explicit boolean",
+        )
+    if value is True:
+        return ScopeVerdict(
+            scope, Applicability.APPLIES, raw_value=True, reason="in scope"
+        )
+    if value is False:
+        return ScopeVerdict(
+            scope,
+            Applicability.SKIP,
+            raw_value=False,
+            reason="explicitly out of scope",
+        )
+    return ScopeVerdict(
+        scope,
+        Applicability.UNKNOWN,
+        value,
+        f"{definition.flag_name} is {value!r}, not a boolean; correct it",
+    )
+
+
+def load_manifest_scope_checks() -> dict[str, list[str]]:
+    """Map each ``applies_to`` scope to the manifest check IDs carrying it.
+
+    Read from the manifest rather than hardcoded so the "N checks skipped"
+    count in the audit summary cannot drift from the manifest. Degrades to an
+    empty mapping when the manifest is missing or unparseable; callers render
+    an unknown count rather than failing the sweep.
+
+    Returns:
+        Mapping of scope name to the sorted check IDs scoped to it.
+    """
+    if not _YAML_AVAILABLE:
+        print("warning: pyyaml unavailable, scope counts unknown", file=sys.stderr)
+        return {}
+    try:
+        with MANIFEST_PATH.open(encoding="utf-8") as handle:
+            data = yaml.safe_load(handle)
+    except (OSError, yaml.YAMLError) as exc:
+        print(
+            f"warning: manifest at {MANIFEST_PATH} unreadable: {exc}", file=sys.stderr
+        )
+        return {}
+    # safe_load returns whatever the document is: a list, a scalar, or None for
+    # an empty file. Only a mapping has `.get`, so anything else must exit here
+    # or the sweep dies on AttributeError instead of degrading to unknown counts.
+    if not isinstance(data, dict):
+        print(
+            f"warning: manifest at {MANIFEST_PATH} has a non-mapping root "
+            f"({type(data).__name__}), scope counts unknown",
+            file=sys.stderr,
+        )
+        return {}
+    scoped: dict[str, list[str]] = {}
+    for check in data.get("checks", []) or []:
+        if not isinstance(check, dict):
+            continue
+        raw = check.get("applies_to")
+        if raw is None:
+            continue
+        values = raw if isinstance(raw, list) else [raw]
+        for value in values:
+            scoped.setdefault(str(value), []).append(str(check.get("id", "<no id>")))
+    return {scope: sorted(ids) for scope, ids in scoped.items()}
 
 
 @dataclass
@@ -136,6 +335,127 @@ class RepoResult:
     api_004_last_audited: str = "N/A"
     api_005_test_status: str = "N/A"
     notes: list[str] = field(default_factory=list)
+    # Every applies_to scope resolved for this repo, keyed by scope name. Carries
+    # SKIP and UNKNOWN verdicts so the summary can report them per repo instead
+    # of dropping them silently.
+    scopes: dict[str, ScopeVerdict] = field(default_factory=dict)
+
+
+_API_RESULT_FIELDS = (
+    "api_001_openapi_spec",
+    "api_002_postman_collection",
+    "api_003_ci_workflow",
+    "api_004_last_audited",
+    "api_005_test_status",
+)
+
+
+def render_scope_summary(
+    results: list[RepoResult], scope_checks: dict[str, list[str]]
+) -> list[str]:
+    """Render the per-scope applicability summary block.
+
+    A skipped domain must be visible. For every scope this prints one
+    ``SKIP (<flag>: <value>)`` line and one ``UNKNOWN`` line, each carrying the
+    number of manifest checks that were not evaluated as a result, so a skip can
+    never be mistaken for a passing audit.
+
+    Args:
+        results: Per-repo results carrying resolved scope verdicts.
+        scope_checks: Scope-to-check-ID mapping from
+            :func:`load_manifest_scope_checks`.
+
+    Returns:
+        The rendered lines, in scope-name order.
+    """
+    lines = ["", "APPLICABILITY BY SCOPE", "-" * 60]
+    for scope, definition in sorted(SCOPE_DEFINITIONS.items()):
+        check_ids = scope_checks.get(scope, [])
+        # An unreadable manifest means the per-repo check count is UNKNOWN, not
+        # zero. Rendering it as 0 would print a definitive "0 check evaluations
+        # skipped" for a quantity nobody measured, which is the same hollow
+        # reporting this whole summary exists to prevent.
+        count_label = str(len(check_ids)) if check_ids else "?"
+
+        def skipped_label(repos: int, ids: list[str] = check_ids) -> str:
+            """Render the skipped-evaluation count, or ``?`` when unmeasurable."""
+            return str(repos * len(ids)) if ids else "?"
+
+        buckets: dict[Applicability, list[RepoResult]] = {
+            state: [] for state in Applicability
+        }
+        for result in results:
+            verdict = result.scopes.get(scope)
+            if verdict is not None:
+                buckets[verdict.applicability].append(result)
+        applies = len(buckets[Applicability.APPLIES])
+        skipped = len(buckets[Applicability.SKIP])
+        unknown = len(buckets[Applicability.UNKNOWN])
+        lines.append(
+            f"{scope} (flag: {definition.flag_name}, domain: {definition.domain}, "
+            f"{count_label} checks/repo)"
+        )
+        lines.append(f"  APPLIES  {applies:>3} repo(s)")
+        lines.append(
+            f"  SKIP ({definition.flag_name}: false)  {skipped:>3} repo(s), "
+            f"{skipped_label(skipped)} check evaluations skipped"
+        )
+        lines.append(
+            f"  UNKNOWN  {unknown:>3} repo(s), "
+            f"{skipped_label(unknown)} check evaluations skipped "
+            f"-- catalog needs populating"
+        )
+        for result in buckets[Applicability.UNKNOWN]:
+            verdict = result.scopes[scope]
+            lines.append(f"      [UNKNOWN] {result.slug}: {verdict.reason}")
+        lines.append("")
+    return lines
+
+
+def assert_scopes_reachable(
+    results: list[RepoResult], scope_checks: dict[str, list[str]]
+) -> list[str]:
+    """Flag every ``applies_to`` scope that no repo in the fleet evaluates true.
+
+    A scope with zero in-scope repos means its whole domain is dead: the checks
+    exist, the audit runs, and nothing is ever evaluated. That is the failure
+    mode the MkDocs domain shipped in. Fleet-wide reach is the only place it is
+    detectable, because each individual repo's skip looks locally correct.
+
+    Args:
+        results: Per-repo results carrying resolved scope verdicts.
+        scope_checks: Scope-to-check-ID mapping from
+            :func:`load_manifest_scope_checks`.
+
+    Returns:
+        One problem line per unreachable scope; empty when every scope has at
+        least one in-scope repo.
+    """
+    problems: list[str] = []
+    for scope, definition in sorted(SCOPE_DEFINITIONS.items()):
+        if not results:
+            continue
+        in_scope = [
+            r
+            for r in results
+            if (v := r.scopes.get(scope)) is not None
+            and v.applicability is Applicability.APPLIES
+        ]
+        if in_scope:
+            continue
+        check_ids = scope_checks.get(scope, [])
+        detail = (
+            f"{len(check_ids)} check(s): {', '.join(check_ids)}"
+            if check_ids
+            else "check list unavailable (manifest unreadable)"
+        )
+        problems.append(
+            f"[UNREACHABLE SCOPE] {scope}: zero of {len(results)} repos have "
+            f"{definition.flag_name}: true, so the entire '{definition.domain}' "
+            f"domain is never evaluated -- {detail}. Populate the catalog flag or "
+            f"retire the scope."
+        )
+    return problems
 
 
 def gh(path: str) -> tuple[dict | list | None, str | None]:
@@ -326,9 +646,76 @@ def _admins_enforced(org: str, repo: str, branch: str) -> bool:
         return False
 
 
-def file_exists(org: str, repo: str, path: str, branch: str) -> bool:
-    data, _err = gh(f"repos/{org}/{repo}/contents/{path}?ref={branch}")
-    return data is not None and "sha" in data
+class Presence(enum.Enum):
+    """Tri-state result of a file-existence probe against the GitHub API.
+
+    A ``gh()`` failure (rate limit, expired auth, transient 5xx) and a
+    genuinely absent file both collapse to a falsy result if only PRESENT
+    and ABSENT are modeled. UNKNOWN keeps that distinction: a probe that
+    could not be answered is never rendered as a confident FAIL.
+    """
+
+    PRESENT = "PRESENT"
+    ABSENT = "ABSENT"
+    UNKNOWN = "UNKNOWN"
+
+
+# `gh api` reports HTTP-level failures on stderr as `gh: <message> (HTTP
+# <code>)` and exits non-zero for a 404 exactly as it does for a rate limit,
+# an expired token, or a 5xx. gh() collapses all of those to (None, err), so
+# only a confirmed 404 means genuine absence; every other status, or a
+# non-HTTP failure (network error, malformed JSON) with no status at all, is
+# indeterminate. check-required-checks.py uses the same substring convention
+# for the identical gh-404-vs-real-failure distinction.
+_NOT_FOUND_MARKER = "(HTTP 404)"
+
+
+def _is_not_found_error(err: str) -> bool:
+    """Return True if a ``gh()`` error message reports an HTTP 404.
+
+    Args:
+        err: The error string returned by :func:`gh`.
+
+    Returns:
+        True when the error text reports HTTP 404, else False.
+    """
+    return _NOT_FOUND_MARKER in err
+
+
+def file_exists(org: str, repo: str, path: str, branch: str) -> Presence:
+    """Probe whether a file exists at ``path`` on ``branch``.
+
+    Args:
+        org: GitHub organization name.
+        repo: Repository name.
+        path: Repository-relative file path to probe.
+        branch: Branch name to check.
+
+    Returns:
+        PRESENT when the API call succeeded and the file was found. ABSENT
+        when the API call succeeded and found no file, or failed with a
+        confirmed HTTP 404. UNKNOWN when the ``gh()`` call failed for any
+        other reason and existence could not be determined.
+    """
+    data, err = gh(f"repos/{org}/{repo}/contents/{path}?ref={branch}")
+    if err is not None:
+        return Presence.ABSENT if _is_not_found_error(err) else Presence.UNKNOWN
+    return Presence.PRESENT if data is not None and "sha" in data else Presence.ABSENT
+
+
+def _render_presence(presence: Presence) -> str:
+    """Render a :class:`Presence` verdict as a PASS/FAIL/UNK report string.
+
+    Args:
+        presence: The probe outcome to render.
+
+    Returns:
+        ``"UNK"`` when the probe was indeterminate, otherwise ``"PASS"`` for
+        PRESENT and ``"FAIL"`` for ABSENT.
+    """
+    if presence is Presence.UNKNOWN:
+        return "UNK"
+    return "PASS" if presence is Presence.PRESENT else "FAIL"
 
 
 def check_repo(org: str, repo: str, catalog: dict) -> RepoResult:
@@ -337,16 +724,25 @@ def check_repo(org: str, repo: str, catalog: dict) -> RepoResult:
     result = RepoResult(slug=slug, branch=branch)
 
     # CI-020: renovate.json present
-    has_renovate = file_exists(org, repo, "renovate.json", branch)
-    result.ci_020 = "PASS" if has_renovate else "FAIL"
+    renovate_presence = file_exists(org, repo, "renovate.json", branch)
+    result.ci_020 = _render_presence(renovate_presence)
 
     # CI-021: dependabot.yml absent when Renovate active
     if slug in RENOVATE_IGNORED:
         result.ci_021 = "N/A"
         result.notes.append("Renovate ignored; dependabot.yml coexistence expected")
-    elif has_renovate:
-        has_dependabot = file_exists(org, repo, ".github/dependabot.yml", branch)
-        result.ci_021 = "FAIL" if has_dependabot else "PASS"
+    elif renovate_presence is Presence.UNKNOWN:
+        # Cannot tell whether the coexistence check even applies without
+        # first knowing whether renovate.json is present.
+        result.ci_021 = "UNK"
+    elif renovate_presence is Presence.PRESENT:
+        dependabot_presence = file_exists(org, repo, ".github/dependabot.yml", branch)
+        if dependabot_presence is Presence.UNKNOWN:
+            result.ci_021 = "UNK"
+        else:
+            result.ci_021 = (
+                "FAIL" if dependabot_presence is Presence.PRESENT else "PASS"
+            )
     else:
         result.ci_021 = "N/A"  # no Renovate, so CI-020 gap is the issue
 
@@ -363,57 +759,74 @@ def check_repo(org: str, repo: str, catalog: dict) -> RepoResult:
             result.bp_5 = "FAIL"
             result.notes.append("BP-5 expected FAIL: solo-dev admin bypass intentional")
 
-    # API-001..005: only run for repos with api.servesApi=true
-    if applies_to_api_repos(org, repo, catalog):
-        catalog_entry = catalog.get(slug, {})
-        api_info = catalog_entry.get("api") or {}
+    # Resolve every applies_to scope up front so SKIP and UNKNOWN verdicts are
+    # recorded for the summary even when the scope gates no locally-run check.
+    result.scopes = {
+        scope: resolve_applicability(slug, catalog, scope)
+        for scope in SCOPE_DEFINITIONS
+    }
 
-        # API-001: openapi.yaml present
-        result.api_001_openapi_spec = (
-            "PASS"
-            if file_exists(org, repo, "docs/api/openapi.yaml", branch)
-            else "FAIL"
-        )
-
-        # API-002: postman-collection.json present
-        result.api_002_postman_collection = (
-            "PASS"
-            if file_exists(org, repo, "docs/api/postman-collection.json", branch)
-            else "FAIL"
-        )
-
-        # API-003: CI workflow present
-        result.api_003_ci_workflow = (
-            "PASS"
-            if file_exists(org, repo, ".github/workflows/postman-api-tests.yml", branch)
-            else "FAIL"
-        )
-
-        # API-004: lastAudited within 90 days
-        last_audited = api_info.get("lastAudited")
-        if last_audited is None:
-            result.api_004_last_audited = "FAIL"
-        else:
-            try:
-                audited_date = datetime.date.fromisoformat(last_audited)
-                today = datetime.datetime.now(tz=datetime.timezone.utc).date()
-                days_ago = (today - audited_date).days
-                result.api_004_last_audited = "PASS" if days_ago <= 90 else "FAIL"
-            except ValueError:
-                result.api_004_last_audited = "FAIL"
-
-        # API-005: testStatus == "passing"
-        # FAIL covers both "not yet audited" (None) and "failing"; matches API-004
-        # behavior. New servesApi=true repos surface as FAIL until the openapi-
-        # compliance-agent has run on them, which is intentional: the audit drives
-        # completion of pending pipeline work.
-        test_status = api_info.get("testStatus")
-        if test_status is None:
-            result.api_005_test_status = "FAIL"
-        else:
-            result.api_005_test_status = "PASS" if test_status == "passing" else "FAIL"
+    api_verdict = result.scopes["api_repos"]
+    if api_verdict.applicability is Applicability.UNKNOWN:
+        # Unresolvable scope is not "not applicable". Mark the columns UNK so the
+        # row cannot be mistaken for a clean skip, and carry the reason forward.
+        for api_field in _API_RESULT_FIELDS:
+            setattr(result, api_field, "UNK")
+        result.notes.append(f"api_repos UNKNOWN: {api_verdict.reason}")
+    elif api_verdict.applicability is Applicability.APPLIES:
+        _apply_api_checks(result, org, repo, catalog)
 
     return result
+
+
+def _apply_api_checks(result: RepoResult, org: str, repo: str, catalog: dict) -> None:
+    """Evaluate API-001..005 for a repo already confirmed in ``api_repos`` scope.
+
+    Args:
+        result: The repo result to populate in place.
+        org: GitHub organization name.
+        repo: Repository name.
+        catalog: Catalog mapping from :func:`load_catalog`.
+    """
+    branch = result.branch
+    api_info = catalog.get(result.slug, {}).get("api") or {}
+
+    # API-001: openapi.yaml present
+    result.api_001_openapi_spec = _render_presence(
+        file_exists(org, repo, "docs/api/openapi.yaml", branch)
+    )
+
+    # API-002: postman-collection.json present
+    result.api_002_postman_collection = _render_presence(
+        file_exists(org, repo, "docs/api/postman-collection.json", branch)
+    )
+
+    # API-003: CI workflow present
+    result.api_003_ci_workflow = _render_presence(
+        file_exists(org, repo, ".github/workflows/postman-api-tests.yml", branch)
+    )
+
+    # API-004: lastAudited within 90 days
+    last_audited = api_info.get("lastAudited")
+    if last_audited is None:
+        result.api_004_last_audited = "FAIL"
+    else:
+        try:
+            audited_date = datetime.date.fromisoformat(last_audited)
+            today = datetime.datetime.now(tz=datetime.timezone.utc).date()
+            result.api_004_last_audited = (
+                "PASS" if (today - audited_date).days <= 90 else "FAIL"
+            )
+        except ValueError:
+            result.api_004_last_audited = "FAIL"
+
+    # API-005: testStatus == "passing"
+    # FAIL covers both "not yet audited" (None) and "failing"; matches API-004
+    # behavior. New servesApi=true repos surface as FAIL until the openapi-
+    # compliance-agent has run on them, which is intentional: the audit drives
+    # completion of pending pipeline work.
+    test_status = api_info.get("testStatus")
+    result.api_005_test_status = "PASS" if test_status == "passing" else "FAIL"
 
 
 # --------------------------------------------------------------------------- #
@@ -619,6 +1032,46 @@ def _run_local_audit(args: argparse.Namespace, parser: argparse.ArgumentParser) 
     return 0 if result["status"] == "pass" else 1
 
 
+# Fleet-mode exit codes. A compliance regression and an audit that could not
+# reach a verdict are different facts and must not share a code: "3 repos fail
+# BP-4" is actionable on the repos, "the catalog never said whether MkDocs
+# applies" is actionable on the catalog, and a single non-zero code forces the
+# operator to read the log to tell which they have.
+#
+# Both are non-zero on purpose. Any incompleteness has to stop a `&&` chain,
+# because exiting 0 on a domain that was never evaluated is precisely how the
+# fleet-wide MkDocs skip survived unnoticed.
+EXIT_OK = 0
+EXIT_FAILURES = 1
+EXIT_INCOMPLETE = 2
+
+
+def sweep_exit_code(
+    *, failures: int, unreachable_scopes: int, unknown_scope_repos: int
+) -> int:
+    """Decide a fleet sweep's exit code from its three outcome counts.
+
+    Split out of ``main`` so the rule can be driven directly. Deciding this
+    inline would make it reachable only by mocking an entire sweep, and a gate
+    that is expensive to exercise is one that gets asserted loosely or not at
+    all.
+
+    Args:
+        failures: Repos failing at least one check that applies to them.
+        unreachable_scopes: Scopes no repo in the fleet satisfies.
+        unknown_scope_repos: Repos with at least one UNKNOWN applicability.
+
+    Returns:
+        ``EXIT_FAILURES`` when any repo fails, else ``EXIT_INCOMPLETE`` when any
+        verdict is missing, else ``EXIT_OK``.
+    """
+    if failures:
+        return EXIT_FAILURES
+    if unreachable_scopes or unknown_scope_repos:
+        return EXIT_INCOMPLETE
+    return EXIT_OK
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Repo compliance sweep")
     parser.add_argument("--org", help="Limit to one org")
@@ -712,6 +1165,20 @@ def main() -> int:
 
     print("-" * len(header))
 
+    # Applicability summary: every skipped domain is printed, never silent.
+    scope_checks = load_manifest_scope_checks()
+    for line in render_scope_summary(results, scope_checks):
+        print(line)
+
+    # Fleet-level reach assertion: a scope no repo satisfies is a dead domain.
+    # Only meaningful across a full sweep; a single-repo run is not a fleet, and
+    # asserting reach against one repo would flag every scope it is out of.
+    scope_problems: list[str] = []
+    if not args.repo:
+        scope_problems = assert_scopes_reachable(results, scope_checks)
+        for problem in scope_problems:
+            print(problem, file=sys.stderr)
+
     # Summary
     all_check_fields = [
         "ci_020",
@@ -729,8 +1196,17 @@ def main() -> int:
         for r in results
         if all(getattr(r, f) in ("PASS", "N/A") for f in all_check_fields)
     )
+    unknown_scopes = sum(
+        1
+        for r in results
+        if any(v.applicability is Applicability.UNKNOWN for v in r.scopes.values())
+    )
     print(
-        f"\n{pass_count}/{len(results)} repos fully compliant  |  {failures} with failures\n"
+        f"\n{pass_count}/{len(results)} repos fully compliant  |  {failures} with failures"
+    )
+    print(
+        f"{unknown_scopes}/{len(results)} repos have at least one UNKNOWN applies_to "
+        f"scope  |  {len(scope_problems)} unreachable scope(s)\n"
     )
     print(
         "Checks: CI-020=renovate.json present, CI-021=no dependabot.yml conflict, "
@@ -738,7 +1214,16 @@ def main() -> int:
         "API-001..005=OpenAPI/Postman compliance (api_repos only)"
     )
 
-    return 1 if failures else 0
+    # Failures outrank incompleteness: a known-bad repo is the more urgent
+    # signal, and the incompleteness is still printed above either way. An
+    # unreachable scope and an UNKNOWN applicability are both "no verdict
+    # reached", so both land on EXIT_INCOMPLETE rather than masquerading as a
+    # compliance result.
+    return sweep_exit_code(
+        failures=failures,
+        unreachable_scopes=len(scope_problems),
+        unknown_scope_repos=unknown_scopes,
+    )
 
 
 if __name__ == "__main__":

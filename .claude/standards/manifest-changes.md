@@ -67,6 +67,60 @@ interpreting a `verify` field too leniently. A critical check without a fixture
 can degrade to a no-op with no alarm. See
 `data/test_fixtures/compliance_auditor/README.md` for the contract.
 
+## Mechanism status: a check enters unproven
+
+Adopted 2026-08-02 from the assurance spine (`.claude/standards/assurance-spine.md`),
+whose status model exists because binary pass/fail cannot express the dominant
+real-world failure: a check that runs and tells you nothing.
+
+Checks carrying a `mechanism:` field follow one rule:
+
+- **`mechanism: unproven`** is the entry state for every automated check. It
+  means the check has never demonstrated an ability to fail.
+- **`mechanism: proven`** may only be set once a *negative control* has
+  demonstrably tripped it: a deliberate violation, committed as a fixture at
+  `data/test_fixtures/compliance_auditor/defect_<CHECK_ID>/`.
+
+`tests/unit/test_manifest_consistency.py` enforces the promotion: claiming
+`proven` without the fixture fails the build. Without that gate, `proven` is
+self-certification, a field an author sets to silence a warning, which is the
+exact failure mode the status model exists to surface.
+
+This generalizes the regression-fixture requirement in the preceding section. That rule
+applies the fixture obligation only to `critical` + `override_eligible: false`
+checks. The mechanism field extends the *concept* to any check that opts in,
+without making a fixture mandatory for all 197: the honest default is to admit a
+check is unproven, not to pretend the obligation does not exist.
+
+Currently scoped to the `operations` domain (OPS-*), which is where the anti-hollow
+discipline was introduced. Widening it to other domains is a deliberate decision,
+not a default, because backfilling fixtures for the existing corpus is real work
+and an unproven-everywhere manifest is noisier than it is useful.
+
+### Reassessment cadence
+
+`unproven` gains an expiry clock here, aligned with the existing 60-day
+reassessment window this repo already uses for unfixed CVEs
+(`docs/known-vulnerabilities.md`): a check still carrying `mechanism: unproven`
+60 days after it entered the manifest is due for reassessment.
+
+- **Trigger:** 60 days elapsed since the check's `mechanism: unproven` entry
+  date (recorded in the check's `notes:` field or the introducing commit date).
+- **Who acts:** the domain owner for that check, currently whoever maintains
+  `operations-posture-auditor` for the OPS-* cohort. Widening `mechanism` to a
+  new domain carries this same obligation to that domain's owning agent.
+- **What happens:** build the negative-control fixture and promote to
+  `mechanism: proven` per the rule above. If a fixture cannot be built yet,
+  record the reason in the check's `notes:` field and reset the
+  60-day clock, the same extension path the CVE policy allows for a
+  documented reassessment.
+- **If the cadence lapses:** a check that passes 60 days with neither a
+  fixture nor a recorded reason is a `compliance-retrospective` finding. The
+  retrospective agent flags it as a stale `unproven` check the same way it
+  flags recurring unclassified candidates, so the drift surfaces at the next
+  audit instead of staying invisible between sessions. All 12 checks that ship
+  `unproven` in this change start their 60-day clock on this PR's merge date.
+
 ## When a single PR does multiple types
 
 The PR-splitting rule: when a single PR contains changes that map to two different

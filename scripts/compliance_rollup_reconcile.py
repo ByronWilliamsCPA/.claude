@@ -131,6 +131,31 @@ def _parse_findings_by_check(text: str) -> list[dict[str, str]]:
     return findings
 
 
+# YAML block-scalar markers. A `pattern` equal to one of these is not a
+# description, it is the scalar header that a line-based parser mistook for the
+# value. An earlier version of this parser emitted these: 20 of the 111
+# unclassified candidates in the committed master log carry `pattern: ">-"`.
+# The current parser uses yaml.safe_load and cannot produce them, but the
+# downstream synthesis agent groups on `pattern` by fuzzy match, so a single
+# degenerate value repeated across many sessions and repos would rank as the
+# top trending pattern: a garbage finding presented as the headline insight.
+# This guard is defense in depth so it can never re-enter the log.
+_YAML_SCALAR_MARKERS = frozenset({">", ">-", ">+", "|", "|-", "|+"})
+
+
+def is_degenerate_pattern(pattern: str) -> bool:
+    """Return True if ``pattern`` is a parse artifact rather than a description.
+
+    Args:
+        pattern: The candidate ``pattern`` value to test.
+
+    Returns:
+        True when the value is empty, whitespace-only, or a bare YAML block
+        scalar marker.
+    """
+    return pattern.strip() in _YAML_SCALAR_MARKERS or not pattern.strip()
+
+
 def _parse_unclassified_candidates(text: str) -> list[dict[str, str]]:
     """Extract candidate proposals from Proposed Manifest Additions blocks.
 
@@ -173,11 +198,29 @@ def _parse_unclassified_candidates(text: str) -> list[dict[str, str]]:
             item_id = item.get("id")
             if not item_id:
                 continue
-            description = item.get("description", "")
+            raw_description = item.get("description")
+            # A description is prose, so only a YAML string can be one. Every
+            # other node type safe_load can produce here stringifies into
+            # something that reads as real text and passes the degeneracy test:
+            # null becomes "None", an empty sequence becomes "[]", a bare `no`
+            # becomes "False". Each would enter the master log as a groupable
+            # pattern. Accept str alone and let the rest take the ID fallback.
+            description = (
+                raw_description.strip() if isinstance(raw_description, str) else ""
+            )
+            if is_degenerate_pattern(description):
+                # Fall back to the manifest ID so the candidate stays traceable
+                # instead of entering the log as an ungroupable parse artifact.
+                print(
+                    f"warning: candidate {item_id} has a degenerate description "
+                    f"{description!r}; falling back to the proposed ID as pattern",
+                    file=sys.stderr,
+                )
+                description = f"(no description parsed) {str(item_id).strip()}"
             candidates.append(
                 {
                     "candidate_id": f"reconciled-{uuid.uuid4().hex[:8]}",
-                    "pattern": str(description).strip(),
+                    "pattern": description,
                     "proposed_manifest_id": str(item_id).strip(),
                     "proposed_yaml_path": "",
                 }

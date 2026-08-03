@@ -3,10 +3,14 @@
 from __future__ import annotations
 
 import json
+from typing import TYPE_CHECKING
 
 import pytest
 
 from tests.unit._load_check_repo_compliance import load_module
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 crc = load_module()
 
@@ -123,7 +127,15 @@ def test_branch_protection_exempt_fallback_when_catalog_missing():
 @pytest.mark.unit
 def test_check_repo_marks_exempt_repos_na_for_branch_protection(monkeypatch) -> None:
     """check_repo sets bp_4/bp_5 to N/A and ci_020 to PASS for exempt repos."""
-    catalog = {"williaby/homelab-agent-configs": {"branchProtectionExempt": True}}
+    # servesApi: false keeps the api_repos scope an explicit SKIP, so this test
+    # exercises branch-protection exemption without also tripping the UNKNOWN
+    # applies_to path.
+    catalog = {
+        "williaby/homelab-agent-configs": {
+            "branchProtectionExempt": True,
+            "api": {"servesApi": False},
+        }
+    }
 
     mock_sig_calls: list[object] = []
     mock_admins_calls: list[object] = []
@@ -136,10 +148,9 @@ def test_check_repo_marks_exempt_repos_na_for_branch_protection(monkeypatch) -> 
         mock_admins_calls.append(args)
         return True
 
-    monkeypatch.setattr(crc, "file_exists", lambda *a, **kw: True)
+    monkeypatch.setattr(crc, "file_exists", lambda *a, **kw: crc.Presence.PRESENT)
     monkeypatch.setattr(crc, "_signatures_enforced", fake_sig)
     monkeypatch.setattr(crc, "_admins_enforced", fake_admins)
-    monkeypatch.setattr(crc, "applies_to_api_repos", lambda *a, **kw: False)
 
     result = crc.check_repo("williaby", "homelab-agent-configs", catalog)
 
@@ -156,13 +167,195 @@ def test_check_repo_marks_exempt_repos_na_for_branch_protection(monkeypatch) -> 
 @pytest.mark.unit
 def test_check_repo_fails_ci020_when_renovate_missing(monkeypatch) -> None:
     """check_repo sets ci_020 to FAIL when renovate.json is absent."""
-    monkeypatch.setattr(crc, "file_exists", lambda *a, **kw: False)
+    monkeypatch.setattr(crc, "file_exists", lambda *a, **kw: crc.Presence.ABSENT)
     monkeypatch.setattr(crc, "_signatures_enforced", lambda *a, **kw: False)
     monkeypatch.setattr(crc, "_admins_enforced", lambda *a, **kw: False)
-    monkeypatch.setattr(crc, "applies_to_api_repos", lambda *a, **kw: False)
 
+    # Empty catalog: the repo is absent, so every applies_to scope resolves
+    # UNKNOWN and the API columns report UNK rather than a silent N/A.
     result = crc.check_repo("ByronWilliamsCPA", "test-repo", {})
     assert result.ci_020 == "FAIL"
+    assert result.api_001_openapi_spec == "UNK"
+    assert result.scopes["api_repos"].applicability is crc.Applicability.UNKNOWN
+
+
+# --------------------------------------------------------------------------- #
+# file_exists tri-state (Presence)                                            #
+# --------------------------------------------------------------------------- #
+
+
+@pytest.mark.parametrize(
+    ("fake_gh_result", "expected_presence", "expected_render"),
+    [
+        (
+            ({"sha": "abc123", "name": "renovate.json"}, None),
+            crc.Presence.PRESENT,
+            "PASS",
+        ),
+        (
+            (None, "gh: Not Found (HTTP 404)"),
+            crc.Presence.ABSENT,
+            "FAIL",
+        ),
+        (
+            (None, "gh: API rate limit exceeded for user ID 123. (HTTP 403)"),
+            crc.Presence.UNKNOWN,
+            "UNK",
+        ),
+    ],
+    ids=["file-present", "file-genuinely-absent", "api-error-indeterminate"],
+)
+@pytest.mark.unit
+def test_file_exists_distinguishes_three_outcomes(
+    monkeypatch, fake_gh_result, expected_presence, expected_render
+) -> None:
+    """file_exists returns PRESENT, ABSENT, or UNKNOWN, never conflating the last two.
+
+    The API-error case is the point of this change: a transient ``gh()``
+    failure (rate limit, expired auth, 5xx) must render as the established
+    "UNK" convention, distinct from the "FAIL" a confirmed HTTP 404 produces.
+    Asserting the rendered string, not just "not PASS", pins that distinction.
+    """
+    monkeypatch.setattr(crc, "gh", lambda path: fake_gh_result)
+
+    result = crc.file_exists("org", "repo", "renovate.json", "main")
+
+    assert result is expected_presence
+    assert crc._render_presence(result) == expected_render
+
+
+@pytest.mark.unit
+def test_file_exists_unknown_is_not_absent(monkeypatch) -> None:
+    """UNKNOWN and ABSENT are distinct members, not two names for the same value.
+
+    Regression guard: a naive fix could collapse every ``gh()`` error (404
+    included) onto one enum member. This pins that a non-404 failure lands
+    on a value that is identity-distinct from the genuinely-absent case.
+    """
+    monkeypatch.setattr(
+        crc, "gh", lambda path: (None, "gh: Internal Server Error (HTTP 500)")
+    )
+
+    result = crc.file_exists("org", "repo", "renovate.json", "main")
+
+    assert result is crc.Presence.UNKNOWN
+    assert result is not crc.Presence.ABSENT
+    assert result is not crc.Presence.PRESENT
+
+
+@pytest.mark.parametrize(
+    ("presence", "expected"),
+    [
+        (crc.Presence.PRESENT, "PASS"),
+        (crc.Presence.ABSENT, "FAIL"),
+        (crc.Presence.UNKNOWN, "UNK"),
+    ],
+    ids=["present", "absent", "unknown"],
+)
+@pytest.mark.unit
+def test_apply_api_checks_renders_all_three_outcomes(
+    monkeypatch, presence, expected
+) -> None:
+    """_apply_api_checks renders PASS/FAIL/UNK uniformly across API-001..003.
+
+    This is the caller the defect names directly: an API outage mid-sweep on
+    an API-001..003 probe must render "UNK", not a confident "FAIL", while
+    the PRESENT and ABSENT cases preserve the pre-fix PASS/FAIL rendering
+    exactly.
+    """
+    monkeypatch.setattr(crc, "file_exists", lambda *a, **kw: presence)
+    result = crc.RepoResult(slug="org/api-repo", branch="main")
+
+    crc._apply_api_checks(result, "org", "api-repo", {})
+
+    assert result.api_001_openapi_spec == expected
+    assert result.api_002_postman_collection == expected
+    assert result.api_003_ci_workflow == expected
+
+
+@pytest.mark.parametrize(
+    (
+        "renovate_presence",
+        "dependabot_presence",
+        "expected_ci_020",
+        "expected_ci_021",
+    ),
+    [
+        (crc.Presence.PRESENT, crc.Presence.ABSENT, "PASS", "PASS"),
+        (crc.Presence.PRESENT, crc.Presence.PRESENT, "PASS", "FAIL"),
+        (crc.Presence.PRESENT, crc.Presence.UNKNOWN, "PASS", "UNK"),
+        (crc.Presence.ABSENT, None, "FAIL", "N/A"),
+        (crc.Presence.UNKNOWN, None, "UNK", "UNK"),
+    ],
+    ids=[
+        "renovate-present-dependabot-absent",
+        "renovate-present-dependabot-present",
+        "renovate-present-dependabot-indeterminate",
+        "renovate-absent-skips-dependabot-probe",
+        "renovate-indeterminate-skips-dependabot-probe",
+    ],
+)
+@pytest.mark.unit
+def test_check_repo_ci020_ci021_tri_state_cascade(
+    monkeypatch,
+    renovate_presence,
+    dependabot_presence,
+    expected_ci_020,
+    expected_ci_021,
+) -> None:
+    """CI-020/CI-021 propagate PASS/FAIL/UNK correctly through the cascade.
+
+    CI-021 depends on CI-020's result to decide whether the dependabot.yml
+    probe even applies. An indeterminate renovate.json probe must not be
+    treated as "no renovate present" (which would wrongly render CI-021 as
+    N/A) and must not trigger the dependabot probe at all, since whether that
+    probe applies is itself unknown.
+    """
+
+    def fake_file_exists(org, repo, path, branch):
+        if path == "renovate.json":
+            return renovate_presence
+        if path == ".github/dependabot.yml":
+            if dependabot_presence is None:
+                msg = "dependabot.yml must not be probed when renovate is FAIL/UNK"
+                raise AssertionError(msg)
+            return dependabot_presence
+        msg = f"unexpected file_exists call for path={path}"
+        raise AssertionError(msg)
+
+    monkeypatch.setattr(crc, "file_exists", fake_file_exists)
+    monkeypatch.setattr(crc, "_signatures_enforced", lambda *a, **kw: True)
+    monkeypatch.setattr(crc, "_admins_enforced", lambda *a, **kw: True)
+
+    result = crc.check_repo("org", "repo", {})
+
+    assert result.ci_020 == expected_ci_020
+    assert result.ci_021 == expected_ci_021
+
+
+@pytest.mark.unit
+def test_check_repo_ci021_na_when_renovate_ignored_regardless_of_presence(
+    monkeypatch,
+) -> None:
+    """RENOVATE_IGNORED short-circuits CI-021 to N/A even when renovate.json
+    is present, without probing dependabot.yml at all.
+    """
+    slug = next(iter(crc.RENOVATE_IGNORED))
+    org, repo = slug.split("/", 1)
+
+    def fake_file_exists(org, repo, path, branch):
+        if path == "renovate.json":
+            return crc.Presence.PRESENT
+        msg = f"unexpected file_exists call for path={path}"
+        raise AssertionError(msg)
+
+    monkeypatch.setattr(crc, "file_exists", fake_file_exists)
+    monkeypatch.setattr(crc, "_signatures_enforced", lambda *a, **kw: True)
+    monkeypatch.setattr(crc, "_admins_enforced", lambda *a, **kw: True)
+
+    result = crc.check_repo(org, repo, {})
+
+    assert result.ci_021 == "N/A"
 
 
 @pytest.mark.unit
@@ -211,3 +404,348 @@ def test_admins_enforced_returns_true_when_no_bypass(monkeypatch) -> None:
     monkeypatch.setattr(crc, "gh", fake_gh)
     result = crc._admins_enforced("testorg", "testrepo", "main")
     assert result is True
+
+
+# --------------------------------------------------------------------------- #
+# applies_to scope resolution (tri-state)                                     #
+# --------------------------------------------------------------------------- #
+
+
+@pytest.mark.unit
+def test_resolve_applicability_returns_applies_only_for_literal_true() -> None:
+    """resolve_applicability yields APPLIES only when the flag is literal True."""
+    catalog = {"org/repo": {"api": {"servesApi": True}}}
+
+    verdict = crc.resolve_applicability("org/repo", catalog, "api_repos")
+
+    assert verdict.applicability is crc.Applicability.APPLIES
+    assert verdict.raw_value is True
+
+
+@pytest.mark.unit
+def test_resolve_applicability_returns_skip_only_for_literal_false() -> None:
+    """resolve_applicability yields SKIP only when the flag is literal False."""
+    catalog = {"org/repo": {"api": {"servesApi": False}}}
+
+    verdict = crc.resolve_applicability("org/repo", catalog, "api_repos")
+
+    assert verdict.applicability is crc.Applicability.SKIP
+    assert verdict.raw_value is False
+
+
+@pytest.mark.unit
+def test_resolve_applicability_unknown_when_flag_absent_from_entry() -> None:
+    """A missing flag key resolves to UNKNOWN, naming the flag in the reason."""
+    catalog = {"org/repo": {}}
+
+    verdict = crc.resolve_applicability("org/repo", catalog, "api_repos")
+
+    assert verdict.applicability is crc.Applicability.UNKNOWN
+    assert "api.servesApi" in verdict.reason
+    assert "populate" in verdict.reason
+
+
+@pytest.mark.unit
+def test_resolve_applicability_unknown_when_flag_is_none() -> None:
+    """A flag explicitly set to null resolves to UNKNOWN, not SKIP."""
+    catalog = {"org/repo": {"api": {"servesApi": None}}}
+
+    verdict = crc.resolve_applicability("org/repo", catalog, "api_repos")
+
+    assert verdict.applicability is crc.Applicability.UNKNOWN
+    assert "null" in verdict.reason
+
+
+@pytest.mark.parametrize("raw_value", ["yes", 1, 0])
+@pytest.mark.unit
+def test_resolve_applicability_unknown_for_non_boolean_values(raw_value) -> None:
+    """Non-boolean flag values resolve to UNKNOWN, including int 1 and int 0.
+
+    Python treats ``1 == True`` and ``0 == False``, so this pins the
+    implementation's ``is True`` / ``is False`` identity checks: an int flag
+    must never be silently coerced into APPLIES or SKIP.
+    """
+    catalog = {"org/repo": {"api": {"servesApi": raw_value}}}
+
+    verdict = crc.resolve_applicability("org/repo", catalog, "api_repos")
+
+    assert verdict.applicability is crc.Applicability.UNKNOWN
+    assert verdict.raw_value == raw_value
+
+
+@pytest.mark.unit
+def test_resolve_applicability_unknown_when_slug_absent_from_catalog() -> None:
+    """A repo slug missing from the catalog entirely resolves to UNKNOWN."""
+    verdict = crc.resolve_applicability("org/missing-repo", {}, "api_repos")
+
+    assert verdict.applicability is crc.Applicability.UNKNOWN
+    assert "org/missing-repo" in verdict.reason
+
+
+@pytest.mark.parametrize(
+    ("entry", "expected"),
+    [
+        (
+            {"api": {"servesApi": True}},
+            "APPLIES",
+        ),
+        (
+            {"api": None},
+            "UNKNOWN",
+        ),
+        (
+            {"api": {}},
+            "UNKNOWN",
+        ),
+    ],
+)
+@pytest.mark.unit
+def test_resolve_applicability_nested_flag_path(entry, expected) -> None:
+    """Nested flag paths (e.g. api.servesApi) resolve through intermediate dicts."""
+    catalog = {"org/repo": entry}
+
+    verdict = crc.resolve_applicability("org/repo", catalog, "api_repos")
+
+    assert verdict.applicability.value == expected
+
+
+@pytest.mark.unit
+def test_read_flag_missing_path_returns_none_and_not_found() -> None:
+    """_read_flag reports found=False for a path absent from the entry."""
+    value, found = crc._read_flag({}, ("api", "servesApi"))
+
+    assert value is None
+    assert found is False
+
+
+@pytest.mark.unit
+def test_read_flag_present_null_returns_none_and_found() -> None:
+    """_read_flag distinguishes a null value present at the path from absent."""
+    value, found = crc._read_flag({"api": {"servesApi": None}}, ("api", "servesApi"))
+
+    assert value is None
+    assert found is True
+
+
+@pytest.mark.unit
+def test_assert_scopes_reachable_flags_scope_with_zero_applies_repos() -> None:
+    """Regression guard for the MkDocs silent-skip defect.
+
+    A scope where every repo resolves to SKIP or UNKNOWN (never APPLIES) must
+    surface as an unreachable-scope problem line, since that is exactly the
+    fleet-wide state the MkDocs domain shipped in: publishesDocs absent or
+    false everywhere, so all MKDOCS-* checks silently never ran.
+    """
+    results = [
+        crc.RepoResult(slug="org/repo1", branch="main"),
+    ]
+    results[0].scopes = {
+        "api_repos": crc.ScopeVerdict(
+            "api_repos",
+            crc.Applicability.APPLIES,
+            raw_value=True,
+            reason="in scope",
+        ),
+        "docs_repos": crc.ScopeVerdict(
+            "docs_repos",
+            crc.Applicability.SKIP,
+            raw_value=False,
+            reason="explicitly out of scope",
+        ),
+        "deployed_repos": crc.ScopeVerdict(
+            "deployed_repos",
+            crc.Applicability.APPLIES,
+            raw_value=True,
+            reason="in scope",
+        ),
+    }
+
+    problems = crc.assert_scopes_reachable(results, {})
+
+    assert len(problems) == 1
+    assert "docs_repos" in problems[0]
+    assert "mkdocs" in problems[0]
+
+
+@pytest.mark.unit
+def test_assert_scopes_reachable_no_problem_when_at_least_one_applies() -> None:
+    """A scope with at least one APPLIES repo produces no problem line."""
+    results = [
+        crc.RepoResult(slug="org/repo1", branch="main"),
+    ]
+    results[0].scopes = {
+        "api_repos": crc.ScopeVerdict(
+            "api_repos",
+            crc.Applicability.APPLIES,
+            raw_value=True,
+            reason="in scope",
+        ),
+        "docs_repos": crc.ScopeVerdict(
+            "docs_repos",
+            crc.Applicability.APPLIES,
+            raw_value=True,
+            reason="in scope",
+        ),
+        "deployed_repos": crc.ScopeVerdict(
+            "deployed_repos",
+            crc.Applicability.APPLIES,
+            raw_value=True,
+            reason="in scope",
+        ),
+    }
+
+    problems = crc.assert_scopes_reachable(results, {})
+
+    assert problems == []
+
+
+@pytest.mark.unit
+def test_assert_scopes_reachable_empty_results_returns_no_problems() -> None:
+    """No repos means no fleet to assert reach against, so nothing is flagged."""
+    problems = crc.assert_scopes_reachable([], {})
+
+    assert problems == []
+
+
+@pytest.mark.unit
+def test_render_scope_summary_always_emits_skip_line_even_when_zero() -> None:
+    """render_scope_summary prints a SKIP line per scope, even with zero skips."""
+    lines = crc.render_scope_summary([], {})
+
+    assert any("SKIP (publishesDocs: false)" in line for line in lines)
+
+
+@pytest.mark.unit
+def test_render_scope_summary_lists_unknown_repos_with_reason() -> None:
+    """render_scope_summary lists each UNKNOWN repo slug with its reason."""
+    result = crc.RepoResult(slug="org/unclear-repo", branch="main")
+    reason = "publishesDocs absent from catalog entry; populate it"
+    result.scopes = {
+        "docs_repos": crc.ScopeVerdict(
+            "docs_repos", crc.Applicability.UNKNOWN, None, reason
+        ),
+    }
+
+    lines = crc.render_scope_summary([result], {})
+
+    assert any(f"org/unclear-repo: {reason}" in line for line in lines)
+
+
+@pytest.mark.unit
+def test_load_manifest_scope_checks_covers_every_defined_scope() -> None:
+    """The real manifest yields non-empty, sorted check-ID lists for every scope.
+
+    Asserting against SCOPE_DEFINITIONS rather than a hardcoded pair means a
+    scope that loses all its manifest checks fails here instead of vanishing
+    from the mapping unnoticed. A loop over ``scope_checks.values()`` alone
+    cannot catch that: the missing scope simply never enters the loop.
+    """
+    scope_checks = crc.load_manifest_scope_checks()
+
+    missing = sorted(set(crc.SCOPE_DEFINITIONS) - set(scope_checks))
+    assert not missing, f"scopes defined but carried by no manifest check: {missing}"
+    for ids in scope_checks.values():
+        assert len(ids) > 0
+        assert ids == sorted(ids)
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize(
+    ("body", "root_type"),
+    [
+        ("- CI-001\n- CI-002\n", "list"),
+        ("just a string\n", "str"),
+        ("", "NoneType"),
+    ],
+    ids=["sequence-root", "scalar-root", "empty-file"],
+)
+def test_load_manifest_scope_checks_degrades_on_non_mapping_root(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    tmp_path: Path,
+    body: str,
+    root_type: str,
+) -> None:
+    """A valid YAML document that is not a mapping degrades, it does not crash.
+
+    `yaml.safe_load` happily returns a list, a bare scalar, or `None`. None of
+    those carries `.get`, so an unguarded read raises AttributeError and kills
+    the whole fleet sweep over a malformed manifest. The documented behaviour
+    for an unreadable manifest is an unknown scope count, and a differently
+    malformed manifest must land in the same place rather than in a traceback.
+    """
+    manifest = tmp_path / "standards-manifest.yaml"
+    manifest.write_text(body, encoding="utf-8")
+    monkeypatch.setattr(crc, "MANIFEST_PATH", manifest)
+
+    assert crc.load_manifest_scope_checks() == {}
+    assert root_type in capsys.readouterr().err
+
+
+@pytest.mark.parametrize(
+    ("failures", "unreachable", "unknown", "expected"),
+    [
+        (0, 0, 0, 0),
+        (3, 0, 0, 1),
+        (0, 2, 0, 2),
+        (0, 0, 45, 2),
+        (0, 2, 45, 2),
+        (3, 2, 45, 1),
+    ],
+    ids=[
+        "clean",
+        "failures-only",
+        "unreachable-only",
+        "unknown-only",
+        "both-incomplete",
+        "failures-outrank-incomplete",
+    ],
+)
+def test_sweep_exit_code_separates_failure_from_incompleteness(
+    failures: int, unreachable: int, unknown: int, expected: int
+) -> None:
+    """A missing verdict exits 2, a real failure exits 1, and neither exits 0.
+
+    The distinction is the point. "3 repos fail BP-4" is actionable on the
+    repos; "the catalog never said whether MkDocs applies" is actionable on the
+    catalog. Collapsing both to 1 forces the operator to read the log to learn
+    which they have, and collapsing incompleteness to 0 is the defect this PR
+    exists to remove: the fleet-wide MkDocs skip reported a clean audit.
+
+    Args:
+        failures: Repos failing an applicable check.
+        unreachable: Scopes no repo satisfies.
+        unknown: Repos carrying an UNKNOWN applicability.
+        expected: Required exit code.
+    """
+    mod = load_module()
+
+    assert (
+        mod.sweep_exit_code(
+            failures=failures,
+            unreachable_scopes=unreachable,
+            unknown_scope_repos=unknown,
+        )
+        == expected
+    )
+
+
+def test_sweep_exit_code_never_reports_incompleteness_as_success() -> None:
+    """No combination of missing verdicts can produce exit 0.
+
+    Guards the property directly rather than trusting the parametrized cases to
+    have enumerated every shape: exit 0 must require both counts at zero.
+    """
+    mod = load_module()
+
+    for unreachable in range(3):
+        for unknown in range(3):
+            code = mod.sweep_exit_code(
+                failures=0,
+                unreachable_scopes=unreachable,
+                unknown_scope_repos=unknown,
+            )
+            clean = unreachable == 0 and unknown == 0
+            assert (code == 0) is clean, (
+                f"unreachable={unreachable} unknown={unknown} gave {code}"
+            )
