@@ -694,6 +694,22 @@ def test_offenders_for_mechanism_proven_fixture_accepts_a_present_fixture(
     assert offenders == []
 
 
+def test_offenders_for_mechanism_proven_fixture_ignores_unproven(
+    tmp_path: Path,
+) -> None:
+    """An ``unproven`` check with no fixture is not an offender.
+
+    This is the over-match control. The two tests above prove the guard fires
+    on a real violation; this one bounds it. Widening the predicate to
+    ``!= "unproven"`` or ``in {"proven", "unproven"}`` would still pass both of
+    them while turning all 12 live OPS checks into offenders, because none has
+    a fixture. Only this direction catches that.
+    """
+    checks = [{"id": "OPS-998", "mechanism": "unproven"}]
+    offenders = _offenders_for_mechanism_proven_fixture(checks, tmp_path)
+    assert offenders == []
+
+
 def _offenders_for_spine_category(checks: list[dict[str, Any]]) -> list[Any]:
     """Return the ID of every OPS check with a missing or unknown sp_category.
 
