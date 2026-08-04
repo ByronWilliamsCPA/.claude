@@ -24,6 +24,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import subprocess
 import sys
 from io import StringIO
 from pathlib import Path
@@ -313,6 +314,51 @@ def _is_excluded(resolved: Path, exclude_resolved: list[Path]) -> bool:
     return any(resolved == ex or ex in resolved.parents for ex in exclude_resolved)
 
 
+def _drop_git_ignored(files: list[Path]) -> list[Path]:
+    """Drop files that git ignores.
+
+    Discovery is an unfiltered ``rglob``, so locally-generated output that
+    ``.gitignore`` already covers (compliance reports, generated catalogs) was
+    validated and could fail a pre-commit run over a file that will never be
+    committed. Gating a commit on ignored build output is always wrong, and the
+    alternative of naming each directory in ``--exclude`` drifts the moment a
+    new generated path appears.
+
+    Args:
+        files: Candidate Markdown paths.
+
+    Returns:
+        The subset git does not ignore. Returns *files* unchanged when git is
+        unavailable or errors, so a missing git can never silently skip
+        validation.
+    """
+    if not files:
+        return files
+    # Anchor the query inside the tree being validated. Without an explicit cwd
+    # git resolves .gitignore against the process working directory, which is
+    # the wrong repo whenever the collected paths live somewhere else.
+    anchor = files[0].parent
+    if not anchor.is_dir():
+        return files
+    try:
+        proc = subprocess.run(
+            ["git", "check-ignore", "--stdin"],
+            input="\n".join(str(f) for f in files),
+            cwd=anchor,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return files
+    # 0 = some paths ignored, 1 = none ignored. Anything else (128: not a git
+    # repo, git missing) means no usable verdict, so validate everything.
+    if proc.returncode not in (0, 1):
+        return files
+    ignored = {line.strip() for line in proc.stdout.splitlines() if line.strip()}
+    return [f for f in files if str(f) not in ignored]
+
+
 def _collect_md_files(paths: list[str], exclude: list[str] | None = None) -> list[Path]:
     """Collect Markdown files from the given path strings.
 
@@ -322,7 +368,8 @@ def _collect_md_files(paths: list[str], exclude: list[str] | None = None) -> lis
             an exclude entry or any of its ancestor directories matches one.
 
     Returns:
-        List of Path objects for Markdown files found.
+        List of Path objects for Markdown files found, excluding any that git
+        ignores.
     """
     exclude_resolved = [Path(e).resolve() for e in (exclude or [])]
     md_files: list[Path] = []
@@ -336,7 +383,7 @@ def _collect_md_files(paths: list[str], exclude: list[str] | None = None) -> lis
             )
         elif path.suffix.lower() == ".md" and not _is_excluded(path, exclude_resolved):
             md_files.append(path)
-    return md_files
+    return _drop_git_ignored(md_files)
 
 
 def _output_results(results: list[dict[str, Any]], emit_json: bool) -> None:
