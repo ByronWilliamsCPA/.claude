@@ -53,9 +53,11 @@ class TestConfigResolution:
         monkeypatch.setenv("ANKI_SOURCE_ROOT", "~/cards")
         assert "~" not in str(card_source_root())
 
-    def test_source_root_has_a_default(self, monkeypatch):
+    def test_source_root_defaults_to_the_cards_subdirectory(self, monkeypatch):
         monkeypatch.delenv("ANKI_SOURCE_ROOT", raising=False)
-        assert card_source_root().name == "premed-anki-source"
+        root = card_source_root()
+        assert root.name == "cards"
+        assert root.parent.name == "premed-anki-source"
 
     def test_root_deck_reads_the_env_var(self, monkeypatch):
         monkeypatch.setenv("ANKI_ROOT_DECK", "Custom")

@@ -51,7 +51,8 @@ anki-cards new <course-slug> <term-slug> "<Lecture Title>"
 ```
 
 This creates `<course>/<term>/<YYYY-MM-DD>-<lecture-slug>.md` under the
-card-source root with correct frontmatter and an empty card list. Fill in the
+card-source root (the repo's `cards/` folder) with correct frontmatter and an
+empty card list. Fill in the
 cards with Edit, following the rules below, then run:
 
 ```bash
@@ -110,7 +111,9 @@ Two layers, already decided; do not redesign them:
 - **AnkiWeb** handles live multi-device sync.
 - **The card-source git repo** is the durable, human-readable history. Every
   batch is a commit. It is a separate private repo, never this one: this repo
-  is public and her course list and study record are not for publishing.
+  is public and her course list and study record are not for publishing. Cards
+  sit in that repo's `cards/` folder, which is what `ANKI_SOURCE_ROOT` points
+  at; the rest of the repo root is free for other premed material.
 
 The `.apkg` export is a third restore path that depends on neither:
 

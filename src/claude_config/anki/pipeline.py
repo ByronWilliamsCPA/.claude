@@ -12,9 +12,11 @@ Three operations, deliberately separate:
     Write an ``.apkg`` snapshot of a deck tree, for a restore path that depends
     on neither git nor AnkiWeb.
 
-The card-source root is a separate git repository, not this one. This repo is
-public; a student's course list, lecture cadence and study record are not
-things to publish. The root is resolved from ``ANKI_SOURCE_ROOT``.
+The card-source root is the ``cards`` folder of a separate private git
+repository, not this one. This repo is public; a student's course list, lecture
+cadence and study record are not things to publish. Cards sit under ``cards/``
+rather than at that repo's root so the repo can also hold other premed material
+without the two tangling. The root is resolved from ``ANKI_SOURCE_ROOT``.
 """
 
 from __future__ import annotations
@@ -42,7 +44,7 @@ from claude_config.anki.dedupe import (
 if TYPE_CHECKING:
     from claude_config.anki.connect import AnkiConnectClient
 
-DEFAULT_SOURCE_ROOT: Final = "~/dev/premed-anki-source"
+DEFAULT_SOURCE_ROOT: Final = "~/dev/premed-anki-source/cards"
 SOURCE_ROOT_ENV: Final = "ANKI_SOURCE_ROOT"
 EXPORT_DIR_ENV: Final = "ANKI_EXPORT_DIR"
 ROOT_DECK_ENV: Final = "ANKI_ROOT_DECK"

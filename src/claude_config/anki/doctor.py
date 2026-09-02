@@ -77,8 +77,27 @@ def find_config_repo(path: Path) -> Path | None:
     return None
 
 
+def find_git_root(path: Path) -> Path | None:
+    """Find the git repository containing ``path``.
+
+    Walks ``path`` and its parents looking for a ``.git`` entry. The card
+    source is a subdirectory of its repository rather than the repository
+    root, so testing ``path`` alone would miss it.
+
+    Args:
+        path (Path): Directory to test, along with its ancestors.
+
+    Returns:
+        Path | None: Repository root, or None when ``path`` is not in one.
+    """
+    for candidate in (path, *path.parents):
+        if (candidate / ".git").exists():
+            return candidate
+    return None
+
+
 def check_source_root() -> list[CheckResult]:
-    """Verify the card-source repository is configured and usable.
+    """Verify the card-source folder is configured and usable.
 
     Returns:
         list[CheckResult]: Results for configuration, existence, git status
@@ -86,7 +105,8 @@ def check_source_root() -> list[CheckResult]:
     """
     configured = os.environ.get(SOURCE_ROOT_ENV)
     root = card_source_root()
-    results = [
+    git_root = find_git_root(root)
+    return [
         CheckResult(
             name=SOURCE_ROOT_ENV,
             ok=bool(configured),
@@ -97,56 +117,88 @@ def check_source_root() -> list[CheckResult]:
                 f"Export {SOURCE_ROOT_ENV} in your shell profile."
             ),
             fatal=False,
-        )
+        ),
+        _check_folder(root, git_root),
+        _check_git_repo(root, git_root),
+        _check_not_public_repo(root),
     ]
-    if not root.is_dir():
-        results.append(
-            CheckResult(
-                name="card source folder",
-                ok=False,
-                detail=f"{root} does not exist. Clone the card-source repo there.",
-            )
-        )
-        return results
-    results.append(
-        CheckResult(name="card source folder", ok=True, detail=f"{root} exists.")
-    )
-    results.append(_check_is_git_repo(root))
-    results.append(_check_not_public_repo(root))
-    return results
 
 
-def _check_is_git_repo(root: Path) -> CheckResult:
-    """Verify the card-source root is a git repository.
+def _check_folder(root: Path, git_root: Path | None) -> CheckResult:
+    """Report whether the card-source folder exists.
+
+    A missing folder inside a real repository is only a warning: the folder is
+    a subdirectory of the card-source repo and is created on the first
+    ``anki-cards new``. A missing folder with no repository above it is fatal,
+    because that means the path is wrong rather than merely unpopulated.
 
     Args:
-        root (Path): Card-source root.
+        root (Path): Card-source folder.
+        git_root (Path | None): Enclosing repository root, if any.
 
     Returns:
-        CheckResult: Whether ``root`` carries a ``.git`` entry.
+        CheckResult: Whether the folder is present, or acceptably absent.
     """
-    if (root / ".git").exists():
+    if root.is_dir():
+        return CheckResult(name="card source folder", ok=True, detail=f"{root} exists.")
+    if git_root is not None:
         return CheckResult(
-            name="card source is a git repo", ok=True, detail="Version history is on."
+            name="card source folder",
+            ok=False,
+            detail=(
+                f"{root} does not exist yet. It sits inside the repo at "
+                f"{git_root} and is created on the first 'anki-cards new', so "
+                "this only matters if you expected cards to be there already."
+            ),
+            fatal=False,
         )
     return CheckResult(
-        name="card source is a git repo",
+        name="card source folder",
         ok=False,
         detail=(
-            f"{root} is not a git repository, so card batches would have no "
-            "history. Run 'git init' there and add a private remote."
+            f"{root} does not exist, and there is no git repository above it. "
+            f"Clone the card-source repo and point {SOURCE_ROOT_ENV} at its "
+            "'cards' folder."
+        ),
+    )
+
+
+def _check_git_repo(root: Path, git_root: Path | None) -> CheckResult:
+    """Verify the card source sits inside a git repository.
+
+    Args:
+        root (Path): Card-source folder.
+        git_root (Path | None): Enclosing repository root, if any.
+
+    Returns:
+        CheckResult: Whether an enclosing repository was found.
+    """
+    if git_root is not None:
+        where = "this folder" if git_root == root else str(git_root)
+        return CheckResult(
+            name="card source is in a git repo",
+            ok=True,
+            detail=f"Version history is on, rooted at {where}.",
+        )
+    return CheckResult(
+        name="card source is in a git repo",
+        ok=False,
+        detail=(
+            f"{root} is not inside a git repository, so card batches would "
+            f"have no history. Clone the card-source repo and point "
+            f"{SOURCE_ROOT_ENV} at its 'cards' folder."
         ),
     )
 
 
 def _check_not_public_repo(root: Path) -> CheckResult:
-    """Verify the card-source root is not inside the public config repo.
+    """Verify the card source is not inside the public config repo.
 
     Card content carries a student's course list, lecture cadence and study
     record, so it must never land in a public repository.
 
     Args:
-        root (Path): Card-source root.
+        root (Path): Card-source folder.
 
     Returns:
         CheckResult: Whether ``root`` sits outside any config repo.

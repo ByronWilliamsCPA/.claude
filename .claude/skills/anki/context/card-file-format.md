@@ -1,6 +1,8 @@
 # Card File Format
 
-One markdown file per lecture. YAML frontmatter, then `## Card N` blocks.
+One markdown file per lecture, stored under the card-source repo's `cards/`
+folder as `cards/<course>/<term>/<YYYY-MM-DD>-<lecture>.md`. YAML frontmatter,
+then `## Card N` blocks.
 
 ```markdown
 ---

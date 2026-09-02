@@ -31,36 +31,42 @@ cd premed-anki-source
 git commit -S --allow-empty -m "chore: initialize card source"
 ```
 
-Layout, created automatically by `anki-cards new`:
+Cards live under `cards/`, not at the repo root, so the repo can also hold
+other premed material without the two tangling. Everything below `cards/` is
+created automatically by `anki-cards new`:
 
 ```text
 premed-anki-source/
-  bisc-220/
-    fall-2026/
-      2026-09-02-glycolysis-regulation.md
-      2026-09-04-gluconeogenesis.md
-  chem-322/
-    fall-2026/
-      2026-09-03-sn1-and-sn2.md
+  cards/
+    bisc-220/
+      fall-2026/
+        2026-09-02-glycolysis-regulation.md
+        2026-09-04-gluconeogenesis.md
+    chem-322/
+      fall-2026/
+        2026-09-03-sn1-and-sn2.md
 ```
 
 Course, then term, then date-prefixed lecture file. The term tier keeps a
 repeated or retaken course from colliding with its earlier run, and the date
 prefix makes a term read chronologically.
 
+`ANKI_SOURCE_ROOT` points at the `cards` folder, not the repo root. Git still
+sees the whole repo, so commits work from inside `cards/` as normal.
+
 ## 3. Environment variables
 
 Add to the shell profile (`~/.zshrc` or `~/.bashrc`):
 
 ```bash
-export ANKI_SOURCE_ROOT="$HOME/dev/premed-anki-source"
+export ANKI_SOURCE_ROOT="$HOME/dev/premed-anki-source/cards"
 export ANKI_EXPORT_DIR="$HOME/OneDrive/Family/anki-backups"
 export ANKI_ROOT_DECK="Ariannah"
 ```
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
-| `ANKI_SOURCE_ROOT` | `~/dev/premed-anki-source` | Card-source repo root. |
+| `ANKI_SOURCE_ROOT` | `~/dev/premed-anki-source/cards` | Card folder inside the card-source repo. |
 | `ANKI_EXPORT_DIR` | unset | Where `.apkg` snapshots are written. Point at the OneDrive folder that already holds the family Excel tracker. |
 | `ANKI_ROOT_DECK` | `Ariannah` | Top-level deck. Exporting it includes every subdeck. |
 | `ANKI_CONNECT_HOST` | `127.0.0.1` | Only change if Anki runs on another machine. |
@@ -106,3 +112,7 @@ Two failures worth knowing about in advance:
   anywhere inside the public `.claude` repo, `doctor` fails hard. Card content
   carries a course list, lecture cadence and study record, and must stay in its
   own private repo.
+- **`cards/` not created yet.** On a freshly cloned repo this is a warning, not
+  a failure: the folder appears on the first `anki-cards new`. It is only fatal
+  when there is no git repository above the path at all, which means the path
+  is wrong.

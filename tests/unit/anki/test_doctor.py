@@ -10,6 +10,7 @@ from claude_config.anki.doctor import (
     check_export_dir,
     check_source_root,
     find_config_repo,
+    find_git_root,
     run_checks,
 )
 
@@ -28,11 +29,13 @@ def make_config_repo(root):
 
 @pytest.fixture
 def source_repo(tmp_path, monkeypatch):
-    """A well-formed, private card-source repo outside any config repo."""
-    root = tmp_path / "premed-anki-source"
-    (root / ".git").mkdir(parents=True)
-    monkeypatch.setenv("ANKI_SOURCE_ROOT", str(root))
-    return root
+    """A private card-source repo with cards in a `cards/` subdirectory."""
+    repo = tmp_path / "premed-anki-source"
+    (repo / ".git").mkdir(parents=True)
+    cards = repo / "cards"
+    cards.mkdir()
+    monkeypatch.setenv("ANKI_SOURCE_ROOT", str(cards))
+    return cards
 
 
 class TestFindConfigRepo:
@@ -53,9 +56,9 @@ class TestFindConfigRepo:
         is not a git checkout."""
         (tmp_path / "CLAUDE.md").write_text("x")
         (tmp_path / ".claude" / "skills").mkdir(parents=True)
-        source = tmp_path / "dev" / "premed-anki-source"
-        (source / ".git").mkdir(parents=True)
-        assert find_config_repo(source) is None
+        repo = tmp_path / "dev" / "premed-anki-source"
+        (repo / ".git").mkdir(parents=True)
+        assert find_config_repo(repo / "cards") is None
 
     def test_returns_none_outside_a_config_repo(self, tmp_path):
         plain = tmp_path / "somewhere"
@@ -83,29 +86,44 @@ class TestCheckSourceRoot:
         assert result.fatal is False
         assert "shell profile" in result.detail
 
-    def test_missing_folder_blocks_and_stops_further_checks(
-        self, monkeypatch, tmp_path
-    ):
+    def test_missing_folder_with_no_repo_above_it_blocks(self, monkeypatch, tmp_path):
         monkeypatch.setenv("ANKI_SOURCE_ROOT", str(tmp_path / "absent"))
+        folder = by_name(check_source_root(), "card source folder")
+        assert folder.ok is False
+        assert folder.fatal is True
+        assert "no git repository above it" in folder.detail
+
+    def test_missing_cards_folder_inside_a_repo_only_warns(self, monkeypatch, tmp_path):
+        """The cards folder is created on the first `anki-cards new`, so a
+        freshly cloned repo that has no cards yet is not a blocker."""
+        repo = tmp_path / "premed-anki-source"
+        (repo / ".git").mkdir(parents=True)
+        monkeypatch.setenv("ANKI_SOURCE_ROOT", str(repo / "cards"))
         results = check_source_root()
         folder = by_name(results, "card source folder")
         assert folder.ok is False
-        assert folder.fatal is True
-        assert "Clone the card-source repo" in folder.detail
-        assert len(results) == 2
+        assert folder.fatal is False
+        assert "created on the first" in folder.detail
+        assert blocking_failures(results) == []
 
-    def test_folder_without_git_blocks(self, monkeypatch, tmp_path):
+    def test_folder_outside_any_repo_blocks(self, monkeypatch, tmp_path):
         root = tmp_path / "plain"
         root.mkdir()
         monkeypatch.setenv("ANKI_SOURCE_ROOT", str(root))
-        result = by_name(check_source_root(), "card source is a git repo")
+        result = by_name(check_source_root(), "card source is in a git repo")
         assert result.ok is False
-        assert "git init" in result.detail
+        assert result.fatal is True
+        assert "not inside a git repository" in result.detail
+
+    def test_git_repo_check_names_the_enclosing_repo(self, source_repo):
+        result = by_name(check_source_root(), "card source is in a git repo")
+        assert result.ok is True
+        assert str(source_repo.parent) in result.detail
 
     def test_source_inside_the_public_config_repo_blocks(self, monkeypatch, tmp_path):
         make_config_repo(tmp_path)
-        root = tmp_path / "anki-source"
-        (root / ".git").mkdir(parents=True)
+        root = tmp_path / "anki-source" / "cards"
+        root.mkdir(parents=True)
         monkeypatch.setenv("ANKI_SOURCE_ROOT", str(root))
         result = by_name(
             check_source_root(), "card source is separate from the config repo"
@@ -113,6 +131,32 @@ class TestCheckSourceRoot:
         assert result.ok is False
         assert result.fatal is True
         assert "public" in result.detail
+
+
+class TestFindGitRoot:
+    def test_finds_the_repo_from_a_subdirectory(self, tmp_path):
+        (tmp_path / ".git").mkdir()
+        nested = tmp_path / "cards" / "bisc-220" / "fall-2026"
+        nested.mkdir(parents=True)
+        assert find_git_root(nested) == tmp_path
+
+    def test_finds_the_repo_at_the_path_itself(self, tmp_path):
+        (tmp_path / ".git").mkdir()
+        assert find_git_root(tmp_path) == tmp_path
+
+    def test_returns_none_outside_a_repo(self, tmp_path):
+        plain = tmp_path / "plain"
+        plain.mkdir()
+        assert find_git_root(plain) is None
+
+    def test_finds_the_repo_for_a_path_that_does_not_exist_yet(self, tmp_path):
+        (tmp_path / ".git").mkdir()
+        assert find_git_root(tmp_path / "cards") == tmp_path
+
+    def test_a_git_file_counts_as_a_repo(self, tmp_path):
+        """Worktrees and submodules carry a .git file, not a directory."""
+        (tmp_path / ".git").write_text("gitdir: /elsewhere")
+        assert find_git_root(tmp_path / "cards") == tmp_path
 
 
 class TestCheckExportDir:
