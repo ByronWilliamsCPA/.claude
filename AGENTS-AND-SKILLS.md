@@ -756,6 +756,17 @@ analysis, and style profile calibration. Modes: `edit` (Stage 1→2→3), `draft
 "rewrite for [audience]", "check my writing", "style review", "grammar check", "does this sound
 like me", "writing pipeline", "AI patterns", "will this land".
 
+### Study Workflows
+
+**[/anki](/.claude/skills/anki/SKILL.md)**
+Turns a distilled lecture summary into 10-15 Anki cards and pushes them into the live
+collection over AnkiConnect (add-on `2055492159`, `127.0.0.1:8765`). Writes a reviewable
+markdown card file first and refuses to push until it is marked `approved`; checks each
+card against the destination deck and the rest of the batch for near-duplicates; syncs to
+AnkiWeb afterwards. Backed by the `claude_config.anki` package and the `anki-cards` CLI.
+Card content lives in a separate private repo, never here. Activates on: "anki",
+"make cards", "flashcards", "lecture notes to cards", "push cards", "apkg backup".
+
 ---
 
 ## Superpowers Skills (Community-Maintained)
