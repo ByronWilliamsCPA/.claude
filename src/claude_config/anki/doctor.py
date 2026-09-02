@@ -29,7 +29,7 @@ from claude_config.anki.pipeline import (
 if TYPE_CHECKING:
     from claude_config.anki.connect import AnkiConnectClient
 
-CONFIG_REPO_MARKERS: Final = ("CLAUDE.md", ".claude/skills")
+CONFIG_REPO_MARKERS: Final = ("CLAUDE.md", ".claude/skills", ".git")
 
 
 @dataclass(frozen=True)
@@ -53,8 +53,16 @@ class CheckResult:
 def find_config_repo(path: Path) -> Path | None:
     """Find the public config repo in ``path`` or any of its parents.
 
-    The config repo is identified by carrying both a top-level ``CLAUDE.md``
-    and a ``.claude/skills`` directory.
+    A config repo carries a top-level ``CLAUDE.md``, a ``.claude/skills``
+    directory, and a ``.git`` entry.
+
+    The ``.git`` requirement is what keeps this from misfiring on a home
+    directory. After ``setup.sh`` runs, ``~/.claude/skills`` is a symlink and
+    therefore exists, so a home directory that also happens to hold a
+    ``~/CLAUDE.md`` matches the first two markers on its own. Without the
+    third, a perfectly good card source at ``~/dev/premed-anki-source`` would
+    be reported as living inside the public repo. A home directory is not a
+    git checkout; the config repo always is.
 
     Args:
         path (Path): Directory to test, along with its ancestors.

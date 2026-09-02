@@ -18,6 +18,14 @@ def by_name(results, name):
     return next(r for r in results if r.name == name)
 
 
+def make_config_repo(root):
+    """Create the three markers that identify the public config repo."""
+    (root / "CLAUDE.md").write_text("x")
+    (root / ".claude" / "skills").mkdir(parents=True)
+    (root / ".git").mkdir()
+    return root
+
+
 @pytest.fixture
 def source_repo(tmp_path, monkeypatch):
     """A well-formed, private card-source repo outside any config repo."""
@@ -29,16 +37,25 @@ def source_repo(tmp_path, monkeypatch):
 
 class TestFindConfigRepo:
     def test_detects_a_config_repo_root(self, tmp_path):
-        (tmp_path / "CLAUDE.md").write_text("x")
-        (tmp_path / ".claude" / "skills").mkdir(parents=True)
+        make_config_repo(tmp_path)
         assert find_config_repo(tmp_path) == tmp_path
 
     def test_detects_a_config_repo_from_a_nested_path(self, tmp_path):
-        (tmp_path / "CLAUDE.md").write_text("x")
-        (tmp_path / ".claude" / "skills").mkdir(parents=True)
+        make_config_repo(tmp_path)
         nested = tmp_path / "anki-source" / "bisc-220"
         nested.mkdir(parents=True)
         assert find_config_repo(nested) == tmp_path
+
+    def test_a_home_directory_is_not_a_config_repo(self, tmp_path):
+        """Regression: ~/.claude/skills exists after setup.sh, so a home
+        directory holding a ~/CLAUDE.md matched the first two markers and
+        wrongly blocked a card source anywhere beneath it. A home directory
+        is not a git checkout."""
+        (tmp_path / "CLAUDE.md").write_text("x")
+        (tmp_path / ".claude" / "skills").mkdir(parents=True)
+        source = tmp_path / "dev" / "premed-anki-source"
+        (source / ".git").mkdir(parents=True)
+        assert find_config_repo(source) is None
 
     def test_returns_none_outside_a_config_repo(self, tmp_path):
         plain = tmp_path / "somewhere"
@@ -47,6 +64,10 @@ class TestFindConfigRepo:
 
     def test_one_marker_alone_is_not_a_config_repo(self, tmp_path):
         (tmp_path / "CLAUDE.md").write_text("x")
+        assert find_config_repo(tmp_path) is None
+
+    def test_a_plain_git_repo_is_not_a_config_repo(self, tmp_path):
+        (tmp_path / ".git").mkdir()
         assert find_config_repo(tmp_path) is None
 
 
@@ -82,8 +103,7 @@ class TestCheckSourceRoot:
         assert "git init" in result.detail
 
     def test_source_inside_the_public_config_repo_blocks(self, monkeypatch, tmp_path):
-        (tmp_path / "CLAUDE.md").write_text("x")
-        (tmp_path / ".claude" / "skills").mkdir(parents=True)
+        make_config_repo(tmp_path)
         root = tmp_path / "anki-source"
         (root / ".git").mkdir(parents=True)
         monkeypatch.setenv("ANKI_SOURCE_ROOT", str(root))
