@@ -82,3 +82,27 @@ Run the export on a cadence that suits the term:
 ```bash
 anki-cards export
 ```
+
+## Verifying the whole setup
+
+One command checks every step above and prints a remedy for anything that
+fails:
+
+```bash
+anki-cards doctor
+```
+
+It exits non-zero if anything would block a push. Warnings (a missing export
+folder, a root deck that does not exist yet) do not block, because the export
+folder is only needed for backups and course decks are created on demand.
+
+Two failures worth knowing about in advance:
+
+- **Note types missing.** The pipeline creates `Basic` and `Cloze` notes. A
+  collection set up in a language other than English carries translated
+  note-type names, and every push would fail on an unhelpful add-on error.
+  `doctor` catches this and names it.
+- **Card source inside the config repo.** If `ANKI_SOURCE_ROOT` points
+  anywhere inside the public `.claude` repo, `doctor` fails hard. Card content
+  carries a course list, lecture cadence and study record, and must stay in its
+  own private repo.

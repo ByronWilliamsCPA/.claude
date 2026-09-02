@@ -239,3 +239,55 @@ class TestDuplicateReportFormatting:
         assert len(card_lines) == 1
         assert "\n" not in card_lines[0]
         assert "steps are catalyzed by" in card_lines[0]
+
+
+class TestDoctor:
+    def test_healthy_machine_reports_ready(self, wired, monkeypatch, tmp_path, capsys):
+        root = tmp_path / "source"
+        (root / ".git").mkdir(parents=True)
+        monkeypatch.setenv("ANKI_SOURCE_ROOT", str(root))
+        monkeypatch.setenv("ANKI_EXPORT_DIR", str(tmp_path / "onedrive"))
+        monkeypatch.delenv("ANKI_ROOT_DECK", raising=False)
+        assert cli.main(["doctor"]) == cli.EXIT_OK
+        assert "Ready to push cards" in capsys.readouterr().out
+
+    def test_blocking_problem_exits_nonzero(self, wired, monkeypatch, tmp_path, capsys):
+        monkeypatch.setenv("ANKI_SOURCE_ROOT", str(tmp_path / "absent"))
+        assert cli.main(["doctor"]) == cli.EXIT_FAIL
+        output = capsys.readouterr().out
+        assert "[FAIL]" in output
+        assert "Cards cannot be pushed yet" in output
+
+    def test_warnings_do_not_block(self, wired, monkeypatch, tmp_path, capsys):
+        root = tmp_path / "source"
+        (root / ".git").mkdir(parents=True)
+        monkeypatch.setenv("ANKI_SOURCE_ROOT", str(root))
+        monkeypatch.delenv("ANKI_EXPORT_DIR", raising=False)
+        assert cli.main(["doctor"]) == cli.EXIT_OK
+        output = capsys.readouterr().out
+        assert "[warn]" in output
+        assert "warning(s) above" in output
+
+    def test_each_result_is_followed_by_a_detail_line(
+        self, wired, monkeypatch, tmp_path, capsys
+    ):
+        monkeypatch.setenv("ANKI_SOURCE_ROOT", str(tmp_path / "absent"))
+        cli.main(["doctor"])
+        lines = [line for line in capsys.readouterr().out.splitlines() if line]
+        marks = [i for i, line in enumerate(lines) if line.startswith("[")]
+        assert marks
+        for index in marks:
+            assert lines[index + 1].startswith("       ")
+
+    def test_fully_clean_machine_says_everything_checks_out(
+        self, wired, monkeypatch, tmp_path, capsys
+    ):
+        root = tmp_path / "source"
+        (root / ".git").mkdir(parents=True)
+        export = tmp_path / "onedrive"
+        export.mkdir()
+        monkeypatch.setenv("ANKI_SOURCE_ROOT", str(root))
+        monkeypatch.setenv("ANKI_EXPORT_DIR", str(export))
+        monkeypatch.delenv("ANKI_ROOT_DECK", raising=False)
+        assert cli.main(["doctor"]) == cli.EXIT_OK
+        assert "Everything checks out" in capsys.readouterr().out

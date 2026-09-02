@@ -13,6 +13,9 @@ class FakeAnki:
     """In-memory stand-in for AnkiConnectClient, recording what it was asked."""
 
     def __init__(self, decks=None, notes=None, version=6, supports=True):
+        self.host = "127.0.0.1"
+        self.port = 8765
+        self.models = ["Basic", "Cloze"]
         self.decks = list(decks or ["Ariannah"])
         self.notes = list(notes or [])
         self.version = version
@@ -25,6 +28,9 @@ class FakeAnki:
 
     def preflight(self):
         return self.version
+
+    def model_names(self):
+        return list(self.models)
 
     def supports(self, action):
         return self._supports

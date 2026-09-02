@@ -177,6 +177,33 @@ class AnkiConnectClient:
             raise AnkiActionError(msg)
         return parsed["result"]
 
+    @staticmethod
+    def _as_list(action: str, result: Any) -> list[Any]:
+        """Validate that ``result`` is a list.
+
+        A ``null`` or scalar result where a list is expected means the running
+        add-on did not understand the action. Reporting that as a protocol
+        error keeps it distinguishable from a genuinely empty result, and stops
+        it surfacing as a ``TypeError`` several frames away.
+
+        Args:
+            action (str): Action name, used only for error messages.
+            result (Any): Value returned by AnkiConnect.
+
+        Returns:
+            list[Any]: The result, unchanged.
+
+        Raises:
+            AnkiProtocolError: The result was not a list.
+        """
+        if not isinstance(result, list):
+            msg = (
+                f"{action}: expected a list from Anki, got {result!r}. "
+                "This AnkiConnect version may not support the action."
+            )
+            raise AnkiProtocolError(msg)
+        return result
+
     def preflight(self) -> int:
         """Confirm Anki is reachable and report its API version.
 
@@ -218,7 +245,15 @@ class AnkiConnectClient:
         Returns:
             list[str]: Fully qualified deck names.
         """
-        return list(self.invoke("deckNames"))
+        return self._as_list("deckNames", self.invoke("deckNames"))
+
+    def model_names(self) -> list[str]:
+        """List every note type in the open collection.
+
+        Returns:
+            list[str]: Note type names as Anki reports them.
+        """
+        return self._as_list("modelNames", self.invoke("modelNames"))
 
     def create_deck(self, deck: str) -> None:
         """Create ``deck`` if it does not already exist.
@@ -240,7 +275,7 @@ class AnkiConnectClient:
         Returns:
             list[int]: Matching note ids.
         """
-        return list(self.invoke("findNotes", query=query))
+        return self._as_list("findNotes", self.invoke("findNotes", query=query))
 
     def notes_info(self, note_ids: list[int]) -> list[dict[str, Any]]:
         """Fetch field values and tags for ``note_ids``.
@@ -253,7 +288,7 @@ class AnkiConnectClient:
         """
         if not note_ids:
             return []
-        return list(self.invoke("notesInfo", notes=note_ids))
+        return self._as_list("notesInfo", self.invoke("notesInfo", notes=note_ids))
 
     def can_add_notes(self, notes: list[dict[str, Any]]) -> list[bool]:
         """Ask Anki which notes it would accept.
@@ -269,7 +304,7 @@ class AnkiConnectClient:
         """
         if not notes:
             return []
-        return list(self.invoke("canAddNotes", notes=notes))
+        return self._as_list("canAddNotes", self.invoke("canAddNotes", notes=notes))
 
     def add_notes(self, notes: list[dict[str, Any]]) -> list[int | None]:
         """Add notes to the collection.
@@ -283,7 +318,7 @@ class AnkiConnectClient:
         """
         if not notes:
             return []
-        return list(self.invoke("addNotes", notes=notes))
+        return self._as_list("addNotes", self.invoke("addNotes", notes=notes))
 
     def export_package(
         self,

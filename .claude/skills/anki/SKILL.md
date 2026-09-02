@@ -16,10 +16,17 @@ lecture summary goes in, cards come out in the right course deck.
 ## Invocation
 
 ```text
+/anki setup                        # verify this machine is set up correctly
 /anki <path-or-pasted-summary>     # draft cards from a distilled summary
 /anki push <card-file>             # push an approved card file
 /anki backup                       # write an .apkg snapshot
 ```
+
+On a machine that has never run this, start with `anki-cards doctor`. It
+checks the three environment variables, the card-source repo, the Anki
+connection, and that the collection actually carries the `Basic` and `Cloze`
+note types, then prints a remedy for anything that fails. Exit code is
+non-zero when something would block a push.
 
 ## The two-stage gate
 
@@ -80,7 +87,8 @@ anki-cards push <card-file> --dry-run
 anki-cards push <card-file>
 ```
 
-`check` must pass before a push is attempted. Anki Desktop has to be open with
+`check` must pass before a push is attempted. If it fails on a machine that
+has worked before, run `anki-cards doctor` for the fuller picture. Anki Desktop has to be open with
 the AnkiConnect add-on installed (code `2055492159`); there is no headless mode
 and AnkiWeb is a sync service, not an API. If `check` fails, print its message
 and stop; do not retry or work around it.

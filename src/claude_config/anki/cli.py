@@ -1,7 +1,8 @@
 """Command line entry point for the Anki card pipeline.
 
-Five commands, in the order they get used::
+Six commands, in the order they get used::
 
+    anki-cards doctor                # is this machine set up correctly?
     anki-cards check                 # is Anki ready?
     anki-cards new  <course> <term> <lecture>   # make an empty card file
     anki-cards validate <file>       # parse and count, no Anki needed
@@ -30,6 +31,7 @@ from claude_config.anki.cards import (
 )
 from claude_config.anki.connect import AnkiConnectClient, AnkiError
 from claude_config.anki.dedupe import DEFAULT_THRESHOLD
+from claude_config.anki.doctor import blocking_failures, run_checks
 from claude_config.anki.pipeline import (
     PipelineError,
     PushReport,
@@ -82,6 +84,33 @@ def cmd_check(args: argparse.Namespace) -> int:
         out("")
         out("Note: this add-on version has no 'exportPackage'; backups")
         out("will need File > Export in Anki instead.")
+    return EXIT_OK
+
+
+def cmd_doctor(args: argparse.Namespace) -> int:
+    """Verify first-run setup and report every problem with its remedy.
+
+    Args:
+        args (argparse.Namespace): Parsed arguments.
+
+    Returns:
+        int: Process exit code. Non-zero when a check would block a push.
+    """
+    results = run_checks(_client(args))
+    for result in results:
+        mark = "ok  " if result.ok else ("FAIL" if result.fatal else "warn")
+        out(f"[{mark}] {result.name}")
+        out(f"       {result.detail}")
+    blocking = blocking_failures(results)
+    out("")
+    if blocking:
+        out(f"{len(blocking)} blocking problem(s). Cards cannot be pushed yet.")
+        return EXIT_FAIL
+    warnings = [r for r in results if not r.ok]
+    if warnings:
+        out(f"Ready to push cards, with {len(warnings)} warning(s) above.")
+    else:
+        out("Everything checks out. Ready to push cards.")
     return EXIT_OK
 
 
@@ -244,6 +273,10 @@ def build_parser() -> argparse.ArgumentParser:
     check = subparsers.add_parser("check", help="Check that Anki is reachable.")
     _add_connection_flags(check)
     check.set_defaults(handler=cmd_check)
+
+    doctor = subparsers.add_parser("doctor", help="Verify setup on this machine.")
+    _add_connection_flags(doctor)
+    doctor.set_defaults(handler=cmd_doctor)
 
     new = subparsers.add_parser("new", help="Create an empty card file.")
     new.add_argument("course", help="Course slug, e.g. bisc-220.")

@@ -193,3 +193,42 @@ class TestPassThroughWrappers:
         responses["addNotes"] = {"result": [123, None], "error": None}
         assert client.add_notes([{"a": 1}, {"b": 2}]) == [123, None]
         assert len(received[0]["params"]["notes"]) == 2
+
+
+class TestListCoercion:
+    """A null or scalar result where a list is expected is a protocol error.
+
+    Regression: an add-on that does not know an action can answer
+    ``{"result": null, "error": null}``. Passing that straight to ``list()``
+    raised ``TypeError`` several frames away instead of naming the problem.
+    """
+
+    def test_null_result_raises_a_protocol_error(self, anki_server):
+        client, responses, _ = anki_server
+        responses["modelNames"] = {"result": None, "error": None}
+        with pytest.raises(AnkiProtocolError, match="expected a list"):
+            client.model_names()
+
+    def test_error_names_the_action_and_the_likely_cause(self, anki_server):
+        client, responses, _ = anki_server
+        responses["modelNames"] = {"result": None, "error": None}
+        with pytest.raises(AnkiProtocolError) as excinfo:
+            client.model_names()
+        assert "modelNames" in str(excinfo.value)
+        assert "may not support the action" in str(excinfo.value)
+
+    def test_scalar_result_raises_a_protocol_error(self, anki_server):
+        client, responses, _ = anki_server
+        responses["deckNames"] = {"result": 7, "error": None}
+        with pytest.raises(AnkiProtocolError, match="expected a list"):
+            client.deck_names()
+
+    def test_model_names_returns_the_note_types(self, anki_server):
+        client, responses, _ = anki_server
+        responses["modelNames"] = {"result": ["Basic", "Cloze"], "error": None}
+        assert client.model_names() == ["Basic", "Cloze"]
+
+    def test_empty_list_is_a_valid_result(self, anki_server):
+        client, responses, _ = anki_server
+        responses["findNotes"] = {"result": [], "error": None}
+        assert client.find_notes("deck:none") == []
