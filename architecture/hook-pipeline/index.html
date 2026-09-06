@@ -2653,7 +2653,7 @@
 <h2 id="the-six-hook-types">The Six Hook Types<a class="headerlink" href="#the-six-hook-types" title="Permanent link">&para;</a></h2>
 <p><strong>UserPromptSubmit</strong>: fires immediately after the user sends a message, before Claude processes it. Used for: injecting context, detecting intent signals (PR review reminder), the mechanical session-length nudge check, running the hookify user prompt pipeline.</p>
 <p><strong>PreToolUse</strong>: fires before each tool call Claude attempts. Each entry in the <code>PreToolUse</code> array can have a matcher regex targeting specific tools. Used for, in <code>hooks.json</code> array order: bash command guard (Bash), secrets file guard (Edit/Write/MultiEdit), planning bridge gate (Skill), security reminder (Edit/Write/MultiEdit), hookify dispatch (all tools), destructive-command guard (Bash).</p>
-<p><strong>PostToolUse</strong>: fires after each tool call completes. Used for, in <code>hooks.json</code> array order: Python 3.10 compatibility check (Edit/Write), Snyk dependency-manifest reminder (Edit/Write/MultiEdit), test-skip-marker guard (Edit/Write/MultiEdit), hookify dispatch (all tools).</p>
+<p><strong>PostToolUse</strong>: fires after each tool call completes. Used for, in <code>hooks.json</code> array order: Python 3.10 compatibility check (Edit/Write), Snyk dependency-manifest reminder (Edit/Write/MultiEdit), test-skip-marker guard (Edit/Write/MultiEdit), hookify dispatch (all tools), delegation-ratio nudge (Edit/Write/MultiEdit/NotebookEdit).</p>
 <p><strong>Stop</strong>: fires when Claude finishes its turn (before control returns to the user). Used for: hookify stop handler, task-observer flush check.</p>
 <p><strong>PreCompact</strong>: fires immediately before Claude Code compacts the conversation, whether triggered automatically (approaching the context limit) or manually (<code>/compact</code>). Used for: writing a cheap, objective auto-handoff snapshot as a backstop for the unattended-autocompact case.</p>
 <p><strong>SessionStart</strong>: fires when a session opens, and again on resume, <code>clear</code>, or <code>compact</code>, depending on which matcher a given hook registers. Five repo-managed hooks are wired here, in <code>hooks.json</code> order: <code>scripts/hooks/cbm-context-reminder.sh</code>, <code>scripts/hooks/delegation-reminder.sh</code>, <code>scripts/hooks/task-observer-reminder.sh</code>, <code>scripts/hooks/handoff-resume-reminder.sh</code>, and <code>scripts/hooks/harness-doctor.sh</code>, alongside SessionStart hooks contributed by installed plugins. No <code>.claude/rules/*.md</code> file is injected at this point or any other; rules enter context only when Claude follows a <code>CLAUDE.md</code> pointer to one, or a hook prints its content directly, which is exactly what these hooks do.</p>
@@ -2683,24 +2683,25 @@
 </span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>      → PostToolUse[1]: snyk-dep-reminder.sh (matcher: Edit|Write|MultiEdit)
 </span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>      → PostToolUse[2]: test-skip-guard.sh (matcher: Edit|Write|MultiEdit)
 </span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>      → PostToolUse[3]: hookify posttooluse.py (all tools)
-</span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>
-</span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>    For each Skill call:
-</span><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>      → PreToolUse[2]: planning bridge gate (matcher: Skill)
-</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>      → PreToolUse[4]: hookify pretooluse.py (all tools)
-</span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>      → Tool executes
-</span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>      → PostToolUse[3]: hookify posttooluse.py (all tools)
-</span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>
-</span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>    For any other tool call:
-</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>      → PreToolUse[4]: hookify pretooluse.py (all tools)
-</span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>      → Tool executes
-</span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>      → PostToolUse[3]: hookify posttooluse.py (all tools)
-</span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>
-</span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>  Model turn ends
-</span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>    → Stop[0]: hookify stop.py
-</span><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>    → Stop[1]: task-observer-flush-check.py
-</span><span id="__span-0-38"><a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>
-</span><span id="__span-0-39"><a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>  If context is compacted (auto or manual), separately from the turn cycle:
-</span><span id="__span-0-40"><a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>    → PreCompact[0]: precompact-handoff.sh
+</span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>      → PostToolUse[4]: delegation-ratio-nudge.py (matcher: Edit|Write|MultiEdit|NotebookEdit)
+</span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>
+</span><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>    For each Skill call:
+</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>      → PreToolUse[2]: planning bridge gate (matcher: Skill)
+</span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>      → PreToolUse[4]: hookify pretooluse.py (all tools)
+</span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>      → Tool executes
+</span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>      → PostToolUse[3]: hookify posttooluse.py (all tools)
+</span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>
+</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>    For any other tool call:
+</span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>      → PreToolUse[4]: hookify pretooluse.py (all tools)
+</span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>      → Tool executes
+</span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>      → PostToolUse[3]: hookify posttooluse.py (all tools)
+</span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>
+</span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>  Model turn ends
+</span><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>    → Stop[0]: hookify stop.py
+</span><span id="__span-0-38"><a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>    → Stop[1]: task-observer-flush-check.py
+</span><span id="__span-0-39"><a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>
+</span><span id="__span-0-40"><a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>  If context is compacted (auto or manual), separately from the turn cycle:
+</span><span id="__span-0-41"><a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a>    → PreCompact[0]: precompact-handoff.sh
 </span></code></pre></div>
 <p>Array position determines execution order within each hook type. Matcher-specific entries run only when their regex matches the tool being called.</p>
 <h2 id="per-hook-responsibilities">Per-Hook Responsibilities<a class="headerlink" href="#per-hook-responsibilities" title="Permanent link">&para;</a></h2>
@@ -2848,8 +2849,14 @@
 <td><code>hookify/hooks/posttooluse.py</code></td>
 <td>Dispatches to hookify plugin engine</td>
 </tr>
+<tr>
+<td><code>Edit\|Write\|MultiEdit\|NotebookEdit</code></td>
+<td><code>scripts/hooks/delegation-ratio-nudge.py</code></td>
+<td>Mechanically enforces CLAUDE.md's "the main session orchestrates, subagents do the work" rule. Counts main-thread file mutations against <code>Agent</code> dispatches, reading both from the transcript and filtering <code>isSidechain</code> so subagent edits are never charged to the root thread. Emits advisory <code>additionalContext</code> (never blocks) once main-thread mutations pass 10 and the mutations-per-dispatch ratio passes 3.0, re-arming every 15 further mutations and capping at 4 nudges per session. Goes quiet on its own once a dispatch pulls the ratio back under threshold. Tunable via <code>DELEGATION_NUDGE_FLOOR</code>, <code>DELEGATION_NUDGE_RATIO</code>, <code>DELEGATION_NUDGE_DISABLED</code></td>
+</tr>
 </tbody>
 </table>
+<p>Thresholds were calibrated by replaying the hook over 17 real session transcripts rather than chosen a priori: the failure it targets is bimodal (six sessions ran at 3.6-to-infinity main-thread edits per dispatch, six others at 0.4-to-2.0), and earlier zero-based band arithmetic produced duplicate nudges one edit apart. It complements <code>scripts/hooks/delegation-reminder.sh</code> (SessionStart), which states the rule but cannot observe whether the session then follows it.</p>
 <h3 id="stop">Stop<a class="headerlink" href="#stop" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
@@ -2973,7 +2980,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 20, 2026 23:51:13 UTC">July 20, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="September 6, 2026 14:15:30 UTC">September 6, 2026</span>
   </span>
 
     
