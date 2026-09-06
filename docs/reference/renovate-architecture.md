@@ -3,7 +3,7 @@ title: "Renovate Architecture & Dependency Management"
 schema_type: common
 status: published
 owner: core-maintainer
-purpose: "Authoritative reference for how Renovate is configured across the ByronWilliamsCPA and williaby fleet, including the Docker stack, global and per-repo configs, manifest enforcement, and relationships to Dependabot, SBOM generation, and dependency-review."
+purpose: "Authoritative reference for how Renovate is configured across the ByronWilliamsCPA and williaby fleet, including the Docker stack, global and per-repo configs, manifest enforcement, and relationships to Dependabot, SBOM generation, and (historically) dependency-review."
 tags:
   - reference
   - dependencies
@@ -12,7 +12,7 @@ tags:
   - automation
 ---
 
-This document is the canonical source of truth for how dependency updates and vulnerability remediation are wired across the fleet. It covers the self-hosted Renovate stack, the layered config inheritance model, manifest enforcement, and how Renovate interacts with adjacent processes (Dependabot Alerts, SBOM generation, dependency-review, pip-audit).
+This document is the canonical source of truth for how dependency updates and vulnerability remediation are wired across the fleet. It covers the self-hosted Renovate stack, the layered config inheritance model, manifest enforcement, and how Renovate interacts with adjacent processes (Dependabot Alerts, SBOM generation, pip-audit). It also documents the retired dependency-review workflow for historical context (see "Relationship to dependency-review" below).
 
 ## Quick Reference
 
@@ -25,7 +25,7 @@ This document is the canonical source of truth for how dependency updates and vu
 | Pre-commit validator hook (PC-016, homelab-infra only) | `homelab-infra/.pre-commit-config.yaml` |
 | Manifest checks | PC-016, CI-020, CI-021, CI-058, CI-059, CI-060, CI-061, CI-063, CI-064, REPO-001, REPO-002 in `docs/standards-manifest.yaml` |
 | Reusable SBOM workflow | `ByronWilliamsCPA/.github/.github/workflows/python-sbom.yml` |
-| Reusable dependency-review workflow | `ByronWilliamsCPA/.github/.github/workflows/dependency-review.yml` |
+| Reusable dependency-review workflow (RETIRED 2026-09, paid GHAS required) | `ByronWilliamsCPA/.github/.github/workflows/dependency-review.yml` |
 
 ## Architecture Overview
 
@@ -279,9 +279,16 @@ second keyless gate.
 
 **Net effect:** SBOM scanning is the *last line of defense* against vulnerable dependencies sneaking into main. It does not generate PRs; it gates them. The 90-day artifact retention preserves SBOMs for audit.
 
-## Relationship to dependency-review
+## Relationship to dependency-review (RETIRED 2026-09)
 
-The `dependency-review.yml` reusable workflow runs on every pull request to main and uses GitHub's `dependency-review-action`. It checks the *diff* of dependencies in a PR against GHSA and a license allowlist.
+> **Retired.** `actions/dependency-review-action` now requires paid GitHub Advanced Security
+> (Code Security) on every repo, public or private; the free-tier capability this section
+> describes no longer exists. `dependency-review.yml` callers were removed fleet-wide. This
+> section is kept for historical context and to explain what the SBOM workflow now covers
+> alone. The manifest checks that enforced this workflow, CI-036 and CI-081, were retired as
+> deprecated stubs in `docs/standards-manifest.yaml`.
+
+The `dependency-review.yml` reusable workflow ran on every pull request to main and used GitHub's `dependency-review-action`. It checked the *diff* of dependencies in a PR against GHSA and a license allowlist.
 
 | Setting | Value |
 | --- | --- |
@@ -325,7 +332,7 @@ The `dependency-review.yml` reusable workflow runs on every pull request to main
 2. Reads each repo's effective config: docker-compose env → global config → org template → per-repo override.
 3. Detects a new `pydantic` minor version via pep621 manager.
 4. Opens PR, signed by `Renovate Bot <renovate@byronwilliams.dev>`.
-5. CI runs: tests, `python-sbom.yml` (SBOM + Grype/OSV scan), `dependency-review.yml`, pip-audit (if in dev deps).
+5. CI runs: tests, `python-sbom.yml` (SBOM + Grype/OSV scan), pip-audit (if in dev deps).
 6. All checks pass; Renovate's automerge rule fires after the 3-day stability window.
 7. PR auto-merges via squash.
 

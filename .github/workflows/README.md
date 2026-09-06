@@ -65,12 +65,15 @@ Comprehensive CI with:
 **Calls**: `ByronWilliamsCPA/.github/.github/workflows/python-security-analysis.yml@main`
 
 Comprehensive security scanning with:
-- CodeQL advanced analysis
 - Bandit static security analysis
 - Safety dependency CVE scanning
 - OSV Scanner
 - OWASP dependency check
-- Dependency review (PRs only)
+
+CodeQL and dependency review are no longer part of this scan: both require paid
+GitHub Advanced Security (Code Security) as of 2026-09 and were retired
+fleet-wide (`run-codeql: false`, `run-dependency-review: false` in
+`security-analysis.yml`; `codeql.yml` and `dependency-review.yml` deleted).
 
 **Triggers**: Push/PR to main, weekly schedule, manual dispatch
 
