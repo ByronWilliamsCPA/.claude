@@ -231,6 +231,52 @@ class TestDropGitIgnored:
         files = [tmp_path / "a.md"]
         assert vfm._drop_git_ignored(files) == files
 
+    def test_sends_git_forward_slash_paths_regardless_of_host_separator(
+        self, vfm: Any, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """The stdin payload must use POSIX separators, never str(Path).
+
+        On Windows, str(Path) renders native backslashes; text piped through
+        ``git check-ignore --stdin`` never passes through the argv-level
+        backslash-to-slash normalization Git for Windows applies to
+        command-line arguments, so a backslash path silently fails to match
+        forward-slash .gitignore patterns. Pinning the stdin payload to
+        as_posix() output is what keeps this working on every host OS.
+        """
+        captured: dict[str, Any] = {}
+
+        def _fake_run(*_args: object, **kwargs: object) -> Any:
+            captured.update(kwargs)
+
+            class _Result:
+                returncode = 1
+                stdout = ""
+
+            return _Result()
+
+        monkeypatch.setattr(subprocess, "run", _fake_run)
+        nested = tmp_path / "generated"
+        nested.mkdir()
+        files = [nested / "report.md"]
+
+        vfm._drop_git_ignored(files)
+
+        assert "\\" not in captured["input"]
+        assert captured["input"] == files[0].as_posix()
+
+    def test_handles_non_ascii_filenames(self, vfm: Any, tmp_path: Path) -> None:
+        """Non-ASCII filenames round-trip through the explicit utf-8 decode."""
+        self._git_repo(tmp_path, "generated/\n")
+        (tmp_path / "keep.md").write_text("# Keep")
+        generated = tmp_path / "generated"
+        generated.mkdir()
+        (generated / "rapport-été.md").write_text("# Rapport")
+
+        result = vfm._collect_md_files([str(tmp_path)])
+        result_names = {p.name for p in result}
+        assert "keep.md" in result_names
+        assert "rapport-été.md" not in result_names
+
 
 # ---------------------------------------------------------------------------
 # Property-based tests (Hypothesis)

@@ -340,13 +340,27 @@ def _drop_git_ignored(files: list[Path]) -> list[Path]:
     anchor = files[0].parent
     if not anchor.is_dir():
         return files
+    # Talk to git in POSIX form (forward slashes) regardless of host OS. On
+    # Windows, str(Path) renders native backslashes, but text piped through
+    # --stdin never passes through the argv-level backslash-to-slash
+    # normalization Git for Windows applies to command-line arguments, so a
+    # raw backslash path silently fails to match forward-slash .gitignore
+    # patterns (e.g. "generated/"): git exits 1 (no matches) and every file,
+    # including the truly ignored one, survives filtering.
+    posix_paths = [f.as_posix() for f in files]
     try:
         proc = subprocess.run(
-            ["git", "check-ignore", "--stdin"],
-            input="\n".join(str(f) for f in files),
+            # -c core.quotePath=false: without it git C-quotes non-ASCII path
+            # bytes in its --stdin echo (e.g. "é" prints as
+            # "\303\251"), which never string-matches the plain posix_paths
+            # entry we sent, so a genuinely ignored file with an accented or
+            # otherwise non-ASCII name silently survives filtering too.
+            ["git", "-c", "core.quotePath=false", "check-ignore", "--stdin"],
+            input="\n".join(posix_paths),
             cwd=anchor,
             capture_output=True,
             text=True,
+            encoding="utf-8",
             check=False,
         )
     except (OSError, subprocess.SubprocessError):
@@ -356,7 +370,9 @@ def _drop_git_ignored(files: list[Path]) -> list[Path]:
     if proc.returncode not in (0, 1):
         return files
     ignored = {line.strip() for line in proc.stdout.splitlines() if line.strip()}
-    return [f for f in files if str(f) not in ignored]
+    return [
+        f for f, posix in zip(files, posix_paths, strict=True) if posix not in ignored
+    ]
 
 
 def _collect_md_files(paths: list[str], exclude: list[str] | None = None) -> list[Path]:
