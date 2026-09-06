@@ -55,6 +55,10 @@ Comprehensive CI with:
 - UV dependency management
 - Ruff linting and formatting
 - BasedPyright type checking (strict mode)
+- Bandit static security analysis (runs here, not in Security Analysis below;
+  it also runs a second time via the Qlty plugin in `pr-validation.yml`'s
+  PR-diff checks, so `security-analysis.yml` sets `run-bandit: false` to
+  avoid a third run of the same commit)
 - Pytest with 80%+ coverage
 
 **Triggers**: Push/PR to main branches, manual dispatch
@@ -65,9 +69,14 @@ Comprehensive CI with:
 **Calls**: `ByronWilliamsCPA/.github/.github/workflows/python-security-analysis.yml@main`
 
 Comprehensive security scanning with:
-- Bandit static security analysis
 - pip-audit dependency CVE scanning (replaces the removed Safety scanner)
 - OWASP dependency check
+
+Bandit does not run here: `security-analysis.yml` sets `run-bandit: false`
+because Bandit already runs via `python-ci.yml` (see CI Pipeline above,
+called once per push/PR by `ci.yml`) and again via the Qlty plugin in
+`pr-validation.yml`'s PR-diff checks. Running it a third time on the same
+commit would be pure duplication with no additional signal.
 
 OSV Scanner is disabled (`run-osv: false`) pending an upstream fix to an
 osv-scanner-action bug that misreports filtered `IgnoredVulns` entries as unused;
