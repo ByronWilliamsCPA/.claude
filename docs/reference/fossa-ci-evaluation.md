@@ -11,6 +11,18 @@ tags:
   - evaluation
 ---
 
+> **Update (2026-09):** GitHub now bills Advanced Security (Code Security) separately, so
+> `actions/dependency-review-action` no longer functions on the free tier for any repo,
+> public or private. `dependency-review.yml` was removed fleet-wide, and the manifest
+> checks this evaluation drove, **CI-036** (dependency-review.yml presence) and **CI-081**
+> (its deny-licenses/allow-licenses input), were retired as deprecated stubs. The DEFER
+> conclusion below is unaffected: it never relied on dependency-review-action as a reason
+> to skip FOSSA. But the "4 existing layers" in Finding 3 is now 3 layers, action-plan step
+> 3 (adding `deny-licenses` to `dependency-review.yml`) is moot, and the decision-matrix
+> column for `dependency-review-action` reflects a capability the fleet no longer has.
+> **CI-080** (the `sbom.yml` license denylist) is unaffected and remains the fleet's
+> PR-diff-adjacent, though not diff-scoped, license-policy control.
+
 This report evaluates whether to add FOSSA (a third-party license-compliance SaaS) to the 44-repo `claude-config` fleet's CI. Six dimension analyses converge on a single conclusion: the fleet is overwhelmingly permissive (253 of 263 distributions in the active `claude-config` venv are permissive; the remaining 10 are 8 MPL-2.0 plus 2 LGPL, none of which create obligations for an MIT app that dynamically imports unmodified source), and zero GPL or AGPL packages exist in any managed `uv.lock` fleet-wide. FOSSA's deep-scan value is real but does not match the actual risk profile: its license-gating feature is paid-tier only, its free tier caps at 5 projects against 34 Python repos, it cannot read the org's REUSE 3.0 own-source layout, and every capability it would add over the current stack is already achievable by repairing the dormant in-house license gate that ships in `python-sbom.yml`. This is the same structural conclusion the companion `dependency-tooling-comparison.md` reached for Snyk: a third-party SaaS is not justified at this fleet size unless license compliance becomes a hard contractual requirement.
 
 ## Overall recommendation: DEFER
@@ -70,7 +82,7 @@ Integration is mechanically feasible but has four hard blockers: the free tier c
 
 ### 3. Overlap and redundancy versus the 4 existing layers
 
-The fleet already has four overlapping layers: (1) the `python-sbom.yml` `license-compliance` job (non-gating, GPL/AGPL `id`-only); (2) `dependency-review-action` (PR-diff only, inconsistently configured, 6 repos have no license gate at all); (3) REUSE/fsfe-action (own-source SPDX headers only, orthogonal to dependency licenses, irreplaceable by FOSSA); (4) Trivy + Grype + OSV-Scanner (vulnerability-only, zero license capability). The current in-house script evaluates only 43% of license entries (126 of 295) because it reads only the SPDX `id` field; the 56% name-only and 3 expression entries are silently skipped, and it catches zero of the 8 copyleft packages. The three-step in-house fix (expand denylist to LGPL/MPL, also match `name` and `expression` fields, add a `pip-licenses` step for PEP-639 packages) closes the entire gap in one PR.
+At the time of this evaluation the fleet had four overlapping layers: (1) the `python-sbom.yml` `license-compliance` job (non-gating, GPL/AGPL `id`-only); (2) `dependency-review-action` (PR-diff only, inconsistently configured, 6 repos have no license gate at all); (3) REUSE/fsfe-action (own-source SPDX headers only, orthogonal to dependency licenses, irreplaceable by FOSSA); (4) Trivy + Grype + OSV-Scanner (vulnerability-only, zero license capability). Layer (2) was retired fleet-wide in 2026-09 when `dependency-review-action` began requiring paid GitHub Advanced Security; three layers remain. The current in-house script evaluates only 43% of license entries (126 of 295) because it reads only the SPDX `id` field; the 56% name-only and 3 expression entries are silently skipped, and it catches zero of the 8 copyleft packages. The three-step in-house fix (expand denylist to LGPL/MPL, also match `name` and `expression` fields, add a `pip-licenses` step for PEP-639 packages) closes the entire gap in one PR.
 
 - Risks: enabling `fail-on-forbidden-licenses: true` without also fixing the `id`-only matching produces the same false-clean result; policy drift is accelerating across 17 config variations; the `cyclonedx-bom==7.3.0` PEP-639 bug is unresolved and hides `hypothesis` regardless of denylist quality.
 - Recommendation: pursue the in-house upgrade now; FOSSA's only no-in-house-equivalent capabilities are license-compatibility-graph reasoning and automated NOTICE generation. Add FOSSA only when those are required, not merely convenient.
@@ -84,7 +96,7 @@ If FOSSA is adopted, the policy must target the runtime shipping surface, not th
 
 ### 5. Standards-manifest integration
 
-Two new checks should be added to `docs/standards-manifest.yaml` to drive the in-house repair. They were originally drafted as CI-078 and CI-079, but PR #188 landed CI-078 (the qlty-gate check) and reserved CI-079 for its ruleset companion first, so the checks were renumbered to CI-080 and CI-081. CI-080 gates the `sbom.yml` caller's denylist content to include LGPL/MPL; CI-081 gates `dependency-review.yml` presence of a `deny-licenses` or `allow-licenses` input. Both start at `severity: suggested` per the policy-execution-gap lesson and are promoted to `important` only after their prerequisite sweeps (CI-058 for `sbom.yml` callers, CI-036 for `dependency-review.yml`) reach 100% of applicable repos. Current `sbom.yml` reach is 15 of 30 Python repos (50%), so `suggested` is correct, not `important`.
+Two new checks should be added to `docs/standards-manifest.yaml` to drive the in-house repair. They were originally drafted as CI-078 and CI-079, but PR #188 landed CI-078 (the qlty-gate check) and reserved CI-079 for its ruleset companion first, so the checks were renumbered to CI-080 and CI-081. CI-080 gates the `sbom.yml` caller's denylist content to include LGPL/MPL; CI-081 gates `dependency-review.yml` presence of a `deny-licenses` or `allow-licenses` input. Both started at `severity: suggested` per the policy-execution-gap lesson, promoting to `important` only after their prerequisite sweeps (CI-058 for `sbom.yml` callers, CI-036 for `dependency-review.yml`) reached 100% of applicable repos. **CI-081 and its CI-036 prerequisite were retired in 2026-09** when `dependency-review-action` began requiring paid GitHub Advanced Security; CI-080 promotion is unaffected and still tracks the CI-058 `sbom.yml` sweep.
 
 - Risks: promoting CI-080 before CI-058 reaches 100% generates correct-but-unactionable findings; the free-text `name` blind spot is a workflow-code fix, not just a manifest entry; Wave 3 `fail-on-forbidden-licenses: true` requires a `certifi` allowlist mechanism first or every Python repo breaks.
 - Recommendation: paste both entries (see the ready-to-paste YAML below) and do not enable hard-fail until the allowlist mechanism and 100% CI-058 reach are confirmed.
@@ -98,7 +110,7 @@ FOSSA's OSS mode transmits dependency-graph metadata (package names, versions, r
 
 ## Decision matrix: FOSSA versus the 4 existing layers
 
-| Capability | FOSSA (free) | FOSSA (paid) | python-sbom license job (current) | python-sbom license job (repaired) | dependency-review-action | REUSE / fsfe-action | Trivy+Grype+OSV |
+| Capability | FOSSA (free) | FOSSA (paid) | python-sbom license job (current) | python-sbom license job (repaired) | dependency-review-action (retired 2026-09, paid GHAS required) | REUSE / fsfe-action | Trivy+Grype+OSV |
 |---|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
 | Dependency license detection | Yes | Yes | Partial (id-only, 43%) | Yes (id+name+expr) | PR-diff only | No | No |
 | Copyleft denylist (GPL/AGPL) | Yes | Yes | Yes (advisory) | Yes (gating) | Configurable, unused | No | No |
@@ -122,7 +134,7 @@ Execute these in order. The whole detection-and-gating gap closes in approximate
 
 1. Repair the `license-compliance` script in `ByronWilliamsCPA/.github` at `.github/workflows/python-sbom.yml`: (a) expand the default `forbidden-licenses` to add `LGPL-2.0-only`, `LGPL-2.0-or-later`, `LGPL-2.1-only`, `LGPL-2.1-or-later`, `LGPL-3.0-only`, `LGPL-3.0-or-later`, `MPL-2.0`; (b) match the CycloneDX `name` and `expression` fields by substring, not only the SPDX `id`; (c) add a `pip-licenses --format=json` step (or `Trivy --scanners license`) to catch PEP-639 packages like `hypothesis` that `cyclonedx-bom==7.3.0` misses entirely.
 2. Add a per-package allowlist mechanism (YAML in the caller or in the reusable workflow) seeded with `certifi` (MPL-2.0, transitive via `requests`, present in every Python repo). This is the precondition for any hard-fail gate.
-3. Add `deny-licenses` (GPL-2.0/3.0, AGPL-3.0 minimum) to `dependency-review.yml` for an early PR-time signal complementing the post-merge SBOM gate.
+3. ~~Add `deny-licenses` (GPL-2.0/3.0, AGPL-3.0 minimum) to `dependency-review.yml` for an early PR-time signal complementing the post-merge SBOM gate.~~ Moot as of 2026-09: `dependency-review.yml` was removed fleet-wide (`actions/dependency-review-action` now requires paid GitHub Advanced Security). The post-merge SBOM gate (step 1) is the fleet's sole license-policy enforcement point.
 4. Repo-specific remediation independent of tooling: in `image_detection`, replace PyMuPDF with `pypdfium2` or document the Artifex commercial-license decision; in `ledgerbase`, move `semgrep` from the main to the dev dependency group.
 5. Clean the `claude-config` venv: remove the spurious unmanaged installs `tqdm`, `psycopg2-binary`, `python-gitlab` so they stop appearing in the SBOM.
 6. Roll out via the staged plan: Wave 1 (now) suggested/advisory, no CI failures; Wave 2 promote to `important` after CI-058 reaches 100% of the 30 Python repos; Wave 3 enable `fail-on-forbidden-licenses: true` only after the `certifi` allowlist is confirmed deployed.
@@ -139,8 +151,13 @@ originally proposed CI-078/CI-079 after PR #188 took CI-078 (the qlty-gate
 check) and reserved CI-079 for its ruleset companion. See the live definitions
 in `docs/standards-manifest.yaml` for the authoritative `verify` logic; the
 canonical entries are the single source of truth and supersede any earlier
-draft. Both start at `severity: suggested` and promote to `important` only
-after their prerequisite sweeps (CI-058 for CI-080, CI-036 for CI-081) reach
-100% of applicable repos. CI-080's required LGPL/MPL set covers the LGPL-2.1
-variants so that `semgrep` (the one concrete LGPL-2.1 package observed in the
-fleet) is not missed.
+draft. CI-080 starts at `severity: suggested` and promotes to `important` only
+after its prerequisite sweep (CI-058) reaches 100% of applicable repos.
+CI-080's required LGPL/MPL set covers the LGPL-2.1 variants so that `semgrep`
+(the one concrete LGPL-2.1 package observed in the fleet) is not missed.
+
+**CI-081 was retired in 2026-09** (deprecated stub, ID not reused) alongside
+its CI-036 prerequisite: `actions/dependency-review-action` now requires paid
+GitHub Advanced Security, `dependency-review.yml` was removed fleet-wide, and
+a check gating a workflow that no longer exists would fail every repo.
+CI-080 is unaffected and remains the fleet's license-policy control.
