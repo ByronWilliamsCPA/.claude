@@ -75,27 +75,42 @@ rather than leaking it.
 
 Several skills and agents in this repo are symlinks into `.submodules/`
 (`superpowers`, `anthropics-skills`, `anthropics-plugins`, `reference-library`,
-`image-generation`, `jeffallan-claude-skills`; see
-[submodule-strategy.md](submodule-strategy.md) for the full inventory and
-trust tiers). None of that content ships through this pipeline in v1.
-Re-distributing it into a second repo is a separate license question from the
-one this pipeline answers, don't fold it in silently. If a specific vendored
-item needs to reach the team, clear its license for redistribution first,
-then add it to the manifest with a comment recording that check, following
-the same admission-bar discipline as a new submodule.
+`image-generation`, `jeffallan-claude-skills`). The other two submodules,
+`one-skill-to-rule-them-all` and `agents-observe`, are wired by mechanisms of
+their own rather than a direct symlink (see the ADR-011 provenance split
+below); see [submodule-strategy.md](submodule-strategy.md) for the full
+eight-submodule inventory and trust tiers. No vendored or third-party
+submodule *content* ships through this
+pipeline. Re-distributing it into a second repo is a separate license question
+from the one this pipeline answers, don't fold it in silently. If a specific
+vendored item needs to reach the team, clear its license for redistribution
+first, then add it to the manifest with a comment recording that check,
+following the same admission-bar discipline as a new submodule.
 
-This splits the `*-extras` skills, each of which is a delta on a companion
-skill, by whether that companion is vendored or first-party. An `-extras`
-delta on a **vendored** companion stays `exclude` until the companion itself
-is cleared, since the delta alone references concepts it doesn't redefine:
-`audience-reaction-analyzer-extras`, `brainstorming-extras`,
+The [ADR-011 provenance split](adr/ADR-011-org-plugin-distribution.md) (2026-07-10
+update) sorts the submodules by redistribution license and states, per bucket,
+where the team gets each: first-party submodules (`reference-library`,
+`image-generation`) as their own plugins in a follow-up; Anthropic vendor
+content from Anthropic's official channels; third-party marketplaces
+(`superpowers`, `agents-observe`, and the rest) added upstream directly. Read
+that update before adding any submodule-sourced entry to the manifest.
+
+### The `*-extras` skills
+
+Each `*-extras` skill is first-party content: a delta layered on a companion
+skill. Only the companion may be third-party; the delta itself is ours. So the
+delta ships as `claude-code-only` regardless of where the companion comes from,
+because the team obtains the companion from its own source (bucket B/C of the
+provenance split for vendored companions, or first-party alongside for the
+rest). The delta references concepts the companion defines but does not
+redistribute the companion. This is why every `*-extras` skill is now
+`claude-code-only`, including the eleven that were `exclude` before the
+2026-07-10 update (`audience-reaction-analyzer-extras`, `brainstorming-extras`,
 `code-review-extras`, `executing-plans-extras`, `fastapi-expert-extras`,
 `finishing-a-development-branch-extras`, `pdf-extras`, `pptx-extras`,
-`subagent-driven-development-extras`, `systematic-debugging-extras`, and
-`verification-before-completion-extras`. An `-extras` delta on a
-**first-party** companion ships as `claude-code-only` alongside it, which is
-why `receiving-code-review-extras` and `test-driven-development-extras` are
-classified `claude-code-only` rather than `exclude`.
+`subagent-driven-development-extras`, `systematic-debugging-extras`,
+`verification-before-completion-extras`), alongside `receiving-code-review-extras`
+and `test-driven-development-extras`, which were already `claude-code-only`.
 
 ## Running the build locally
 
