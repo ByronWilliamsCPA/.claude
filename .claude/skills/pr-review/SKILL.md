@@ -54,3 +54,34 @@ review completion menu), or standalone on any PR.
 | --- | --- |
 | Review-related (`review PR`, `/pr-review`, etc.) | `workflows/pr-review.md` |
 | Fix-related (`fix PR`, `/pr-fix`, etc.) | `workflows/pr-fix.md` |
+
+## File layout
+
+Each workflow file is a spine: it keeps every `## Step N` heading and, under
+each, a short statement of what that step consumes, produces, and decides. The
+long-form procedure for the larger steps lives in `context/`, reached by a
+`**Full procedure:**` pointer in the stub. Read the spine to orchestrate; open
+a context file when you are about to execute that step.
+
+Step numbering is the addressing scheme for both workflows and is load-bearing:
+roughly 125 internal references point at those headings. Never renumber,
+re-letter, or merge a step, and never move a `Step` heading out of its spine.
+Move bodies, not anchors.
+
+| Context file | Backs |
+| --- | --- |
+| `context/github-api-idioms.md` | Both workflows. GitHub API behaviours that have each caused a real defect. |
+| `context/pr-metadata.md` | pr-review Steps 2, 2d, 2e, 2f |
+| `context/change-classification.md` | pr-review Step 3 |
+| `context/quality-gates.md` | pr-review Step 4 |
+| `context/review-agents.md` | pr-review Step 5, the agent roster |
+| `context/finding-validation.md` | pr-review Steps 6 and 7b |
+| `context/issue-gathering.md` | pr-fix Step 1 |
+| `context/fix-execution.md` | pr-fix Step 4 |
+| `context/fix-verification.md` | pr-fix Step 5 |
+| `context/watch-refix-loop.md` | pr-fix Step 9 |
+
+Read `context/github-api-idioms.md` before writing any code that touches
+reviewer identity, `mergeStateStatus`, renamed files, scanner exit codes, or an
+MCP-backed quality gate. Every rule in it is there because the obvious
+implementation shipped and silently did the wrong thing.
