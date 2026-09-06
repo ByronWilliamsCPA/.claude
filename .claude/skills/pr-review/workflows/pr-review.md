@@ -1586,16 +1586,19 @@ finding rationale: "(consensus security: {exploitability}, {reason})".
 Before assembling the final report, poll for async reviewer results so that
 pr-fix (if selected) can address everything in a single pass.
 
-**Polling target:** Copilot (`copilot-pull-request-reviewer`) and CodeRabbit
-(`coderabbitai`) review submissions on the PR.
+**Polling target:** Copilot and CodeRabbit review submissions on the PR. Match
+Copilot with the full alternation described in the "Bot login suffix" note below,
+not the bare `copilot-pull-request-reviewer` string: review submissions arrive as
+`copilot-pull-request-reviewer[bot]`, so an exact-equality filter on the
+unsuffixed login matches nothing and the poll can never succeed.
 
 ```bash
 # Poll every 30s for up to 5 minutes (10 attempts)
 for i in $(seq 1 10); do
   REVIEWS=$(gh api repos/{OWNER}/{REPO}/pulls/{PR_NUMBER}/reviews \
-    --jq '[.[] | select(.user.login == "copilot-pull-request-reviewer" or .user.login == "coderabbitai[bot]") | .user.login] | unique')
-  COPILOT_DONE=$(echo "$REVIEWS" | grep -c "copilot-pull-request-reviewer" || true)
-  CODERABBIT_DONE=$(echo "$REVIEWS" | grep -c "coderabbitai" || true)
+    --jq '[.[] | select(.user.login | test("^(Copilot|copilot-pull-request-reviewer(\\[bot\\])?|coderabbitai(\\[bot\\])?)$")) | .user.login] | unique')
+  COPILOT_DONE=$(echo "$REVIEWS" | grep -ci "copilot" || true)
+  CODERABBIT_DONE=$(echo "$REVIEWS" | grep -ci "coderabbitai" || true)
   if [ "$COPILOT_DONE" -ge 1 ] && [ "$CODERABBIT_DONE" -ge 1 ]; then
     break
   fi
