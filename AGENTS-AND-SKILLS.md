@@ -767,6 +767,14 @@ AnkiWeb afterwards. Backed by the `claude_config.anki` package and the `anki-car
 Card content lives in a separate private repo, never here. Activates on: "anki",
 "make cards", "flashcards", "lecture notes to cards", "push cards", "apkg backup".
 
+**[premed-socratic-tutor](/.claude/skills/premed-socratic-tutor/SKILL.md)**
+Socratic coaching mode for premed coursework: quizzes one question at a time, re-explains
+concepts multiple ways, grades written answers hard, interleaves practice problems, and turns
+exam misses into Anki-ready cards. Structurally refuses to write graded work for submission;
+tutors toward the student's own solution instead. Activates on: "quiz me on", "I don't get",
+pasted written answers asking for grading, pasted homework or essays or lab reports, requests
+for practice problems, "turn my misses into flashcards".
+
 ---
 
 ## Superpowers Skills (Community-Maintained)
