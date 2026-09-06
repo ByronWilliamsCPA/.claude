@@ -55,6 +55,10 @@ Comprehensive CI with:
 - UV dependency management
 - Ruff linting and formatting
 - BasedPyright type checking (strict mode)
+- Bandit static security analysis (runs here, not in Security Analysis below;
+  it also runs a second time via the Qlty plugin in `pr-validation.yml`'s
+  PR-diff checks, so `security-analysis.yml` sets `run-bandit: false` to
+  avoid a third run of the same commit)
 - Pytest with 80%+ coverage
 
 **Triggers**: Push/PR to main branches, manual dispatch
@@ -65,15 +69,24 @@ Comprehensive CI with:
 **Calls**: `ByronWilliamsCPA/.github/.github/workflows/python-security-analysis.yml@main`
 
 Comprehensive security scanning with:
-- Bandit static security analysis
-- Safety dependency CVE scanning
-- OSV Scanner
+- pip-audit dependency CVE scanning (replaces the removed Safety scanner)
 - OWASP dependency check
+
+Bandit does not run here: `security-analysis.yml` sets `run-bandit: false`
+because Bandit already runs via `python-ci.yml` (see CI Pipeline above,
+called once per push/PR by `ci.yml`) and again via the Qlty plugin in
+`pr-validation.yml`'s PR-diff checks. Running it a third time on the same
+commit would be pure duplication with no additional signal.
+
+OSV Scanner is disabled (`run-osv: false`) pending an upstream fix to an
+osv-scanner-action bug that misreports filtered `IgnoredVulns` entries as unused;
+pip-audit covers the same surface in the interim.
 
 CodeQL and dependency review are no longer part of this scan: both require paid
 GitHub Advanced Security (Code Security) as of 2026-09 and were retired
 fleet-wide (`run-codeql: false`, `run-dependency-review: false` in
 `security-analysis.yml`; `codeql.yml` and `dependency-review.yml` deleted).
+`#ASSUME`: this billing/entitlement status holds for every repo in the fleet regardless of visibility. `#VERIFY`: before re-enabling either control on any repo, confirm current GHAS pricing and entitlement at <https://docs.github.com/en/billing/concepts/product-billing/github-advanced-security> for that repo's actual visibility and org plan.
 
 **Triggers**: Push/PR to main, weekly schedule, manual dispatch
 

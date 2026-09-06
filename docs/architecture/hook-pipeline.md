@@ -20,7 +20,7 @@ For the design decisions behind this system, see [ADR-002](adr/ADR-002-hook-comp
 
 **PreToolUse**: fires before each tool call Claude attempts. Each entry in the `PreToolUse` array can have a matcher regex targeting specific tools. Used for, in `hooks.json` array order: bash command guard (Bash), secrets file guard (Edit/Write/MultiEdit), planning bridge gate (Skill), security reminder (Edit/Write/MultiEdit), hookify dispatch (all tools), destructive-command guard (Bash).
 
-**PostToolUse**: fires after each tool call completes. Used for, in `hooks.json` array order: Python 3.10 compatibility check (Edit/Write), Snyk dependency-manifest reminder (Edit/Write/MultiEdit), test-skip-marker guard (Edit/Write/MultiEdit), hookify dispatch (all tools).
+**PostToolUse**: fires after each tool call completes. Used for, in `hooks.json` array order: Python 3.10 compatibility check (Edit/Write), Snyk dependency-manifest reminder (Edit/Write/MultiEdit), test-skip-marker guard (Edit/Write/MultiEdit), hookify dispatch (all tools), delegation-ratio nudge (Edit/Write/MultiEdit/NotebookEdit).
 
 **Stop**: fires when Claude finishes its turn (before control returns to the user). Used for: hookify stop handler, task-observer flush check.
 
@@ -59,6 +59,7 @@ User sends message
       → PostToolUse[1]: snyk-dep-reminder.sh (matcher: Edit|Write|MultiEdit)
       → PostToolUse[2]: test-skip-guard.sh (matcher: Edit|Write|MultiEdit)
       → PostToolUse[3]: hookify posttooluse.py (all tools)
+      → PostToolUse[4]: delegation-ratio-nudge.py (matcher: Edit|Write|MultiEdit|NotebookEdit)
 
     For each Skill call:
       → PreToolUse[2]: planning bridge gate (matcher: Skill)
@@ -126,6 +127,9 @@ None of the repo-managed hooks, nor either plugin hook, loads a file from `.clau
 | `Edit\|Write\|MultiEdit` | `scripts/snyk-dep-reminder.sh` | Prints a reminder to run `snyk_package_health_check`/`snyk_sca_scan` via the Snyk MCP Server when a dependency manifest (`pyproject.toml`, `uv.lock`, `requirements*.txt`) is modified. Repo baseline (`hooks.json`), not a direct `settings.json` write |
 | `Edit\|Write\|MultiEdit` | `scripts/test-skip-guard.sh` | Mechanically enforces CLAUDE.md's "never propose `pytest.mark.skip` to silence a failing test" rule. When the edited path looks like a test file, greps its post-edit contents for a skip/ignore marker (`.skip(`, `xit(`, `xdescribe(`, `@pytest.mark.skip`, `#[ignore]`, `t.Skip(`) and blocks (exit 2) with a reminder if found |
 | (all tools) | `hookify/hooks/posttooluse.py` | Dispatches to hookify plugin engine |
+| `Edit\|Write\|MultiEdit\|NotebookEdit` | `scripts/hooks/delegation-ratio-nudge.py` | Mechanically enforces CLAUDE.md's "the main session orchestrates, subagents do the work" rule. Counts main-thread file mutations against `Agent` dispatches, reading both from the transcript and filtering `isSidechain` so subagent edits are never charged to the root thread. Emits advisory `additionalContext` (never blocks) once main-thread mutations pass 10 and the mutations-per-dispatch ratio passes 3.0, re-arming every 15 further mutations and capping at 4 nudges per session. Goes quiet on its own once a dispatch pulls the ratio back under threshold. Tunable via `DELEGATION_NUDGE_FLOOR`, `DELEGATION_NUDGE_RATIO`, `DELEGATION_NUDGE_DISABLED` |
+
+Thresholds were calibrated by replaying the hook over 17 real session transcripts rather than chosen a priori: the failure it targets is bimodal (six sessions ran at 3.6-to-infinity main-thread edits per dispatch, six others at 0.4-to-2.0), and earlier zero-based band arithmetic produced duplicate nudges one edit apart. It complements `scripts/hooks/delegation-reminder.sh` (SessionStart), which states the rule but cannot observe whether the session then follows it.
 
 ### Stop
 
