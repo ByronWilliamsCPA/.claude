@@ -198,7 +198,7 @@ prints only a summary plus exit code to the log; see
 [context/github-api-idioms.md](../context/github-api-idioms.md) ("Scanner exit
 codes: a verdict, not a diagnosis") for the shared version of this rule.
 
-**Full procedure:** [context/issue-gathering.md](../context/issue-gathering.md#1a-ci-check-failures)
+**Full procedure (orchestrator runs this step; read when you reach it, not before):** [context/issue-gathering.md](../context/issue-gathering.md#1a-ci-check-failures)
 
 ### 1b. Review comments
 
@@ -234,7 +234,7 @@ Which unresolved threads are actionable (change requests, Copilot/CodeRabbit
 suggestions, bug reports) versus non-actionable (resolved threads, bot summary
 walkthroughs, pure praise) is enumerated in the context file below.
 
-**Full procedure:** [context/issue-gathering.md](../context/issue-gathering.md#1b-review-comments)
+**Full procedure (orchestrator runs this step; read when you reach it, not before):** [context/issue-gathering.md](../context/issue-gathering.md#1b-review-comments)
 
 ### 1c. SonarQube findings
 
@@ -256,7 +256,7 @@ A SonarQube MCP server that fails to connect must be recorded as
 unreachable MCP server is not an empty result set") for the shared version of
 this rule.
 
-**Full procedure:** [context/issue-gathering.md](../context/issue-gathering.md#1c-sonarqube-findings)
+**Full procedure (orchestrator runs this step; read when you reach it, not before):** [context/issue-gathering.md](../context/issue-gathering.md#1c-sonarqube-findings)
 
 ### 1d. Codecov / coverage status
 
@@ -514,7 +514,7 @@ A cross-cutting editing constraint applies throughout: in a repo with a ruff
 PostToolUse hook, a new import and its first usage must land in the same Edit
 call, or the unused-import rule strips the import before the usage exists.
 
-**Full procedure:** [context/fix-execution.md](../context/fix-execution.md)
+**Full procedure (orchestrator runs this step; read when you reach it, not before):** [context/fix-execution.md](../context/fix-execution.md)
 
 ---
 
@@ -563,7 +563,7 @@ indirection-guard regex set, the retry policy (up to 3 cycles, full sequence
 only), the pre-existing-failure policy, and the defect-class rescoping check
 for a BEHIND branch are in the context file below.
 
-**Full procedure:** [context/fix-verification.md](../context/fix-verification.md#5a-local-gate-sequence)
+**Full procedure (orchestrator runs this step; read when you reach it, not before):** [context/fix-verification.md](../context/fix-verification.md#5a-local-gate-sequence)
 
 ### 5b. CI dry-run: validate GitHub Actions configs locally
 
@@ -577,7 +577,7 @@ locally at all (ClusterFuzzLite, SARIF-producing scanners, SonarCloud,
 Codecov) are validated statically instead (file existence, path correctness,
 config parses).
 
-**Full procedure:** [context/fix-verification.md](../context/fix-verification.md#5b-ci-dry-run-validate-github-actions-configs-locally)
+**Full procedure (orchestrator runs this step; read when you reach it, not before):** [context/fix-verification.md](../context/fix-verification.md#5b-ci-dry-run-validate-github-actions-configs-locally)
 
 ---
 
@@ -953,7 +953,7 @@ tiered-review stuck-loop diagnosis and present its `can_retry` verdict as the
 exit option. Clean up the worktree only once the loop completes all-green, or
 the user explicitly discards.
 
-**Full procedure:** [context/watch-refix-loop.md](../context/watch-refix-loop.md)
+**Full procedure (orchestrator runs this step; read when you reach it, not before):** [context/watch-refix-loop.md](../context/watch-refix-loop.md)
 
 ---
 
