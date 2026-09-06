@@ -66,14 +66,18 @@ Comprehensive CI with:
 
 Comprehensive security scanning with:
 - Bandit static security analysis
-- Safety dependency CVE scanning
-- OSV Scanner
+- pip-audit dependency CVE scanning (replaces the removed Safety scanner)
 - OWASP dependency check
+
+OSV Scanner is disabled (`run-osv: false`) pending an upstream fix to an
+osv-scanner-action bug that misreports filtered `IgnoredVulns` entries as unused;
+pip-audit covers the same surface in the interim.
 
 CodeQL and dependency review are no longer part of this scan: both require paid
 GitHub Advanced Security (Code Security) as of 2026-09 and were retired
 fleet-wide (`run-codeql: false`, `run-dependency-review: false` in
 `security-analysis.yml`; `codeql.yml` and `dependency-review.yml` deleted).
+`#ASSUME`: this billing/entitlement status holds for every repo in the fleet regardless of visibility. `#VERIFY`: before re-enabling either control on any repo, confirm current GHAS pricing and entitlement at <https://docs.github.com/en/billing/concepts/product-billing/github-advanced-security> for that repo's actual visibility and org plan.
 
 **Triggers**: Push/PR to main, weekly schedule, manual dispatch
 
