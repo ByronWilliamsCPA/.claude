@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -29,7 +29,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -2443,7 +2443,7 @@ the SHA-256 checksum against the release manifest, and then automatically runs
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>codebase-memory-mcp<span class="w"> </span>--version
 </span></code></pre></div>
 <p>Check <code>~/.local/bin</code> is on <code>PATH</code> if the command is not found:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nb">echo</span><span class="w"> </span><span class="s1">&#39;export PATH=&quot;$HOME/.local/bin:$PATH&quot;&#39;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>~/.zshrc<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">source</span><span class="w"> </span>~/.zshrc
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nb">echo</span><span class="w"> </span><span class="s1">'export PATH="$HOME/.local/bin:$PATH"'</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>~/.zshrc<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">source</span><span class="w"> </span>~/.zshrc
 </span></code></pre></div>
 <hr />
 <h2 id="step-2-verify-what-the-install-wrote">Step 2: Verify what the install wrote<a class="headerlink" href="#step-2-verify-what-the-install-wrote" title="Permanent link">&para;</a></h2>
@@ -2459,7 +2459,7 @@ artifact landed:</p>
 </span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>ls<span class="w"> </span>~/.claude/hooks/cbm-code-discovery-gate
 </span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>
 </span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="c1"># Hook wiring in settings.json: look for the Grep|Glob PreToolUse entry</span>
-</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>python3<span class="w"> </span>-m<span class="w"> </span>json.tool<span class="w"> </span>~/.claude/settings.json<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-A6<span class="w"> </span><span class="s2">&quot;cbm\|codebase-memory\|Grep&quot;</span>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>python3<span class="w"> </span>-m<span class="w"> </span>json.tool<span class="w"> </span>~/.claude/settings.json<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-A6<span class="w"> </span><span class="s2">"cbm\|codebase-memory\|Grep"</span>
 </span></code></pre></div>
 <p>If any artifact is missing, run <code>codebase-memory-mcp install</code> manually.</p>
 <hr />
@@ -2484,7 +2484,7 @@ index on first session connection.</p>
 <h2 id="step-5-index-your-first-repos">Step 5: Index your first repos<a class="headerlink" href="#step-5-index-your-first-repos" title="Permanent link">&para;</a></h2>
 <p>Auto-index triggers on the next Claude Code session start per project. To index
 immediately without opening a session:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>codebase-memory-mcp<span class="w"> </span>cli<span class="w"> </span>index_repository<span class="w"> </span><span class="s1">&#39;{&quot;repo_path&quot;: &quot;/home/byron/dev/.claude&quot;}&#39;</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>codebase-memory-mcp<span class="w"> </span>cli<span class="w"> </span>index_repository<span class="w"> </span><span class="s1">'{"repo_path": "/home/byron/dev/.claude"}'</span>
 </span></code></pre></div>
 <p>Or inside a Claude Code session:</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>Index this project
@@ -2501,15 +2501,15 @@ The binary auto-creates a <code>.gitattributes</code> entry with <code>merge=our
 binary merge conflicts. For solo repos, skip this and add <code>.codebase-memory/</code> to
 <code>.gitignore</code> instead.</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># Solo repos: ignore the artifact</span>
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="nb">echo</span><span class="w"> </span><span class="s1">&#39;.codebase-memory/&#39;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>.gitignore
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="nb">echo</span><span class="w"> </span><span class="s1">'.codebase-memory/'</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>.gitignore
 </span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
 </span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="c1"># Team repos: commit the artifact after first index</span>
 </span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>git<span class="w"> </span>add<span class="w"> </span>.codebase-memory/graph.db.zst
-</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>git<span class="w"> </span>commit<span class="w"> </span>-S<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;chore: add codebase knowledge graph artifact&quot;</span>
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>git<span class="w"> </span>commit<span class="w"> </span>-S<span class="w"> </span>-m<span class="w"> </span><span class="s2">"chore: add codebase knowledge graph artifact"</span>
 </span></code></pre></div>
 <h3 id="custom-extension-mappings">Custom extension mappings<a class="headerlink" href="#custom-extension-mappings" title="Permanent link">&para;</a></h3>
 <p>Only needed for repos with non-standard extensions:</p>
-<div class="language-json highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="p">{</span><span class="nt">&quot;extra_extensions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;.blade.php&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;php&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;.mjs&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;javascript&quot;</span><span class="p">}}</span>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="p">{</span><span class="nt">"extra_extensions"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">".blade.php"</span><span class="p">:</span><span class="w"> </span><span class="s2">"php"</span><span class="p">,</span><span class="w"> </span><span class="nt">".mjs"</span><span class="p">:</span><span class="w"> </span><span class="s2">"javascript"</span><span class="p">}}</span>
 </span></code></pre></div>
 <h3 id="custom-ignore-patterns">Custom ignore patterns<a class="headerlink" href="#custom-ignore-patterns" title="Permanent link">&para;</a></h3>
 <p>Only needed when <code>.gitignore</code> alone is insufficient (e.g., large generated files
@@ -2659,7 +2659,7 @@ convention in this repo.</p>
       <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>

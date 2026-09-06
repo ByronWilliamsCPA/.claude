@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -29,7 +29,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -2377,6 +2377,19 @@
 
   <h1>FOSSA CI Integration: License Compliance Evaluation and Decision</h1>
 
+<blockquote>
+<p><strong>Update (2026-09):</strong> GitHub now bills Advanced Security (Code Security) separately, so
+<code>actions/dependency-review-action</code> no longer functions on the free tier for any repo,
+public or private. <code>dependency-review.yml</code> was removed fleet-wide, and the manifest
+checks this evaluation drove, <strong>CI-036</strong> (dependency-review.yml presence) and <strong>CI-081</strong>
+(its deny-licenses/allow-licenses input), were retired as deprecated stubs. The DEFER
+conclusion below is unaffected: it never relied on dependency-review-action as a reason
+to skip FOSSA. But the "4 existing layers" in Finding 3 is now 3 layers, action-plan step
+3 (adding <code>deny-licenses</code> to <code>dependency-review.yml</code>) is moot, and the decision-matrix
+column for <code>dependency-review-action</code> reflects a capability the fleet no longer has.
+<strong>CI-080</strong> (the <code>sbom.yml</code> license denylist) is unaffected and remains the fleet's
+PR-diff-adjacent, though not diff-scoped, license-policy control.</p>
+</blockquote>
 <p>This report evaluates whether to add FOSSA (a third-party license-compliance SaaS) to the 44-repo <code>claude-config</code> fleet's CI. Six dimension analyses converge on a single conclusion: the fleet is overwhelmingly permissive (253 of 263 distributions in the active <code>claude-config</code> venv are permissive; the remaining 10 are 8 MPL-2.0 plus 2 LGPL, none of which create obligations for an MIT app that dynamically imports unmodified source), and zero GPL or AGPL packages exist in any managed <code>uv.lock</code> fleet-wide. FOSSA's deep-scan value is real but does not match the actual risk profile: its license-gating feature is paid-tier only, its free tier caps at 5 projects against 34 Python repos, it cannot read the org's REUSE 3.0 own-source layout, and every capability it would add over the current stack is already achievable by repairing the dormant in-house license gate that ships in <code>python-sbom.yml</code>. This is the same structural conclusion the companion <code>dependency-tooling-comparison.md</code> reached for Snyk: a third-party SaaS is not justified at this fleet size unless license compliance becomes a hard contractual requirement.</p>
 <h2 id="overall-recommendation-defer">Overall recommendation: DEFER<a class="headerlink" href="#overall-recommendation-defer" title="Permanent link">&para;</a></h2>
 <p>Do not adopt FOSSA at this time. Instead, repair and arm the existing in-house license gate. Revisit FOSSA only if one of these conditions becomes true:</p>
@@ -2452,7 +2465,7 @@
 <li>Recommendation: do not adopt now; if revisited post-paid-decision, use a separate <code>python-license.yml</code>, push-only org secret, <code>continue-on-error: true</code> with <code>--timeout 120</code> for the first 60 days, and pre-declare the three egress endpoints for future harden-runner block-mode.</li>
 </ul>
 <h3 id="3-overlap-and-redundancy-versus-the-4-existing-layers">3. Overlap and redundancy versus the 4 existing layers<a class="headerlink" href="#3-overlap-and-redundancy-versus-the-4-existing-layers" title="Permanent link">&para;</a></h3>
-<p>The fleet already has four overlapping layers: (1) the <code>python-sbom.yml</code> <code>license-compliance</code> job (non-gating, GPL/AGPL <code>id</code>-only); (2) <code>dependency-review-action</code> (PR-diff only, inconsistently configured, 6 repos have no license gate at all); (3) REUSE/fsfe-action (own-source SPDX headers only, orthogonal to dependency licenses, irreplaceable by FOSSA); (4) Trivy + Grype + OSV-Scanner (vulnerability-only, zero license capability). The current in-house script evaluates only 43% of license entries (126 of 295) because it reads only the SPDX <code>id</code> field; the 56% name-only and 3 expression entries are silently skipped, and it catches zero of the 8 copyleft packages. The three-step in-house fix (expand denylist to LGPL/MPL, also match <code>name</code> and <code>expression</code> fields, add a <code>pip-licenses</code> step for PEP-639 packages) closes the entire gap in one PR.</p>
+<p>At the time of this evaluation the fleet had four overlapping layers: (1) the <code>python-sbom.yml</code> <code>license-compliance</code> job (non-gating, GPL/AGPL <code>id</code>-only); (2) <code>dependency-review-action</code> (PR-diff only, inconsistently configured, 6 repos have no license gate at all); (3) REUSE/fsfe-action (own-source SPDX headers only, orthogonal to dependency licenses, irreplaceable by FOSSA); (4) Trivy + Grype + OSV-Scanner (vulnerability-only, zero license capability). Layer (2) was retired fleet-wide in 2026-09 when <code>dependency-review-action</code> began requiring paid GitHub Advanced Security; three layers remain. The current in-house script evaluates only 43% of license entries (126 of 295) because it reads only the SPDX <code>id</code> field; the 56% name-only and 3 expression entries are silently skipped, and it catches zero of the 8 copyleft packages. The three-step in-house fix (expand denylist to LGPL/MPL, also match <code>name</code> and <code>expression</code> fields, add a <code>pip-licenses</code> step for PEP-639 packages) closes the entire gap in one PR.</p>
 <ul>
 <li>Risks: enabling <code>fail-on-forbidden-licenses: true</code> without also fixing the <code>id</code>-only matching produces the same false-clean result; policy drift is accelerating across 17 config variations; the <code>cyclonedx-bom==7.3.0</code> PEP-639 bug is unresolved and hides <code>hypothesis</code> regardless of denylist quality.</li>
 <li>Recommendation: pursue the in-house upgrade now; FOSSA's only no-in-house-equivalent capabilities are license-compatibility-graph reasoning and automated NOTICE generation. Add FOSSA only when those are required, not merely convenient.</li>
@@ -2464,7 +2477,7 @@
 <li>Recommendation: this is the blueprint to apply IF condition 1, 2, or 3 above is ever met. It is not a reason to adopt now.</li>
 </ul>
 <h3 id="5-standards-manifest-integration">5. Standards-manifest integration<a class="headerlink" href="#5-standards-manifest-integration" title="Permanent link">&para;</a></h3>
-<p>Two new checks should be added to <code>docs/standards-manifest.yaml</code> to drive the in-house repair. They were originally drafted as CI-078 and CI-079, but PR #188 landed CI-078 (the qlty-gate check) and reserved CI-079 for its ruleset companion first, so the checks were renumbered to CI-080 and CI-081. CI-080 gates the <code>sbom.yml</code> caller's denylist content to include LGPL/MPL; CI-081 gates <code>dependency-review.yml</code> presence of a <code>deny-licenses</code> or <code>allow-licenses</code> input. Both start at <code>severity: suggested</code> per the policy-execution-gap lesson and are promoted to <code>important</code> only after their prerequisite sweeps (CI-058 for <code>sbom.yml</code> callers, CI-036 for <code>dependency-review.yml</code>) reach 100% of applicable repos. Current <code>sbom.yml</code> reach is 15 of 30 Python repos (50%), so <code>suggested</code> is correct, not <code>important</code>.</p>
+<p>Two new checks should be added to <code>docs/standards-manifest.yaml</code> to drive the in-house repair. They were originally drafted as CI-078 and CI-079, but PR #188 landed CI-078 (the qlty-gate check) and reserved CI-079 for its ruleset companion first, so the checks were renumbered to CI-080 and CI-081. CI-080 gates the <code>sbom.yml</code> caller's denylist content to include LGPL/MPL; CI-081 gates <code>dependency-review.yml</code> presence of a <code>deny-licenses</code> or <code>allow-licenses</code> input. Both started at <code>severity: suggested</code> per the policy-execution-gap lesson, promoting to <code>important</code> only after their prerequisite sweeps (CI-058 for <code>sbom.yml</code> callers, CI-036 for <code>dependency-review.yml</code>) reached 100% of applicable repos. <strong>CI-081 and its CI-036 prerequisite were retired in 2026-09</strong> when <code>dependency-review-action</code> began requiring paid GitHub Advanced Security; CI-080 promotion is unaffected and still tracks the CI-058 <code>sbom.yml</code> sweep.</p>
 <ul>
 <li>Risks: promoting CI-080 before CI-058 reaches 100% generates correct-but-unactionable findings; the free-text <code>name</code> blind spot is a workflow-code fix, not just a manifest entry; Wave 3 <code>fail-on-forbidden-licenses: true</code> requires a <code>certifi</code> allowlist mechanism first or every Python repo breaks.</li>
 <li>Recommendation: paste both entries (see the ready-to-paste YAML below) and do not enable hard-fail until the allowlist mechanism and 100% CI-058 reach are confirmed.</li>
@@ -2484,7 +2497,7 @@
 <th style="text-align: center;">FOSSA (paid)</th>
 <th style="text-align: center;">python-sbom license job (current)</th>
 <th style="text-align: center;">python-sbom license job (repaired)</th>
-<th style="text-align: center;">dependency-review-action</th>
+<th style="text-align: center;">dependency-review-action (retired 2026-09, paid GHAS required)</th>
 <th style="text-align: center;">REUSE / fsfe-action</th>
 <th style="text-align: center;">Trivy+Grype+OSV</th>
 </tr>
@@ -2628,7 +2641,7 @@
 <ol>
 <li>Repair the <code>license-compliance</code> script in <code>ByronWilliamsCPA/.github</code> at <code>.github/workflows/python-sbom.yml</code>: (a) expand the default <code>forbidden-licenses</code> to add <code>LGPL-2.0-only</code>, <code>LGPL-2.0-or-later</code>, <code>LGPL-2.1-only</code>, <code>LGPL-2.1-or-later</code>, <code>LGPL-3.0-only</code>, <code>LGPL-3.0-or-later</code>, <code>MPL-2.0</code>; (b) match the CycloneDX <code>name</code> and <code>expression</code> fields by substring, not only the SPDX <code>id</code>; &copy; add a <code>pip-licenses --format=json</code> step (or <code>Trivy --scanners license</code>) to catch PEP-639 packages like <code>hypothesis</code> that <code>cyclonedx-bom==7.3.0</code> misses entirely.</li>
 <li>Add a per-package allowlist mechanism (YAML in the caller or in the reusable workflow) seeded with <code>certifi</code> (MPL-2.0, transitive via <code>requests</code>, present in every Python repo). This is the precondition for any hard-fail gate.</li>
-<li>Add <code>deny-licenses</code> (GPL-2.0/3.0, AGPL-3.0 minimum) to <code>dependency-review.yml</code> for an early PR-time signal complementing the post-merge SBOM gate.</li>
+<li><del>Add <code>deny-licenses</code> (GPL-2.0/3.0, AGPL-3.0 minimum) to <code>dependency-review.yml</code> for an early PR-time signal complementing the post-merge SBOM gate.</del> Moot as of 2026-09: <code>dependency-review.yml</code> was removed fleet-wide (<code>actions/dependency-review-action</code> now requires paid GitHub Advanced Security). The post-merge SBOM gate (step 1) is the fleet's sole license-policy enforcement point.</li>
 <li>Repo-specific remediation independent of tooling: in <code>image_detection</code>, replace PyMuPDF with <code>pypdfium2</code> or document the Artifex commercial-license decision; in <code>ledgerbase</code>, move <code>semgrep</code> from the main to the dev dependency group.</li>
 <li>Clean the <code>claude-config</code> venv: remove the spurious unmanaged installs <code>tqdm</code>, <code>psycopg2-binary</code>, <code>python-gitlab</code> so they stop appearing in the SBOM.</li>
 <li>Roll out via the staged plan: Wave 1 (now) suggested/advisory, no CI failures; Wave 2 promote to <code>important</code> after CI-058 reaches 100% of the 30 Python repos; Wave 3 enable <code>fail-on-forbidden-licenses: true</code> only after the <code>certifi</code> allowlist is confirmed deployed.</li>
@@ -2643,11 +2656,15 @@ originally proposed CI-078/CI-079 after PR #188 took CI-078 (the qlty-gate
 check) and reserved CI-079 for its ruleset companion. See the live definitions
 in <code>docs/standards-manifest.yaml</code> for the authoritative <code>verify</code> logic; the
 canonical entries are the single source of truth and supersede any earlier
-draft. Both start at <code>severity: suggested</code> and promote to <code>important</code> only
-after their prerequisite sweeps (CI-058 for CI-080, CI-036 for CI-081) reach
-100% of applicable repos. CI-080's required LGPL/MPL set covers the LGPL-2.1
-variants so that <code>semgrep</code> (the one concrete LGPL-2.1 package observed in the
-fleet) is not missed.</p>
+draft. CI-080 starts at <code>severity: suggested</code> and promotes to <code>important</code> only
+after its prerequisite sweep (CI-058) reaches 100% of applicable repos.
+CI-080's required LGPL/MPL set covers the LGPL-2.1 variants so that <code>semgrep</code>
+(the one concrete LGPL-2.1 package observed in the fleet) is not missed.</p>
+<p><strong>CI-081 was retired in 2026-09</strong> (deprecated stub, ID not reused) alongside
+its CI-036 prerequisite: <code>actions/dependency-review-action</code> now requires paid
+GitHub Advanced Security, <code>dependency-review.yml</code> was removed fleet-wide, and
+a check gating a workflow that no longer exists would fail every repo.
+CI-080 is unaffected and remains the fleet's license-policy control.</p>
 
 
 
@@ -2670,7 +2687,7 @@ fleet) is not missed.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 4, 2026 15:51:47 UTC">June 4, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="September 6, 2026 03:47:09 UTC">September 6, 2026</span>
   </span>
 
     
@@ -2760,7 +2777,7 @@ fleet) is not missed.</p>
       <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>

@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -29,7 +29,7 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -2856,7 +2856,7 @@ Code discovers agents by filename in that directory.</p>
 </span><span id="__span-3-18"><a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a><span class="k">-</span><span class="w"> </span>owasp-api: Include if any HTTP framework, REST endpoints, or API
 </span><span id="__span-3-19"><a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a>  route decorators are detected.
 </span><span id="__span-3-20"><a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a><span class="k">-</span><span class="w"> </span>owasp-llm: Include if any LLM SDK (anthropic, openai, litellm,
-</span><span id="__span-3-21"><a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a>  langchain, openrouter, transformers with pipeline(&quot;text-generation&quot;))
+</span><span id="__span-3-21"><a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a>  langchain, openrouter, transformers with pipeline("text-generation"))
 </span><span id="__span-3-22"><a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a>  is imported or configured.
 </span><span id="__span-3-23"><a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a><span class="k">-</span><span class="w"> </span>owasp-agent: Include if agent orchestration (langchain agents, Claude
 </span><span id="__span-3-24"><a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a>  tool_use, MCP server definitions, autogen, crewai) is detected.
@@ -3004,7 +3004,7 @@ symlinked and will drift silently. Apply every change to both.</p>
 </span><span id="__span-6-41"><a id="__codelineno-6-41" name="__codelineno-6-41" href="#__codelineno-6-41"></a><span class="gs">**A02 Security Misconfiguration:**</span>
 </span><span id="__span-6-42"><a id="__codelineno-6-42" name="__codelineno-6-42" href="#__codelineno-6-42"></a><span class="k">-</span><span class="w"> </span><span class="sb">`DEBUG = True`</span> or equivalent reachable from a production settings path
 </span><span id="__span-6-43"><a id="__codelineno-6-43" name="__codelineno-6-43" href="#__codelineno-6-43"></a><span class="k">-</span><span class="w"> </span>Default or seeded credentials left in config, fixtures, or migration files
-</span><span id="__span-6-44"><a id="__codelineno-6-44" name="__codelineno-6-44" href="#__codelineno-6-44"></a><span class="k">-</span><span class="w"> </span>Overly permissive CORS (<span class="sb">`allow_origins=[&quot;*&quot;]`</span> with <span class="sb">`allow_credentials=True`</span>)
+</span><span id="__span-6-44"><a id="__codelineno-6-44" name="__codelineno-6-44" href="#__codelineno-6-44"></a><span class="k">-</span><span class="w"> </span>Overly permissive CORS (<span class="sb">`allow_origins=["*"]`</span> with <span class="sb">`allow_credentials=True`</span>)
 </span><span id="__span-6-45"><a id="__codelineno-6-45" name="__codelineno-6-45" href="#__codelineno-6-45"></a><span class="k">-</span><span class="w"> </span>Framework error pages returned to clients with stack traces intact
 </span><span id="__span-6-46"><a id="__codelineno-6-46" name="__codelineno-6-46" href="#__codelineno-6-46"></a><span class="k">-</span><span class="w"> </span>Admin interfaces mounted at a default path with no auth restriction
 </span><span id="__span-6-47"><a id="__codelineno-6-47" name="__codelineno-6-47" href="#__codelineno-6-47"></a>
@@ -3185,8 +3185,8 @@ A10:2025    MISSING    No tests verify error responses don't leak stack traces
 </span><span id="__span-8-74"><a id="__codelineno-8-74" name="__codelineno-8-74" href="#__codelineno-8-74"></a><span class="k">-</span><span class="w"> </span>Retrieval index updatable by untrusted callers with no content validation
 </span><span id="__span-8-75"><a id="__codelineno-8-75" name="__codelineno-8-75" href="#__codelineno-8-75"></a>  (RAG poisoning)
 </span><span id="__span-8-76"><a id="__codelineno-8-76" name="__codelineno-8-76" href="#__codelineno-8-76"></a><span class="k">-</span><span class="w"> </span>Embedding vectors reversible to source text with no protection on the
-</span><span id="__span-8-77"><a id="__codelineno-8-77" name="__codelineno-8-77" href="#__codelineno-8-77"></a>  vector store&#39;s access path
-</span><span id="__span-8-78"><a id="__codelineno-8-78" name="__codelineno-8-78" href="#__codelineno-8-78"></a><span class="k">-</span><span class="w"> </span>No access control distinguishing which documents a given caller&#39;s queries
+</span><span id="__span-8-77"><a id="__codelineno-8-77" name="__codelineno-8-77" href="#__codelineno-8-77"></a>  vector store's access path
+</span><span id="__span-8-78"><a id="__codelineno-8-78" name="__codelineno-8-78" href="#__codelineno-8-78"></a><span class="k">-</span><span class="w"> </span>No access control distinguishing which documents a given caller's queries
 </span><span id="__span-8-79"><a id="__codelineno-8-79" name="__codelineno-8-79" href="#__codelineno-8-79"></a>  may retrieve
 </span><span id="__span-8-80"><a id="__codelineno-8-80" name="__codelineno-8-80" href="#__codelineno-8-80"></a><span class="k">-</span><span class="w"> </span>Retrieved context inserted into the prompt with no provenance tag
 </span><span id="__span-8-81"><a id="__codelineno-8-81" name="__codelineno-8-81" href="#__codelineno-8-81"></a>  distinguishing it from trusted instructions
@@ -3261,13 +3261,13 @@ A10:2025    MISSING    No tests verify error responses don't leak stack traces
 </span><span id="__span-9-32"><a id="__codelineno-9-32" name="__codelineno-9-32" href="#__codelineno-9-32"></a>
 </span><span id="__span-9-33"><a id="__codelineno-9-33" name="__codelineno-9-33" href="#__codelineno-9-33"></a><span class="gs">**AG02 Prompt Injection:**</span>
 </span><span id="__span-9-34"><a id="__codelineno-9-34" name="__codelineno-9-34" href="#__codelineno-9-34"></a><span class="k">-</span><span class="w"> </span>Untrusted content (fetched web pages, tool results, retrieved documents)
-</span><span id="__span-9-35"><a id="__codelineno-9-35" name="__codelineno-9-35" href="#__codelineno-9-35"></a>  concatenated directly into the agent&#39;s system or instruction prompt with no
+</span><span id="__span-9-35"><a id="__codelineno-9-35" name="__codelineno-9-35" href="#__codelineno-9-35"></a>  concatenated directly into the agent's system or instruction prompt with no
 </span><span id="__span-9-36"><a id="__codelineno-9-36" name="__codelineno-9-36" href="#__codelineno-9-36"></a>  delimiter or sanitization step
 </span><span id="__span-9-37"><a id="__codelineno-9-37" name="__codelineno-9-37" href="#__codelineno-9-37"></a><span class="k">-</span><span class="w"> </span>No structural distinction in the prompt-construction path between trusted
 </span><span id="__span-9-38"><a id="__codelineno-9-38" name="__codelineno-9-38" href="#__codelineno-9-38"></a>  developer/system instructions and untrusted user/tool/retrieved content
 </span><span id="__span-9-39"><a id="__codelineno-9-39" name="__codelineno-9-39" href="#__codelineno-9-39"></a><span class="k">-</span><span class="w"> </span>Agent instructions assembled via string formatting or concatenation from
 </span><span id="__span-9-40"><a id="__codelineno-9-40" name="__codelineno-9-40" href="#__codelineno-9-40"></a>  external inputs rather than structured, role-tagged messages
-</span><span id="__span-9-41"><a id="__codelineno-9-41" name="__codelineno-9-41" href="#__codelineno-9-41"></a><span class="k">-</span><span class="w"> </span>Tool output re-injected into the agent&#39;s instruction context without a
+</span><span id="__span-9-41"><a id="__codelineno-9-41" name="__codelineno-9-41" href="#__codelineno-9-41"></a><span class="k">-</span><span class="w"> </span>Tool output re-injected into the agent's instruction context without a
 </span><span id="__span-9-42"><a id="__codelineno-9-42" name="__codelineno-9-42" href="#__codelineno-9-42"></a>  trust boundary marker separating it from the original task
 </span><span id="__span-9-43"><a id="__codelineno-9-43" name="__codelineno-9-43" href="#__codelineno-9-43"></a><span class="k">-</span><span class="w"> </span>No content filtering or length cap on untrusted text before it reaches the
 </span><span id="__span-9-44"><a id="__codelineno-9-44" name="__codelineno-9-44" href="#__codelineno-9-44"></a>  LLM context window
@@ -3291,10 +3291,10 @@ A10:2025    MISSING    No tests verify error responses don't leak stack traces
 </span><span id="__span-9-62"><a id="__codelineno-9-62" name="__codelineno-9-62" href="#__codelineno-9-62"></a>  re-validation of what actually ran
 </span><span id="__span-9-63"><a id="__codelineno-9-63" name="__codelineno-9-63" href="#__codelineno-9-63"></a>
 </span><span id="__span-9-64"><a id="__codelineno-9-64" name="__codelineno-9-64" href="#__codelineno-9-64"></a><span class="gs">**AG05 Broken Authentication:**</span>
-</span><span id="__span-9-65"><a id="__codelineno-9-65" name="__codelineno-9-65" href="#__codelineno-9-65"></a><span class="k">-</span><span class="w"> </span>Sub-agent or delegated task spawned with the parent agent&#39;s full credential
+</span><span id="__span-9-65"><a id="__codelineno-9-65" name="__codelineno-9-65" href="#__codelineno-9-65"></a><span class="k">-</span><span class="w"> </span>Sub-agent or delegated task spawned with the parent agent's full credential
 </span><span id="__span-9-66"><a id="__codelineno-9-66" name="__codelineno-9-66" href="#__codelineno-9-66"></a>  set or token rather than a scoped, delegation-specific credential
 </span><span id="__span-9-67"><a id="__codelineno-9-67" name="__codelineno-9-67" href="#__codelineno-9-67"></a><span class="k">-</span><span class="w"> </span>No verification of caller identity before an agent acts on behalf of a
-</span><span id="__span-9-68"><a id="__codelineno-9-68" name="__codelineno-9-68" href="#__codelineno-9-68"></a>  user, an unauthenticated &quot;acting as user X&quot; field taken at face value
+</span><span id="__span-9-68"><a id="__codelineno-9-68" name="__codelineno-9-68" href="#__codelineno-9-68"></a>  user, an unauthenticated "acting as user X" field taken at face value
 </span><span id="__span-9-69"><a id="__codelineno-9-69" name="__codelineno-9-69" href="#__codelineno-9-69"></a><span class="k">-</span><span class="w"> </span>Shared API keys or service credentials reused across multiple agent
 </span><span id="__span-9-70"><a id="__codelineno-9-70" name="__codelineno-9-70" href="#__codelineno-9-70"></a>  identities with no per-agent scoping
 </span><span id="__span-9-71"><a id="__codelineno-9-71" name="__codelineno-9-71" href="#__codelineno-9-71"></a><span class="k">-</span><span class="w"> </span>No expiration or single-use constraint on credentials issued for a
@@ -3334,7 +3334,7 @@ A10:2025    MISSING    No tests verify error responses don't leak stack traces
 </span><span id="__span-9-105"><a id="__codelineno-9-105" name="__codelineno-9-105" href="#__codelineno-9-105"></a>  trusted, unvalidated input by another agent
 </span><span id="__span-9-106"><a id="__codelineno-9-106" name="__codelineno-9-106" href="#__codelineno-9-106"></a><span class="k">-</span><span class="w"> </span>No message-origin verification between agents, so any agent can inject a
 </span><span id="__span-9-107"><a id="__codelineno-9-107" name="__codelineno-9-107" href="#__codelineno-9-107"></a>  message claiming to be from a trusted peer
-</span><span id="__span-9-108"><a id="__codelineno-9-108" name="__codelineno-9-108" href="#__codelineno-9-108"></a><span class="k">-</span><span class="w"> </span>No circuit breaker or isolation boundary preventing one agent&#39;s failure or
+</span><span id="__span-9-108"><a id="__codelineno-9-108" name="__codelineno-9-108" href="#__codelineno-9-108"></a><span class="k">-</span><span class="w"> </span>No circuit breaker or isolation boundary preventing one agent's failure or
 </span><span id="__span-9-109"><a id="__codelineno-9-109" name="__codelineno-9-109" href="#__codelineno-9-109"></a>  hallucination from propagating unchecked to downstream agents
 </span><span id="__span-9-110"><a id="__codelineno-9-110" name="__codelineno-9-110" href="#__codelineno-9-110"></a><span class="k">-</span><span class="w"> </span>Inter-agent messages passed as raw strings with no schema validation
 </span><span id="__span-9-111"><a id="__codelineno-9-111" name="__codelineno-9-111" href="#__codelineno-9-111"></a>  before being acted on
@@ -3406,14 +3406,14 @@ A10:2025    MISSING    No tests verify error responses don't leak stack traces
 </span><span id="__span-10-48"><a id="__codelineno-10-48" name="__codelineno-10-48" href="#__codelineno-10-48"></a>  ID and secret shared between development and production config
 </span><span id="__span-10-49"><a id="__codelineno-10-49" name="__codelineno-10-49" href="#__codelineno-10-49"></a><span class="k">-</span><span class="w"> </span>Ownership checks missing on record lookups: a query keyed on a request ID with
 </span><span id="__span-10-50"><a id="__codelineno-10-50" name="__codelineno-10-50" href="#__codelineno-10-50"></a>  no <span class="sb">`user=`</span> or <span class="sb">`tenant=`</span> filter
-</span><span id="__span-10-51"><a id="__codelineno-10-51" name="__codelineno-10-51" href="#__codelineno-10-51"></a><span class="k">-</span><span class="w"> </span>Hardcoded bypass flags (<span class="sb">`if user.email.endswith(&quot;@internal&quot;)`</span>, <span class="sb">`SKIP_AUTH`</span>)
+</span><span id="__span-10-51"><a id="__codelineno-10-51" name="__codelineno-10-51" href="#__codelineno-10-51"></a><span class="k">-</span><span class="w"> </span>Hardcoded bypass flags (<span class="sb">`if user.email.endswith("@internal")`</span>, <span class="sb">`SKIP_AUTH`</span>)
 </span><span id="__span-10-52"><a id="__codelineno-10-52" name="__codelineno-10-52" href="#__codelineno-10-52"></a>
 </span><span id="__span-10-53"><a id="__codelineno-10-53" name="__codelineno-10-53" href="#__codelineno-10-53"></a><span class="gs">**CD02 Security Misconfiguration:**</span>
 </span><span id="__span-10-54"><a id="__codelineno-10-54" name="__codelineno-10-54" href="#__codelineno-10-54"></a><span class="k">-</span><span class="w"> </span><span class="sb">`DEBUG = True`</span>, <span class="sb">`app.run(debug=True)`</span>, or <span class="sb">`FastAPI(debug=True)`</span> reachable from
 </span><span id="__span-10-55"><a id="__codelineno-10-55" name="__codelineno-10-55" href="#__codelineno-10-55"></a>  a production settings path
 </span><span id="__span-10-56"><a id="__codelineno-10-56" name="__codelineno-10-56" href="#__codelineno-10-56"></a><span class="k">-</span><span class="w"> </span>Admin interfaces mounted at a default path with no auth or IP restriction
 </span><span id="__span-10-57"><a id="__codelineno-10-57" name="__codelineno-10-57" href="#__codelineno-10-57"></a>  (Django admin, <span class="sb">`flask_admin`</span>, <span class="sb">`/admin`</span>)
-</span><span id="__span-10-58"><a id="__codelineno-10-58" name="__codelineno-10-58" href="#__codelineno-10-58"></a><span class="k">-</span><span class="w"> </span><span class="sb">`ALLOWED_HOSTS = [&quot;*&quot;]`</span> or `CORSMiddleware(allow_origins=[&quot;*&quot;],
+</span><span id="__span-10-58"><a id="__codelineno-10-58" name="__codelineno-10-58" href="#__codelineno-10-58"></a><span class="k">-</span><span class="w"> </span><span class="sb">`ALLOWED_HOSTS = ["*"]`</span> or `CORSMiddleware(allow_origins=["*"],
 </span><span id="__span-10-59"><a id="__codelineno-10-59" name="__codelineno-10-59" href="#__codelineno-10-59"></a>  allow_credentials=True)`
 </span><span id="__span-10-60"><a id="__codelineno-10-60" name="__codelineno-10-60" href="#__codelineno-10-60"></a><span class="k">-</span><span class="w"> </span>Default or seeded credentials left in config, fixtures, or migration files
 </span><span id="__span-10-61"><a id="__codelineno-10-61" name="__codelineno-10-61" href="#__codelineno-10-61"></a><span class="k">-</span><span class="w"> </span>Framework error pages returned to clients with stack traces intact
@@ -3431,7 +3431,7 @@ A10:2025    MISSING    No tests verify error responses don't leak stack traces
 </span><span id="__span-10-73"><a id="__codelineno-10-73" name="__codelineno-10-73" href="#__codelineno-10-73"></a><span class="gs">**CD04 Data and Privacy Exposure:**</span>
 </span><span id="__span-10-74"><a id="__codelineno-10-74" name="__codelineno-10-74" href="#__codelineno-10-74"></a><span class="k">-</span><span class="w"> </span>PII written to logs: whole request or response bodies logged, or direct field
 </span><span id="__span-10-75"><a id="__codelineno-10-75" name="__codelineno-10-75" href="#__codelineno-10-75"></a>  logging (<span class="sb">`logger.info(user.email)`</span>)
-</span><span id="__span-10-76"><a id="__codelineno-10-76" name="__codelineno-10-76" href="#__codelineno-10-76"></a><span class="k">-</span><span class="w"> </span>Serializers exposing every column (<span class="sb">`fields = &quot;__all__&quot;`</span>, <span class="sb">`SELECT *`</span> returned
+</span><span id="__span-10-76"><a id="__codelineno-10-76" name="__codelineno-10-76" href="#__codelineno-10-76"></a><span class="k">-</span><span class="w"> </span>Serializers exposing every column (<span class="sb">`fields = "__all__"`</span>, <span class="sb">`SELECT *`</span> returned
 </span><span id="__span-10-77"><a id="__codelineno-10-77" name="__codelineno-10-77" href="#__codelineno-10-77"></a>  straight to a response)
 </span><span id="__span-10-78"><a id="__codelineno-10-78" name="__codelineno-10-78" href="#__codelineno-10-78"></a><span class="k">-</span><span class="w"> </span>Sensitive fields persisted to plaintext columns with no encryption at rest
 </span><span id="__span-10-79"><a id="__codelineno-10-79" name="__codelineno-10-79" href="#__codelineno-10-79"></a><span class="k">-</span><span class="w"> </span>Connector or export configured to pull entire tables when a few columns are
@@ -3451,7 +3451,7 @@ A10:2025    MISSING    No tests verify error responses don't leak stack traces
 </span><span id="__span-10-93"><a id="__codelineno-10-93" name="__codelineno-10-93" href="#__codelineno-10-93"></a><span class="gs">**CD06 Excessive Permissions and Oversharing:**</span>
 </span><span id="__span-10-94"><a id="__codelineno-10-94" name="__codelineno-10-94" href="#__codelineno-10-94"></a><span class="k">-</span><span class="w"> </span>OAuth scopes broader than the code exercises (full-mailbox or full-drive scope
 </span><span id="__span-10-95"><a id="__codelineno-10-95" name="__codelineno-10-95" href="#__codelineno-10-95"></a>  for a single-folder feature)
-</span><span id="__span-10-96"><a id="__codelineno-10-96" name="__codelineno-10-96" href="#__codelineno-10-96"></a><span class="k">-</span><span class="w"> </span>Cloud IAM policies with wildcard actions or resources (<span class="sb">`&quot;Action&quot;: &quot;*&quot;`</span>)
+</span><span id="__span-10-96"><a id="__codelineno-10-96" name="__codelineno-10-96" href="#__codelineno-10-96"></a><span class="k">-</span><span class="w"> </span>Cloud IAM policies with wildcard actions or resources (<span class="sb">`"Action": "*"`</span>)
 </span><span id="__span-10-97"><a id="__codelineno-10-97" name="__codelineno-10-97" href="#__codelineno-10-97"></a><span class="k">-</span><span class="w"> </span>Share links or bucket ACLs set to anyone-with-the-link or public-read
 </span><span id="__span-10-98"><a id="__codelineno-10-98" name="__codelineno-10-98" href="#__codelineno-10-98"></a><span class="k">-</span><span class="w"> </span>Connectors configured with account-wide access where record-level would do
 </span><span id="__span-10-99"><a id="__codelineno-10-99" name="__codelineno-10-99" href="#__codelineno-10-99"></a><span class="k">-</span><span class="w"> </span>Database grants to the application role beyond the statements it issues
@@ -3548,8 +3548,8 @@ A10:2025    MISSING    No tests verify error responses don't leak stack traces
 </span><span id="__span-11-29"><a id="__codelineno-11-29" name="__codelineno-11-29" href="#__codelineno-11-29"></a><span class="k">-</span><span class="w"> </span>Direct database queries using user-supplied IDs without filtering
 </span><span id="__span-11-30"><a id="__codelineno-11-30" name="__codelineno-11-30" href="#__codelineno-11-30"></a>
 </span><span id="__span-11-31"><a id="__codelineno-11-31" name="__codelineno-11-31" href="#__codelineno-11-31"></a><span class="gs">**API02 Broken Authentication:**</span>
-</span><span id="__span-11-32"><a id="__codelineno-11-32" name="__codelineno-11-32" href="#__codelineno-11-32"></a><span class="k">-</span><span class="w"> </span>Token decode calls that skip signature verification (<span class="sb">`jwt.decode(..., options={&quot;verify_signature&quot;: False})`</span>, <span class="sb">`verify=False`</span>)
-</span><span id="__span-11-33"><a id="__codelineno-11-33" name="__codelineno-11-33" href="#__codelineno-11-33"></a><span class="k">-</span><span class="w"> </span>Hardcoded secret or signing keys in source (<span class="sb">`SECRET_KEY = &quot;...&quot;`</span>, <span class="sb">`JWT_SECRET = &quot;...&quot;`</span>)
+</span><span id="__span-11-32"><a id="__codelineno-11-32" name="__codelineno-11-32" href="#__codelineno-11-32"></a><span class="k">-</span><span class="w"> </span>Token decode calls that skip signature verification (<span class="sb">`jwt.decode(..., options={"verify_signature": False})`</span>, <span class="sb">`verify=False`</span>)
+</span><span id="__span-11-33"><a id="__codelineno-11-33" name="__codelineno-11-33" href="#__codelineno-11-33"></a><span class="k">-</span><span class="w"> </span>Hardcoded secret or signing keys in source (<span class="sb">`SECRET_KEY = "..."`</span>, <span class="sb">`JWT_SECRET = "..."`</span>)
 </span><span id="__span-11-34"><a id="__codelineno-11-34" name="__codelineno-11-34" href="#__codelineno-11-34"></a><span class="k">-</span><span class="w"> </span>Password or token comparisons using <span class="sb">`==`</span> instead of a constant-time compare (<span class="sb">`hmac.compare_digest`</span>, <span class="sb">`secrets.compare_digest`</span>)
 </span><span id="__span-11-35"><a id="__codelineno-11-35" name="__codelineno-11-35" href="#__codelineno-11-35"></a><span class="k">-</span><span class="w"> </span>Missing expiration handling on tokens (no <span class="sb">`exp`</span> claim check) or refresh tokens issued without rotation
 </span><span id="__span-11-36"><a id="__codelineno-11-36" name="__codelineno-11-36" href="#__codelineno-11-36"></a><span class="k">-</span><span class="w"> </span>Login or password-reset endpoints with no failed-attempt counter or lockout logic
@@ -3574,7 +3574,7 @@ A10:2025    MISSING    No tests verify error responses don't leak stack traces
 </span><span id="__span-11-55"><a id="__codelineno-11-55" name="__codelineno-11-55" href="#__codelineno-11-55"></a><span class="k">-</span><span class="w"> </span>GraphQL mutations with no per-mutation authorization resolver or directive
 </span><span id="__span-11-56"><a id="__codelineno-11-56" name="__codelineno-11-56" href="#__codelineno-11-56"></a>
 </span><span id="__span-11-57"><a id="__codelineno-11-57" name="__codelineno-11-57" href="#__codelineno-11-57"></a><span class="gs">**API06 Unrestricted Access to Sensitive Business Flows:**</span> NOT STATICALLY DETECTABLE
-</span><span id="__span-11-58"><a id="__codelineno-11-58" name="__codelineno-11-58" href="#__codelineno-11-58"></a><span class="k">-</span><span class="w"> </span>Whether a flow is &quot;sensitive&quot; (bulk purchase, ticket reservation, referral payout) is a business judgment, not a code shape; separating legitimate high-volume use from automated abuse depends on runtime behavioral signal (request velocity, device fingerprint) that a single-pass source read cannot see
+</span><span id="__span-11-58"><a id="__codelineno-11-58" name="__codelineno-11-58" href="#__codelineno-11-58"></a><span class="k">-</span><span class="w"> </span>Whether a flow is "sensitive" (bulk purchase, ticket reservation, referral payout) is a business judgment, not a code shape; separating legitimate high-volume use from automated abuse depends on runtime behavioral signal (request velocity, device fingerprint) that a single-pass source read cannot see
 </span><span id="__span-11-59"><a id="__codelineno-11-59" name="__codelineno-11-59" href="#__codelineno-11-59"></a><span class="k">-</span><span class="w"> </span>Covered by: standards manifest <span class="sb">`OPS-*`</span> checks (domain: operations), evaluated by the <span class="sb">`operations-posture-auditor`</span> agent. Specifically OPS-009 (anti-automation on public write paths) and OPS-011 (authentication endpoint rate limiting with the limit recorded)
 </span><span id="__span-11-60"><a id="__codelineno-11-60" name="__codelineno-11-60" href="#__codelineno-11-60"></a><span class="k">-</span><span class="w"> </span>Statically detectable sub-signals only: public write endpoints (checkout, signup, referral-claim, reservation) with no CAPTCHA or anti-automation middleware reference nearby; absence of any per-user or per-IP throttle decorator on flows that create financial or scarce-resource records
 </span><span id="__span-11-61"><a id="__codelineno-11-61" name="__codelineno-11-61" href="#__codelineno-11-61"></a>
@@ -3585,7 +3585,7 @@ A10:2025    MISSING    No tests verify error responses don't leak stack traces
 </span><span id="__span-11-66"><a id="__codelineno-11-66" name="__codelineno-11-66" href="#__codelineno-11-66"></a>
 </span><span id="__span-11-67"><a id="__codelineno-11-67" name="__codelineno-11-67" href="#__codelineno-11-67"></a><span class="gs">**API08 Security Misconfiguration:**</span>
 </span><span id="__span-11-68"><a id="__codelineno-11-68" name="__codelineno-11-68" href="#__codelineno-11-68"></a><span class="k">-</span><span class="w"> </span>Debug flags left enabled outside test config (<span class="sb">`DEBUG = True`</span>, <span class="sb">`app.debug = True`</span>)
-</span><span id="__span-11-69"><a id="__codelineno-11-69" name="__codelineno-11-69" href="#__codelineno-11-69"></a><span class="k">-</span><span class="w"> </span>CORS configured with <span class="sb">`allow_origins=[&quot;*&quot;]`</span> combined with <span class="sb">`allow_credentials=True`</span>
+</span><span id="__span-11-69"><a id="__codelineno-11-69" name="__codelineno-11-69" href="#__codelineno-11-69"></a><span class="k">-</span><span class="w"> </span>CORS configured with <span class="sb">`allow_origins=["*"]`</span> combined with <span class="sb">`allow_credentials=True`</span>
 </span><span id="__span-11-70"><a id="__codelineno-11-70" name="__codelineno-11-70" href="#__codelineno-11-70"></a><span class="k">-</span><span class="w"> </span>Missing or permissive security headers in middleware (<span class="sb">`X-Content-Type-Options`</span>, <span class="sb">`Content-Security-Policy`</span>, <span class="sb">`Strict-Transport-Security`</span> unset)
 </span><span id="__span-11-71"><a id="__codelineno-11-71" name="__codelineno-11-71" href="#__codelineno-11-71"></a><span class="k">-</span><span class="w"> </span>Exception handlers that return stack traces or internal error detail to the client
 </span><span id="__span-11-72"><a id="__codelineno-11-72" name="__codelineno-11-72" href="#__codelineno-11-72"></a><span class="k">-</span><span class="w"> </span>Default or example credentials carried over into real config (<span class="sb">`.env.example`</span> values reused verbatim)
@@ -3607,7 +3607,7 @@ A10:2025    MISSING    No tests verify error responses don't leak stack traces
 </span><span id="__span-11-88"><a id="__codelineno-11-88" name="__codelineno-11-88" href="#__codelineno-11-88"></a>
 </span><span id="__span-11-89"><a id="__codelineno-11-89" name="__codelineno-11-89" href="#__codelineno-11-89"></a><span class="gu">## Mode: review-tests / generate</span>
 </span><span id="__span-11-90"><a id="__codelineno-11-90" name="__codelineno-11-90" href="#__codelineno-11-90"></a>
-</span><span id="__span-11-91"><a id="__codelineno-11-91" name="__codelineno-11-91" href="#__codelineno-11-91"></a>Generate API security tests using the project&#39;s test client (FastAPI
+</span><span id="__span-11-91"><a id="__codelineno-11-91" name="__codelineno-11-91" href="#__codelineno-11-91"></a>Generate API security tests using the project's test client (FastAPI
 </span><span id="__span-11-92"><a id="__codelineno-11-92" name="__codelineno-11-92" href="#__codelineno-11-92"></a>TestClient, Flask test client, etc.) with parametrized attack payloads.
 </span><span id="__span-11-93"><a id="__codelineno-11-93" name="__codelineno-11-93" href="#__codelineno-11-93"></a>Reference API## category IDs in all test docstrings.
 </span></code></pre></div>
@@ -3695,7 +3695,7 @@ A10:2025    MISSING    No tests verify error responses don't leak stack traces
 </span><span id="__span-12-79"><a id="__codelineno-12-79" name="__codelineno-12-79" href="#__codelineno-12-79"></a>  cache writable by untrusted callers
 </span><span id="__span-12-80"><a id="__codelineno-12-80" name="__codelineno-12-80" href="#__codelineno-12-80"></a><span class="k">-</span><span class="w"> </span>Model serving response path lacks transport authentication between the inference service
 </span><span id="__span-12-81"><a id="__codelineno-12-81" name="__codelineno-12-81" href="#__codelineno-12-81"></a>  and its consumer
-</span><span id="__span-12-82"><a id="__codelineno-12-82" name="__codelineno-12-82" href="#__codelineno-12-82"></a><span class="k">-</span><span class="w"> </span>No check that a returned prediction matches the model&#39;s own deterministic output, leaving
+</span><span id="__span-12-82"><a id="__codelineno-12-82" name="__codelineno-12-82" href="#__codelineno-12-82"></a><span class="k">-</span><span class="w"> </span>No check that a returned prediction matches the model's own deterministic output, leaving
 </span><span id="__span-12-83"><a id="__codelineno-12-83" name="__codelineno-12-83" href="#__codelineno-12-83"></a>  in-transit or in-cache result tampering undetected
 </span><span id="__span-12-84"><a id="__codelineno-12-84" name="__codelineno-12-84" href="#__codelineno-12-84"></a>
 </span><span id="__span-12-85"><a id="__codelineno-12-85" name="__codelineno-12-85" href="#__codelineno-12-85"></a><span class="gs">**ML10 Model Poisoning:**</span>
@@ -3720,7 +3720,7 @@ A10:2025    MISSING    No tests verify error responses don't leak stack traces
 <p>Add this section to <code>.claude/agents/test-writer.md</code>:</p>
 <p><div class="language-markdown highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="gu">## Security Test Delegation</span>
 </span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>
-</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>When writing tests for code that falls within an OWASP specialist&#39;s
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>When writing tests for code that falls within an OWASP specialist's
 </span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>domain, you SHOULD delegate to the appropriate specialist rather than
 </span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>writing security tests yourself. Your role is functional test coverage;
 </span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>specialists handle security depth.
@@ -3741,7 +3741,7 @@ A10:2025    MISSING    No tests verify error responses don't leak stack traces
 </span><span id="__span-13-21"><a id="__codelineno-13-21" name="__codelineno-13-21" href="#__codelineno-13-21"></a>Use the Task tool to invoke the specialist:
 </span></code></pre></div>
 Task: Run the owasp-llm specialist in generate mode on src/llm/prompt.py
-<div class="language-text highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>Incorporate the specialist&#39;s generated tests into the test file alongside
+<div class="language-text highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>Incorporate the specialist's generated tests into the test file alongside
 </span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>your functional tests.
 </span></code></pre></div></p>
 <h3 id="62-updated-test-reviewer-agent">6.2 Updated test-reviewer Agent<a class="headerlink" href="#62-updated-test-reviewer-agent" title="Permanent link">&para;</a></h3>
@@ -3766,9 +3766,9 @@ Task: Run the owasp-llm specialist in generate mode on src/llm/prompt.py
 <h2 id="7-invocation-patterns">7. Invocation Patterns<a class="headerlink" href="#7-invocation-patterns" title="Permanent link">&para;</a></h2>
 <h3 id="71-full-repo-security-audit">7.1 Full Repo Security Audit<a class="headerlink" href="#71-full-repo-security-audit" title="Permanent link">&para;</a></h3>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="c1"># Via Claude Code: run dispatcher on entire codebase</span>
-</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>claude<span class="w"> </span><span class="s2">&quot;Run the OWASP dispatcher on this repo in review-code mode,</span>
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>claude<span class="w"> </span><span class="s2">"Run the OWASP dispatcher on this repo in review-code mode,</span>
 </span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="s2">then review-tests mode. Identify all security gaps and generate</span>
-</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="s2">missing tests for critical findings.&quot;</span>
+</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="s2">missing tests for critical findings."</span>
 </span></code></pre></div>
 <p>The dispatcher will:
 1. Detect applicable OWASP lists
@@ -3778,14 +3778,14 @@ Task: Run the owasp-llm specialist in generate mode on src/llm/prompt.py
 5. Aggregate results into a unified security report</p>
 <h3 id="72-targeted-security-review">7.2 Targeted Security Review<a class="headerlink" href="#72-targeted-security-review" title="Permanent link">&para;</a></h3>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="c1"># Review just the auth module against web and API standards</span>
-</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>claude<span class="w"> </span><span class="s2">&quot;Run owasp-web and owasp-api specialists in review-tests mode</span>
-</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="s2">on tests/unit/test_auth.py and src/auth/&quot;</span>
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>claude<span class="w"> </span><span class="s2">"Run owasp-web and owasp-api specialists in review-tests mode</span>
+</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="s2">on tests/unit/test_auth.py and src/auth/"</span>
 </span></code></pre></div>
 <h3 id="73-pr-level-security-gate">7.3 PR-Level Security Gate<a class="headerlink" href="#73-pr-level-security-gate" title="Permanent link">&para;</a></h3>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="c1"># In CI via headless mode: check changed files only</span>
-</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>claude<span class="w"> </span>--bare<span class="w"> </span>-p<span class="w"> </span><span class="s2">&quot;Run the OWASP dispatcher in review-code mode on the files</span>
+</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>claude<span class="w"> </span>--bare<span class="w"> </span>-p<span class="w"> </span><span class="s2">"Run the OWASP dispatcher in review-code mode on the files</span>
 </span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="s2">changed in this PR. Report any findings with severity HIGH or above.</span>
-</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="s2">If critical gaps exist, generate tests and commit them.&quot;</span>
+</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="s2">If critical gaps exist, generate tests and commit them."</span>
 </span><span id="__span-18-5"><a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a><span class="c1"># --bare skips project-dir auto-scan; use for all scripted claude -p invocations</span>
 </span></code></pre></div>
 <h3 id="74-orchestrator-integration">7.4 Orchestrator Integration<a class="headerlink" href="#74-orchestrator-integration" title="Permanent link">&para;</a></h3>
@@ -3894,14 +3894,14 @@ Task: Run the owasp-llm specialist in generate mode on src/llm/prompt.py
 </span><span id="__span-22-2"><a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a><span class="k">[tool.pytest.ini_options]</span>
 </span><span id="__span-22-3"><a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a><span class="n">markers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span>
 </span><span id="__span-22-4"><a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a><span class="w">    </span><span class="c1"># ... existing markers ...</span>
-</span><span id="__span-22-5"><a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a><span class="w">    </span><span class="s2">&quot;security: security tests generated by OWASP specialists&quot;</span><span class="p">,</span>
-</span><span id="__span-22-6"><a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a><span class="w">    </span><span class="s2">&quot;owasp_web: OWASP Web Applications Top 10 (2025)&quot;</span><span class="p">,</span>
-</span><span id="__span-22-7"><a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a><span class="w">    </span><span class="s2">&quot;owasp_llm: OWASP LLM Applications Top 10 (2025)&quot;</span><span class="p">,</span>
-</span><span id="__span-22-8"><a id="__codelineno-22-8" name="__codelineno-22-8" href="#__codelineno-22-8"></a><span class="w">    </span><span class="s2">&quot;owasp_agent: OWASP Agentic Applications Top 10 (2026)&quot;</span><span class="p">,</span>
-</span><span id="__span-22-9"><a id="__codelineno-22-9" name="__codelineno-22-9" href="#__codelineno-22-9"></a><span class="w">    </span><span class="s2">&quot;owasp_citizen: OWASP Citizen Developer Top 10 (2025)&quot;</span><span class="p">,</span>
-</span><span id="__span-22-10"><a id="__codelineno-22-10" name="__codelineno-22-10" href="#__codelineno-22-10"></a><span class="w">    </span><span class="s2">&quot;owasp_api: OWASP API Security Top 10 (2023)&quot;</span><span class="p">,</span>
-</span><span id="__span-22-11"><a id="__codelineno-22-11" name="__codelineno-22-11" href="#__codelineno-22-11"></a><span class="w">    </span><span class="s2">&quot;owasp_ml: OWASP ML Security Top 10 (v0.3)&quot;</span><span class="p">,</span>
-</span><span id="__span-22-12"><a id="__codelineno-22-12" name="__codelineno-22-12" href="#__codelineno-22-12"></a><span class="w">    </span><span class="s2">&quot;ai_security: AI-specific security tests (subset of security)&quot;</span><span class="p">,</span>
+</span><span id="__span-22-5"><a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a><span class="w">    </span><span class="s2">"security: security tests generated by OWASP specialists"</span><span class="p">,</span>
+</span><span id="__span-22-6"><a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a><span class="w">    </span><span class="s2">"owasp_web: OWASP Web Applications Top 10 (2025)"</span><span class="p">,</span>
+</span><span id="__span-22-7"><a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a><span class="w">    </span><span class="s2">"owasp_llm: OWASP LLM Applications Top 10 (2025)"</span><span class="p">,</span>
+</span><span id="__span-22-8"><a id="__codelineno-22-8" name="__codelineno-22-8" href="#__codelineno-22-8"></a><span class="w">    </span><span class="s2">"owasp_agent: OWASP Agentic Applications Top 10 (2026)"</span><span class="p">,</span>
+</span><span id="__span-22-9"><a id="__codelineno-22-9" name="__codelineno-22-9" href="#__codelineno-22-9"></a><span class="w">    </span><span class="s2">"owasp_citizen: OWASP Citizen Developer Top 10 (2025)"</span><span class="p">,</span>
+</span><span id="__span-22-10"><a id="__codelineno-22-10" name="__codelineno-22-10" href="#__codelineno-22-10"></a><span class="w">    </span><span class="s2">"owasp_api: OWASP API Security Top 10 (2023)"</span><span class="p">,</span>
+</span><span id="__span-22-11"><a id="__codelineno-22-11" name="__codelineno-22-11" href="#__codelineno-22-11"></a><span class="w">    </span><span class="s2">"owasp_ml: OWASP ML Security Top 10 (v0.3)"</span><span class="p">,</span>
+</span><span id="__span-22-12"><a id="__codelineno-22-12" name="__codelineno-22-12" href="#__codelineno-22-12"></a><span class="w">    </span><span class="s2">"ai_security: AI-specific security tests (subset of security)"</span><span class="p">,</span>
 </span><span id="__span-22-13"><a id="__codelineno-22-13" name="__codelineno-22-13" href="#__codelineno-22-13"></a><span class="p">]</span>
 </span></code></pre></div>
 <p>Run security tests selectively:</p>
@@ -3915,7 +3915,7 @@ Task: Run the owasp-llm specialist in generate mode on src/llm/prompt.py
 </span><span id="__span-23-8"><a id="__codelineno-23-8" name="__codelineno-23-8" href="#__codelineno-23-8"></a>pytest<span class="w"> </span>-m<span class="w"> </span>ai_security
 </span><span id="__span-23-9"><a id="__codelineno-23-9" name="__codelineno-23-9" href="#__codelineno-23-9"></a>
 </span><span id="__span-23-10"><a id="__codelineno-23-10" name="__codelineno-23-10" href="#__codelineno-23-10"></a><span class="c1"># Security tests for a specific category</span>
-</span><span id="__span-23-11"><a id="__codelineno-23-11" name="__codelineno-23-11" href="#__codelineno-23-11"></a>pytest<span class="w"> </span>-k<span class="w"> </span><span class="s2">&quot;a05&quot;</span><span class="w"> </span>-m<span class="w"> </span>owasp_web
+</span><span id="__span-23-11"><a id="__codelineno-23-11" name="__codelineno-23-11" href="#__codelineno-23-11"></a>pytest<span class="w"> </span>-k<span class="w"> </span><span class="s2">"a05"</span><span class="w"> </span>-m<span class="w"> </span>owasp_web
 </span></code></pre></div>
 <hr />
 <h2 id="11-rollout-plan">11. Rollout Plan<a class="headerlink" href="#11-rollout-plan" title="Permanent link">&para;</a></h2>
@@ -4177,7 +4177,7 @@ its domain-specific perspective:</p>
       <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>

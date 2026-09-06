@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -29,7 +29,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -2784,13 +2784,13 @@
 <h3 id="required-backports-for-310">Required Backports for 3.10<a class="headerlink" href="#required-backports-for-310" title="Permanent link">&para;</a></h3>
 <div class="language-toml highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">dependencies</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="c1"># TOML support (tomllib added in 3.11)</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="s2">&quot;tomli&gt;=2.0.0; python_version &lt; &#39;3.11&#39;&quot;</span><span class="p">,</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="s2">"tomli&gt;=2.0.0; python_version &lt; '3.11'"</span><span class="p">,</span>
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
 </span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="c1"># Exception groups (added in 3.11)</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">    </span><span class="s2">&quot;exceptiongroup&gt;=1.1.0; python_version &lt; &#39;3.11&#39;&quot;</span><span class="p">,</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">    </span><span class="s2">"exceptiongroup&gt;=1.1.0; python_version &lt; '3.11'"</span><span class="p">,</span>
 </span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>
 </span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">    </span><span class="c1"># Newer typing features</span>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">    </span><span class="s2">&quot;typing-extensions&gt;=4.12.0&quot;</span><span class="p">,</span><span class="w">  </span><span class="c1"># Always useful for backporting latest typing features</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">    </span><span class="s2">"typing-extensions&gt;=4.12.0"</span><span class="p">,</span><span class="w">  </span><span class="c1"># Always useful for backporting latest typing features</span>
 </span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="p">]</span>
 </span></code></pre></div>
 <h3 id="code-patterns-for-310-compatibility">Code Patterns for 3.10 Compatibility<a class="headerlink" href="#code-patterns-for-310-compatibility" title="Permanent link">&para;</a></h3>
@@ -2824,7 +2824,7 @@
 </ul>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">tomllib</span>  <span class="c1"># No need for tomli backport</span>
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;pyproject.toml&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">"pyproject.toml"</span><span class="p">,</span> <span class="s2">"rb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
 </span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="n">data</span> <span class="o">=</span> <span class="n">tomllib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
 </span></code></pre></div>
 <ul>
@@ -2949,9 +2949,9 @@
 </span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">    </span><span class="c1"># ... other deps ...</span>
 </span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>
 </span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">    </span><span class="c1"># Add replacements for Python 3.13+</span>
-</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">    </span><span class="s2">&quot;legacy-cgi&gt;=2.6.1; python_version &gt;= &#39;3.13&#39;&quot;</span><span class="p">,</span><span class="w">  </span><span class="c1"># For cgi module</span>
-</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">    </span><span class="s2">&quot;filetype&gt;=1.2.0&quot;</span><span class="p">,</span><span class="w">  </span><span class="c1"># Better alternative to imghdr/sndhdr</span>
-</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="w">    </span><span class="s2">&quot;python-magic&gt;=0.4.27&quot;</span><span class="p">,</span><span class="w">  </span><span class="c1"># Alternative file type detection</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">    </span><span class="s2">"legacy-cgi&gt;=2.6.1; python_version &gt;= '3.13'"</span><span class="p">,</span><span class="w">  </span><span class="c1"># For cgi module</span>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">    </span><span class="s2">"filetype&gt;=1.2.0"</span><span class="p">,</span><span class="w">  </span><span class="c1"># Better alternative to imghdr/sndhdr</span>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="w">    </span><span class="s2">"python-magic&gt;=0.4.27"</span><span class="p">,</span><span class="w">  </span><span class="c1"># Alternative file type detection</span>
 </span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="p">]</span>
 </span></code></pre></div>
 <h3 id="python-313-improvements">Python 3.13 Improvements<a class="headerlink" href="#python-313-improvements" title="Permanent link">&para;</a></h3>
@@ -2969,7 +2969,7 @@
 </span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>uv<span class="w"> </span>python<span class="w"> </span>install<span class="w"> </span><span class="m">3</span>.14t
 </span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
 </span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="c1"># Check if GIL is disabled</span>
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import sys; print(f&#39;GIL enabled: {sys._is_gil_enabled()}&#39;)&quot;</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">"import sys; print(f'GIL enabled: {sys._is_gil_enabled()}')"</span>
 </span></code></pre></div>
 <p><strong>Important Considerations:</strong>
 - Not all packages support free-threaded mode yet
@@ -2992,8 +2992,8 @@
 - Access annotations via <code>__annotations__</code> or <code>inspect.get_annotations()</code></p>
 <h3 id="template-strings-pep-750">Template Strings (PEP 750)<a class="headerlink" href="#template-strings-pep-750" title="Permanent link">&para;</a></h3>
 <p>Python 3.14 adds template strings (t-strings):</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;world&quot;</span>
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="n">message</span> <span class="o">=</span> <span class="sa">t</span><span class="s2">&quot;Hello </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>  <span class="c1"># New syntax</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">name</span> <span class="o">=</span> <span class="s2">"world"</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="n">message</span> <span class="o">=</span> <span class="sa">t</span><span class="s2">"Hello </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span>  <span class="c1"># New syntax</span>
 </span></code></pre></div>
 <p>This project does <strong>not</strong> require t-strings - standard f-strings work across all versions.</p>
 <h3 id="deprecations">Deprecations<a class="headerlink" href="#deprecations" title="Permanent link">&para;</a></h3>
@@ -3030,24 +3030,24 @@
 <p>UV automatically installs the correct packages based on Python version:</p>
 <div class="language-toml highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">dependencies</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span>
 </span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">    </span><span class="c1"># Install only on older Python versions (if you support &lt; 3.11)</span>
-</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">    </span><span class="s2">&quot;tomli&gt;=2.0.0; python_version &lt; &#39;3.11&#39;&quot;</span><span class="p">,</span>
-</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">    </span><span class="s2">&quot;exceptiongroup&gt;=1.1.0; python_version &lt; &#39;3.11&#39;&quot;</span><span class="p">,</span>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">    </span><span class="s2">"tomli&gt;=2.0.0; python_version &lt; '3.11'"</span><span class="p">,</span>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">    </span><span class="s2">"exceptiongroup&gt;=1.1.0; python_version &lt; '3.11'"</span><span class="p">,</span>
 </span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>
 </span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="w">    </span><span class="c1"># Install only on newer Python versions</span>
-</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="w">    </span><span class="s2">&quot;legacy-cgi&gt;=2.6.1; python_version &gt;= &#39;3.13&#39;&quot;</span><span class="p">,</span>
+</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="w">    </span><span class="s2">"legacy-cgi&gt;=2.6.1; python_version &gt;= '3.13'"</span><span class="p">,</span>
 </span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>
 </span><span id="__span-11-9"><a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a><span class="w">    </span><span class="c1"># Install on specific version ranges</span>
-</span><span id="__span-11-10"><a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a><span class="w">    </span><span class="s2">&quot;typing-extensions&gt;=4.12.0; python_version &lt; &#39;3.13&#39;&quot;</span><span class="p">,</span>
+</span><span id="__span-11-10"><a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a><span class="w">    </span><span class="s2">"typing-extensions&gt;=4.12.0; python_version &lt; '3.13'"</span><span class="p">,</span>
 </span><span id="__span-11-11"><a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a><span class="p">]</span>
 </span></code></pre></div>
 <h3 id="platform-specific-dependencies">Platform-Specific Dependencies<a class="headerlink" href="#platform-specific-dependencies" title="Permanent link">&para;</a></h3>
 <p>Combine version and platform markers:</p>
 <div class="language-toml highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="n">dependencies</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span>
 </span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="w">    </span><span class="c1"># Windows-specific for Python 3.13+</span>
-</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="w">    </span><span class="s2">&quot;pywin32&gt;=306; sys_platform == &#39;win32&#39; and python_version &gt;= &#39;3.13&#39;&quot;</span><span class="p">,</span>
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="w">    </span><span class="s2">"pywin32&gt;=306; sys_platform == 'win32' and python_version &gt;= '3.13'"</span><span class="p">,</span>
 </span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>
 </span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="w">    </span><span class="c1"># Unix-specific backport</span>
-</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="w">    </span><span class="s2">&quot;unix-helpers&gt;=1.0; sys_platform != &#39;win32&#39;&quot;</span><span class="p">,</span>
+</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="w">    </span><span class="s2">"unix-helpers&gt;=1.0; sys_platform != 'win32'"</span><span class="p">,</span>
 </span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="p">]</span>
 </span></code></pre></div>
 <h3 id="environment-markers-reference">Environment Markers Reference<a class="headerlink" href="#environment-markers-reference" title="Permanent link">&para;</a></h3>
@@ -3099,7 +3099,7 @@
 <div class="language-python highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 </span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>
 </span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="k">def</span><span class="w"> </span><span class="nf">process</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;This is enforced by scripts/check_type_hints.py&quot;&quot;&quot;</span>
+</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="w">    </span><span class="sd">"""This is enforced by scripts/check_type_hints.py"""</span>
 </span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>    <span class="o">...</span>
 </span></code></pre></div>
 <p><strong>Why?</strong> While Python 3.10+ supports <code>|</code> natively, the future import:</p>
@@ -3121,18 +3121,18 @@
 </span><span id="__span-14-8"><a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a>
 </span><span id="__span-14-9"><a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a><span class="k">class</span><span class="w"> </span><span class="nc">UserManager</span><span class="p">:</span>
 </span><span id="__span-14-10"><a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">create</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
-</span><span id="__span-14-11"><a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns same type as the class.&quot;&quot;&quot;</span>
+</span><span id="__span-14-11"><a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a><span class="w">        </span><span class="sd">"""Returns same type as the class."""</span>
 </span><span id="__span-14-12"><a id="__codelineno-14-12" name="__codelineno-14-12" href="#__codelineno-14-12"></a>        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)()</span>
 </span><span id="__span-14-13"><a id="__codelineno-14-13" name="__codelineno-14-13" href="#__codelineno-14-13"></a>
 </span><span id="__span-14-14"><a id="__codelineno-14-14" name="__codelineno-14-14" href="#__codelineno-14-14"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">User</span><span class="p">:</span>
-</span><span id="__span-14-15"><a id="__codelineno-14-15" name="__codelineno-14-15" href="#__codelineno-14-15"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Uses forward reference safely.&quot;&quot;&quot;</span>
+</span><span id="__span-14-15"><a id="__codelineno-14-15" name="__codelineno-14-15" href="#__codelineno-14-15"></a><span class="w">        </span><span class="sd">"""Uses forward reference safely."""</span>
 </span><span id="__span-14-16"><a id="__codelineno-14-16" name="__codelineno-14-16" href="#__codelineno-14-16"></a>        <span class="o">...</span>
 </span></code></pre></div>
 <h2 id="tool-configuration">Tool Configuration<a class="headerlink" href="#tool-configuration" title="Permanent link">&para;</a></h2>
 <h3 id="ruff-linter-formatter">Ruff (Linter &amp; Formatter)<a class="headerlink" href="#ruff-linter-formatter" title="Permanent link">&para;</a></h3>
 <p>Configured to target the selected Python version:</p>
 <div class="language-toml highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="k">[tool.ruff]</span>
-</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="n">target-version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;py312&quot;</span><span class="w">  </span><span class="c1"># py311, py312, or py313</span>
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="n">target-version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"py312"</span><span class="w">  </span><span class="c1"># py311, py312, or py313</span>
 </span></code></pre></div>
 <p>This ensures Ruff:</p>
 <ul>
@@ -3143,8 +3143,8 @@
 <h3 id="basedpyright-type-checker">BasedPyright (Type Checker)<a class="headerlink" href="#basedpyright-type-checker" title="Permanent link">&para;</a></h3>
 <p>Configured to match your Python version:</p>
 <div class="language-toml highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="k">[tool.basedpyright]</span>
-</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="n">pythonVersion</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;3.12&quot;</span><span class="w">  </span><span class="c1"># 3.11, 3.12, or 3.13</span>
-</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="n">typeCheckingMode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;strict&quot;</span>
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="n">pythonVersion</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"3.12"</span><span class="w">  </span><span class="c1"># 3.11, 3.12, or 3.13</span>
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="n">typeCheckingMode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"strict"</span>
 </span></code></pre></div>
 <p>This ensures BasedPyright:</p>
 <ul>
@@ -3168,7 +3168,7 @@
 <p>Our GitHub Actions workflow tests on all supported versions:</p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="nt">strategy</span><span class="p">:</span>
 </span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="w">  </span><span class="nt">matrix</span><span class="p">:</span>
-</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="w">    </span><span class="nt">python-version</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;3.10&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;3.11&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;3.12&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;3.13&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;3.14&quot;</span><span class="p p-Indicator">]</span>
+</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="w">    </span><span class="nt">python-version</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"3.10"</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">"3.11"</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">"3.12"</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">"3.13"</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">"3.14"</span><span class="p p-Indicator">]</span>
 </span></code></pre></div>
 <h2 id="migration-guide">Migration Guide<a class="headerlink" href="#migration-guide" title="Permanent link">&para;</a></h2>
 <h3 id="migrating-to-python-310">Migrating to Python 3.10+<a class="headerlink" href="#migrating-to-python-310" title="Permanent link">&para;</a></h3>
@@ -3180,14 +3180,14 @@
 </span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>uv<span class="w"> </span>python<span class="w"> </span>install<span class="w"> </span><span class="m">3</span>.10
 </span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a>
 </span><span id="__span-19-4"><a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="c1"># Update requires-python in pyproject.toml</span>
-</span><span id="__span-19-5"><a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>requires-python<span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&gt;=3.10,&lt;3.15&quot;</span>
+</span><span id="__span-19-5"><a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>requires-python<span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"&gt;=3.10,&lt;3.15"</span>
 </span></code></pre></div>
 <ol>
 <li><strong>Add backport packages</strong> for 3.10 compatibility:</li>
 </ol>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>uv<span class="w"> </span>add<span class="w"> </span><span class="s2">&quot;tomli&gt;=2.0.0; python_version &lt; &#39;3.11&#39;&quot;</span>
-</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a>uv<span class="w"> </span>add<span class="w"> </span><span class="s2">&quot;exceptiongroup&gt;=1.1.0; python_version &lt; &#39;3.11&#39;&quot;</span>
-</span><span id="__span-20-3"><a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a>uv<span class="w"> </span>add<span class="w"> </span><span class="s2">&quot;typing-extensions&gt;=4.12.0&quot;</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>uv<span class="w"> </span>add<span class="w"> </span><span class="s2">"tomli&gt;=2.0.0; python_version &lt; '3.11'"</span>
+</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a>uv<span class="w"> </span>add<span class="w"> </span><span class="s2">"exceptiongroup&gt;=1.1.0; python_version &lt; '3.11'"</span>
+</span><span id="__span-20-3"><a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a>uv<span class="w"> </span>add<span class="w"> </span><span class="s2">"typing-extensions&gt;=4.12.0"</span>
 </span></code></pre></div>
 <ol>
 <li><strong>Use conditional imports</strong> for 3.10/3.11+ compatibility:</li>
@@ -3225,7 +3225,7 @@
 <ol>
 <li><strong>Update requires-python</strong>:</li>
 </ol>
-<div class="language-toml highlight"><pre><span></span><code><span id="__span-25-1"><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="n">requires-python</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&gt;=3.11,&lt;3.15&quot;</span>
+<div class="language-toml highlight"><pre><span></span><code><span id="__span-25-1"><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="n">requires-python</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"&gt;=3.11,&lt;3.15"</span>
 </span></code></pre></div>
 <h3 id="preparing-for-python-314">Preparing for Python 3.14<a class="headerlink" href="#preparing-for-python-314" title="Permanent link">&para;</a></h3>
 <p>Python 3.14 (expected October 2025):</p>
@@ -3238,7 +3238,7 @@
 <h3 id="import-errors-on-python-313">Import Errors on Python 3.13<a class="headerlink" href="#import-errors-on-python-313" title="Permanent link">&para;</a></h3>
 <p><strong>Problem:</strong> <code>ModuleNotFoundError: No module named 'cgi'</code></p>
 <p><strong>Solution:</strong> Add the replacement package:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-26-1"><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a>uv<span class="w"> </span>add<span class="w"> </span><span class="s2">&quot;legacy-cgi&gt;=2.6.1; python_version &gt;= &#39;3.13&#39;&quot;</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-26-1"><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a>uv<span class="w"> </span>add<span class="w"> </span><span class="s2">"legacy-cgi&gt;=2.6.1; python_version &gt;= '3.13'"</span>
 </span></code></pre></div>
 <h3 id="type-hint-syntax-errors">Type Hint Syntax Errors<a class="headerlink" href="#type-hint-syntax-errors" title="Permanent link">&para;</a></h3>
 <p><strong>Problem:</strong> <code>TypeError: unsupported operand type(s) for |: 'type' and 'type'</code></p>
@@ -3383,7 +3383,7 @@
       <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>

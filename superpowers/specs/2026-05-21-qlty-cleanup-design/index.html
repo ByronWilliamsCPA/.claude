@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -29,7 +29,7 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -2654,9 +2654,9 @@ smell thresholds in <code>.claude/skills/</code>, <code>scripts/</code>, or <cod
   <code>[plugins.enabled]</code> TOML table:</li>
 </ul>
 <div class="language-toml highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">[plugins.enabled]</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="n">ruff</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;latest&quot;</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">basedpyright</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;latest&quot;</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">bandit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;latest&quot;</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="n">ruff</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"latest"</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">basedpyright</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"latest"</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">bandit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"latest"</span>
 </span></code></pre></div>
 <ul>
 <li><code>[smells]</code>, <code>[smells.*]</code>, <code>[language.python.smells]</code> sections
@@ -2764,8 +2764,8 @@ re-litigation.</p>
 case-discriminator → small handler function. Each handler is ≤ cc=5,
 individually testable; the dispatch dict doubles as documentation.</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">_FIPS_CHECKERS</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">ast</span><span class="o">.</span><span class="n">Call</span><span class="p">],</span> <span class="n">FipsFinding</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="s2">&quot;hashlib.md5&quot;</span><span class="p">:</span> <span class="n">_check_hashlib_md5</span><span class="p">,</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="s2">&quot;Crypto.Hash.MD5&quot;</span><span class="p">:</span> <span class="n">_check_pycrypto_md5</span><span class="p">,</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="s2">"hashlib.md5"</span><span class="p">:</span> <span class="n">_check_hashlib_md5</span><span class="p">,</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="s2">"Crypto.Hash.MD5"</span><span class="p">:</span> <span class="n">_check_pycrypto_md5</span><span class="p">,</span>
 </span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="p">}</span>
 </span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>
 </span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="k">def</span><span class="w"> </span><span class="nf">visit_Call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">ast</span><span class="o">.</span><span class="n">Call</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -2796,10 +2796,10 @@ body into a parameterized helper.</p>
 </span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="n">issues</span> <span class="o">=</span> <span class="p">[]</span>
 </span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="n">word_count</span> <span class="o">=</span> <span class="n">count_words</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
 </span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">word_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">word_count</span> <span class="o">&lt;=</span> <span class="n">word_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>        <span class="n">issues</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: word count </span><span class="si">{</span><span class="n">word_count</span><span class="si">}</span><span class="s2"> outside </span><span class="si">{</span><span class="n">word_range</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>        <span class="n">issues</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: word count </span><span class="si">{</span><span class="n">word_count</span><span class="si">}</span><span class="s2"> outside </span><span class="si">{</span><span class="n">word_range</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="k">for</span> <span class="n">section</span> <span class="ow">in</span> <span class="n">required_sections</span><span class="p">:</span>
 </span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>        <span class="k">if</span> <span class="n">section</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">content</span><span class="p">:</span>
-</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>            <span class="n">issues</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: missing section &#39;</span><span class="si">{</span><span class="n">section</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>            <span class="n">issues</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: missing section '</span><span class="si">{</span><span class="n">section</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
 </span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>    <span class="k">return</span> <span class="n">issues</span>
 </span></code></pre></div>
 <h3 id="pattern-d-many-returns-guard-clauses-single-happy-path-return">Pattern D: Many returns → guard clauses + single happy-path return<a class="headerlink" href="#pattern-d-many-returns-guard-clauses-single-happy-path-return" title="Permanent link">&para;</a></h3>
@@ -2807,10 +2807,10 @@ body into a parameterized helper.</p>
 <p>Collapse early-returns that share a return type into guard clauses for
 invalid input plus a single computed final return.</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">_signatures_enforced</span><span class="p">(</span><span class="n">rules</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">rules</span> <span class="ow">or</span> <span class="s2">&quot;signatures&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">rules</span><span class="p">:</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">rules</span> <span class="ow">or</span> <span class="s2">"signatures"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">rules</span><span class="p">:</span>
 </span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>        <span class="k">return</span> <span class="kc">False</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="n">sig</span> <span class="o">=</span> <span class="n">rules</span><span class="p">[</span><span class="s2">&quot;signatures&quot;</span><span class="p">]</span>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="n">sig</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;enabled&quot;</span><span class="p">))</span> <span class="ow">and</span> <span class="n">sig</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;scope&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;all&quot;</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="n">sig</span> <span class="o">=</span> <span class="n">rules</span><span class="p">[</span><span class="s2">"signatures"</span><span class="p">]</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="n">sig</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"enabled"</span><span class="p">))</span> <span class="ow">and</span> <span class="n">sig</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"scope"</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"all"</span>
 </span></code></pre></div>
 <p><strong>Exception:</strong> if the function's early-returns form a distinct validation
 chain where each return is a different failure mode that needs different
@@ -3098,7 +3098,7 @@ the soak window rule.</p>
       <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>

@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -29,7 +29,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -2300,10 +2300,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#relationship-to-dependency-review" class="md-nav__link">
+  <a href="#relationship-to-dependency-review-retired-2026-09" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Relationship to dependency-review
+        Relationship to dependency-review (RETIRED 2026-09)
       
     </span>
   </a>
@@ -2498,7 +2498,7 @@
 
   <h1>Renovate Architecture & Dependency Management</h1>
 
-<p>This document is the canonical source of truth for how dependency updates and vulnerability remediation are wired across the fleet. It covers the self-hosted Renovate stack, the layered config inheritance model, manifest enforcement, and how Renovate interacts with adjacent processes (Dependabot Alerts, SBOM generation, dependency-review, pip-audit).</p>
+<p>This document is the canonical source of truth for how dependency updates and vulnerability remediation are wired across the fleet. It covers the self-hosted Renovate stack, the layered config inheritance model, manifest enforcement, and how Renovate interacts with adjacent processes (Dependabot Alerts, SBOM generation, pip-audit). It also documents the retired dependency-review workflow for historical context (see "Relationship to dependency-review" below).</p>
 <h2 id="quick-reference">Quick Reference<a class="headerlink" href="#quick-reference" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -2537,7 +2537,7 @@
 <td><code>ByronWilliamsCPA/.github/.github/workflows/python-sbom.yml</code></td>
 </tr>
 <tr>
-<td>Reusable dependency-review workflow</td>
+<td>Reusable dependency-review workflow (RETIRED 2026-09, paid GHAS required)</td>
 <td><code>ByronWilliamsCPA/.github/.github/workflows/dependency-review.yml</code></td>
 </tr>
 </tbody>
@@ -2554,7 +2554,7 @@
 </span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>                              ▼
 </span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>┌────────────────────────────────────────────────────────────────┐
 </span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>│ LAYER 2: Global config (config/config.json)                    │
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>│ - enabledManagers fleet-wide (v43 includes &quot;uv&quot; natively)      │
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>│ - enabledManagers fleet-wide (v43 includes "uv" natively)      │
 </span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>│ - platformAutomerge: true (defensive explicit set, CI-064)     │
 </span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>│ - vulnerabilityAlerts, osvVulnerabilityAlerts                  │
 </span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>│ - lockFileMaintenance, transitiveRemediation                   │
@@ -2574,7 +2574,7 @@
 </span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>│ LAYER 4: Per-repo config ({repo}/renovate.json)                │
 </span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>│ - REPLACES (not merges) array keys from upstream layers        │
 </span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>│ - Thin overlay; do NOT duplicate global packageRules (CI-063)  │
-</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>│ - May use either &quot;uv&quot; or &quot;pep621&quot; on uv-managed projects (v43) │
+</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>│ - May use either "uv" or "pep621" on uv-managed projects (v43) │
 </span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>└────────────────────────────────────────────────────────────────┘
 </span></code></pre></div>
 <p><strong>Critical inheritance rule:</strong> Renovate's <code>enabledManagers</code>, <code>packageRules</code>, <code>customManagers</code>, and most other array fields are <strong>replace-not-merge</strong>. A per-repo <code>enabledManagers: ["pep621"]</code> does not inherit additional managers from the global config; it replaces the list entirely. This is the root cause of most fleet-wide Renovate drift.</p>
@@ -2718,21 +2718,21 @@
 <li><strong>All vulnerability alerts:</strong> bypass grouping and schedule, fire immediately</li>
 </ol>
 <p>All of these are configured via <code>matchJsonata</code> expressions in packageRules, e.g.:
-<div class="language-json highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">&quot;matchJsonata&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;isVulnerabilityAlert = true and (vulnerabilitySeverity = &#39;CRITICAL&#39; or vulnerabilitySeverity = &#39;HIGH&#39;)&quot;</span><span class="p">]</span>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">"matchJsonata"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"isVulnerabilityAlert = true and (vulnerabilitySeverity = 'CRITICAL' or vulnerabilitySeverity = 'HIGH')"</span><span class="p">]</span>
 </span></code></pre></div></p>
 <h2 id="layer-3-org-template">Layer 3: Org Template<a class="headerlink" href="#layer-3-org-template" title="Permanent link">&para;</a></h2>
 <p><code>ByronWilliamsCPA/.github/renovate.json</code> defines the default per-repo config inherited by any BWCPA or williaby repo that has no <code>renovate.json</code> of its own. (The <code>williaby/.github</code> URL is an HTTP 301 redirect to <code>ByronWilliamsCPA/.github</code>; same underlying repo ID 975216077, so both orgs share the same defaults.)</p>
 <p>This template is intentionally narrower than the global config. It declares the most common managers that downstream repos need (<code>pep621</code>, <code>pip_requirements</code>, <code>github-actions</code>) without dragging in container, terraform, or ansible managers that are only relevant to homelab-infra.</p>
 <p><strong>Canonical content:</strong>
 <div class="language-json highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="p">{</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="nt">&quot;$schema&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://docs.renovatebot.com/renovate-schema.json&quot;</span><span class="p">,</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span><span class="nt">&quot;extends&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span><span class="s2">&quot;config:recommended&quot;</span><span class="p">,</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">    </span><span class="s2">&quot;:dependencyDashboard&quot;</span><span class="p">,</span>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">    </span><span class="s2">&quot;:semanticCommits&quot;</span><span class="p">,</span>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">    </span><span class="s2">&quot;:preserveSemverRanges&quot;</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="nt">"$schema"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://docs.renovatebot.com/renovate-schema.json"</span><span class="p">,</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span><span class="nt">"extends"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span><span class="s2">"config:recommended"</span><span class="p">,</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">    </span><span class="s2">":dependencyDashboard"</span><span class="p">,</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">    </span><span class="s2">":semanticCommits"</span><span class="p">,</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">    </span><span class="s2">":preserveSemverRanges"</span>
 </span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">  </span><span class="p">],</span>
-</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">  </span><span class="nt">&quot;enabledManagers&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;pep621&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;pip_requirements&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;github-actions&quot;</span><span class="p">],</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">  </span><span class="nt">"enabledManagers"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"pep621"</span><span class="p">,</span><span class="w"> </span><span class="s2">"pip_requirements"</span><span class="p">,</span><span class="w"> </span><span class="s2">"github-actions"</span><span class="p">],</span>
 </span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">  </span><span class="err">...</span>
 </span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="p">}</span>
 </span></code></pre></div></p>
@@ -2828,9 +2828,9 @@
 </table>
 <p><strong>Per-repo config template (minimal, uv project):</strong>
 <div class="language-json highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="p">{</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="nt">&quot;$schema&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://docs.renovatebot.com/renovate-schema.json&quot;</span><span class="p">,</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span><span class="nt">&quot;extends&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;config:recommended&quot;</span><span class="p">],</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">  </span><span class="nt">&quot;enabledManagers&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;pep621&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;github-actions&quot;</span><span class="p">]</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="nt">"$schema"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://docs.renovatebot.com/renovate-schema.json"</span><span class="p">,</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span><span class="nt">"extends"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"config:recommended"</span><span class="p">],</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">  </span><span class="nt">"enabledManagers"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"pep621"</span><span class="p">,</span><span class="w"> </span><span class="s2">"github-actions"</span><span class="p">]</span>
 </span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="p">}</span>
 </span></code></pre></div></p>
 <p>That's it. Inheritance from the global config handles vulnerabilityAlerts, lockFileMaintenance, packageRules, etc.</p>
@@ -3000,8 +3000,16 @@ second keyless gate.</p>
    update), the SBOM scan blocks the PR even though Renovate would have allowed it.
    Grype's and OSV's independent databases provide cross-checks against each other.</p>
 <p><strong>Net effect:</strong> SBOM scanning is the <em>last line of defense</em> against vulnerable dependencies sneaking into main. It does not generate PRs; it gates them. The 90-day artifact retention preserves SBOMs for audit.</p>
-<h2 id="relationship-to-dependency-review">Relationship to dependency-review<a class="headerlink" href="#relationship-to-dependency-review" title="Permanent link">&para;</a></h2>
-<p>The <code>dependency-review.yml</code> reusable workflow runs on every pull request to main and uses GitHub's <code>dependency-review-action</code>. It checks the <em>diff</em> of dependencies in a PR against GHSA and a license allowlist.</p>
+<h2 id="relationship-to-dependency-review-retired-2026-09">Relationship to dependency-review (RETIRED 2026-09)<a class="headerlink" href="#relationship-to-dependency-review-retired-2026-09" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p><strong>Retired.</strong> <code>actions/dependency-review-action</code> now requires paid GitHub Advanced Security
+(Code Security) on every repo, public or private; the free-tier capability this section
+describes no longer exists. <code>dependency-review.yml</code> callers were removed fleet-wide. This
+section is kept for historical context and to explain what the SBOM workflow now covers
+alone. The manifest checks that enforced this workflow, CI-036 and CI-081, were retired as
+deprecated stubs in <code>docs/standards-manifest.yaml</code>.</p>
+</blockquote>
+<p>The <code>dependency-review.yml</code> reusable workflow ran on every pull request to main and used GitHub's <code>dependency-review-action</code>. It checked the <em>diff</em> of dependencies in a PR against GHSA and a license allowlist.</p>
 <table>
 <thead>
 <tr>
@@ -3088,7 +3096,7 @@ second keyless gate.</p>
 <li>Reads each repo's effective config: docker-compose env → global config → org template → per-repo override.</li>
 <li>Detects a new <code>pydantic</code> minor version via pep621 manager.</li>
 <li>Opens PR, signed by <code>Renovate Bot &lt;renovate@byronwilliams.dev&gt;</code>.</li>
-<li>CI runs: tests, <code>python-sbom.yml</code> (SBOM + Grype/OSV scan), <code>dependency-review.yml</code>, pip-audit (if in dev deps).</li>
+<li>CI runs: tests, <code>python-sbom.yml</code> (SBOM + Grype/OSV scan), pip-audit (if in dev deps).</li>
 <li>All checks pass; Renovate's automerge rule fires after the 3-day stability window.</li>
 <li>PR auto-merges via squash.</li>
 </ol>
@@ -3186,16 +3194,16 @@ second keyless gate.</p>
 <p>Bot upgrades do not retroactively change behavior on PRs that already exist. The 2026-05-26 audit found 54 PRs stuck open across both orgs because pre-cutover Renovate (v42) had opened them without <code>platformAutomerge</code> attached and v43 does not retroactively click the auto-merge button. The cleanup is mechanical but invisible if you do not know to look for it.</p>
 <ol>
 <li><strong>List all open Renovate PRs</strong> that pre-date the cutover commit timestamp:
-   <div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>gh<span class="w"> </span>search<span class="w"> </span>prs<span class="w"> </span>--state<span class="w"> </span>open<span class="w"> </span>--author<span class="w"> </span><span class="s2">&quot;@me&quot;</span><span class="w"> </span>--created<span class="w"> </span><span class="s2">&quot;&lt;YYYY-MM-DD&quot;</span><span class="w"> </span><span class="se">\</span>
+   <div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>gh<span class="w"> </span>search<span class="w"> </span>prs<span class="w"> </span>--state<span class="w"> </span>open<span class="w"> </span>--author<span class="w"> </span><span class="s2">"@me"</span><span class="w"> </span>--created<span class="w"> </span><span class="s2">"&lt;YYYY-MM-DD"</span><span class="w"> </span><span class="se">\</span>
 </span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span>--json<span class="w"> </span>repository,number,title,headRefName<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span>--jq<span class="w"> </span><span class="s1">&#39;.[] | select(.headRefName | startswith(&quot;renovate/&quot;))&#39;</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span>--jq<span class="w"> </span><span class="s1">'.[] | select(.headRefName | startswith("renovate/"))'</span>
 </span></code></pre></div>
    (Filter by <code>headRefName</code>, not author: self-hosted Renovate authenticates as a PAT and shows the human user as PR author, per L-004.)</li>
 <li><strong>Close each pre-cutover PR with an explanatory comment</strong> referencing the cutover commit SHA. Renovate will recreate them on the next scheduled run with the new defaults attached.</li>
 <li><strong>Exclude from cleanup:</strong> major-version bumps (intentional manual review per the global config's <code>automerge: false</code> for majors), in-progress human-authored config PRs, and any PR explicitly marked "abandoned" in the title (closing it would erase the abandonment signal).</li>
 <li><strong>Verify auto-merge attachment on recreated PRs:</strong>
     <div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>gh<span class="w"> </span>pr<span class="w"> </span>list<span class="w"> </span>-R<span class="w"> </span>&lt;org&gt;/&lt;repo&gt;<span class="w"> </span>--json<span class="w"> </span>number,autoMergeRequest<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span>--jq<span class="w"> </span><span class="s1">&#39;.[] | select(.autoMergeRequest == null) | .number&#39;</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span>--jq<span class="w"> </span><span class="s1">'.[] | select(.autoMergeRequest == null) | .number'</span>
 </span></code></pre></div>
     Any number returned is a PR that still lacks auto-merge after recreation; investigate before closing more PRs.</li>
 </ol>
@@ -3236,7 +3244,7 @@ second keyless gate.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 28, 2026 16:07:38 UTC">June 28, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="September 6, 2026 03:47:09 UTC">September 6, 2026</span>
   </span>
 
     
@@ -3326,7 +3334,7 @@ second keyless gate.</p>
       <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>

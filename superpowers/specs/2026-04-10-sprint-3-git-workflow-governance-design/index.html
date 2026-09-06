@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -29,7 +29,7 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -2422,7 +2422,7 @@ the Branch Naming Convention subsection and before <code>## Gate System</code>.<
 <p><strong>Section content to add:</strong></p>
 <div class="language-markdown highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="gu">## Remote Verification</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>Before pushing to a remote you haven&#39;t used in this session, verify you are targeting
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>Before pushing to a remote you haven't used in this session, verify you are targeting
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>the correct organization:
 </span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
 </span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    git remote -v
@@ -2448,10 +2448,10 @@ after <code>## Remote Verification</code> and before <code>## Gate System</code>
 </span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>When a legitimate exception exists (hotfix to an unprotected repo, solo maintenance
 </span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>commit, CI config tweak), document the override with three elements before proceeding:
 </span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="k">1.</span> <span class="gs">**Rule overridden**</span>: which rule is being bypassed (e.g., &quot;branch-first commit rule&quot;)
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="k">1.</span> <span class="gs">**Rule overridden**</span>: which rule is being bypassed (e.g., "branch-first commit rule")
 </span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="k">2.</span> <span class="gs">**Reason**</span>: why the exception applies in this specific context
 </span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="k">3.</span> <span class="gs">**Compensating control**</span>: what replaces the protection the rule normally provides
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>   (e.g., &quot;PR is not required; commit is reviewed via pair programming before push&quot;)
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>   (e.g., "PR is not required; commit is reviewed via pair programming before push")
 </span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>
 </span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>Record this as a comment in the commit message footer:
 </span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>
@@ -2566,7 +2566,7 @@ The file references Black in two places that describe what automated checks hand
 Copilot should skip them:
 
 - Line 4 (introductory note): `formatting (Black)` -- change to `formatting (ruff format)`
-- Line 110 (&quot;What NOT to Review&quot; list): `Code formatting (Black)` -- change to
+- Line 110 ("What NOT to Review" list): `Code formatting (Black)` -- change to
   `Code formatting (ruff format)`
 
 No other changes are needed. The nine review focus areas are accurate and should not
@@ -2575,16 +2575,16 @@ be modified.
 **`.coderabbit.yaml`**
 
 Compare this file with `.coderabbit.yaml` at the root of the `.claude` repo (the global
-baseline). Update the template&#39;s file if the baseline has changed. The key sections to
+baseline). Update the template's file if the baseline has changed. The key sections to
 compare: `language_instructions`, `path_instructions`, and `tools` block. Profile and
 auto-review settings are intentionally the same and should stay in sync.
 </code></pre></div>
 <h3 id="5b-two-new-definition-of-done-items">5b: Two new Definition of Done items<a class="headerlink" href="#5b-two-new-definition-of-done-items" title="Permanent link">&para;</a></h3>
 <p>Add to the end of the <code>## Definition of Done</code> checklist in
 <code>docs/handoff-cookiecutter-claude-removal.md</code>:</p>
-<div class="language-text highlight"><pre><span></span><code>- [ ] `{{cookiecutter.project_slug}}/.github/copilot-instructions.md` updated: &quot;Black&quot;
-      replaced with &quot;ruff format&quot; in both the introductory note and the &quot;What NOT to
-      Review&quot; list
+<div class="language-text highlight"><pre><span></span><code>- [ ] `{{cookiecutter.project_slug}}/.github/copilot-instructions.md` updated: "Black"
+      replaced with "ruff format" in both the introductory note and the "What NOT to
+      Review" list
 - [ ] `{{cookiecutter.project_slug}}/.coderabbit.yaml` compared against `.claude` repo
       baseline; divergences either resolved or documented as intentional
 </code></pre></div>
@@ -2763,7 +2763,7 @@ auto-review settings are intentionally the same and should stay in sync.
       <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>
