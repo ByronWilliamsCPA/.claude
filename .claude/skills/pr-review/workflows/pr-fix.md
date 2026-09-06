@@ -71,6 +71,26 @@ gh pr view "$PR_NUMBER" --repo "$OWNER/$REPO" \
 
 **Abort if: PR is closed, or metadata fetch fails.**
 
+**Settle before evaluating (mandatory):** `mergeable` and `mergeStateStatus` are
+computed asynchronously and commonly read `null` or `UNKNOWN` on a freshly opened
+or freshly pushed PR. A single fetch is therefore not enough to apply the
+precondition below. Poll until the field is settled, and treat an unsettled read
+as "retry", never as "passed":
+
+```bash
+for i in $(seq 1 10); do
+  MS=$(gh pr view "$PR_NUMBER" --repo "$OWNER/$REPO" --json mergeStateStatus \
+    --jq '.mergeStateStatus // "UNKNOWN"')
+  [ "$MS" != "UNKNOWN" ] && [ -n "$MS" ] && break
+  sleep 3
+done
+```
+
+If it is still unsettled after the loop, say so and stop; do not fall through to
+Step 1 on an unknown value. This is the gap that made the precondition below
+unenforceable: the only abort conditions were "PR is closed" and "metadata fetch
+fails", so a `null` read silently proceeded.
+
 **PR conflict precondition (mandatory):** If `mergeable` is `CONFLICTING` or
 `mergeStateStatus` is `DIRTY` or `BEHIND`, do NOT proceed to Step 1. A
 conflicted PR is not actionable for an automated fix workflow because
@@ -243,12 +263,24 @@ Use GitHub MCP `pull_request_read` with these methods (page with `perPage: 100`)
 For each item, record: author, body, file path, line, is_resolved,
 is_outdated, thread/comment ID.
 
-**Classify by author:**
+**Classify by author.** Copilot uses two different logins depending on what it
+posted, and matching only one of them silently drops the other into the "Human"
+bucket below, where it is triaged as a change request from a person. Review
+*submissions* are authored by `copilot-pull-request-reviewer[bot]`; the *inline
+comments* attached to that review are authored as bare `Copilot`, with no `[bot]`
+suffix. Match both, case-insensitively, and match on substring rather than exact
+equality so a future suffix change does not reopen the same gap:
 
-- `copilot-pull-request-reviewer` --> Copilot
-- `coderabbitai` or CodeRabbit markers --> CodeRabbit
+- login matches `copilot` (covers `Copilot` and
+  `copilot-pull-request-reviewer[bot]`) --> Copilot
+- login matches `coderabbitai` (covers `coderabbitai[bot]`), or the body carries
+  CodeRabbit markers --> CodeRabbit
 - Contains `Generated with [Claude Code]` --> pr-review bot
 - All others --> Human
+
+The "All others --> Human" line is a catch-all, so any classifier gap fails
+*quietly* into it rather than erroring. That is why the bot patterns above must
+be permissive: an unmatched bot is not a visible failure, it is a mis-triage.
 
 **Filter out (non-actionable):**
 
@@ -266,7 +298,12 @@ is_outdated, thread/comment ID.
 
 ### 1c. SonarQube findings
 
-Same detection as pr-review Step 4:
+**Abridged summary; `pr-review` Step 4 is authoritative.** The five steps below
+are the happy path only. The full procedure lives in
+`workflows/pr-review.md` Step 4 (substeps 4a through 4h) and covers cases this
+summary omits, including the pre-flight configuration check, security hotspots,
+and the Qlty gate. If the two ever disagree, `pr-review` Step 4 wins. Read it
+rather than this list whenever detection does not succeed on the first attempt.
 
 1. Detect org from `.sonarlint/connectedMode.json` `sonarCloudOrganization`
    or `sonar-project.properties` `sonar.organization`
@@ -275,6 +312,12 @@ Same detection as pr-review Step 4:
 3. Resolve project key from config files or `search_my_sonarqube_projects`
 4. Fetch: `search_sonar_issues_in_projects(projects: [KEY], pullRequest: PR_NUMBER)`
 5. Fall back to branch issues if PR not analyzed
+
+**A SonarQube MCP server that fails to connect is not "no findings".** Both
+servers are Docker-backed and routinely unreachable. A connection failure must be
+recorded as `SONAR_FINDINGS: unavailable` and surfaced, never collapsed into an
+empty finding set, or the fix run reports a clean quality gate it never actually
+queried.
 
 **Token discovery (safe form):** When checking for a SonarCloud token, check
 specific known variable names by existence only -- never `env | grep`:
@@ -429,7 +472,24 @@ acknowledges.
   working tree is clean AND HEAD matches the PR head SHA: skip worktree creation
   and set `WORKTREE_PATH=.` (in-place mode). Log: "Branch already checked out in
   main tree; working in-place (isolation goal already met)."
-- If `.worktrees/fix-pr{PR_NUMBER}` exists: `git worktree remove --force` first
+- **If `.worktrees/fix-pr{PR_NUMBER}` already exists:** do NOT run
+  `git worktree remove --force` on it unconditionally. In a clone where several
+  sessions run concurrently, that directory may hold another session's
+  uncommitted work, and `--force` discards it silently. Establish that it is
+  abandoned and yours to remove first:
+
+  ```bash
+  # Is anything uncommitted in it?
+  git -C ".worktrees/fix-pr{PR_NUMBER}" status --porcelain
+  # Does it hold commits not reachable from the remote branch?
+  git -C ".worktrees/fix-pr{PR_NUMBER}" log --oneline \
+    "origin/{HEAD_BRANCH}..HEAD"
+  ```
+
+  If both are empty, remove it with a plain `git worktree remove` (no
+  `--force`). If either is non-empty, stop and surface it to the user with the
+  path and what it contains; another session probably owns it. Reach for
+  `--force` only after the user says the contents are disposable.
 - If branch not found: check that the branch exists on origin with `git fetch origin`
 - If `fatal: '{HEAD_BRANCH}' is already used by worktree`: report the existing path
   (from `git worktree list --porcelain`) and offer: (1) use that worktree, (2)
@@ -1672,10 +1732,12 @@ not reappear; the underlying advisory logic (non-required + `UNSTABLE` + `MERGEA
 through regardless of terminal color) still applies to any other non-required check.
 
 **Green-but-BLOCKED: distinguish the cause before acting.** "All checks green" is
-necessary but not sufficient for mergeability; `mergeStateStatus` is the authoritative
-gate and BLOCKED has multiple independent causes that each need a different, non-code
-action. When CI is all green AND there are no new non-stale comments AND
-`mergeStateStatus` is BLOCKED:
+necessary but not sufficient for mergeability. Use `mergeStateStatus` here only in
+the negative direction, consistent with Phase A above: a settled `BLOCKED` is
+grounds to stop and diagnose, but it is never the signal that confirms the branch
+is ready. Phase A's rule stands, this does not override it. BLOCKED has multiple
+independent causes that each need a different, non-code action. When CI is all
+green AND there are no new non-stale comments AND `mergeStateStatus` is BLOCKED:
 
 - **Unresolved review threads** (branch protection enforces conversation resolution):
   check `reviewThreads.nodes` for `isResolved == false` whose findings are already
