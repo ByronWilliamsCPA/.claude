@@ -75,9 +75,12 @@ rather than leaking it.
 
 Several skills and agents in this repo are symlinks into `.submodules/`
 (`superpowers`, `anthropics-skills`, `anthropics-plugins`, `reference-library`,
-`image-generation`, `jeffallan-claude-skills`; see
-[submodule-strategy.md](submodule-strategy.md) for the full inventory and
-trust tiers). No vendored or third-party submodule *content* ships through this
+`image-generation`, `jeffallan-claude-skills`). The other two submodules,
+`one-skill-to-rule-them-all` and `agents-observe`, are wired by mechanisms of
+their own rather than a direct symlink (see the ADR-011 provenance split
+below); see [submodule-strategy.md](submodule-strategy.md) for the full
+eight-submodule inventory and trust tiers. No vendored or third-party
+submodule *content* ships through this
 pipeline. Re-distributing it into a second repo is a separate license question
 from the one this pipeline answers, don't fold it in silently. If a specific
 vendored item needs to reach the team, clear its license for redistribution
