@@ -55,6 +55,40 @@ if [[ "${BROKEN}" != "0" ]]; then
     DEGRADED+=("${BROKEN} broken agent/skill symlinks")
 fi
 
+# hooks.json is canonical; setup.sh merge_hooks() regenerates the live
+# settings.json block from it. Nothing runs setup.sh automatically, so a hook
+# can be committed, reviewed and merged yet never become live. That is not
+# hypothetical: commit 88356c6 added task-observer-flush-check.py,
+# task-observer-reminder.sh and this script to hooks.json on 2026-08-04, and
+# all three sat inert in the live settings for 32 days. This script's own
+# purpose is guarding against trusting protections that are not live, so it
+# must detect the case where it is itself the thing that is not live.
+# Reports drift only; it never repairs. A detector that silently self-healed
+# would hide the fact that the propagation step was skipped, recreating the
+# failure mode above. The fix is to run setup.sh.
+# Event names sit at the top level in hooks.json but under .hooks in
+# settings.json, hence the `(.hooks // .)` normalisation on both sides. The
+# comparison is a generic set difference, so hooks added later need no change
+# here.
+HOOKS_JSON="${REPO_ROOT}/hooks.json"
+SETTINGS_JSON="${HOME}/.claude/settings.json"
+if command -v jq > /dev/null 2>&1 &&
+    [[ -f "$HOOKS_JSON" && -f "$SETTINGS_JSON" ]]; then
+    jq_cmds='[(.hooks // .) | to_entries[] | .value[]? | .hooks[]? | .command]
+             | unique[]'
+    DECLARED=$(jq -r "$jq_cmds" "$HOOKS_JSON" 2> /dev/null | sort)
+    INSTALLED=$(jq -r "$jq_cmds" "$SETTINGS_JSON" 2> /dev/null | sort)
+    # Only the declared-but-not-live direction is a finding. Live-only entries
+    # are foreign hooks from plugins and other installers, which merge_hooks()
+    # deliberately preserves; flagging those would be a standing false alarm.
+    DRIFT=$(comm -23 <(printf '%s\n' "$DECLARED") <(printf '%s\n' "$INSTALLED"))
+    DRIFT_N=$(printf '%s' "$DRIFT" | grep -c . || true)
+    if [[ "$DRIFT_N" != "0" ]]; then
+        DRIFT_NAMES=$(printf '%s\n' "$DRIFT" | sed 's#.*/##' | paste -sd, -)
+        DEGRADED+=("${DRIFT_N} hook(s) declared in hooks.json but not live in settings.json (${DRIFT_NAMES}); run setup.sh")
+    fi
+fi
+
 echo "[harness-doctor] live: ${LIVE[*]:-none}" >&2
 if [[ ${#DEGRADED[@]} -gt 0 ]]; then
     joined=$(printf '%s; ' "${DEGRADED[@]}")
