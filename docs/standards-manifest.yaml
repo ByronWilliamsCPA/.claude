@@ -1,6 +1,22 @@
 # docs/standards-manifest.yaml
 version: "1.0"
-last_updated: "2026-08-03"
+last_updated: "2026-09-06"
+# 2026-09-06: doc-accuracy correction to the 2026-09-02 entry below. CodeQL
+# code scanning (via codeql.yml, deleted) and the dependency-review action no
+# longer function fleet-wide, but SARIF ingestion into the Security tab is NOT
+# retired fleet-wide: sbom.yml's Grype and OSV-Scanner jobs still call
+# github/codeql-action/upload-sarif (categories grype-runtime-deps,
+# osv-sbom-runtime-deps). Only the two deleted workflows' SARIF stopped.
+# 2026-09-02: GitHub Advanced Security (Code Security) is now a paid add-on;
+# CodeQL code scanning and GitHub's dependency-review action no longer
+# function fleet-wide. Removed codeql.yml and dependency-review.yml from the
+# CI-013 workflow_inventory expected_set. Retired CI-036 (dependency-review.yml
+# presence) and CI-081 (its deny-licenses/allow-licenses input) as deprecated
+# stubs; both assumed a free capability that GitHub discontinued. CI-080 (SBOM
+# license denylist, Trivy-based) remains the fleet's license policy control.
+# The security-analysis.yml run-codeql/run-dependency-review caller inputs are
+# intentionally untouched pending a coordinated ByronWilliamsCPA/.github
+# reusable-workflow change.
 # 2026-08-03: Operations posture assurance. Added the operations domain,
 # OPS-001 through OPS-012, covering runtime-only controls the six read-only
 # OWASP specialist agents cannot statically verify (deployed config
@@ -843,7 +859,7 @@ checks:
     description: >-
       No unregistered GitHub Actions workflows -- any .yml in .github/workflows/ not in
       the registered set is flagged for evaluation
-    verify: "workflow_inventory: .github/workflows/, expected_set=[ci.yml,codeql.yml,coverage.yml,dependency-review.yml,docs.yml,fips-compatibility.yml,mutation-testing.yml,postman-api-tests.yml,pr-title.yml,pr-validation.yml,python-compatibility.yml,qlty.yml,release-sign.yml,release.yml,repo-health.yml,reuse.yml,sbom.yml,scorecard.yml,security-analysis.yml,slsa-provenance.yml,sonarcloud.yml], report_extras=true"  # yamllint disable-line rule:line-length
+    verify: "workflow_inventory: .github/workflows/, expected_set=[ci.yml,coverage.yml,docs.yml,fips-compatibility.yml,mutation-testing.yml,postman-api-tests.yml,pr-title.yml,pr-validation.yml,python-compatibility.yml,qlty.yml,release-sign.yml,release.yml,repo-health.yml,reuse.yml,sbom.yml,scorecard.yml,security-analysis.yml,slsa-provenance.yml,sonarcloud.yml], report_extras=true"  # yamllint disable-line rule:line-length
     override_eligible: true
 
   - id: CI-022
@@ -1156,23 +1172,14 @@ checks:
         FAIL if concurrency.cancel-in-progress is not true.
     override_eligible: true
 
-  - id: CI-036
-    domain: ci
-    severity: important
-    description: >-
-      A dependency-review.yml workflow must be present for public repos, triggered on
-      pull_request, using actions/dependency-review-action with fail-on-severity: high.
-      This catches vulnerable new dependencies added in a PR diff before they merge,
-      complementing pip-audit (which audits the full lock file, not just the diff).
-    verify: |
-      file_exists: .github/workflows/dependency-review.yml
-      content_present: .github/workflows/dependency-review.yml, dependency-review-action
-      content_present: .github/workflows/dependency-review.yml, fail-on-severity: high
-    override_eligible: true
-    notes: >
-      Not applicable to private repos (GitHub's vulnerability database endpoint for
-      dependency review is only available on public repos or repos with GitHub Advanced
-      Security). Mark N/A with a comment when the repo is private.
+  # RETIRED: CI-036 (2026-09-02) - dependency-review.yml presence check. Retired
+  # because actions/dependency-review-action now requires paid GitHub Advanced
+  # Security (Code Security) on every repo, public or private; the free public-repo
+  # path that this check assumed is gone. dependency-review.yml was removed
+  # fleet-wide alongside codeql.yml and SARIF upload steps. pip-audit remains the
+  # dependency vulnerability control (full lockfile, not just the PR diff). CI-081
+  # (deny-licenses/allow-licenses on the same workflow) is retired alongside this
+  # check for the same reason. Do NOT reuse this ID.
 
   - id: CI-037
     domain: ci
@@ -2671,56 +2678,12 @@ checks:
       ByronWilliamsCPA/.github (the LGPL-2.1 variants cover semgrep, the one
       concrete LGPL-2.1 package observed in the fleet).
 
-  - id: CI-081
-    domain: ci
-    severity: suggested
-    override_eligible: true
-    not_applicable_when: >-
-      Repo is private (actions/dependency-review-action license endpoint
-      requires GitHub Advanced Security or a public repo), OR
-      dependency-review.yml is absent from .github/workflows/ (CI-036
-      prerequisite unmet), OR repositoryType is config, docs-only, or
-      infrastructure.
-    description: >-
-      The dependency-review.yml caller must include a deny-licenses or
-      allow-licenses input in its with: block. The actions/dependency-review-
-      action supports both natively (v4+). Omitting both means the action only
-      gates on vulnerability severity and applies no license policy to
-      PR-introduced packages, so a PR adding a GPL-3.0 or LGPL-3.0 library
-      passes silently until the post-merge SBOM scan runs. deny-licenses
-      provides an early PR-time signal complementing CI-080's full-lockfile
-      post-merge gate. deny-licenses operates only on PR-diff packages; CI-080
-      covers the full lockfile via the SBOM. Both are needed: CI-081 catches
-      new introductions early; CI-080 catches pre-existing packages that
-      predate CI-081 enforcement. Note: the deny-licenses input is deprecated
-      by actions/dependency-review-action (issue 997) and may be removed in a
-      future major release; allow-licenses also satisfies this check and is the
-      forward-compatible alternative.
-    verify: |
-      Read .github/workflows/dependency-review.yml.
-      Locate the step using actions/dependency-review-action and its with:
-      block.
-      FAIL if neither deny-licenses nor allow-licenses is present.
-      PASS if at least one is present.
-      Advisory: if deny-licenses is present, warn if it omits GPL-3.0-only,
-      GPL-3.0-or-later, AGPL-3.0-only, AGPL-3.0-or-later. Content review is
-      manual; this check enforces presence of the key, not its exact value.
-    source_frameworks:
-      - manifest-internal
-      - GitHub dependency-review-action documentation (deny-licenses input)
-      - OWASP Top 10 CI/CD A08 Ungoverned Usage of Third-Party Services
-    notes: >-
-      Added 2026-06-04 at severity: suggested. Renumbered from the originally
-      proposed CI-079, which is reserved by the CI-078 qlty-gate ruleset
-      companion check from PR #188. Promotion to important after CI-036
-      (dependency-review.yml presence) is confirmed at 100% across applicable
-      public repos and at least one reference implementation of deny-licenses
-      or allow-licenses is deployed (recommended deny starting set:
-      GPL-2.0-only, GPL-2.0-or-later, GPL-3.0-only, GPL-3.0-or-later,
-      AGPL-3.0-only, AGPL-3.0-or-later, matching the SBOM denylist). The two
-      lists are separate and must be kept in sync. Reference implementation
-      target: .github/workflows/dependency-review.yml under the
-      actions/dependency-review-action with: block.
+  # RETIRED: CI-081 (2026-09-02) - dependency-review.yml deny-licenses/
+  # allow-licenses input check. Retired alongside its CI-036 prerequisite:
+  # actions/dependency-review-action now requires paid GitHub Advanced Security
+  # on every repo, so dependency-review.yml is no longer deployed fleet-wide.
+  # CI-080 (SBOM license-compliance denylist, Trivy-based, no GHAS dependency)
+  # remains the fleet's license policy control. Do NOT reuse this ID.
 
   # ── workflow-library type checks (Obs 45) ──────────────────────────────────
   # The .github repo is the only repo that is simultaneously a community-health

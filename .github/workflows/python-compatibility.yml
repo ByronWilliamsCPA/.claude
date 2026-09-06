@@ -37,7 +37,7 @@ permissions:
 jobs:
   compatibility:
     name: Python Compatibility Matrix
-    uses: ByronWilliamsCPA/.github/.github/workflows/python-compatibility.yml@7aaf24d13d9ff61d0d231797bfa6fd3cad478e2b  # v7.1.12
+    uses: ByronWilliamsCPA/.github/.github/workflows/python-compatibility.yml@7d12f5486ab5c856397ebaa4acd3c99ca385227c  # v9.0.0
     with:
       python-versions: '["3.10", "3.11", "3.12", "3.13"]'
       operating-systems: '["ubuntu-latest"]'

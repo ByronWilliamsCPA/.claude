@@ -1273,8 +1273,7 @@ platform: resolve against the platform's live docs and the CI-pinned tool versio
 | CI check | Static validation |
 | --- | --- |
 | ClusterFuzzLite | For each fuzz target declared in workflow: verify file exists at the declared path, has the correct extension (`.py` for Python), and compiles with `python3 -m py_compile {target}` |
-| Dependency Review | Verify the action version pin resolves (check format: `actions/dependency-review-action@vN`) |
-| SARIF upload | If workflow references a SARIF file path, verify the generating step would produce it (check step ordering and output paths) |
+| SARIF-producing scanners (Trivy, Snyk, Scorecard, SBOM) | If workflow references a SARIF file path, verify the generating step would produce it (check step ordering and output paths). Only `codeql.yml` and `dependency-review.yml` (deleted 2026-09) stopped producing SARIF; `sbom.yml`'s Grype and OSV-Scanner jobs still call `github/codeql-action/upload-sarif` to ingest into the Security tab (categories `grype-runtime-deps`, `osv-sbom-runtime-deps`), matching `.github/workflows/README.md:120-129`. Verify the `upload-sarif` step exists for those, and treat `actions/upload-artifact` as a backup copy of the raw SBOM/SARIF file, not a replacement for Security-tab ingestion. |
 | SonarCloud | Verify `sonar-project.properties` has non-placeholder values for `sonar.organization` and `sonar.projectKey` |
 | Codecov | If `codecov.yml` exists, verify it parses as valid YAML and references existing flag names |
 
@@ -1621,20 +1620,27 @@ still serves dangling commits, so use `compare`, not existence. Validate the fix
 `if:`). When the failure appeared right after an edit, confirm causation by reverting the
 suspected change on the current base before committing to a fix direction.
 
-**SARIF / code-scanning orphan checks:** When "Code scanning results / *" checks remain
-in `queued` state indefinitely after a push, check whether the upstream analysis job was
-path-filtered or skipped. Security analysis workflows on config-only or docs-only PRs are
-commonly path-filtered, leaving their SARIF upload result checks permanently pending with
-no source to resolve them.
+**SARIF / code-scanning orphan checks, CodeQL only (legacy, pre-2026-09):** `codeql.yml` and
+`dependency-review.yml` were deleted fleet-wide (2026-09; `actions/dependency-review-action` now
+requires paid GitHub Advanced Security). A "CodeQL" or "Code scanning results / CodeQL" check
+visible on a new PR is therefore a leftover from before the deletion, not a live analysis: treat
+it as permanently orphaned (not merely path-filtered) and, if it recurs, have the repo owner
+disable "Code scanning: Default setup" in repo Settings > Code security so GitHub stops
+registering the check context. This does NOT apply to other SARIF-producing workflows: `sbom.yml`
+still runs `github/codeql-action/upload-sarif` for its Grype and OSV-Scanner jobs (categories
+`grype-runtime-deps`, `osv-sbom-runtime-deps`), so those checks are live, not orphaned. The
+pre-2026-09 mechanics below (queued indefinitely because the upstream analysis job was
+path-filtered or skipped on config-only/docs-only PRs) still apply to those and to any other
+SARIF-producing workflow, such as a Trivy or Snyk scan that guards a path filter.
 
 ```bash
 gh pr view "$PR_NUMBER" --repo "$OWNER/$REPO" --json mergeable,mergeStateStatus \
   --jq '{mergeable:.mergeable, state:.mergeStateStatus}'
 ```
 
-If `mergeable: MERGEABLE` (button is active), these orphaned SARIF checks are non-blocking
-advisory checks, not CI failures. Classify them as "advisory pending (path-filtered upstream
-job)" and do NOT trigger a re-fix cycle. The PR is safe to merge.
+If `mergeable: MERGEABLE` (button is active), a queued (not orphaned-CodeQL) SARIF check is a
+non-blocking advisory check, not a CI failure. Classify it as "advisory pending (path-filtered
+upstream job)" and do NOT trigger a re-fix cycle. The PR is safe to merge.
 
 Classify the outcome:
 
@@ -1657,11 +1663,13 @@ change can clear it. Before treating any single FAILURE as a blocker that warran
 Phase C re-fix cycle, run `gh pr view "$PR_NUMBER" --repo "$OWNER/$REPO" --json
 mergeable,mergeStateStatus` and a required-contexts lookup; classify by the merge-
 eligibility API and the required-context list, not by the check's terminal color alone.
-The worked example is a CodeQL default-setup job ("Analyze (javascript-typescript)")
-failing "no source code seen during build" on a repo with zero JS/TS source: it is enabled
-org-wide by the recommended code-security config, is non-required, and merges straight
-through. This is the same advisory logic the queued/PENDING SARIF row applies, extended to
-the hard-FAILED terminal case.
+The worked example (pre-2026-09, when CodeQL default setup was still free) was a CodeQL
+default-setup job ("Analyze (javascript-typescript)") failing "no source code seen during
+build" on a repo with zero JS/TS source: it was enabled org-wide by the recommended
+code-security config, was non-required, and merged straight through. CodeQL now requires
+paid GitHub Advanced Security and no longer runs fleet-wide, so this specific check should
+not reappear; the underlying advisory logic (non-required + `UNSTABLE` + `MERGEABLE` merges
+through regardless of terminal color) still applies to any other non-required check.
 
 **Green-but-BLOCKED: distinguish the cause before acting.** "All checks green" is
 necessary but not sufficient for mergeability; `mergeStateStatus` is the authoritative

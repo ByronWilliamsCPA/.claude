@@ -27,7 +27,7 @@ jobs:
       security-events: write
       pull-requests: write
       actions: read
-    uses: ByronWilliamsCPA/.github/.github/workflows/python-security-analysis.yml@7aaf24d13d9ff61d0d231797bfa6fd3cad478e2b # v7.1.12
+    uses: ByronWilliamsCPA/.github/.github/workflows/python-security-analysis.yml@7d12f5486ab5c856397ebaa4acd3c99ca385227c # v9.0.0
     with:
       python-version: "3.12"
       # safety scanner support was removed in the v1.1.0 reusable workflow;

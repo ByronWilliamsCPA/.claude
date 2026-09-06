@@ -2,6 +2,32 @@
 
 ## Unreleased
 
+### Removed
+
+* fix(ci)!: remove GitHub Advanced Security dependent CI and its documentation.
+  GitHub now bills Advanced Security (Code Security) separately, so CodeQL
+  code scanning, `actions/dependency-review-action`, and SARIF ingestion into
+  the Security tab no longer function on the free tier. Deleted
+  `.github/workflows/codeql.yml` and `.github/workflows/dependency-review.yml`.
+  Removed `codeql.yml` and `dependency-review.yml` from the CI-013
+  `workflow_inventory` expected set in `docs/standards-manifest.yaml`, and
+  retired CI-036 (dependency-review.yml presence) and CI-081 (its
+  deny-licenses/allow-licenses input) as deprecated stubs. Updated
+  `ossf-compliance-auditor.md`, `ci-fix/SKILL.md`, `pr-review/workflows/pr-fix.md`,
+  and `repo-compliance/SKILL.md` so Claude no longer recommends or checks for
+  either control. Updated `docs/reference/fossa-ci-evaluation.md` and
+  `docs/reference/renovate-architecture.md` to note the retirement rather than
+  describing the controls as active. Left the `run-codeql`/`run-dependency-review`
+  input lines in `security-analysis.yml` untouched; a follow-up PR removes them
+  once the shared `ByronWilliamsCPA/.github` reusable workflow's defaults change,
+  since removing the caller lines first would silently enable a CodeQL job that
+  cannot succeed. No `github/codeql-action/upload-sarif` steps were found
+  outside the deleted `codeql.yml`.
+  BREAKING CHANGE: repos and tooling that relied on CI-036/CI-081 findings, the
+  `codeql.yml`/`dependency-review.yml` workflows, or Security-tab SARIF results
+  will no longer see them. pip-audit and the SBOM (`sbom.yml`, Trivy-based)
+  workflow remain the fleet's dependency vulnerability and license controls.
+
 ### Breaking
 
 * feat(compliance)!: elevate PC-003 (basedpyright pre-commit hook) from
