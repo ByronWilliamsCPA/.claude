@@ -27,7 +27,7 @@ jobs:
       id-token: write
       contents: read
       actions: read
-    uses: ByronWilliamsCPA/.github/.github/workflows/python-scorecard.yml@f9625c5513a031a3d3a127681ee9d238e38c313e  # v7.0.3
+    uses: ByronWilliamsCPA/.github/.github/workflows/python-scorecard.yml@7d12f5486ab5c856397ebaa4acd3c99ca385227c  # v9.0.0
     with:
       # publish-results: false -- OIDC repository claim resolves to org .github repo
       # when called as a reusable callee; setting true would publish to wrong repo.

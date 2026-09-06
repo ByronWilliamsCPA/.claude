@@ -1,15 +1,20 @@
 # docs/standards-manifest.yaml
 version: "1.0"
-last_updated: "2026-09-02"
+last_updated: "2026-09-06"
+# 2026-09-06: doc-accuracy correction to the 2026-09-02 entry below. CodeQL
+# code scanning (via codeql.yml, deleted) and the dependency-review action no
+# longer function fleet-wide, but SARIF ingestion into the Security tab is NOT
+# retired fleet-wide: sbom.yml's Grype and OSV-Scanner jobs still call
+# github/codeql-action/upload-sarif (categories grype-runtime-deps,
+# osv-sbom-runtime-deps). Only the two deleted workflows' SARIF stopped.
 # 2026-09-02: GitHub Advanced Security (Code Security) is now a paid add-on;
-# CodeQL code scanning, GitHub's dependency-review action, and SARIF ingestion
-# into the Security tab no longer function fleet-wide. Removed codeql.yml and
-# dependency-review.yml from the CI-013 workflow_inventory expected_set.
-# Retired CI-036 (dependency-review.yml presence) and CI-081 (its
-# deny-licenses/allow-licenses input) as deprecated stubs; both assumed a free
-# capability that GitHub discontinued. CI-080 (SBOM license denylist,
-# Trivy-based) remains the fleet's license policy control. The
-# security-analysis.yml run-codeql/run-dependency-review caller inputs are
+# CodeQL code scanning and GitHub's dependency-review action no longer
+# function fleet-wide. Removed codeql.yml and dependency-review.yml from the
+# CI-013 workflow_inventory expected_set. Retired CI-036 (dependency-review.yml
+# presence) and CI-081 (its deny-licenses/allow-licenses input) as deprecated
+# stubs; both assumed a free capability that GitHub discontinued. CI-080 (SBOM
+# license denylist, Trivy-based) remains the fleet's license policy control.
+# The security-analysis.yml run-codeql/run-dependency-review caller inputs are
 # intentionally untouched pending a coordinated ByronWilliamsCPA/.github
 # reusable-workflow change.
 # 2026-08-03: Operations posture assurance. Added the operations domain,
