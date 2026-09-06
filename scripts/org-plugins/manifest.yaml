@@ -148,17 +148,29 @@ skills:
   writing: claude-code-only
   writing-plans: claude-code-only
 
-  # exclude: delta on a vendored/dangling-submodule companion, not cleared
-  # for redistribution; re-evaluate once the companion's license is checked
-  # and the submodule is verified checked out.
-  audience-reaction-analyzer-extras: exclude
-  brainstorming-extras: exclude
-  code-review-extras: exclude
-  executing-plans-extras: exclude
-  fastapi-expert-extras: exclude
-  finishing-a-development-branch-extras: exclude
-  pdf-extras: exclude
-  pptx-extras: exclude
-  subagent-driven-development-extras: exclude
-  systematic-debugging-extras: exclude
-  verification-before-completion-extras: exclude
+  # -extras deltas on a vendored companion. These are first-party content (our
+  # own observations layered on a third-party/vendor skill); only the companion
+  # itself is under someone else's license, and it is NOT redistributed through
+  # this pipeline. The team obtains each companion from its upstream source
+  # (superpowers, anthropics-skills, jeffallan-claude-skills) per the provenance
+  # split in ADR-011, then these deltas layer on top. Classified claude-code-only
+  # (not portable): they reference subagent/pipeline concepts the companion
+  # defines. Same rule already applied to receiving-code-review-extras and
+  # test-driven-development-extras (deltas on first-party companions) above.
+  audience-reaction-analyzer-extras: claude-code-only
+  brainstorming-extras: claude-code-only
+  code-review-extras: claude-code-only
+  executing-plans-extras: claude-code-only
+  fastapi-expert-extras: claude-code-only
+  finishing-a-development-branch-extras: claude-code-only
+  pdf-extras: claude-code-only
+  pptx-extras: claude-code-only
+  subagent-driven-development-extras: claude-code-only
+  systematic-debugging-extras: claude-code-only
+  verification-before-completion-extras: claude-code-only
+
+  # exclude: currently no entries. Reserved for a first-party skill with a known
+  # blocker (a hardcoded local path, an unreviewed dependency) or a delta whose
+  # companion cannot be reached from any source. Vendored/submodule-sourced
+  # skills are excluded by omission (the build only ships what is listed here),
+  # not by an explicit exclude entry.

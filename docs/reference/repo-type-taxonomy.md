@@ -24,7 +24,7 @@ are exempt. Type profiles are defined in `_meta.typeProfiles`.
 | `python-script` | 6.0 | 7.5 | Scripts/automation; basedpyright/docstrings exempt |
 | `config` | 5.0 | 7.0 | Dotfiles/settings; Python toolchain fully exempt |
 | `infrastructure` | 5.0 | 7.0 | IaC/homelab; Python toolchain fully exempt |
-| `docs-only` | 4.0 | 6.0 | Docs/GitHub Pages; CodeQL and Python toolchain exempt |
+| `docs-only` | 4.0 | 6.0 | Docs/GitHub Pages; Python toolchain exempt |
 | `template` | 5.0 | 7.5 | Cookiecutter templates; placeholder code exempt |
 
 ## Assigning a Type
@@ -52,11 +52,14 @@ is language-agnostic. Even repos that contain no Python code can contain
 credentials, API keys, or tokens in configuration files. Exempting Python-specific
 tools (ruff, basedpyright, bandit) does not exempt security hygiene.
 
-**`docs-only` exempts `codeql.yml` but not `sonarcloud.yml`:** CodeQL is a static
-analysis engine that requires compilable or interpretable source code and cannot
-run on documentation files alone. SonarCloud can analyze text-based content and
-may still surface doc quality issues; it remains in scope unless a specific repo
-has no content SonarCloud can evaluate.
+**`codeql.yml` is retired fleet-wide (2026-09), not type-scoped:** GitHub's CodeQL
+code scanning now requires paid GitHub Advanced Security (Code Security); the
+former per-type exemption for `docs-only` (CodeQL cannot run on documentation
+files alone) no longer applies because `codeql.yml` was removed from every repo
+regardless of type. Do not log a `codeql.yml`-absence finding for any type.
+`sonarcloud.yml` is unaffected: SonarCloud can analyze text-based content and
+may still surface doc quality issues on `docs-only` repos; it remains in scope
+unless a specific repo has no content SonarCloud can evaluate.
 
 **Infrastructure repos with embedded Python:** Some Ansible playbooks or Terraform
 modules include embedded Python scripts or Lambda functions. If a repo's Python

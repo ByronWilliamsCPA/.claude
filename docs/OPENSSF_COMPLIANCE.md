@@ -183,9 +183,14 @@ Comprehensive static analysis on every commit.
 - **Ruff**: Python linting with security rules
 - **Bandit**: Python security issue detection
 - **BasedPyright**: Type safety (prevents entire classes of bugs)
-- **CodeQL**: Advanced semantic code analysis
 
 **Workflow**: `.github/workflows/security-analysis.yml`
+
+**Retired (2026-09)**: CodeQL semantic code analysis (`codeql.yml`) and the
+`dependency-review-action` PR-diff gate (`dependency-review.yml`) were removed
+fleet-wide. GitHub now bills Advanced Security (Code Security) separately, so
+both require a paid add-on and no longer function on the free tier that this
+repo was using.
 
 ### 8. Mutation Testing 🧬
 
