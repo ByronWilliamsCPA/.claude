@@ -756,6 +756,25 @@ analysis, and style profile calibration. Modes: `edit` (Stage 1→2→3), `draft
 "rewrite for [audience]", "check my writing", "style review", "grammar check", "does this sound
 like me", "writing pipeline", "AI patterns", "will this land".
 
+### Study Workflows
+
+**[/anki](/.claude/skills/anki/SKILL.md)**
+Turns a distilled lecture summary into 10-15 Anki cards and pushes them into the live
+collection over AnkiConnect (add-on `2055492159`, `127.0.0.1:8765`). Writes a reviewable
+markdown card file first and refuses to push until it is marked `approved`; checks each
+card against the destination deck and the rest of the batch for near-duplicates; syncs to
+AnkiWeb afterwards. Backed by the `claude_config.anki` package and the `anki-cards` CLI.
+Card content lives in a separate private repo, never here. Activates on: "anki",
+"make cards", "flashcards", "lecture notes to cards", "push cards", "apkg backup".
+
+**[premed-socratic-tutor](/.claude/skills/premed-socratic-tutor/SKILL.md)**
+Socratic coaching mode for premed coursework: quizzes one question at a time, re-explains
+concepts multiple ways, grades written answers hard, interleaves practice problems, and turns
+exam misses into Anki-ready cards. Structurally refuses to write graded work for submission;
+tutors toward the student's own solution instead. Activates on: "quiz me on", "I don't get",
+pasted written answers asking for grading, pasted homework or essays or lab reports, requests
+for practice problems, "turn my misses into flashcards".
+
 ---
 
 ## Superpowers Skills (Community-Maintained)

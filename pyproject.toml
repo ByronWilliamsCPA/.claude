@@ -77,6 +77,10 @@ dependencies = [
     "requests>=2.33.1",
 ]
 
+# Console entry points
+[project.scripts]
+anki-cards = "claude_config.anki.cli:main"
+
 # Optional dependency groups
 [project.optional-dependencies]
 # Development dependencies
@@ -301,6 +305,7 @@ known-first-party = ["claude_config"]
     "S311",   # random - non-crypto random in tests is fine
     "S113",   # request_without_timeout - test HTTP calls may be mocked
     "S603",   # subprocess_without_shell_equals_true - tests invoke project scripts with fixed args
+    "N802",   # stdlib callback contracts require mixed-case names (BaseHTTPRequestHandler.do_POST)
 ]
 
 # FIPS compliance fixture files (intentionally use non-compliant algorithms for testing)
