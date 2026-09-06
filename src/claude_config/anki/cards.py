@@ -189,14 +189,19 @@ class CardBatch:
         count = len(self.cards)
         if count > MAX_CARDS:
             return [
-                f"{count} cards is over the {MAX_CARDS}-card cap for one "
-                "lecture. Trim the weakest ones so daily review stays "
-                "inside 20-30 minutes."
+                (
+                    f"{count} cards is over the {MAX_CARDS}-card cap for one "
+                    "lecture. Trim the weakest ones so daily review stays "
+                    "inside 20-30 minutes."
+                )
             ]
         if count < MIN_CARDS:
             return [
-                f"Only {count} cards; the target is {MIN_CARDS}-{MAX_CARDS} "
-                "per lecture. This is a warning, not a blocker."
+                (
+                    f"Only {count} cards; the target is "
+                    f"{MIN_CARDS}-{MAX_CARDS} per lecture. This is a "
+                    "warning, not a blocker."
+                )
             ]
         return []
 

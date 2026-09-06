@@ -220,6 +220,7 @@ def _collect_duplicates(
 def push_batch(
     client: AnkiConnectClient,
     batch: CardBatch,
+    *,
     threshold: float = DEFAULT_THRESHOLD,
     dry_run: bool = False,
     force_duplicates: bool = False,
