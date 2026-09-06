@@ -106,9 +106,58 @@ needs its own license check, tracked separately from this decision.
   them in the manifest, which is intentional but means a forgotten
   classification silently withholds new content from the team rather than
   silently leaking it.
-- **Neutral**: the manifest's classification is a point-in-time judgment call
-  (see the `-extras` exclusions); it should be revisited whenever a vendored
-  submodule pin bumps or a new skill is added.
+- **Neutral**: the manifest's classification is a point-in-time judgment call;
+  it should be revisited whenever a vendored submodule pin bumps or a new skill
+  is added.
+
+## Update 2026-07-10: Submodule provenance split
+
+The v1 decision deferred all submodule-sourced content ("tracked separately
+from this decision"). With `wff-code` and `wff-chat` shipping, this update
+resolves that deferral. The governing axis is redistribution license per
+source, not packaging convenience. The eight submodules
+(`docs/architecture/submodule-strategy.md` is the authoritative inventory)
+split into three buckets:
+
+- **Bucket A, first-party (same maintainer): `reference-library`,
+  `image-generation`.** Both MIT, so redistribution is permitted.
+  Recommendation: package each as its **own plugin** (`wff-writing` from
+  `reference-library`; an image-generation plugin), not a fold-in to
+  `wff-code`. Their agents are coupled to submodule payload:
+  `reference-library`'s seven writing agents reference `{{LIBRARY_PATH}}/...`
+  (writing-style, legal-style, config, scripts; `grammar-composition-editor`
+  alone has 27 references), and `diagram-specialist` references
+  `scripts/generate_image.py` (a Gemini/Nano Banana Pro call) plus sibling
+  docs/examples. Shipping the bare agent files would hand the team dangling
+  paths. Own-plugin packaging bundles each payload whole, resolves
+  `{{LIBRARY_PATH}}` to the plugin root once, keeps `wff-code`'s `.submodules`
+  guard strict, and isolates the Gemini runtime dependency to a plugin the
+  team opts into. **Status: recommended, deferred to a follow-up** (payload
+  bundling, placeholder rewrite, and the CI checkout change to init these two
+  submodules are non-trivial and land separately).
+
+- **Bucket B, Anthropic vendor: `anthropics-skills`, `anthropics-plugins`.**
+  Not redistributed. The document skills (docx/pdf/pptx/xlsx) are already
+  symlink-only "for license reasons" per `submodule-strategy.md`, which is the
+  tell. The team obtains these from Anthropic's own official plugin/skill
+  channels rather than a relaundered copy.
+
+- **Bucket C, third-party marketplaces: `superpowers`, `agents-observe`,
+  `jeffallan-claude-skills`, `one-skill-to-rule-them-all`.** Not relaundered.
+  For Claude Code, the team adds the upstream marketplace directly, which
+  avoids a maintained fork and the attribution burden. `one-skill-to-rule-them-all`
+  (task-observer) is the model for the rare case where a third-party skill must
+  reach `wff-chat`, where chat cannot add a Claude Code marketplace: ship it as
+  a build artifact with attribution passthrough, per-skill, after an explicit
+  license check, never as a raw copy.
+
+Applied in this change: the eleven `-extras` deltas on vendored companions move
+from `exclude` to `claude-code-only`. They are first-party content; only their
+companion is third-party, and the companion now arrives from its upstream
+source (bucket B/C) rather than through this pipeline, so the delta can ship in
+`wff-code`. This mirrors the existing treatment of
+`receiving-code-review-extras` and `test-driven-development-extras` (deltas on
+first-party companions).
 
 ## References
 
