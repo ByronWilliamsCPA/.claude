@@ -19,11 +19,22 @@ Model-validation parameters used throughout this workflow. Edit these values to 
 model selection and consensus depth without touching the workflow logic.
 
 ```text
-PANEL_MODELS:          ["google/gemini-2.5-pro-preview", "openai/gpt-4o"]
+PANEL_MODELS:          ["google/gemini-2.5-pro-preview", "openai/gpt-4o"]  # DRIFTED, see note below
 CONSENSUS_LEVEL:       1
 PREMISE_MERGED_PR_LOOKBACK:   10
 PREMISE_STALENESS_HOLD_DAYS:  14
 ```
+
+**`PANEL_MODELS` is flagged, not fixed.** Both listed IDs are stale against standing guidance
+to avoid `-pro` model variants (`feedback_no_pro_models`), and neither has been re-verified
+against the live OpenRouter roster, which churns independently of this file. This was caught,
+not corrected: substituting a name from training data or from memory carries the same risk as
+leaving the stale value in place, because an unverified replacement can be just as wrong as the
+value it replaces, only more confidently wrong. Do not silently swap in a plausible-looking
+model ID here. Before the next run that reaches Agent L, re-derive the roster live (`pal
+listmodels`, or the `/panel` skill's own roster listing) and pick the two highest-scoring
+non-pro, cross-vendor models, or bring the drift to the user as an explicit decision. Leaving
+a flagged stale value beats asserting an unverified one as settled.
 
 - `PANEL_MODELS`: model list passed to `Skill("panel")` in flexible panel mode
   for Agent L (the engine's `--models` argument). Precondition:
@@ -257,6 +268,24 @@ lines; never silently truncate; instruct every agent not to dismiss findings as
 trivial, since confidence scoring happens downstream in Step 6.
 
 **Full procedure:** [context/review-agents.md](../context/review-agents.md)
+
+**Execution hygiene applies to every shell command this workflow or its dispatched agents
+run, not only the one block that currently quotes defensively** (the `&`-in-URL guard on
+Agent M's commit-history fetch in [context/review-agents.md](../context/review-agents.md)).
+Quote every variable interpolated into a `bash` command (`"$VAR"`, not `$VAR`) and every URL
+containing `&`, `?`, or spaces; an unquoted expansion that is empty, multi-word, or contains a
+shell metacharacter changes what actually runs, not just how it looks.
+
+A sharper edge in the same family: **never use `pkill -f <pattern>` (or `pgrep -f`,
+`killall`) from an orchestrator or dispatched agent shell.** `-f` matches against the FULL
+command line, not just the process name, so a pattern that also appears in the invoking
+shell's own command string (a heredoc, a quoted argument, the wrapper's own invocation) makes
+`pkill -f` SIGTERM its own session before it ever reaches the intended target. This has
+actually happened: a review agent starting a background test server and later killing it by
+name-pattern matched its own shell and hung for over half an hour with no target actually
+stopped. Kill by numeric PID only: capture it at spawn time (`cmd & pid=$!`) and kill that
+(`kill "$pid"`), or resolve the PID via `ps`/`jobs -p` immediately before killing, never via a
+loose pattern match.
 
 ---
 

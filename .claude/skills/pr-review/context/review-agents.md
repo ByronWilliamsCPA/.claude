@@ -55,6 +55,46 @@ lines from CONTEXT_FILES to understand callers and callees before issuing findin
 > a linter." Report everything you observe. Categorize it; do not omit it.
 > The user reviews all tiers. Confidence scoring happens after you return.
 
+**Re-derive every claim from source before reporting it, at the claim's own pinned
+reference.** A finding's path, line number, count, or scope is not evidence just because it
+sounds precise; it is evidence only once it has been checked against the actual file at the
+actual commit the finding is about. Before including any of the following in a finding,
+re-derive it directly rather than carrying it forward from an earlier read, a search-result
+snippet, or a plausible-sounding guess: a file path (does it exist at this path, at this
+SHA?), a count (recount it, do not trust a remembered or estimated number), a line anchor
+(does that line actually contain what the finding says it does, right now?), and scope (does
+the claim hold for the whole file/PR/repo, or only for the part actually inspected?). A count
+or line number that is merely carried through unverified becomes a wrong finding published to
+the PR; the fix costs one command, the wrong finding costs a review cycle and reviewer trust.
+This is a stricter, universal version of Agent J's item 6 below (which drops unverifiable
+quantitative claims); apply the same discipline to every agent's output, not only J's.
+
+**Dispatch discipline (applies to whoever writes and reads these agent prompts, not just to
+the agents themselves):**
+
+1. **Verify a dispatched agent's actual diff or tool output, never its self-reported
+   narrative.** A subagent's completion message is a claim, not evidence; an agent explicitly
+   told not to take a write action can take it anyway and describe its own work in a way that
+   omits or contradicts what it actually did. This has happened in this repo: a fix-dispatch
+   subagent given an explicit "do not push" instruction pushed to origin, and its completion
+   report never mentioned the push. Whenever a dispatched agent's report is used as the basis
+   for a decision, check the artifact it produced (the diff, the commit log, the pushed ref),
+   not the prose describing it.
+2. **Never assert an unverified technical premise as fact inside a dispatch prompt.** An
+   agent reasons from what its prompt states as background, not just from what it is asked to
+   find; a false premise stated as fact steers every agent that receives it toward the same
+   wrong conclusion, which then looks like independent convergence. State an unverified claim
+   as a falsifiable question ("determine empirically whether X; report either outcome"), not
+   as settled background. Agent A's own "HARD CONSTRAINT" text below already models the
+   discipline in the other direction (an agent that cannot verify a fact must flag it as
+   unverifiable rather than assert it); apply the same rule to what the ORCHESTRATOR puts into
+   a prompt, not only to what an agent puts into a finding.
+3. **State the model tier explicitly in the dispatch brief.** Do not re-derive or duplicate
+   per-agent model choices here; the headings below (Sonnet/Haiku/Opus per agent) already
+   reflect the reviewer model pins owned by `.claude/rules/supervisor.md`. If a pin needs to
+   change, change it there and let this file's headings follow, rather than drifting the two
+   out of sync.
+
 ### Agent A: CLAUDE.md Compliance (Sonnet)
 
 ```text
@@ -318,8 +358,20 @@ For every new or modified function/method/class in the diff:
 2. Identify missing edge cases, boundary conditions, negative tests
 3. Flag tests that are too implementation-coupled (test internals, not behavior)
 4. Flag missing tests for error conditions introduced in the diff
+5. An unfalsifiable test proves nothing: for each new or modified test, check whether it
+   could actually FAIL given the behavior it claims to guard. Read the assertion and ask what
+   production change would make it red. A test that would pass identically whether the
+   behavior under test exists, is broken, or is deleted entirely (an absence-assertion that
+   can never observe the thing it forbids, a fixture whose value already satisfies the
+   assertion before the code under test runs, a mock so permissive it cannot distinguish
+   right from wrong) is a false green, not coverage. This is a review criterion, not a
+   suggestion: report a test that cannot fail as its own finding, distinct from and in
+   addition to any coverage gap, since crediting it as coverage is worse than reporting no
+   test at all.
 
-Rate each gap 1–10 (10 = critical, will cause production failures without it).
+Rate each gap 1–10 (10 = critical, will cause production failures without it). Rate an
+unfalsifiable-test finding at 8+ regardless of what it appears to cover: it manufactures false
+confidence in exactly the area it claims to protect.
 Report ALL gaps; do not skip low-rated ones. Include: what's untested,
 what failure it could allow, the criticality rating.
 ```

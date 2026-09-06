@@ -50,6 +50,19 @@ The pre-commit-pinned ruff (`.pre-commit-config.yaml` `rev:`) intentionally lags
 ruff for stability. A pre-commit ruff pass does NOT guarantee a CI ruff pass when
 the two versions differ -- version skew is a recurring false-green source.
 
+**Mirror CI's exact invocation, not a narrower one scoped to changed files.** It is
+tempting, especially for speed, to invoke a linter against only the files this fix
+touched (`ruff format --check file1.py file2.py`) rather than the directory-scoped
+invocation above. Do not: an explicit path argument overrides `ruff`'s own
+`exclude`/`extend-exclude`/`format.exclude` configuration, so a file the project
+intentionally exempts (a generated Alembic migration, a vendored file, a schema export)
+gets linted anyway and produces a false failure CI will never report. This generalizes
+past ruff: any tool whose config resolution depends on being invoked against a directory
+or the whole repo answers a different question when given explicit file arguments
+instead. Derive the exact command, flags, and working scope from the CI workflow file
+itself (`.github/workflows/*.yml`) rather than retyping a remembered or narrowed version
+of it.
+
 The default gate uses `uv tool run`, which resolves each tool from a global
 ephemeral environment isolated from the reviewed repo's `pyproject.toml`
 and `uv.lock`. This is the trust boundary that makes the default gate
@@ -218,6 +231,35 @@ analysis surface. Test execution and full-CI replay were skipped.
 Continue without running it. Do not ask for confirmation; this branch
 does not have a yes path.
 
+### Verifying a fix that touches a test, mock, fixture, or guard
+
+A green test suite proves nothing about a fix if the test, mock, fixture, or guard the
+fix depends on cannot fail. Before crediting such a fix as verified, run a
+mutation-style self-check: temporarily remove or invert the guarded behavior (revert the
+fix, comment out the assertion's target, or otherwise reintroduce the defect) and
+confirm the test now actually fails. A negative or absence assertion
+(`X not in rendered`, `assert "SKIP LOCKED" not in str(stmt)`) is the sharpest version of
+this trap: string-matching against a dialect-less or generic render can make the checked
+construct incapable of ever appearing in that render, so the assertion passes trivially
+whether or not the fix is present. Render against the same target the production path
+uses (the actual SQL dialect, the actual serializer) before trusting a negative
+assertion.
+
+Apply the same self-check to a fixture. A fixture that asserts against data it
+manufactures itself proves the fixture is internally consistent, not that the fix
+behaves correctly against real input; trace a fixture's provenance back to a real
+example or a spec before crediting it as evidence.
+
+Guards (validators, linters, security checks, anything whose purpose is to reject a
+class of input) need verification in both directions: confirm the guard fires on the
+input it should reject, and confirm it stays silent on the input it should allow. A
+guard with only a positive test (fires on the bad case) can still let cases through in
+practice that it should have caught. For a guard over structured data (YAML, JSON,
+config), verify with the structural/parsed form, not a line-or-regex scan against raw
+text; a canonical-but-differently-shaped input (inline-flow YAML, a deeper-nested JSON
+block, a trailing comment) routinely slips past a text-scoped guard that a structural
+walk would catch.
+
 ### Retry policy
 
 Applies to the default gate only. If any default-gate tool fails, fix the
@@ -309,6 +351,21 @@ done
 If the base branch total exceeds the branch's original scope, expand the
 fix to cover the merged result rather than just the branch's original scope.
 
+**A pathspec-scoped verification must confirm the pathspec matched something.**
+`git diff --exit-code -- <pathspec>` (or an equivalent grep/diff scoped to a path)
+returns success both when the pathspec is clean and when it matches nothing at all;
+empty and equal-to-clean are byte-identical exit codes. A drifted working directory is
+the most common way to hit this silently: a `cd` in an earlier turn does not reliably
+carry forward, so a later command's relative pathspec can resolve against the wrong tree
+(`frontend/frontend/src/client` instead of `frontend/src/client`) and report a false
+PASS on a check that never actually ran. Before trusting any pathspec-scoped
+verification result, first confirm the pathspec matched a nonzero number of files
+(`git diff --name-only -- <pathspec> | wc -l`, or inspect the tool's own match count),
+and prefer a pathspec-free command (a bare `git status --short`, or an absolute path
+built with an explicit `cd`/`-C` in the same command) wherever the check can be
+expressed that way, since a floating relative path is what lets the drift happen in the
+first place.
+
 ## 5b. CI dry-run: validate GitHub Actions configs locally
 
 After local gates pass, scan `.github/workflows/*.yml` in the worktree and
@@ -347,6 +404,17 @@ platform: resolve against the platform's live docs and the CI-pinned tool versio
 |---|---|---|
 | pip-audit | `cd {WORKTREE_PATH} && uv export --no-hashes --format requirements-txt \| uv tool run pip-audit -r /dev/stdin $IGNORE_ARGS` | This is the only working invocation: `pip-audit -r pyproject.toml` fails (TOML pip-audit cannot parse) and `-r uv.lock` fails (uv-specific format pip-audit does not recognize); exporting to a requirements stream first is required. Overseer's pip-audit binary reads the exported manifest as input data, not as an active environment. Do NOT use bare `uv tool run pip-audit`; that audits the empty ephemeral tool env and returns a misleading clean result. Do NOT use `uv run pip-audit`; that pulls pip-audit from the reviewed repo's environment and recreates the AG04 gap. **Match CI's ignore policy and treat resolve errors as inconclusive:** a local pip-audit without the project's ignore list over-reports CVEs that CI legitimately suppresses (risking a wrong "this won't go green" conclusion or an unnecessary suppression edit). Before running, read `[tool.pip-audit] ignore-vuln` from `pyproject.toml` and build `IGNORE_ARGS` as one `--ignore-vuln <ID>` per entry (the org reusable workflow forwards these; this is a workflow convention, not native pip-audit config). Any pip-audit run that ends in a build/resolve error (e.g., lxml failing to build under a newer Python) is INCONCLUSIVE, not clean: zero findings from a failed resolution is a false-clean, never a pass. |
 | bandit (full repo) | already covered by the Step 5a default gate (which now runs bandit unconditionally with bandit defaults, no longer gated on `[tool.bandit]`) | n/a |
+
+**Verifying a rebase- or lockfile-only fix that clears a CVE.** When the fix's origin is
+a rebase that pulled in a base-branch lockfile update, or a lockfile-only bump, do not
+trust a local `pip-audit` run alone to confirm the CVE is cleared: the worktree's
+resident virtual environment can be staler than the lock (or point at a shared `.venv`
+from a different clone), which makes pip-audit re-report an advisory the lock has
+already fixed. Verify against the artifact CI actually consumes instead:
+`git diff origin/{BASE_BRANCH} -- uv.lock`. An empty diff means the lock is byte-identical
+to a base whose CI is green, which is authoritative; a non-empty diff means the fix has
+not actually landed the update it claims to. Treat a local pip-audit result as
+corroborating only, never as the primary evidence for a lockfile-scoped fix.
 
 *Hard-refused:*
 

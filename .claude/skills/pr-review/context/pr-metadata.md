@@ -297,6 +297,44 @@ functions, and conventional hooks (`setUp`, `main`). Symbol collisions are
 QUESTION-tier, not HOLD, because choosing the canonical definition needs human
 judgment. Store all collisions as `SYMBOL_COLLISIONS` and pass to Agent M.
 
+### Dimension 3: filename-derived identity keys
+
+Path overlap and symbol overlap both miss a third collision class: two PRs adding DIFFERENT
+files to the same directory whose framework derives an identity key FROM the filename rather
+than from its content (migration directories are the canonical case, but any append-only,
+sequentially-numbered artifact directory qualifies). Two files with distinct paths and no
+shared symbol name can still collide on the derived key once both land, and the collision is
+invisible to both prior dimensions because neither compares paths across PRs. When
+`CHANGED_FILES` adds a file to such a directory, list sibling filenames on `BASE_BRANCH` and
+on each PR in the comparison set, extract the derived key from each (the leading sequence
+number, timestamp, or ID segment the framework actually parses), and compare keys, not paths.
+Record a match as a `SYMBOL_COLLISIONS`-shaped entry so Agent M emits it through the same
+`Premise/Collision` path.
+
+### Merge order, not just a warning
+
+A collision finding that names two colliding PRs but not an order is only half useful: when
+this step runs across a batch of open PRs (multiple `/pr-review` passes, or a user asking
+"what order should these merge in"), emit a recommended merge order alongside each collision,
+with the reason per edge, for example "land #{n} first: it owns the shared definition/copy
+that this PR would otherwise duplicate." Working a colliding batch in the right order can
+reduce a semantic conflict to a positional one (a change that becomes a clean no-op once the
+PR it depended on has already landed); working it in the wrong order can force the same
+conflict to be resolved twice. Also flag any contested artifact that cannot be three-way
+merged (pixel baselines, generated lockfiles, generated clients): those force a
+regenerate-after-both-land constraint regardless of order.
+
+### Scale the lookback to branch staleness
+
+`PREMISE_MERGED_PR_LOOKBACK` is a fixed count (default 10) applied uniformly regardless of how
+stale the current branch is. A branch that has been open and diverging for weeks needs a
+longer merged-PR lookback than a same-day branch, because the fixed default window can slide
+past merges the stale branch never saw, silently narrowing the comparison set exactly when
+staleness makes a collision most likely. Scale the effective lookback by `STALENESS.age_days`
+(Step 2d) before running the merged-PR query: widen `--limit` proportionally, or switch to a
+date-bounded query (merged PRs since the branch's divergence date) rather than a fixed count,
+when `age_days` exceeds `PREMISE_STALENESS_HOLD_DAYS`.
+
 ---
 
 ## Step 2f detail: Supersession pre-check (only when MERGE_STATE is DIRTY or BEHIND)

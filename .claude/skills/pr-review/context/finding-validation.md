@@ -132,8 +132,59 @@ remains.
    agent you dispatched is as capable of a confident, plausible, wrong claim as an external
    bot; trusting your own subagents more than bots is an unjustified asymmetry that lets
    false positives in through the side door.
+
+   **Bot-finding disposition has two independent axes: is the CONCLUSION right, and is the
+   STATED RATIONALE right.** These do not always agree, and refuting one is not refuting the
+   other. A bot can reach the right conclusion via the wrong rationale (it cites a rule that
+   does not exist, but the flagged line is still defective for a different, real reason); this
+   is a distinct outcome from being simply wrong, and treating it as "rationale false, so
+   decline" silently drops a genuine finding with no trace in the report. Dispose of every
+   bot finding into one of three outcomes, not two:
+
+   | Conclusion | Rationale | Disposition | What to post |
+   | --- | --- | --- | --- |
+   | Correct | Correct | Keep as-is | Forward the finding and the bot's own rationale unchanged. |
+   | Correct | False | **Rationale wrong, finding stands** | Keep the finding; replace the bot's stated reason with the independently-derived one, and say so explicitly ("the cited rule does not apply; flagging for {actual reason} instead") so the record does not misattribute the correct call to a rule that does not exist. |
+   | Wrong | (either) | Declined: false positive | Post the doc citation or direct-check evidence that refutes the conclusion; do not forward the fix. |
+
+   Before declining a bot comment solely because its cited rule, tool semantics, or hook
+   scope turns out to be false, re-examine the flagged line on its own merits; a checker's
+   scope disclaimer or a wrong cited rule refutes the RATIONALE, not necessarily the
+   CONCLUSION. A wrong disposition posted to a bot thread (declining a real finding, or
+   forwarding a false one under a borrowed correct-sounding reason) corrupts the public PR
+   record in a way a private miss does not; get the row right before posting, not after.
 4. **Cross-model consensus (7b-1 / 7b-2 below)** for Critical findings still unresolved
    after steps 1-3.
+
+**A finding whose entire evidence is an absence needs a higher bar than a positive one.**
+"X is missing," "nothing handles Y," or "no control does Z" is a claim about the whole search
+space, not about the one place searched, and it is a distinct failure mode from a positive
+finding: a positive finding is wrong only if the cited thing is misread, but a negative one is
+wrong whenever the search could not have found the thing even if it existed. Before including
+an absence-only finding, establish all three of:
+1. **Query provenance.** What actually ran, and could it have found X if X existed? A
+   zero-match `grep` over one directory tree only proves absence within that tree; some
+   controls are enabled at a control-plane or platform level with no in-repo file to grep for
+   at all, so a search that only reads checked-in files can return "not found" for something
+   that is very much present and enforced elsewhere.
+2. **Non-repo locations where X could legitimately live.** Org-level shared config, git
+   submodules, generated build output, and CI-platform settings (branch protection, app
+   installations, dashboard-only toggles) are all real places a control can live without a
+   corresponding line in this repo's tree. An absence claim that never looked there is
+   incomplete, not confirmed.
+3. **The checker's own stated scope.** When the evidence for "missing" is "a repo checker
+   should have caught this and didn't," read that checker's source or docstring before trusting
+   the inference. A checker's name advertises ambition; only its documented scope is evidence.
+   A checker that explicitly disclaims the exact property in question (for example, one whose
+   own docs state it verifies a citation resolves but not that the citation discriminates the
+   claimed property) proves nothing about that property either way, and a green run from it is
+   not corroboration.
+
+A null grep published as a nonexistence claim is a wrong finding, not a conservative one. Note
+the adjacent risk this does not resolve: even a broadened search is only as good as the
+instrument running it (a malformed pattern, an untested regex, a tool flag that silently
+narrows scope can all manufacture the same false "not found"); verifying scope and location
+does not substitute for verifying the query itself actually works, which is a separate check.
 
 **Before the consensus call, extract a 15-line diff context window for each remaining
 Critical finding.** Locate its `file` and `line` in `PR_DIFF` and capture lines
