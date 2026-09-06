@@ -2242,6 +2242,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Vendored content">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-extras-skills" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The *-extras skills
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -2354,26 +2371,39 @@ rather than leaking it.</p>
 <h2 id="vendored-content">Vendored content<a class="headerlink" href="#vendored-content" title="Permanent link">&para;</a></h2>
 <p>Several skills and agents in this repo are symlinks into <code>.submodules/</code>
 (<code>superpowers</code>, <code>anthropics-skills</code>, <code>anthropics-plugins</code>, <code>reference-library</code>,
-<code>image-generation</code>, <code>jeffallan-claude-skills</code>; see
-<a href="../submodule-strategy/">submodule-strategy.md</a> for the full inventory and
-trust tiers). None of that content ships through this pipeline in v1.
-Re-distributing it into a second repo is a separate license question from the
-one this pipeline answers, don't fold it in silently. If a specific vendored
-item needs to reach the team, clear its license for redistribution first,
-then add it to the manifest with a comment recording that check, following
-the same admission-bar discipline as a new submodule.</p>
-<p>This splits the <code>*-extras</code> skills, each of which is a delta on a companion
-skill, by whether that companion is vendored or first-party. An <code>-extras</code>
-delta on a <strong>vendored</strong> companion stays <code>exclude</code> until the companion itself
-is cleared, since the delta alone references concepts it doesn't redefine:
-<code>audience-reaction-analyzer-extras</code>, <code>brainstorming-extras</code>,
+<code>image-generation</code>, <code>jeffallan-claude-skills</code>). The other two submodules,
+<code>one-skill-to-rule-them-all</code> and <code>agents-observe</code>, are wired by mechanisms of
+their own rather than a direct symlink (see the ADR-011 provenance split
+below); see <a href="../submodule-strategy/">submodule-strategy.md</a> for the full
+eight-submodule inventory and trust tiers. No vendored or third-party
+submodule <em>content</em> ships through this
+pipeline. Re-distributing it into a second repo is a separate license question
+from the one this pipeline answers, don't fold it in silently. If a specific
+vendored item needs to reach the team, clear its license for redistribution
+first, then add it to the manifest with a comment recording that check,
+following the same admission-bar discipline as a new submodule.</p>
+<p>The <a href="../adr/ADR-011-org-plugin-distribution/">ADR-011 provenance split</a> (2026-07-10
+update) sorts the submodules by redistribution license and states, per bucket,
+where the team gets each: first-party submodules (<code>reference-library</code>,
+<code>image-generation</code>) as their own plugins in a follow-up; Anthropic vendor
+content from Anthropic's official channels; third-party marketplaces
+(<code>superpowers</code>, <code>agents-observe</code>, and the rest) added upstream directly. Read
+that update before adding any submodule-sourced entry to the manifest.</p>
+<h3 id="the-extras-skills">The <code>*-extras</code> skills<a class="headerlink" href="#the-extras-skills" title="Permanent link">&para;</a></h3>
+<p>Each <code>*-extras</code> skill is first-party content: a delta layered on a companion
+skill. Only the companion may be third-party; the delta itself is ours. So the
+delta ships as <code>claude-code-only</code> regardless of where the companion comes from,
+because the team obtains the companion from its own source (bucket B/C of the
+provenance split for vendored companions, or first-party alongside for the
+rest). The delta references concepts the companion defines but does not
+redistribute the companion. This is why every <code>*-extras</code> skill is now
+<code>claude-code-only</code>, including the eleven that were <code>exclude</code> before the
+2026-07-10 update (<code>audience-reaction-analyzer-extras</code>, <code>brainstorming-extras</code>,
 <code>code-review-extras</code>, <code>executing-plans-extras</code>, <code>fastapi-expert-extras</code>,
 <code>finishing-a-development-branch-extras</code>, <code>pdf-extras</code>, <code>pptx-extras</code>,
-<code>subagent-driven-development-extras</code>, <code>systematic-debugging-extras</code>, and
-<code>verification-before-completion-extras</code>. An <code>-extras</code> delta on a
-<strong>first-party</strong> companion ships as <code>claude-code-only</code> alongside it, which is
-why <code>receiving-code-review-extras</code> and <code>test-driven-development-extras</code> are
-classified <code>claude-code-only</code> rather than <code>exclude</code>.</p>
+<code>subagent-driven-development-extras</code>, <code>systematic-debugging-extras</code>,
+<code>verification-before-completion-extras</code>), alongside <code>receiving-code-review-extras</code>
+and <code>test-driven-development-extras</code>, which were already <code>claude-code-only</code>.</p>
 <h2 id="running-the-build-locally">Running the build locally<a class="headerlink" href="#running-the-build-locally" title="Permanent link">&para;</a></h2>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>scripts/org-plugins/build_org_plugins.py<span class="w"> </span>--out<span class="w"> </span>/tmp/org-plugin-build
 </span></code></pre></div>
@@ -2436,7 +2466,7 @@ workflow runs the identical script.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 9, 2026 19:56:21 UTC">July 9, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="September 6, 2026 13:46:39 UTC">September 6, 2026</span>
   </span>
 
     

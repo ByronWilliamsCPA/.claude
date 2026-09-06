@@ -2245,6 +2245,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#update-2026-07-10-submodule-provenance-split" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Update 2026-07-10: Submodule provenance split
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#references" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2366,10 +2377,61 @@ needs its own license check, tracked separately from this decision.</p>
   them in the manifest, which is intentional but means a forgotten
   classification silently withholds new content from the team rather than
   silently leaking it.</li>
-<li><strong>Neutral</strong>: the manifest's classification is a point-in-time judgment call
-  (see the <code>-extras</code> exclusions); it should be revisited whenever a vendored
-  submodule pin bumps or a new skill is added.</li>
+<li><strong>Neutral</strong>: the manifest's classification is a point-in-time judgment call;
+  it should be revisited whenever a vendored submodule pin bumps or a new skill
+  is added.</li>
 </ul>
+<h2 id="update-2026-07-10-submodule-provenance-split">Update 2026-07-10: Submodule provenance split<a class="headerlink" href="#update-2026-07-10-submodule-provenance-split" title="Permanent link">&para;</a></h2>
+<p>The v1 decision deferred all submodule-sourced content ("tracked separately
+from this decision"). With <code>wff-code</code> and <code>wff-chat</code> shipping, this update
+resolves that deferral. The governing axis is redistribution license per
+source, not packaging convenience. The eight submodules
+(<code>docs/architecture/submodule-strategy.md</code> is the authoritative inventory)
+split into three buckets:</p>
+<ul>
+<li>
+<p><strong>Bucket A, first-party (same maintainer): <code>reference-library</code>,
+  <code>image-generation</code>.</strong> Both MIT, so redistribution is permitted.
+  Recommendation: package each as its <strong>own plugin</strong> (<code>wff-writing</code> from
+  <code>reference-library</code>; an image-generation plugin), not a fold-in to
+  <code>wff-code</code>. Their agents are coupled to submodule payload:
+  <code>reference-library</code>'s seven writing agents reference <code>{{LIBRARY_PATH}}/...</code>
+  (writing-style, legal-style, config, scripts; <code>grammar-composition-editor</code>
+  alone has 27 references), and <code>diagram-specialist</code> references
+  <code>scripts/generate_image.py</code> (a Gemini/Nano Banana Pro call) plus sibling
+  docs/examples. Shipping the bare agent files would hand the team dangling
+  paths. Own-plugin packaging bundles each payload whole, resolves
+  <code>{{LIBRARY_PATH}}</code> to the plugin root once, keeps <code>wff-code</code>'s <code>.submodules</code>
+  guard strict, and isolates the Gemini runtime dependency to a plugin the
+  team opts into. <strong>Status: recommended, deferred to a follow-up</strong> (payload
+  bundling, placeholder rewrite, and the CI checkout change to init these two
+  submodules are non-trivial and land separately).</p>
+</li>
+<li>
+<p><strong>Bucket B, Anthropic vendor: <code>anthropics-skills</code>, <code>anthropics-plugins</code>.</strong>
+  Not redistributed. The document skills (docx/pdf/pptx/xlsx) are already
+  symlink-only "for license reasons" per <code>submodule-strategy.md</code>, which is the
+  tell. The team obtains these from Anthropic's own official plugin/skill
+  channels rather than a relaundered copy.</p>
+</li>
+<li>
+<p><strong>Bucket C, third-party marketplaces: <code>superpowers</code>, <code>agents-observe</code>,
+  <code>jeffallan-claude-skills</code>, <code>one-skill-to-rule-them-all</code>.</strong> Not relaundered.
+  For Claude Code, the team adds the upstream marketplace directly, which
+  avoids a maintained fork and the attribution burden. <code>one-skill-to-rule-them-all</code>
+  (task-observer) is the model for the rare case where a third-party skill must
+  reach <code>wff-chat</code>, where chat cannot add a Claude Code marketplace: ship it as
+  a build artifact with attribution passthrough, per-skill, after an explicit
+  license check, never as a raw copy.</p>
+</li>
+</ul>
+<p>Applied in this change: the eleven <code>-extras</code> deltas on vendored companions move
+from <code>exclude</code> to <code>claude-code-only</code>. They are first-party content; only their
+companion is third-party, and the companion now arrives from its upstream
+source (bucket B/C) rather than through this pipeline, so the delta can ship in
+<code>wff-code</code>. This mirrors the existing treatment of
+<code>receiving-code-review-extras</code> and <code>test-driven-development-extras</code> (deltas on
+first-party companions).</p>
 <h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
 <ul>
 <li><code>scripts/org-plugins/manifest.yaml</code>, <code>scripts/org-plugins/build_org_plugins.py</code></li>
@@ -2402,7 +2464,7 @@ needs its own license check, tracked separately from this decision.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="July 9, 2026 19:56:21 UTC">July 9, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="September 6, 2026 13:46:39 UTC">September 6, 2026</span>
   </span>
 
     
