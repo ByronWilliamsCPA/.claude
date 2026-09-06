@@ -13,6 +13,8 @@ from __future__ import annotations
 
 import importlib.abc
 import importlib.util
+import shutil
+import subprocess
 import sys
 from pathlib import Path
 from typing import Any, Protocol
@@ -178,6 +180,102 @@ class TestCollectMdFiles:
         result_names = {p.name for p in result}
         assert "keep.md" in result_names
         assert "skip.md" not in result_names
+
+
+class TestDropGitIgnored:
+    """Git-ignored files must not gate a commit they can never be part of."""
+
+    @staticmethod
+    def _git_repo(root: Path, ignore: str) -> None:
+        """Initialise a throwaway git repo at *root* carrying a .gitignore."""
+        # Absolute path when resolvable; the bare name otherwise, so a missing
+        # git raises FileNotFoundError and fails loudly rather than skipping.
+        git = shutil.which("git") or "git"
+        subprocess.run([git, "init", "-q"], cwd=root, check=True, capture_output=True)
+        (root / ".gitignore").write_text(ignore, encoding="utf-8")
+
+    def test_drops_ignored_file(self, vfm: Any, tmp_path: Path) -> None:
+        """A generated report under a gitignored path is not collected."""
+        self._git_repo(tmp_path, "generated/\n")
+        (tmp_path / "keep.md").write_text("# Keep")
+        generated = tmp_path / "generated"
+        generated.mkdir()
+        (generated / "report.md").write_text("# Report")
+
+        result = vfm._collect_md_files([str(tmp_path)])
+        result_names = {p.name for p in result}
+        assert "keep.md" in result_names
+        assert "report.md" not in result_names
+
+    def test_keeps_everything_outside_a_git_repo(
+        self, vfm: Any, tmp_path: Path
+    ) -> None:
+        """No git verdict means validate everything, never silently skip."""
+        (tmp_path / "a.md").write_text("# A")
+        (tmp_path / "b.md").write_text("# B")
+
+        assert len(vfm._collect_md_files([str(tmp_path)])) == 2
+
+    def test_empty_input_short_circuits(self, vfm: Any) -> None:
+        assert vfm._drop_git_ignored([]) == []
+
+    def test_keeps_files_when_git_is_missing(
+        self, vfm: Any, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """An OSError from the git call must not drop files from validation."""
+
+        def _boom(*_args: object, **_kwargs: object) -> object:
+            raise OSError("git not found")
+
+        monkeypatch.setattr(subprocess, "run", _boom)
+        files = [tmp_path / "a.md"]
+        assert vfm._drop_git_ignored(files) == files
+
+    def test_sends_git_forward_slash_paths_regardless_of_host_separator(
+        self, vfm: Any, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """The stdin payload must use POSIX separators, never str(Path).
+
+        On Windows, str(Path) renders native backslashes; text piped through
+        ``git check-ignore --stdin`` never passes through the argv-level
+        backslash-to-slash normalization Git for Windows applies to
+        command-line arguments, so a backslash path silently fails to match
+        forward-slash .gitignore patterns. Pinning the stdin payload to
+        as_posix() output is what keeps this working on every host OS.
+        """
+        captured: dict[str, Any] = {}
+
+        def _fake_run(*_args: object, **kwargs: object) -> Any:
+            captured.update(kwargs)
+
+            class _Result:
+                returncode = 1
+                stdout = ""
+
+            return _Result()
+
+        monkeypatch.setattr(subprocess, "run", _fake_run)
+        nested = tmp_path / "generated"
+        nested.mkdir()
+        files = [nested / "report.md"]
+
+        vfm._drop_git_ignored(files)
+
+        assert "\\" not in captured["input"]
+        assert captured["input"] == files[0].as_posix()
+
+    def test_handles_non_ascii_filenames(self, vfm: Any, tmp_path: Path) -> None:
+        """Non-ASCII filenames round-trip through the explicit utf-8 decode."""
+        self._git_repo(tmp_path, "generated/\n")
+        (tmp_path / "keep.md").write_text("# Keep")
+        generated = tmp_path / "generated"
+        generated.mkdir()
+        (generated / "rapport-été.md").write_text("# Rapport")
+
+        result = vfm._collect_md_files([str(tmp_path)])
+        result_names = {p.name for p in result}
+        assert "keep.md" in result_names
+        assert "rapport-été.md" not in result_names
 
 
 # ---------------------------------------------------------------------------
