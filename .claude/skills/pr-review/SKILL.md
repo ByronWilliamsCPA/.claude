@@ -60,26 +60,45 @@ review completion menu), or standalone on any PR.
 Each workflow file is a spine: it keeps every `## Step N` heading and, under
 each, a short statement of what that step consumes, produces, and decides. The
 long-form procedure for the larger steps lives in `context/`, reached by a
-`**Full procedure:**` pointer in the stub. Read the spine to orchestrate; open
-a context file when you are about to execute that step.
+`**Full procedure:**` pointer in the stub.
+
+**Loading rule. This is a cost control, and it is the whole point of the
+split.** The orchestrator reads the spine and nothing else by default. Every
+`**Full procedure:**` pointer names its reader:
+
+- *pass the path* means the step is executed by a dispatched agent. Put the
+  path in the dispatch brief and let the agent open it. The orchestrator must
+  not read the file itself: that pays for the same tokens twice, once in the
+  orchestrator's context and once in the agent's, and buys nothing, because the
+  agent is the one running the procedure.
+- *read before executing* means the orchestrator runs this step itself. It
+  opens the file when it reaches that step, not at the top of the run.
+
+Both workflows are linear, so every step runs on every invocation. Eagerly
+opening all ten context files therefore costs *more* than the single undivided
+file did before the split (roughly 25k tokens against the old 17k). Honouring
+the pointers puts about 10k in the orchestrator and pushes the remaining 12k
+into agents that were being dispatched anyway. Opening a context file for a
+step you are about to delegate is the specific mistake that turns this refactor
+into a regression.
 
 Step numbering is the addressing scheme for both workflows and is load-bearing:
 roughly 125 internal references point at those headings. Never renumber,
 re-letter, or merge a step, and never move a `Step` heading out of its spine.
 Move bodies, not anchors.
 
-| Context file | Backs |
-| --- | --- |
-| `context/github-api-idioms.md` | Both workflows. GitHub API behaviours that have each caused a real defect. |
-| `context/pr-metadata.md` | pr-review Steps 2, 2d, 2e, 2f |
-| `context/change-classification.md` | pr-review Step 3 |
-| `context/quality-gates.md` | pr-review Step 4 |
-| `context/review-agents.md` | pr-review Step 5, the agent roster |
-| `context/finding-validation.md` | pr-review Steps 6 and 7b |
-| `context/issue-gathering.md` | pr-fix Step 1 |
-| `context/fix-execution.md` | pr-fix Step 4 |
-| `context/fix-verification.md` | pr-fix Step 5 |
-| `context/watch-refix-loop.md` | pr-fix Step 9 |
+| Context file | Backs | Read by |
+| --- | --- | --- |
+| `context/github-api-idioms.md` | Both workflows. GitHub API behaviours that have each caused a real defect. | whoever writes the call, orchestrator or agent |
+| `context/pr-metadata.md` | pr-review Steps 2, 2d, 2e, 2f | orchestrator |
+| `context/change-classification.md` | pr-review Step 3 | the Haiku agent, by path |
+| `context/quality-gates.md` | pr-review Step 4 | orchestrator |
+| `context/review-agents.md` | pr-review Step 5, the agent roster | Agents A-M, by path |
+| `context/finding-validation.md` | pr-review Steps 6 and 7b | Step 6 half: the Haiku agents, by path. Step 7b half: orchestrator |
+| `context/issue-gathering.md` | pr-fix Step 1 | orchestrator |
+| `context/fix-execution.md` | pr-fix Step 4 | orchestrator |
+| `context/fix-verification.md` | pr-fix Step 5 | orchestrator |
+| `context/watch-refix-loop.md` | pr-fix Step 9 | orchestrator |
 
 Read `context/github-api-idioms.md` before writing any code that touches
 reviewer identity, `mergeStateStatus`, renamed files, scanner exit codes, or an

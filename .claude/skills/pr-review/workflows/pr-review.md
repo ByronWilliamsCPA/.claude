@@ -137,7 +137,7 @@ required-check case and the dangling-submodule case.
 For the shared `mergeStateStatus` settle-and-reject idiom this step depends on, see
 [context/github-api-idioms.md](../context/github-api-idioms.md).
 
-**Full procedure:** [context/pr-metadata.md](../context/pr-metadata.md)
+**Full procedure (orchestrator runs this step; read when you reach it, not before):** [context/pr-metadata.md](../context/pr-metadata.md)
 
 ---
 
@@ -155,7 +155,7 @@ a scan-intensity dial and a HOLD bias on confirmed regressions.
 `{commits_behind: 0, age_days: 0}` and note staleness as unavailable rather than
 blocking the workflow.
 
-**Full procedure:** [context/pr-metadata.md](../context/pr-metadata.md)
+**Full procedure (orchestrator runs this step; read when you reach it, not before):** [context/pr-metadata.md](../context/pr-metadata.md)
 
 ---
 
@@ -175,7 +175,7 @@ revert risk (merged PR postdating merge-base) or a collision/duplicate-work risk
 PR); apply the dunder/`test_*`/hook-name exclusions before treating a symbol match as a
 collision.
 
-**Full procedure:** [context/pr-metadata.md](../context/pr-metadata.md)
+**Full procedure (orchestrator runs this step; read when you reach it, not before):** [context/pr-metadata.md](../context/pr-metadata.md)
 
 ---
 
@@ -196,7 +196,7 @@ salvage list instead of spawning the full agent fleet; only genuine conflicts an
 branch-regresses-base findings are actionable, a merely-behind-base file is a
 non-finding.
 
-**Full procedure:** [context/pr-metadata.md](../context/pr-metadata.md)
+**Full procedure (orchestrator runs this step; read when you reach it, not before):** [context/pr-metadata.md](../context/pr-metadata.md)
 
 ---
 
@@ -219,7 +219,7 @@ guarantees and reusable-workflow ref reachability where applicable.
 For the shared renamed-file detection idiom (REST `previous_filename`, not GraphQL),
 see [context/github-api-idioms.md](../context/github-api-idioms.md).
 
-**Full procedure:** [context/change-classification.md](../context/change-classification.md)
+**Full procedure (pass this path to the dispatched agent in its brief; the orchestrator does not read it):** [context/change-classification.md](../context/change-classification.md)
 
 ---
 
@@ -242,7 +242,7 @@ silently imply full coverage.
 For the shared "unreachable MCP server is not an empty result set" idiom, see
 [context/github-api-idioms.md](../context/github-api-idioms.md).
 
-**Full procedure:** [context/quality-gates.md](../context/quality-gates.md)
+**Full procedure (orchestrator runs this step; read when you reach it, not before):** [context/quality-gates.md](../context/quality-gates.md)
 
 ---
 
@@ -267,7 +267,7 @@ chunking vs. hard stop at 500 lines) before spawning agents when the diff exceed
 lines; never silently truncate; instruct every agent not to dismiss findings as
 trivial, since confidence scoring happens downstream in Step 6.
 
-**Full procedure:** [context/review-agents.md](../context/review-agents.md)
+**Full procedure (pass this path to the dispatched agent in its brief; the orchestrator does not read it):** [context/review-agents.md](../context/review-agents.md)
 
 **Execution hygiene applies to every shell command this workflow or its dispatched agents
 run, not only the one block that currently quotes defensively** (the `&`-in-URL guard on
@@ -306,7 +306,7 @@ capped at Important) and the Agent C/D historical-context cap (20, lifted only b
 cited commit SHA or by Agent M's source); do not discard any finding regardless of
 tier.
 
-**Full procedure:** [context/finding-validation.md](../context/finding-validation.md)
+**Full procedure (pass this path to the dispatched agent in its brief; the orchestrator does not read it):** [context/finding-validation.md](../context/finding-validation.md#step-6-detail-confidence-scoring-parallel-haiku-agents)
 
 ---
 
@@ -352,7 +352,7 @@ third-party-tool and cross-repo claims, and only then cross-model consensus via 
 findings from Agent I). Treat convergence among your own dispatched agents as zero
 additional evidence when their claim depends on state outside the diff.
 
-**Full procedure:** [context/finding-validation.md](../context/finding-validation.md)
+**Full procedure (orchestrator runs this step; read when you reach it, not before):** [context/finding-validation.md](../context/finding-validation.md#step-7b-detail-validate-critical-findings)
 
 ---
 
