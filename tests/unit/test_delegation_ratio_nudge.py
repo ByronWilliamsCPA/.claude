@@ -117,6 +117,22 @@ class TestScan:
         assert state["mutations"] == 1
         assert state["offset"] > 0
 
+    def test_shrink_resets_rearm_baseline(self, tmp_path: Path) -> None:
+        """A rotation must not leave a stale last_fire_at that starves re-arm.
+
+        Comparing a freshly-recounted mutation total against a last_fire_at
+        measured under the old count would silently require far more new
+        mutations than REARM_AFTER before the nudge could fire again.
+        """
+        t = _transcript(tmp_path, [_assistant(["Edit"]) for _ in range(20)])
+        state = nudge.scan(t, _fresh())
+        state["last_fire_at"] = 20  # a nudge fired at the old mutation count
+
+        _transcript(tmp_path, [_assistant(["Edit"]) for _ in range(5)])
+        state = nudge.scan(t, state)
+        assert state["mutations"] == 5
+        assert state["last_fire_at"] == -1
+
     def test_missing_transcript_returns_state_unchanged(self, tmp_path: Path) -> None:
         state = _fresh()
         result = nudge.scan(tmp_path / "absent.jsonl", state)
@@ -165,6 +181,44 @@ class TestShouldFire:
             "fires": nudge.MAX_FIRES,
         }
         assert nudge.should_fire(state) is False
+
+
+class TestLoadState:
+    """Reading persisted state must fail open, never raise."""
+
+    def test_recovers_from_non_integer_values(self, tmp_path: Path) -> None:
+        """A truncated write or manual edit can leave non-integer values.
+
+        int() on None, a list, or a non-numeric string raises TypeError or
+        ValueError; load_state must fall back per-field instead of
+        propagating that, or the hook stops failing open.
+        """
+        path = tmp_path / "state.json"
+        path.write_text(
+            json.dumps(
+                {
+                    "offset": "not-a-number",
+                    "mutations": None,
+                    "dispatches": [1, 2],
+                    "last_fire_at": -1,
+                    "fires": 0,
+                }
+            ),
+            encoding="utf-8",
+        )
+        state = nudge.load_state(path)
+        assert state["offset"] == 0
+        assert state["mutations"] == 0
+        assert state["dispatches"] == 0
+        assert state["last_fire_at"] == -1
+        assert state["fires"] == 0
+
+    def test_recovers_from_non_dict_json(self, tmp_path: Path) -> None:
+        path = tmp_path / "state.json"
+        path.write_text(json.dumps([1, 2, 3]), encoding="utf-8")
+        state = nudge.load_state(path)
+        assert state["offset"] == 0
+        assert state["mutations"] == 0
 
 
 class TestStateFile:
@@ -263,3 +317,35 @@ class TestMain:
         state_dir = tmp_path / "state"
         assert self._run(monkeypatch, capsys, payload, state_dir) != {}
         assert self._run(monkeypatch, capsys, payload, state_dir) == {}
+
+    def test_recovers_from_malformed_persisted_state(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        capsys: pytest.CaptureFixture[str],
+        tmp_path: Path,
+    ) -> None:
+        """A malformed on-disk state file must not raise through main().
+
+        TestMain calls nudge.main() directly, bypassing the __main__
+        catch-all at the bottom of the script, so main() itself must
+        tolerate a state file holding non-integer values (a truncated
+        write or manual edit) rather than relying on that outer guard.
+        """
+        state_dir = tmp_path / "state"
+        state_dir.mkdir()
+        (state_dir / "abc").write_text(
+            json.dumps(
+                {
+                    "offset": "bad",
+                    "mutations": None,
+                    "dispatches": [],
+                    "last_fire_at": -1,
+                    "fires": 0,
+                }
+            ),
+            encoding="utf-8",
+        )
+        t = _transcript(tmp_path, [_assistant(["Edit"]) for _ in range(20)])
+        payload = json.dumps({"session_id": "abc", "transcript_path": str(t)})
+        out = self._run(monkeypatch, capsys, payload, state_dir)
+        assert out["hookSpecificOutput"]["hookEventName"] == "PostToolUse"

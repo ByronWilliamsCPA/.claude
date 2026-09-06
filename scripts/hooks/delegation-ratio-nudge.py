@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 """PostToolUse hook: nudge when the orchestrator is doing implementation itself.
 
-Registered under hooks.PostToolUse for `Edit|Write|NotebookEdit`. Canonical
-source is hooks.json in this repo; setup.sh merge_hooks() regenerates the live
-~/.claude/settings.json block from it, so edit hooks.json rather than the live
-file.
+Registered under hooks.PostToolUse for `Edit|Write|MultiEdit|NotebookEdit`.
+Canonical source is hooks.json in this repo; setup.sh merge_hooks()
+regenerates the live ~/.claude/settings.json block from it, so edit
+hooks.json rather than the live file.
 
 Why this exists as a hook and not as prose: the CLAUDE.md delegation rule is
 already stated at session start by scripts/hooks/delegation-reminder.sh, but a
 session-start reminder cannot observe what the session then does. Transcript
-analysis across 16 sessions found the failure bimodal rather than gradual: six
-sessions ran at 3.8-to-infinity main-thread edits per subagent dispatch while
+analysis across 17 sessions found the failure bimodal rather than gradual: six
+sessions ran at 3.6-to-infinity main-thread edits per subagent dispatch while
 six others ran at 0.4-to-2.0, in the same repos with the same tooling. One
 session made 122 main-thread edits and dispatched nothing at all. A per-session
 habit that either engages early or never does needs a mid-session trigger.
@@ -109,6 +109,20 @@ def state_file(session_id: str) -> Path | None:
     return STATE_DIR / safe_id
 
 
+def _safe_int(value: object, fallback: int) -> int:
+    """Coerce value to int, falling back when it cannot be represented as one.
+
+    A truncated write or a manual edit can leave a value that is valid JSON
+    but not an int (None, a list, a non-numeric string). Falling back here
+    keeps load_state's fail-open contract; letting int() raise would surface
+    on every subsequent Edit/Write until the state file is deleted by hand.
+    """
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return fallback
+
+
 def load_state(path: Path) -> dict[str, int]:
     """Read scan state, returning a zeroed state when absent or invalid.
 
@@ -116,7 +130,7 @@ def load_state(path: Path) -> dict[str, int]:
         path: State file path.
 
     Returns:
-        Mapping with offset, mutations, dispatches, and last_band keys.
+        Mapping with offset, mutations, dispatches, last_fire_at, and fires keys.
     """
     fresh = {
         "offset": 0,
@@ -131,7 +145,11 @@ def load_state(path: Path) -> dict[str, int]:
         return fresh
     if not isinstance(raw, dict):
         return fresh
-    return {key: int(raw.get(key, fallback)) for key, fallback in fresh.items()}
+
+    return {
+        key: _safe_int(raw.get(key, fallback), fallback)
+        for key, fallback in fresh.items()
+    }
 
 
 def save_state(path: Path, state: dict[str, int]) -> None:
@@ -196,7 +214,14 @@ def scan(transcript: Path, state: dict[str, int]) -> dict[str, int]:
     # A transcript smaller than the stored offset was rotated or compacted.
     # Trusting the offset would silently skip the new content, so recount.
     if size < updated["offset"]:
-        updated.update({"offset": 0, "mutations": 0, "dispatches": 0})
+        # last_fire_at was measured against the pre-rotation mutation count.
+        # Resetting mutations to recount from scratch while leaving
+        # last_fire_at intact would compare a small, freshly-recounted total
+        # against a stale high-water mark, silently requiring far more new
+        # mutations than REARM_AFTER to re-arm for the rest of the session.
+        updated.update(
+            {"offset": 0, "mutations": 0, "dispatches": 0, "last_fire_at": -1}
+        )
 
     try:
         with transcript.open("rb") as handle:
@@ -328,5 +353,8 @@ if __name__ == "__main__":
         try:
             print(json.dumps({}))
         except OSError:
+            # Stdout itself is broken (e.g. a closed pipe from the harness
+            # racing this hook's exit). There is no channel left to report
+            # through, and sys.exit(0) below still keeps the hook fail-open.
             pass
         sys.exit(0)
