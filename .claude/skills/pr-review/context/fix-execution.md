@@ -50,6 +50,22 @@ chars) plus the combined form `# #ASSUME: ... #VERIFY: ...` almost always exceed
 yamllint 120-char line-length limit at any indentation depth beyond a few characters, so the
 qlty/yamllint gate fails on a marker that would fit fine in a prose comment.
 
+**A fix pass invalidates its own downstream references and outward claims mid-pass.**
+Editing one instance of a fact, a count, a line-anchor citation, a restated value, an
+outward claim such as "N findings remain" or "all tests pass", does not update every other
+place that states the same fact. After any edit that changes something restated elsewhere
+(a summary table, a front-matter count, a cross-reference line number, a PR-body claim
+about test counts or CI status), sweep every location that restates it and regenerate the
+claim from the post-edit state, not from a value captured earlier in the pass. This applies
+to behavioral claims as much as numeric ones: a PR-body sentence like "exits nonzero on any
+threshold miss" is exactly the kind of assertion a fix for a Critical finding is most likely
+to falsify, and a reviewer who trusts the stale prose will not re-derive the real behavior.
+When a claim's truth depends on work still to come later in the same pass (a test count
+while more tests are still being added), sequence its correction as one of the last actions
+before the final verification gate, not the moment the discrepancy is first noticed;
+correcting it early and then continuing to change the underlying facts silently reintroduces
+the same staleness the correction was meant to fix.
+
 ## Priority 1: CI failures
 
 For each failing check, apply the fix strategy from the Step 1a table.
@@ -68,14 +84,28 @@ and `uv.lock` and recreate the AG04 trust gap that Step 5a's tiers close).
   the test-fix category as "verification deferred to Step 5a" and
   proceed to the next category.
 
-**Do NOT hand-edit `CHANGELOG.md` and do NOT apply changelog-skip labels.** The changelog
-is generated at release time by python-semantic-release from Conventional Commits; there is
-no per-PR changelog gate to satisfy. The org `Changelog Check` job is a deprecated no-op
-that always passes (see `ByronWilliamsCPA/.github` PR #288), so a red required "Changelog"
-check on any current repo indicates a stale pinned workflow ref, not a missing entry:
-diagnose it as a workflow-load/ref issue, never by fabricating a `[Unreleased]` entry. The
-release-impacting signal lives in the PR title and commit types, which the commit-type
-validation below enforces.
+**Verify per-repo before assuming the changelog gate is a no-op.** The changelog is
+generated at release time by python-semantic-release from Conventional Commits, and most
+repos in this org have no per-PR changelog gate to satisfy: the org `Changelog Check` job
+is a deprecated no-op that always passes (see `ByronWilliamsCPA/.github` PR #288). This is
+not universal, and the blanket claim that a red Changelog check "always" means a stale
+pinned ref is falsified by at least one repo: cyo-adventure defines its own live local
+`changelog` job that greps for a `CHANGELOG.md` entry and fails the PR without one, with an
+`if:` condition that explicitly sanctions a `skip-changelog` label. Before diagnosing a red
+required Changelog or Dependency-and-Standards check, grep the repo's own
+`.github/workflows/*.yml` for a locally-defined `changelog` job.
+
+- If none exists, the stale-ref diagnosis stands: do not hand-edit `CHANGELOG.md`, do not
+  apply changelog-skip labels, and never fabricate a `[Unreleased]` entry; diagnose it as a
+  workflow-load/ref issue instead.
+- If a live local job exists, still do NOT hand-edit `CHANGELOG.md`. Apply the sanctioned
+  `skip-changelog` label instead, and mind the ordering: the job reads labels from the
+  triggering event's payload, not live PR state, so the label must be applied *before* the
+  next push or synchronize. Adding the label to an already-red run and waiting for it to
+  "re-evaluate" is a silent no-op; nothing re-runs until a fresh event carries the label.
+
+For repos without a local gate, the release-impacting signal lives in the PR title and
+commit types, which the commit-type validation below enforces.
 
 **Invalid commit-type fixes (non-interactive reword):** When a commit on the branch uses
 an invalid or non-allowed Conventional Commit type (a Critical CLAUDE.md violation),
@@ -145,6 +175,22 @@ catch this. Treat a manifest/lockfile desync as a blocking condition:
    a required one. If the scan surfaces advisories, patch them (or revert) before pushing;
    never push a regenerated lockfile without re-running the dependency scanner that consumes
    it.
+
+**Sequential-ID register collisions: check concurrent branches before appending.** A fix
+that appends a row to an append-only, sequentially-numbered register (a standards
+manifest, a numbered lessons log, an ADR index) can collide with an identical append
+landed on a sibling branch: both branches read the same "next" ID, both commit it, and
+per-branch CI stays green because nothing detects the collision until the second branch
+merges and the ID space is scanned as a whole. A mechanical renumber to resolve the
+collision is worse than the collision itself: it can silently falsify any row whose own
+text quotes the shifted ID range (a cross-reference, a "rows 40-45" summary), and the
+renumber succeeds syntactically, so this is easy to miss. Before appending: (1) diff the
+register file against `origin/{BASE_BRANCH}`, since `mergeable` describes the diff as it
+stands and says nothing about a conflict the append is about to create, and merge the base
+in first if it is ahead in that file; (2) scan other open PRs touching the same register
+file for an in-flight ID claim in the same range. Prefer a non-sequential or
+content-derived ID scheme in new registers to remove this class of collision at the
+source.
 
 ## Priority 2: SonarQube findings
 
@@ -240,6 +286,17 @@ For each unresolved actionable comment:
    features not requested. When the root cause fix touches more than 3 files not in
    the original diff, pause and confirm with the user before proceeding.
 
+**Trace the mechanism and blast radius before fixing, not just the root-cause file.** A
+root-cause fix that stops at "the function now behaves correctly" can still leave the
+defect reachable. Enumerate every caller, every test double standing in for the changed
+code, any generated artifact derived from it (a snapshot, a lockfile, a compiled schema),
+any mirror instance of the same logic copied elsewhere in the repo, and any state reachable
+through the change but not exercised by the review that found it. An unguarded
+out-of-diff caller, or a hand-rolled test double built against the old (looser) contract,
+survives a fix that claims to close the whole class and reopens the same finding on the
+next pass. Treat "how many places does this reach" as part of the fix's cost to evaluate
+before committing to it, not as a follow-up discovered later.
+
 **Documenting a declined recommendation:** When the fix DECLINES a recommendation (keeps
 the current posture deliberately), the documentation must state the decision first, then
 scope any mitigation to the audience it applies to. Write (a) that the declined posture
@@ -268,6 +325,17 @@ their false positives.
   full file (not just the hunk) and honor a rationale documented in the enclosing function or
   module docstring. A documented deliberate non-catch is not a defect; do not implement a fix
   that contradicts it.
+- *Every stated fact needs re-derivation at its own pinned reference, not trust in the
+  finding's transcription.* A finding's stated file path, line number, occurrence count,
+  granularity (single line vs whole block), and scope (this file vs every file matching a
+  pattern) are each a separate claim, and each can be wrong independently of the others.
+  Before editing, open the finding's own cited reference (a commit SHA, a specific line, a
+  rule ID) and re-derive every one of these facts directly, rather than transcribing the
+  finding's numbers into the edit. A stated line number applied verbatim, when the file has
+  shifted since the finding was generated, writes a correct-looking edit into the wrong
+  place. When a finding names more than one call site, re-derive the remedy at each site
+  independently rather than applying one fix uniformly: a shared API does not imply shared
+  semantics, and the same default can be right at one call site and wrong at another.
 
 **Agent-supplied test assertion verification:** When applying tests from the pr-test-analyzer
 agent or any agent-generated test skeleton, treat assertions as hypotheses, not ground truth.

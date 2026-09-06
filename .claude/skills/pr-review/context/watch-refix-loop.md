@@ -40,9 +40,35 @@ Poll in parallel every 60 seconds:
    `{success, skipped, neutral, cancelled, failure}`). Treat an empty or failed poll
    response as still-active, never as done.
 
-   **Debounce the exit.** Do not exit on the first all-terminal poll. Require EITHER a
-   minimum elapsed time of 2 minutes since the push, OR two consecutive all-terminal
-   polls, before declaring CI settled.
+   **Debounce the exit.** Do not exit on the first all-terminal poll. Require BOTH a
+   minimum elapsed time of 2 minutes since the push AND two consecutive all-terminal
+   polls before declaring CI settled; treating these as alternatives lets the faster
+   clause win every time, and even the conjunction is not enough on its own. Check
+   registration is progressive, not a burst followed by execution, so a plateau in the
+   middle of registration is indistinguishable from the end of it: one observed run
+   climbed 37 -> 40 -> 43 -> 43 -> 43 -> 43 -> 43 -> 44 -> 45 -> 47, and a floor taken
+   after five stable-at-43 polls was still short of the real total. On top of the
+   elapsed-time-and-consecutive-polls conjunction, settlement additionally requires the
+   known REQUIRED-context set to be both PRESENT (has a status on `PUSH_SHA`) and
+   TERMINAL. A required context that has not been created yet is not a passing check;
+   "every check that has appeared so far is green" is the wrong terminal verdict while a
+   required context is still missing, and is exactly what produces a false "all clear"
+   report on a PR that is still mid-registration.
+
+   **Re-anchor to the live head every iteration, not just at push time.** `PUSH_SHA` is
+   captured once, before the loop, for attribution: it labels which push produced which
+   findings. It is not safe to keep polling that fixed value for liveness. If the head
+   advances mid-watch (a co-author pushes, GitHub's auto-update-branch commits, a bot
+   commits), the old SHA's checks are superseded or cancelled, and a query against the
+   stale value returns an empty or MISSING set for every required context; that reads
+   exactly like a phantom-required-check block and alarms on a PR that is actually
+   running fine. At the top of every poll, re-resolve
+   `gh pr view --json headRefOid --jq '.headRefOid'` and compare it to the SHA the loop
+   is currently anchored to. If it differs, log `head advanced {old} -> {new} (external
+   push)`, re-anchor every subsequent check-runs query to the new SHA, and keep the
+   original `PUSH_SHA` only as the attribution label for the findings that push produced.
+   Never conclude "required check missing" from a query against a SHA that is no longer
+   the head.
 
 2. **Review comments:** `gh api repos/{OWNER}/{REPO}/pulls/{PR_NUMBER}/comments --jq 'length'`
    - Track: comment count stabilizes (same count for 2 consecutive polls)
@@ -90,6 +116,30 @@ Mark comments with an older `commit_id` AND whose cited content is absent from
 current HEAD as `STALE`. Include them in the Phase C summary as "Reply-only
 ({N} stale comments already addressed in {PUSH_SHA})" rather than as new
 findings requiring a code-change cycle.
+
+**Comment identity is not one ID.** A single review comment/thread carries at least
+three distinct, non-interchangeable identifiers: the comment's REST numeric
+`id`/`databaseId` (what the reply endpoint
+`POST .../pulls/{PR_NUMBER}/comments/{comment_id}/replies` requires in its URL path),
+the comment's GraphQL node ID (`PRRC_...`, what `reviewThreads.nodes.comments.nodes.id`
+returns), and the thread's own GraphQL node ID (`PRRT_...`, required by the
+`resolveReviewThread` mutation and distinct from either comment ID). Using the GraphQL
+comment node ID where the REST reply endpoint expects the numeric `id` fails with a
+plain 404 that gives no hint which of the three was wrong. When building the stale-
+comment filter above, or replying to a thread, request `databaseId` (or the numeric
+`id`) directly in the query rather than assuming an ID already on hand from a different
+call is interchangeable with the one the next call needs.
+
+**`commit_id` re-anchors and `.line` goes null once a push moves a comment.** GitHub
+re-anchors an existing review comment's `commit_id` to the new head after a push, and
+once a push invalidates a comment's diff position (the surrounding lines changed, or the
+comment is now outdated), `.line` returns null while `original_line` keeps the pre-push
+value. A stale-comment filter keyed on `.line` from the original Step 1 gathering pass
+therefore matches nothing on a re-anchored comment: it either miscounts the comment as a
+brand-new finding (if it resurfaces under the new `commit_id`) or loses it entirely (if
+the lookup keys on the old line and finds no match). Once a push has occurred, filter
+and match by comment id, not by path+line, and treat a null `.line` as "outdated, use
+`original_line` for context only," never as "absent."
 
 **Reusable-workflow startup_failure (no jobs, no logs).** A `completed/startup_failure`
 conclusion (distinct from `completed/failure`) means no job ran, so logs and annotations

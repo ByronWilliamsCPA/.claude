@@ -66,6 +66,18 @@ For each check with `conclusion` not `success` and not `neutral`, do the followi
 drilling to the failing step (e.g., "Dependency vulnerability scan" / pip-audit) reveals
 the real, often diff-independent, cause.
 
+**Establish causation before naming a cause.** The failing-step-name and scanner-exit-
+code rules above both exist to serve one goal: know what actually failed before deciding
+why. Do not name a cause from the first alarming line a log grep returns, and do not
+write a grep that can only confirm a hypothesis already formed, since a search for the
+term you expect to find will find it whether or not it is the real cause. Use the jobs
+API's own structured per-step conclusion (`.jobs[].steps[].conclusion`) as the oracle for
+WHAT failed, then read only that step's output, or its artifact, for WHY. When two or
+more checks share a display name, resolve each to its `workflow_name` and failing step
+via the jobs API before classifying or tiering either; the name alone cannot
+disambiguate them, and attributing a finding to the wrong sibling check misdirects the
+fix.
+
 **For an auth-suspected failure, read the input echo before assuming a missing secret.**
 GitHub renders a masked `name: ***` in an Actions log only for a registered, NON-EMPTY
 secret (an unset secret prints nothing after the colon). A masked `***` is therefore
@@ -92,6 +104,20 @@ as a signal to go to the artifact or local reproduction, never as the finding it
 See also [context/github-api-idioms.md](github-api-idioms.md) ("Scanner exit
 codes: a verdict, not a diagnosis") for the cross-workflow version of the
 scanner-artifact rule above.
+
+**GitGuardian findings are history-scoped and incident-stateful, not tree-scoped.** The
+table above marks GitGuardian "Alert user only, never auto-fix" for a different reason
+than the usual code-review caution: the check cannot be cleared by iterating code in the
+current tree. GitGuardian scans every commit in the PR's history, not just the tip, so
+removing a flagged literal at HEAD does nothing if it was introduced earlier; the secret
+has to be removed at its point of introduction (an autosquash fixup into the introducing
+commit, or a full history rewrite). Separately, the GitHub App check reflects unresolved
+incident state on GitGuardian's own dashboard: once an incident triggers, a fresh scan of
+clean code does not auto-close it, only a dashboard action (resolve or ignore) or a
+history rewrite does. Recognize the shape early: if the net PR diff has no literal
+secret and the check is still red, further force-pushes will not clear it; hand the
+dashboard action to the user rather than iterating. The check is typically non-required,
+so the PR stays mergeable while this is pending.
 
 ## 1b. Review comments
 

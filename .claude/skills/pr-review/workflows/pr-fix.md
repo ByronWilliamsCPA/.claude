@@ -39,6 +39,18 @@ single-model verification with the `doubt-driven-development` skill and tag the
 output `VERIFIED-SINGLE-MODEL` so downstream readers know decorrelation was not
 achieved.
 
+**Configuration drift flag (`PANEL_MODEL`).** The value above
+(`google/gemini-2.5-pro-preview`) is a `-pro` variant, which conflicts with
+standing guidance elsewhere in this project to avoid `-pro` models. It has not
+been re-validated against the current OpenRouter roster and may no longer
+resolve. Do not silently substitute a replacement model ID on the strength of
+this note: an unverified guess that happens to look current fails silently at
+call time, which is worse than a value flagged as stale. Before the next
+invocation that depends on this line, check the live roster (PAL `listmodels`,
+or `Skill("panel")`'s own listing) and update it to a currently-listed,
+non-`-pro`, cross-vendor model; that substitution is a decision for whoever
+runs the check, not something to resolve here by guessing.
+
 ---
 
 ## Step 0: Parse URL and fetch metadata
@@ -692,6 +704,59 @@ Which CI structure should apply? (show branch side / show main side / abort)
 
 If rebase succeeds (no identity conflicts), continue with the selected push option.
 
+**Conflict-free is not correct: verify semantically before trusting a clean resolution.**
+Absence of `<<<<<<<` conflict markers after a merge or rebase is not evidence the result
+is correct. Git resolves non-overlapping hunks automatically even when the surviving hunk
+contradicts what the removed hunk intended, so a clean three-way merge can silently
+reinstate lines a sibling PR deliberately removed. After any merge or rebase completes
+without reported conflicts, re-read the changed regions against all three stages (ours,
+theirs, and the merge base), not just against the absence of markers, and confirm the
+result still reflects what each side intended rather than merely what git could
+mechanically combine.
+
+Two `--onto` recipes handle the cases a plain rebase or merge mishandles:
+
+- **Stacked branch whose parent PR squash-merged:** a plain rebase onto the new base
+  replays this branch's own commits alongside content the parent already landed under a
+  different SHA, producing phantom add/add conflicts on every duplicate commit. Rebase
+  only the branch's unique range instead: `git rebase --onto origin/{BASE_BRANCH}
+  {OLD_BASE_TIP} {HEAD_BRANCH}`, where `{OLD_BASE_TIP}` is the last commit shared with the
+  parent branch before it diverged. Duplicate commits become empty and auto-drop; the
+  genuinely new work applies cleanly.
+- **Branch with no shared ancestry to the current base at all** (`git merge-base
+  --is-ancestor` finds nothing, typically after a squash-merged sibling): ahead/behind
+  commit counts are meaningless across a disjoint history, so a direct diff against
+  `origin/{BASE_BRANCH}` is the only reliable check. Classify each differing file by
+  direction: branch-ahead is a keep candidate, branch-behind is noise the rebase must not
+  reintroduce.
+
+**Re-verify branch ownership immediately before every mutating step, not once at
+worktree setup.** Step 3's worktree-head vs PR-head check is a snapshot taken at creation
+time; a concurrent session, the PR author, or a bot can push to the same branch at any
+point during Steps 4 through 8. Re-fetch `origin/{HEAD_BRANCH}` and diff it against the
+worktree's recorded base immediately before each of: applying fixes (Step 4), committing
+(Step 6), and pushing (below), not only once at the start. A rejected push is evidence of
+a live concurrent writer, not evidence the PR was superseded or abandoned; treat it as a
+signal to pause and diff the new remote commits against the fix already in hand, never as
+license to force past it.
+
+**Force-push safety: `--force-with-lease` alone is not sufficient.** The lease compares
+against the *local* remote-tracking ref (`refs/remotes/origin/{HEAD_BRANCH}`), not against
+live remote state. If that ref was never fetched in the current worktree (only
+`{BASE_BRANCH}` was fetched, which is exactly what the rebase check above does), the lease
+is computed against stale or absent data and passes even though the real remote has moved.
+This is not theoretical: on this repo, a `--force-with-lease` push destroyed a concurrent
+session's review-fix commit and merge commit on PR #288 (2026-08-03) for this exact
+reason. The corrected sequence has two mandatory parts, and the first is load-bearing:
+
+1. `git fetch origin {HEAD_BRANCH}` (the branch itself, immediately before the push, not
+   the earlier `{BASE_BRANCH}` fetch from the rebase check above) so the lease is computed
+   against current remote state; then `--force-with-lease`, never raw `--force`.
+2. Before force-pushing, enumerate other worktrees on the same branch
+   (`git worktree list`) and check each for unpushed commits
+   (`git -C <path> log --oneline origin/{HEAD_BRANCH}..HEAD`). If any hold unpushed
+   work, stop and surface it; do not force-push over a session that has not published yet.
+
 ---
 
 ## Step 8: Execute chosen option
@@ -851,6 +916,33 @@ green AND there are no new non-stale comments AND `mergeStateStatus` is BLOCKED:
   name, not by resolving threads.
 
 Neither cause is a re-fix cycle. Identify which one applies before acting.
+
+**PR lifecycle sequencing changes what "all-green" means after a push.** Three
+sequencing effects, none of them a code defect, can distort the Phase A/B read:
+
+- **A metadata edit right after a push cancels in-flight checks.** If Step 8 Option 1
+  edits the PR body or title shortly after pushing, the edit fires its own
+  `pull_request: edited` event; workflows with concurrency groups cancel their in-flight
+  run from the push event and re-run under the edit event. The settled rollup then
+  carries CANCELLED entries alongside SUCCESS re-runs of the same check name, and a naive
+  failure count reads CANCELLED as a failure. Before treating any CANCELLED conclusion as
+  a failure, look for a same-named check with a later start time, and corroborate with
+  `mergeStateStatus == CLEAN`, which does not care about superseded rows. Where practical,
+  finish body/title edits before the push rather than after, to avoid generating the
+  duplicate rows at all.
+- **A stacked PR's base can retarget mid-run.** When a stacked PR's parent merges,
+  GitHub retargets the child to the grandparent via an `edited` event. Many
+  `pull_request:` trigger lists cover only `[opened, synchronize, reopened]` and never
+  fire on `edited`, so required contexts can go completely unreported on the retargeted
+  head while unrelated checks stay green. Whenever `BASE_BRANCH` changed since Step 0,
+  confirm every required context actually ran on the *current* head SHA, not just that
+  the visible rollup looks green.
+- **Squash-merge breaks ancestry-based "is this merged" checks.** If any cleanup or
+  supersession judgment in this loop needs to know whether a branch's work already
+  landed, `git branch --merged`, `git cherry`, and ahead/behind counts all false-negative
+  under squash-merge, because the merged commit shares no ancestry with the original
+  branch commits. Use the PR's own merge state (`gh pr view --json state,mergedAt`) or a
+  content diff against the target, never commit-graph ancestry, to decide.
 
 ### Phase C: Automatic re-fix pass (up to 2 cycles)
 
