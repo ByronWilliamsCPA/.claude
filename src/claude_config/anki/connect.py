@@ -94,7 +94,7 @@ class AnkiConnectClient:
 
         Raises:
             AnkiError: ``ANKI_CONNECT_PORT`` is set but is not a valid
-                integer.
+                integer, or is outside the 1-65535 TCP port range.
         """
         raw_port = os.environ.get("ANKI_CONNECT_PORT")
         if raw_port is None:
@@ -109,6 +109,13 @@ class AnkiConnectClient:
                     f"({DEFAULT_PORT}), or fix the value."
                 )
                 raise AnkiError(msg) from exc
+            if not 1 <= port <= 65535:
+                msg = (
+                    "ANKI_CONNECT_PORT must be between 1 and 65535, got "
+                    f"{port}. Unset it to use the add-on default "
+                    f"({DEFAULT_PORT}), or fix the value."
+                )
+                raise AnkiError(msg)
         return cls(
             host=os.environ.get("ANKI_CONNECT_HOST", DEFAULT_HOST),
             port=port,
