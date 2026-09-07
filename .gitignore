@@ -381,3 +381,11 @@ docs/audit/
 
 # Session-specific planning documents (ephemeral, not for sharing)
 docs/superpowers/plans/
+
+# Anki card source must never be committed here: this repo is public and the
+# card content carries a student's course list, lecture cadence and study
+# record. It lives in a separate private repo via ANKI_SOURCE_ROOT.
+# See .claude/skills/anki/context/setup.md
+/anki-source/
+/premed-anki-source/
+*.apkg

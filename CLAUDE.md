@@ -382,6 +382,25 @@ Do not preserve:
 - Exploratory detours that did not inform the final approach
 - Generic restatements of the user's request
 
+## Anki study pipeline
+
+Operator: **Ariannah**, on her own machine. She drafts, reviews and pushes her
+own cards; no one runs the pipeline on her behalf. Decided 2026-09-02; do not
+re-decide it per session.
+
+Two rules that are easy to get wrong:
+
+- **Card content never lands in this repo.** This repo is public. The
+  human-readable card source lives in a separate private repo pointed at by
+  `ANKI_SOURCE_ROOT`. `.gitignore` blocks the obvious paths, but the rule is
+  the rule, not the ignore file.
+- **The draft-then-approve gate is load-bearing.** `anki-cards push` refuses a
+  card file still marked `status: draft`. Never flip that field on her behalf,
+  and never push cards she has not read. Her editing pass is where the learning
+  happens.
+
+Full operating model, card format, and setup: `.claude/skills/anki/`.
+
 ## Global resources
 
 Full agent catalog, skill catalog, and install instructions:
