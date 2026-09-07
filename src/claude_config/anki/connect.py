@@ -86,7 +86,7 @@ def validate_port(port: int, *, source: str = "port") -> int:
     """
     if not 1 <= port <= 65535:
         msg = (
-            f"{source} must be between 1 and 65535, got {port}. Unset it to "
+            f"{source} must be between 1 and 65535, got {port}. Remove it to "
             f"use the add-on default ({DEFAULT_PORT}), or fix the value."
         )
         raise AnkiError(msg)

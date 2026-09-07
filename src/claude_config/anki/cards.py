@@ -419,9 +419,10 @@ def _split_frontmatter(text: str, source: str) -> tuple[str, str]:
         if lines[idx].rstrip(" \t") == "---":
             yaml_text = "\n".join(lines[1:idx])
             body = lines[idx + 1 :]
-            while body and not body[0].strip(" \t"):
-                body.pop(0)
-            return yaml_text, "\n".join(body)
+            first_content = 0
+            while first_content < len(body) and not body[first_content].strip(" \t"):
+                first_content += 1
+            return yaml_text, "\n".join(body[first_content:])
     msg = f"{source}: file must start with a '---' YAML frontmatter block."
     raise CardFormatError(msg)
 
