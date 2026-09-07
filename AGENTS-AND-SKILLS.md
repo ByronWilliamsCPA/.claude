@@ -758,7 +758,7 @@ like me", "writing pipeline", "AI patterns", "will this land".
 
 ### Study Workflows
 
-**[/anki](/.claude/skills/anki/SKILL.md)**
+**[/anki](.claude/skills/anki/SKILL.md)**
 Turns a distilled lecture summary into 10-15 Anki cards and pushes them into the live
 collection over AnkiConnect (add-on `2055492159`, `127.0.0.1:8765`). Writes a reviewable
 markdown card file first and refuses to push until it is marked `approved`; checks each

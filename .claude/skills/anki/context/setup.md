@@ -25,6 +25,7 @@ not go in the `.claude` config repo, which is public: a course list, lecture
 cadence and study record are not things to publish.
 
 ```bash
+mkdir -p ~/dev && cd ~/dev
 gh repo create ByronWilliamsCPA/premed-anki-source --private --clone \
   --description "Card source for the Anki study pipeline"
 cd premed-anki-source
@@ -72,6 +73,14 @@ export ANKI_ROOT_DECK="Ariannah"
 | `ANKI_CONNECT_HOST` | `127.0.0.1` | Only change if Anki runs on another machine. |
 | `ANKI_CONNECT_PORT` | `8765` | Only change if the add-on was reconfigured. |
 | `ANKI_CONNECT_API_KEY` | unset | Only if the add-on's `apiKey` setting was set. |
+
+If Anki runs on another machine, reach it through a secure tunnel (an SSH
+tunnel, Tailscale, or similar), and keep `ANKI_CONNECT_HOST=127.0.0.1` on the
+client pointed at the local end of that tunnel. Do not configure AnkiConnect's
+own `webBindAddress` to listen on a non-loopback address and do not point
+`ANKI_CONNECT_HOST` at a remote IP directly: AnkiConnect speaks plain HTTP with
+no transport encryption, so a direct remote bind exposes card content, every
+AnkiConnect command, and any configured API key to the network.
 
 ## Backup layers
 

@@ -88,6 +88,16 @@ class TestParseBatch:
         with pytest.raises(CardFormatError, match="valid YAML"):
             parse_batch("---\ncourse: [unclosed\n---\n\n## Card 1\n")
 
+    def test_scalar_tags_is_rejected(self):
+        text = VALID.replace("tags: [bisc-220, metabolism]", "tags: bisc-220")
+        with pytest.raises(CardFormatError, match="'tags' must be a YAML list"):
+            parse_batch(text)
+
+    def test_non_list_tags_is_rejected(self):
+        text = VALID.replace("tags: [bisc-220, metabolism]", "tags: 42")
+        with pytest.raises(CardFormatError, match="'tags' must be a YAML list"):
+            parse_batch(text)
+
     def test_scalar_frontmatter_is_rejected(self):
         with pytest.raises(CardFormatError, match="mapping"):
             parse_batch("---\njust a string\n---\n")

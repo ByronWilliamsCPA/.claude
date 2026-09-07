@@ -6,6 +6,7 @@ from claude_config.anki.connect import (
     API_VERSION,
     AnkiActionError,
     AnkiConnectClient,
+    AnkiError,
     AnkiProtocolError,
     AnkiUnreachableError,
 )
@@ -160,6 +161,22 @@ class TestFromEnv:
     def test_blank_api_key_is_treated_as_unset(self, monkeypatch):
         monkeypatch.setenv("ANKI_CONNECT_API_KEY", "")
         assert AnkiConnectClient.from_env()._api_key is None
+
+    def test_non_integer_port_is_rejected(self, monkeypatch):
+        monkeypatch.setenv("ANKI_CONNECT_PORT", "not-a-port")
+        with pytest.raises(AnkiError, match="must be an integer"):
+            AnkiConnectClient.from_env()
+
+    @pytest.mark.parametrize("bad_port", ["0", "-1", "65536", "999999"])
+    def test_out_of_range_port_is_rejected(self, monkeypatch, bad_port):
+        monkeypatch.setenv("ANKI_CONNECT_PORT", bad_port)
+        with pytest.raises(AnkiError, match="between 1 and 65535"):
+            AnkiConnectClient.from_env()
+
+    @pytest.mark.parametrize("edge_port", ["1", "65535"])
+    def test_boundary_ports_are_accepted(self, monkeypatch, edge_port):
+        monkeypatch.setenv("ANKI_CONNECT_PORT", edge_port)
+        assert AnkiConnectClient.from_env().port == int(edge_port)
 
 
 class TestPassThroughWrappers:

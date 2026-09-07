@@ -91,10 +91,34 @@ class AnkiConnectClient:
 
         Returns:
             AnkiConnectClient: Client configured from the environment.
+
+        Raises:
+            AnkiError: ``ANKI_CONNECT_PORT`` is set but is not a valid
+                integer, or is outside the 1-65535 TCP port range.
         """
+        raw_port = os.environ.get("ANKI_CONNECT_PORT")
+        if raw_port is None:
+            port = DEFAULT_PORT
+        else:
+            try:
+                port = int(raw_port)
+            except ValueError as exc:
+                msg = (
+                    "ANKI_CONNECT_PORT must be an integer, got "
+                    f"{raw_port!r}. Unset it to use the add-on default "
+                    f"({DEFAULT_PORT}), or fix the value."
+                )
+                raise AnkiError(msg) from exc
+            if not 1 <= port <= 65535:
+                msg = (
+                    "ANKI_CONNECT_PORT must be between 1 and 65535, got "
+                    f"{port}. Unset it to use the add-on default "
+                    f"({DEFAULT_PORT}), or fix the value."
+                )
+                raise AnkiError(msg)
         return cls(
             host=os.environ.get("ANKI_CONNECT_HOST", DEFAULT_HOST),
-            port=int(os.environ.get("ANKI_CONNECT_PORT", DEFAULT_PORT)),
+            port=port,
             api_key=os.environ.get("ANKI_CONNECT_API_KEY") or None,
         )
 
@@ -132,6 +156,7 @@ class AnkiConnectClient:
         Raises:
             AnkiUnreachableError: The socket could not be established or the
                 request did not complete.
+            AnkiProtocolError: The response body was not valid UTF-8.
         """
         conn = http.client.HTTPConnection(self.host, self.port, timeout=self.timeout)
         try:
@@ -141,12 +166,17 @@ class AnkiConnectClient:
                 body=body.encode("utf-8"),
                 headers={"Content-Type": "application/json"},
             )
-            return conn.getresponse().read().decode("utf-8")
+            raw = conn.getresponse().read()
         except (OSError, http.client.HTTPException) as exc:
             hint = _INSTALL_HINT.format(host=self.host, port=self.port)
             raise AnkiUnreachableError(hint) from exc
         finally:
             conn.close()
+        try:
+            return raw.decode("utf-8")
+        except UnicodeDecodeError as exc:
+            msg = f"Anki sent a reply that was not valid UTF-8: {exc}"
+            raise AnkiProtocolError(msg) from exc
 
     @staticmethod
     def _unwrap(action: str, body: str) -> Any:
@@ -293,8 +323,12 @@ class AnkiConnectClient:
     def can_add_notes(self, notes: list[dict[str, Any]]) -> list[bool]:
         """Ask Anki which notes it would accept.
 
-        This catches exact first-field duplicates using Anki's own rules,
-        which the pipeline's similarity check cannot see.
+        Reserved and currently unused: nothing in the pipeline calls this.
+        Anki's own exact first-field duplicate check is already applied on
+        ``add_notes``, whose rejections surface as ``None`` entries the
+        pipeline records in ``PushReport.rejected``, so pre-checking here
+        would only add a redundant round trip. Kept for callers that need to
+        ask "would this be accepted" before committing to a write.
 
         Args:
             notes (list[dict[str, Any]]): Note payloads in ``addNotes`` shape.

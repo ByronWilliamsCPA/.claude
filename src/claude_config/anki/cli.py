@@ -11,7 +11,7 @@ Six commands, in the order they get used::
 
 The operator is a student, not a developer, so every failure path prints the
 next action to take rather than a stack trace. Anything unexpected still
-raises, but the four named error classes are caught and reported plainly.
+raises, but the three named error classes are caught and reported plainly.
 """
 
 from __future__ import annotations
@@ -59,7 +59,7 @@ def _client(args: argparse.Namespace) -> AnkiConnectClient:
     client = AnkiConnectClient.from_env()
     if args.host:
         client.host = args.host
-    if args.port:
+    if args.port is not None:
         client.port = args.port
     return client
 
@@ -98,7 +98,12 @@ def cmd_doctor(args: argparse.Namespace) -> int:
     """
     results = run_checks(_client(args))
     for result in results:
-        mark = "ok  " if result.ok else ("FAIL" if result.fatal else "warn")
+        if result.ok:
+            mark = "ok  "
+        elif result.fatal:
+            mark = "FAIL"
+        else:
+            mark = "warn"
         out(f"[{mark}] {result.name}")
         out(f"       {result.detail}")
     blocking = blocking_failures(results)

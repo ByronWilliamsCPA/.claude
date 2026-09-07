@@ -53,7 +53,10 @@ STATUS_APPROVED: Final = "approved"
 _CLOZE_MARKER: Final = re.compile(r"\{\{c\d+::")
 _FIELD_LINE: Final = re.compile(r"^\*\*(?P<label>[A-Za-z ]+):\*\*\s?(?P<value>.*)$")
 _CARD_HEADING: Final = re.compile(r"^##\s+")
-_FRONTMATTER: Final = re.compile(r"\A---\s*\n(?P<yaml>.*?)\n---\s*\n?", re.DOTALL)
+_FRONTMATTER: Final = re.compile(
+    r"\A---[ \t]*\n(?:[ \t]*\n)*(?P<yaml>.*?)\n---[ \t]*\n(?:[ \t]*\n)*",
+    re.DOTALL,
+)
 _SLUG_STRIP: Final = re.compile(r"[^a-z0-9]+")
 
 _REVIEW_BANNER: Final = (
@@ -173,12 +176,16 @@ class CardBatch:
         """Return this batch's path within the card-source root.
 
         The layout is ``<course>/<term>/<YYYY-MM-DD>-<lecture-slug>.md``.
+        ``course`` and ``term`` are slugified the same way ``lecture`` is, so
+        a value containing ``../`` or another path separator cannot escape
+        the card-source root. A well-formed slug (``bisc-220``) round-trips
+        unchanged; only a malicious or malformed value is altered.
 
         Returns:
             Path: Path relative to the card-source root.
         """
         name = f"{self.date.isoformat()}-{slugify(self.lecture)}.md"
-        return Path(self.course) / self.term / name
+        return Path(slugify(self.course)) / slugify(self.term) / name
 
     def volume_warnings(self) -> list[str]:
         """Check the batch against the daily-review volume budget.
@@ -204,6 +211,19 @@ class CardBatch:
                 )
             ]
         return []
+
+    @property
+    def is_over_cap(self) -> bool:
+        """Report whether this batch exceeds the per-lecture card cap.
+
+        A structured counterpart to :meth:`volume_warnings`, so callers that
+        need to act on the over-cap condition (rather than just display it)
+        do not have to pattern-match warning text.
+
+        Returns:
+            bool: True when the card count is over ``MAX_CARDS``.
+        """
+        return len(self.cards) > MAX_CARDS
 
 
 def slugify(text: str) -> str:
@@ -264,7 +284,8 @@ def _card_from_fields(fields: dict[str, str], index: int) -> Card:
 
     Raises:
         CardFormatError: The block carried neither a cloze text nor a
-            question-and-answer pair.
+            question-and-answer pair, or mixed a cloze marker in
+            ``**Q:**`` with a non-empty ``**A:**``.
     """
     extra = fields.get("extra", "")
     cloze = fields.get("cloze") or fields.get("text")
@@ -272,7 +293,15 @@ def _card_from_fields(fields: dict[str, str], index: int) -> Card:
         return Card(kind="cloze", front=cloze, extra=extra)
     question = fields.get("q") or fields.get("question", "")
     answer = fields.get("a") or fields.get("answer", "")
-    if question and _CLOZE_MARKER.search(question) and not answer:
+    has_cloze_marker = bool(question) and bool(_CLOZE_MARKER.search(question))
+    if has_cloze_marker and answer:
+        msg = (
+            f"Card {index} has a cloze marker in '**Q:**' and also an "
+            "'**A:**' field, which is ambiguous. Use '**Cloze:**' for a "
+            "cloze card, or remove the marker for a plain question."
+        )
+        raise CardFormatError(msg)
+    if has_cloze_marker:
         return Card(kind="cloze", front=question, extra=extra)
     if not question or not answer:
         msg = (
@@ -374,7 +403,9 @@ def parse_batch(text: str, source: str = "card file") -> CardBatch:
         CardBatch: The parsed batch.
 
     Raises:
-        CardFormatError: The frontmatter was missing, malformed, or incomplete.
+        CardFormatError: The frontmatter was missing, malformed, incomplete,
+            carried an unrecognized ``status`` value, or gave ``tags`` as
+            something other than a YAML list.
     """
     match = _FRONTMATTER.match(text)
     if match is None:
@@ -389,7 +420,22 @@ def parse_batch(text: str, source: str = "card file") -> CardBatch:
         msg = f"{source}: frontmatter must be a mapping of keys to values."
         raise CardFormatError(msg)
     raw_tags = meta.get("tags") or []
+    if isinstance(raw_tags, str):
+        msg = (
+            f"{source}: 'tags' must be a YAML list, not a plain string "
+            f"({raw_tags!r}). A bare string is iterated character by "
+            f"character; wrap it in brackets, e.g. tags: [{raw_tags}]."
+        )
+        raise CardFormatError(msg)
+    if not isinstance(raw_tags, list):
+        msg = f"{source}: 'tags' must be a YAML list, got {type(raw_tags).__name__}."
+        raise CardFormatError(msg)
     tags = [str(tag).strip() for tag in raw_tags if str(tag).strip()]
+    valid_statuses = (STATUS_DRAFT, STATUS_APPROVED)
+    status = str(meta.get("status", STATUS_DRAFT)).strip().lower()
+    if status not in valid_statuses:
+        msg = f"{source}: 'status' must be one of {valid_statuses!r}, got {status!r}."
+        raise CardFormatError(msg)
     return CardBatch(
         course=_require_str(meta, "course", source),
         term=_require_str(meta, "term", source),
@@ -397,7 +443,7 @@ def parse_batch(text: str, source: str = "card file") -> CardBatch:
         date=_coerce_date(meta.get("date"), source),
         deck=_require_str(meta, "deck", source),
         tags=tags,
-        status=str(meta.get("status", STATUS_DRAFT)).strip().lower(),
+        status=status,
         cards=parse_cards(text[match.end() :]),
     )
 

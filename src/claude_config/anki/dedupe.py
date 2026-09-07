@@ -29,7 +29,9 @@ if TYPE_CHECKING:
 DEFAULT_THRESHOLD: Final = 0.75
 
 _HTML_TAG: Final = re.compile(r"<[^>]+>")
-_CLOZE_WRAPPER: Final = re.compile(r"\{\{c\d+::(?P<inner>.*?)(?:::.*?)?\}\}")
+_CLOZE_WRAPPER: Final = re.compile(
+    r"\{\{c\d+::(?P<inner>(?:(?!::|\}\}).)*)(?:::(?:(?!\}\}).)*)?\}\}"
+)
 _NON_WORD: Final = re.compile(r"[^a-z0-9\s]+")
 _WHITESPACE: Final = re.compile(r"\s+")
 

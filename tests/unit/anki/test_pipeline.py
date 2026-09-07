@@ -5,7 +5,13 @@ from pathlib import Path
 
 import pytest
 
-from claude_config.anki.cards import MAX_CARDS, Card, CardBatch, CardFormatError
+from claude_config.anki.cards import (
+    MAX_CARDS,
+    Card,
+    CardBatch,
+    CardFormatError,
+    parse_batch,
+)
 from claude_config.anki.pipeline import (
     DEFAULT_ROOT_DECK,
     PipelineError,
@@ -23,6 +29,21 @@ from claude_config.anki.pipeline import (
 REWORDED = (
     "Which enzyme catalyzes the rate-limiting step of glycolysis?",
     "What enzyme catalyzes glycolysis's rate-limiting step?",
+)
+
+DRAFT_APPROVED_TEMPLATE = (
+    "---\n"
+    "course: bisc-220\n"
+    "term: fall-2026\n"
+    "lecture: Glycolysis Regulation\n"
+    "date: 2026-09-02\n"
+    "deck: Ariannah::BISC 220::Fall 2026\n"
+    "tags: [bisc-220]\n"
+    "status: {status}\n"
+    "---\n\n"
+    "## Card 1\n"
+    "**Q:** Which enzyme catalyzes the rate-limiting step of glycolysis?\n"
+    "**A:** Phosphofructokinase-1\n"
 )
 
 
@@ -122,6 +143,13 @@ class TestExistingNotes:
 
     def test_empty_deck_yields_nothing(self, fake_anki):
         assert existing_notes(fake_anki, "D") == []
+
+    def test_scopes_the_query_to_the_deck_not_globally(self, fake_anki):
+        fake_anki.notes = ["x"]
+        existing_notes(fake_anki, "Ariannah::BISC 220::Fall 2026")
+        assert fake_anki.last_query == 'deck:"Ariannah::BISC 220::Fall 2026"'
+        assert fake_anki.last_query.startswith("deck:")
+        assert fake_anki.last_query not in ("*", "")
 
 
 class TestPushGate:
@@ -234,6 +262,39 @@ class TestPushBehaviour:
         assert report.added_count == 0
         assert report.rejected == list(range(1, 11))
 
+    def test_repushing_the_same_batch_skips_previously_added_cards(self, fake_anki):
+        """Idempotent re-run: a second push of an identical batch must not
+        re-add cards Anki already has, catching them via near-duplicate
+        detection against the (now-populated) destination deck."""
+        first_batch = make_batch(count=10)
+        first = push_batch(fake_anki, first_batch)
+        assert first.added_count == 10
+
+        # Simulate the collection now holding the notes the first push added.
+        fake_anki.notes = [card.front for card in first_batch.cards]
+        second = push_batch(fake_anki, make_batch(count=10))
+        assert second.added_count == 0
+        assert len(second.skipped) == 10
+
+    def test_partial_rejection_preserves_original_card_indexes(self, fake_anki):
+        """Regression guard for index realignment: when addNotes rejects some
+        notes and accepts others, and a card was already skipped earlier in
+        the batch as an internal duplicate, the rejected/added ids must map
+        back to the correct original card position, not a shifted one."""
+        cards = [
+            Card(kind="basic", front="Same front text repeated", back="A"),
+            Card(kind="basic", front="Same front text repeated", back="B"),
+            Card(kind="basic", front="Distinct third card here", back="C"),
+            Card(kind="basic", front="Distinct fourth card here", back="D"),
+        ]
+        # Card 2 is an internal duplicate of card 1 and is skipped before any
+        # notes are sent to Anki, so only 3 notes (cards 1, 3, 4) are sent.
+        fake_anki.add_notes = lambda notes: [1001, None, 1004]
+        report = push_batch(fake_anki, make_batch(cards=cards))
+        assert list(report.skipped) == [2]
+        assert report.rejected == [3]
+        assert report.added == [1001, 1004]
+
 
 class TestPushDryRun:
     def test_writes_nothing(self, fake_anki):
@@ -291,6 +352,13 @@ class TestExport:
         with pytest.raises(PipelineError, match="did not succeed"):
             export_collection(fake_anki, dest_dir=tmp_path, deck="Ariannah")
 
+    def test_writes_a_real_file_to_disk(self, fake_anki, tmp_path):
+        """The report must correspond to an actual file, not merely a path
+        Anki claimed to have written."""
+        path = export_collection(fake_anki, dest_dir=tmp_path, deck="Ariannah")
+        assert path.is_file()
+        assert path.read_bytes() == b"apkg"
+
 
 class TestResolveCardFile:
     def test_accepts_a_direct_path(self, tmp_path):
@@ -307,3 +375,28 @@ class TestResolveCardFile:
     def test_unknown_reference_is_refused(self, tmp_path):
         with pytest.raises(CardFormatError, match="No card file"):
             resolve_card_file("nope.md", root=tmp_path)
+
+
+class TestDraftToApprovedLifecycle:
+    """parse_batch and push_batch together must gate on the review status.
+
+    The gate is meant to be a single coherent path: the same markdown source
+    content, only with 'status: draft' changed to 'status: approved', must
+    flip from refused to pushed. Testing parse_batch's ``approved`` boolean
+    alone would miss a regression where the gate and the parser disagree
+    about what counts as approved.
+    """
+
+    def test_draft_is_refused_then_the_same_content_approved_is_pushed(self, fake_anki):
+        draft_batch = parse_batch(DRAFT_APPROVED_TEMPLATE.format(status="draft"))
+        with pytest.raises(PipelineError, match="still marked 'status: draft'"):
+            push_batch(fake_anki, draft_batch)
+        assert fake_anki.added == []
+
+        approved_batch = parse_batch(DRAFT_APPROVED_TEMPLATE.format(status="approved"))
+        report = push_batch(fake_anki, approved_batch)
+        assert report.added_count == 1
+        assert (
+            fake_anki.added[0]["fields"]["Front"]
+            == "Which enzyme catalyzes the rate-limiting step of glycolysis?"
+        )
