@@ -33,6 +33,7 @@ from claude_config.anki.cards import (
     slugify,
     today,
 )
+from claude_config.anki.connect import AnkiError
 from claude_config.anki.dedupe import (
     DEFAULT_THRESHOLD,
     DuplicateMatch,
@@ -42,6 +43,7 @@ from claude_config.anki.dedupe import (
 )
 
 if TYPE_CHECKING:
+    from claude_config.anki.cards import Card
     from claude_config.anki.connect import AnkiConnectClient
 
 DEFAULT_SOURCE_ROOT: Final = "~/dev/premed-anki-source/cards"
@@ -50,9 +52,74 @@ EXPORT_DIR_ENV: Final = "ANKI_EXPORT_DIR"
 ROOT_DECK_ENV: Final = "ANKI_ROOT_DECK"
 DEFAULT_ROOT_DECK: Final = "Ariannah"
 
+#: Markers that identify the public config repo. Shared with ``doctor.py``,
+#: which imports both this and :func:`find_config_repo` rather than defining
+#: its own copy, so the write-path guard below and the ``anki-cards doctor``
+#: check can never drift apart.
+CONFIG_REPO_MARKERS: Final = ("CLAUDE.md", ".claude/skills", ".git")
+
 
 class PipelineError(RuntimeError):
     """A pipeline step could not proceed."""
+
+
+def find_config_repo(path: Path) -> Path | None:
+    """Find the public config repo in ``path`` or any of its parents.
+
+    A config repo carries a top-level ``CLAUDE.md``, a ``.claude/skills``
+    directory, and a ``.git`` entry.
+
+    The ``.git`` requirement is what keeps this from misfiring on a home
+    directory. After ``setup.sh`` runs, ``~/.claude/skills`` is a symlink and
+    therefore exists, so a home directory that also happens to hold a
+    ``~/CLAUDE.md`` matches the first two markers on its own. Without the
+    third, a perfectly good card source at ``~/dev/premed-anki-source`` would
+    be reported as living inside the public repo. A home directory is not a
+    git checkout; the config repo always is.
+
+    Callers that intend to make a security decision from the result (rather
+    than simply reporting one) should resolve symlinks in ``path`` first; see
+    :func:`_ensure_not_public_repo`. This function itself walks ``path``
+    lexically, unchanged, so existing callers keep their current behavior.
+
+    Args:
+        path (Path): Directory to test, along with its ancestors.
+
+    Returns:
+        Path | None: The config repo root, or None when ``path`` sits outside
+            any config repo.
+    """
+    for candidate in (path, *path.parents):
+        if all((candidate / marker).exists() for marker in CONFIG_REPO_MARKERS):
+            return candidate
+    return None
+
+
+def _ensure_not_public_repo(root: Path) -> None:
+    """Refuse to write card content inside the public config repo.
+
+    Card content carries a student's course list, lecture cadence and study
+    record, so it must never land in a public repository. ``root`` is
+    resolved (symlinks included) before the ancestry check runs: a symlink at
+    the configured card-source root that lexically looks external but
+    actually resolves inside the config repo must not slip past this guard.
+
+    Args:
+        root (Path): Card-source root as configured, possibly containing
+            symlinks.
+
+    Raises:
+        PipelineError: The resolved root sits inside the config repo.
+    """
+    resolved = root.resolve()
+    config_repo = find_config_repo(resolved)
+    if config_repo is not None:
+        msg = (
+            f"{resolved} is inside the config repo at {config_repo}, which is "
+            "public. Move the card source to its own private repository and "
+            f"repoint {SOURCE_ROOT_ENV}."
+        )
+        raise PipelineError(msg)
 
 
 @dataclass
@@ -125,9 +192,12 @@ def write_draft(
         Path: The file written.
 
     Raises:
-        PipelineError: The target exists and ``overwrite`` is False.
+        PipelineError: The card-source root resolves to a path inside the
+            public config repo, or the target exists and ``overwrite`` is
+            False.
     """
     base = root if root is not None else card_source_root()
+    _ensure_not_public_repo(base)
     target = base / batch.relative_path()
     if target.exists() and not overwrite:
         msg = (
@@ -217,6 +287,76 @@ def _collect_duplicates(
     return matches
 
 
+def _validate_push_request(threshold: float, batch: CardBatch) -> None:
+    """Validate the arguments to :func:`push_batch` before anything runs.
+
+    Args:
+        threshold (float): Near-duplicate similarity threshold.
+        batch (CardBatch): Batch to push.
+
+    Raises:
+        PipelineError: ``threshold`` is outside ``[0.0, 1.0]`` (this also
+            rejects ``nan``, which fails every comparison), or the batch has
+            not been approved.
+    """
+    if not (0.0 <= threshold <= 1.0):
+        msg = f"--duplicate-threshold must be between 0.0 and 1.0, got {threshold!r}."
+        raise PipelineError(msg)
+    if not batch.approved:
+        source = batch.source_path or "this batch"
+        msg = (
+            f"{source} is still marked 'status: draft'.\n"
+            "Read the cards, edit anything that is wrong, then change the "
+            "status line to 'approved' and run push again."
+        )
+        raise PipelineError(msg)
+
+
+def _add_kept_notes(
+    client: AnkiConnectClient,
+    keep: list[tuple[int, Card]],
+    batch: CardBatch,
+    report: PushReport,
+) -> None:
+    """Send the surviving cards to Anki and record the outcome on ``report``.
+
+    Args:
+        client (AnkiConnectClient): Live client.
+        keep (list[tuple[int, Card]]): Cards to add, each paired with its
+            1-based position in the original batch.
+        batch (CardBatch): Batch the cards came from, for deck and tags.
+        report (PushReport): Report to update in place with added and
+            rejected note ids.
+    """
+    notes = [card.to_note(batch.deck, batch.tags) for _, card in keep]
+    results = client.add_notes(notes)
+    for (index, _), note_id in zip(keep, results, strict=True):
+        if isinstance(note_id, int):
+            report.added.append(note_id)
+        else:
+            report.rejected.append(index)
+
+
+def _sync_after_push(client: AnkiConnectClient, report: PushReport) -> None:
+    """Trigger an AnkiWeb sync and record failure as a warning, not a raise.
+
+    A sync failure must not look like the cards were never added: ``report``
+    already carries the added note ids, so this only appends a warning and
+    leaves ``synced`` at its default False.
+
+    Args:
+        client (AnkiConnectClient): Live client.
+        report (PushReport): Report to update in place.
+    """
+    try:
+        client.sync()
+    except AnkiError as exc:
+        msg = f"{report.added_count} card(s) were added, but the AnkiWeb sync afterwards failed: {exc}. Run a sync in Anki to reach your other devices."
+        report.warnings.append(msg)
+    else:
+        report.synced = True
+
+
 def push_batch(
     client: AnkiConnectClient,
     batch: CardBatch,
@@ -245,21 +385,14 @@ def push_batch(
         PushReport: What happened, including everything skipped and why.
 
     Raises:
-        PipelineError: The batch has not been approved, or is over the card cap.
+        PipelineError: ``threshold`` is outside ``[0.0, 1.0]``, the batch has
+            not been approved, or is over the card cap.
     """
-    if not batch.approved:
-        source = batch.source_path or "this batch"
-        msg = (
-            f"{source} is still marked 'status: draft'.\n"
-            "Read the cards, edit anything that is wrong, then change the "
-            "status line to 'approved' and run push again."
-        )
-        raise PipelineError(msg)
+    _validate_push_request(threshold, batch)
     report = PushReport(deck=batch.deck, dry_run=dry_run)
     report.warnings.extend(batch.volume_warnings())
-    over_cap = [w for w in report.warnings if "over the" in w]
-    if over_cap and not allow_overflow:
-        raise PipelineError(over_cap[0])
+    if batch.is_over_cap and not allow_overflow:
+        raise PipelineError(report.warnings[0])
     client.preflight()
     if not dry_run:
         ensure_deck(client, batch.deck)
@@ -274,16 +407,9 @@ def push_batch(
     ]
     if not keep or dry_run:
         return report
-    notes = [card.to_note(batch.deck, batch.tags) for _, card in keep]
-    results = client.add_notes(notes)
-    for (index, _), note_id in zip(keep, results, strict=True):
-        if isinstance(note_id, int):
-            report.added.append(note_id)
-        else:
-            report.rejected.append(index)
+    _add_kept_notes(client, keep, batch, report)
     if sync and report.added:
-        client.sync()
-        report.synced = True
+        _sync_after_push(client, report)
     return report
 
 
@@ -305,8 +431,9 @@ def export_collection(
         Path: The ``.apkg`` file written.
 
     Raises:
-        PipelineError: No destination is configured, the deck is missing, the
-            running add-on lacks ``exportPackage``, or the write failed.
+        PipelineError: No destination is configured, the destination folder
+            could not be created, the deck is missing, the running add-on
+            lacks ``exportPackage``, or the write failed.
     """
     target_deck = deck or root_deck()
     raw_dest = dest_dir or os.environ.get(EXPORT_DIR_ENV)
@@ -317,7 +444,15 @@ def export_collection(
         )
         raise PipelineError(msg)
     destination = Path(raw_dest).expanduser()
-    destination.mkdir(parents=True, exist_ok=True)
+    try:
+        destination.mkdir(parents=True, exist_ok=True)
+    except OSError as exc:
+        msg = (
+            f"Could not create the export folder {destination}: {exc}. Check "
+            "that the path is writable and that no file already sits where a "
+            "folder is expected."
+        )
+        raise PipelineError(msg) from exc
     client.preflight()
     if not client.supports("exportPackage"):
         msg = (

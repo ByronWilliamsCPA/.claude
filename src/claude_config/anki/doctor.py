@@ -23,13 +23,19 @@ from claude_config.anki.pipeline import (
     EXPORT_DIR_ENV,
     SOURCE_ROOT_ENV,
     card_source_root,
+    find_config_repo,
     root_deck,
 )
 
 if TYPE_CHECKING:
     from claude_config.anki.connect import AnkiConnectClient
 
-CONFIG_REPO_MARKERS: Final = ("CLAUDE.md", ".claude/skills", ".git")
+#: Repeated ``CheckResult.name`` labels (SonarQube S1192), one constant per
+#: label used at more than one call site so the wording cannot drift between
+#: them.
+_CHECK_NAME_SOURCE_FOLDER: Final = "card source folder"
+_CHECK_NAME_NOTE_TYPES: Final = "note types"
+_CHECK_NAME_ROOT_DECK: Final = "root deck"
 
 
 @dataclass(frozen=True)
@@ -48,33 +54,6 @@ class CheckResult:
     ok: bool
     detail: str
     fatal: bool = True
-
-
-def find_config_repo(path: Path) -> Path | None:
-    """Find the public config repo in ``path`` or any of its parents.
-
-    A config repo carries a top-level ``CLAUDE.md``, a ``.claude/skills``
-    directory, and a ``.git`` entry.
-
-    The ``.git`` requirement is what keeps this from misfiring on a home
-    directory. After ``setup.sh`` runs, ``~/.claude/skills`` is a symlink and
-    therefore exists, so a home directory that also happens to hold a
-    ``~/CLAUDE.md`` matches the first two markers on its own. Without the
-    third, a perfectly good card source at ``~/dev/premed-anki-source`` would
-    be reported as living inside the public repo. A home directory is not a
-    git checkout; the config repo always is.
-
-    Args:
-        path (Path): Directory to test, along with its ancestors.
-
-    Returns:
-        Path | None: The config repo root, or None when ``path`` sits outside
-            any config repo.
-    """
-    for candidate in (path, *path.parents):
-        if all((candidate / marker).exists() for marker in CONFIG_REPO_MARKERS):
-            return candidate
-    return None
 
 
 def find_git_root(path: Path) -> Path | None:
@@ -140,10 +119,12 @@ def _check_folder(root: Path, git_root: Path | None) -> CheckResult:
         CheckResult: Whether the folder is present, or acceptably absent.
     """
     if root.is_dir():
-        return CheckResult(name="card source folder", ok=True, detail=f"{root} exists.")
+        return CheckResult(
+            name=_CHECK_NAME_SOURCE_FOLDER, ok=True, detail=f"{root} exists."
+        )
     if git_root is not None:
         return CheckResult(
-            name="card source folder",
+            name=_CHECK_NAME_SOURCE_FOLDER,
             ok=False,
             detail=(
                 f"{root} does not exist yet. It sits inside the repo at "
@@ -153,7 +134,7 @@ def _check_folder(root: Path, git_root: Path | None) -> CheckResult:
             fatal=False,
         )
     return CheckResult(
-        name="card source folder",
+        name=_CHECK_NAME_SOURCE_FOLDER,
         ok=False,
         detail=(
             f"{root} does not exist, and there is no git repository above it. "
@@ -195,7 +176,11 @@ def _check_not_public_repo(root: Path) -> CheckResult:
     """Verify the card source is not inside the public config repo.
 
     Card content carries a student's course list, lecture cadence and study
-    record, so it must never land in a public repository.
+    record, so it must never land in a public repository. ``root`` is
+    resolved (symlinks included) before the ancestry check runs, mirroring
+    the write-path guard in ``pipeline.py``: a symlink at the configured
+    card-source root that lexically looks external but actually resolves
+    inside the config repo must not read as safe here.
 
     Args:
         root (Path): Card-source folder.
@@ -203,7 +188,8 @@ def _check_not_public_repo(root: Path) -> CheckResult:
     Returns:
         CheckResult: Whether ``root`` sits outside any config repo.
     """
-    config_repo = find_config_repo(root)
+    resolved = root.resolve()
+    config_repo = find_config_repo(resolved)
     if config_repo is None:
         return CheckResult(
             name="card source is separate from the config repo",
@@ -214,7 +200,7 @@ def _check_not_public_repo(root: Path) -> CheckResult:
         name="card source is separate from the config repo",
         ok=False,
         detail=(
-            f"{root} is inside the config repo at {config_repo}, which is "
+            f"{resolved} is inside the config repo at {config_repo}, which is "
             "public. Move the card source to its own private repository and "
             f"repoint {SOURCE_ROOT_ENV}."
         ),
@@ -307,16 +293,16 @@ def _check_note_types(client: AnkiConnectClient) -> CheckResult:
     try:
         models = set(client.model_names())
     except AnkiError as exc:
-        return CheckResult(name="note types", ok=False, detail=str(exc))
+        return CheckResult(name=_CHECK_NAME_NOTE_TYPES, ok=False, detail=str(exc))
     missing = [name for name in (BASIC_MODEL, CLOZE_MODEL) if name not in models]
     if not missing:
         return CheckResult(
-            name="note types",
+            name=_CHECK_NAME_NOTE_TYPES,
             ok=True,
             detail=f"{BASIC_MODEL} and {CLOZE_MODEL} are both present.",
         )
     return CheckResult(
-        name="note types",
+        name=_CHECK_NAME_NOTE_TYPES,
         ok=False,
         detail=(
             f"Missing note type(s): {', '.join(missing)}. This collection uses "
@@ -341,11 +327,15 @@ def _check_root_deck(client: AnkiConnectClient) -> CheckResult:
     try:
         decks = set(client.deck_names())
     except AnkiError as exc:
-        return CheckResult(name="root deck", ok=False, detail=str(exc), fatal=False)
+        return CheckResult(
+            name=_CHECK_NAME_ROOT_DECK, ok=False, detail=str(exc), fatal=False
+        )
     if deck in decks:
-        return CheckResult(name="root deck", ok=True, detail=f"{deck!r} exists.")
+        return CheckResult(
+            name=_CHECK_NAME_ROOT_DECK, ok=True, detail=f"{deck!r} exists."
+        )
     return CheckResult(
-        name="root deck",
+        name=_CHECK_NAME_ROOT_DECK,
         ok=False,
         detail=(
             f"No deck named {deck!r} yet. It is created on the first push, so "
