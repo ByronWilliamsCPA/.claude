@@ -74,6 +74,14 @@ class TestParseBatch:
         with pytest.raises(CardFormatError, match="frontmatter"):
             parse_batch("## Card 1\n**Q:** a\n**A:** b\n")
 
+    def test_unterminated_frontmatter_with_many_blank_lines_is_rejected(self):
+        """Regression for the ReDoS-prone regex flagged on PR #305 (SonarCloud
+        S8786): many blank lines with no closing '---' must fail fast, not
+        hang the parser retrying every possible split point."""
+        text = "---\ncourse: bisc-220\n" + "\n" * 500
+        with pytest.raises(CardFormatError, match="frontmatter"):
+            parse_batch(text)
+
     def test_missing_required_key_is_rejected(self):
         text = VALID.replace("course: bisc-220\n", "")
         with pytest.raises(CardFormatError, match="'course'"):

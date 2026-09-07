@@ -53,10 +53,6 @@ STATUS_APPROVED: Final = "approved"
 _CLOZE_MARKER: Final = re.compile(r"\{\{c\d+::")
 _FIELD_LINE: Final = re.compile(r"^\*\*(?P<label>[A-Za-z ]+):\*\*\s?(?P<value>.*)$")
 _CARD_HEADING: Final = re.compile(r"^##\s+")
-_FRONTMATTER: Final = re.compile(
-    r"\A---[ \t]*\n(?:[ \t]*\n)*(?P<yaml>.*?)\n---[ \t]*\n(?:[ \t]*\n)*",
-    re.DOTALL,
-)
 _SLUG_STRIP: Final = re.compile(r"[^a-z0-9]+")
 
 _REVIEW_BANNER: Final = (
@@ -392,6 +388,45 @@ def _coerce_date(value: Any, source: str) -> date:
         raise CardFormatError(msg) from exc
 
 
+def _split_frontmatter(text: str, source: str) -> tuple[str, str]:
+    r"""Split a card file into its YAML frontmatter and card body.
+
+    Line-oriented scan rather than a single backtracking regex: a ``.*?``
+    DOTALL group and an adjacent ``(?:[ \t]*\n)*`` repetition can both match
+    the same run of blank lines, so a file with many blank lines and no
+    closing delimiter made the previous regex re-try every split between them
+    (SonarCloud S8786, flagged again on PR #305 after the prior fix pass
+    changed this regex without noticing the new overlap it introduced).
+
+    Args:
+        text (str): Full file contents.
+        source (str): File description, used in error messages.
+
+    Returns:
+        tuple[str, str]: The YAML frontmatter text, and the remaining body
+            text with any blank lines right after the closing delimiter
+            removed.
+
+    Raises:
+        CardFormatError: The file does not open with a bare ``---`` line, or
+            no closing ``---`` line follows it.
+    """
+    lines = text.split("\n")
+    if lines[0].rstrip(" \t") != "---":
+        msg = f"{source}: file must start with a '---' YAML frontmatter block."
+        raise CardFormatError(msg)
+    for idx in range(1, len(lines)):
+        if lines[idx].rstrip(" \t") == "---":
+            yaml_text = "\n".join(lines[1:idx])
+            body = lines[idx + 1 :]
+            first_content = 0
+            while first_content < len(body) and not body[first_content].strip(" \t"):
+                first_content += 1
+            return yaml_text, "\n".join(body[first_content:])
+    msg = f"{source}: file must start with a '---' YAML frontmatter block."
+    raise CardFormatError(msg)
+
+
 def parse_batch(text: str, source: str = "card file") -> CardBatch:
     """Parse a complete card source file.
 
@@ -407,19 +442,16 @@ def parse_batch(text: str, source: str = "card file") -> CardBatch:
             carried an unrecognized ``status`` value, or gave ``tags`` as
             something other than a YAML list.
     """
-    match = _FRONTMATTER.match(text)
-    if match is None:
-        msg = f"{source}: file must start with a '---' YAML frontmatter block."
-        raise CardFormatError(msg)
+    yaml_text, body_text = _split_frontmatter(text, source)
     try:
-        meta = yaml.safe_load(match.group("yaml")) or {}
+        meta = yaml.safe_load(yaml_text) or {}
     except yaml.YAMLError as exc:
         msg = f"{source}: frontmatter is not valid YAML: {exc}"
         raise CardFormatError(msg) from exc
     if not isinstance(meta, dict):
         msg = f"{source}: frontmatter must be a mapping of keys to values."
         raise CardFormatError(msg)
-    raw_tags = meta.get("tags") or []
+    raw_tags: object = meta.get("tags", [])
     if isinstance(raw_tags, str):
         msg = (
             f"{source}: 'tags' must be a YAML list, not a plain string "
@@ -444,7 +476,7 @@ def parse_batch(text: str, source: str = "card file") -> CardBatch:
         deck=_require_str(meta, "deck", source),
         tags=tags,
         status=status,
-        cards=parse_cards(text[match.end() :]),
+        cards=parse_cards(body_text),
     )
 
 

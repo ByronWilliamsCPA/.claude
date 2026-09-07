@@ -122,6 +122,22 @@ class TestWriteDraft:
         path = write_draft(make_batch(count=11), root=tmp_path, overwrite=True)
         assert "Distinct question 10" in path.read_text()
 
+    def test_symlinked_course_dir_into_config_repo_is_rejected(self, tmp_path):
+        """Regression (PR #305, CodeRabbit): ``root`` can be a legitimate
+        external path while an intermediate segment of the joined target
+        (here, the course-slug directory) is a symlink resolving inside the
+        public config repo. Validating only ``root`` misses this; the write
+        target itself must be re-checked after joining."""
+        config_repo = tmp_path / "config-repo"
+        (config_repo / ".claude" / "skills").mkdir(parents=True)
+        (config_repo / ".git").mkdir()
+        (config_repo / "CLAUDE.md").write_text("", encoding="utf-8")
+        root = tmp_path / "cards"
+        root.mkdir()
+        (root / "bisc-220").symlink_to(config_repo, target_is_directory=True)
+        with pytest.raises(PipelineError, match="public"):
+            write_draft(make_batch(), root=root)
+
 
 class TestEnsureDeck:
     def test_creates_a_missing_deck(self, fake_anki):
