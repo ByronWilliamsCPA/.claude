@@ -1,6 +1,7 @@
 """Tests for the anki-cards command line surface."""
 
 from datetime import date
+from pathlib import Path
 
 import pytest
 
@@ -184,6 +185,56 @@ class TestPush:
         assert "over the" in capsys.readouterr().err
 
 
+class TestDedupAndOverflowFlagsEndToEnd:
+    """Exercise the push flags through cli.main itself, not push_batch
+    directly, so a wiring bug between argparse and the pipeline call would
+    be caught here even if push_batch's own tests stayed green."""
+
+    def test_allow_overflow_flag_permits_pushing_the_full_batch(
+        self, wired, tmp_path, capsys
+    ):
+        cards = "\n\n".join(
+            f"## Card {i}\n**Q:** Distinct question {i} here?\n**A:** Answer {i}"
+            for i in range(MAX_CARDS + 1)
+        )
+        path = tmp_path / "big.md"
+        path.write_text(APPROVED.split("## Card 1", maxsplit=1)[0] + cards + "\n")
+
+        without_flag = cli.main(["push", str(path)])
+        assert without_flag == cli.EXIT_FAIL
+
+        with_flag = cli.main(["push", str(path), "--allow-overflow"])
+        assert with_flag == cli.EXIT_OK
+        assert f"Added {MAX_CARDS + 1} card(s)" in capsys.readouterr().out
+
+    def test_force_duplicates_flag_adds_a_flagged_card_instead_of_skipping(
+        self, wired, card_file, capsys
+    ):
+        wired.notes = ["What enzyme catalyzes glycolysis's rate-limiting step?"]
+        cli.main(["push", str(card_file), "--force-duplicates"])
+        output = capsys.readouterr().out
+        assert "Skipped" not in output
+        assert "Added 2 card(s)" in output
+
+    def test_duplicate_threshold_flag_catches_a_match_the_default_misses(
+        self, wired, tmp_path, capsys
+    ):
+        path = tmp_path / "cards.md"
+        path.write_text(
+            APPROVED.split("## Card 1", maxsplit=1)[0]
+            + "## Card 1\n**Q:** Which step is rate-limiting?\n**A:** PFK-1\n"
+        )
+        wired.notes = ["What enzyme catalyzes glycolysis's rate-limiting step?"]
+
+        cli.main(["push", str(path)])
+        default_output = capsys.readouterr().out
+        assert "Skipped" not in default_output
+
+        cli.main(["push", str(path), "--duplicate-threshold", "0.3"])
+        loose_output = capsys.readouterr().out
+        assert "Skipped 1 near-duplicate(s)" in loose_output
+
+
 class TestExport:
     def test_writes_an_apkg_and_reports_the_path(self, wired, tmp_path, capsys):
         code = cli.main(
@@ -196,6 +247,14 @@ class TestExport:
         monkeypatch.delenv("ANKI_EXPORT_DIR", raising=False)
         assert cli.main(["export", "--deck", "Ariannah"]) == cli.EXIT_FAIL
         assert "No export folder configured" in capsys.readouterr().err
+
+    def test_writes_a_real_apkg_file_to_disk(self, wired, tmp_path, capsys):
+        dest = tmp_path / "onedrive"
+        code = cli.main(["export", "--dest", str(dest), "--deck", "Ariannah"])
+        assert code == cli.EXIT_OK
+        output = capsys.readouterr().out
+        written_path = Path(output.removeprefix("Wrote ").strip())
+        assert written_path.is_file()
 
 
 class TestParser:

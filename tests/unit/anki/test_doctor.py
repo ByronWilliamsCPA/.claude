@@ -1,5 +1,7 @@
 """Tests for first-run setup verification."""
 
+import os
+
 import pytest
 
 from claude_config.anki.connect import AnkiActionError, AnkiUnreachableError
@@ -273,3 +275,37 @@ class TestRunChecks:
         results = run_checks(fake_anki)
         assert by_name(results, "card source folder").ok is True
         assert by_name(results, "Anki connection").ok is False
+
+
+class TestSymlinkResolutionRegression:
+    """CodeRabbit R9: a symlinked card-source directory that RESOLVES into
+    the public config repo must be flagged, even though its raw (unresolved)
+    path does not lexically look like it sits inside the repo."""
+
+    @pytest.mark.skipif(
+        not hasattr(os, "symlink"), reason="platform has no symlink support"
+    )
+    def test_symlink_resolving_into_the_config_repo_is_blocked(
+        self, tmp_path, monkeypatch
+    ):
+        config_repo = tmp_path / "config-repo"
+        config_repo.mkdir()
+        make_config_repo(config_repo)
+        real_cards = config_repo / "anki-source" / "cards"
+        real_cards.mkdir(parents=True)
+
+        symlinked_root = tmp_path / "elsewhere" / "symlinked-cards"
+        symlinked_root.parent.mkdir(parents=True)
+        try:
+            symlinked_root.symlink_to(real_cards, target_is_directory=True)
+        except OSError:
+            pytest.skip("platform denies symlink creation without elevated privilege")
+
+        monkeypatch.setenv("ANKI_SOURCE_ROOT", str(symlinked_root))
+        result = by_name(
+            check_source_root(), "card source is separate from the config repo"
+        )
+        assert result.ok is False
+        assert result.fatal is True
+        assert "public" in result.detail
+        assert str(config_repo) in result.detail
