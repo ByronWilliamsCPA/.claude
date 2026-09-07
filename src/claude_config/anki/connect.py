@@ -59,6 +59,40 @@ class AnkiProtocolError(AnkiError):
     """AnkiConnect returned a response that could not be understood."""
 
 
+def validate_port(port: int, *, source: str = "port") -> int:
+    """Confirm ``port`` is a usable TCP destination port.
+
+    Shared by :meth:`AnkiConnectClient.from_env` (``ANKI_CONNECT_PORT``) and
+    the CLI's ``--port`` flag, so both paths reject the same out-of-range
+    values instead of one silently passing 0 or 65536 through to
+    :class:`http.client.HTTPConnection`, where it would surface as an opaque
+    :class:`AnkiUnreachableError` rather than a configuration error.
+
+    #EDGE Port 0 and negative values are structurally invalid; ports above
+    65535 do not exist on the wire. #VERIFY the 1-65535 bound matches every
+    caller's expectation before relaxing it.
+
+    Args:
+        port (int): Candidate port number.
+        source (str): Name of the setting being validated, used only to
+            phrase the error message (``"ANKI_CONNECT_PORT"`` or
+            ``"--port"``).
+
+    Returns:
+        int: ``port``, unchanged.
+
+    Raises:
+        AnkiError: ``port`` is outside the 1-65535 TCP port range.
+    """
+    if not 1 <= port <= 65535:
+        msg = (
+            f"{source} must be between 1 and 65535, got {port}. Unset it to "
+            f"use the add-on default ({DEFAULT_PORT}), or fix the value."
+        )
+        raise AnkiError(msg)
+    return port
+
+
 class AnkiConnectClient:
     """Minimal AnkiConnect client covering the card-pipeline actions.
 
@@ -109,13 +143,7 @@ class AnkiConnectClient:
                     f"({DEFAULT_PORT}), or fix the value."
                 )
                 raise AnkiError(msg) from exc
-            if not 1 <= port <= 65535:
-                msg = (
-                    "ANKI_CONNECT_PORT must be between 1 and 65535, got "
-                    f"{port}. Unset it to use the add-on default "
-                    f"({DEFAULT_PORT}), or fix the value."
-                )
-                raise AnkiError(msg)
+            port = validate_port(port, source="ANKI_CONNECT_PORT")
         return cls(
             host=os.environ.get("ANKI_CONNECT_HOST", DEFAULT_HOST),
             port=port,

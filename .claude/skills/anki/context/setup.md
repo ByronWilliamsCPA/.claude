@@ -70,7 +70,7 @@ export ANKI_ROOT_DECK="Ariannah"
 | `ANKI_SOURCE_ROOT` | `~/dev/premed-anki-source/cards` | Card folder inside the card-source repo. |
 | `ANKI_EXPORT_DIR` | unset | Where `.apkg` snapshots are written. Point at the OneDrive folder that already holds the family Excel tracker. |
 | `ANKI_ROOT_DECK` | `Ariannah` | Top-level deck. Exporting it includes every subdeck. |
-| `ANKI_CONNECT_HOST` | `127.0.0.1` | Only change if Anki runs on another machine. |
+| `ANKI_CONNECT_HOST` | `127.0.0.1` | Keep this value even when Anki runs on another machine; reach it through a local tunnel endpoint instead. Do not point this at a remote IP directly. |
 | `ANKI_CONNECT_PORT` | `8765` | Only change if the add-on was reconfigured. |
 | `ANKI_CONNECT_API_KEY` | unset | Only if the add-on's `apiKey` setting was set. |
 

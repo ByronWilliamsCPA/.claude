@@ -29,7 +29,7 @@ from claude_config.anki.cards import (
     read_batch,
     today,
 )
-from claude_config.anki.connect import AnkiConnectClient, AnkiError
+from claude_config.anki.connect import AnkiConnectClient, AnkiError, validate_port
 from claude_config.anki.dedupe import DEFAULT_THRESHOLD
 from claude_config.anki.doctor import blocking_failures, run_checks
 from claude_config.anki.pipeline import (
@@ -50,6 +50,12 @@ EXIT_FAIL = 1
 def _client(args: argparse.Namespace) -> AnkiConnectClient:
     """Build a client, letting flags override the environment.
 
+    ``AnkiConnectClient.from_env()`` and :func:`validate_port` each raise
+    ``AnkiError`` when ``ANKI_CONNECT_PORT`` or ``--port`` is outside the
+    1-65535 TCP port range; this function has no ``raise`` of its own, so
+    that propagates to the caller (``main``), which already catches
+    ``AnkiError``.
+
     Args:
         args (argparse.Namespace): Parsed arguments.
 
@@ -60,7 +66,7 @@ def _client(args: argparse.Namespace) -> AnkiConnectClient:
     if args.host:
         client.host = args.host
     if args.port is not None:
-        client.port = args.port
+        client.port = validate_port(args.port, source="--port")
     return client
 
 

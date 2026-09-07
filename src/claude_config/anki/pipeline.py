@@ -199,6 +199,13 @@ def write_draft(
     base = root if root is not None else card_source_root()
     _ensure_not_public_repo(base)
     target = base / batch.relative_path()
+    # #CRITICAL Validating only ``base`` is not enough: a symlink at an
+    # intermediate segment of batch.relative_path() (e.g. a course-slug
+    # directory swapped for a symlink into the config repo) resolves
+    # differently from base alone and would slip past the check above.
+    # #VERIFY re-run _ensure_not_public_repo on the fully joined target
+    # before any exists()/mkdir()/write_text() call touches disk.
+    _ensure_not_public_repo(target)
     if target.exists() and not overwrite:
         msg = (
             f"{target} already exists. Pass --overwrite to replace it, or "
