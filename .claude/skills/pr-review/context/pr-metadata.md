@@ -68,9 +68,20 @@ gh pr checks "$PR_NUMBER" --repo "$OWNER/$REPO" \
   --jq '.[] | {name, state, description, link}'
 ```
 
-Store as `CI_CHECKS`. For any check where `state` is not `SUCCESS` and not
-`PENDING` (PENDING means in-progress; skip it), classify each failing check
-by branch state before emitting.
+Store as `CI_CHECKS`. GitHub's check `state` is not a two-value success/failure
+signal: besides `SUCCESS`, `PENDING` (queued or in progress) and `EXPECTED`
+(a required context that has not started yet, functionally the same as
+PENDING for this purpose) are not-yet-decided, and `NEUTRAL` and `SKIPPED` are
+decided-but-not-a-failure (a condition legitimately did not apply, or a job
+was intentionally skipped, e.g. by a path filter). Treating any of these five
+as "failing" manufactures a false CI finding on a check that never actually
+failed. Classify a check as failing, and run the branch-state logic below,
+only when `state` is one of: `FAILURE`, `ERROR`, `ACTION_REQUIRED`,
+`CANCELLED`, `STALE`, `TIMED_OUT`, `STARTUP_FAILURE`. Everything else
+(`SUCCESS`, `PENDING`, `EXPECTED`, `NEUTRAL`, `SKIPPED`) skips this branch
+entirely; `EXPECTED` specifically is handled separately by the
+phantom/never-reported check below, which is where a required context stuck
+at `EXPECTED` forever belongs, not here.
 
 **Required-vs-non-required tiering (decide tier before branch-state attribution).**
 A failing check is a fact; whether it BLOCKS merge is a separate fact, and the tier
@@ -82,7 +93,20 @@ required set once:
 
 ```bash
 REQUIRED=$(gh api "repos/$OWNER/$REPO/branches/$BASE_BRANCH/protection/required_status_checks/contexts" \
-  2>/dev/null | jq -r '.[]' || gh api "repos/$OWNER/$REPO/rulesets" 2>/dev/null | jq -r '..|.required_status_checks?//empty' )
+  2>/dev/null | jq -r '.[]')
+if [ -z "$REQUIRED" ]; then
+  # The rulesets LIST endpoint returns only summary fields (id, name, target,
+  # enforcement); it has no `rules`/`parameters`, so a jq scan against it can
+  # never find `required_status_checks`. Fetch each branch ruleset's detail
+  # endpoint and read the field at its actual nested path:
+  # .rules[] where .type == "required_status_checks", then
+  # .parameters.required_status_checks[].context.
+  REQUIRED=$(gh api "repos/$OWNER/$REPO/rulesets?targets=branch" --jq '.[].id' 2>/dev/null \
+    | while read -r rid; do
+        gh api "repos/$OWNER/$REPO/rulesets/$rid" 2>/dev/null \
+          --jq '.rules[]? | select(.type=="required_status_checks") | .parameters.required_status_checks[].context'
+      done)
+fi
 ```
 
 - Failing check IS in the required set, OR `MERGE_STATE` is `BLOCKED`: tier it per the
@@ -344,11 +368,18 @@ commands and can invalidate the entire premise of the review before the agent fl
 runs. Skip this step when `MERGE_STATE` is `CLEAN` (the up-to-date-with-base state;
 `mergeStateStatus` has no `MERGEABLE` value, that belongs to the separate `mergeable` field).
 
-For each file in `CHANGED_FILES`, compare the PR head content to the base branch:
+This workflow never checks the repo out locally (see Design Principles in
+`SKILL.md`); `git diff` against `origin/$BASE_BRANCH` assumes a local clone
+with that ref fetched, which this workflow does not have. Compare content via
+the GitHub API instead: fetch each file's blob at both SHAs and diff the
+downloaded text, never a local ref.
 
 ```bash
+BASE_SHA_TIP=$(gh api "repos/$OWNER/$REPO/branches/$BASE_BRANCH" --jq '.commit.sha')
 for f in {CHANGED_FILES}; do
-  if git diff --quiet "origin/$BASE_BRANCH" "$HEAD_SHA" -- "$f" 2>/dev/null; then
+  base_content=$(gh api "repos/$OWNER/$REPO/contents/$f?ref=$BASE_SHA_TIP" --jq '.content' 2>/dev/null | base64 -d 2>/dev/null)
+  head_content=$(gh api "repos/$OWNER/$REPO/contents/$f?ref=$HEAD_SHA" --jq '.content' 2>/dev/null | base64 -d 2>/dev/null)
+  if [ "$base_content" = "$head_content" ]; then
     echo "IDENTICAL  $f"
   else
     echo "DIFFERS    $f"
@@ -363,15 +394,36 @@ done
   attach the salvage list, and stop before spawning the full agent fleet. Supersession
   is rarely all-or-nothing: report the residual, not a binary yes/no.
 
-**`git diff base head` direction alone is not enough to declare a regression.** Diff
-direction between two diverged tips conflates "this branch changed it" with "base changed
-it later"; a DIFFERS file on a stale branch can look like it re-adds deliberately-removed
-content when in fact the branch never touched the file relative to the merge-base and a
-merge would cleanly take base's version. For each DIFFERS file, run a merge-base-aware
-three-way classification (`git merge-tree --write-tree "origin/$BASE_BRANCH" "$HEAD_SHA"`,
-or per-file three-way reasoning) to bucket it as (a) genuine conflict, (b) branch-regresses-
-base, or (c) merely-behind-base (merge takes base cleanly). Only (a) and (b) are actionable;
-(c) is a non-finding. Only a three-way merge tells you what a merge would actually do.
+**Diff direction between two diverged tips alone is not enough to declare a regression.**
+Comparing base tip to head content directly conflates "this branch changed it" with "base
+changed it later"; a DIFFERS file on a stale branch can look like it re-adds
+deliberately-removed content when in fact the branch never touched the file relative to
+the merge-base and a merge would cleanly take base's version. Classify each DIFFERS file
+against the merge-base, not against the base branch's current tip, using only `gh api`
+(no local `git merge-tree`, which needs a local clone this workflow does not have):
+
+```bash
+MERGE_BASE=$(gh api "repos/$OWNER/$REPO/compare/$BASE_BRANCH...$HEAD_SHA" --jq '.merge_base_commit.sha')
+BRANCH_CHANGED=$(gh api "repos/$OWNER/$REPO/compare/$MERGE_BASE...$HEAD_SHA" --jq '.files[].filename')
+BASE_CHANGED=$(gh api "repos/$OWNER/$REPO/compare/$MERGE_BASE...$BASE_SHA_TIP" --jq '.files[].filename')
+```
+
+For a DIFFERS file `f`:
+- `f` is in `BASE_CHANGED` but NOT in `BRANCH_CHANGED`: (c) merely-behind-base, a
+  non-finding; the branch never touched this file since diverging, and a merge cleanly
+  takes base's version (this is what the byte-content comparison above already flagged as
+  DIFFERS, since base moved but the branch did not).
+- `f` is in `BRANCH_CHANGED` but NOT in `BASE_CHANGED`: the branch is the only side that
+  touched the file since the merge-base; a genuine regression would require base to have
+  since removed something the branch re-adds, which cannot be true here. Non-finding for
+  this check (Agent M's own regression scan, Step 5, still covers this file independently).
+- `f` is in BOTH: both sides touched the file since diverging. This is bucket (a) or (b),
+  a genuine conflict or regression candidate; hand it to Agent M's per-commit regression
+  scan (Step 5) rather than resolving it here, since distinguishing "branch re-adds
+  something base deliberately removed" from "both made unrelated, compatible edits"
+  needs the line-level commit history Agent M already fetches.
+
+Only (a) and (b) are actionable; (c) is a non-finding.
 - **Few or no files IDENTICAL:** proceed to Step 3 normally; note any IDENTICAL files so
   agents do not waste effort reviewing already-merged content.
 

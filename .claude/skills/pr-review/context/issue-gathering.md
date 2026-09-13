@@ -10,7 +10,13 @@ duplicated here.
 
 Use GitHub MCP `pull_request_read` method `get_check_runs`.
 
-For each check with `conclusion` not `success` and not `neutral`, do the following:
+For each check with `conclusion` not `success`, `neutral`, or `skipped`, do the
+following. `skipped` is a job that intentionally did not run (a path filter, an
+`if:` condition that evaluated false); it is not a failure and needs no fix, and
+counting it as one manufactures a finding for a check that never actually ran. A
+`null` conclusion means still in progress, not failed; if `get_check_runs`
+returns any, treat those as not-yet-decided and skip them here rather than
+folding them into the failing set.
 
 - Record: check name, conclusion, run URL
 - **Identify failing step name first (reduces log noise):**
@@ -52,7 +58,7 @@ For each check with `conclusion` not `success` and not `neutral`, do the followi
 | Compatibility | Py version | Fix 3.10+ incompatibilities |
 | SBOM | SBOM | Fix dependency declarations |
 | SonarCloud | Quality gate | Defer to Step 1c |
-| qlty | Quality gate | Defer to Step 1c handling; enumerate locally if the qlty CLI is available (see Step 5b) |
+| qlty | Quality gate | Defer to `context/quality-gates.md`'s Qlty procedure (pr-review Step 4, not the 1c summary below, which covers SonarQube only and never reads qlty findings); enumerate locally if the qlty CLI is available (see Step 5b) |
 | Reusable workflow startup_failure (0 jobs, no logs, "workflow file issue") | Workflow-load failure | Not a step failure; diagnose at file/reference level. Check `uses:@<sha>` reachability via `gh api repos/<owner>/<repo>/compare/<default>...<sha>`; if `diverged` (orphaned by a squash-merge), re-pin to a SHA reachable from the reusable repo's default branch that contains the file and exposes the same `workflow_call` inputs. `contents?ref=<sha>` serves dangling commits, so existence checks mislead; use `compare`. Validate cheaply with `workflow_dispatch` on a throwaway branch (startup validation runs at load time, before job `if:`). When a failure appears after an edit, confirm causation by reverting the suspected change on the current base before committing to a fix direction. |
 | Failing reusable-workflow check (job renders as `<workflow> / <job>`, caller uses `uses: org/repo/...@<ref>`) and the FIX is to the workflow body | Wrong-ref fix risk | Before authoring a fix, resolve the running definition. For a workflow consumed via `uses: ...@<sha>`, the running body is whatever that SHA resolves to; it is NOT necessarily the reusable repo's default branch. Read the caller's pinned ref and `gh api compare` it against main AND any open-PR branch heads to identify which definition actually runs and will become canonical. A fix landed on the wrong ref (e.g. main, when the caller pins a diverged in-flight rework branch) is cosmetic, will not clear the observed failure, and can collide with an open rework PR of the same file. Fix the ref that runs. |
 | GitGuardian | Secrets | Alert user only, never auto-fix |
@@ -170,11 +176,15 @@ the classifier rule above and the CodeRabbit rate-limit trap.
 ## 1c. SonarQube findings
 
 **Abridged summary; `pr-review` Step 4 is authoritative.** The five steps below
-are the happy path only. The full procedure lives in
-`workflows/pr-review.md` Step 4 (substeps 4a through 4h) and covers cases this
-summary omits, including the pre-flight configuration check, security hotspots,
-and the Qlty gate. If the two ever disagree, `pr-review` Step 4 wins. Read it
-rather than this list whenever detection does not succeed on the first attempt.
+are the happy path only, and they cover SonarQube exclusively; this summary does
+not read or enumerate Qlty findings despite the CI-failure table above naming
+"Step 1c" as where qlty defers to (that pointer means `context/quality-gates.md`'s
+Qlty procedure under pr-review Step 4, not this SonarQube-only summary). The full
+procedure lives in `workflows/pr-review.md` Step 4 (substeps 4a through 4g) and
+covers cases this summary omits, including the pre-flight configuration check,
+security hotspots, and the Qlty gate. If the two ever disagree, `pr-review` Step 4
+wins. Read it rather than this list whenever detection does not succeed on the
+first attempt.
 
 1. Detect org from `.sonarlint/connectedMode.json` `sonarCloudOrganization`
    or `sonar-project.properties` `sonar.organization`
