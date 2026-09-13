@@ -81,16 +81,28 @@ This produces two opposite errors, and a workflow can contain both at once:
 
 **Settling poll:**
 
+Fetch and retain both fields on every attempt, not `mergeStateStatus` alone. `mergeable` and
+`mergeStateStatus` settle independently: GitHub can report a real `mergeStateStatus` while
+`mergeable` is still `null` mid-computation, or vice versa. A snippet that loops on
+`mergeStateStatus` only and reads `mergeable` once outside the loop can hand the caller an
+unsettled `mergeable`, reproducing the exact race this section exists to prevent, even though
+`mergeStateStatus` itself looked settled.
+
 ```bash
 for i in $(seq 1 10); do
-  MS=$(gh pr view "$PR_NUMBER" --repo "$OWNER/$REPO" --json mergeStateStatus \
-    --jq '.mergeStateStatus // "UNKNOWN"')
-  [ "$MS" != "UNKNOWN" ] && [ -n "$MS" ] && break
+  RESULT=$(gh pr view "$PR_NUMBER" --repo "$OWNER/$REPO" --json mergeStateStatus,mergeable)
+  MS=$(printf '%s' "$RESULT" | jq -r '.mergeStateStatus // "UNKNOWN"')
+  MG=$(printf '%s' "$RESULT" | jq -r '.mergeable // "UNKNOWN"')
+  [ "$MS" != "UNKNOWN" ] && [ -n "$MS" ] && [ "$MG" != "UNKNOWN" ] && [ -n "$MG" ] && break
   sleep 3
 done
 ```
 
-If the loop exits still unsettled, stop and surface it. Do not fall through.
+If the loop exits with either field still unsettled, stop and surface it. Do not fall
+through. `mergeStateStatus == DIRTY` (or `BEHIND`/`CONFLICTING`) is grounds to reject
+independently of `mergeable`'s value, since GitHub itself computes `DIRTY` from a real
+conflict; that rejection path does not need to wait on `mergeable` to settle. Every other use
+of either field must wait for both.
 
 **Why this is stated so emphatically:** `pr-fix.md` once held three incompatible
 postures on this single field at the same time. Step 0 treated it as a hard

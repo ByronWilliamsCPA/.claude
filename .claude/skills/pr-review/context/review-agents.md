@@ -715,6 +715,15 @@ deduplication with `agent source: M`. Capture its verdict object as
 `PREMISE_VERDICT = {verdict, headline}` for the Step 9 header and the Step 11 handoff.
 
 If Agent M produces no parseable JSON verdict (timeout, agent error, or malformed
-output), set `PREMISE_VERDICT = {verdict: "SKIP", headline: "premise gate did not run"}`.
-A SKIP verdict renders in the Step 9 report header as a single quiet line and does not
-trigger the HOLD confirmation in Step 11.
+output), retry once before falling back. A parse failure is not evidence of an OK
+verdict: the underlying run may have found a genuine HOLD-worthy premise concern and
+merely failed to emit it as parseable JSON, so collapsing every parse failure straight
+to a silent, non-blocking SKIP can suppress a real regression finding without anyone
+reviewing it. If the retry also fails to parse, set `PREMISE_VERDICT = {verdict:
+"UNRESOLVED", headline: "premise gate produced no parseable verdict after retry;
+treated as HOLD pending human review"}`. `UNRESOLVED` is a distinct state from both
+`SKIP` (the gate is known not to apply, e.g. Agent M was not dispatched at all) and
+`HOLD` (the gate ran and found a concern): it means the gate's outcome is unknown, and
+an unknown outcome must fail closed the same way a known HOLD does, not fail open the
+way a clean SKIP does. Step 9's header rendering and Step 11's confirmation gate both
+treat `UNRESOLVED` identically to `HOLD`.

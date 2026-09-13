@@ -11,10 +11,13 @@ method `get`, or `gh pr view --json url`.
 
 **From pr-review**: `FINDINGS`, `SONAR_FINDINGS`, `OWNER`, `REPO`,
 `PR_NUMBER`, `HEAD_BRANCH`, and `PREMISE_VERDICT` (if present) are already in
-context from the review. When `PREMISE_VERDICT.verdict` is `HOLD`, prepend a line to
-the fix summary: "Premise gate flagged HOLD: {PREMISE_VERDICT.headline}. This fix proceeds at the
-user's explicit direction." Standalone /pr-fix runs (not invoked via /pr-review) have
-no `PREMISE_VERDICT`; omit the line in that case.
+context from the review. When `PREMISE_VERDICT.verdict` is `HOLD` or `UNRESOLVED`,
+prepend a line to the fix summary: "Premise gate flagged {PREMISE_VERDICT.verdict}:
+{PREMISE_VERDICT.headline}. This fix proceeds at the user's explicit direction."
+(`UNRESOLVED` means Agent M's outcome is unknown after a retry and gates identically
+to a confirmed `HOLD`; see [context/review-agents.md](../context/review-agents.md).)
+Standalone /pr-fix runs (not invoked via /pr-review) have no `PREMISE_VERDICT`; omit
+the line in that case.
 
 ---
 

@@ -80,17 +80,35 @@ confirm or flag, never assume.
 
 **Reusable-workflow ref reachability (workflow files present).** For each
 `uses: <owner>/<repo>/...@<sha>` cross-repo reusable reference, verify the SHA is reachable
-from that repo's default branch and that the file exists at that ref:
+from some ref that will persist, not merely that it currently resolves:
 
 ```bash
-gh api "repos/<owner>/<repo>/compare/<default>...<sha>" --jq '.status'   # must not be "diverged"
+gh api "repos/<owner>/<repo>/compare/<sha>...<default>" --jq '.status'
 ```
 
-A `diverged` status means the pin points at a commit reachable from no ref (commonly a
-PR-branch SHA orphaned by a squash-merge); the Actions resolver refuses it and the workflow
-fails at startup once the source branch is deleted. Note `contents?ref=<sha>` still serves
-the file for dangling commits, so a file-existence check gives false confidence; use
-`compare`. Emit:
+`diverged` alone is NOT proof of orphaning: it is also the normal result for a valid commit
+on an active feature branch that has unique commits on both sides of the comparison (the
+branch is ahead of default in its own commits and behind in default's later commits). Do not
+flag on `diverged` by itself. The status that DOES prove safety is `ahead` or `identical`:
+either means `<sha>` is an ancestor of (or equal to) the default branch, so it is part of
+permanent history and can never be orphaned by a branch deletion. Only when the status is
+`diverged` or `behind` (sha not reachable from default) does the pin need a second check,
+since neither status distinguishes "still a live branch tip" from "reachable from no ref at
+all":
+
+```bash
+gh api "repos/<owner>/<repo>/commits/<sha>/branches-where-head" --jq 'length'
+```
+
+A nonzero result means `<sha>` is currently the tip of a live branch, so the pin is safe for
+now (though it depends on that branch surviving, unlike a default-branch ancestor). A zero
+result means the SHA is not the head of any existing branch and is not reachable from
+default either; this is the genuine orphan signal (commonly a PR-branch SHA the Actions
+resolver refuses once the branch has been deleted, or the object has already been garbage
+collected). Note `contents?ref=<sha>` still serves the file for a dangling commit until GC
+actually runs, so a file-existence check alone gives false confidence; use the two checks
+above instead. Only emit the finding when BOTH the ancestor check and the branch-tip check
+come back negative:
 
 ```text
 [Important] Workflow: reusable ref @<sha> is not reachable from <repo> default branch; it

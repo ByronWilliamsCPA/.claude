@@ -532,10 +532,13 @@ Or confirm now and I will post it immediately.
 
 ---
 
-Render a `HOLD` premise verdict with the same prominence as `BUILD FAILING`. An `OK`
-verdict may render as a single quiet line. A `SKIP` verdict renders as a single quiet
-line: "PREMISE SKIP: premise gate did not run." Individual premise findings from Agent M
-appear in their scored tiers above, like any other agent's findings.
+Render a `HOLD` premise verdict with the same prominence as `BUILD FAILING`. Render an
+`UNRESOLVED` verdict (Agent M produced no parseable verdict after one retry) with that
+same prominence: its outcome is unknown, not clean, and must fail closed like `HOLD`,
+not fail open like `SKIP`. An `OK` verdict may render as a single quiet line. A `SKIP`
+verdict renders as a single quiet line: "PREMISE SKIP: premise gate did not run."
+Individual premise findings from Agent M appear in their scored tiers above, like any
+other agent's findings.
 
 ---
 
@@ -608,11 +611,12 @@ If `NEXT_ACTION` is 1, stop here.
 
 ### Option 2 or 3: Run /pr-fix
 
-If `PREMISE_VERDICT.verdict` is `HOLD`, interpose one confirmation before loading the
-fix workflow:
+If `PREMISE_VERDICT.verdict` is `HOLD` or `UNRESOLVED`, interpose one confirmation
+before loading the fix workflow (an `UNRESOLVED` verdict means Agent M's outcome is
+unknown, not clean, and gates identically to a confirmed `HOLD`):
 
 ```text
-Premise gate flagged HOLD: {PREMISE_VERDICT.headline}.
+Premise gate flagged {PREMISE_VERDICT.verdict}: {PREMISE_VERDICT.headline}.
 /pr-fix would polish a change whose existence is in question.
 Proceed with the fix anyway? (y/N)
 ```

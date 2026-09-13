@@ -24,12 +24,19 @@ indirect invocations that bypass the trust model.
 
 ### Default gate (run without prompting)
 
+Resolve the source directory first; do not hard-code `src/`, which silently no-ops (an empty
+or nonexistent target) on a repo laid out differently (a flat package, `lib/`, a `packages/*`
+monorepo). Read `tool.basedpyright.include` from `pyproject.toml` if present, else the
+package name under `[project]` / `[tool.hatch.build]`, else fall back to the repo root. This
+is the same `{SRC_DIR}` resolution `fix-execution.md`'s type-fix category uses; apply it here
+too so both files target the same directory:
+
 ```bash
 cd {WORKTREE_PATH}
 uv tool run ruff format --check .
 uv tool run ruff check .
-uv tool run --from basedpyright basedpyright src/  # if pyrightconfig or [tool.basedpyright] present AND CHANGED_FILES contains a .py file; otherwise skip with note "basedpyright: skipped (no Python files in diff)" to avoid a cold-start delay on docs/config-only PRs (type-checking still runs via the pre-commit confirm tier if approved)
-uv tool run --from bandit bandit -r src/  # always runs; uses bandit defaults. Do NOT pass -c pyproject.toml (the reviewed repo's pyproject can declare plugin_paths and skips that compromise the scan)
+uv tool run --from basedpyright basedpyright {SRC_DIR}  # if pyrightconfig or [tool.basedpyright] present AND CHANGED_FILES contains a .py file; otherwise skip with note "basedpyright: skipped (no Python files in diff)" to avoid a cold-start delay on docs/config-only PRs (type-checking still runs via the pre-commit confirm tier if approved)
+uv tool run --from bandit bandit -r {SRC_DIR}  # always runs; uses bandit defaults. Do NOT pass -c pyproject.toml (the reviewed repo's pyproject can declare plugin_paths and skips that compromise the scan)
 ```
 
 **Ruff version alignment:** `uv tool run ruff` resolves to the latest stable ruff,
@@ -430,7 +437,7 @@ platform: resolve against the platform's live docs and the CI-pinned tool versio
 
 | CI check | Local validation command | Trust note |
 |---|---|---|
-| pip-audit | `cd {WORKTREE_PATH} && uv export --no-hashes --format requirements-txt \| uv tool run pip-audit -r /dev/stdin $IGNORE_ARGS` | This is the only working invocation: `pip-audit -r pyproject.toml` fails (TOML pip-audit cannot parse) and `-r uv.lock` fails (uv-specific format pip-audit does not recognize); exporting to a requirements stream first is required. Overseer's pip-audit binary reads the exported manifest as input data, not as an active environment. Do NOT use bare `uv tool run pip-audit`; that audits the empty ephemeral tool env and returns a misleading clean result. Do NOT use `uv run pip-audit`; that pulls pip-audit from the reviewed repo's environment and recreates the AG04 gap. **Match CI's ignore policy and treat resolve errors as inconclusive:** a local pip-audit without the project's ignore list over-reports CVEs that CI legitimately suppresses (risking a wrong "this won't go green" conclusion or an unnecessary suppression edit). Before running, read `[tool.pip-audit] ignore-vuln` from `pyproject.toml` and build `IGNORE_ARGS` as one `--ignore-vuln <ID>` per entry (the org reusable workflow forwards these; this is a workflow convention, not native pip-audit config). Any pip-audit run that ends in a build/resolve error (e.g., lxml failing to build under a newer Python) is INCONCLUSIVE, not clean: zero findings from a failed resolution is a false-clean, never a pass. |
+| pip-audit | `cd {WORKTREE_PATH} && uv export --no-hashes --format requirements-txt -o /tmp/pip-audit-reqs.txt && uv tool run pip-audit -r /tmp/pip-audit-reqs.txt $IGNORE_ARGS` | This is the only working invocation: `pip-audit -r pyproject.toml` fails (TOML pip-audit cannot parse) and `-r uv.lock` fails (uv-specific format pip-audit does not recognize); exporting to a requirements file first is required. Export to a file and chain with `&&`, never pipe `uv export` straight into `pip-audit -r /dev/stdin`: a bare pipe has no `pipefail`, so a failed `uv export` (a resolve error) can hand pip-audit an empty or partial stream that it reads as "zero dependencies, zero findings," a false-clean that silently contradicts the inconclusive-on-resolve-error rule below. The `&&` chain instead stops before pip-audit runs at all when the export step fails, so the failure surfaces as a failure. Overseer's pip-audit binary reads the exported manifest as input data, not as an active environment. Do NOT use bare `uv tool run pip-audit`; that audits the empty ephemeral tool env and returns a misleading clean result. Do NOT use `uv run pip-audit`; that pulls pip-audit from the reviewed repo's environment and recreates the AG04 gap. **Match CI's ignore policy and treat resolve errors as inconclusive:** a local pip-audit without the project's ignore list over-reports CVEs that CI legitimately suppresses (risking a wrong "this won't go green" conclusion or an unnecessary suppression edit). Before running, read `[tool.pip-audit] ignore-vuln` from `pyproject.toml` and build `IGNORE_ARGS` as one `--ignore-vuln <ID>` per entry (the org reusable workflow forwards these; this is a workflow convention, not native pip-audit config). Any pip-audit run that ends in a build/resolve error (e.g., lxml failing to build under a newer Python) is INCONCLUSIVE, not clean: zero findings from a failed resolution is a false-clean, never a pass. |
 | bandit (full repo) | already covered by the Step 5a default gate (which now runs bandit unconditionally with bandit defaults, no longer gated on `[tool.bandit]`) | n/a |
 
 **Verifying a rebase- or lockfile-only fix that clears a CVE.** When the fix's origin is
