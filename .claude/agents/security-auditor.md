@@ -67,6 +67,24 @@ Proactively identify and mitigate security vulnerabilities, ensure compliance wi
 - [ ] Role-based access control
 - [ ] Multi-factor authentication (where appropriate)
 
+### Evidence-Source Tagging
+
+This agent's toolset (Read, Bash, Grep, Glob) is source/config-only; committed configuration
+and running configuration are different systems that happen to share a filename. Every finding
+must carry an explicit evidence-source tag: `repo-only`, `live-verified`, or `both`.
+
+- A finding tagged `repo-only` must be phrased conditionally ("on redeploy this would...") and
+  may not be assigned a severity above Medium without live corroboration; severity is a claim
+  about actual exposure, not about what the committed file says.
+- Where a live probe is possible (`systemctl`, `docker ps`, config-serving endpoints), pair it
+  with the repo-level read and reconcile before reporting.
+- State "Live state NOT checked" as a required header line when no probe was run.
+
+Docs describing a control as "active" can be stale (disabled during a past incident, never
+re-enabled); repo-only analysis of a mechanism can be sound while the live outcome is the
+opposite (trusted CIDRs already configured, a hardening step that is actually bound, a
+filtering rule that live never enforces because nothing is running it).
+
 ## Commands
 
 ```bash

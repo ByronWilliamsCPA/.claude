@@ -13,7 +13,16 @@ Claude Code acts as SUPERVISOR for all development tasks.
 
 1. **Always Use TodoWrite**: Create and maintain TODO lists for ALL tasks
 2. **Assign Tasks to Agents**: Each TODO item → appropriate specialized agent
-3. **Review Agent Work**: Validate all agent outputs before proceeding
+3. **Review Agent Work**: Validate all agent outputs before proceeding. Two
+   sub-agent report patterns need independent verification, not face-value
+   acceptance: when a subagent reports a negative decision ("this check doesn't
+   apply", "already passes", "no action needed"), run the gate yourself before
+   accepting it, since a negative claim is the one an orchestrator is least
+   likely to double-check and most likely to be wrong; and when a subagent's
+   report characterizes a finding as "deferred to next round", treat that
+   characterization as unverified until the next round's operator re-reads the
+   original finding rather than the deferral summary (full delta:
+   `.claude/skills/subagent-driven-development-extras/SKILL.md`).
 4. **Use Temporary Reference Files**: `.tmp-` prefixed files in `tmp_cleanup/` for complex tasks
 5. **Maintain Continuity**: Reference files preserve context across conversation compactions
 
@@ -176,7 +185,11 @@ Create when:
 
 Subagent dispatches can fail on usage or quota limits (observed 2026-07:
 review and implementation agents killed mid-task by session usage limits).
-When a dispatch fails:
+Classify the failure before choosing a remedy: **transient** (retry as-is),
+**capacity/quota** (redispatch with narrower scope or a cheaper model), or
+**entitlement/access** (an organization or permission decision, not a
+resource limit; retrying the same path is futile, try a different model tier
+once, then surface the blocker immediately). When a dispatch fails:
 
 1. **Never absorb the full task inline.** Inline absorption defeats the
    context isolation that delegation exists to provide and is the main way
@@ -186,6 +199,17 @@ When a dispatch fails:
    defer the task and surface the blocker to the user.
 3. If any part of the work is completed inline as a last resort, disclose the
    substitution in the final report. Never silently swap the worker.
+
+### Dispatch prompt hygiene
+
+When work lives in a shared or mutable working directory, the brief must
+state the absolute worktree path, require every file operation to use that
+prefix, and include a cheap self-check the agent runs first (grep a
+known-current string) to confirm it is on the intended tree. Any
+environmental fact passed into a dispatch prompt (branch, HEAD SHA, diff
+status) is a claim to verify, not a given: instruct the agent to report
+discrepancies rather than proceed silently, and pin to an immutable ref
+(`git show <sha>:path`, `origin/main`) where possible.
 
 ## Scope Tracing (Phased Projects)
 
@@ -323,6 +347,18 @@ The `issues` list on `NEEDS_WORK` and the `blocker`/`proposed_fix` fields on
 retry decisions are **required** when their condition is true; they must not be
 omitted or left empty. A response that omits a required field should be treated
 as a failed verdict (for example, `NEEDS_WORK` with issue: "agent returned unparseable output").
+
+### Verification before publishing
+
+Before any subagent finding is published at the highest severity tier in a
+deliverable, the orchestrator independently verifies it with at least one
+direct observation; budget one verification command per Critical. When a
+subagent brief asks for output that a downstream gate will validate, the
+brief must name the validator and require the agent to run it or quote the
+accepted value set. When verifying a mechanical transformation, distinguish
+"it ran as reported" (counts, diffs, file lists) from "it is correct" (the
+output resolves to what it claims); the discriminating check's oracle must
+live outside the changed artifact.
 
 Specify the exact shape in the agent task prompt so the model commits to the
 structure before generating output. Example instruction to add to a task:
