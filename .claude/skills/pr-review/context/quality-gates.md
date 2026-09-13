@@ -37,19 +37,34 @@ for this repository" in the report. Do not block the rest of the workflow.
 **REST fallback when the MCP server is not loaded.** The sonarqube MCP server is not
 connected in every session. When the MCP prefix is unavailable, query the SonarCloud Web
 API directly with `SONARQUBE_TOKEN` (a local shell env var) rather than skipping Sonar
-entirely:
+entirely. Check the variable is actually set before spending a call on it; an unset
+token is not the same failure as an unreachable server and should be reported
+distinctly ("SonarQube: REST fallback unavailable, `SONARQUBE_TOKEN` is not set" versus
+"SonarQube: unreachable"):
 
 ```bash
-curl -s -u "${SONARQUBE_TOKEN}:" \
-  "https://sonarcloud.io/api/issues/search?projects={KEY}&organization={ORG}&pullRequest={N}"
-curl -s -u "${SONARQUBE_TOKEN}:" \
-  "https://sonarcloud.io/api/hotspots/search?projectKey={KEY}&pullRequest={N}"
+if [ -z "${SONARQUBE_TOKEN:-}" ]; then
+  echo "SonarQube: REST fallback unavailable, SONARQUBE_TOKEN is not set"
+else
+  ISSUES_HTTP=$(curl -s -o /tmp/sonar_issues.json -w '%{http_code}' -u "${SONARQUBE_TOKEN}:" \
+    "https://sonarcloud.io/api/issues/search?componentKeys={KEY}&organization={ORG}&pullRequest={N}")
+  HOTSPOTS_HTTP=$(curl -s -o /tmp/sonar_hotspots.json -w '%{http_code}' -u "${SONARQUBE_TOKEN}:" \
+    "https://sonarcloud.io/api/hotspots/search?projectKey={KEY}&pullRequest={N}")
+  # A non-2xx status means the fallback failed (bad token, wrong key, rate limit);
+  # do not treat the response body as findings in that case.
+fi
 ```
 
 Both endpoints require authentication: an anonymous request returns "Project doesn't
 exist" even for a valid key, so the `-u "${SONARQUBE_TOKEN}:"` form is mandatory and the
-curl path covers BOTH issues and hotspots. Only if both MCP and REST fail should the
-workflow skip Sonar.
+curl path covers BOTH issues and hotspots. Note the issues endpoint's parameter is
+`componentKeys`, not `projects`; `projects` is not a recognized parameter for
+`/api/issues/search` and is silently ignored by the API, which would otherwise return
+an unfiltered (or empty, depending on token scope) result set that looks like "no
+issues" rather than "malformed request." Check `$ISSUES_HTTP`/`$HOTSPOTS_HTTP` for a
+2xx status before treating the body as findings; a non-2xx status is a fetch failure,
+not an empty result, and should be reported as such. Only if both MCP and REST fail
+should the workflow skip Sonar.
 
 ### 4b. Resolve project key
 
@@ -61,62 +76,17 @@ Check in order:
 If not found, use `search_my_sonarqube_projects` to list projects and match
 by repo name.
 
-### 4c. Fetch PR-specific issues
+### 4c. Pre-flight SonarCloud configuration check
 
-```text
-search_sonar_issues_in_projects(
-  projects: [PROJECT_KEY],
-  pullRequest: PR_NUMBER   ← PR-specific analysis only
-)
-```
-
-If the PR has not been analyzed yet (empty result), fall back to branch issues:
-
-```text
-search_sonar_issues_in_projects(
-  projects: [PROJECT_KEY],
-  branch: HEAD_BRANCH
-)
-```
-
-Note in the report whether results are PR-specific or branch-level.
-
-### 4f. Fetch PR-specific security hotspots
-
-Security hotspots are a completely separate queue from issues in SonarCloud.
-`search_sonar_issues_in_projects` never returns them; this explicit call is
-required. Skipping it is the most common reason hotspots go unreviewed.
-
-```text
-search_security_hotspots(
-  projectKey: PROJECT_KEY,
-  pullRequest: PR_NUMBER
-)
-```
-
-If the result is empty (PR not yet analyzed), fall back to branch-level with
-status filter:
-
-```text
-search_security_hotspots(
-  projectKey: PROJECT_KEY,
-  branch: HEAD_BRANCH,
-  status: "TO_REVIEW"
-)
-```
-
-Note in the report whether results are PR-specific or branch-level.
-Store as `SONAR_HOTSPOTS`. For each hotspot record: component, line, rule key,
-message, securityCategory, vulnerabilityProbability (HIGH/MEDIUM/LOW).
-
-### 4g. Pre-flight SonarCloud configuration check
-
-Before fetching findings, inspect any `sonar-project.properties` or
-`sonar-project.properties.template` for placeholder values:
+Before fetching findings, inspect `sonar-project.properties` AND its
+`.template` variant for placeholder values (a repo mid-setup can carry either
+name, and checking only the first misses the second entirely):
 
 ```bash
-gh api repos/{OWNER}/{REPO}/contents/sonar-project.properties \
-  --jq '.content' | base64 -d 2>/dev/null
+for f in sonar-project.properties sonar-project.properties.template; do
+  gh api "repos/{OWNER}/{REPO}/contents/$f" \
+    --jq '.content' 2>/dev/null | base64 -d 2>/dev/null
+done
 ```
 
 If any of these patterns appear, emit a **Critical** finding in the report:
@@ -130,9 +100,76 @@ gate will fail. Update `sonar-project.properties` with the real organization
 and project key before merge."
 
 This prevents the silent "SonarCloud: not configured" skip that delays
-findings until a later push.
+findings until a later push. Doing this check before 4d/4e also means a
+placeholder config is reported as a real finding rather than silently
+producing the same empty result the "not yet analyzed" fallback below
+expects.
 
-### 4e. Store SonarQube findings and hotspots for the fix step
+### 4d. Fetch PR-specific issues
+
+```text
+search_sonar_issues_in_projects(
+  projects: [PROJECT_KEY],
+  pullRequest: PR_NUMBER   ← PR-specific analysis only
+)
+```
+
+An empty result here is ambiguous: it means either "the PR has not been
+analyzed yet" or "the PR was analyzed and has zero issues," and the two
+must not be conflated silently, one is a fallback case and the other is
+success. Disambiguate before falling back:
+
+```text
+list_pull_requests(project: PROJECT_KEY)
+```
+
+If `PR_NUMBER` appears in that list, the PR has been analyzed and an empty
+issues result means zero issues; report it as such and do not fall back to
+branch-level. Only when `PR_NUMBER` is absent from the list should the
+fallback run:
+
+```text
+search_sonar_issues_in_projects(
+  projects: [PROJECT_KEY],
+  branch: HEAD_BRANCH
+)
+```
+
+Note in the report whether results are PR-specific or branch-level, and
+if branch-level, that the fallback fired because the PR is not yet
+registered in SonarCloud rather than because it has an empty finding set.
+
+### 4e. Fetch PR-specific security hotspots
+
+Security hotspots are a completely separate queue from issues in SonarCloud.
+`search_sonar_issues_in_projects` never returns them; this explicit call is
+required. Skipping it is the most common reason hotspots go unreviewed.
+
+```text
+search_security_hotspots(
+  projectKey: PROJECT_KEY,
+  pullRequest: PR_NUMBER
+)
+```
+
+The same not-yet-analyzed-versus-zero-hotspots ambiguity applies here.
+Reuse the `list_pull_requests` check from 4d rather than treating an empty
+result as automatic grounds for falling back: only fall back to
+branch-level when `PR_NUMBER` is absent from that list.
+
+```text
+search_security_hotspots(
+  projectKey: PROJECT_KEY,
+  branch: HEAD_BRANCH,
+  status: "TO_REVIEW"
+)
+```
+
+Note in the report whether results are PR-specific or branch-level.
+Store as `SONAR_HOTSPOTS`. For each hotspot record: component, line, rule key,
+message, securityCategory, vulnerabilityProbability (HIGH/MEDIUM/LOW).
+
+### 4f. Store SonarQube findings and hotspots for the fix step
 
 SonarQube issues are deterministic -- they have clear, prescribed fixes and
 do not require human judgment. Do not include them in the review report.
@@ -152,7 +189,7 @@ The review report shows only a one-line summary:
 Omit the hotspot clause if M = 0. The fix step resolves both without
 further review unless a hotspot genuinely requires a human decision.
 
-### 4h. Qlty findings (other configured quality gate)
+### 4g. Qlty findings (other configured quality gate)
 
 Account for every configured quality gate that produces findings, not just the ones with
 convenient APIs. Qlty posts a blocking-issue count as a GitHub commit STATUS (not a
