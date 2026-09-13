@@ -74,6 +74,12 @@ explicitly and replace while preserving meaning ("stable", "rank-stability check
 grep -nE 'robust|leverage|seamless|...' generated_artifact.md
 ```
 
+The gate applies to any content that reaches the user, not only content
+written to a file. A conversational or chat response that is never saved to
+disk is exempt from a file-based grep but not from the underlying rule; scan
+the drafted response text itself before sending when no artifact file exists
+to grep.
+
 ## Structural Tells to Avoid
 
 These patterns appear in AI output and make text look unreviewed:

@@ -293,12 +293,26 @@ entry; once the speculative build passes, the queue lands the batch using
 the auto-merge method. Use `squash` for dependency batches to keep the
 default branch history clean.
 
+Re-check `autoMergeRequest`, `isInMergeQueue`, and `mergeQueueEntry` after any
+force-push, rebase, or new-commit push, before assuming a PR will still merge
+unattended: a force-push commonly disarms auto-merge and/or evicts the PR from the
+merge queue silently (full workflow-level detail: `pr-review/workflows/pr-fix.md`).
+
 ### References
 
 - GitHub docs:
   <https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/configuring-pull-request-merges/managing-a-merge-queue>
 - Cost incident motivating these checks: ByronWilliamsCPA/.github#154
 - Standards: CI-040 (trigger), CI-062 (ruleset)
+
+## Append-only ledger merges
+
+For append-only, contiguous-ID ledger files (manifest logs, compliance master
+logs), configure a `merge=union` driver in `.gitattributes` rather than
+hand-resolving cumulative rebase or merge conflicts. Hand-resolution risks silently
+dropping or duplicating entries across repeated rebases; a union merge driver
+concatenates both sides and lets a downstream dedup/sort pass clean up, instead of
+a human picking one side under time pressure.
 
 ## Session Forking
 

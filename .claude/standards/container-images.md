@@ -155,6 +155,15 @@ binaries from a Debian 13 DHI image (e.g. `dhi-uv:0-debian13`) into a Debian 12
 (bookworm) builder fails at runtime with a symbol version error. Always pair the
 `-debian13-dev` builder base with `-debian13` source images.
 
+## CA trust store verification
+
+A minimal DHI or distroless base image can silently omit the CA certificate trust
+store (`ca-certificates` or equivalent). Its absence disables outbound TLS
+verification with no error: the container makes outbound HTTPS calls that succeed
+even against a spoofed or MITM'd endpoint, because there is nothing to fail
+verification against. Verify the trust store is present in any hardened/distroless
+base image that makes outbound TLS connections before shipping it.
+
 ## Security properties
 
 Every image in the GHCR mirror has:
