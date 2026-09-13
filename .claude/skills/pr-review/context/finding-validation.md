@@ -233,8 +233,25 @@ Informational, appending "(consensus: false positive: {reason})" to its rational
 
 ### 7b-2. Security finding validation (Critical security findings only)
 
-If any Critical finding originates from Agent I (Security Pass) or contains "Security/"
-in its description, repeat the 7b-1 engine call with `--domain security` and
+Route by the finding's SUBSTANCE, not its origin. Agent I (Security Pass) is not the
+only source of a genuinely security-relevant Critical finding: Agent B (CLAUDE.md
+compliance), Agent M (premise/regression), or any other agent can surface an
+injection vector, an auth/authz bypass, a secrets-handling defect, or an unsafe
+deserialization path while investigating something else entirely, and a "Security/"
+description prefix is a formatting convention some agents use and others do not.
+Route a Critical finding through the security pass below if EITHER:
+
+- it originates from Agent I, or its description carries the "Security/" prefix, OR
+- its content otherwise describes a security-relevant defect category regardless of
+  source agent or description formatting: injection (SQL, command, template, log),
+  authN/authZ bypass, secrets or credential exposure, unsafe deserialization,
+  path traversal, SSRF, insecure cryptography, or a supply-chain/dependency
+  vulnerability.
+
+When in doubt whether a finding fits one of those categories, route it through the
+security pass; the cost of one extra `--domain security` call is far cheaper than a
+real vulnerability validated only by the generic false-positive filter. For any
+Critical finding routed here, repeat the 7b-1 engine call with `--domain security` and
 `--level 2` (security decisions warrant more model coverage regardless of
 `CONSENSUS_LEVEL`), using this prompt:
 

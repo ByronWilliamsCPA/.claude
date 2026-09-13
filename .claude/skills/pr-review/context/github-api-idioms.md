@@ -29,9 +29,17 @@ so `login == "coderabbitai"` matches nothing.
 
 **Working filter:**
 
+The stated rule is substring, case-insensitive, never anchored exact-match:
+an anchored `^...$` pattern is exactly the "exact equality" trap the rule
+warns against, just spelled as a regex instead of `==`, and it silently stops
+matching the moment GitHub varies casing or appends/reorders a suffix on
+either login. Match on the unanchored, case-insensitive substrings `copilot`
+and `coderabbitai`, consistent with how both bot logins are filtered
+elsewhere in this workflow:
+
 ```bash
 gh api "repos/$OWNER/$REPO/pulls/$PR_NUMBER/reviews" --paginate \
-  --jq '[.[] | select(.user.login | test("^(Copilot|copilot-pull-request-reviewer(\\[bot\\])?|coderabbitai(\\[bot\\])?)$")) | .user.login] | unique'
+  --jq '[.[] | select(.user.login | test("copilot|coderabbitai"; "i")) | .user.login] | unique'
 ```
 
 **Two defects this caused, with different symptoms:**
