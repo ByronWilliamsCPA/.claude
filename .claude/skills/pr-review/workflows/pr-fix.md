@@ -240,7 +240,7 @@ walkthroughs, pure praise) is enumerated in the context file below.
 
 **Abridged summary; `pr-review` Step 4 is authoritative.** The five steps below
 are the happy path only. The full procedure lives in
-`workflows/pr-review.md` Step 4 (substeps 4a through 4h) and covers cases this
+`workflows/pr-review.md` Step 4 (substeps 4a through 4g) and covers cases this
 summary omits, including the pre-flight configuration check, security hotspots,
 and the Qlty gate. If the two ever disagree, `pr-review` Step 4 wins. Read it
 rather than this list whenever detection does not succeed on the first attempt.
@@ -893,8 +893,12 @@ signal is direct check-run data plus `mergeable_state == "clean"`.
 
 ### Phase B: Assess results
 
-Filter stale comments (an older `commit_id` whose cited content no longer
-exists at HEAD) out of the new-findings count before classifying the outcome.
+Re-fetch and classify comments using the same methods and author-classification
+rules as Step 1b ([context/issue-gathering.md](../context/issue-gathering.md#1b-review-comments)),
+not a separate re-derivation; Copilot's dual-login pattern and the other bot rules
+apply identically to a post-push comment batch. Filter stale comments (an older
+`commit_id` whose cited content no longer exists at HEAD) out of the new-findings
+count before classifying the outcome.
 A hard-FAILED check is not automatically a merge blocker: it is advisory when
 non-required and `mergeStateStatus` is `UNSTABLE` (not `BLOCKED`) with
 `mergeable: MERGEABLE`.
@@ -963,7 +967,7 @@ the user explicitly discards.
 | --- | --- |
 | `gh` / GitHub MCP not authenticated | Stop. Print auth instructions. |
 | PR not found or closed | Stop with clear message. |
-| Worktree already exists | Remove with `--force` and re-create. |
+| Worktree already exists | Do NOT blanket `--force` remove; another session may own it. Follow the guarded check in Step 3 (uncommitted changes and unpushed commits both empty before a plain `git worktree remove`; `--force` only after the user confirms it is disposable). |
 | Pre-commit fails after 3 attempts | Report failures, ask commit anyway or stop. |
 | Finding cannot be auto-fixed | Assign to the appropriate specialized agent (see Priority 3 agent table in [context/fix-execution.md](../context/fix-execution.md)). Mark "human-only" only when no agent applies. |
 | Push rejected (protected/diverged) | Report error. Offer Option 3 (keep worktree). |

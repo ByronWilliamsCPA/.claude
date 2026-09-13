@@ -27,11 +27,19 @@ Poll in parallel every 60 seconds:
    new SHA's check-runs directly:
 
    ```bash
-   gh api repos/{OWNER}/{REPO}/commits/$PUSH_SHA/check-runs --paginate \
-     --jq '[.[]? // empty] | length' >/dev/null  # see structured query below
-   ACTIVE=$(gh api repos/{OWNER}/{REPO}/commits/$PUSH_SHA/check-runs --paginate \
-     | jq -s '[.[].check_runs[] | select(.status != "completed")] | length')
-   ACTIVE=${ACTIVE:-99}   # empty/failed poll = still active, never "done"
+   # Check the gh api call's own exit status separately from jq's. A pipeline
+   # without `set -o pipefail` reports only the LAST command's exit status, so
+   # a failed `gh api` call feeding a `jq -s` that still parses (an error body,
+   # or a well-formed empty result) can leave $? at 0 and ACTIVE at a real "0",
+   # which the `${ACTIVE:-99}` empty-string fallback below does NOT catch,
+   # since 0 is not empty. Fail the poll explicitly instead of trusting the
+   # pipeline's combined exit status.
+   if ! RAW=$(gh api repos/{OWNER}/{REPO}/commits/$PUSH_SHA/check-runs --paginate 2>/dev/null); then
+     ACTIVE=99   # gh api call itself failed: still active, never "done"
+   else
+     ACTIVE=$(printf '%s' "$RAW" | jq -s '[.[].check_runs[] | select(.status != "completed")] | length' 2>/dev/null)
+     ACTIVE=${ACTIVE:-99}   # jq failed or emitted nothing: still active, never "done"
+   fi
    ```
 
    A check is non-terminal when `status` is any of `queued`, `in_progress`, `waiting`,
@@ -70,24 +78,59 @@ Poll in parallel every 60 seconds:
    Never conclude "required check missing" from a query against a SHA that is no longer
    the head.
 
-2. **Review comments:** `gh api repos/{OWNER}/{REPO}/pulls/{PR_NUMBER}/comments --jq 'length'`
+2. **Review comments:** `gh api repos/{OWNER}/{REPO}/pulls/{PR_NUMBER}/comments --paginate --jq 'length'`
+   (`--paginate` is required: the endpoint defaults to 30 per page, and a PR with more
+   comments than that would silently report only the first page's count, so a comment
+   count that looks stable could actually be a truncated page total, not the real count)
    - Track: comment count stabilizes (same count for 2 consecutive polls)
-3. **PR state (when AUTO_MERGE=true):** `gh pr view --json state --jq '.state'`
+3. **Qlty and other classic-Status API checks.** The Checks API poll above
+   (`commits/{sha}/check-runs`) does not cover checks posted through the older commit-Status
+   API, which is how Qlty (and some other third-party quality tools) reports; a Qlty status
+   left pending or failing would never surface if only `check-runs` is polled. Poll the
+   combined status alongside it:
+
+   ```bash
+   gh api repos/{OWNER}/{REPO}/commits/$PUSH_SHA/status --jq '.state'
+   ```
+
+   Treat a `state` of `pending` as non-terminal (same as an in-progress check-run) and
+   `failure`/`error` as a real failure to fold into Phase B's classification; only
+   `success` clears this signal.
+4. **PR state (when AUTO_MERGE=true):** `gh pr view --json state --jq '.state'`
    - If `state == "MERGED"`: stop immediately. The PR merged between cycles.
      Any staged fixes must go to a follow-up PR.
+   - **Merge-queue gate, run once per repo before relying on PR-head state as the merge
+     oracle:** `gh api "repos/{OWNER}/{REPO}" --jq .owner.type`. Merge queue is an
+     Organization-only GitHub feature (see
+     [context/github-api-idioms.md](github-api-idioms.md), "Merge queues are invisible
+     to both workflows"); when this returns `Organization` AND the repo's ruleset
+     declares a merge queue, `gh pr merge` **enqueues** rather than merges, and the
+     checks that gate the actual merge run against
+     `gh-readonly-queue/{BASE_BRANCH}/pr-{PR_NUMBER}-{sha}`, not `PUSH_SHA`. Watching
+     PR-head check-runs and `state` on a queued repo answers "is the PR itself green,"
+     not "has it merged"; poll the PR's `state` for the transition to `MERGED` as the
+     actual completion signal there, and do not treat "all PR-head checks green" as
+     merge completion when the repo is queue-enabled. When `owner.type` is `User`,
+     none of this applies: `gh pr merge` already merges directly and the existing
+     PR-head polling is already the correct oracle.
 
 **Confirm each REQUIRED context actually re-ran on the new head SHA.** GitHub evaluates
 required status contexts against the head SHA. A fix commit that touches only files outside
 a required path-filtered workflow's trigger paths does NOT re-run that workflow; its required
 context then has no status on the new head, reads as unsatisfied-on-head, and
 `mergeStateStatus` stays or returns to BLOCKED even though every check that DID run is green.
-After pushing a narrow fix, check `gh api repos/{OWNER}/{REPO}/commits/$PUSH_SHA/check-runs`
-for each required context; if a required context is missing on the head, the PR is silently
-blocked. Re-trigger it by ensuring the final push touches that workflow's trigger paths (for
-example, bundle the fixes so the last commit also edits a path the required workflow watches,
-such as a file under that workflow's `paths:` filter). This is the same phantom/never-reported required-check failure
-mode pr-review documents, surfacing here via path-filtered re-triggers; a green prior run does
-not carry forward to a new head.
+After pushing a narrow fix, check `gh api repos/{OWNER}/{REPO}/commits/$CURRENT_SHA/check-runs`
+for each required context, where `$CURRENT_SHA` is the re-anchored live head from the rule
+above, not the original fixed `$PUSH_SHA`: if the head has advanced since this push (a
+co-author push, an auto-update-branch commit), a required context is legitimately evaluated
+against the NEW head, and querying the stale `$PUSH_SHA` here would reproduce exactly the
+false phantom-block this paragraph exists to catch. If a required context is missing on the
+current head, the PR is silently blocked. Re-trigger it by ensuring the final push touches
+that workflow's trigger paths (for example, bundle the fixes so the last commit also edits a
+path the required workflow watches, such as a file under that workflow's `paths:` filter).
+This is the same phantom/never-reported required-check failure mode pr-review documents,
+surfacing here via path-filtered re-triggers; a green prior run does not carry forward to a
+new head.
 
 **Do not block on `mergeStateStatus` for the all-green signal.** That field (and
 `mergeable`) is computed asynchronously and can return `null` or lag by minutes even when
@@ -155,10 +198,16 @@ suspected change on the current base before committing to a fix direction.
 **SARIF / code-scanning orphan checks, CodeQL only (legacy, pre-2026-09):** `codeql.yml` and
 `dependency-review.yml` were deleted fleet-wide (2026-09; `actions/dependency-review-action` now
 requires paid GitHub Advanced Security). A "CodeQL" or "Code scanning results / CodeQL" check
-visible on a new PR is therefore a leftover from before the deletion, not a live analysis: treat
-it as permanently orphaned (not merely path-filtered) and, if it recurs, have the repo owner
-disable "Code scanning: Default setup" in repo Settings > Code security so GitHub stops
-registering the check context. This does NOT apply to other SARIF-producing workflows: `sbom.yml`
+visible on a new PR is very likely a leftover from before the deletion, not a live analysis, but
+do not assume the deletion is permanent or universal before treating it that way: verify by
+checking whether `.github/workflows/codeql.yml` still exists on the current default branch
+(`gh api repos/{OWNER}/{REPO}/contents/.github/workflows/codeql.yml?ref={BASE_BRANCH}`); a repo
+can re-enable "Code scanning: Default setup" independently of this deletion, a new repo added to
+the org afterward may never have had it removed, or GitHub's free-tier policy can change again.
+If the workflow file is genuinely absent, treat the check as orphaned and, if it recurs, have
+the repo owner disable "Code scanning: Default setup" in repo Settings > Code security so GitHub
+stops registering the check context; if the file is present, the check is live and needs the
+usual failure classification instead. This does NOT apply to other SARIF-producing workflows: `sbom.yml`
 still runs `github/codeql-action/upload-sarif` for its Grype and OSV-Scanner jobs (categories
 `grype-runtime-deps`, `osv-sbom-runtime-deps`), so those checks are live, not orphaned. The
 pre-2026-09 mechanics below (queued indefinitely because the upstream analysis job was
@@ -172,7 +221,13 @@ gh pr view "$PR_NUMBER" --repo "$OWNER/$REPO" --json mergeable,mergeStateStatus 
 
 If `mergeable: MERGEABLE` (button is active), a queued (not orphaned-CodeQL) SARIF check is a
 non-blocking advisory check, not a CI failure. Classify it as "advisory pending (path-filtered
-upstream job)" and do NOT trigger a re-fix cycle. The PR is safe to merge.
+upstream job)" and do NOT trigger a re-fix cycle for it. `mergeable: MERGEABLE` says only that
+the branch has no git-level conflict; it does NOT say the PR is clear to merge overall, since
+`mergeStateStatus` can independently be `BLOCKED` (unresolved review threads, a missing
+required context) while `mergeable` stays `MERGEABLE` the whole time, exactly the
+Green-but-BLOCKED scenario documented below. Do not assert overall mergeability from this
+signal alone; check `mergeStateStatus`/required-context state per that section before calling
+the PR clear.
 
 Classify the outcome:
 
