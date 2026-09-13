@@ -74,13 +74,18 @@ split.** The orchestrator reads the spine and nothing else by default. Every
 - *read before executing* means the orchestrator runs this step itself. It
   opens the file when it reaches that step, not at the top of the run.
 
-Both workflows are linear, so every step runs on every invocation. Eagerly
-opening all ten context files therefore costs *more* than the single undivided
-file did before the split (roughly 25k tokens against the old 17k). Honouring
-the pointers puts about 10k in the orchestrator and pushes the remaining 12k
-into agents that were being dispatched anyway. Opening a context file for a
-step you are about to delegate is the specific mistake that turns this refactor
-into a regression.
+Both workflows are a fixed linear sequence of `## Step N` headings; every step
+is reached on every invocation even though some steps complete as a no-op at
+runtime (Step 5's Agents E-H and L activate only when Step 3's classification
+calls for them; pr-fix's Step 9 watch loop only starts if Step 8's push is
+approved). Reaching a step is not the same as its context file being needed:
+eagerly opening all ten context files up front costs *more* than the single
+undivided file did before the split (roughly 25k tokens against the old 17k).
+Honouring the pointers puts about 10k in the orchestrator and pushes the
+remaining 12k into agents that were being dispatched anyway. Opening a context
+file for a step you are about to delegate, or one whose runtime conditions
+will skip it, is the specific mistake that turns this refactor into a
+regression.
 
 Step numbering is the addressing scheme for both workflows and is load-bearing:
 roughly 125 internal references point at those headings. Never renumber,
@@ -93,7 +98,7 @@ Move bodies, not anchors.
 | `context/pr-metadata.md` | pr-review Steps 2, 2d, 2e, 2f | orchestrator |
 | `context/change-classification.md` | pr-review Step 3 | the Haiku agent, by path |
 | `context/quality-gates.md` | pr-review Step 4 | orchestrator |
-| `context/review-agents.md` | pr-review Step 5, the agent roster | Agents A-M, by path |
+| `context/review-agents.md` | pr-review Step 5, the agent roster | orchestrator, directly. It opens with orchestrator-run procedure (large-PR strategy, the file-context fetch, dispatch discipline) that must execute before any agent exists to dispatch, and the orchestrator is also the one extracting each `### Agent X:` block below to build that agent's dispatch prompt. Only the extracted block reaches the agent; no agent opens this file itself. |
 | `context/finding-validation.md` | pr-review Steps 6 and 7b | Step 6 half: the Haiku agents, by path. Step 7b half: orchestrator |
 | `context/issue-gathering.md` | pr-fix Step 1 | orchestrator |
 | `context/fix-execution.md` | pr-fix Step 4 | orchestrator |

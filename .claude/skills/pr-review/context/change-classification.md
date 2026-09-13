@@ -134,5 +134,7 @@ WHOLE file, not just the diff lines. Pre-commit's changed-files scoping will NOT
 surface violations the move newly exposed until the next unrelated edit to that file.
 ```
 
-Include the moved file path in the CHANGED_FILES list for agents B, F, G, and I so
-they read full file context, not just the diff hunk.
+Include the moved file path in the CHANGED_FILES list for agents B, F, G, and K so
+they read full file context, not just the diff hunk (these are the four agents that
+receive `CONTEXT_FILES`; see `review-agents.md`'s File context fetch section. Agent I,
+Security, works from the diff alone and is not part of this set).

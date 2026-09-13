@@ -25,16 +25,18 @@ PREMISE_MERGED_PR_LOOKBACK:   10
 PREMISE_STALENESS_HOLD_DAYS:  14
 ```
 
-**`PANEL_MODELS` is flagged, not fixed.** Both listed IDs are stale against standing guidance
-to avoid `-pro` model variants (`feedback_no_pro_models`), and neither has been re-verified
-against the live OpenRouter roster, which churns independently of this file. This was caught,
-not corrected: substituting a name from training data or from memory carries the same risk as
-leaving the stale value in place, because an unverified replacement can be just as wrong as the
-value it replaces, only more confidently wrong. Do not silently swap in a plausible-looking
-model ID here. Before the next run that reaches Agent L, re-derive the roster live (`pal
-listmodels`, or the `/panel` skill's own roster listing) and pick the two highest-scoring
-non-pro, cross-vendor models, or bring the drift to the user as an explicit decision. Leaving
-a flagged stale value beats asserting an unverified one as settled.
+**`PANEL_MODELS` is flagged, not fixed.** `google/gemini-2.5-pro-preview` is stale against
+standing guidance to avoid `-pro` model variants (`feedback_no_pro_models`); `openai/gpt-4o`
+is not a `-pro` variant, but is stale for a separate reason, it predates OpenAI's current
+flagship line and has not been re-verified as the best available cross-vendor choice. Neither
+ID has been re-verified against the live OpenRouter roster, which churns independently of this
+file. This was caught, not corrected: substituting a name from training data or from memory
+carries the same risk as leaving the stale value in place, because an unverified replacement
+can be just as wrong as the value it replaces, only more confidently wrong. Do not silently
+swap in a plausible-looking model ID here. Before the next run that reaches Agent L, re-derive
+the roster live (`pal listmodels`, or the `/panel` skill's own roster listing) and pick the two
+highest-scoring non-pro, cross-vendor models, or bring the drift to the user as an explicit
+decision. Leaving a flagged stale value beats asserting an unverified one as settled.
 
 - `PANEL_MODELS`: model list passed to `Skill("panel")` in flexible panel mode
   for Agent L (the engine's `--models` argument). Precondition:
