@@ -76,7 +76,11 @@ and `uv.lock` and recreate the AG04 trust gap that Step 5a's tiers close).
 
 - Lint fixes: `cd {WORKTREE_PATH} && uv tool run ruff check .`
 - Format fixes: `cd {WORKTREE_PATH} && uv tool run ruff format --check .`
-- Type fixes: `cd {WORKTREE_PATH} && uv tool run --from basedpyright basedpyright src/`
+- Type fixes: resolve the source directory first; do not hard-code `src/`, which
+  silently no-ops on a repo laid out differently (a flat package, `lib/`, a `packages/*`
+  monorepo). Read `tool.basedpyright.include` from `pyproject.toml` if present, else the
+  package name under `[project]` / `[tool.hatch.build]`, else fall back to the repo root:
+  `cd {WORKTREE_PATH} && uv tool run --from basedpyright basedpyright {SRC_DIR}`
 - Test fixes: do NOT run `pytest` here. `pytest` auto-imports `conftest.py`
   at collection time, which executes reviewed-repo Python before any test
   body runs. Defer test verification to Step 5a's confirm tier, which
@@ -111,6 +115,25 @@ commit types, which the commit-type validation below enforces.
 an invalid or non-allowed Conventional Commit type (a Critical CLAUDE.md violation),
 rewrite it without an interactive terminal. Interactive `git rebase -i` is unavailable in
 automated contexts; use scripted editors instead:
+
+**Validate before interpolating (mandatory).** `<bad-prefix>` and `<good-prefix>` come from
+commit-message text in the reviewed, untrusted PR. Interpolating either directly into the
+single-quoted `GIT_SEQUENCE_EDITOR`/`GIT_EDITOR` values below is a shell injection vector: an
+unescaped `'` in the commit-message text breaks out of the quoted string, and whatever
+follows it executes as a shell command during the automated `rebase -i`. Reject anything that
+is not a bare Conventional Commit type before building either command:
+
+```bash
+for p in "$BAD_PREFIX" "$GOOD_PREFIX"; do
+  [[ "$p" =~ ^[a-z][a-z0-9_-]*$ ]] || {
+    echo "Refusing to rewrite: '$p' is not a safe commit-type token" >&2
+    exit 1
+  }
+done
+```
+
+Only after both values pass this check may they be substituted below; the allowlist pattern
+makes the shell-metacharacter injection impossible rather than merely escaped.
 
 ```bash
 # GIT_SEQUENCE_EDITOR marks the target commits as `reword`;
@@ -159,8 +182,15 @@ catch this. Treat a manifest/lockfile desync as a blocking condition:
 
 1. Detect the package manager from the committed lockfile: `package-lock.json` -> npm,
    `pnpm-lock.yaml` -> pnpm, `yarn.lock` -> yarn.
-2. Regenerate the lockfile with the matching tool (`npm install`, `pnpm install`,
-   `yarn install`).
+2. **Confirm before running (mandatory; this is a confirm-tier action, not default-tier).**
+   `npm install`, `pnpm install`, and `yarn install` execute repo-controlled `package.json`
+   lifecycle scripts (`preinstall`/`postinstall`/`prepare`) unconditionally; there is no
+   `uv tool run`-equivalent isolation for the JS/TS ecosystem. Present the lockfile diff and
+   the exact command to the user and require the literal reply `yes`, using the same
+   per-candidate confirmation sequence as Step 5a
+   ([context/fix-verification.md](fix-verification.md#5a-local-gate-sequence)), before
+   running `npm install` / `pnpm install` / `yarn install`. Never run it unprompted, even when
+   every other part of the fix is auto-fixable.
 3. Verify the frozen-install command succeeds before commit: `npm ci`
    (or `pnpm i --frozen-lockfile`, `yarn install --frozen-lockfile`). The binding
    correctness check for a lockfile-bearing ecosystem is "does the frozen-install

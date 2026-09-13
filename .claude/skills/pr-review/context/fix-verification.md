@@ -63,12 +63,29 @@ instead. Derive the exact command, flags, and working scope from the CI workflow
 itself (`.github/workflows/*.yml`) rather than retyping a remembered or narrowed version
 of it.
 
-The default gate uses `uv tool run`, which resolves each tool from a global
-ephemeral environment isolated from the reviewed repo's `pyproject.toml`
-and `uv.lock`. This is the trust boundary that makes the default gate
-overseer-controlled: even if the reviewed repo declares a malicious
-typosquat or shim for `ruff`, `basedpyright`, or `bandit`, those
-declarations do not affect the global tool environment.
+The default gate uses `uv tool run`, which resolves each tool BINARY from a
+global ephemeral environment isolated from the reviewed repo's `pyproject.toml`
+and `uv.lock`. This is the trust boundary against package substitution: even if
+the reviewed repo declares a malicious typosquat or shim dependency named
+`ruff`, `basedpyright`, or `bandit`, those declarations cannot substitute a
+different binary for the one `uv tool run` installs.
+
+**This isolation does not extend to tool CONFIGURATION.** `ruff` and
+`basedpyright` are both designed to auto-discover and apply
+`[tool.ruff]`/`[tool.basedpyright]` (or `pyrightconfig.json`) from the
+directory they run in, and running them from `{WORKTREE_PATH}` means they read
+the reviewed repo's own config regardless of where the binary came from. A
+malicious `pyproject.toml` can neuter the scan without touching either binary:
+a blanket `exclude`, a disabled rule code that matches a known finding
+category, or a narrowed `include` that skips the changed file entirely all
+suppress findings while `uv tool run`'s package isolation stays fully intact.
+Bandit's invocation above already accounts for this (`Do NOT pass -c
+pyproject.toml`, avoiding its `plugin_paths`/skip config); ruff and
+basedpyright have no equivalent carve-out, since suppressing their own config
+resolution would break their intended per-project behavior for the common
+case. Treat a suspicious `pyproject.toml`/`pyrightconfig.json` diff (new
+excludes, disabled rules, narrowed includes) as a review flag in its own
+right, not as a residual risk `uv tool run` already closes.
 
 The default gate runs static analyzers only. Tools that execute
 reviewed-repo code by design (`pytest` auto-imports `conftest.py` at
@@ -168,10 +185,17 @@ Reply with the literal word `yes` (and nothing else) to execute, or
 anything else (including `ok`, `sure`, `yes please`, `go ahead`) to skip.
 ````
 
-For step 4 (parsing): read the user's next message. Trim leading and
-trailing whitespace. The message executes the command if and only if
-the trimmed first line is exactly `yes` (case-insensitive). Any other
-content makes it a `skip`. Specifically:
+For step 4 (parsing): read the user's next message. Trim leading and trailing
+whitespace from the whole message, then split on newlines and independently
+trim the first line (leading/trailing whitespace on the first line alone,
+not just at the start/end of the whole message). The message executes the
+command if and only if that independently-trimmed first line is exactly
+`yes` (case-insensitive). Trimming only the whole message is not sufficient:
+in a multi-line reply such as `"yes \nplease proceed"`, the trailing space
+after `yes` sits before an internal newline, not at the very end of the
+message, so a whole-message-only trim leaves it in place and a naive
+comparison against `yes` fails to match content the user clearly intended as
+a bare `yes`. Any other content makes it a `skip`. Specifically:
 
 - `yes` (any case), `Yes`, `YES`, `yes\n` -> execute
 - `yes.`, `yes,`, `yes!`, `(yes)` -> skip (trimmed first line is not exactly `yes`)
@@ -303,9 +327,13 @@ touched. The two-question triage above identifies these; the commit-time decisio
 separate. Distinguish failures caused by the PR's own changed files (must fix) from
 pre-existing failures in unrelated files the commit merely triggers, and never treat a
 whole-tree hook failure as the PR's fault. For the unrelated-file case, surface it to the
-user with options: fix the unrelated files, hold, or, only with the user's explicit
-request, an authorized `--no-verify` for this commit. Never auto-bypass; `--no-verify` is
-prohibited except by explicit user instruction (Step 6).
+user with options: fix the unrelated files, hold, or, only when the unrelated files also
+meet one of CLAUDE.md's two suppression exceptions (vendored/third-party code that cannot
+be changed, or a suppression paired with a tracking reference expected to result in a
+proper fix), an authorized `--no-verify` for this commit. Offering `--no-verify` as a menu
+option at all is scoped to those two cases; it is not a general bypass available whenever
+the user happens to ask. Within that scope, execution still requires the user's own
+explicit per-commit request (Step 6); never auto-bypass.
 
 If the default gate is still failing after 3 attempts: check whether the
 failures existed before this fix session started (see pre-existing failure
@@ -427,7 +455,7 @@ corroborating only, never as the primary evidence for a lockfile-scoped fix.
 | CI check | Static validation |
 | --- | --- |
 | ClusterFuzzLite | For each fuzz target declared in workflow: verify file exists at the declared path, has the correct extension (`.py` for Python), and compiles with `python3 -m py_compile {target}` |
-| SARIF-producing scanners (Trivy, Snyk, Scorecard, SBOM) | If workflow references a SARIF file path, verify the generating step would produce it (check step ordering and output paths). Only `codeql.yml` and `dependency-review.yml` (deleted 2026-09) stopped producing SARIF; `sbom.yml`'s Grype and OSV-Scanner jobs still call `github/codeql-action/upload-sarif` to ingest into the Security tab (categories `grype-runtime-deps`, `osv-sbom-runtime-deps`), matching `.github/workflows/README.md:120-129`. Verify the `upload-sarif` step exists for those, and treat `actions/upload-artifact` as a backup copy of the raw SBOM/SARIF file, not a replacement for Security-tab ingestion. |
+| SARIF-producing scanners (Trivy, Snyk, Scorecard, SBOM) | If workflow references a SARIF file path, verify the generating step would produce it (check step ordering and output paths). Only `codeql.yml` and `dependency-review.yml` (deleted 2026-09) stopped producing SARIF; `sbom.yml`'s Grype and OSV-Scanner jobs still call `github/codeql-action/upload-sarif` to ingest into the Security tab (categories `grype-runtime-deps`, `osv-sbom-runtime-deps`). Confirm this by content, not by a pinned line range in `.github/workflows/README.md`: line numbers drift as the file is edited and a citation carried forward from an earlier PR can point at the wrong section by the time it's read. Grep the README for the SARIF/upload-sarif section and read it in place. Verify the `upload-sarif` step exists for those, and treat `actions/upload-artifact` as a backup copy of the raw SBOM/SARIF file, not a replacement for Security-tab ingestion. |
 | SonarCloud | Verify `sonar-project.properties` has non-placeholder values for `sonar.organization` and `sonar.projectKey` |
 | Codecov | If `codecov.yml` exists, verify it parses as valid YAML and references existing flag names |
 
