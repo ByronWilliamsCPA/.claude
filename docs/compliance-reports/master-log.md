@@ -19,14 +19,14 @@ tags:
 
 | Date | Repo | Mode | Critical | Important | Suggested | Candidates | Reconciled | Report |
 |------|------|------|---------:|----------:|----------:|-----------:|:----------:|--------|
-| 2026-09-09 | ByronWilliamsCPA/fragrance-rater | interactive | 7 | 17 | 10 | 7 |  | [report](lessons-learned/2026-09-09.md) |
+| 2026-09-09 | ByronWilliamsCPA/fragrance-rater | interactive | 7 | 17 | 10 | 7 |  |  |
 
 ## 2026-08
 
 
 | Date | Repo | Mode | Critical | Important | Suggested | Candidates | Reconciled | Report |
 |------|------|------|---------:|----------:|----------:|-----------:|:----------:|--------|
-| 2026-08-25 | williaby/monte_carlo | interactive | 5 | 33 | 27 | 8 |  | [report](lessons-learned/2026-08-25-monte_carlo.md) |
+| 2026-08-25 | williaby/monte_carlo | interactive | 5 | 33 | 27 | 8 |  |  |
 
 ## 2026-06
 
@@ -67,4 +67,4 @@ tags:
 | 2026-04-25 | ByronWilliamsCPA/gleif | unknown | 10 | 22 | 13 | 8 | yes | [report](https://github.com/ByronWilliamsCPA/gleif/blob/main/docs/compliance-reports/lessons-learned/2026-04-25.md) |
 
 ---
-*Rendered 2026-09-19 16:19:48 from master-log.jsonl by compliance_log_render.py.*
+*Rendered 2026-09-19 16:24:58 from master-log.jsonl by compliance_log_render.py.*
