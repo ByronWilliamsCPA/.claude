@@ -179,6 +179,25 @@ CLAUDE.md rule block, and tool invocation guidance: `standards/snyk-mcp-setup.md
 `snyk monitor` (a CLI-only command, not an MCP tool) must not be called from any
 agent bundle or hook. See `standards/snyk-mcp-setup.md` for the reason.
 
+### Exa.ai MCP Server (always-on, semantic web search)
+
+`exa` is registered at user scope in `~/.claude.json` (`npx -y exa-mcp-server`,
+official `exa-labs/exa-mcp-server` package), the same runtime-managed,
+not-committed pattern as `pal` and `Snyk`. It gives every Claude Code session
+Exa's embedding-based semantic search, which fills a real gap: the native
+`WebSearch` tool and the `claude_ai` Tavily connector both do keyword/RAG
+retrieval, while Exa finds conceptually similar results (e.g. "find repos or
+papers doing X"), useful for `research-agent`/`deep-research` and prior-art
+searches.
+
+This was evaluated against the full set of search providers the `openclaw`
+agents use (`williaby/homelab-agent-configs`, `reference/websearch_reference.md`):
+Tavily, Brave, Perplexity, You.com, Exa.ai, Linkup, plus self-hosted SearXNG.
+Only Exa cleared the bar for Claude Code specifically; the rest were skipped as
+redundant with `WebSearch`/Tavily or too narrow a use case for this repo's
+work (2026-07-04 evaluation). Do not re-add them without a concrete task that
+needs their specific differentiator.
+
 ### Claude Design MCP Server (per-UI-repo, local scope)
 
 Claude Design is a runtime-config server like Snyk, but scoped the opposite way:
