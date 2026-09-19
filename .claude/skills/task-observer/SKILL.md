@@ -324,8 +324,25 @@ number by re-reading the file, not the shell variable that produced it; a
 quoted heredoc with a hand-typed number can go stale between computing
 `$PROPOSED` and writing it, in exactly the window a parallel session can
 claim. The collision check must also execute inside the same command or
-tool call as the write itself (e.g., `grep -q ... && exit 1 || cat >> ...`);
-a separate check-then-write split across two tool calls reopens the race
+tool call as the write itself, using an explicit `if`/`then`/`else`, never a
+`&&`/`||`-chained `exit` (e.g. `grep -q ... && exit 1 || cat >> ...`): if that
+chain runs inside any subshell (a `(...)` grouping, a command substitution, or
+a function called in a pipeline), `exit 1` only terminates the subshell and
+returns a nonzero status to the *enclosing* expression, which the trailing
+`|| cat >> ...` then reads as "the check failed" and runs the append anyway,
+so the write happens even though a collision was detected. Use the
+unambiguous form instead:
+
+```bash
+if grep -q "$MARKER" "$LOGFILE"; then
+  echo "COLLISION: $MARKER already present in $LOGFILE"
+  exit 1
+else
+  cat >> "$LOGFILE"
+fi
+```
+
+A separate check-then-write split across two tool calls reopens the race
 the check exists to close, even when the check's own verdict was correct.
 Finally, before renumbering a post-write collision, compare the appended
 entry's title and body against the existing entry at that number; if they

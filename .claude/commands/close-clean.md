@@ -106,7 +106,7 @@ filled per worktree from the parsed `git worktree list` output, not predefined
 shell variables:
 
 ```bash
-[ -d "$WT/.git" ] || { echo "vanished since listing, treating as already removed"; continue; }
+git -C "$WT" rev-parse --git-dir >/dev/null 2>&1 || { echo "vanished since listing, treating as already removed"; continue; }
 DEFAULT=$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null | sed 's|^origin/||')
 DEFAULT=${DEFAULT:-$(git show-ref --verify --quiet refs/heads/main && echo main || echo master)}
 git -C "$WT" status --porcelain                                  # must be empty: clean tree
@@ -134,8 +134,11 @@ preview may now be minutes old, re-verify each destructive precondition at
 execution time, not from the Step 3 snapshot (Obs 311):
 
 - Temp files and skill workspaces: `rm -rf` the listed paths.
-- Worktrees: gate on existence first: `[ -d "$WT/.git" ] || { echo "$WT
-  already removed since preview"; continue; }` (another session may have
+- Worktrees: gate on existence first: `git -C "$WT" rev-parse --git-dir
+  >/dev/null 2>&1 || { echo "$WT already removed since preview"; continue; }`
+  (a linked worktree's `.git` is a file, not a directory, so a `-d` test is
+  always false for a real worktree; `git rev-parse --git-dir` correctly
+  treats that as valid; another session may have
   finished the removal first; count that as a success outcome, not a failure
   to report). If it still exists, immediately before `git worktree remove
   "$WT"`, re-run `git -C "$WT" status --porcelain` and confirm it is still

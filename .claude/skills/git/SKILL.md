@@ -202,10 +202,16 @@ commands. Two defenses, applied at the moment of the state-changing command, not
 - Immediately before `git commit`, re-read `git branch --show-current` and
   `git rev-parse HEAD` fresh; do not trust a value captured earlier in the session.
 
-Two escape hatches for a shared tree: `git update-index --cacheinfo <mode>,<sha>,<path>`
-stages exact known content without touching a working tree another session may be racing;
-`git switch --detach` (no argument) frees a branch that is checked out in a shared
-worktree, with no other side effects.
+Two techniques exist for a tree checked out at `<mode>,<sha>,<path>` or a branch
+checked out elsewhere, but both mutate shared state and are safe only inside an
+isolated worktree (`.worktrees/<slug>`), never in a shared checkout with concurrent
+sessions: `git update-index --cacheinfo <mode>,<sha>,<path>` writes directly into
+the shared index, so running it against the main checkout can stage or clobber
+another session's pending changes; `git switch --detach` (no argument) rewrites
+`HEAD` for whichever tree it runs in, so running it in a shared checkout moves
+another session's branch out from under it. Confirm you are inside your own
+worktree (`git rev-parse --show-toplevel` matches your worktree path) before
+using either command.
 
 ### HR-8: Verify the intended base explicitly before `git checkout -b`, never inherit the ambient checkout (Obs 666/1045/1108/1129/1732/1891)
 

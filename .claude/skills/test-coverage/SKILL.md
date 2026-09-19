@@ -31,11 +31,16 @@ When invoked with no arguments or `analyze`:
 2. Run `pytest --cov=src --cov-report=json:coverage.json --cov-branch -q`
 3. Parse coverage.json using the bundled parser script
 
-   **Native coverage regions (Obs 1028):** Recent coverage.py versions emit exact
-   per-function/class regions (with branch summaries) in the coverage JSON. Detect
-   whether these are present and prefer them over AST-range reconstruction when so:
-   they are exact, cheaper, and add a per-class/per-function branch floor the AST
-   approach never had. Fall back to AST intersection only for older coverage.py.
+   **AST-based gap detection, not native coverage regions (Obs 1028):** Recent
+   coverage.py versions can emit exact per-function/class regions (with branch
+   summaries) in the coverage JSON, but the bundled parser
+   (`.claude/skills/test-coverage/scripts/parse_coverage.py`) does not yet consume
+   them: it always reconstructs function boundaries via `ast.parse`/`ast.walk`
+   over the source file and intersects them with `missing_lines` from the JSON,
+   regardless of coverage.py version. Per-function branch coverage is not computed
+   at all today; only per-file `percent_covered_branches` is read. Detecting and
+   preferring native regions when present is a possible future improvement, not
+   current behavior; do not describe this step as already using them.
 4. Identify files below the project threshold (default: 80%)
 5. For each under-covered file, identify uncovered functions via AST analysis
 6. Rank gaps by: (a) zero-coverage functions first, (b) lowest coverage %,

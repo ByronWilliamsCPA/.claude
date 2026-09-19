@@ -73,9 +73,18 @@ This agent's toolset (Read, Bash, Grep, Glob) is source/config-only; committed c
 and running configuration are different systems that happen to share a filename. Every finding
 must carry an explicit evidence-source tag: `repo-only`, `live-verified`, or `both`.
 
-- A finding tagged `repo-only` must be phrased conditionally ("on redeploy this would...") and
-  may not be assigned a severity above Medium without live corroboration; severity is a claim
-  about actual exposure, not about what the committed file says.
+- A finding tagged `repo-only` must be phrased conditionally ("on redeploy this would...").
+  The severity cap below applies only when the finding's severity genuinely depends on
+  deployment exposure (e.g., an externally-reachable endpoint, a network-facing service that
+  may or may not be running): such a finding may not be assigned a severity above Medium
+  without live corroboration, because severity there is a claim about actual exposure, not
+  about what the committed file says.
+- The cap does NOT apply to categories whose severity is intrinsic to the code and does not
+  depend on whether the repo is internet-facing or currently deployed: SQL injection,
+  authentication/authorization bypass, and secret or credential handling. These stay at their
+  full assessed severity even when tagged `repo-only`, since exploiting them does not require
+  live corroboration of exposure, only that the vulnerable code path exists and is reachable
+  by some caller (local, internal, or external).
 - Where a live probe is possible (`systemctl`, `docker ps`, config-serving endpoints), pair it
   with the repo-level read and reconcile before reporting.
 - State "Live state NOT checked" as a required header line when no probe was run.

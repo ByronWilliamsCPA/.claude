@@ -55,8 +55,10 @@ does not show what is actually new.
 
 Before finalizing any closed-world claim ("X is still missing", "these are
 all still open"), verify it against the live merged tree or record set rather
-than recalling it: run `git ls-tree origin/<default> -- <path>` (or the
-equivalent query against the actual register) to confirm presence or absence,
+than recalling it: run `git fetch origin <default>` first so the comparison
+reflects current remote state, not a stale local ref, then run
+`git ls-tree origin/<default> -- <path>` (or the equivalent query against the
+actual register) to confirm presence or absence,
 and use a count over the full population, not a sampled few, when
 characterizing test failures or open items. A "What Remains" item about
 deployed state must carry the exact live-state probe command that confirms or
@@ -71,9 +73,12 @@ other.
 
 Write to the durable, gitignored runtime path (never committed; survives
 worktree removal and `/close-clean`). Run `mkdir -p ~/.claude/logs/handoffs`,
-then write `~/.claude/logs/handoffs/handoff-$(date -u +%Y%m%dT%H%MZ).md`. Use
-UTC with an explicit `Z` suffix, not local time: a directory mixing UTC and
-local timestamps sorts out of chronological order.
+then write `~/.claude/logs/handoffs/handoff-$(date -u +%Y%m%dT%H%M%SZ).md`.
+Use UTC with an explicit `Z` suffix, not local time: a directory mixing UTC
+and local timestamps sorts out of chronological order. Seconds-level
+precision is required, not optional: a minute-level timestamp lets two
+concurrent handoff-writing sessions collide and silently overwrite each
+other's file within the same minute.
 
 The template's required fields are a **superset of the CLAUDE.md "Compact
 Instructions" preserve-list**, so a handoff is never weaker than an autocompact

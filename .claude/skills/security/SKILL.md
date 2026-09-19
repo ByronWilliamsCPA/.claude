@@ -111,8 +111,10 @@ trufflehog filesystem .
 
 Never run `detect-secrets scan --baseline .secrets.baseline <files>` against a file subset to
 "inspect findings"; it rewrites the baseline from just those files, silently deleting every
-entry for files not in the subset (Obs 590). Use `detect-secrets-hook --baseline <files>` for
-read-only enumeration instead. Prefer an inline `# pragma: allowlist secret` over a full
+entry for files not in the subset (Obs 590). Use
+`detect-secrets-hook --baseline .secrets.baseline <files>` for read-only enumeration instead
+(the baseline file must come first, then the target files/paths, or the command will not scan
+the intended subset). Prefer an inline `# pragma: allowlist secret` over a full
 baseline regeneration for a confirmed public-value false positive.
 
 ## Security Checklist

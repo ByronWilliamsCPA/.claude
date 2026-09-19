@@ -158,11 +158,15 @@ binaries from a Debian 13 DHI image (e.g. `dhi-uv:0-debian13`) into a Debian 12
 ## CA trust store verification
 
 A minimal DHI or distroless base image can silently omit the CA certificate trust
-store (`ca-certificates` or equivalent). Its absence disables outbound TLS
-verification with no error: the container makes outbound HTTPS calls that succeed
-even against a spoofed or MITM'd endpoint, because there is nothing to fail
-verification against. Verify the trust store is present in any hardened/distroless
-base image that makes outbound TLS connections before shipping it.
+store (`ca-certificates` or equivalent). Its absence does not make TLS verification
+succeed insecurely; the normal outcome is the opposite: TLS verification fails
+closed, with an unknown-issuer or certificate-verify-failed error, because the
+client has no CA to validate the server certificate against. That is a safe
+failure mode, not a silent insecure success, but it still breaks the container:
+every outbound HTTPS call to a real (non-self-signed) endpoint fails at startup or
+first use. Verify the trust store is present in any hardened/distroless base image
+that makes outbound TLS connections before shipping it, so the container can
+complete verification against the expected CA and its connections do not fail.
 
 ## Security properties
 

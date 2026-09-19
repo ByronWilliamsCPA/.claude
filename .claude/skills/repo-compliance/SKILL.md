@@ -117,10 +117,18 @@ unpopulated catalog flag.
 
 Domains whose findings describe absent runtime detection/recovery controls (auth failures
 never logged, no alert reaching a human, unversioned production config) are exactly the kind
-of information a public repo should not commit. Tag such domains `public_safe: false` so
-routing to the committed, public `master-log.jsonl` is mechanical rather than remembered:
-write counts and check IDs to the log, never `current_value` text, or exclude the domain from
-the public log entirely and land its findings only in the gitignored per-session report.
+of information a public repo should not commit. Tag such domains `public_safe: false` as a
+label for the human running the sweep: today this tag is documentation only. There is no
+manifest schema entry, parser, logger, or report-consumer anywhere in the codebase that reads
+or enforces `public_safe`, so it does not make routing mechanical, and sensitive text can still
+reach the committed, public `master-log.jsonl` if the operator does not manually honor it. Until
+a parser and gate exist, routing is manual and human-reviewed: write counts and check IDs to the
+log, never `current_value` text, or exclude the domain from the public log entirely and land its
+findings only in the gitignored per-session report, and have the operator double-check this by
+hand before committing the log. This is a known gap, not a mechanically enforced control; per
+this repo's own standard, a rule that recurs after being documented needs a gate, not more
+prose, so treat `public_safe: false` as a placeholder pending real enforcement rather than a
+safeguard to rely on.
 
 ### Pipeline success is not outcome verification (obs 1749, 1763)
 
