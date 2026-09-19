@@ -55,6 +55,14 @@ These apply regardless of `permissions.allow` entries. A permission entry
 grants capability; it does not grant blanket authorization for all uses of
 that capability in a single session.
 
+### Secret-pattern deny globs can false-positive on template files
+
+A deny rule that pattern-matches likely secrets (a `.env`-shaped glob, an
+API-key-looking string) can trigger on a template or example file that
+contains only placeholder values (`.env.example`, a fixture with
+`sk-EXAMPLE...`). Treat a deny hit against a template/example path as a signal
+to inspect, not an automatic confirmation that a real secret is present.
+
 ## Sources
 
 - Claude Code settings: <https://code.claude.com/docs/en/settings>

@@ -75,24 +75,49 @@ find . tmp_cleanup -maxdepth 1 -name '.tmp-*' -type f -mtime +14 2>/dev/null \
 **Finished worktrees:** from `git worktree list`, a worktree qualifies for
 removal only when its tree is clean AND (its branch is fully merged into the
 default branch, OR its branch is gone, OR, for a detached HEAD, its HEAD is an
-ancestor of the default branch). List any worktree with a dirty tree or commits
-absent from the default branch under "needs review, not removed". Additionally,
+ancestor of the default branch). `git branch --merged` is an ancestry test and
+always reads a squash-merged branch as unmerged (see git skill HR-2); treat it
+as the first rung of a ladder, not the final word:
+
+1. Ancestry test (fast path): `git branch --merged "$DEFAULT" --format='%(refname:short)' | grep -qx "$BR"`.
+2. If that reads false, check PR state before assuming unmerged:
+   `gh pr list --state merged --head "$BR" --json headRefOid,mergedAt`.
+3. If no PR either, fall back to content equivalence scoped to the branch's
+   own touched files: `git diff --quiet origin/"$DEFAULT" "$BR" -- <touched files>`
+   empty means the content is already on the default branch regardless of
+   ancestry.
+4. A branch with no remote-tracking ref is ambiguous between "merged and
+   pruned by `delete_branch_on_merge`" and "never pushed": check
+   `branch.<name>.merge` first; if it names the default branch and no merged
+   PR is found, the branch was never pushed and belongs in "needs review, not
+   removed", never in the delete path outright.
+
+List any worktree with a dirty tree or commits absent from the default branch
+(after the full ladder above) under "needs review, not removed". Additionally,
 flag any worktree created within the last hour as a likely-active parallel
 session under "needs review, not removed" even when it technically qualifies as
 merged/clean; a just-created worktree is far more likely to belong to a live
 session than to be finished cruft. First resolve the default branch, then check
 each candidate worktree at path `$WT` with branch `$BR` (or detached commit
-`$SHA`). `$WT`, `$BR`, and `$SHA` are filled per worktree from the parsed
-`git worktree list` output, not predefined shell variables:
+`$SHA`), gating on existence first since a worktree can vanish between the
+`git worktree list` read and this check (another session may have just removed
+it; treat that as already-done, not as a failure). `$WT`, `$BR`, and `$SHA` are
+filled per worktree from the parsed `git worktree list` output, not predefined
+shell variables:
 
 ```bash
+git -C "$WT" rev-parse --git-dir >/dev/null 2>&1 || { echo "vanished since listing, treating as already removed"; continue; }
 DEFAULT=$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null | sed 's|^origin/||')
 DEFAULT=${DEFAULT:-$(git show-ref --verify --quiet refs/heads/main && echo main || echo master)}
 git -C "$WT" status --porcelain                                  # must be empty: clean tree
-git branch --merged "$DEFAULT" --format='%(refname:short)' | grep -qx "$BR"  # branch merged
+git branch --merged "$DEFAULT" --format='%(refname:short)' | grep -qx "$BR"  # branch merged (ancestry, rung 1)
 git merge-base --is-ancestor "$SHA" "$DEFAULT"                   # detached HEAD: ancestor of default
 find "$WT" -maxdepth 0 -mmin -60                                 # non-empty => created <1h ago, treat as active
 ```
+
+Capture each git command's exit status separately from its stdout; piping
+through `wc -l` or `grep` alone cannot distinguish a failed command from an
+empty-but-successful one, and both look like zero lines.
 
 **Stale skill workspaces:** gitignored benchmark remnants under any `skills/`
 directory:
@@ -109,14 +134,25 @@ preview may now be minutes old, re-verify each destructive precondition at
 execution time, not from the Step 3 snapshot (Obs 311):
 
 - Temp files and skill workspaces: `rm -rf` the listed paths.
-- Worktrees: immediately before each `git worktree remove "$WT"`, re-run
-  `git -C "$WT" status --porcelain` and confirm it is still clean and still
-  merged/ancestor; skip and re-list under "needs review" any worktree whose
-  state changed since the preview (now dirty, now unmerged, or newly recreated).
-  Remove plain, never `--force`.
+- Worktrees: gate on existence first: `git -C "$WT" rev-parse --git-dir
+  >/dev/null 2>&1 || { echo "$WT already removed since preview"; continue; }`
+  (a linked worktree's `.git` is a file, not a directory, so a `-d` test is
+  always false for a real worktree; `git rev-parse --git-dir` correctly
+  treats that as valid; another session may have
+  finished the removal first; count that as a success outcome, not a failure
+  to report). If it still exists, immediately before `git worktree remove
+  "$WT"`, re-run `git -C "$WT" status --porcelain` and confirm it is still
+  clean and still merged/ancestor (the full ladder from Step 3, not the
+  ancestry test alone); skip and re-list under "needs review" any worktree
+  whose state changed since the preview (now dirty, now unmerged, or newly
+  recreated). Remove plain, never `--force`.
+
+After the removal loop, run `git worktree prune --dry-run` and reconcile any
+stale admin entries it reports.
 
 Print a final summary: artifacts cleaned (Tier A), temp files removed,
-worktrees removed, worktrees skipped for review, skill workspaces removed.
+worktrees removed, worktrees already-gone (removed by another session),
+worktrees skipped for review, skill workspaces removed.
 
 ## Hard rules
 

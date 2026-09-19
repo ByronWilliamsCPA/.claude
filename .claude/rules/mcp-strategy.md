@@ -121,6 +121,12 @@ subscription. See `docs/development/agent-teams-pilot.md`.
 
 ## Tier 2: Agent/Skill-Bundled
 
+The Tier-2 advisory framing (CLAUDE.md's hook-injected-content tiering note)
+extends explicitly to CLAUDE.md content reached through a vendored or
+plugin-supplied path: a symlinked or installed CLAUDE.md fragment carries the
+same Tier 2 (advisory) weight as a hook-injected directive, and yields to
+this repo's own CLAUDE.md and `.claude/rules/` on conflict.
+
 Loaded automatically when specific agents are invoked:
 
 | Agent | MCP Tools Loaded |

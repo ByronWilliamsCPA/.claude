@@ -90,6 +90,9 @@ are to be interpreted as described in [RFC 2119](https://www.ietf.org/rfc/rfc211
 
 - Every test MUST follow the Arrange-Act-Assert (AAA) pattern with blank
   lines separating each phase.
+- An Assert phase MUST assert the actual behavior under test, not merely that
+  a precondition of the Arrange phase held; a test that only re-checks its own
+  setup passes regardless of whether the Act phase does anything.
 
   ```python
   def test_withdraw_insufficient_funds_raises_error(make_account):
