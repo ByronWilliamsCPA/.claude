@@ -60,30 +60,6 @@ documentation rework.
 
 ### Repository structure
 
-```text
-~/dev/.claude/                    # Repo root; setup.sh symlinks items from here into ~/.claude/
-├── CLAUDE.md                     # Global standards (this file)
-├── AGENTS-AND-SKILLS.md          # Full agent and skill catalog
-├── README.md                     # Setup and install guide
-├── .claude/
-│   ├── agents/                   # Specialized subagent definitions
-│   │   └── CLAUDE.md             # Agent authoring conventions
-│   ├── commands/                 # Slash command definitions
-│   ├── skills/                   # Reusable skill workflows
-│   │   └── CLAUDE.md             # Skill authoring conventions
-│   ├── rules/                    # Operational rules (path-scoped)
-│   ├── standards/                # Detailed specifications
-│   ├── cowork/                   # Cowork session instructions
-│   └── context/                  # Shared context fragments
-├── docs/
-│   ├── architecture/             # ADRs and system diagrams
-│   ├── development/              # Code quality and workflow guides
-│   ├── getting-started/          # Install, first-run, troubleshooting
-│   └── reference/                # Hooks, MCP, agents, skills indexes
-├── mcp/                          # MCP tool loading configuration
-└── scripts/                      # MCP loading and hook utilities
-```
-
 `~/.claude/` is Claude Code's real home directory, not a whole-directory
 symlink to this repo. `setup.sh` symlinks specific items from this repo into
 it: `CLAUDE.md` and the `agents/`, `skills/`, `commands/`, `rules/`,
