@@ -976,6 +976,62 @@
     },
     {
       "org": "ByronWilliamsCPA",
+      "repositoryType": "python-app",
+      "name": "cyo-adventure",
+      "url": "https://github.com/ByronWilliamsCPA/cyo-adventure",
+      "defaultBranch": "main",
+      "description": "CYO Adventure (Ariadne): a safety-gated choose-your-own-adventure reader and LLM story pipeline for kids",
+      "isPrivate": false,
+      "isArchived": false,
+      "api": {
+        "servesApi": true,
+        "frameworks": [
+          "fastapi"
+        ],
+        "entryPoints": [
+          "src/cyo_adventure/app.py"
+        ],
+        "externalClients": [
+          "httpx"
+        ],
+        "openApiSpec": false,
+        "postmanCollection": true,
+        "lastAudited": null,
+        "testStatus": null
+      },
+      "frontend": {
+        "framework": "react",
+        "bundler": "vite",
+        "directory": "frontend"
+      },
+      "usesDocker": true,
+      "publishesDocs": true,
+      "_publishesDocsBasis": "declared true by owner 2026-08-03. Evidence: mkdocs.yml sets site_url https://cyo-adventure.readthedocs.io and .github/workflows/docs.yml is present. Re-test: does this repo still deploy a docs site? Retire the flag if the Read the Docs project is torn down.",
+      "isDeployed": true,
+      "_isDeployedBasis": "declared true by owner 2026-08-03. Evidence: .github/workflows/e2e-prod.yml runs against a Supabase-backed production environment; supabase-backup.yml, e2e-staging.yml, docker-compose.prod.yml, Dockerfile with a /health/live healthcheck, and supabase/migrations/ are all present. Re-test: does this repo still run as a long-lived deployed service with a runtime config, a data store, or an outbound alerting channel?",
+      "_reviewBasis": "no full compliance audit has been run for this repo yet. Stub review added 2026-09-19 during catalog cleanup; renovate/secretScanning/releaseHealth fields verified live via gh api. Run repo-compliance for the full snapshot.",
+      "review": {
+        "_status": "not yet audited; stub added 2026-09-19 during catalog cleanup -- renovate/secret-scanning/release fields populated from live API 2026-09-19; run repo-compliance for full audit",
+        "renovate": {
+          "configured": true,
+          "shaAutoPinning": true
+        },
+        "secretScanning": {
+          "enabled": true,
+          "pushProtection": true
+        },
+        "releaseHealth": {
+          "hasRelease": true,
+          "daysSinceRelease": 5
+        },
+        "templateDrift": {
+          "sourceTemplate": null,
+          "driftScore": null
+        }
+      }
+    },
+    {
+      "org": "ByronWilliamsCPA",
       "repositoryType": "docs-only",
       "name": "DeQA-Doc",
       "url": "https://github.com/ByronWilliamsCPA/DeQA-Doc",
