@@ -8,11 +8,25 @@ tags:
   - compliance
 ---
 
-**Total sessions:** 20
-**Distinct repos:** 14
-**Newest entry:** 2026-06-27
+**Total sessions:** 22
+**Distinct repos:** 15
+**Newest entry:** 2026-09-09
 **Oldest entry:** 2026-04-25
 **Open fleet actions:** 0
+
+## 2026-09
+
+
+| Date | Repo | Mode | Critical | Important | Suggested | Candidates | Reconciled | Report |
+|------|------|------|---------:|----------:|----------:|-----------:|:----------:|--------|
+| 2026-09-09 | ByronWilliamsCPA/fragrance-rater | interactive | 7 | 17 | 10 | 7 |  |  |
+
+## 2026-08
+
+
+| Date | Repo | Mode | Critical | Important | Suggested | Candidates | Reconciled | Report |
+|------|------|------|---------:|----------:|----------:|-----------:|:----------:|--------|
+| 2026-08-25 | williaby/monte_carlo | interactive | 5 | 33 | 27 | 8 |  |  |
 
 ## 2026-06
 
@@ -53,4 +67,4 @@ tags:
 | 2026-04-25 | ByronWilliamsCPA/gleif | unknown | 10 | 22 | 13 | 8 | yes | [report](https://github.com/ByronWilliamsCPA/gleif/blob/main/docs/compliance-reports/lessons-learned/2026-04-25.md) |
 
 ---
-*Rendered 2026-06-28 17:49:32 from master-log.jsonl by compliance_log_render.py.*
+*Rendered 2026-09-19 16:24:58 from master-log.jsonl by compliance_log_render.py.*
