@@ -319,6 +319,11 @@ docs/reviews/
 .claude/skills/find-skills
 .claude/skills/supabase-server
 
+# anthropic-skills plugin sync cache: local materialized skill content, not a
+# symlink (unlike the find-skills entries above), so this needs the trailing
+# slash. Reproducible from the plugin's own sync mechanism; not committed.
+.claude/skills/synced/
+
 # Git worktrees (always project-local, never at global paths)
 .worktrees/
 # Defensive: also catch worktrees mistakenly created under .claude/. The
