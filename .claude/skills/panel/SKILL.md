@@ -41,7 +41,7 @@ nearly free) and say so.
 uv run .claude/skills/panel/scripts/consensus_cli.py select --level 2 --domain architecture
 uv run .claude/skills/panel/scripts/consensus_cli.py estimate --level 3
 uv run .claude/skills/panel/scripts/consensus_cli.py run --prompt-file /tmp/q.txt --roster-file /tmp/roster.json
-uv run .claude/skills/panel/scripts/consensus_cli.py run --prompt-file /tmp/q.txt --models "openai/gpt-5.1,anthropic/claude-opus-4.6" --roles-file /tmp/roles.json
+uv run .claude/skills/panel/scripts/consensus_cli.py run --prompt-file /tmp/q.txt --models "openai/gpt-6-sol,anthropic/claude-opus-5.5" --roles-file /tmp/roles.json
 uv run .claude/skills/panel/scripts/consensus_cli.py refresh
 ```
 

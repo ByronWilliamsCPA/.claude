@@ -36,6 +36,16 @@ the free tier turned over completely (all 20 previous free rows were retired
 upstream), and the replacements are rated from model cards and parameter
 counts. Treat their relative ordering as a curation judgement, not evidence.
 
+The 2026-09-23 refresh followed the same rule. It swapped superseded paid
+rows for their live successors (GPT-6 Sol/Luna/Astra, Claude Opus 5.5 and
+Sonnet 5, Grok 4.7, Gemini 3.8 Flash, DeepSeek V4 Pro, Kimi K3, Mistral Medium
+3.5), added GLM-5.3 and Qwen3.8 Max, removed three rows retired upstream
+(`mistralai/mistral-large-2512`, `minimax/minimax-m3:free`,
+`minimax/minimax-m2.7:free`), and added three free rows. Scores on every row it
+touched are estimates set to rank each successor at or above its predecessor;
+none is a measured result. `z-ai/glm-5.2:free` kept its scores but its live
+context dropped from 256K to 32K.
+
 This matters because the roster selector sorts each cost tier by
 `(-humaneval, -swe_bench)`, so these estimates decide which three models fill a
 level-1 panel. Re-rate them when real benchmark numbers land.
