@@ -17,7 +17,7 @@ Updates go through the refresh-data workflow.
 - bands_config.json: ONLY the cost_tier_bands section (free, economy, value,
   premium). Band objects sit alongside metadata keys (band_strategy,
   description, note); access bands by name, never iterate keys. The value
-  (1.01-10.00) and premium (5.00+) ranges intentionally overlap; the roster
+  (1.01-10.00) and premium (4.00+) ranges intentionally overlap; the roster
   selector deduplicates by model name, so a model in the overlap may be
   selected through either band. All other sections (tier_classification_bands,
   org_level_assignment_bands, org_level_requirements, role_assignment_bands,
