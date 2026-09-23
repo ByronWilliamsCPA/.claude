@@ -32,8 +32,10 @@ synthesis to a model template.
 | Names specific models, wants stances (for/against), ad-hoc panel | Flexible panel | `workflows/panel.md` |
 | "refresh the model data", roster references dead models | Data refresh | `workflows/refresh-data.md` |
 
-When the request is ambiguous, default to tiered review at level 1 (under
-$0.01 per run) and say so.
+When the request is ambiguous, default to tiered review at level 1 and say
+so. Its estimated cost is under $0.01 per run, based on the script's
+assumption of 2,000 input and 1,500 output tokens per model; longer prompts
+cost more, up to the level's $0.50 cap.
 
 ## Engine quick reference
 

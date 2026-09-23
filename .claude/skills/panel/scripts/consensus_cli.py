@@ -341,8 +341,9 @@ def pinned_models(models: list[Model], tier: str, bands: dict) -> list[Model]:
         Pinned Model instances for the tier, in configured order.
 
     Raises:
-        ValueError: If tier_pins is not an object or a tier's pins are not a
-            list of strings (bands_config.json is hand-edited).
+        ValueError: If any part of tier_pins is malformed: not an object, an
+            unknown tier key (e.g. a misspelling), or pins that are not a list
+            of strings (bands_config.json is hand-edited).
     """
     # #ASSUME: tier_pins is optional; a config without it pins nothing.
     # #VERIFY: test_real_tier_pins_exist_in_dataset fails if a pinned id
@@ -350,11 +351,22 @@ def pinned_models(models: list[Model], tier: str, bands: dict) -> list[Model]:
     section = bands.get("tier_pins", {})
     if not isinstance(section, dict):
         raise ValueError("bands_config.json: tier_pins must be an object.")
+    # Validate every entry, not just the requested tier, so a typo such as
+    # "econmy" fails on any level instead of silently pinning nothing.
+    for key, value in section.items():
+        if key == "description":
+            continue
+        if key not in TIER_FALLBACK_ORDER:
+            valid = ", ".join(TIER_FALLBACK_ORDER)
+            raise ValueError(
+                f"bands_config.json: unknown tier_pins key {key!r}; "
+                f"valid tiers: {valid}."
+            )
+        if not isinstance(value, list) or not all(isinstance(n, str) for n in value):
+            raise ValueError(
+                f"bands_config.json: tier_pins.{key} must be a list of model ids."
+            )
     names = section.get(tier, [])
-    if not isinstance(names, list) or not all(isinstance(n, str) for n in names):
-        raise ValueError(
-            f"bands_config.json: tier_pins.{tier} must be a list of model ids."
-        )
     by_name = {m.name: m for m in models}
     return [by_name[n] for n in names if n in by_name]
 
