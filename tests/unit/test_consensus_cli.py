@@ -360,6 +360,94 @@ class TestRosterSelection:
         )
         assert all(r["est_cost_usd"] == 0.0 for r in roster)
 
+    def test_economy_pins_lead_level2_economy_slots(self):
+        """Economy pins fill the first economy slots even from the value band."""
+        bands = {**self.bands, "tier_pins": {"economy": ["val-a", "prem-b"]}}
+        roster = cli.select_roster(fake_dataset(), bands, self.roles, 2, "code_review")
+        assert [r["model"] for r in roster][3:] == ["val-a", "prem-b", "econ-a"]
+
+    def test_economy_pins_carry_into_level3_without_duplicates(self):
+        """Level 3 inherits economy pins; a pinned premium model is not repeated."""
+        bands = {**self.bands, "tier_pins": {"economy": ["val-a", "prem-b"]}}
+        roster = cli.select_roster(fake_dataset(), bands, self.roles, 3, "architecture")
+        names = [r["model"] for r in roster]
+        assert names[3:5] == ["val-a", "prem-b"]
+        assert len(names) == len(set(names))
+        assert "prem-a" in names[6:]
+
+    def test_unknown_or_dead_pins_are_skipped(self):
+        """Pins absent from the dataset or the live set fall through to the band."""
+        bands = {**self.bands, "tier_pins": {"economy": ["ghost/x", "val-a"]}}
+        live = {m.name for m in fake_dataset()} - {"val-a"}
+        roster = cli.select_roster(
+            fake_dataset(), bands, self.roles, 2, "code_review", live=live
+        )
+        assert {r["model"] for r in roster[3:]} == {"econ-a", "econ-b", "econ-c"}
+
+    def test_fallbacks_order_pins_ahead_of_band_within_tier(self):
+        """Within a tier's fallback walk, pins come before that tier's bands.
+
+        Tiers are still walked in LEVEL_TIER_COUNTS order, so at level 2 the
+        free tier's chain precedes economy pins; the exclude set removes it.
+        """
+        bands = {**self.bands, "tier_pins": {"economy": ["prem-b"]}}
+        exclude = {m.name for m in fake_dataset() if m.input_cost <= 1.0}
+        out = cli.select_fallbacks(fake_dataset(), bands, 2, exclude)
+        assert out == ["prem-b", "val-a"]
+
+    @pytest.mark.parametrize(
+        "pins",
+        [
+            None,
+            ["x"],
+            {"economy": "openai/gpt-6-sol"},
+            {"economy": [1]},
+            {"econmy": ["val-a"]},
+        ],
+    )
+    def test_malformed_tier_pins_raise(self, pins):
+        """A hand-edit typo in tier_pins fails loudly instead of pinning nothing."""
+        bands = {**self.bands, "tier_pins": pins}
+        with pytest.raises(ValueError, match="tier_pins"):
+            cli.select_roster(fake_dataset(), bands, self.roles, 2, "code_review")
+
+    def test_malformed_other_tier_pin_raises_at_level1(self):
+        """A bad economy entry fails even when only the free tier is selected."""
+        bands = {**self.bands, "tier_pins": {"economy": "val-a"}}
+        with pytest.raises(ValueError, match=r"tier_pins\.economy"):
+            cli.select_roster(fake_dataset(), bands, self.roles, 1, "code_review")
+
+    def test_description_key_is_allowed_in_tier_pins(self):
+        """The description metadata key is not treated as a tier."""
+        bands = {**self.bands, "tier_pins": {"description": "note", "economy": []}}
+        roster = cli.select_roster(fake_dataset(), bands, self.roles, 1, "code_review")
+        assert len(roster) == 3
+
+    def test_paid_free_pin_leads_level1_and_carries_up(self):
+        """A paid model pinned under free takes the first seat at every level."""
+        bands = {**self.bands, "tier_pins": {"free": ["econ-c"]}}
+        level1 = cli.select_roster(fake_dataset(), bands, self.roles, 1, "code_review")
+        assert [r["model"] for r in level1] == ["econ-c", "free-a:free", "free-b:free"]
+        assert level1[0]["est_cost_usd"] > 0
+        level3 = cli.select_roster(fake_dataset(), bands, self.roles, 3, "architecture")
+        names = [r["model"] for r in level3]
+        assert names[0] == "econ-c"
+        assert names.count("econ-c") == 1
+
+    def test_absent_tier_pins_keeps_benchmark_order(self):
+        """Without tier_pins, economy slots follow benchmark order."""
+        bands = {k: v for k, v in self.bands.items() if k != "tier_pins"}
+        roster = cli.select_roster(fake_dataset(), bands, self.roles, 2, "code_review")
+        assert [r["model"] for r in roster][3:] == ["econ-a", "econ-b", "econ-c"]
+
+    def test_real_tier_pins_exist_in_dataset(self):
+        """Every shipped pin is a curated row, so no pin is skipped silently."""
+        names = {m.name for m in cli.load_models()}
+        for tier, pins in self.bands.get("tier_pins", {}).items():
+            if isinstance(pins, list):
+                missing = [p for p in pins if p not in names]
+                assert not missing, f"tier_pins.{tier} not in models.csv: {missing}"
+
     def test_level3_cross_tier_dedup_no_duplicates(self):
         """Economy models filling free slots must not also occupy economy slots."""
         live = {
