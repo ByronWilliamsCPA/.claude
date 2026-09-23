@@ -30,9 +30,11 @@ Updates go through the refresh-data workflow.
   models.csv is skipped. Pins are not priced at selection time: the level cost
   cap applies to the whole roster when `run` starts and aborts the run rather
   than skipping an expensive pin, so keep pinned models cheap enough to fit the
-  cap of every level that includes their tier. Current pins: economy ->
-  openai/gpt-6-sol, moonshotai/kimi-k3 (2026-09-23, to give level 2
-  frontier-class members).
+  cap of every level that includes their tier. Current pins (2026-09-23): free -> openai/gpt-6-luna, so level 1
+  carries one paid frontier-family seat (about $0.001 per run); economy ->
+  openai/gpt-6-sol, moonshotai/kimi-k3, to give level 2 frontier-class
+  members. A pin under free is the one case where a paid model fills a free
+  slot on purpose.
 - roles.json: role_definitions (19 roles) and domain_roles (4 domains,
   additive levels 1-3). This file is internally consistent; domain_roles
   references only defined roles.
