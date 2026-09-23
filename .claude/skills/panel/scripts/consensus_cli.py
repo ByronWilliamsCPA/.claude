@@ -326,6 +326,57 @@ def fetch_live_model_ids(
     return ids
 
 
+def pinned_models(models: list[Model], tier: str, bands: dict) -> list[Model]:
+    """Curated models pinned to the front of a tier, in configured order.
+
+    Pins let a level include a model whose price or score would not earn the
+    slot on its own. Pinned ids missing from the curated dataset are skipped.
+
+    Args:
+        models: Curated model dataset to resolve pinned ids against.
+        tier: Roster tier name (e.g. 'economy').
+        bands: Loaded bands configuration (from load_bands).
+
+    Returns:
+        Pinned Model instances for the tier, in configured order.
+
+    Raises:
+        ValueError: If tier_pins is not an object or a tier's pins are not a
+            list of strings (bands_config.json is hand-edited).
+    """
+    # #ASSUME: tier_pins is optional; a config without it pins nothing.
+    # #VERIFY: test_real_tier_pins_exist_in_dataset fails if a pinned id
+    # leaves models.csv.
+    section = bands.get("tier_pins", {})
+    if not isinstance(section, dict):
+        raise ValueError("bands_config.json: tier_pins must be an object.")
+    names = section.get(tier, [])
+    if not isinstance(names, list) or not all(isinstance(n, str) for n in names):
+        raise ValueError(
+            f"bands_config.json: tier_pins.{tier} must be a list of model ids."
+        )
+    by_name = {m.name: m for m in models}
+    return [by_name[n] for n in names if n in by_name]
+
+
+def tier_candidates(models: list[Model], tier: str, bands: dict) -> list[Model]:
+    """Ordered candidates for a roster tier: pins, then the fallback band chain.
+
+    Args:
+        models: Curated model dataset to draw candidates from.
+        tier: Roster tier name (a key of TIER_FALLBACK_ORDER).
+        bands: Loaded bands configuration (from load_bands).
+
+    Returns:
+        Candidate Model instances in selection order; may contain duplicates,
+        which callers skip by name.
+    """
+    candidates = pinned_models(models, tier, bands)
+    for fallback_tier in TIER_FALLBACK_ORDER[tier]:
+        candidates.extend(models_in_cost_tier(models, fallback_tier, bands))
+    return candidates
+
+
 def select_roster(
     models: list[Model],
     bands: dict,
@@ -340,6 +391,8 @@ def select_roster(
     tier runs out of live candidates, the fallback tier order in
     TIER_FALLBACK_ORDER supplies substitutes, which is how level 1 can use
     cheap paid models (within its cost cap) when free models are unavailable.
+    Models listed under the tier's tier_pins entry in bands_config are tried
+    first, ahead of the band's benchmark ordering.
 
     Args:
         models: Curated model dataset to draw candidates from.
@@ -369,11 +422,8 @@ def select_roster(
 
     picked: list[Model] = []
     for tier, count in LEVEL_TIER_COUNTS[level].items():
-        candidates: list[Model] = []
-        for fallback_tier in TIER_FALLBACK_ORDER[tier]:
-            candidates.extend(models_in_cost_tier(models, fallback_tier, bands))
         taken = 0
-        for candidate in candidates:
+        for candidate in tier_candidates(models, tier, bands):
             if taken >= count:
                 break
             if any(p.name == candidate.name for p in picked):
@@ -409,13 +459,12 @@ def select_fallbacks(
     """
     out: list[str] = []
     for tier in LEVEL_TIER_COUNTS[level]:
-        for fallback_tier in TIER_FALLBACK_ORDER[tier]:
-            for m in models_in_cost_tier(models, fallback_tier, bands):
-                if m.name in exclude or m.name in out:
-                    continue
-                if live is not None and m.name not in live:
-                    continue
-                out.append(m.name)
+        for m in tier_candidates(models, tier, bands):
+            if m.name in exclude or m.name in out:
+                continue
+            if live is not None and m.name not in live:
+                continue
+            out.append(m.name)
     return out[:limit]
 
 

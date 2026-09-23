@@ -55,6 +55,10 @@
       "target_allocation": "6 models (24%)"
     }
   },
+  "tier_pins": {
+    "description": "Models tried first for a roster tier, ahead of benchmark order. Levels are additive, so an economy pin appears in levels 2 and 3.",
+    "economy": ["openai/gpt-6-sol", "moonshotai/kimi-k3"]
+  },
   "performance_bands": {
     "band_strategy": "centralized_ranges",
     "description": "Single source of truth for performance band definitions",

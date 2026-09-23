@@ -15,7 +15,7 @@ Updates go through the refresh-data workflow.
 - context values are strings like "131K" or "1M"; multiply K by 1,000 and M by
   1,000,000 (the engine's parse_context handles this).
 - bands_config.json: ONLY the cost_tier_bands section (free, economy, value,
-  premium). Band objects sit alongside metadata keys (band_strategy,
+  premium) and the tier_pins section. Band objects sit alongside metadata keys (band_strategy,
   description, note); access bands by name, never iterate keys. The value
   (1.01-10.00) and premium (4.00+) ranges intentionally overlap; the roster
   selector deduplicates by model name, so a model in the overlap may be
@@ -23,6 +23,16 @@ Updates go through the refresh-data workflow.
   org_level_assignment_bands, org_level_requirements, role_assignment_bands,
   provider_info, provider_trust_bands, etc.) are legacy zen metadata and
   unconsumed.
+- tier_pins maps a roster tier (a key of TIER_FALLBACK_ORDER: free, economy,
+  premium) to model ids tried first for that tier, ahead of benchmark order
+  and regardless of price band. Levels are additive, so an economy pin sits in
+  levels 2 and 3. Pins still pass live validation; an id missing from
+  models.csv is skipped. Pins are not priced at selection time: the level cost
+  cap applies to the whole roster when `run` starts and aborts the run rather
+  than skipping an expensive pin, so keep pinned models cheap enough to fit the
+  cap of every level that includes their tier. Current pins: economy ->
+  openai/gpt-6-sol, moonshotai/kimi-k3 (2026-09-23, to give level 2
+  frontier-class members).
 - roles.json: role_definitions (19 roles) and domain_roles (4 domains,
   additive levels 1-3). This file is internally consistent; domain_roles
   references only defined roles.
