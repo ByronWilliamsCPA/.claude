@@ -37,7 +37,7 @@ jobs:
     # #VERIFY before bumping: `gh api
     # repos/ByronWilliamsCPA/.github/compare/main...<sha> --jq .status` must not
     # return "diverged".
-    uses: ByronWilliamsCPA/.github/.github/workflows/claude-baseline-review.yml@f9564243f7931334fa0a4adcb5d5fd877f66fcc8  # main
+    uses: ByronWilliamsCPA/.github/.github/workflows/claude-baseline-review.yml@b7c661ec3bfeb04370ce3a9c748bd8c4e93bfe89  # main
     with:
       repo-description: >-
         the global Claude Code configuration repo: agents, skills, slash
