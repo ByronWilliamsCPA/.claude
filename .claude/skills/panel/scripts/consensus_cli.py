@@ -812,7 +812,7 @@ async def run_consensus(
             "response": None,
             "tokens": None,
             "cost_usd": None,
-            "error": f"{type(res).__name__}: {res}",
+            "error": _redact(f"{type(res).__name__}: {res}", api_key),
         }
         for entry, res in zip(entries, raw, strict=True)
     ]
@@ -1013,6 +1013,17 @@ def _fetch_zdr_ids_or_exit() -> tuple[set[str], bool]:
     test_fetch_zdr_ids_or_exit_flags_cache_older_than_seven_days and
     test_fetch_zdr_ids_or_exit_fresh_cache_not_flagged in
     test_consensus_cli.py.
+
+    #EDGE: _fetch_cached_ids treats a failed cache write after a successful
+    live fetch as non-fatal (it unlinks the temp file and returns the live
+    ids anyway, per its own #EDGE note), so the on-disk cache can stay old
+    even though the ids just returned are fresh. This function has no way
+    to distinguish that case from a genuine stale-fallback read, so it can
+    report a false-positive cache_stale=True on a successful live fetch
+    when the write itself failed. This errs toward warning the operator
+    rather than silently trusting a filter that may be built from
+    unexpectedly old data, which is the safer failure direction for a
+    policy filter like ZDR.
 
     Returns:
         A tuple of (zdr_ids, cache_stale): cache_stale is True when the ids
@@ -1263,18 +1274,21 @@ def _owning_repo_root() -> Path | None:
     from the resolved file path. #CRITICAL: this is a *global* skill that
     gets symlinked or checked out into arbitrary project roots, so the
     parents[4] candidate is trusted only when it actually contains the
-    .claude/skills/panel marker directory (this repo's own install shape).
-    A bare parent-count check cannot tell an unrelated ancestor directory
-    from a real install, and could even resolve to '/' for a script placed
-    exactly 5 levels deep somewhere unexpected; either way it would let a
-    stranger project's .env supply this process's OpenRouter key, silently
-    defeating the ZDR account-restriction guarantee. #VERIFY:
+    .claude/skills/panel marker directory, confirming the standard
+    <root>/.claude/skills/panel install layout rather than merely counting
+    path segments. A bare parent-count check cannot tell an unrelated
+    ancestor directory from a real install, and could even resolve to '/'
+    for a script placed exactly 5 levels deep somewhere unexpected; either
+    way it would let a stranger project's .env supply this process's
+    OpenRouter key, silently defeating the ZDR account-restriction
+    guarantee. #VERIFY:
     test_owning_repo_root_lands_on_repo_root_for_matching_depth and
     test_owning_repo_root_rejects_missing_marker in test_consensus_cli.py.
 
     Returns:
         The resolved repo root path when it contains the skill's marker
-        directory, otherwise None (script too shallow, or no marker found).
+        directory, confirming the standard install layout, otherwise None
+        (script too shallow, or no marker found there).
     """
     parents = Path(__file__).resolve().parents
     if len(parents) <= 4:
@@ -1378,8 +1392,18 @@ def _cmd_run(
     # after that resolution, not at function entry.
     api_key = _select_api_key(zdr_mode)
     if not api_key:
-        missing_var = OPENROUTER_ZDR_KEY_VAR if zdr_mode else OPENROUTER_API_KEY_VAR
-        emit({"error": f"{missing_var} is not set"}, stream=sys.stderr)
+        var = OPENROUTER_ZDR_KEY_VAR if zdr_mode else OPENROUTER_API_KEY_VAR
+        # Distinguish "unset" from "set but hygiene-rejected" so the operator
+        # knows which problem to fix, without ever printing the value itself
+        # (see _select_api_key's #VERIFY note on this exact distinction).
+        if os.environ.get(var):
+            message = (
+                f"{var} is set but malformed (whitespace, control, or "
+                "non-ASCII characters)"
+            )
+        else:
+            message = f"{var} is not set"
+        emit({"error": message}, stream=sys.stderr)
         return 1
 
     off_zdr = _off_zdr_models(entries, zdr_mode, models_mode=bool(args.models))

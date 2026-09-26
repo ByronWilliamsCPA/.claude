@@ -35,8 +35,8 @@ _REAL_LOAD_DOTENV_KEYS = cli._load_dotenv_keys
 
 
 @pytest.fixture(autouse=True)
-def _clean_zdr_env(monkeypatch):
-    """Keep OpenRouter key/ZDR env vars out of the ambient environment for every test.
+def _clean_zdr_env(monkeypatch, tmp_path):
+    """Keep OpenRouter key/ZDR env vars and cache paths off real machine state.
 
     ZDR mode is env-var-triggered by design (the requirement travels with
     the key), so a leaked value from one test or the developer's shell
@@ -54,11 +54,26 @@ def _clean_zdr_env(monkeypatch):
     file calls the real loader without first monkeypatching cli.Path.cwd()
     and/or cli._owning_repo_root to a tmp_path fixture; grep confirms every
     _REAL_LOAD_DOTENV_KEYS() or cli._load_dotenv_keys() call site does so.
+
+    #CRITICAL: cli.CACHE_PATH and cli.ZDR_CACHE_PATH default to real files
+    under the developer's actual ~/.cache; redirecting both here to this
+    test's own tmp_path means no test reads or writes that real cache, and a
+    test's outcome cannot depend on that real file's age or contents (a ZDR
+    cache older than ZDR_STALE_CACHE_SECONDS on the machine running the
+    suite previously made test_main_select_zdr_fresh_cache_omits_stale_fields
+    fail nondeterministically). Tests that need a specific cache file still
+    write one under tmp_path and monkeypatch.setattr the path explicitly,
+    which simply overrides this default later in the same test. #VERIFY:
+    HOME=$(mktemp -d) with a 9-day-old
+    $HOME/.cache/panel-skill/openrouter-zdr-models.json present, then run
+    this file; every test passes because none of them read that path.
     """
     env_vars = ("OPENROUTER_ZDR", "OPENROUTER_API_KEY", "OPENROUTER__ZDR_API_KEY")
     for name in env_vars:
         monkeypatch.delenv(name, raising=False)
     monkeypatch.setattr(cli, "_load_dotenv_keys", lambda: None)
+    monkeypatch.setattr(cli, "CACHE_PATH", tmp_path / "openrouter-models.json")
+    monkeypatch.setattr(cli, "ZDR_CACHE_PATH", tmp_path / "openrouter-zdr-models.json")
     yield
     for name in env_vars:
         os.environ.pop(name, None)
@@ -863,6 +878,33 @@ class TestRunConsensus:
             )
         )
         assert "provider" not in seen_bodies[0]
+
+    def test_escaped_exception_error_is_redacted(self, monkeypatch):
+        """An exception that escapes call_model entirely is still redacted.
+
+        return_exceptions=True lets asyncio.gather hand run_consensus a raw
+        BaseException for any model whose call_model coroutine raises past
+        its own try/except (call_model's docstring says "never raises", but
+        this is the defensive normalisation for the case where it does
+        anyway). That normalisation stringifies the exception directly
+        (f"{type(res).__name__}: {res}"), so it needs the same _redact
+        treatment as call_model's own error strings; otherwise a leaked
+        key would bypass call_model's redaction entirely.
+        """
+        api_key = "sk-or-ESCAPED789"  # pragma: allowlist secret
+
+        async def raising_call_model(client, entry, prompt, key, catalog, zdr=False):
+            raise RuntimeError(f"unexpected failure, key={key}")
+
+        monkeypatch.setattr(cli, "call_model", raising_call_model)
+        entries = [{"model": "m/x", "role": None, "system_prompt": None}]
+        out = asyncio.run(
+            cli.run_consensus(entries, "q?", api_key, catalog={}, transport=None)
+        )
+        assert out["failed"] == 1
+        error = out["results"][0]["error"]
+        assert api_key not in error
+        assert "[REDACTED]" in error
 
 
 class TestRefresh:
@@ -2016,7 +2058,7 @@ class TestApiKeyHygiene:
     def test_run_rejects_hygiene_failing_key_naming_variable_only(
         self, monkeypatch, tmp_path, capsys
     ):
-        """A key with an embedded control char exits 1 naming only the variable."""
+        """A malformed key exits 1 with a distinct 'malformed' message, value never printed."""
         bad_key = "sk-or-FAKE\x0bTAIL"
         monkeypatch.setenv("OPENROUTER_API_KEY", bad_key)
         prompt = tmp_path / "p.txt"
@@ -2025,8 +2067,29 @@ class TestApiKeyHygiene:
         assert rc == 1
         err = capsys.readouterr().err
         assert "OPENROUTER_API_KEY" in err
+        assert "is set but malformed" in err
         assert bad_key not in err
         assert "FAKE" not in err
+
+    def test_run_reports_unset_key_distinctly_from_malformed(
+        self, monkeypatch, tmp_path, capsys
+    ):
+        """An unset key exits 1 with 'is not set', distinct from the malformed message.
+
+        _select_api_key returns None for both an absent variable and a
+        hygiene-rejected one, so _cmd_run's error message can only tell
+        them apart by checking os.environ itself; this confirms it does,
+        so an operator sees "unset" rather than a misleading "malformed"
+        message when the variable was never exported at all.
+        """
+        monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
+        prompt = tmp_path / "p.txt"
+        prompt.write_text("q?")
+        rc = cli.main(["run", "--prompt-file", str(prompt), "--models", "m/x"])
+        assert rc == 1
+        err = capsys.readouterr().err
+        assert "OPENROUTER_API_KEY is not set" in err
+        assert "malformed" not in err
 
     def test_call_model_redacts_api_key_from_http_error(self, monkeypatch):
         """A 4xx body that echoes the bearer token is redacted before storage."""
