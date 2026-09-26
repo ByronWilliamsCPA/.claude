@@ -19,16 +19,29 @@ synthesis to a model template.
 
 ## Prerequisites
 
-- `OPENROUTER_API_KEY` set in the environment. If `run` fails with a key
-  error (exit code 1), tell the user and stop.
+- `OPENROUTER_API_KEY` set in the environment for standard runs. A separate,
+  more restricted `OPENROUTER__ZDR_API_KEY` (double underscore after
+  OPENROUTER) is required for `--zdr` runs; the ZDR key is account-restricted
+  to zero-data-retention endpoints, a stronger guarantee than the
+  per-request provider preference alone, and `run` never falls back to the
+  standard key when the mode is ZDR. If the required key for the mode is
+  unset, `run` fails with exit code 1 naming the missing variable; tell the
+  user and stop.
+- Both keys can also live in a gitignored `.env` at the repo root that owns
+  this skill; `run` auto-loads them (never overriding a key already set in
+  the shell environment).
 - All commands run from the repo root with `uv run` (the script carries
   PEP 723 inline dependencies).
-- If the key requires zero data retention (ZDR), set `OPENROUTER_ZDR=1` in
-  the environment, or pass `--zdr` to `select`, `estimate`, and `run`. Under
-  ZDR, free models are unavailable (free endpoints log prompts), so level 1
-  is filled with cheap paid ZDR models instead, still within its $0.50 cap.
-  See the failure-handling note in `workflows/tiered-review.md` for the
-  symptom that indicates a key is policy-restricted.
+- Pass `--zdr` to `select`, `estimate`, and `run` whenever the prompt
+  contains confidential material: client or financial data, secrets or
+  credentials, proprietary or non-public code, or PII. Otherwise the
+  standard key is fine. Under ZDR, free models are unavailable (free
+  endpoints log prompts), so level 1 is filled with cheap paid ZDR models
+  instead, still within its $0.50 cap. Set `OPENROUTER_ZDR=1` to force ZDR
+  mode for every run regardless of prompt content (for a key that only works
+  in ZDR mode). See the failure-handling note in
+  `workflows/tiered-review.md` for the symptom that indicates a key is
+  policy-restricted.
 
 ## Mode routing
 
@@ -38,10 +51,13 @@ synthesis to a model template.
 | Names specific models, wants stances (for/against), ad-hoc panel | Flexible panel | `workflows/panel.md` |
 | "refresh the model data", roster references dead models | Data refresh | `workflows/refresh-data.md` |
 
-When the request is ambiguous, default to tiered review at level 1 and say
-so. Its estimated cost is under $0.01 per run, based on the script's
-assumption of 2,000 input and 1,500 output tokens per model; longer prompts
-cost more, up to the level's $0.50 cap.
+When the request is ambiguous, default to tiered review at level 2 (also the
+engine's own default when `--level` is omitted). Level 1 is for low-value or
+low-stakes items: quick sanity checks, trivial questions, anything where a
+second opinion is nice-to-have rather than load-bearing. Level 2's estimated
+cost is under $0.02 per run, based on the script's assumption of 2,000 input
+and 1,500 output tokens per model; longer prompts cost more, up to the
+level's $1.00 cap.
 
 ## Engine quick reference
 
@@ -51,8 +67,12 @@ uv run .claude/skills/panel/scripts/consensus_cli.py estimate --level 3
 uv run .claude/skills/panel/scripts/consensus_cli.py run --prompt-file /tmp/q.txt --roster-file /tmp/roster.json
 uv run .claude/skills/panel/scripts/consensus_cli.py run --prompt-file /tmp/q.txt --models "openai/gpt-6-sol,anthropic/claude-opus-5.5" --roles-file /tmp/roles.json
 uv run .claude/skills/panel/scripts/consensus_cli.py refresh
-uv run .claude/skills/panel/scripts/consensus_cli.py select --level 1 --zdr
+uv run .claude/skills/panel/scripts/consensus_cli.py select --zdr
 ```
+
+`--level` defaults to 2 on `select` and `estimate` when omitted (as in the
+`refresh` and last `select` lines above); `run --level` has no default and
+only applies the cost cap, so pass whatever level `select` used.
 
 Domains: `code_review` (default), `security`, `architecture`, `general`.
 
@@ -63,8 +83,8 @@ input file, 3 every model failed.
 
 | Level | Roster | Cap |
 | --- | --- | --- |
-| 1 | GPT-6 Luna (pinned, paid) + 2 free models; failover may substitute cheap paid models. Under `--zdr`/`OPENROUTER_ZDR`, free models are excluded (they log prompts) and the free tier is filled with cheap paid ZDR models instead, within cap. | $0.50 |
-| 2 | level 1 + GPT-6 Sol and Kimi K3 (pinned) + 1 economy model (6 total) | $1.00 |
+| 1 (low-value items) | GPT-6 Luna (pinned, paid) + 2 free models; failover may substitute cheap paid models. Under `--zdr`/`OPENROUTER_ZDR`, free models are excluded (they log prompts) and the free tier is filled with cheap paid ZDR models instead, within cap. | $0.50 |
+| 2 (default) | level 1 + GPT-6 Sol and Kimi K3 (pinned) + 1 economy model (6 total) | $1.00 |
 | 3 | level 2 + 2 high-cost models (8 total) | $10.00 |
 
 Pins come from `tier_pins` in `data/bands_config.json`; see

@@ -11,7 +11,17 @@ Subcommands (all emit JSON on stdout):
     run       Fan a prompt out to models in parallel; emit raw responses.
     refresh   Diff the curated dataset against the live OpenRouter catalog.
 
-OPENROUTER_API_KEY must be set in the environment for the run subcommand.
+OPENROUTER_API_KEY must be set in the environment for standard runs of the
+run subcommand. A separate, more restrictive OPENROUTER__ZDR_API_KEY (double
+underscore after OPENROUTER) is required for --zdr runs; the two keys are
+never substituted for each other, so a run in ZDR mode fails rather than
+falling back to the standard key. Both may instead live in a gitignored
+.env at the repo root that owns this skill; run auto-loads them from
+Path.cwd()/.env and that repo root .env, without overriding a key already
+present in the environment. Pass --zdr (or set OPENROUTER_ZDR=1 to force it
+for every run regardless of prompt content) whenever the prompt carries
+confidential material: client or financial data, secrets or credentials,
+proprietary or non-public code, or PII. Otherwise the standard key is fine.
 """
 
 from __future__ import annotations
@@ -36,6 +46,9 @@ ZDR_CACHE_PATH = Path.home() / ".cache" / "panel-skill" / "openrouter-zdr-models
 CACHE_TTL_SECONDS = 24 * 3600
 OPENROUTER_BASE = "https://openrouter.ai/api/v1"
 ZDR_TRUTHY_VALUES = {"1", "true", "yes"}
+OPENROUTER_API_KEY_VAR = "OPENROUTER_API_KEY"  # pragma: allowlist secret
+OPENROUTER_ZDR_KEY_VAR = "OPENROUTER__ZDR_API_KEY"
+_DOTENV_ALLOWLIST = {OPENROUTER_API_KEY_VAR, OPENROUTER_ZDR_KEY_VAR, "OPENROUTER_ZDR"}
 EST_INPUT_TOKENS = 2000
 EST_OUTPUT_TOKENS = 1500
 LEVEL_COST_CAPS_USD = {1: 0.50, 2: 1.00, 3: 10.00}
@@ -783,7 +796,13 @@ def build_parser() -> argparse.ArgumentParser:
     sub = parser.add_subparsers(dest="command", required=True)
 
     p_select = sub.add_parser("select", help="Build a roster for a level and domain")
-    p_select.add_argument("--level", type=int, required=True, choices=[1, 2, 3])
+    p_select.add_argument(
+        "--level",
+        type=int,
+        default=2,
+        choices=[1, 2, 3],
+        help="Review depth; defaults to 2 (level 1 is for low-value/low-stakes items)",
+    )
     p_select.add_argument("--domain", default="code_review", choices=DOMAIN_CHOICES)
     p_select.add_argument("--limit", type=int, default=None)
     p_select.add_argument(
@@ -799,7 +818,13 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     p_estimate = sub.add_parser("estimate", help="Cost preview for a level")
-    p_estimate.add_argument("--level", type=int, required=True, choices=[1, 2, 3])
+    p_estimate.add_argument(
+        "--level",
+        type=int,
+        default=2,
+        choices=[1, 2, 3],
+        help="Review depth; defaults to 2 (level 1 is for low-value/low-stakes items)",
+    )
     p_estimate.add_argument("--domain", default="code_review", choices=DOMAIN_CHOICES)
     p_estimate.add_argument(
         "--zdr",
@@ -1079,16 +1104,121 @@ def _off_zdr_models(
     return [e["model"] for e in entries if e["model"] not in zdr_ids]
 
 
+def _parse_dotenv_line(line: str) -> tuple[str, str] | None:
+    """Parse one .env line into a (key, value) pair, or None for non-data lines.
+
+    Skips blank lines and `#` comments, tolerates a leading `export ` prefix,
+    and strips a single pair of matching quotes (`'` or `"`) around the value.
+
+    Args:
+        line: One raw line from a .env file, not yet stripped.
+
+    Returns:
+        The parsed (key, value) pair, or None if the line carries no data.
+    """
+    stripped = line.strip()
+    if not stripped or stripped.startswith("#"):
+        return None
+    if stripped.startswith("export "):
+        stripped = stripped[len("export ") :].strip()
+    if "=" not in stripped:
+        return None
+    key, _, value = stripped.partition("=")
+    key = key.strip()
+    value = value.strip()
+    if len(value) >= 2 and value[0] == value[-1] and value[0] in ("'", '"'):
+        value = value[1:-1]
+    return key, value
+
+
+def _load_env_file(path: Path) -> None:
+    """Load allowlisted OpenRouter env vars from one .env file into os.environ.
+
+    #CRITICAL: this reads a file that may contain API keys and writes into
+    the process environment. Only the three names in _DOTENV_ALLOWLIST are
+    ever taken from the file (arbitrary .env content cannot inject other env
+    vars), and a name already present in os.environ is never overwritten, so
+    a stray or malicious .env cannot override an operator's explicit shell
+    export. #VERIFY: test_load_env_file_allowlist_only and
+    test_load_env_file_never_overrides_existing_env in test_consensus_cli.py.
+
+    Args:
+        path: Candidate .env file path; missing or unreadable is a silent
+            no-op, since a .env file is optional at every search location.
+    """
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError:
+        return
+    for line in text.splitlines():
+        parsed = _parse_dotenv_line(line)
+        if parsed is None:
+            continue
+        key, value = parsed
+        if key not in _DOTENV_ALLOWLIST or key in os.environ:
+            continue
+        os.environ[key] = value
+
+
+def _owning_repo_root() -> Path | None:
+    """Return the repo root that owns this skill script, or None if too shallow.
+
+    The script lives at <repo_root>/.claude/skills/panel/scripts/consensus_cli.py,
+    so the repo root is 4 parents up from the resolved file path. Guarded rather
+    than indexed unconditionally so a script copied somewhere shallower cannot
+    raise an IndexError; dotenv loading from the repo root is simply skipped.
+
+    Returns:
+        The resolved repo root path, or None when the script path has 4 or
+        fewer parents.
+    """
+    parents = Path(__file__).resolve().parents
+    return parents[4] if len(parents) > 4 else None
+
+
+def _load_dotenv_keys() -> None:
+    """Load OpenRouter keys from .env files: cwd first, then the owning repo root.
+
+    Callers often run this script from a project root other than the repo
+    that owns the panel skill, so the shell environment may lack the keys
+    even though a gitignored .env holds them. Path.cwd()/.env is checked
+    first (an operator's local override wins), then the skill's owning repo
+    root .env. Neither call overrides a variable already set in os.environ.
+    """
+    _load_env_file(Path.cwd() / ".env")
+    repo_root = _owning_repo_root()
+    if repo_root is not None:
+        _load_env_file(repo_root / ".env")
+
+
+def _select_api_key(zdr_mode: bool) -> str | None:
+    """Return the correct OpenRouter API key for the mode, with no fallback.
+
+    #CRITICAL: in ZDR mode this must return only OPENROUTER__ZDR_API_KEY,
+    never falling back to the standard OPENROUTER_API_KEY. The ZDR key is an
+    account-level data-handling guarantee, stronger than the per-request
+    provider.zdr preference alone, so silently substituting the standard key
+    would weaken that guarantee without any visible signal.
+    #VERIFY: test_zdr_mode_never_falls_back_to_standard_key in
+    test_consensus_cli.py.
+
+    Args:
+        zdr_mode: True when the run must use the ZDR-restricted account key.
+
+    Returns:
+        The key string, or None when the required env var is unset or empty.
+    """
+    var = OPENROUTER_ZDR_KEY_VAR if zdr_mode else OPENROUTER_API_KEY_VAR
+    return os.environ.get(var) or None
+
+
 def _cmd_run(
     args: argparse.Namespace,
     models: list[Model],
     roles: dict,
 ) -> int:
     """Handle the run subcommand; return an exit code."""
-    api_key = os.environ.get("OPENROUTER_API_KEY")
-    if not api_key:
-        emit({"error": "OPENROUTER_API_KEY is not set"}, stream=sys.stderr)
-        return 1
+    _load_dotenv_keys()
     try:
         prompt = Path(args.prompt_file).read_text(encoding="utf-8")
     except (OSError, UnicodeDecodeError) as exc:
@@ -1115,6 +1245,15 @@ def _cmd_run(
     else:
         # --models mode: user-named panels are never substituted
         fallbacks = []
+
+    # Key choice depends on the fully-resolved zdr_mode (flag, env var, or the
+    # roster file's "zdr": true override read just above), so this must come
+    # after that resolution, not at function entry.
+    api_key = _select_api_key(zdr_mode)
+    if not api_key:
+        missing_var = OPENROUTER_ZDR_KEY_VAR if zdr_mode else OPENROUTER_API_KEY_VAR
+        emit({"error": f"{missing_var} is not set"}, stream=sys.stderr)
+        return 1
 
     off_zdr = _off_zdr_models(entries, zdr_mode, models_mode=bool(args.models))
 

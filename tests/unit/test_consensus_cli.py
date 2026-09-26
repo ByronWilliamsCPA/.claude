@@ -31,13 +31,21 @@ _spec.loader.exec_module(cli)
 
 @pytest.fixture(autouse=True)
 def _clean_zdr_env(monkeypatch):
-    """Keep OPENROUTER_ZDR out of the ambient environment for every test.
+    """Keep OpenRouter key/ZDR env vars out of the ambient environment for every test.
 
     ZDR mode is env-var-triggered by design (the requirement travels with
     the key), so a leaked value from one test or the developer's shell
-    would silently change another test's behavior.
+    would silently change another test's behavior. The two API key names are
+    cleared the same way, then force-cleared again on teardown: the dotenv
+    loader under test writes directly into os.environ (not via monkeypatch),
+    so monkeypatch's own undo stack does not know to revert it.
     """
-    monkeypatch.delenv("OPENROUTER_ZDR", raising=False)
+    env_vars = ("OPENROUTER_ZDR", "OPENROUTER_API_KEY", "OPENROUTER__ZDR_API_KEY")
+    for name in env_vars:
+        monkeypatch.delenv(name, raising=False)
+    yield
+    for name in env_vars:
+        os.environ.pop(name, None)
 
 
 def make_model(name, inp, out, he=70.0, swe=60.0, context=131000, spec="general"):
@@ -1088,6 +1096,7 @@ class TestCliZdrRun:
     ):
         """A roster file carrying "zdr": true turns on ZDR mode with no CLI flag."""
         monkeypatch.setenv("OPENROUTER_API_KEY", "k")
+        monkeypatch.setenv("OPENROUTER__ZDR_API_KEY", "zdr-k")
         prompt = tmp_path / "p.txt"
         prompt.write_text("q?")
         roster = tmp_path / "roster.json"
@@ -1126,6 +1135,7 @@ class TestCliZdrRun:
     def test_env_var_enables_zdr_for_run(self, monkeypatch, tmp_path, capsys):
         """OPENROUTER_ZDR alone enables ZDR mode for run and marks the output."""
         monkeypatch.setenv("OPENROUTER_API_KEY", "k")
+        monkeypatch.setenv("OPENROUTER__ZDR_API_KEY", "zdr-k")
         monkeypatch.setenv("OPENROUTER_ZDR", "1")
         prompt = tmp_path / "p.txt"
         prompt.write_text("q?")
@@ -1150,6 +1160,7 @@ class TestCliZdrRun:
     ):
         """--models under ZDR merges an off-ZDR warning with the uncatalogued one."""
         monkeypatch.setenv("OPENROUTER_API_KEY", "k")
+        monkeypatch.setenv("OPENROUTER__ZDR_API_KEY", "zdr-k")
         prompt = tmp_path / "p.txt"
         prompt.write_text("q?")
 
@@ -1612,3 +1623,285 @@ class TestRosterLevelGuard:
         }
         with pytest.raises(ValueError, match="no roles configured for level 3"):
             cli.select_roster(fake_dataset(), bands, roles, 3, "code_review")
+
+
+class TestLevelDefault:
+    """select/estimate default to level 2 when --level is omitted."""
+
+    def test_select_parse_args_no_level_defaults_to_two(self):
+        """parse_args(["select"]) defaults to level 2 with no explicit flag."""
+        args = cli.build_parser().parse_args(["select"])
+        assert args.level == 2
+
+    def test_estimate_parse_args_no_level_defaults_to_two(self):
+        """parse_args(["estimate"]) defaults to level 2 with no explicit flag."""
+        args = cli.build_parser().parse_args(["estimate"])
+        assert args.level == 2
+
+    def test_run_parse_args_no_level_stays_none(self):
+        """run's --level has no default; it stays optional as-is."""
+        args = cli.build_parser().parse_args(["run", "--prompt-file", "p.txt"])
+        assert args.level is None
+
+    def test_main_select_no_level_emits_level2_roster(self, capsys):
+        """select with no --level emits the level-2 roster (6 entries)."""
+        rc = cli.main(["select", "--no-validate"])
+        assert rc == 0
+        payload = json.loads(capsys.readouterr().out)
+        assert payload["level"] == 2
+        assert len(payload["roster"]) == 6
+        assert payload["cap_usd"] == 1.00
+
+    def test_main_estimate_no_level_defaults_to_two(self, capsys):
+        """estimate with no --level defaults to level 2."""
+        rc = cli.main(["estimate"])
+        assert rc == 0
+        payload = json.loads(capsys.readouterr().out)
+        assert payload["level"] == 2
+
+
+class TestDotenvLoader:
+    """Stdlib-only .env loader: parsing, allowlist, and non-override semantics.
+
+    Exercised only against synthetic tmp_path fixtures, never against a real
+    .env file, per the security constraint that this loader must not be
+    verified by reading any real .env on disk.
+    """
+
+    def test_parses_plain_key_value(self):
+        assert cli._parse_dotenv_line("OPENROUTER_API_KEY=abc123") == (
+            "OPENROUTER_API_KEY",
+            "abc123",
+        )
+
+    def test_skips_blank_and_comment_lines(self):
+        assert cli._parse_dotenv_line("") is None
+        assert cli._parse_dotenv_line("   ") is None
+        assert cli._parse_dotenv_line("# a comment") is None
+
+    def test_strips_export_prefix(self):
+        assert cli._parse_dotenv_line("export OPENROUTER_API_KEY=abc123") == (
+            "OPENROUTER_API_KEY",
+            "abc123",
+        )
+
+    def test_strips_matching_double_quotes(self):
+        raw = 'OPENROUTER_API_KEY="abc 123"'  # pragma: allowlist secret
+        assert cli._parse_dotenv_line(raw) == ("OPENROUTER_API_KEY", "abc 123")
+
+    def test_strips_matching_single_quotes(self):
+        raw = "OPENROUTER_API_KEY='abc123'"  # pragma: allowlist secret
+        assert cli._parse_dotenv_line(raw) == ("OPENROUTER_API_KEY", "abc123")
+
+    def test_no_equals_sign_returns_none(self):
+        assert cli._parse_dotenv_line("not a valid line") is None
+
+    def test_load_env_file_allowlist_only(self, tmp_path):
+        """Only the three allowlisted names are pulled from the file."""
+        env_file = tmp_path / ".env"
+        env_file.write_text(
+            "OPENROUTER_API_KEY=std-key\n"
+            "OPENROUTER__ZDR_API_KEY=zdr-key\n"
+            "OPENROUTER_ZDR=1\n"
+            "SOME_OTHER_SECRET=nope\n"
+        )
+        cli._load_env_file(env_file)
+        env = os.environ
+        assert env["OPENROUTER_API_KEY"] == "std-key"  # pragma: allowlist secret
+        assert env["OPENROUTER__ZDR_API_KEY"] == "zdr-key"  # pragma: allowlist secret
+        assert env["OPENROUTER_ZDR"] == "1"
+        assert "SOME_OTHER_SECRET" not in env
+
+    def test_load_env_file_never_overrides_existing_env(self, monkeypatch, tmp_path):
+        """An already-set env var is left untouched by the loader."""
+        monkeypatch.setenv("OPENROUTER_API_KEY", "shell-key")
+        env_file = tmp_path / ".env"
+        env_file.write_text("OPENROUTER_API_KEY=dotenv-key\n")
+        cli._load_env_file(env_file)
+        env = os.environ["OPENROUTER_API_KEY"]
+        assert env == "shell-key"  # pragma: allowlist secret
+
+    def test_load_env_file_missing_file_is_a_noop(self, tmp_path):
+        """A nonexistent .env path does not raise."""
+        cli._load_env_file(tmp_path / "does-not-exist" / ".env")
+        assert "OPENROUTER_API_KEY" not in os.environ
+
+    def test_owning_repo_root_lands_on_repo_root_for_matching_depth(self, tmp_path):
+        """A synthetic tree of the real script's depth resolves parents[4] to its root."""
+        fake_script = (
+            tmp_path
+            / "repo"
+            / ".claude"
+            / "skills"
+            / "panel"
+            / "scripts"
+            / "consensus_cli.py"
+        )
+        fake_script.parent.mkdir(parents=True)
+        fake_script.write_text("# placeholder\n")
+        assert fake_script.resolve().parents[4] == (tmp_path / "repo").resolve()
+
+    def test_owning_repo_root_guards_shallow_path(self, monkeypatch):
+        """A script path with 4 or fewer parents returns None instead of raising."""
+        monkeypatch.setattr(cli, "__file__", "/a/b/x.py")
+        assert cli._owning_repo_root() is None
+
+    def test_load_dotenv_keys_checks_cwd_then_repo_root(self, monkeypatch, tmp_path):
+        """cwd's .env is loaded, then the (mocked) owning repo root's .env."""
+        cwd_dir = tmp_path / "cwd"
+        cwd_dir.mkdir()
+        (cwd_dir / ".env").write_text("OPENROUTER_API_KEY=from-cwd\n")
+        repo_dir = tmp_path / "repo"
+        repo_dir.mkdir()
+        (repo_dir / ".env").write_text(
+            "OPENROUTER_API_KEY=from-repo-root\n"  # pragma: allowlist secret
+            "OPENROUTER__ZDR_API_KEY=zdr-from-repo\n"  # pragma: allowlist secret
+        )
+        monkeypatch.setattr(cli.Path, "cwd", staticmethod(lambda: cwd_dir))
+        monkeypatch.setattr(cli, "_owning_repo_root", lambda: repo_dir)
+        cli._load_dotenv_keys()
+        # cwd wins for the key present in both; the repo root fills the gap.
+        env = os.environ
+        assert env["OPENROUTER_API_KEY"] == "from-cwd"  # pragma: allowlist secret
+        zdr_key = env["OPENROUTER__ZDR_API_KEY"]
+        assert zdr_key == "zdr-from-repo"  # pragma: allowlist secret
+
+
+class TestDualApiKeySelection:
+    """Key selection: standard key for non-ZDR runs, ZDR key with no fallback under ZDR."""
+
+    def test_select_api_key_non_zdr_uses_standard_key(self, monkeypatch):
+        monkeypatch.setenv("OPENROUTER_API_KEY", "std-key")
+        assert cli._select_api_key(zdr_mode=False) == "std-key"
+
+    def test_select_api_key_zdr_uses_zdr_key(self, monkeypatch):
+        monkeypatch.setenv("OPENROUTER__ZDR_API_KEY", "zdr-key")
+        assert cli._select_api_key(zdr_mode=True) == "zdr-key"
+
+    def test_select_api_key_zdr_mode_never_falls_back_to_standard_key(
+        self, monkeypatch
+    ):
+        """Setting only the standard key must not satisfy a ZDR-mode request."""
+        monkeypatch.setenv("OPENROUTER_API_KEY", "std-key")
+        assert cli._select_api_key(zdr_mode=True) is None
+
+    def test_select_api_key_missing_returns_none(self):
+        assert cli._select_api_key(zdr_mode=False) is None
+        assert cli._select_api_key(zdr_mode=True) is None
+
+    def test_run_zdr_flag_missing_zdr_key_exits_1_naming_variable(
+        self, monkeypatch, tmp_path, capsys
+    ):
+        """--zdr with only the standard key set fails fast, naming the ZDR var."""
+        monkeypatch.setenv("OPENROUTER_API_KEY", "std-key")
+        prompt = tmp_path / "p.txt"
+        prompt.write_text("q?")
+        rc = cli.main(["run", "--prompt-file", str(prompt), "--models", "m/x", "--zdr"])
+        assert rc == 1
+        err = capsys.readouterr().err
+        assert "OPENROUTER__ZDR_API_KEY" in err
+        assert "std-key" not in err
+
+    def test_run_zdr_env_var_missing_zdr_key_exits_1(
+        self, monkeypatch, tmp_path, capsys
+    ):
+        """OPENROUTER_ZDR=1 with only the standard key set also fails fast."""
+        monkeypatch.setenv("OPENROUTER_API_KEY", "std-key")
+        monkeypatch.setenv("OPENROUTER_ZDR", "1")
+        prompt = tmp_path / "p.txt"
+        prompt.write_text("q?")
+        rc = cli.main(["run", "--prompt-file", str(prompt), "--models", "m/x"])
+        assert rc == 1
+        assert "OPENROUTER__ZDR_API_KEY" in capsys.readouterr().err
+
+    def test_run_zdr_roster_flag_missing_zdr_key_exits_1(
+        self, monkeypatch, tmp_path, capsys
+    ):
+        """A roster file's "zdr": true also requires the ZDR key, no fallback."""
+        monkeypatch.setenv("OPENROUTER_API_KEY", "std-key")
+        prompt = tmp_path / "p.txt"
+        prompt.write_text("q?")
+        roster = tmp_path / "roster.json"
+        roster.write_text(
+            json.dumps(
+                {
+                    "zdr": True,
+                    "roster": [
+                        {
+                            "model": "paid/x",
+                            "role": "code_reviewer",
+                            "est_cost_usd": 0.01,
+                        }
+                    ],
+                }
+            )
+        )
+        rc = cli.main(
+            ["run", "--prompt-file", str(prompt), "--roster-file", str(roster)]
+        )
+        assert rc == 1
+        assert "OPENROUTER__ZDR_API_KEY" in capsys.readouterr().err
+
+    def test_run_zdr_uses_zdr_key_not_standard_key(self, monkeypatch, tmp_path):
+        """A successful --zdr run is fed the ZDR key, never the standard one."""
+        monkeypatch.setenv("OPENROUTER_API_KEY", "std-key")
+        monkeypatch.setenv("OPENROUTER__ZDR_API_KEY", "zdr-key")
+        monkeypatch.setattr(cli, "fetch_zdr_model_ids", lambda: {"m/x"})
+        prompt = tmp_path / "p.txt"
+        prompt.write_text("q?")
+
+        captured = {}
+
+        async def fake_run_consensus(
+            entries, prompt_text, api_key, catalog, transport=None, zdr=False
+        ):
+            captured["api_key"] = api_key
+            return {"results": [], "succeeded": 1, "failed": 0, "total_cost_usd": 0.0}
+
+        monkeypatch.setattr(cli, "run_consensus", fake_run_consensus)
+        rc = cli.main(["run", "--prompt-file", str(prompt), "--models", "m/x", "--zdr"])
+        assert rc == 0
+        assert captured["api_key"] == "zdr-key"  # pragma: allowlist secret
+
+    def test_run_non_zdr_still_uses_standard_key(self, monkeypatch, tmp_path):
+        """A non-ZDR run is fed the standard key even when a ZDR key also exists."""
+        monkeypatch.setenv("OPENROUTER_API_KEY", "std-key")
+        monkeypatch.setenv("OPENROUTER__ZDR_API_KEY", "zdr-key")
+        prompt = tmp_path / "p.txt"
+        prompt.write_text("q?")
+
+        captured = {}
+
+        async def fake_run_consensus(
+            entries, prompt_text, api_key, catalog, transport=None, zdr=False
+        ):
+            captured["api_key"] = api_key
+            return {"results": [], "succeeded": 1, "failed": 0, "total_cost_usd": 0.0}
+
+        monkeypatch.setattr(cli, "run_consensus", fake_run_consensus)
+        rc = cli.main(["run", "--prompt-file", str(prompt), "--models", "m/x"])
+        assert rc == 0
+        assert captured["api_key"] == "std-key"  # pragma: allowlist secret
+
+    def test_run_loads_dotenv_keys_from_cwd(self, monkeypatch, tmp_path):
+        """run() picks up a key from a .env in the cwd when the shell lacks it."""
+        cwd_dir = tmp_path / "cwd"
+        cwd_dir.mkdir()
+        (cwd_dir / ".env").write_text("OPENROUTER_API_KEY=from-dotenv\n")
+        monkeypatch.setattr(cli.Path, "cwd", staticmethod(lambda: cwd_dir))
+        monkeypatch.setattr(cli, "_owning_repo_root", lambda: None)
+        prompt = tmp_path / "p.txt"
+        prompt.write_text("q?")
+
+        captured = {}
+
+        async def fake_run_consensus(
+            entries, prompt_text, api_key, catalog, transport=None, zdr=False
+        ):
+            captured["api_key"] = api_key
+            return {"results": [], "succeeded": 1, "failed": 0, "total_cost_usd": 0.0}
+
+        monkeypatch.setattr(cli, "run_consensus", fake_run_consensus)
+        rc = cli.main(["run", "--prompt-file", str(prompt), "--models", "m/x"])
+        assert rc == 0
+        assert captured["api_key"] == "from-dotenv"  # pragma: allowlist secret
