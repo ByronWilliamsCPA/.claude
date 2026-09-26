@@ -29,6 +29,17 @@ sys.modules["consensus_cli"] = cli
 _spec.loader.exec_module(cli)
 
 
+@pytest.fixture(autouse=True)
+def _clean_zdr_env(monkeypatch):
+    """Keep OPENROUTER_ZDR out of the ambient environment for every test.
+
+    ZDR mode is env-var-triggered by design (the requirement travels with
+    the key), so a leaked value from one test or the developer's shell
+    would silently change another test's behavior.
+    """
+    monkeypatch.delenv("OPENROUTER_ZDR", raising=False)
+
+
 def make_model(name, inp, out, he=70.0, swe=60.0, context=131000, spec="general"):
     """Build a Model row for tests."""
     return cli.Model(
@@ -264,6 +275,102 @@ class TestLiveCatalog:
         assert ids == {"old/model"}
 
 
+class TestZdrEnvTruthy:
+    """Tests for the _env_truthy helper backing OPENROUTER_ZDR."""
+
+    @pytest.mark.parametrize("value", ["1", "true", "yes", "TRUE", "Yes", " 1 "])
+    def test_truthy_values(self, monkeypatch, value):
+        """Recognised truthy strings (case-insensitive, whitespace-tolerant)."""
+        monkeypatch.setenv("OPENROUTER_ZDR", value)
+        assert cli._env_truthy("OPENROUTER_ZDR") is True
+
+    @pytest.mark.parametrize("value", ["0", "false", "no", "", "on", "banana"])
+    def test_falsy_values(self, monkeypatch, value):
+        """Anything other than the truthy set, including empty string, is False."""
+        monkeypatch.setenv("OPENROUTER_ZDR", value)
+        assert cli._env_truthy("OPENROUTER_ZDR") is False
+
+    def test_unset_is_falsy(self, monkeypatch):
+        """An unset env var is False, not an error."""
+        monkeypatch.delenv("OPENROUTER_ZDR", raising=False)
+        assert cli._env_truthy("OPENROUTER_ZDR") is False
+
+
+class TestFetchZdrModelIds:
+    """Tests for fetch_zdr_model_ids, mirroring TestLiveCatalog's contract."""
+
+    def _client(self, handler):
+        """Build an httpx.Client backed by a mock transport."""
+        return httpx.Client(transport=httpx.MockTransport(handler))
+
+    def test_fetch_and_cache(self, tmp_path):
+        """Fetch ZDR model ids from model_id fields, cache, and reuse the cache."""
+        calls = {"n": 0}
+
+        def handler(request):
+            calls["n"] += 1
+            return httpx.Response(
+                200,
+                json={
+                    "data": [
+                        {"model_id": "z-ai/glm-5.3", "provider_name": "z-ai"},
+                        {"model_id": "openai/gpt-6-sol", "provider_name": "openai"},
+                    ]
+                },
+            )
+
+        cache = tmp_path / "zdr-cache.json"
+        ids = cli.fetch_zdr_model_ids(client=self._client(handler), cache_path=cache)
+        assert ids == {"z-ai/glm-5.3", "openai/gpt-6-sol"}
+        assert set(json.loads(cache.read_text())) == ids
+        ids2 = cli.fetch_zdr_model_ids(client=self._client(handler), cache_path=cache)
+        assert ids2 == ids
+        assert calls["n"] == 1  # second call served from cache
+
+    def test_stale_cache_used_on_network_error(self, tmp_path):
+        """Fall back to a stale ZDR cache file when the network call fails."""
+
+        def handler(request):
+            raise httpx.ConnectError("boom")
+
+        cache = tmp_path / "zdr-cache.json"
+        cache.write_text(json.dumps(["old/zdr-model"]))
+        two_days_ago = time.time() - 2 * 86400
+        os.utime(cache, (two_days_ago, two_days_ago))
+        ids = cli.fetch_zdr_model_ids(client=self._client(handler), cache_path=cache)
+        assert ids == {"old/zdr-model"}
+
+    def test_network_error_without_cache_raises(self, tmp_path):
+        """Propagate the httpx error when the network fails and no cache exists."""
+
+        def handler(request):
+            raise httpx.ConnectError("boom")
+
+        with pytest.raises(httpx.HTTPError):
+            cli.fetch_zdr_model_ids(
+                client=self._client(handler), cache_path=tmp_path / "missing.json"
+            )
+
+    def test_malformed_200_body_uses_stale_cache(self, tmp_path):
+        """An unexpected /endpoints/zdr schema falls back to a stale cache."""
+
+        def handler(request):
+            return httpx.Response(200, json={"unexpected": "schema"})
+
+        cache = tmp_path / "zdr-cache.json"
+        cache.write_text(json.dumps(["old/zdr-model"]))
+        two_days_ago = time.time() - 2 * 86400
+        os.utime(cache, (two_days_ago, two_days_ago))
+        ids = cli.fetch_zdr_model_ids(client=self._client(handler), cache_path=cache)
+        assert ids == {"old/zdr-model"}
+
+    def test_uses_own_cache_file_distinct_from_live_catalog(self):
+        """The ZDR cache path is a sibling file, never the live-catalog cache."""
+        assert cli.ZDR_CACHE_PATH != cli.CACHE_PATH
+        assert cli.ZDR_CACHE_PATH.parent == cli.CACHE_PATH.parent
+        assert cli.ZDR_CACHE_PATH.name == "openrouter-zdr-models.json"
+
+
 def fake_dataset():
     """Synthetic dataset spanning all cost tiers."""
     return [
@@ -478,6 +585,78 @@ class TestRosterSelection:
             cli.select_roster(fake_dataset(), self.bands, self.roles, 1, "nonsense")
 
 
+class TestZdrRosterFiltering:
+    """ZDR restricts roster and fallback candidates to a given id set."""
+
+    def setup_method(self):
+        """Load shared fixtures before each test."""
+        self.bands = cli.load_bands()
+        self.roles = cli.load_roles()
+
+    def test_zdr_excludes_free_models_and_falls_over_to_economy(self):
+        """No free model has a ZDR endpoint: level 1 fills from economy instead.
+
+        Mirrors the real-world finding (0/10 curated free models are ZDR
+        endpoints): the free tier empties and the existing free->economy
+        fallback chain (TIER_FALLBACK_ORDER) fills the level-1 roster with
+        cheap paid ZDR models instead.
+        """
+        zdr_ids = {"econ-a", "econ-b", "econ-c", "val-a", "prem-a", "prem-b"}
+        roster = cli.select_roster(
+            fake_dataset(), self.bands, self.roles, 1, "code_review", zdr=zdr_ids
+        )
+        assert [r["model"] for r in roster] == ["econ-a", "econ-b", "econ-c"]
+
+    def test_zdr_roster_stays_under_level1_cap(self):
+        """A ZDR-filled level-1 roster (no free seats) still fits the $0.50 cap."""
+        zdr_ids = {"econ-a", "econ-b", "econ-c"}
+        roster = cli.select_roster(
+            fake_dataset(), self.bands, self.roles, 1, "code_review", zdr=zdr_ids
+        )
+        total = sum(r["est_cost_usd"] for r in roster)
+        assert total < cli.LEVEL_COST_CAPS_USD[1]
+        assert total > 0  # sanity: these are paid, not free, models
+
+    def test_zdr_and_live_combine(self):
+        """A model must pass both live validation and the ZDR filter."""
+        live = {m.name for m in fake_dataset()}
+        zdr_ids = {"free-a:free", "econ-a", "econ-b"}
+        roster = cli.select_roster(
+            fake_dataset(),
+            self.bands,
+            self.roles,
+            1,
+            "code_review",
+            live=live,
+            zdr=zdr_ids,
+        )
+        assert [r["model"] for r in roster] == ["free-a:free", "econ-a", "econ-b"]
+
+    def test_zdr_none_leaves_selection_unfiltered(self):
+        """zdr=None (the default) is a no-op, matching pre-ZDR behavior."""
+        roster = cli.select_roster(
+            fake_dataset(), self.bands, self.roles, 1, "code_review"
+        )
+        assert [r["model"] for r in roster] == [
+            "free-a:free",
+            "free-b:free",
+            "free-c:free",
+        ]
+
+    def test_zdr_filters_fallbacks_too(self):
+        """select_fallbacks skips candidates missing from the ZDR set.
+
+        Level 1's only tier ("free") falls back through free then economy
+        (TIER_FALLBACK_ORDER); with every free model off-ZDR, only the
+        ZDR-listed economy model survives the walk.
+        """
+        zdr_ids = {"econ-b"}
+        fallbacks = cli.select_fallbacks(
+            fake_dataset(), self.bands, 1, exclude=set(), zdr=zdr_ids
+        )
+        assert fallbacks == ["econ-b"]
+
+
 def _ok_response(model_name):
     return httpx.Response(
         200,
@@ -617,6 +796,47 @@ class TestRunConsensus:
         assert out["total_cost_usd"] == 0.0
         assert all(r["error"] for r in out["results"])
 
+    def test_zdr_true_adds_provider_preference_to_every_request(self):
+        """zdr=True on run_consensus reaches call_model and every request body."""
+        seen_bodies = []
+
+        def handler(request):
+            seen_bodies.append(json.loads(request.content))
+            return _ok_response(json.loads(request.content)["model"])
+
+        entries = [
+            {"model": "a/x", "role": None, "system_prompt": None},
+            {"model": "b/y", "role": None, "system_prompt": None},
+        ]
+        asyncio.run(
+            cli.run_consensus(
+                entries,
+                "q?",
+                "k",
+                catalog={},
+                transport=httpx.MockTransport(handler),
+                zdr=True,
+            )
+        )
+        assert len(seen_bodies) == 2
+        assert all(body["provider"] == {"zdr": True} for body in seen_bodies)
+
+    def test_zdr_false_omits_provider_key(self):
+        """zdr=False (the default) never adds a provider key; unchanged behavior."""
+        seen_bodies = []
+
+        def handler(request):
+            seen_bodies.append(json.loads(request.content))
+            return _ok_response("m/x")
+
+        entries = [{"model": "m/x", "role": None, "system_prompt": None}]
+        asyncio.run(
+            cli.run_consensus(
+                entries, "q?", "k", catalog={}, transport=httpx.MockTransport(handler)
+            )
+        )
+        assert "provider" not in seen_bodies[0]
+
 
 class TestRefresh:
     def test_reports_dead_and_new_free_models(self):
@@ -627,6 +847,63 @@ class TestRefresh:
         assert report["dead_in_curated"] == ["dead/y"]
         assert report["live_free_not_in_curated"] == ["brand/new:free"]
         assert report["curated_count"] == 2
+
+    def test_curated_without_zdr_endpoint_lists_missing_ids(self):
+        """When a zdr set is given, curated ids missing from it are reported."""
+        curated = [
+            make_model("has-zdr/x", 0.01, 0.02),
+            make_model("no-zdr/y", 0.01, 0.02),
+        ]
+        live = {"has-zdr/x", "no-zdr/y"}
+        zdr = {"has-zdr/x"}
+        report = cli.refresh_report(curated, live, zdr=zdr)
+        assert report["curated_without_zdr_endpoint"] == ["no-zdr/y"]
+        assert "zdr_error" not in report
+
+    def test_zdr_error_reports_null_list_without_failing_refresh(self):
+        """A ZDR fetch failure reports zdr_error and a null list, not a crash."""
+        curated = [make_model("alive/x", 0, 0)]
+        live = {"alive/x"}
+        report = cli.refresh_report(curated, live, zdr_error="ConnectError: no network")
+        assert report["curated_without_zdr_endpoint"] is None
+        assert report["zdr_error"] == "ConnectError: no network"
+        # dead_in_curated / live_free_not_in_curated are unaffected by ZDR failure.
+        assert report["dead_in_curated"] == []
+
+    def test_neither_zdr_nor_zdr_error_omits_the_key_entirely(self):
+        """Calling refresh_report with neither zdr arg leaves the key absent."""
+        curated = [make_model("alive/x", 0, 0)]
+        report = cli.refresh_report(curated, {"alive/x"})
+        assert "curated_without_zdr_endpoint" not in report
+        assert "zdr_error" not in report
+
+
+class TestMainRefreshZdr:
+    """main(["refresh"]) wiring for the ZDR fetch and its failure path."""
+
+    def test_zdr_fetch_success_included_in_report(self, monkeypatch, capsys):
+        """A successful ZDR fetch surfaces curated_without_zdr_endpoint."""
+        monkeypatch.setattr(cli, "fetch_live_model_ids", lambda: {"some/model:free"})
+        monkeypatch.setattr(cli, "fetch_zdr_model_ids", lambda: set())
+        rc = cli.main(["refresh"])
+        assert rc == 0
+        payload = json.loads(capsys.readouterr().out)
+        assert payload["curated_without_zdr_endpoint"] is not None
+
+    def test_zdr_fetch_failure_does_not_fail_whole_refresh(self, monkeypatch, capsys):
+        """A ZDR fetch failure reports zdr_error but refresh still exits 0."""
+        monkeypatch.setattr(cli, "fetch_live_model_ids", lambda: {"some/model:free"})
+
+        def _boom():
+            raise httpx.ConnectError("no network")
+
+        monkeypatch.setattr(cli, "fetch_zdr_model_ids", _boom)
+        rc = cli.main(["refresh"])
+        assert rc == 0
+        payload = json.loads(capsys.readouterr().out)
+        assert payload["curated_without_zdr_endpoint"] is None
+        assert "zdr_error" in payload
+        assert "dead_in_curated" in payload
 
 
 class TestCliWiring:
@@ -684,7 +961,7 @@ class TestCliWiring:
         captured = {}
 
         async def fake_run_consensus(
-            entries, prompt_text, api_key, catalog, transport=None
+            entries, prompt_text, api_key, catalog, transport=None, zdr=False
         ):
             captured["entries"] = entries
             return {"results": [], "succeeded": 1, "failed": 0, "total_cost_usd": 0.0}
@@ -704,7 +981,7 @@ class TestCliWiring:
         prompt.write_text("q?")
 
         async def fake_run_consensus(
-            entries, prompt_text, api_key, catalog, transport=None
+            entries, prompt_text, api_key, catalog, transport=None, zdr=False
         ):
             return {
                 "results": [{"model": "m/x", "error": "boom"}],
@@ -744,11 +1021,160 @@ class TestCliWiring:
     def test_main_refresh_emits_report(self, monkeypatch, capsys):
         """Refresh dispatch fetches live ids and emits the report shape."""
         monkeypatch.setattr(cli, "fetch_live_model_ids", lambda: {"some/model:free"})
+        monkeypatch.setattr(cli, "fetch_zdr_model_ids", lambda: {"some/model:free"})
         rc = cli.main(["refresh"])
         assert rc == 0
         payload = json.loads(capsys.readouterr().out)
         assert "dead_in_curated" in payload
         assert "live_free_not_in_curated" in payload
+        assert "curated_without_zdr_endpoint" in payload
+
+
+class TestCliZdrSelect:
+    """CLI-level --zdr and OPENROUTER_ZDR wiring for select/estimate."""
+
+    def test_zdr_flag_filters_roster_and_marks_payload(self, monkeypatch, capsys):
+        """--zdr restricts candidates to the ZDR set and flags the payload."""
+        monkeypatch.setattr(cli, "fetch_zdr_model_ids", lambda: {"openai/gpt-6-sol"})
+        rc = cli.main(["select", "--level", "1", "--no-validate", "--zdr"])
+        assert rc == 0
+        payload = json.loads(capsys.readouterr().out)
+        assert payload["zdr"] is True
+        assert all(r["model"] == "openai/gpt-6-sol" for r in payload["roster"])
+
+    def test_env_var_triggers_zdr_without_flag(self, monkeypatch, capsys):
+        """OPENROUTER_ZDR alone (no --zdr) enables ZDR mode."""
+        monkeypatch.setenv("OPENROUTER_ZDR", "1")
+        monkeypatch.setattr(cli, "fetch_zdr_model_ids", lambda: {"openai/gpt-6-sol"})
+        rc = cli.main(["select", "--level", "1", "--no-validate"])
+        assert rc == 0
+        payload = json.loads(capsys.readouterr().out)
+        assert payload["zdr"] is True
+
+    def test_no_validate_still_applies_zdr_filter(self, monkeypatch, capsys):
+        """--no-validate skips liveness but ZDR is a policy filter, not liveness."""
+        monkeypatch.setattr(cli, "fetch_zdr_model_ids", lambda: {"openai/gpt-6-sol"})
+        rc = cli.main(["select", "--level", "1", "--no-validate", "--zdr"])
+        assert rc == 0
+        payload = json.loads(capsys.readouterr().out)
+        assert all(r["model"] == "openai/gpt-6-sol" for r in payload["roster"])
+
+    def test_zdr_fetch_failure_with_no_cache_exits_nonzero(self, monkeypatch, capsys):
+        """A failed ZDR fetch with no usable cache is fatal, not silently ignored."""
+
+        def _boom():
+            raise httpx.ConnectError("no network")
+
+        monkeypatch.setattr(cli, "fetch_zdr_model_ids", _boom)
+        with pytest.raises(SystemExit) as exc_info:
+            cli.main(["select", "--level", "1", "--no-validate", "--zdr"])
+        assert exc_info.value.code == 2
+        err = json.loads(capsys.readouterr().err)
+        assert "error" in err
+
+    def test_without_zdr_flag_behavior_unchanged(self, capsys):
+        """Without --zdr or the env var, select emits no zdr key at all."""
+        rc = cli.main(["select", "--level", "1", "--no-validate"])
+        assert rc == 0
+        payload = json.loads(capsys.readouterr().out)
+        assert "zdr" not in payload
+
+
+class TestCliZdrRun:
+    """CLI-level --zdr and OPENROUTER_ZDR wiring for run."""
+
+    def test_roster_file_zdr_true_enables_zdr_without_flag(
+        self, monkeypatch, tmp_path, capsys
+    ):
+        """A roster file carrying "zdr": true turns on ZDR mode with no CLI flag."""
+        monkeypatch.setenv("OPENROUTER_API_KEY", "k")
+        prompt = tmp_path / "p.txt"
+        prompt.write_text("q?")
+        roster = tmp_path / "roster.json"
+        roster.write_text(
+            json.dumps(
+                {
+                    "zdr": True,
+                    "roster": [
+                        {
+                            "model": "paid/x",
+                            "role": "code_reviewer",
+                            "est_cost_usd": 0.01,
+                        }
+                    ],
+                }
+            )
+        )
+
+        captured = {}
+
+        async def fake_run_consensus(
+            entries, prompt_text, api_key, catalog, transport=None, zdr=False
+        ):
+            captured["zdr"] = zdr
+            return {"results": [], "succeeded": 1, "failed": 0, "total_cost_usd": 0.0}
+
+        monkeypatch.setattr(cli, "run_consensus", fake_run_consensus)
+        rc = cli.main(
+            ["run", "--prompt-file", str(prompt), "--roster-file", str(roster)]
+        )
+        assert rc == 0
+        assert captured["zdr"] is True
+        payload = json.loads(capsys.readouterr().out)
+        assert payload["zdr"] is True
+
+    def test_env_var_enables_zdr_for_run(self, monkeypatch, tmp_path, capsys):
+        """OPENROUTER_ZDR alone enables ZDR mode for run and marks the output."""
+        monkeypatch.setenv("OPENROUTER_API_KEY", "k")
+        monkeypatch.setenv("OPENROUTER_ZDR", "1")
+        prompt = tmp_path / "p.txt"
+        prompt.write_text("q?")
+
+        captured = {}
+
+        async def fake_run_consensus(
+            entries, prompt_text, api_key, catalog, transport=None, zdr=False
+        ):
+            captured["zdr"] = zdr
+            return {"results": [], "succeeded": 1, "failed": 0, "total_cost_usd": 0.0}
+
+        monkeypatch.setattr(cli, "run_consensus", fake_run_consensus)
+        rc = cli.main(["run", "--prompt-file", str(prompt), "--models", "m/x"])
+        assert rc == 0
+        assert captured["zdr"] is True
+        payload = json.loads(capsys.readouterr().out)
+        assert payload["zdr"] is True
+
+    def test_models_mode_zdr_warns_on_off_zdr_models_but_still_attempts(
+        self, monkeypatch, tmp_path, capsys
+    ):
+        """--models under ZDR merges an off-ZDR warning with the uncatalogued one."""
+        monkeypatch.setenv("OPENROUTER_API_KEY", "k")
+        prompt = tmp_path / "p.txt"
+        prompt.write_text("q?")
+
+        monkeypatch.setattr(cli, "fetch_zdr_model_ids", lambda: {"m/other"})
+
+        async def fake_run_consensus(
+            entries, prompt_text, api_key, catalog, transport=None, zdr=False
+        ):
+            return {"results": [], "succeeded": 1, "failed": 0, "total_cost_usd": 0.0}
+
+        monkeypatch.setattr(cli, "run_consensus", fake_run_consensus)
+        rc = cli.main(
+            [
+                "run",
+                "--prompt-file",
+                str(prompt),
+                "--models",
+                "not/catalogued",
+                "--zdr",
+            ]
+        )
+        assert rc == 0
+        payload = json.loads(capsys.readouterr().out)
+        assert "warning" in payload
+        assert "not/catalogued" in payload["warning"]
 
 
 class TestRunFailover:
@@ -772,7 +1198,9 @@ class TestRunFailover:
     def test_substitution_replaces_failed_entry_and_carries_role(self, monkeypatch):
         """A failed entry is re-run on the next fallback with the same role."""
 
-        async def fake_run(entries, prompt, api_key, catalog, transport=None):
+        async def fake_run(
+            entries, prompt, api_key, catalog, transport=None, zdr=False
+        ):
             results = [
                 {
                     "model": e["model"],
@@ -844,7 +1272,9 @@ class TestRunFailover:
     def test_partial_substitution_when_pool_exhausted(self, monkeypatch):
         """With fewer fallbacks than failures, only the available swaps happen."""
 
-        async def fake_run(entries, prompt, api_key, catalog, transport=None):
+        async def fake_run(
+            entries, prompt, api_key, catalog, transport=None, zdr=False
+        ):
             results = [
                 {
                     "model": e["model"],
@@ -920,7 +1350,7 @@ class TestGatherIsolation:
     def test_unexpected_exception_does_not_cancel_panel(self, monkeypatch):
         """One model raising an unexpected error becomes its own error record."""
 
-        async def flaky_call(client, entry, prompt, api_key, catalog):
+        async def flaky_call(client, entry, prompt, api_key, catalog, zdr=False):
             if entry["model"] == "boom/x":
                 raise RuntimeError("unexpected boom")
             return {
@@ -1134,7 +1564,9 @@ class TestSubstitutionCostCap:
             )
         )
 
-        async def fake_run(entries, prompt_text, api_key, catalog, transport=None):
+        async def fake_run(
+            entries, prompt_text, api_key, catalog, transport=None, zdr=False
+        ):
             return {
                 "results": [
                     {

@@ -23,6 +23,12 @@ synthesis to a model template.
   error (exit code 1), tell the user and stop.
 - All commands run from the repo root with `uv run` (the script carries
   PEP 723 inline dependencies).
+- If the key requires zero data retention (ZDR), set `OPENROUTER_ZDR=1` in
+  the environment, or pass `--zdr` to `select`, `estimate`, and `run`. Under
+  ZDR, free models are unavailable (free endpoints log prompts), so level 1
+  is filled with cheap paid ZDR models instead, still within its $0.50 cap.
+  See the failure-handling note in `workflows/tiered-review.md` for the
+  symptom that indicates a key is policy-restricted.
 
 ## Mode routing
 
@@ -45,6 +51,7 @@ uv run .claude/skills/panel/scripts/consensus_cli.py estimate --level 3
 uv run .claude/skills/panel/scripts/consensus_cli.py run --prompt-file /tmp/q.txt --roster-file /tmp/roster.json
 uv run .claude/skills/panel/scripts/consensus_cli.py run --prompt-file /tmp/q.txt --models "openai/gpt-6-sol,anthropic/claude-opus-5.5" --roles-file /tmp/roles.json
 uv run .claude/skills/panel/scripts/consensus_cli.py refresh
+uv run .claude/skills/panel/scripts/consensus_cli.py select --level 1 --zdr
 ```
 
 Domains: `code_review` (default), `security`, `architecture`, `general`.
@@ -56,7 +63,7 @@ input file, 3 every model failed.
 
 | Level | Roster | Cap |
 | --- | --- | --- |
-| 1 | GPT-6 Luna (pinned, paid) + 2 free models; failover may substitute cheap paid models | $0.50 |
+| 1 | GPT-6 Luna (pinned, paid) + 2 free models; failover may substitute cheap paid models. Under `--zdr`/`OPENROUTER_ZDR`, free models are excluded (they log prompts) and the free tier is filled with cheap paid ZDR models instead, within cap. | $0.50 |
 | 2 | level 1 + GPT-6 Sol and Kimi K3 (pinned) + 1 economy model (6 total) | $1.00 |
 | 3 | level 2 + 2 high-cost models (8 total) | $10.00 |
 

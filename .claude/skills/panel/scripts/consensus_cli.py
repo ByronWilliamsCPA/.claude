@@ -23,6 +23,7 @@ import json
 import os
 import sys
 import time
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TextIO
@@ -31,8 +32,10 @@ import httpx
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 CACHE_PATH = Path.home() / ".cache" / "panel-skill" / "openrouter-models.json"
+ZDR_CACHE_PATH = Path.home() / ".cache" / "panel-skill" / "openrouter-zdr-models.json"
 CACHE_TTL_SECONDS = 24 * 3600
 OPENROUTER_BASE = "https://openrouter.ai/api/v1"
+ZDR_TRUTHY_VALUES = {"1", "true", "yes"}
 EST_INPUT_TOKENS = 2000
 EST_OUTPUT_TOKENS = 1500
 LEVEL_COST_CAPS_USD = {1: 0.50, 2: 1.00, 3: 10.00}
@@ -260,6 +263,16 @@ def enforce_cost_cap(total: float, level: int | None, max_cost: float | None) ->
         raise SystemExit(2)
 
 
+def _env_truthy(name: str) -> bool:
+    """Return True if the named env var holds a truthy string ('1'/'true'/'yes').
+
+    Case-insensitive; unset or any other value is False. Used for
+    OPENROUTER_ZDR, which travels with the API key rather than the
+    invocation, so a flag alone would not be enough.
+    """
+    return os.environ.get(name, "").strip().lower() in ZDR_TRUTHY_VALUES
+
+
 def _read_cache(cache: Path) -> set[str] | None:
     """Read cached model ids; None when missing, corrupted, or wrong-shaped."""
     try:
@@ -274,20 +287,37 @@ def _read_cache(cache: Path) -> set[str] | None:
     return set(data)
 
 
-def fetch_live_model_ids(
-    client: httpx.Client | None = None,
-    cache_path: Path | None = None,
-    ttl: int = CACHE_TTL_SECONDS,
+def _fetch_cached_ids(
+    url: str,
+    extract_ids: Callable[[dict], set[str]],
+    client: httpx.Client | None,
+    cache: Path,
+    ttl: int,
 ) -> set[str]:
-    """Return the set of live OpenRouter model ids, using a disk cache.
+    """Shared fetch-with-disk-cache logic for OpenRouter catalog endpoints.
 
     A fresh, readable cache (younger than ttl) is served without a network
     call; a corrupted fresh cache falls through to a refetch. On fetch or
     parse failure a readable stale cache is used as fallback; with no usable
     cache the original error propagates. The cache write is atomic
     (temp file plus rename) so concurrent runs cannot tear it.
+
+    Args:
+        url: Full URL of the OpenRouter endpoint to fetch.
+        extract_ids: Parses the JSON response body into a set of ids; a
+            KeyError/TypeError/ValueError here is treated the same as a
+            network failure (falls back to a stale cache).
+        client: Optional shared httpx.Client; a private one is created and
+            closed when omitted.
+        cache: Cache file path for this endpoint.
+        ttl: Cache freshness window in seconds.
+
+    Returns:
+        The set of ids extracted from the endpoint (live or cached).
+
+    Raises:
+        httpx.HTTPError: The network call failed and no usable cache exists.
     """
-    cache = cache_path or CACHE_PATH
     if cache.exists() and time.time() - cache.stat().st_mtime < ttl:
         cached = _read_cache(cache)
         if cached is not None:
@@ -296,10 +326,10 @@ def fetch_live_model_ids(
     owns_client = client is None
     http = client or httpx.Client(timeout=30)
     try:
-        resp = http.get(f"{OPENROUTER_BASE}/models")
+        resp = http.get(url)
         resp.raise_for_status()
-        ids = {entry["id"] for entry in resp.json()["data"]}
-    # #EDGE: a network error OR a malformed 200 body (missing "data", non-iterable
+        ids = extract_ids(resp.json())
+    # #EDGE: a network error OR a malformed 200 body (missing key, non-iterable
     # data, non-dict entries -> TypeError) must fall back to a readable stale
     # cache; only re-raise when no usable cache exists. #VERIFY:
     # test_malformed_200_body_uses_stale_cache covers the parse-failure path.
@@ -324,6 +354,52 @@ def fetch_live_model_ids(
     except OSError:
         tmp.unlink(missing_ok=True)
     return ids
+
+
+def fetch_live_model_ids(
+    client: httpx.Client | None = None,
+    cache_path: Path | None = None,
+    ttl: int = CACHE_TTL_SECONDS,
+) -> set[str]:
+    """Return the set of live OpenRouter model ids, using a disk cache.
+
+    See _fetch_cached_ids for the caching, staleness, and atomic-write
+    contract; fetch_zdr_model_ids shares that helper with a different
+    endpoint, id field, and cache file.
+    """
+    return _fetch_cached_ids(
+        f"{OPENROUTER_BASE}/models",
+        lambda body: {entry["id"] for entry in body["data"]},
+        client,
+        cache_path or CACHE_PATH,
+        ttl,
+    )
+
+
+def fetch_zdr_model_ids(
+    client: httpx.Client | None = None,
+    cache_path: Path | None = None,
+    ttl: int = CACHE_TTL_SECONDS,
+) -> set[str]:
+    """Return model ids with at least one ZDR-compliant endpoint.
+
+    Backed by the public, unauthenticated GET /endpoints/zdr, using the same
+    disk-cache contract as fetch_live_model_ids (see _fetch_cached_ids).
+
+    #ASSUME: /endpoints/zdr stays public (no auth required) and its shape
+    stays {"data": [{"model_id": ..., ...}, ...]}, with multiple entries
+    possible per model (one per compliant provider endpoint). #VERIFY: a
+    shape change surfaces as KeyError/TypeError inside _fetch_cached_ids,
+    which falls back to a stale cache exactly like the live-catalog path;
+    covered by test_zdr_malformed_200_body_uses_stale_cache.
+    """
+    return _fetch_cached_ids(
+        f"{OPENROUTER_BASE}/endpoints/zdr",
+        lambda body: {entry["model_id"] for entry in body["data"]},
+        client,
+        cache_path or ZDR_CACHE_PATH,
+        ttl,
+    )
 
 
 def pinned_models(models: list[Model], tier: str, bands: dict) -> list[Model]:
@@ -396,6 +472,7 @@ def select_roster(
     level: int,
     domain: str,
     live: set[str] | None = None,
+    zdr: set[str] | None = None,
 ) -> list[dict]:
     """Pick models per tier for a level, validate against live ids, assign roles.
 
@@ -413,6 +490,11 @@ def select_roster(
         level: Consensus level (1, 2, or 3).
         domain: Domain key (e.g. 'code_review', 'architecture').
         live: Optional set of live model ids for validation; None skips validation.
+        zdr: Optional set of ZDR-compliant model ids; when given, a candidate
+            missing from this set is skipped regardless of live validation.
+            This is how a policy-restricted key still fills level 1: free
+            endpoints log prompts and drop out, and the free-to-economy
+            fallback chain fills the gap with cheap paid ZDR models instead.
 
     Returns:
         List of dicts with keys: model, role, est_cost_usd.  The list may
@@ -442,6 +524,8 @@ def select_roster(
                 continue
             if live is not None and candidate.name not in live:
                 continue
+            if zdr is not None and candidate.name not in zdr:
+                continue
             picked.append(candidate)
             taken += 1
 
@@ -461,13 +545,16 @@ def select_fallbacks(
     level: int,
     exclude: set[str],
     live: set[str] | None = None,
+    zdr: set[str] | None = None,
     limit: int = 5,
 ) -> list[str]:
     """Ordered fallback candidates for run-time substitution.
 
     Walks the level's tiers and their fallback chains in roster order,
     skipping excluded and dead models, so a failed roster entry can be
-    replaced by the next-best candidate from the same selection rules.
+    replaced by the next-best candidate from the same selection rules. When
+    zdr is given, a candidate missing from it is skipped the same way a dead
+    model is, so a substitution can never land on a policy-restricted model.
     """
     out: list[str] = []
     for tier in LEVEL_TIER_COUNTS[level]:
@@ -475,6 +562,8 @@ def select_fallbacks(
             if m.name in exclude or m.name in out:
                 continue
             if live is not None and m.name not in live:
+                continue
+            if zdr is not None and m.name not in zdr:
                 continue
             out.append(m.name)
     return out[:limit]
@@ -486,6 +575,7 @@ async def call_model(
     prompt: str,
     api_key: str,
     catalog: dict[str, Model],
+    zdr: bool = False,
 ) -> dict:
     """Send one chat completion and return a result record; never raises.
 
@@ -498,6 +588,12 @@ async def call_model(
         prompt: User prompt text sent to every model.
         api_key: OpenRouter bearer token.
         catalog: Model objects keyed by model id for cost calculation.
+        zdr: When True, every request body carries {"provider": {"zdr":
+            true}}, restricting OpenRouter's routing to zero-data-retention
+            endpoints. #CRITICAL: a policy-restricted key 404s/403s on a
+            non-ZDR endpoint, so this must be set on every call in ZDR mode,
+            not just the initial roster. #VERIFY:
+            test_call_model_zdr_adds_provider_preference.
 
     Returns:
         Result dict with keys: model, role, response, tokens, cost_usd, error.
@@ -516,12 +612,15 @@ async def call_model(
         "cost_usd": None,
         "error": None,
     }
+    body: dict = {"model": entry["model"], "messages": messages}
+    if zdr:
+        body["provider"] = {"zdr": True}
 
     for attempt in range(MAX_RETRIES + 1):
         try:
             resp = await client.post(
                 f"{OPENROUTER_BASE}/chat/completions",
-                json={"model": entry["model"], "messages": messages},
+                json=body,
                 headers={"Authorization": f"Bearer {api_key}"},
             )
             if resp.status_code == 200:
@@ -570,15 +669,36 @@ async def call_model(
     return record
 
 
-def refresh_report(models: list[Model], live: set[str]) -> dict:
+def refresh_report(
+    models: list[Model],
+    live: set[str],
+    zdr: set[str] | None = None,
+    zdr_error: str | None = None,
+) -> dict:
     """Compare the curated dataset against live OpenRouter model ids.
 
     Reports rows that no longer exist upstream and free models that exist
     upstream but are not yet curated. Never edits the dataset: the
     benchmark and specialization fields are hand-rated.
+
+    Args:
+        models: Curated model dataset.
+        live: Live OpenRouter model ids (from fetch_live_model_ids).
+        zdr: Live ZDR-compliant model ids (from fetch_zdr_model_ids); when
+            given, the report gains curated_without_zdr_endpoint. Omitted
+            when zdr_error is set instead.
+        zdr_error: When the ZDR endpoint fetch failed (and no fallback was
+            requested), the report carries this string plus a null
+            curated_without_zdr_endpoint instead of failing the whole
+            refresh; dead_in_curated and live_free_not_in_curated are
+            unaffected since they only depend on the live-catalog fetch.
+
+    Returns:
+        Report dict; curated_without_zdr_endpoint/zdr_error are present only
+        when zdr or zdr_error was passed.
     """
     curated = {m.name for m in models}
-    return {
+    report = {
         "dead_in_curated": sorted(curated - live),
         "live_free_not_in_curated": sorted(
             i for i in live if i.endswith(":free") and i not in curated
@@ -586,6 +706,12 @@ def refresh_report(models: list[Model], live: set[str]) -> dict:
         "curated_count": len(curated),
         "live_count": len(live),
     }
+    if zdr_error is not None:
+        report["curated_without_zdr_endpoint"] = None
+        report["zdr_error"] = zdr_error
+    elif zdr is not None:
+        report["curated_without_zdr_endpoint"] = sorted(curated - zdr)
+    return report
 
 
 async def run_consensus(
@@ -594,6 +720,7 @@ async def run_consensus(
     api_key: str,
     catalog: dict[str, Model],
     transport: httpx.AsyncBaseTransport | None = None,
+    zdr: bool = False,
 ) -> dict:
     """Fan the prompt out to all entries in parallel and aggregate results.
 
@@ -603,6 +730,8 @@ async def run_consensus(
         api_key: OpenRouter bearer token.
         catalog: Model objects keyed by model id for per-model cost calculation.
         transport: Optional async transport override for testing.
+        zdr: When True, every chat request carries the ZDR provider
+            preference (see call_model).
 
     Returns:
         Aggregation dict with keys: results, succeeded, failed, total_cost_usd.
@@ -615,7 +744,10 @@ async def run_consensus(
         # error record so per-model isolation holds even outside call_model's
         # own try/except surface.
         raw = await asyncio.gather(
-            *[call_model(client, e, prompt, api_key, catalog) for e in entries],
+            *[
+                call_model(client, e, prompt, api_key, catalog, zdr=zdr)
+                for e in entries
+            ],
             return_exceptions=True,
         )
     results = [
@@ -657,10 +789,23 @@ def build_parser() -> argparse.ArgumentParser:
     p_select.add_argument(
         "--no-validate", action="store_true", help="Skip live OpenRouter validation"
     )
+    p_select.add_argument(
+        "--zdr",
+        action="store_true",
+        help=(
+            "Restrict candidates to ZDR-compliant endpoints (also set by "
+            "OPENROUTER_ZDR); use for keys that require zero data retention"
+        ),
+    )
 
     p_estimate = sub.add_parser("estimate", help="Cost preview for a level")
     p_estimate.add_argument("--level", type=int, required=True, choices=[1, 2, 3])
     p_estimate.add_argument("--domain", default="code_review", choices=DOMAIN_CHOICES)
+    p_estimate.add_argument(
+        "--zdr",
+        action="store_true",
+        help="Restrict candidates to ZDR-compliant endpoints (see select --zdr)",
+    )
 
     p_run = sub.add_parser("run", help="Fan a prompt out to models in parallel")
     p_run.add_argument("--prompt-file", required=True)
@@ -680,6 +825,14 @@ def build_parser() -> argparse.ArgumentParser:
         help="Apply the per-level cost cap (1, 2, or 3)",
     )
     p_run.add_argument("--max-cost", type=float, help="Override the cost cap in USD")
+    p_run.add_argument(
+        "--zdr",
+        action="store_true",
+        help=(
+            "Send every request with the ZDR provider preference (also set "
+            "by OPENROUTER_ZDR or a roster file with a zdr: true key)"
+        ),
+    )
 
     sub.add_parser("refresh", help="Diff curated dataset against the live catalog")
     return parser
@@ -766,6 +919,38 @@ def build_entries(args: argparse.Namespace, roles_data: dict) -> list[dict]:
     return entries
 
 
+def _zdr_mode_enabled(args: argparse.Namespace) -> bool:
+    """True when ZDR mode is requested via --zdr or the OPENROUTER_ZDR env var.
+
+    The env var exists because the ZDR requirement is a property of the
+    OpenRouter key, not of any one invocation, so it should travel with the
+    key rather than need repeating on every call.
+    """
+    return bool(getattr(args, "zdr", False)) or _env_truthy("OPENROUTER_ZDR")
+
+
+def _fetch_zdr_ids_or_exit() -> set[str]:
+    """Fetch the ZDR model-id set, exiting with a clear JSON error on failure.
+
+    ZDR is a policy filter: silently returning an unfiltered roster when the
+    endpoint is unreachable and no cache exists would defeat the point of
+    ZDR mode, so this fails loudly instead.
+    """
+    try:
+        return fetch_zdr_model_ids()
+    except (httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
+        emit(
+            {
+                "error": (
+                    "cannot fetch ZDR endpoint list and no usable cache: "
+                    f"{type(exc).__name__}: {exc}"
+                )
+            },
+            stream=sys.stderr,
+        )
+        raise SystemExit(2) from exc
+
+
 def _cmd_select(
     args: argparse.Namespace,
     models: list[Model],
@@ -776,7 +961,13 @@ def _cmd_select(
     live = None
     if args.command == "select" and not args.no_validate:
         live = fetch_live_model_ids()
-    roster = select_roster(models, bands, roles, args.level, args.domain, live=live)
+
+    zdr_mode = _zdr_mode_enabled(args)
+    zdr_ids = _fetch_zdr_ids_or_exit() if zdr_mode else None
+
+    roster = select_roster(
+        models, bands, roles, args.level, args.domain, live=live, zdr=zdr_ids
+    )
     limit = getattr(args, "limit", None)
     if limit is not None:
         roster = roster[:limit]
@@ -786,17 +977,19 @@ def _cmd_select(
         args.level,
         exclude={r["model"] for r in roster},
         live=live,
+        zdr=zdr_ids,
     )
-    emit(
-        {
-            "level": args.level,
-            "domain": args.domain,
-            "roster": roster,
-            "fallbacks": fallbacks,
-            "estimated_cost_usd": round(sum(r["est_cost_usd"] for r in roster), 6),
-            "cap_usd": LEVEL_COST_CAPS_USD[args.level],
-        }
-    )
+    payload = {
+        "level": args.level,
+        "domain": args.domain,
+        "roster": roster,
+        "fallbacks": fallbacks,
+        "estimated_cost_usd": round(sum(r["est_cost_usd"] for r in roster), 6),
+        "cap_usd": LEVEL_COST_CAPS_USD[args.level],
+    }
+    if zdr_mode:
+        payload["zdr"] = True
+    emit(payload)
     return 0
 
 
@@ -807,12 +1000,28 @@ def _substitute_failures(
     prompt: str,
     api_key: str,
     catalog: dict[str, Model],
+    zdr: bool = False,
 ) -> dict:
     """One substitution round: re-run failed entries on fallback models.
 
     Each failed result hands its role to the next unused fallback candidate.
     Substituted originals stay in the results list so the operator sees both
     the failure and its replacement; a substitutions map links them.
+
+    Args:
+        outcome: Prior run_consensus aggregation to substitute into.
+        fallbacks: Ordered fallback model ids, already filtered to
+            live/ZDR-eligible candidates by select_fallbacks.
+        roles_data: Loaded roles configuration for system-prompt building.
+        prompt: User prompt text sent to every model.
+        api_key: OpenRouter bearer token.
+        catalog: Model objects keyed by model id for cost calculation.
+        zdr: When True, retry requests also carry the ZDR provider
+            preference, matching the original round.
+
+    Returns:
+        Merged outcome dict, or the original outcome unchanged when there is
+        nothing to substitute.
     """
     failed = [r for r in outcome["results"] if r["error"] is not None]
     if not failed or not fallbacks:
@@ -833,7 +1042,9 @@ def _substitute_failures(
                 "system_prompt": role_system_prompt(role, roles_data) if role else None,
             }
         )
-    retry_outcome = asyncio.run(run_consensus(retry_entries, prompt, api_key, catalog))
+    retry_outcome = asyncio.run(
+        run_consensus(retry_entries, prompt, api_key, catalog, zdr=zdr)
+    )
     merged = outcome["results"] + retry_outcome["results"]
     succeeded = [r for r in merged if r["error"] is None]
     return {
@@ -845,6 +1056,27 @@ def _substitute_failures(
         ),
         "substitutions": substitutions,
     }
+
+
+def _off_zdr_models(
+    entries: list[dict], zdr_mode: bool, models_mode: bool
+) -> list[str]:
+    """Entry model ids missing a ZDR-compliant endpoint, for the run warning.
+
+    Only checked in --models (flexible) mode under ZDR: roster-file entries
+    were already restricted to the ZDR set at select time, so re-checking
+    them here would be redundant. This check is informational, not a policy
+    gate (the gate lives in select/estimate), so a failed ZDR fetch here is
+    swallowed rather than blocking the run: the operator already asked to
+    run these exact models.
+    """
+    if not (zdr_mode and models_mode):
+        return []
+    try:
+        zdr_ids = fetch_zdr_model_ids()
+    except (httpx.HTTPError, KeyError, TypeError, ValueError):
+        return []
+    return [e["model"] for e in entries if e["model"] not in zdr_ids]
 
 
 def _cmd_run(
@@ -867,6 +1099,7 @@ def _cmd_run(
         return 2
     entries = build_entries(args, roles)
     catalog = {m.name: m for m in models}
+    zdr_mode = _zdr_mode_enabled(args)
 
     # Read fallbacks from the roster file (second read; double-read is acceptable per
     # spec: simplest route over refactoring build_entries to accept a pre-loaded obj).
@@ -877,9 +1110,13 @@ def _cmd_run(
             if isinstance(roster_payload, dict)
             else []
         )
+        if isinstance(roster_payload, dict) and roster_payload.get("zdr"):
+            zdr_mode = True
     else:
         # --models mode: user-named panels are never substituted
         fallbacks = []
+
+    off_zdr = _off_zdr_models(entries, zdr_mode, models_mode=bool(args.models))
 
     # #ASSUME: uncatalogued models cannot be cost-estimated; the cap only covers
     # catalog rows. #VERIFY: run output carries a warning listing them so the
@@ -893,7 +1130,9 @@ def _cmd_run(
         6,
     )
     enforce_cost_cap(estimate, args.level, args.max_cost)
-    outcome = asyncio.run(run_consensus(entries, prompt, api_key, catalog))
+    outcome = asyncio.run(
+        run_consensus(entries, prompt, api_key, catalog, zdr=zdr_mode)
+    )
 
     if outcome["failed"] > 0 and fallbacks:
         # Cap-check substitution cost before proceeding.
@@ -914,16 +1153,26 @@ def _cmd_run(
             outcome["total_cost_usd"] + sub_estimate, args.level, args.max_cost
         )
         outcome = _substitute_failures(
-            outcome, fallbacks, roles, prompt, api_key, catalog
+            outcome, fallbacks, roles, prompt, api_key, catalog, zdr=zdr_mode
         )
 
     # Recompute unknown across all result models (substitutes may also be uncatalogued).
     unknown = [r["model"] for r in outcome["results"] if r["model"] not in catalog]
+    warnings = []
     if unknown:
-        outcome["warning"] = (
+        warnings.append(
             "models not in curated catalog, cost unknown and not capped: "
             + ", ".join(unknown)
         )
+    if off_zdr:
+        warnings.append(
+            "models without a ZDR-compliant endpoint under ZDR mode (attempted "
+            "anyway): " + ", ".join(off_zdr)
+        )
+    if warnings:
+        outcome["warning"] = "; ".join(warnings)
+    if zdr_mode:
+        outcome["zdr"] = True
     emit(outcome)
     return 0 if outcome["succeeded"] else 3
 
@@ -946,7 +1195,15 @@ def main(argv: list[str] | None = None) -> int:
         return _cmd_run(args, models, roles)
 
     live = fetch_live_model_ids()
-    emit(refresh_report(models, live))
+    try:
+        zdr_ids = fetch_zdr_model_ids()
+    except (httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
+        # A ZDR-endpoint outage must not fail the whole refresh; the
+        # live-catalog diff (dead_in_curated, live_free_not_in_curated) is
+        # still useful on its own.
+        emit(refresh_report(models, live, zdr_error=f"{type(exc).__name__}: {exc}"))
+        return 0
+    emit(refresh_report(models, live, zdr=zdr_ids))
     return 0
 
 

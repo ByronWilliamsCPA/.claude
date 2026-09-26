@@ -52,3 +52,7 @@ Structured multi-model review with levels and professional roles.
 - Roster came back short (fewer models than the level promises): mention it;
   the live catalog validation likely dropped dead entries. Offer the
   refresh-data workflow.
+- Failures show HTTP 404 with a "data policy" or "guardrail restrictions"
+  message (or 403 for agentic-harness-only models): the key is restricted to
+  zero-data-retention (ZDR) endpoints and the free models it picked log
+  prompts. Rerun `select`/`run` with `--zdr` (or set `OPENROUTER_ZDR=1`).
