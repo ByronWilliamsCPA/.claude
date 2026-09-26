@@ -16,12 +16,17 @@ run subcommand. A separate, more restrictive OPENROUTER__ZDR_API_KEY (double
 underscore after OPENROUTER) is required for --zdr runs; the two keys are
 never substituted for each other, so a run in ZDR mode fails rather than
 falling back to the standard key. Both may instead live in a gitignored
-.env at the repo root that owns this skill; run auto-loads them from
-Path.cwd()/.env and that repo root .env, without overriding a key already
-present in the environment. Pass --zdr (or set OPENROUTER_ZDR=1 to force it
-for every run regardless of prompt content) whenever the prompt carries
-confidential material: client or financial data, secrets or credentials,
-proprietary or non-public code, or PII. Otherwise the standard key is fine.
+.env at the repo root that owns this skill (a symlinked or checked-out
+install, never an arbitrary Path.cwd()): main() auto-loads them from that
+owning repo root's .env, and only when the resolved root actually contains
+the .claude/skills/panel marker directory, without overriding a key already
+present in the environment. This is a global skill that can be installed
+into any project root, so Path.cwd()/.env is never read; trusting an
+arbitrary cwd's .env could silently hand a run a different project's key.
+Pass --zdr (or set OPENROUTER_ZDR=1 to force it for every run regardless of
+prompt content) whenever the prompt carries confidential material: client or
+financial data, secrets or credentials, proprietary or non-public code, or
+PII. Otherwise the standard key is fine.
 """
 
 from __future__ import annotations
@@ -67,6 +72,12 @@ REQUEST_TIMEOUT_SECONDS = 120
 MAX_RETRIES = 2
 RETRY_BACKOFF_SECONDS = 2.0
 FREE_COST_EPSILON = 1e-9
+ZDR_STALE_CACHE_SECONDS = 7 * 24 * 3600
+ZDR_STALE_CACHE_WARNING = (
+    "ZDR endpoint list could not be refreshed from the live catalog; "
+    "filtering against a cached list older than 7 days."
+)
+_SKILL_MARKER = Path(".claude") / "skills" / "panel"
 
 
 @dataclass
@@ -506,8 +517,10 @@ def select_roster(
         zdr: Optional set of ZDR-compliant model ids; when given, a candidate
             missing from this set is skipped regardless of live validation.
             This is how a policy-restricted key still fills level 1: free
-            endpoints log prompts and drop out, and the free-to-economy
-            fallback chain fills the gap with cheap paid ZDR models instead.
+            models without a ZDR-compliant endpoint drop out (not every free
+            model lacks one; the live catalog does include some), and the
+            free-to-economy fallback chain fills the resulting gap with
+            cheap paid ZDR models.
 
     Returns:
         List of dicts with keys: model, role, est_cost_usd.  The list may
@@ -580,6 +593,31 @@ def select_fallbacks(
                 continue
             out.append(m.name)
     return out[:limit]
+
+
+def _redact(text: str, secret: str) -> str:
+    """Replace any occurrence of secret within text with a redaction marker.
+
+    Defense in depth beneath call_model's stored error strings: an HTTP
+    error body or exception message could echo the Authorization header or
+    otherwise leak api_key verbatim, and that string is persisted into the
+    result record and eventually emitted as JSON. #VERIFY:
+    test_call_model_redacts_api_key_from_http_error and
+    test_call_model_redacts_api_key_from_exception_message in
+    test_consensus_cli.py.
+
+    Args:
+        text: The error string that might contain the secret.
+        secret: The API key value to redact. A falsy secret is left alone;
+            str.replace("", ...) would otherwise insert the marker between
+            every character instead of being a no-op.
+
+    Returns:
+        text with every occurrence of secret replaced by "[REDACTED]".
+    """
+    if not secret:
+        return text
+    return text.replace(secret, "[REDACTED]")
 
 
 async def call_model(
@@ -669,13 +707,15 @@ async def call_model(
             ) and attempt < MAX_RETRIES:
                 await asyncio.sleep(RETRY_BACKOFF_SECONDS * (2**attempt))
                 continue
-            record["error"] = f"HTTP {resp.status_code}: {resp.text[:200]}"
+            record["error"] = _redact(
+                f"HTTP {resp.status_code}: {resp.text[:200]}", api_key
+            )
             return record
         except httpx.HTTPError as exc:
             if attempt < MAX_RETRIES:
                 await asyncio.sleep(RETRY_BACKOFF_SECONDS * (2**attempt))
                 continue
-            record["error"] = f"{type(exc).__name__}: {exc}"
+            record["error"] = _redact(f"{type(exc).__name__}: {exc}", api_key)
             return record
     # unreachable defensive return: required by ruff RET503; every loop branch
     # above either returns or continues, so the loop never exits normally
@@ -954,15 +994,33 @@ def _zdr_mode_enabled(args: argparse.Namespace) -> bool:
     return bool(getattr(args, "zdr", False)) or _env_truthy("OPENROUTER_ZDR")
 
 
-def _fetch_zdr_ids_or_exit() -> set[str]:
+def _fetch_zdr_ids_or_exit() -> tuple[set[str], bool]:
     """Fetch the ZDR model-id set, exiting with a clear JSON error on failure.
 
     ZDR is a policy filter: silently returning an unfiltered roster when the
     endpoint is unreachable and no cache exists would defeat the point of
     ZDR mode, so this fails loudly instead.
+
+    #EDGE: when the live fetch fails, _fetch_cached_ids falls back to
+    reading whatever ZDR disk cache already exists, however old, without
+    rewriting it. A successful live fetch always rewrites the cache (mtime
+    now); a fast-path fresh-cache read only happens within
+    CACHE_TTL_SECONDS (24h). So a cache still older than
+    ZDR_STALE_CACHE_SECONDS (7 days) after this call returns can only mean
+    the stale-fallback path was taken; that lets this function detect
+    staleness from the cache file's mtime alone, with no change needed to
+    _fetch_cached_ids's return contract. #VERIFY:
+    test_fetch_zdr_ids_or_exit_flags_cache_older_than_seven_days and
+    test_fetch_zdr_ids_or_exit_fresh_cache_not_flagged in
+    test_consensus_cli.py.
+
+    Returns:
+        A tuple of (zdr_ids, cache_stale): cache_stale is True when the ids
+        came from a disk cache older than ZDR_STALE_CACHE_SECONDS because
+        the live fetch failed and this cache was used as a fallback.
     """
     try:
-        return fetch_zdr_model_ids()
+        ids = fetch_zdr_model_ids()
     except (httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
         emit(
             {
@@ -974,6 +1032,11 @@ def _fetch_zdr_ids_or_exit() -> set[str]:
             stream=sys.stderr,
         )
         raise SystemExit(2) from exc
+    cache_stale = (
+        ZDR_CACHE_PATH.exists()
+        and time.time() - ZDR_CACHE_PATH.stat().st_mtime >= ZDR_STALE_CACHE_SECONDS
+    )
+    return ids, cache_stale
 
 
 def _cmd_select(
@@ -988,7 +1051,10 @@ def _cmd_select(
         live = fetch_live_model_ids()
 
     zdr_mode = _zdr_mode_enabled(args)
-    zdr_ids = _fetch_zdr_ids_or_exit() if zdr_mode else None
+    zdr_ids = None
+    cache_stale = False
+    if zdr_mode:
+        zdr_ids, cache_stale = _fetch_zdr_ids_or_exit()
 
     roster = select_roster(
         models, bands, roles, args.level, args.domain, live=live, zdr=zdr_ids
@@ -1014,6 +1080,9 @@ def _cmd_select(
     }
     if zdr_mode:
         payload["zdr"] = True
+        if cache_stale:
+            payload["zdr_cache_stale"] = True
+            payload["warning"] = ZDR_STALE_CACHE_WARNING
     emit(payload)
     return 0
 
@@ -1107,27 +1176,53 @@ def _off_zdr_models(
 def _parse_dotenv_line(line: str) -> tuple[str, str] | None:
     """Parse one .env line into a (key, value) pair, or None for non-data lines.
 
-    Skips blank lines and `#` comments, tolerates a leading `export ` prefix,
-    and strips a single pair of matching quotes (`'` or `"`) around the value.
+    Skips blank lines and `#` comments, tolerates a leading `export` prefix
+    followed by any amount of whitespace (a single space, tabs, or several
+    spaces), and strips a single pair of matching quotes (`'` or `"`) around
+    the value. An unquoted value's trailing ` #comment` (a literal space,
+    then `#`, then arbitrary text) is stripped before quote-matching runs, so
+    a quoted value followed by a trailing comment (`"quoted" # comment`) is
+    also handled. A key with an empty value (`KEY=` with nothing after the
+    `=`) is skipped entirely rather than returned as real data, so it cannot
+    block key resolution the way a present-but-blank env var would.
 
     Args:
         line: One raw line from a .env file, not yet stripped.
 
     Returns:
-        The parsed (key, value) pair, or None if the line carries no data.
+        The parsed (key, value) pair, or None if the line carries no data or
+        the value is empty.
     """
     stripped = line.strip()
     if not stripped or stripped.startswith("#"):
         return None
-    if stripped.startswith("export "):
-        stripped = stripped[len("export ") :].strip()
+    if stripped.startswith("export") and stripped[len("export") :][:1].isspace():
+        stripped = stripped[len("export") :].strip()
     if "=" not in stripped:
         return None
     key, _, value = stripped.partition("=")
     key = key.strip()
     value = value.strip()
-    if len(value) >= 2 and value[0] == value[-1] and value[0] in ("'", '"'):
-        value = value[1:-1]
+    if len(value) >= 1 and value[0] in ("'", '"'):
+        # Quoted value: take everything up to the FIRST matching closing
+        # quote (not "the last character of the string"), so a trailing
+        # comment after the closing quote ("quoted" # comment) is dropped
+        # along with the quotes themselves rather than left embedded in the
+        # value. An unterminated quote (no closing match) is left as-is.
+        quote = value[0]
+        closing = value.find(quote, 1)
+        if closing != -1:
+            value = value[1:closing]
+    else:
+        # Unquoted value: an unescaped trailing " #comment" is not part of
+        # the value. Only a comment preceded by whitespace counts, so a
+        # literal "#" inside an unquoted value (rare, but not our call to
+        # forbid) is left alone.
+        comment_at = value.find(" #")
+        if comment_at != -1:
+            value = value[:comment_at].rstrip()
+    if not value:
+        return None
     return key, value
 
 
@@ -1161,31 +1256,49 @@ def _load_env_file(path: Path) -> None:
 
 
 def _owning_repo_root() -> Path | None:
-    """Return the repo root that owns this skill script, or None if too shallow.
+    """Return the repo root that owns this skill script, or None if unowned.
 
-    The script lives at <repo_root>/.claude/skills/panel/scripts/consensus_cli.py,
-    so the repo root is 4 parents up from the resolved file path. Guarded rather
-    than indexed unconditionally so a script copied somewhere shallower cannot
-    raise an IndexError; dotenv loading from the repo root is simply skipped.
+    The script normally lives at
+    <repo_root>/.claude/skills/panel/scripts/consensus_cli.py, 4 parents up
+    from the resolved file path. #CRITICAL: this is a *global* skill that
+    gets symlinked or checked out into arbitrary project roots, so the
+    parents[4] candidate is trusted only when it actually contains the
+    .claude/skills/panel marker directory (this repo's own install shape).
+    A bare parent-count check cannot tell an unrelated ancestor directory
+    from a real install, and could even resolve to '/' for a script placed
+    exactly 5 levels deep somewhere unexpected; either way it would let a
+    stranger project's .env supply this process's OpenRouter key, silently
+    defeating the ZDR account-restriction guarantee. #VERIFY:
+    test_owning_repo_root_lands_on_repo_root_for_matching_depth and
+    test_owning_repo_root_rejects_missing_marker in test_consensus_cli.py.
 
     Returns:
-        The resolved repo root path, or None when the script path has 4 or
-        fewer parents.
+        The resolved repo root path when it contains the skill's marker
+        directory, otherwise None (script too shallow, or no marker found).
     """
     parents = Path(__file__).resolve().parents
-    return parents[4] if len(parents) > 4 else None
+    if len(parents) <= 4:
+        return None
+    candidate = parents[4]
+    if not (candidate / _SKILL_MARKER).is_dir():
+        return None
+    return candidate
 
 
 def _load_dotenv_keys() -> None:
-    """Load OpenRouter keys from .env files: cwd first, then the owning repo root.
+    """Load OpenRouter keys from the skill's owning repo .env, if any.
 
-    Callers often run this script from a project root other than the repo
-    that owns the panel skill, so the shell environment may lack the keys
-    even though a gitignored .env holds them. Path.cwd()/.env is checked
-    first (an operator's local override wins), then the skill's owning repo
-    root .env. Neither call overrides a variable already set in os.environ.
+    #CRITICAL: this is a global skill installed (symlinked or checked out)
+    into arbitrary project roots, so Path.cwd() is not necessarily a repo
+    this operator controls; trusting Path.cwd()/.env there would let an
+    unrelated third-party project's .env silently supply a different
+    account's key, or a standard key masquerading as the ZDR key, defeating
+    the account-restriction guarantee ZDR mode depends on. Path.cwd() is
+    therefore never read. Only the owning repo's .env is read, and only
+    when _owning_repo_root confirms the .claude/skills/panel marker
+    actually exists there. Never overrides a variable already set in
+    os.environ.
     """
-    _load_env_file(Path.cwd() / ".env")
     repo_root = _owning_repo_root()
     if repo_root is not None:
         _load_env_file(repo_root / ".env")
@@ -1202,14 +1315,29 @@ def _select_api_key(zdr_mode: bool) -> str | None:
     #VERIFY: test_zdr_mode_never_falls_back_to_standard_key in
     test_consensus_cli.py.
 
+    A key that is empty, contains any whitespace, or carries any
+    non-printable or non-ASCII character is rejected the same way a missing
+    key is: the only caller-visible signal is the variable NAME (see
+    _cmd_run), never the value, so a malformed key (a stray control
+    character from a copy-paste, an embedded newline) fails closed instead
+    of reaching httpx as a bearer token. #VERIFY:
+    test_select_api_key_rejects_key_with_control_character in
+    test_consensus_cli.py.
+
     Args:
         zdr_mode: True when the run must use the ZDR-restricted account key.
 
     Returns:
-        The key string, or None when the required env var is unset or empty.
+        The key string, or None when the required env var is unset, empty,
+        or fails the hygiene check above.
     """
     var = OPENROUTER_ZDR_KEY_VAR if zdr_mode else OPENROUTER_API_KEY_VAR
-    return os.environ.get(var) or None
+    key = os.environ.get(var)
+    if not key:
+        return None
+    if not key.isascii() or not key.isprintable() or any(ch.isspace() for ch in key):
+        return None
+    return key
 
 
 def _cmd_run(
@@ -1218,7 +1346,6 @@ def _cmd_run(
     roles: dict,
 ) -> int:
     """Handle the run subcommand; return an exit code."""
-    _load_dotenv_keys()
     try:
         prompt = Path(args.prompt_file).read_text(encoding="utf-8")
     except (OSError, UnicodeDecodeError) as exc:
@@ -1319,6 +1446,9 @@ def _cmd_run(
 def main(argv: list[str] | None = None) -> int:
     """CLI entry point; returns a process exit code."""
     args = build_parser().parse_args(argv)
+    # Loaded once here (not per-subcommand) so select/estimate also honor a
+    # key or OPENROUTER_ZDR sourced from the owning repo's .env, not just run.
+    _load_dotenv_keys()
     try:
         models = load_models()
         bands = load_bands()
