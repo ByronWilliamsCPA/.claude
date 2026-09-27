@@ -60,6 +60,14 @@ Structured multi-model review with levels and professional roles.
   the live catalog validation likely dropped dead entries. Offer the
   refresh-data workflow.
 - Failures show HTTP 404 with a "data policy" or "guardrail restrictions"
-  message (or 403 for agentic-harness-only models): the key is restricted to
-  zero-data-retention (ZDR) endpoints and the free models it picked log
-  prompts. Rerun `select`/`run` with `--zdr` (or set `OPENROUTER_ZDR=1`).
+  message: the key is restricted to zero-data-retention (ZDR) endpoints and
+  the model it picked logs prompts. Rerun `select`/`run` with `--zdr` (or set
+  `OPENROUTER_ZDR=1`).
+- Failures show HTTP 403 on a model that is agentic-harness-only (accepts
+  calls only through an agent harness, not direct chat-completions): `--zdr`
+  does not fix this, since the failure is about call shape, not data
+  retention. Pick a different model from the roster that accepts direct
+  chat-completions calls instead. Note that `--zdr` filtering already
+  excludes agentic-harness-only models going forward, since they have no ZDR
+  endpoint to filter into; if one still shows up in a non-ZDR roster, run the
+  `refresh` workflow to retire it from the curated list.

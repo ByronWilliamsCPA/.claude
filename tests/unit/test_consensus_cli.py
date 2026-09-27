@@ -904,7 +904,7 @@ class TestRunConsensus:
         assert out["failed"] == 1
         error = out["results"][0]["error"]
         assert api_key not in error
-        assert "[REDACTED]" in error
+        assert "[REDACTED: error text contained the API key]" in error
 
 
 class TestRefresh:
@@ -953,7 +953,7 @@ class TestMainRefreshZdr:
     def test_zdr_fetch_success_included_in_report(self, monkeypatch, capsys):
         """A successful ZDR fetch surfaces curated_without_zdr_endpoint."""
         monkeypatch.setattr(cli, "fetch_live_model_ids", lambda: {"some/model:free"})
-        monkeypatch.setattr(cli, "fetch_zdr_model_ids", lambda: set())
+        monkeypatch.setattr(cli, "fetch_zdr_model_ids", set)
         rc = cli.main(["refresh"])
         assert rc == 0
         payload = json.loads(capsys.readouterr().out)
@@ -1103,13 +1103,29 @@ class TestCliZdrSelect:
     """CLI-level --zdr and OPENROUTER_ZDR wiring for select/estimate."""
 
     def test_zdr_flag_filters_roster_and_marks_payload(self, monkeypatch, capsys):
-        """--zdr restricts candidates to the ZDR set and flags the payload."""
-        monkeypatch.setattr(cli, "fetch_zdr_model_ids", lambda: {"openai/gpt-6-sol"})
+        """--zdr restricts candidates to the ZDR set and flags the payload.
+
+        Exact list equality (not all(...)) matters here: level 1's free tier
+        would otherwise pick openai/gpt-6-luna plus two other free models
+        (z-ai/glm-5.2:free, thinkingmachines/inkling:free); restricting the
+        ZDR set to a single id must shrink the roster to exactly that one
+        entry, not merely fail to include a non-member. all(r["model"] == X
+        for r in []) is vacuously True, so an empty roster (e.g. from a
+        typo'd model id that matches nothing at this level) would pass the
+        old assertion without ever exercising the filter.
+        """
+        monkeypatch.setattr(cli, "fetch_zdr_model_ids", lambda: {"openai/gpt-6-luna"})
         rc = cli.main(["select", "--level", "1", "--no-validate", "--zdr"])
         assert rc == 0
         payload = json.loads(capsys.readouterr().out)
         assert payload["zdr"] is True
-        assert all(r["model"] == "openai/gpt-6-sol" for r in payload["roster"])
+        assert payload["roster"] == [
+            {
+                "model": "openai/gpt-6-luna",
+                "role": "code_reviewer",
+                "est_cost_usd": 0.00095,
+            }
+        ]
 
     def test_env_var_triggers_zdr_without_flag(self, monkeypatch, capsys):
         """OPENROUTER_ZDR alone (no --zdr) enables ZDR mode."""
@@ -1121,12 +1137,23 @@ class TestCliZdrSelect:
         assert payload["zdr"] is True
 
     def test_no_validate_still_applies_zdr_filter(self, monkeypatch, capsys):
-        """--no-validate skips liveness but ZDR is a policy filter, not liveness."""
-        monkeypatch.setattr(cli, "fetch_zdr_model_ids", lambda: {"openai/gpt-6-sol"})
+        """--no-validate skips liveness but ZDR is a policy filter, not liveness.
+
+        Exact list equality (not all(...)): see
+        test_zdr_flag_filters_roster_and_marks_payload for why an empty
+        roster must not vacuously satisfy this assertion.
+        """
+        monkeypatch.setattr(cli, "fetch_zdr_model_ids", lambda: {"openai/gpt-6-luna"})
         rc = cli.main(["select", "--level", "1", "--no-validate", "--zdr"])
         assert rc == 0
         payload = json.loads(capsys.readouterr().out)
-        assert all(r["model"] == "openai/gpt-6-sol" for r in payload["roster"])
+        assert payload["roster"] == [
+            {
+                "model": "openai/gpt-6-luna",
+                "role": "code_reviewer",
+                "est_cost_usd": 0.00095,
+            }
+        ]
 
     def test_zdr_fetch_failure_with_no_cache_exits_nonzero(self, monkeypatch, capsys):
         """A failed ZDR fetch with no usable cache is fatal, not silently ignored."""
@@ -1193,6 +1220,194 @@ class TestCliZdrRun:
         payload = json.loads(capsys.readouterr().out)
         assert payload["zdr"] is True
 
+    def test_undeclared_roster_zdr_flag_warns_and_filters_fallbacks(
+        self, monkeypatch, tmp_path, capsys
+    ):
+        """An undeclared roster combined with --zdr gets the same off-ZDR
+        warning and fallback filtering that --models mode already has.
+
+        A roster file without "zdr": true is not pre-restricted to ZDR ids
+        the way a declared roster is assumed to be; without this check an
+        operator combining --roster-file with --zdr would see neither the
+        warning nor a filtered fallback pool, and substitution could burn
+        attempts on models ZDR mode cannot reach.
+        """
+        monkeypatch.setenv("OPENROUTER_API_KEY", "k")
+        monkeypatch.setenv("OPENROUTER__ZDR_API_KEY", "zdr-k")
+        prompt = tmp_path / "p.txt"
+        prompt.write_text("q?")
+        roster = tmp_path / "roster.json"
+        roster.write_text(
+            json.dumps(
+                {
+                    "roster": [
+                        {"model": "paid/off-zdr-model", "role": "code_reviewer"}
+                    ],
+                    "fallbacks": ["blocked/off-zdr", "allowed/on-zdr"],
+                }
+            )
+        )
+        monkeypatch.setattr(cli, "fetch_zdr_model_ids", lambda: {"allowed/on-zdr"})
+
+        retry_models = []
+
+        async def fake_run_consensus(
+            entries, prompt_text, api_key, catalog, transport=None, zdr=False
+        ):
+            model = entries[0]["model"]
+            if model == "paid/off-zdr-model":
+                return {
+                    "results": [
+                        {"model": model, "role": "code_reviewer", "error": "boom"}
+                    ],
+                    "succeeded": 0,
+                    "failed": 1,
+                    "total_cost_usd": 0.0,
+                }
+            retry_models.append(model)
+            return {
+                "results": [{"model": model, "role": "code_reviewer", "error": None}],
+                "succeeded": 1,
+                "failed": 0,
+                "total_cost_usd": 0.0,
+            }
+
+        monkeypatch.setattr(cli, "run_consensus", fake_run_consensus)
+        rc = cli.main(
+            [
+                "run",
+                "--prompt-file",
+                str(prompt),
+                "--roster-file",
+                str(roster),
+                "--zdr",
+            ]
+        )
+        assert rc == 0
+        payload = json.loads(capsys.readouterr().out)
+        assert "paid/off-zdr-model" in payload["warning"]
+        assert retry_models == ["allowed/on-zdr"]
+
+    def test_declared_zdr_roster_skips_the_undeclared_check(
+        self, monkeypatch, tmp_path, capsys
+    ):
+        """A roster carrying "zdr": true keeps current behavior: no off-ZDR
+        re-check and no fallback filtering are applied, because a declared
+        roster is trusted to have been produced already ZDR-restricted.
+        """
+        monkeypatch.setenv("OPENROUTER_API_KEY", "k")
+        monkeypatch.setenv("OPENROUTER__ZDR_API_KEY", "zdr-k")
+        prompt = tmp_path / "p.txt"
+        prompt.write_text("q?")
+        roster = tmp_path / "roster.json"
+        roster.write_text(
+            json.dumps(
+                {
+                    "zdr": True,
+                    "roster": [{"model": "paid/x", "role": "code_reviewer"}],
+                    "fallbacks": ["some/untouched-fallback"],
+                }
+            )
+        )
+        monkeypatch.setattr(cli, "fetch_zdr_model_ids", lambda: {"allowed/on-zdr"})
+
+        retry_models = []
+
+        async def fake_run_consensus(
+            entries, prompt_text, api_key, catalog, transport=None, zdr=False
+        ):
+            model = entries[0]["model"]
+            if model == "paid/x":
+                return {
+                    "results": [
+                        {"model": model, "role": "code_reviewer", "error": "boom"}
+                    ],
+                    "succeeded": 0,
+                    "failed": 1,
+                    "total_cost_usd": 0.0,
+                }
+            retry_models.append(model)
+            return {
+                "results": [{"model": model, "role": "code_reviewer", "error": None}],
+                "succeeded": 1,
+                "failed": 0,
+                "total_cost_usd": 0.0,
+            }
+
+        monkeypatch.setattr(cli, "run_consensus", fake_run_consensus)
+        rc = cli.main(
+            ["run", "--prompt-file", str(prompt), "--roster-file", str(roster)]
+        )
+        assert rc == 0
+        payload = json.loads(capsys.readouterr().out)
+        assert "ZDR-compliant" not in payload.get("warning", "")
+        assert retry_models == ["some/untouched-fallback"]
+
+    def test_undeclared_roster_zdr_fetch_failure_is_best_effort(
+        self, monkeypatch, tmp_path, capsys
+    ):
+        """A ZDR fetch failure on an undeclared roster is best-effort: run
+        still succeeds, a warning notes the check could not run, and the
+        off-ZDR filter and fallbacks are left untouched rather than crashing.
+        """
+        monkeypatch.setenv("OPENROUTER_API_KEY", "k")
+        monkeypatch.setenv("OPENROUTER__ZDR_API_KEY", "zdr-k")
+        prompt = tmp_path / "p.txt"
+        prompt.write_text("q?")
+        roster = tmp_path / "roster.json"
+        roster.write_text(
+            json.dumps(
+                {
+                    "roster": [{"model": "paid/x", "role": "code_reviewer"}],
+                    "fallbacks": ["some/fallback"],
+                }
+            )
+        )
+
+        def _boom():
+            raise httpx.ConnectError("no network")
+
+        monkeypatch.setattr(cli, "fetch_zdr_model_ids", _boom)
+
+        retry_models = []
+
+        async def fake_run_consensus(
+            entries, prompt_text, api_key, catalog, transport=None, zdr=False
+        ):
+            model = entries[0]["model"]
+            if model == "paid/x":
+                return {
+                    "results": [
+                        {"model": model, "role": "code_reviewer", "error": "boom"}
+                    ],
+                    "succeeded": 0,
+                    "failed": 1,
+                    "total_cost_usd": 0.0,
+                }
+            retry_models.append(model)
+            return {
+                "results": [{"model": model, "role": "code_reviewer", "error": None}],
+                "succeeded": 1,
+                "failed": 0,
+                "total_cost_usd": 0.0,
+            }
+
+        monkeypatch.setattr(cli, "run_consensus", fake_run_consensus)
+        rc = cli.main(
+            [
+                "run",
+                "--prompt-file",
+                str(prompt),
+                "--roster-file",
+                str(roster),
+                "--zdr",
+            ]
+        )
+        assert rc == 0
+        payload = json.loads(capsys.readouterr().out)
+        assert "could not verify roster models" in payload["warning"]
+        assert retry_models == ["some/fallback"]
+
     def test_env_var_enables_zdr_for_run(self, monkeypatch, tmp_path, capsys):
         """OPENROUTER_ZDR alone enables ZDR mode for run and marks the output."""
         monkeypatch.setenv("OPENROUTER_API_KEY", "k")
@@ -1219,7 +1434,13 @@ class TestCliZdrRun:
     def test_models_mode_zdr_warns_on_off_zdr_models_but_still_attempts(
         self, monkeypatch, tmp_path, capsys
     ):
-        """--models under ZDR merges an off-ZDR warning with the uncatalogued one."""
+        """--models under ZDR merges an off-ZDR warning with the uncatalogued one.
+
+        fake_run_consensus must return an actual result for "not/catalogued"
+        (not an empty results list): the uncatalogued-models warning clause is
+        built from outcome["results"], not from entries, so an empty results
+        list would let this test pass without ever exercising that clause.
+        """
         monkeypatch.setenv("OPENROUTER_API_KEY", "k")
         monkeypatch.setenv("OPENROUTER__ZDR_API_KEY", "zdr-k")
         prompt = tmp_path / "p.txt"
@@ -1230,7 +1451,12 @@ class TestCliZdrRun:
         async def fake_run_consensus(
             entries, prompt_text, api_key, catalog, transport=None, zdr=False
         ):
-            return {"results": [], "succeeded": 1, "failed": 0, "total_cost_usd": 0.0}
+            return {
+                "results": [{"model": "not/catalogued", "error": None}],
+                "succeeded": 1,
+                "failed": 0,
+                "total_cost_usd": 0.0,
+            }
 
         monkeypatch.setattr(cli, "run_consensus", fake_run_consensus)
         rc = cli.main(
@@ -1246,7 +1472,14 @@ class TestCliZdrRun:
         assert rc == 0
         payload = json.loads(capsys.readouterr().out)
         assert "warning" in payload
-        assert "not/catalogued" in payload["warning"]
+        assert (
+            "models not in curated catalog, cost unknown and not capped: "
+            "not/catalogued" in payload["warning"]
+        )
+        assert (
+            "models without a ZDR-compliant endpoint under ZDR mode "
+            "(attempted anyway): not/catalogued" in payload["warning"]
+        )
 
 
 class TestRunFailover:
@@ -2114,7 +2347,7 @@ class TestApiKeyHygiene:
 
         record = asyncio.run(run())
         assert api_key not in record["error"]
-        assert "[REDACTED]" in record["error"]
+        assert "[REDACTED: error text contained the API key]" in record["error"]
 
     def test_call_model_redacts_api_key_from_exception_message(self, monkeypatch):
         """An exception message that happens to include the key is redacted."""
@@ -2138,7 +2371,7 @@ class TestApiKeyHygiene:
 
         record = asyncio.run(run())
         assert api_key not in record["error"]
-        assert "[REDACTED]" in record["error"]
+        assert "[REDACTED: error text contained the API key]" in record["error"]
 
 
 class TestDotenvParserEdgeCases:

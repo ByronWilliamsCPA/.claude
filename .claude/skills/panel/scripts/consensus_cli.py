@@ -596,28 +596,38 @@ def select_fallbacks(
 
 
 def _redact(text: str, secret: str) -> str:
-    """Replace any occurrence of secret within text with a redaction marker.
+    """Return a constant marker when text contains secret; otherwise text.
 
     Defense in depth beneath call_model's stored error strings: an HTTP
     error body or exception message could echo the Authorization header or
     otherwise leak api_key verbatim, and that string is persisted into the
-    result record and eventually emitted as JSON. #VERIFY:
-    test_call_model_redacts_api_key_from_http_error and
-    test_call_model_redacts_api_key_from_exception_message in
-    test_consensus_cli.py.
+    result record and eventually emitted as JSON via emit(). #VERIFY:
+    test_call_model_redacts_api_key_from_http_error,
+    test_call_model_redacts_api_key_from_exception_message, and
+    test_escaped_exception_error_is_redacted in test_consensus_cli.py.
+
+    #CRITICAL: the return value must never be built from secret or from any
+    substring of text that depended on secret's presence (e.g. text.replace or
+    text.split on secret). A taint tracker such as CodeQL's
+    py/clear-text-logging-sensitive-data flags any return value that is a
+    data-flow function of a parameter named like a credential, because that
+    is indistinguishable from a leak at the data-flow level even when the
+    literal secret value has been substituted out. Returning one of exactly
+    two constants (this fixed marker, or the untouched original text) breaks
+    that data flow: neither branch's return value is derived from secret.
 
     Args:
         text: The error string that might contain the secret.
-        secret: The API key value to redact. A falsy secret is left alone;
-            str.replace("", ...) would otherwise insert the marker between
-            every character instead of being a no-op.
+        secret: The API key value to check for. A falsy secret always
+            returns text unchanged.
 
     Returns:
-        text with every occurrence of secret replaced by "[REDACTED]".
+        A fixed marker string if secret is truthy and found in text;
+        otherwise text unchanged.
     """
-    if not secret:
-        return text
-    return text.replace(secret, "[REDACTED]")
+    if secret and secret in text:
+        return "[REDACTED: error text contained the API key]"
+    return text
 
 
 async def call_model(
@@ -1184,6 +1194,47 @@ def _off_zdr_models(
     return [e["model"] for e in entries if e["model"] not in zdr_ids]
 
 
+def _roster_zdr_check(
+    entries: list[dict], fallbacks: list[str]
+) -> tuple[list[str], list[str], bool]:
+    """Check an undeclared roster's entries and fallbacks against the ZDR set.
+
+    Only called for a roster file that did not declare "zdr": true while ZDR
+    mode is otherwise active (via --zdr or OPENROUTER_ZDR). A roster that
+    declares "zdr": true is already restricted to ZDR ids at select time (see
+    select_roster), so re-checking it here would be redundant; that case is
+    handled by the caller keeping current behavior and never calling this
+    function. This function fills the equivalent gap for an undeclared
+    roster: without it, an operator running a plain roster file under --zdr
+    would get neither the off-ZDR warning nor fallback filtering that
+    --models mode already provides.
+
+    Best-effort like the --models path (_off_zdr_models): a failed ZDR fetch
+    does not block the run. Unlike that path's fully silent swallow, the
+    caller surfaces the failure as a warning, since an operator combining
+    --roster-file with --zdr reasonably expects the substitution pool to
+    stay ZDR-compliant, and a silent skip here would waste substitution
+    attempts on blocked models with no indication why.
+
+    Args:
+        entries: Roster entries (each a dict with at least "model").
+        fallbacks: The roster's ordered fallback model ids.
+
+    Returns:
+        A (off_zdr_models, filtered_fallbacks, fetch_failed) tuple. When
+        fetch_failed is True, off_zdr_models is [] and filtered_fallbacks is
+        the input fallbacks unchanged, so a fetch failure degrades to the
+        pre-existing unfiltered behavior rather than blocking substitution.
+    """
+    try:
+        zdr_ids = fetch_zdr_model_ids()
+    except (httpx.HTTPError, KeyError, TypeError, ValueError):
+        return [], fallbacks, True
+    off_zdr = [e["model"] for e in entries if e["model"] not in zdr_ids]
+    filtered_fallbacks = [m for m in fallbacks if m in zdr_ids]
+    return off_zdr, filtered_fallbacks, False
+
+
 def _parse_dotenv_line(line: str) -> tuple[str, str] | None:
     """Parse one .env line into a (key, value) pair, or None for non-data lines.
 
@@ -1374,6 +1425,7 @@ def _cmd_run(
 
     # Read fallbacks from the roster file (second read; double-read is acceptable per
     # spec: simplest route over refactoring build_entries to accept a pre-loaded obj).
+    roster_declared_zdr = False
     if args.roster_file:
         roster_payload = _read_json_file(args.roster_file, "roster file")
         fallbacks: list[str] = (
@@ -1383,6 +1435,7 @@ def _cmd_run(
         )
         if isinstance(roster_payload, dict) and roster_payload.get("zdr"):
             zdr_mode = True
+            roster_declared_zdr = True
     else:
         # --models mode: user-named panels are never substituted
         fallbacks = []
@@ -1407,6 +1460,9 @@ def _cmd_run(
         return 1
 
     off_zdr = _off_zdr_models(entries, zdr_mode, models_mode=bool(args.models))
+    zdr_check_failed = False
+    if zdr_mode and args.roster_file and not roster_declared_zdr:
+        off_zdr, fallbacks, zdr_check_failed = _roster_zdr_check(entries, fallbacks)
 
     # #ASSUME: uncatalogued models cannot be cost-estimated; the cap only covers
     # catalog rows. #VERIFY: run output carries a warning listing them so the
@@ -1458,6 +1514,12 @@ def _cmd_run(
         warnings.append(
             "models without a ZDR-compliant endpoint under ZDR mode (attempted "
             "anyway): " + ", ".join(off_zdr)
+        )
+    if zdr_check_failed:
+        warnings.append(
+            "could not verify roster models against the ZDR-compliant model "
+            "list; off-ZDR models were not identified and fallbacks were not "
+            "filtered"
         )
     if warnings:
         outcome["warning"] = "; ".join(warnings)
