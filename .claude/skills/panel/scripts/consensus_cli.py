@@ -51,9 +51,9 @@ ZDR_CACHE_PATH = Path.home() / ".cache" / "panel-skill" / "openrouter-zdr-models
 CACHE_TTL_SECONDS = 24 * 3600
 OPENROUTER_BASE = "https://openrouter.ai/api/v1"
 ZDR_TRUTHY_VALUES = {"1", "true", "yes"}
-OPENROUTER_API_KEY_VAR = "OPENROUTER_API_KEY"  # pragma: allowlist secret
-OPENROUTER_ZDR_KEY_VAR = "OPENROUTER__ZDR_API_KEY"
-_DOTENV_ALLOWLIST = {OPENROUTER_API_KEY_VAR, OPENROUTER_ZDR_KEY_VAR, "OPENROUTER_ZDR"}
+OPENROUTER_STD_ENV_NAME = "OPENROUTER_API_KEY"
+OPENROUTER_ZDR_ENV_NAME = "OPENROUTER__ZDR_API_KEY"
+_DOTENV_ALLOWLIST = {OPENROUTER_STD_ENV_NAME, OPENROUTER_ZDR_ENV_NAME, "OPENROUTER_ZDR"}
 EST_INPUT_TOKENS = 2000
 EST_OUTPUT_TOKENS = 1500
 LEVEL_COST_CAPS_USD = {1: 0.50, 2: 1.00, 3: 10.00}
@@ -1396,7 +1396,7 @@ def _select_api_key(zdr_mode: bool) -> str | None:
         The key string, or None when the required env var is unset, empty,
         or fails the hygiene check above.
     """
-    var = OPENROUTER_ZDR_KEY_VAR if zdr_mode else OPENROUTER_API_KEY_VAR
+    var = OPENROUTER_ZDR_ENV_NAME if zdr_mode else OPENROUTER_STD_ENV_NAME
     key = os.environ.get(var)
     if not key:
         return None
@@ -1445,17 +1445,17 @@ def _cmd_run(
     # after that resolution, not at function entry.
     api_key = _select_api_key(zdr_mode)
     if not api_key:
-        var = OPENROUTER_ZDR_KEY_VAR if zdr_mode else OPENROUTER_API_KEY_VAR
+        env_name = OPENROUTER_ZDR_ENV_NAME if zdr_mode else OPENROUTER_STD_ENV_NAME
         # Distinguish "unset" from "set but hygiene-rejected" so the operator
         # knows which problem to fix, without ever printing the value itself
         # (see _select_api_key's #VERIFY note on this exact distinction).
-        if os.environ.get(var):
+        if os.environ.get(env_name):
             message = (
-                f"{var} is set but malformed (whitespace, control, or "
+                f"{env_name} is set but malformed (whitespace, control, or "
                 "non-ASCII characters)"
             )
         else:
-            message = f"{var} is not set"
+            message = f"{env_name} is not set"
         emit({"error": message}, stream=sys.stderr)
         return 1
 
