@@ -28,6 +28,56 @@ cli = importlib.util.module_from_spec(_spec)
 sys.modules["consensus_cli"] = cli
 _spec.loader.exec_module(cli)
 
+# Captured immediately after exec_module, before any autouse fixture can patch
+# cli._load_dotenv_keys away, so loader-specific tests can opt back into the
+# real implementation deliberately (see _clean_zdr_env below).
+_REAL_LOAD_DOTENV_KEYS = cli._load_dotenv_keys
+
+
+@pytest.fixture(autouse=True)
+def _clean_zdr_env(monkeypatch, tmp_path):
+    """Keep OpenRouter key/ZDR env vars and cache paths off real machine state.
+
+    ZDR mode is env-var-triggered by design (the requirement travels with
+    the key), so a leaked value from one test or the developer's shell
+    would silently change another test's behavior. The two API key names are
+    cleared the same way, then force-cleared again on teardown: the dotenv
+    loader under test writes directly into os.environ (not via monkeypatch),
+    so monkeypatch's own undo stack does not know to revert it.
+
+    #CRITICAL: this also neutralizes cli._load_dotenv_keys to a no-op for
+    every test by default, so no test can accidentally read a real .env
+    from this machine (a real repo-root .env is explicitly off-limits to
+    this test suite). Tests that specifically exercise the loader restore
+    the real function via _REAL_LOAD_DOTENV_KEYS, captured at module import
+    time above, before this fixture ever runs. #VERIFY: no test in this
+    file calls the real loader without first monkeypatching cli.Path.cwd()
+    and/or cli._owning_repo_root to a tmp_path fixture; grep confirms every
+    _REAL_LOAD_DOTENV_KEYS() or cli._load_dotenv_keys() call site does so.
+
+    #CRITICAL: cli.CACHE_PATH and cli.ZDR_CACHE_PATH default to real files
+    under the developer's actual ~/.cache; redirecting both here to this
+    test's own tmp_path means no test reads or writes that real cache, and a
+    test's outcome cannot depend on that real file's age or contents (a ZDR
+    cache older than ZDR_STALE_CACHE_SECONDS on the machine running the
+    suite previously made test_main_select_zdr_fresh_cache_omits_stale_fields
+    fail nondeterministically). Tests that need a specific cache file still
+    write one under tmp_path and monkeypatch.setattr the path explicitly,
+    which simply overrides this default later in the same test. #VERIFY:
+    HOME=$(mktemp -d) with a 9-day-old
+    $HOME/.cache/panel-skill/openrouter-zdr-models.json present, then run
+    this file; every test passes because none of them read that path.
+    """
+    env_vars = ("OPENROUTER_ZDR", "OPENROUTER_API_KEY", "OPENROUTER__ZDR_API_KEY")
+    for name in env_vars:
+        monkeypatch.delenv(name, raising=False)
+    monkeypatch.setattr(cli, "_load_dotenv_keys", lambda: None)
+    monkeypatch.setattr(cli, "CACHE_PATH", tmp_path / "openrouter-models.json")
+    monkeypatch.setattr(cli, "ZDR_CACHE_PATH", tmp_path / "openrouter-zdr-models.json")
+    yield
+    for name in env_vars:
+        os.environ.pop(name, None)
+
 
 def make_model(name, inp, out, he=70.0, swe=60.0, context=131000, spec="general"):
     """Build a Model row for tests."""
@@ -264,6 +314,102 @@ class TestLiveCatalog:
         assert ids == {"old/model"}
 
 
+class TestZdrEnvTruthy:
+    """Tests for the _env_truthy helper backing OPENROUTER_ZDR."""
+
+    @pytest.mark.parametrize("value", ["1", "true", "yes", "TRUE", "Yes", " 1 "])
+    def test_truthy_values(self, monkeypatch, value):
+        """Recognised truthy strings (case-insensitive, whitespace-tolerant)."""
+        monkeypatch.setenv("OPENROUTER_ZDR", value)
+        assert cli._env_truthy("OPENROUTER_ZDR") is True
+
+    @pytest.mark.parametrize("value", ["0", "false", "no", "", "on", "banana"])
+    def test_falsy_values(self, monkeypatch, value):
+        """Anything other than the truthy set, including empty string, is False."""
+        monkeypatch.setenv("OPENROUTER_ZDR", value)
+        assert cli._env_truthy("OPENROUTER_ZDR") is False
+
+    def test_unset_is_falsy(self, monkeypatch):
+        """An unset env var is False, not an error."""
+        monkeypatch.delenv("OPENROUTER_ZDR", raising=False)
+        assert cli._env_truthy("OPENROUTER_ZDR") is False
+
+
+class TestFetchZdrModelIds:
+    """Tests for fetch_zdr_model_ids, mirroring TestLiveCatalog's contract."""
+
+    def _client(self, handler):
+        """Build an httpx.Client backed by a mock transport."""
+        return httpx.Client(transport=httpx.MockTransport(handler))
+
+    def test_fetch_and_cache(self, tmp_path):
+        """Fetch ZDR model ids from model_id fields, cache, and reuse the cache."""
+        calls = {"n": 0}
+
+        def handler(request):
+            calls["n"] += 1
+            return httpx.Response(
+                200,
+                json={
+                    "data": [
+                        {"model_id": "z-ai/glm-5.3", "provider_name": "z-ai"},
+                        {"model_id": "openai/gpt-6-sol", "provider_name": "openai"},
+                    ]
+                },
+            )
+
+        cache = tmp_path / "zdr-cache.json"
+        ids = cli.fetch_zdr_model_ids(client=self._client(handler), cache_path=cache)
+        assert ids == {"z-ai/glm-5.3", "openai/gpt-6-sol"}
+        assert set(json.loads(cache.read_text())) == ids
+        ids2 = cli.fetch_zdr_model_ids(client=self._client(handler), cache_path=cache)
+        assert ids2 == ids
+        assert calls["n"] == 1  # second call served from cache
+
+    def test_stale_cache_used_on_network_error(self, tmp_path):
+        """Fall back to a stale ZDR cache file when the network call fails."""
+
+        def handler(request):
+            raise httpx.ConnectError("boom")
+
+        cache = tmp_path / "zdr-cache.json"
+        cache.write_text(json.dumps(["old/zdr-model"]))
+        two_days_ago = time.time() - 2 * 86400
+        os.utime(cache, (two_days_ago, two_days_ago))
+        ids = cli.fetch_zdr_model_ids(client=self._client(handler), cache_path=cache)
+        assert ids == {"old/zdr-model"}
+
+    def test_network_error_without_cache_raises(self, tmp_path):
+        """Propagate the httpx error when the network fails and no cache exists."""
+
+        def handler(request):
+            raise httpx.ConnectError("boom")
+
+        with pytest.raises(httpx.HTTPError):
+            cli.fetch_zdr_model_ids(
+                client=self._client(handler), cache_path=tmp_path / "missing.json"
+            )
+
+    def test_malformed_200_body_uses_stale_cache(self, tmp_path):
+        """An unexpected /endpoints/zdr schema falls back to a stale cache."""
+
+        def handler(request):
+            return httpx.Response(200, json={"unexpected": "schema"})
+
+        cache = tmp_path / "zdr-cache.json"
+        cache.write_text(json.dumps(["old/zdr-model"]))
+        two_days_ago = time.time() - 2 * 86400
+        os.utime(cache, (two_days_ago, two_days_ago))
+        ids = cli.fetch_zdr_model_ids(client=self._client(handler), cache_path=cache)
+        assert ids == {"old/zdr-model"}
+
+    def test_uses_own_cache_file_distinct_from_live_catalog(self):
+        """The ZDR cache path is a sibling file, never the live-catalog cache."""
+        assert cli.ZDR_CACHE_PATH != cli.CACHE_PATH
+        assert cli.ZDR_CACHE_PATH.parent == cli.CACHE_PATH.parent
+        assert cli.ZDR_CACHE_PATH.name == "openrouter-zdr-models.json"
+
+
 def fake_dataset():
     """Synthetic dataset spanning all cost tiers."""
     return [
@@ -478,6 +624,81 @@ class TestRosterSelection:
             cli.select_roster(fake_dataset(), self.bands, self.roles, 1, "nonsense")
 
 
+class TestZdrRosterFiltering:
+    """ZDR restricts roster and fallback candidates to a given id set."""
+
+    def setup_method(self):
+        """Load shared fixtures before each test."""
+        self.bands = cli.load_bands()
+        self.roles = cli.load_roles()
+
+    def test_zdr_free_tier_without_zdr_endpoint_falls_over_to_economy(self):
+        """A free tier with no ZDR-compliant candidate fills from economy instead.
+
+        This fixture's free models happen to have no ZDR endpoint, so the
+        free tier empties and the existing free->economy fallback chain
+        (TIER_FALLBACK_ORDER) fills the level-1 roster with cheap paid ZDR
+        models instead. This is not a claim that every free model lacks a
+        ZDR endpoint: the live catalog does include some (e.g.
+        qwen/qwen3.8-27b:free); the fallback only engages for the ones that
+        do not.
+        """
+        zdr_ids = {"econ-a", "econ-b", "econ-c", "val-a", "prem-a", "prem-b"}
+        roster = cli.select_roster(
+            fake_dataset(), self.bands, self.roles, 1, "code_review", zdr=zdr_ids
+        )
+        assert [r["model"] for r in roster] == ["econ-a", "econ-b", "econ-c"]
+
+    def test_zdr_roster_stays_under_level1_cap(self):
+        """A ZDR-filled level-1 roster (no free seats) still fits the $0.50 cap."""
+        zdr_ids = {"econ-a", "econ-b", "econ-c"}
+        roster = cli.select_roster(
+            fake_dataset(), self.bands, self.roles, 1, "code_review", zdr=zdr_ids
+        )
+        total = sum(r["est_cost_usd"] for r in roster)
+        assert total < cli.LEVEL_COST_CAPS_USD[1]
+        assert total > 0  # sanity: these are paid, not free, models
+
+    def test_zdr_and_live_combine(self):
+        """A model must pass both live validation and the ZDR filter."""
+        live = {m.name for m in fake_dataset()}
+        zdr_ids = {"free-a:free", "econ-a", "econ-b"}
+        roster = cli.select_roster(
+            fake_dataset(),
+            self.bands,
+            self.roles,
+            1,
+            "code_review",
+            live=live,
+            zdr=zdr_ids,
+        )
+        assert [r["model"] for r in roster] == ["free-a:free", "econ-a", "econ-b"]
+
+    def test_zdr_none_leaves_selection_unfiltered(self):
+        """zdr=None (the default) is a no-op, matching pre-ZDR behavior."""
+        roster = cli.select_roster(
+            fake_dataset(), self.bands, self.roles, 1, "code_review"
+        )
+        assert [r["model"] for r in roster] == [
+            "free-a:free",
+            "free-b:free",
+            "free-c:free",
+        ]
+
+    def test_zdr_filters_fallbacks_too(self):
+        """select_fallbacks skips candidates missing from the ZDR set.
+
+        Level 1's only tier ("free") falls back through free then economy
+        (TIER_FALLBACK_ORDER); with every free model off-ZDR, only the
+        ZDR-listed economy model survives the walk.
+        """
+        zdr_ids = {"econ-b"}
+        fallbacks = cli.select_fallbacks(
+            fake_dataset(), self.bands, 1, exclude=set(), zdr=zdr_ids
+        )
+        assert fallbacks == ["econ-b"]
+
+
 def _ok_response(model_name):
     return httpx.Response(
         200,
@@ -617,6 +838,74 @@ class TestRunConsensus:
         assert out["total_cost_usd"] == 0.0
         assert all(r["error"] for r in out["results"])
 
+    def test_zdr_true_adds_provider_preference_to_every_request(self):
+        """zdr=True on run_consensus reaches call_model and every request body."""
+        seen_bodies = []
+
+        def handler(request):
+            seen_bodies.append(json.loads(request.content))
+            return _ok_response(json.loads(request.content)["model"])
+
+        entries = [
+            {"model": "a/x", "role": None, "system_prompt": None},
+            {"model": "b/y", "role": None, "system_prompt": None},
+        ]
+        asyncio.run(
+            cli.run_consensus(
+                entries,
+                "q?",
+                "k",
+                catalog={},
+                transport=httpx.MockTransport(handler),
+                zdr=True,
+            )
+        )
+        assert len(seen_bodies) == 2
+        assert all(body["provider"] == {"zdr": True} for body in seen_bodies)
+
+    def test_zdr_false_omits_provider_key(self):
+        """zdr=False (the default) never adds a provider key; unchanged behavior."""
+        seen_bodies = []
+
+        def handler(request):
+            seen_bodies.append(json.loads(request.content))
+            return _ok_response("m/x")
+
+        entries = [{"model": "m/x", "role": None, "system_prompt": None}]
+        asyncio.run(
+            cli.run_consensus(
+                entries, "q?", "k", catalog={}, transport=httpx.MockTransport(handler)
+            )
+        )
+        assert "provider" not in seen_bodies[0]
+
+    def test_escaped_exception_error_is_redacted(self, monkeypatch):
+        """An exception that escapes call_model entirely is still redacted.
+
+        return_exceptions=True lets asyncio.gather hand run_consensus a raw
+        BaseException for any model whose call_model coroutine raises past
+        its own try/except (call_model's docstring says "never raises", but
+        this is the defensive normalisation for the case where it does
+        anyway). That normalisation stringifies the exception directly
+        (f"{type(res).__name__}: {res}"), so it needs the same _redact
+        treatment as call_model's own error strings; otherwise a leaked
+        key would bypass call_model's redaction entirely.
+        """
+        api_key = "sk-or-ESCAPED789"  # pragma: allowlist secret
+
+        async def raising_call_model(client, entry, prompt, key, catalog, zdr=False):
+            raise RuntimeError(f"unexpected failure, key={key}")
+
+        monkeypatch.setattr(cli, "call_model", raising_call_model)
+        entries = [{"model": "m/x", "role": None, "system_prompt": None}]
+        out = asyncio.run(
+            cli.run_consensus(entries, "q?", api_key, catalog={}, transport=None)
+        )
+        assert out["failed"] == 1
+        error = out["results"][0]["error"]
+        assert api_key not in error
+        assert "[REDACTED: error text contained the API key]" in error
+
 
 class TestRefresh:
     def test_reports_dead_and_new_free_models(self):
@@ -627,6 +916,63 @@ class TestRefresh:
         assert report["dead_in_curated"] == ["dead/y"]
         assert report["live_free_not_in_curated"] == ["brand/new:free"]
         assert report["curated_count"] == 2
+
+    def test_curated_without_zdr_endpoint_lists_missing_ids(self):
+        """When a zdr set is given, curated ids missing from it are reported."""
+        curated = [
+            make_model("has-zdr/x", 0.01, 0.02),
+            make_model("no-zdr/y", 0.01, 0.02),
+        ]
+        live = {"has-zdr/x", "no-zdr/y"}
+        zdr = {"has-zdr/x"}
+        report = cli.refresh_report(curated, live, zdr=zdr)
+        assert report["curated_without_zdr_endpoint"] == ["no-zdr/y"]
+        assert "zdr_error" not in report
+
+    def test_zdr_error_reports_null_list_without_failing_refresh(self):
+        """A ZDR fetch failure reports zdr_error and a null list, not a crash."""
+        curated = [make_model("alive/x", 0, 0)]
+        live = {"alive/x"}
+        report = cli.refresh_report(curated, live, zdr_error="ConnectError: no network")
+        assert report["curated_without_zdr_endpoint"] is None
+        assert report["zdr_error"] == "ConnectError: no network"
+        # dead_in_curated / live_free_not_in_curated are unaffected by ZDR failure.
+        assert report["dead_in_curated"] == []
+
+    def test_neither_zdr_nor_zdr_error_omits_the_key_entirely(self):
+        """Calling refresh_report with neither zdr arg leaves the key absent."""
+        curated = [make_model("alive/x", 0, 0)]
+        report = cli.refresh_report(curated, {"alive/x"})
+        assert "curated_without_zdr_endpoint" not in report
+        assert "zdr_error" not in report
+
+
+class TestMainRefreshZdr:
+    """main(["refresh"]) wiring for the ZDR fetch and its failure path."""
+
+    def test_zdr_fetch_success_included_in_report(self, monkeypatch, capsys):
+        """A successful ZDR fetch surfaces curated_without_zdr_endpoint."""
+        monkeypatch.setattr(cli, "fetch_live_model_ids", lambda: {"some/model:free"})
+        monkeypatch.setattr(cli, "fetch_zdr_model_ids", set)
+        rc = cli.main(["refresh"])
+        assert rc == 0
+        payload = json.loads(capsys.readouterr().out)
+        assert payload["curated_without_zdr_endpoint"] is not None
+
+    def test_zdr_fetch_failure_does_not_fail_whole_refresh(self, monkeypatch, capsys):
+        """A ZDR fetch failure reports zdr_error but refresh still exits 0."""
+        monkeypatch.setattr(cli, "fetch_live_model_ids", lambda: {"some/model:free"})
+
+        def _boom():
+            raise httpx.ConnectError("no network")
+
+        monkeypatch.setattr(cli, "fetch_zdr_model_ids", _boom)
+        rc = cli.main(["refresh"])
+        assert rc == 0
+        payload = json.loads(capsys.readouterr().out)
+        assert payload["curated_without_zdr_endpoint"] is None
+        assert "zdr_error" in payload
+        assert "dead_in_curated" in payload
 
 
 class TestCliWiring:
@@ -684,7 +1030,7 @@ class TestCliWiring:
         captured = {}
 
         async def fake_run_consensus(
-            entries, prompt_text, api_key, catalog, transport=None
+            entries, prompt_text, api_key, catalog, transport=None, zdr=False
         ):
             captured["entries"] = entries
             return {"results": [], "succeeded": 1, "failed": 0, "total_cost_usd": 0.0}
@@ -704,7 +1050,7 @@ class TestCliWiring:
         prompt.write_text("q?")
 
         async def fake_run_consensus(
-            entries, prompt_text, api_key, catalog, transport=None
+            entries, prompt_text, api_key, catalog, transport=None, zdr=False
         ):
             return {
                 "results": [{"model": "m/x", "error": "boom"}],
@@ -744,11 +1090,396 @@ class TestCliWiring:
     def test_main_refresh_emits_report(self, monkeypatch, capsys):
         """Refresh dispatch fetches live ids and emits the report shape."""
         monkeypatch.setattr(cli, "fetch_live_model_ids", lambda: {"some/model:free"})
+        monkeypatch.setattr(cli, "fetch_zdr_model_ids", lambda: {"some/model:free"})
         rc = cli.main(["refresh"])
         assert rc == 0
         payload = json.loads(capsys.readouterr().out)
         assert "dead_in_curated" in payload
         assert "live_free_not_in_curated" in payload
+        assert "curated_without_zdr_endpoint" in payload
+
+
+class TestCliZdrSelect:
+    """CLI-level --zdr and OPENROUTER_ZDR wiring for select/estimate."""
+
+    def test_zdr_flag_filters_roster_and_marks_payload(self, monkeypatch, capsys):
+        """--zdr restricts candidates to the ZDR set and flags the payload.
+
+        Exact list equality (not all(...)) matters here: level 1's free tier
+        would otherwise pick openai/gpt-6-luna plus two other free models
+        (z-ai/glm-5.2:free, thinkingmachines/inkling:free); restricting the
+        ZDR set to a single id must shrink the roster to exactly that one
+        entry, not merely fail to include a non-member. all(r["model"] == X
+        for r in []) is vacuously True, so an empty roster (e.g. from a
+        typo'd model id that matches nothing at this level) would pass the
+        old assertion without ever exercising the filter.
+        """
+        monkeypatch.setattr(cli, "fetch_zdr_model_ids", lambda: {"openai/gpt-6-luna"})
+        rc = cli.main(["select", "--level", "1", "--no-validate", "--zdr"])
+        assert rc == 0
+        payload = json.loads(capsys.readouterr().out)
+        assert payload["zdr"] is True
+        assert payload["roster"] == [
+            {
+                "model": "openai/gpt-6-luna",
+                "role": "code_reviewer",
+                "est_cost_usd": 0.00095,
+            }
+        ]
+
+    def test_env_var_triggers_zdr_without_flag(self, monkeypatch, capsys):
+        """OPENROUTER_ZDR alone (no --zdr) enables ZDR mode."""
+        monkeypatch.setenv("OPENROUTER_ZDR", "1")
+        monkeypatch.setattr(cli, "fetch_zdr_model_ids", lambda: {"openai/gpt-6-sol"})
+        rc = cli.main(["select", "--level", "1", "--no-validate"])
+        assert rc == 0
+        payload = json.loads(capsys.readouterr().out)
+        assert payload["zdr"] is True
+
+    def test_no_validate_still_applies_zdr_filter(self, monkeypatch, capsys):
+        """--no-validate skips liveness but ZDR is a policy filter, not liveness.
+
+        Exact list equality (not all(...)): see
+        test_zdr_flag_filters_roster_and_marks_payload for why an empty
+        roster must not vacuously satisfy this assertion.
+        """
+        monkeypatch.setattr(cli, "fetch_zdr_model_ids", lambda: {"openai/gpt-6-luna"})
+        rc = cli.main(["select", "--level", "1", "--no-validate", "--zdr"])
+        assert rc == 0
+        payload = json.loads(capsys.readouterr().out)
+        assert payload["roster"] == [
+            {
+                "model": "openai/gpt-6-luna",
+                "role": "code_reviewer",
+                "est_cost_usd": 0.00095,
+            }
+        ]
+
+    def test_zdr_fetch_failure_with_no_cache_exits_nonzero(self, monkeypatch, capsys):
+        """A failed ZDR fetch with no usable cache is fatal, not silently ignored."""
+
+        def _boom():
+            raise httpx.ConnectError("no network")
+
+        monkeypatch.setattr(cli, "fetch_zdr_model_ids", _boom)
+        with pytest.raises(SystemExit) as exc_info:
+            cli.main(["select", "--level", "1", "--no-validate", "--zdr"])
+        assert exc_info.value.code == 2
+        err = json.loads(capsys.readouterr().err)
+        assert "error" in err
+
+    def test_without_zdr_flag_behavior_unchanged(self, capsys):
+        """Without --zdr or the env var, select emits no zdr key at all."""
+        rc = cli.main(["select", "--level", "1", "--no-validate"])
+        assert rc == 0
+        payload = json.loads(capsys.readouterr().out)
+        assert "zdr" not in payload
+
+
+class TestCliZdrRun:
+    """CLI-level --zdr and OPENROUTER_ZDR wiring for run."""
+
+    def test_roster_file_zdr_true_enables_zdr_without_flag(
+        self, monkeypatch, tmp_path, capsys
+    ):
+        """A roster file carrying "zdr": true turns on ZDR mode with no CLI flag."""
+        monkeypatch.setenv("OPENROUTER_API_KEY", "k")
+        monkeypatch.setenv("OPENROUTER__ZDR_API_KEY", "zdr-k")
+        prompt = tmp_path / "p.txt"
+        prompt.write_text("q?")
+        roster = tmp_path / "roster.json"
+        roster.write_text(
+            json.dumps(
+                {
+                    "zdr": True,
+                    "roster": [
+                        {
+                            "model": "paid/x",
+                            "role": "code_reviewer",
+                            "est_cost_usd": 0.01,
+                        }
+                    ],
+                }
+            )
+        )
+
+        captured = {}
+
+        async def fake_run_consensus(
+            entries, prompt_text, api_key, catalog, transport=None, zdr=False
+        ):
+            captured["zdr"] = zdr
+            return {"results": [], "succeeded": 1, "failed": 0, "total_cost_usd": 0.0}
+
+        monkeypatch.setattr(cli, "run_consensus", fake_run_consensus)
+        rc = cli.main(
+            ["run", "--prompt-file", str(prompt), "--roster-file", str(roster)]
+        )
+        assert rc == 0
+        assert captured["zdr"] is True
+        payload = json.loads(capsys.readouterr().out)
+        assert payload["zdr"] is True
+
+    def test_undeclared_roster_zdr_flag_warns_and_filters_fallbacks(
+        self, monkeypatch, tmp_path, capsys
+    ):
+        """An undeclared roster combined with --zdr gets the same off-ZDR
+        warning and fallback filtering that --models mode already has.
+
+        A roster file without "zdr": true is not pre-restricted to ZDR ids
+        the way a declared roster is assumed to be; without this check an
+        operator combining --roster-file with --zdr would see neither the
+        warning nor a filtered fallback pool, and substitution could burn
+        attempts on models ZDR mode cannot reach.
+        """
+        monkeypatch.setenv("OPENROUTER_API_KEY", "k")
+        monkeypatch.setenv("OPENROUTER__ZDR_API_KEY", "zdr-k")
+        prompt = tmp_path / "p.txt"
+        prompt.write_text("q?")
+        roster = tmp_path / "roster.json"
+        roster.write_text(
+            json.dumps(
+                {
+                    "roster": [
+                        {"model": "paid/off-zdr-model", "role": "code_reviewer"}
+                    ],
+                    "fallbacks": ["blocked/off-zdr", "allowed/on-zdr"],
+                }
+            )
+        )
+        monkeypatch.setattr(cli, "fetch_zdr_model_ids", lambda: {"allowed/on-zdr"})
+
+        retry_models = []
+
+        async def fake_run_consensus(
+            entries, prompt_text, api_key, catalog, transport=None, zdr=False
+        ):
+            model = entries[0]["model"]
+            if model == "paid/off-zdr-model":
+                return {
+                    "results": [
+                        {"model": model, "role": "code_reviewer", "error": "boom"}
+                    ],
+                    "succeeded": 0,
+                    "failed": 1,
+                    "total_cost_usd": 0.0,
+                }
+            retry_models.append(model)
+            return {
+                "results": [{"model": model, "role": "code_reviewer", "error": None}],
+                "succeeded": 1,
+                "failed": 0,
+                "total_cost_usd": 0.0,
+            }
+
+        monkeypatch.setattr(cli, "run_consensus", fake_run_consensus)
+        rc = cli.main(
+            [
+                "run",
+                "--prompt-file",
+                str(prompt),
+                "--roster-file",
+                str(roster),
+                "--zdr",
+            ]
+        )
+        assert rc == 0
+        payload = json.loads(capsys.readouterr().out)
+        assert "paid/off-zdr-model" in payload["warning"]
+        assert retry_models == ["allowed/on-zdr"]
+
+    def test_declared_zdr_roster_skips_the_undeclared_check(
+        self, monkeypatch, tmp_path, capsys
+    ):
+        """A roster carrying "zdr": true keeps current behavior: no off-ZDR
+        re-check and no fallback filtering are applied, because a declared
+        roster is trusted to have been produced already ZDR-restricted.
+        """
+        monkeypatch.setenv("OPENROUTER_API_KEY", "k")
+        monkeypatch.setenv("OPENROUTER__ZDR_API_KEY", "zdr-k")
+        prompt = tmp_path / "p.txt"
+        prompt.write_text("q?")
+        roster = tmp_path / "roster.json"
+        roster.write_text(
+            json.dumps(
+                {
+                    "zdr": True,
+                    "roster": [{"model": "paid/x", "role": "code_reviewer"}],
+                    "fallbacks": ["some/untouched-fallback"],
+                }
+            )
+        )
+        monkeypatch.setattr(cli, "fetch_zdr_model_ids", lambda: {"allowed/on-zdr"})
+
+        retry_models = []
+
+        async def fake_run_consensus(
+            entries, prompt_text, api_key, catalog, transport=None, zdr=False
+        ):
+            model = entries[0]["model"]
+            if model == "paid/x":
+                return {
+                    "results": [
+                        {"model": model, "role": "code_reviewer", "error": "boom"}
+                    ],
+                    "succeeded": 0,
+                    "failed": 1,
+                    "total_cost_usd": 0.0,
+                }
+            retry_models.append(model)
+            return {
+                "results": [{"model": model, "role": "code_reviewer", "error": None}],
+                "succeeded": 1,
+                "failed": 0,
+                "total_cost_usd": 0.0,
+            }
+
+        monkeypatch.setattr(cli, "run_consensus", fake_run_consensus)
+        rc = cli.main(
+            ["run", "--prompt-file", str(prompt), "--roster-file", str(roster)]
+        )
+        assert rc == 0
+        payload = json.loads(capsys.readouterr().out)
+        assert "ZDR-compliant" not in payload.get("warning", "")
+        assert retry_models == ["some/untouched-fallback"]
+
+    def test_undeclared_roster_zdr_fetch_failure_is_best_effort(
+        self, monkeypatch, tmp_path, capsys
+    ):
+        """A ZDR fetch failure on an undeclared roster is best-effort: run
+        still succeeds, a warning notes the check could not run, and the
+        off-ZDR filter and fallbacks are left untouched rather than crashing.
+        """
+        monkeypatch.setenv("OPENROUTER_API_KEY", "k")
+        monkeypatch.setenv("OPENROUTER__ZDR_API_KEY", "zdr-k")
+        prompt = tmp_path / "p.txt"
+        prompt.write_text("q?")
+        roster = tmp_path / "roster.json"
+        roster.write_text(
+            json.dumps(
+                {
+                    "roster": [{"model": "paid/x", "role": "code_reviewer"}],
+                    "fallbacks": ["some/fallback"],
+                }
+            )
+        )
+
+        def _boom():
+            raise httpx.ConnectError("no network")
+
+        monkeypatch.setattr(cli, "fetch_zdr_model_ids", _boom)
+
+        retry_models = []
+
+        async def fake_run_consensus(
+            entries, prompt_text, api_key, catalog, transport=None, zdr=False
+        ):
+            model = entries[0]["model"]
+            if model == "paid/x":
+                return {
+                    "results": [
+                        {"model": model, "role": "code_reviewer", "error": "boom"}
+                    ],
+                    "succeeded": 0,
+                    "failed": 1,
+                    "total_cost_usd": 0.0,
+                }
+            retry_models.append(model)
+            return {
+                "results": [{"model": model, "role": "code_reviewer", "error": None}],
+                "succeeded": 1,
+                "failed": 0,
+                "total_cost_usd": 0.0,
+            }
+
+        monkeypatch.setattr(cli, "run_consensus", fake_run_consensus)
+        rc = cli.main(
+            [
+                "run",
+                "--prompt-file",
+                str(prompt),
+                "--roster-file",
+                str(roster),
+                "--zdr",
+            ]
+        )
+        assert rc == 0
+        payload = json.loads(capsys.readouterr().out)
+        assert "could not verify roster models" in payload["warning"]
+        assert retry_models == ["some/fallback"]
+
+    def test_env_var_enables_zdr_for_run(self, monkeypatch, tmp_path, capsys):
+        """OPENROUTER_ZDR alone enables ZDR mode for run and marks the output."""
+        monkeypatch.setenv("OPENROUTER_API_KEY", "k")
+        monkeypatch.setenv("OPENROUTER__ZDR_API_KEY", "zdr-k")
+        monkeypatch.setenv("OPENROUTER_ZDR", "1")
+        prompt = tmp_path / "p.txt"
+        prompt.write_text("q?")
+
+        captured = {}
+
+        async def fake_run_consensus(
+            entries, prompt_text, api_key, catalog, transport=None, zdr=False
+        ):
+            captured["zdr"] = zdr
+            return {"results": [], "succeeded": 1, "failed": 0, "total_cost_usd": 0.0}
+
+        monkeypatch.setattr(cli, "run_consensus", fake_run_consensus)
+        rc = cli.main(["run", "--prompt-file", str(prompt), "--models", "m/x"])
+        assert rc == 0
+        assert captured["zdr"] is True
+        payload = json.loads(capsys.readouterr().out)
+        assert payload["zdr"] is True
+
+    def test_models_mode_zdr_warns_on_off_zdr_models_but_still_attempts(
+        self, monkeypatch, tmp_path, capsys
+    ):
+        """--models under ZDR merges an off-ZDR warning with the uncatalogued one.
+
+        fake_run_consensus must return an actual result for "not/catalogued"
+        (not an empty results list): the uncatalogued-models warning clause is
+        built from outcome["results"], not from entries, so an empty results
+        list would let this test pass without ever exercising that clause.
+        """
+        monkeypatch.setenv("OPENROUTER_API_KEY", "k")
+        monkeypatch.setenv("OPENROUTER__ZDR_API_KEY", "zdr-k")
+        prompt = tmp_path / "p.txt"
+        prompt.write_text("q?")
+
+        monkeypatch.setattr(cli, "fetch_zdr_model_ids", lambda: {"m/other"})
+
+        async def fake_run_consensus(
+            entries, prompt_text, api_key, catalog, transport=None, zdr=False
+        ):
+            return {
+                "results": [{"model": "not/catalogued", "error": None}],
+                "succeeded": 1,
+                "failed": 0,
+                "total_cost_usd": 0.0,
+            }
+
+        monkeypatch.setattr(cli, "run_consensus", fake_run_consensus)
+        rc = cli.main(
+            [
+                "run",
+                "--prompt-file",
+                str(prompt),
+                "--models",
+                "not/catalogued",
+                "--zdr",
+            ]
+        )
+        assert rc == 0
+        payload = json.loads(capsys.readouterr().out)
+        assert "warning" in payload
+        assert (
+            "models not in curated catalog, cost unknown and not capped: "
+            "not/catalogued" in payload["warning"]
+        )
+        assert (
+            "models without a ZDR-compliant endpoint under ZDR mode "
+            "(attempted anyway): not/catalogued" in payload["warning"]
+        )
 
 
 class TestRunFailover:
@@ -772,7 +1503,9 @@ class TestRunFailover:
     def test_substitution_replaces_failed_entry_and_carries_role(self, monkeypatch):
         """A failed entry is re-run on the next fallback with the same role."""
 
-        async def fake_run(entries, prompt, api_key, catalog, transport=None):
+        async def fake_run(
+            entries, prompt, api_key, catalog, transport=None, zdr=False
+        ):
             results = [
                 {
                     "model": e["model"],
@@ -844,7 +1577,9 @@ class TestRunFailover:
     def test_partial_substitution_when_pool_exhausted(self, monkeypatch):
         """With fewer fallbacks than failures, only the available swaps happen."""
 
-        async def fake_run(entries, prompt, api_key, catalog, transport=None):
+        async def fake_run(
+            entries, prompt, api_key, catalog, transport=None, zdr=False
+        ):
             results = [
                 {
                     "model": e["model"],
@@ -920,7 +1655,7 @@ class TestGatherIsolation:
     def test_unexpected_exception_does_not_cancel_panel(self, monkeypatch):
         """One model raising an unexpected error becomes its own error record."""
 
-        async def flaky_call(client, entry, prompt, api_key, catalog):
+        async def flaky_call(client, entry, prompt, api_key, catalog, zdr=False):
             if entry["model"] == "boom/x":
                 raise RuntimeError("unexpected boom")
             return {
@@ -1134,7 +1869,9 @@ class TestSubstitutionCostCap:
             )
         )
 
-        async def fake_run(entries, prompt_text, api_key, catalog, transport=None):
+        async def fake_run(
+            entries, prompt_text, api_key, catalog, transport=None, zdr=False
+        ):
             return {
                 "results": [
                     {
@@ -1180,3 +1917,570 @@ class TestRosterLevelGuard:
         }
         with pytest.raises(ValueError, match="no roles configured for level 3"):
             cli.select_roster(fake_dataset(), bands, roles, 3, "code_review")
+
+
+class TestLevelDefault:
+    """select/estimate default to level 2 when --level is omitted."""
+
+    def test_select_parse_args_no_level_defaults_to_two(self):
+        """parse_args(["select"]) defaults to level 2 with no explicit flag."""
+        args = cli.build_parser().parse_args(["select"])
+        assert args.level == 2
+
+    def test_estimate_parse_args_no_level_defaults_to_two(self):
+        """parse_args(["estimate"]) defaults to level 2 with no explicit flag."""
+        args = cli.build_parser().parse_args(["estimate"])
+        assert args.level == 2
+
+    def test_run_parse_args_no_level_stays_none(self):
+        """run's --level has no default; it stays optional as-is."""
+        args = cli.build_parser().parse_args(["run", "--prompt-file", "p.txt"])
+        assert args.level is None
+
+    def test_main_select_no_level_emits_level2_roster(self, capsys):
+        """select with no --level emits the level-2 roster (6 entries)."""
+        rc = cli.main(["select", "--no-validate"])
+        assert rc == 0
+        payload = json.loads(capsys.readouterr().out)
+        assert payload["level"] == 2
+        assert len(payload["roster"]) == 6
+        assert payload["cap_usd"] == 1.00
+
+    def test_main_estimate_no_level_defaults_to_two(self, capsys):
+        """estimate with no --level defaults to level 2."""
+        rc = cli.main(["estimate"])
+        assert rc == 0
+        payload = json.loads(capsys.readouterr().out)
+        assert payload["level"] == 2
+
+
+class TestDotenvLoader:
+    """Stdlib-only .env loader: parsing, allowlist, and non-override semantics.
+
+    Exercised only against synthetic tmp_path fixtures, never against a real
+    .env file, per the security constraint that this loader must not be
+    verified by reading any real .env on disk.
+    """
+
+    def test_parses_plain_key_value(self):
+        assert cli._parse_dotenv_line("OPENROUTER_API_KEY=abc123") == (
+            "OPENROUTER_API_KEY",
+            "abc123",
+        )
+
+    def test_skips_blank_and_comment_lines(self):
+        assert cli._parse_dotenv_line("") is None
+        assert cli._parse_dotenv_line("   ") is None
+        assert cli._parse_dotenv_line("# a comment") is None
+
+    def test_strips_export_prefix(self):
+        assert cli._parse_dotenv_line("export OPENROUTER_API_KEY=abc123") == (
+            "OPENROUTER_API_KEY",
+            "abc123",
+        )
+
+    def test_strips_matching_double_quotes(self):
+        raw = 'OPENROUTER_API_KEY="abc 123"'  # pragma: allowlist secret
+        assert cli._parse_dotenv_line(raw) == ("OPENROUTER_API_KEY", "abc 123")
+
+    def test_strips_matching_single_quotes(self):
+        raw = "OPENROUTER_API_KEY='abc123'"  # pragma: allowlist secret
+        assert cli._parse_dotenv_line(raw) == ("OPENROUTER_API_KEY", "abc123")
+
+    def test_no_equals_sign_returns_none(self):
+        assert cli._parse_dotenv_line("not a valid line") is None
+
+    def test_load_env_file_allowlist_only(self, tmp_path):
+        """Only the three allowlisted names are pulled from the file."""
+        env_file = tmp_path / ".env"
+        env_file.write_text(
+            "OPENROUTER_API_KEY=std-key\n"
+            "OPENROUTER__ZDR_API_KEY=zdr-key\n"
+            "OPENROUTER_ZDR=1\n"
+            "SOME_OTHER_SECRET=nope\n"
+        )
+        cli._load_env_file(env_file)
+        env = os.environ
+        assert env["OPENROUTER_API_KEY"] == "std-key"  # pragma: allowlist secret
+        assert env["OPENROUTER__ZDR_API_KEY"] == "zdr-key"  # pragma: allowlist secret
+        assert env["OPENROUTER_ZDR"] == "1"
+        assert "SOME_OTHER_SECRET" not in env
+
+    def test_load_env_file_never_overrides_existing_env(self, monkeypatch, tmp_path):
+        """An already-set env var is left untouched by the loader."""
+        monkeypatch.setenv("OPENROUTER_API_KEY", "shell-key")
+        env_file = tmp_path / ".env"
+        env_file.write_text("OPENROUTER_API_KEY=dotenv-key\n")
+        cli._load_env_file(env_file)
+        env = os.environ["OPENROUTER_API_KEY"]
+        assert env == "shell-key"  # pragma: allowlist secret
+
+    def test_load_env_file_missing_file_is_a_noop(self, tmp_path):
+        """A nonexistent .env path does not raise."""
+        cli._load_env_file(tmp_path / "does-not-exist" / ".env")
+        assert "OPENROUTER_API_KEY" not in os.environ
+
+    def test_owning_repo_root_lands_on_repo_root_for_matching_depth(
+        self, monkeypatch, tmp_path
+    ):
+        """A synthetic tree with the marker directory resolves to its repo root."""
+        fake_script = (
+            tmp_path
+            / "repo"
+            / ".claude"
+            / "skills"
+            / "panel"
+            / "scripts"
+            / "consensus_cli.py"
+        )
+        fake_script.parent.mkdir(parents=True)
+        fake_script.write_text("# placeholder\n")
+        monkeypatch.setattr(cli, "__file__", str(fake_script))
+        assert cli._owning_repo_root() == (tmp_path / "repo").resolve()
+
+    def test_owning_repo_root_rejects_missing_marker(self, monkeypatch, tmp_path):
+        """The same script depth without the .claude/skills/panel marker returns None."""
+        fake_script = (
+            tmp_path / "repo" / "some" / "other" / "nested" / "scripts" / "x.py"
+        )
+        fake_script.parent.mkdir(parents=True)
+        fake_script.write_text("# placeholder\n")
+        monkeypatch.setattr(cli, "__file__", str(fake_script))
+        assert cli._owning_repo_root() is None
+
+    def test_owning_repo_root_guards_shallow_path(self, monkeypatch):
+        """A script path with 4 or fewer parents returns None instead of raising."""
+        monkeypatch.setattr(cli, "__file__", "/a/b/x.py")
+        assert cli._owning_repo_root() is None
+
+    def test_load_dotenv_keys_never_reads_cwd(self, monkeypatch, tmp_path):
+        """cwd's .env is never read, even with no owning repo and a key present there.
+
+        This is a global skill installed into arbitrary project roots; trusting
+        Path.cwd()/.env would let an unrelated project's .env silently supply a
+        different account's key. #VERIFY: OPENROUTER_API_KEY stays absent even
+        though cwd/.env defines it, because _load_dotenv_keys no longer
+        consults Path.cwd() at all.
+        """
+        cwd_dir = tmp_path / "cwd"
+        cwd_dir.mkdir()
+        (cwd_dir / ".env").write_text("OPENROUTER_API_KEY=from-cwd\n")
+        monkeypatch.setattr(cli.Path, "cwd", staticmethod(lambda: cwd_dir))
+        monkeypatch.setattr(cli, "_owning_repo_root", lambda: None)
+        _REAL_LOAD_DOTENV_KEYS()
+        assert "OPENROUTER_API_KEY" not in os.environ
+
+    def test_load_dotenv_keys_reads_owning_repo_root_only(self, monkeypatch, tmp_path):
+        """Only the (mocked) owning repo root's .env is loaded; cwd is ignored."""
+        cwd_dir = tmp_path / "cwd"
+        cwd_dir.mkdir()
+        (cwd_dir / ".env").write_text("OPENROUTER_API_KEY=from-cwd\n")
+        repo_dir = tmp_path / "repo"
+        repo_dir.mkdir()
+        (repo_dir / ".env").write_text(
+            "OPENROUTER_API_KEY=from-repo-root\n"  # pragma: allowlist secret
+            "OPENROUTER__ZDR_API_KEY=zdr-from-repo\n"  # pragma: allowlist secret
+        )
+        monkeypatch.setattr(cli.Path, "cwd", staticmethod(lambda: cwd_dir))
+        monkeypatch.setattr(cli, "_owning_repo_root", lambda: repo_dir)
+        _REAL_LOAD_DOTENV_KEYS()
+        env = os.environ
+        assert env["OPENROUTER_API_KEY"] == "from-repo-root"  # pragma: allowlist secret
+        zdr_key = env["OPENROUTER__ZDR_API_KEY"]
+        assert zdr_key == "zdr-from-repo"  # pragma: allowlist secret
+
+    def test_load_dotenv_keys_skips_when_no_owning_repo(self, monkeypatch, tmp_path):
+        """No owning repo root (marker absent) means the loader is a no-op."""
+        monkeypatch.setattr(cli, "_owning_repo_root", lambda: None)
+        _REAL_LOAD_DOTENV_KEYS()
+        assert "OPENROUTER_API_KEY" not in os.environ
+        assert "OPENROUTER__ZDR_API_KEY" not in os.environ
+
+
+class TestDualApiKeySelection:
+    """Key selection: standard key for non-ZDR runs, ZDR key with no fallback under ZDR."""
+
+    def test_select_api_key_non_zdr_uses_standard_key(self, monkeypatch):
+        monkeypatch.setenv("OPENROUTER_API_KEY", "std-key")
+        assert cli._select_api_key(zdr_mode=False) == "std-key"
+
+    def test_select_api_key_zdr_uses_zdr_key(self, monkeypatch):
+        monkeypatch.setenv("OPENROUTER__ZDR_API_KEY", "zdr-key")
+        assert cli._select_api_key(zdr_mode=True) == "zdr-key"
+
+    def test_select_api_key_zdr_mode_never_falls_back_to_standard_key(
+        self, monkeypatch
+    ):
+        """Setting only the standard key must not satisfy a ZDR-mode request."""
+        monkeypatch.setenv("OPENROUTER_API_KEY", "std-key")
+        assert cli._select_api_key(zdr_mode=True) is None
+
+    def test_select_api_key_missing_returns_none(self):
+        assert cli._select_api_key(zdr_mode=False) is None
+        assert cli._select_api_key(zdr_mode=True) is None
+
+    def test_run_zdr_flag_missing_zdr_key_exits_1_naming_variable(
+        self, monkeypatch, tmp_path, capsys
+    ):
+        """--zdr with only the standard key set fails fast, naming the ZDR var."""
+        monkeypatch.setenv("OPENROUTER_API_KEY", "std-key")
+        prompt = tmp_path / "p.txt"
+        prompt.write_text("q?")
+        rc = cli.main(["run", "--prompt-file", str(prompt), "--models", "m/x", "--zdr"])
+        assert rc == 1
+        err = capsys.readouterr().err
+        assert "OPENROUTER__ZDR_API_KEY" in err
+        assert "std-key" not in err
+
+    def test_run_zdr_env_var_missing_zdr_key_exits_1(
+        self, monkeypatch, tmp_path, capsys
+    ):
+        """OPENROUTER_ZDR=1 with only the standard key set also fails fast."""
+        monkeypatch.setenv("OPENROUTER_API_KEY", "std-key")
+        monkeypatch.setenv("OPENROUTER_ZDR", "1")
+        prompt = tmp_path / "p.txt"
+        prompt.write_text("q?")
+        rc = cli.main(["run", "--prompt-file", str(prompt), "--models", "m/x"])
+        assert rc == 1
+        assert "OPENROUTER__ZDR_API_KEY" in capsys.readouterr().err
+
+    def test_run_zdr_roster_flag_missing_zdr_key_exits_1(
+        self, monkeypatch, tmp_path, capsys
+    ):
+        """A roster file's "zdr": true also requires the ZDR key, no fallback."""
+        monkeypatch.setenv("OPENROUTER_API_KEY", "std-key")
+        prompt = tmp_path / "p.txt"
+        prompt.write_text("q?")
+        roster = tmp_path / "roster.json"
+        roster.write_text(
+            json.dumps(
+                {
+                    "zdr": True,
+                    "roster": [
+                        {
+                            "model": "paid/x",
+                            "role": "code_reviewer",
+                            "est_cost_usd": 0.01,
+                        }
+                    ],
+                }
+            )
+        )
+        rc = cli.main(
+            ["run", "--prompt-file", str(prompt), "--roster-file", str(roster)]
+        )
+        assert rc == 1
+        assert "OPENROUTER__ZDR_API_KEY" in capsys.readouterr().err
+
+    def test_run_zdr_uses_zdr_key_not_standard_key(self, monkeypatch, tmp_path):
+        """A successful --zdr run is fed the ZDR key, never the standard one."""
+        monkeypatch.setenv("OPENROUTER_API_KEY", "std-key")
+        monkeypatch.setenv("OPENROUTER__ZDR_API_KEY", "zdr-key")
+        monkeypatch.setattr(cli, "fetch_zdr_model_ids", lambda: {"m/x"})
+        prompt = tmp_path / "p.txt"
+        prompt.write_text("q?")
+
+        captured = {}
+
+        async def fake_run_consensus(
+            entries, prompt_text, api_key, catalog, transport=None, zdr=False
+        ):
+            captured["api_key"] = api_key
+            return {"results": [], "succeeded": 1, "failed": 0, "total_cost_usd": 0.0}
+
+        monkeypatch.setattr(cli, "run_consensus", fake_run_consensus)
+        rc = cli.main(["run", "--prompt-file", str(prompt), "--models", "m/x", "--zdr"])
+        assert rc == 0
+        assert captured["api_key"] == "zdr-key"  # pragma: allowlist secret
+
+    def test_run_non_zdr_still_uses_standard_key(self, monkeypatch, tmp_path):
+        """A non-ZDR run is fed the standard key even when a ZDR key also exists."""
+        monkeypatch.setenv("OPENROUTER_API_KEY", "std-key")
+        monkeypatch.setenv("OPENROUTER__ZDR_API_KEY", "zdr-key")
+        prompt = tmp_path / "p.txt"
+        prompt.write_text("q?")
+
+        captured = {}
+
+        async def fake_run_consensus(
+            entries, prompt_text, api_key, catalog, transport=None, zdr=False
+        ):
+            captured["api_key"] = api_key
+            return {"results": [], "succeeded": 1, "failed": 0, "total_cost_usd": 0.0}
+
+        monkeypatch.setattr(cli, "run_consensus", fake_run_consensus)
+        rc = cli.main(["run", "--prompt-file", str(prompt), "--models", "m/x"])
+        assert rc == 0
+        assert captured["api_key"] == "std-key"  # pragma: allowlist secret
+
+    def test_run_loads_dotenv_keys_from_owning_repo_root(self, monkeypatch, tmp_path):
+        """main() loads a key from the (mocked) owning repo root .env before run.
+
+        cwd is deliberately left unset here (no cli.Path.cwd patch, no cwd
+        .env file) to confirm the key comes from the owning repo root, not
+        from any cwd fallback (there is none any more).
+        """
+        monkeypatch.setattr(cli, "_load_dotenv_keys", _REAL_LOAD_DOTENV_KEYS)
+        repo_dir = tmp_path / "repo"
+        repo_dir.mkdir()
+        (repo_dir / ".env").write_text("OPENROUTER_API_KEY=from-dotenv\n")
+        monkeypatch.setattr(cli, "_owning_repo_root", lambda: repo_dir)
+        prompt = tmp_path / "p.txt"
+        prompt.write_text("q?")
+
+        captured = {}
+
+        async def fake_run_consensus(
+            entries, prompt_text, api_key, catalog, transport=None, zdr=False
+        ):
+            captured["api_key"] = api_key
+            return {"results": [], "succeeded": 1, "failed": 0, "total_cost_usd": 0.0}
+
+        monkeypatch.setattr(cli, "run_consensus", fake_run_consensus)
+        rc = cli.main(["run", "--prompt-file", str(prompt), "--models", "m/x"])
+        assert rc == 0
+        assert captured["api_key"] == "from-dotenv"  # pragma: allowlist secret
+
+
+class TestMainLoadsDotenvForEveryCommand:
+    """main() loads dotenv keys once, up front, so select/estimate benefit too."""
+
+    def test_main_select_honors_zdr_flag_from_repo_env(
+        self, monkeypatch, tmp_path, capsys
+    ):
+        """select with no --zdr flag still honors OPENROUTER_ZDR from the repo .env."""
+        monkeypatch.setattr(cli, "_load_dotenv_keys", _REAL_LOAD_DOTENV_KEYS)
+        repo_dir = tmp_path / "repo"
+        repo_dir.mkdir()
+        (repo_dir / ".env").write_text("OPENROUTER_ZDR=1\n")
+        monkeypatch.setattr(cli, "_owning_repo_root", lambda: repo_dir)
+        monkeypatch.setattr(cli, "fetch_zdr_model_ids", lambda: {"m/x"})
+        rc = cli.main(["select", "--no-validate"])
+        assert rc == 0
+        payload = json.loads(capsys.readouterr().out)
+        assert payload["zdr"] is True
+        # None of the curated catalog matches the stubbed ZDR set, so the
+        # roster comes back filtered down to nothing: proof the flag sourced
+        # from the repo .env actually drove selection, not just parsing.
+        assert payload["roster"] == []
+
+
+class TestApiKeyHygiene:
+    """_select_api_key rejects malformed keys; call_model redacts leaked keys."""
+
+    def test_select_api_key_rejects_key_with_control_character(self, monkeypatch):
+        """A key containing a control character (e.g. vertical tab) is rejected."""
+        monkeypatch.setenv("OPENROUTER_API_KEY", "sk-or-FAKE\x0bTAIL")
+        assert cli._select_api_key(zdr_mode=False) is None
+
+    def test_select_api_key_rejects_key_with_embedded_space(self, monkeypatch):
+        """A key containing plain whitespace is rejected."""
+        monkeypatch.setenv("OPENROUTER_API_KEY", "sk-or FAKE")
+        assert cli._select_api_key(zdr_mode=False) is None
+
+    def test_select_api_key_rejects_non_ascii_key(self, monkeypatch):
+        """A key containing a non-ASCII character is rejected."""
+        monkeypatch.setenv("OPENROUTER_API_KEY", "sk-or-faké")
+        assert cli._select_api_key(zdr_mode=False) is None
+
+    def test_select_api_key_accepts_a_clean_key(self, monkeypatch):
+        """A plain ASCII, printable, whitespace-free key is accepted unchanged."""
+        monkeypatch.setenv("OPENROUTER_API_KEY", "sk-or-clean123")
+        assert cli._select_api_key(zdr_mode=False) == "sk-or-clean123"
+
+    def test_run_rejects_hygiene_failing_key_naming_variable_only(
+        self, monkeypatch, tmp_path, capsys
+    ):
+        """A malformed key exits 1 with a distinct 'malformed' message, value never printed."""
+        bad_key = "sk-or-FAKE\x0bTAIL"
+        monkeypatch.setenv("OPENROUTER_API_KEY", bad_key)
+        prompt = tmp_path / "p.txt"
+        prompt.write_text("q?")
+        rc = cli.main(["run", "--prompt-file", str(prompt), "--models", "m/x"])
+        assert rc == 1
+        err = capsys.readouterr().err
+        assert "OPENROUTER_API_KEY" in err
+        assert "is set but malformed" in err
+        assert bad_key not in err
+        assert "FAKE" not in err
+
+    def test_run_reports_unset_key_distinctly_from_malformed(
+        self, monkeypatch, tmp_path, capsys
+    ):
+        """An unset key exits 1 with 'is not set', distinct from the malformed message.
+
+        _select_api_key returns None for both an absent variable and a
+        hygiene-rejected one, so _cmd_run's error message can only tell
+        them apart by checking os.environ itself; this confirms it does,
+        so an operator sees "unset" rather than a misleading "malformed"
+        message when the variable was never exported at all.
+        """
+        monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
+        prompt = tmp_path / "p.txt"
+        prompt.write_text("q?")
+        rc = cli.main(["run", "--prompt-file", str(prompt), "--models", "m/x"])
+        assert rc == 1
+        err = capsys.readouterr().err
+        assert "OPENROUTER_API_KEY is not set" in err
+        assert "malformed" not in err
+
+    def test_call_model_redacts_api_key_from_http_error(self, monkeypatch):
+        """A 4xx body that echoes the bearer token is redacted before storage."""
+        api_key = "sk-or-SECRET123"  # pragma: allowlist secret
+
+        def handler(request):
+            return httpx.Response(
+                400, text=f"bad request, Authorization: Bearer {api_key}"
+            )
+
+        async def run():
+            async with httpx.AsyncClient(
+                transport=httpx.MockTransport(handler)
+            ) as client:
+                return await cli.call_model(
+                    client,
+                    {"model": "m/x", "role": None, "system_prompt": None},
+                    "q?",
+                    api_key,
+                    {},
+                )
+
+        record = asyncio.run(run())
+        assert api_key not in record["error"]
+        assert "[REDACTED: error text contained the API key]" in record["error"]
+
+    def test_call_model_redacts_api_key_from_exception_message(self, monkeypatch):
+        """An exception message that happens to include the key is redacted."""
+        monkeypatch.setattr(cli, "RETRY_BACKOFF_SECONDS", 0)
+        api_key = "sk-or-SECRET456"  # pragma: allowlist secret
+
+        def handler(request):
+            raise httpx.ConnectError(f"connection reset, key={api_key}")
+
+        async def run():
+            async with httpx.AsyncClient(
+                transport=httpx.MockTransport(handler)
+            ) as client:
+                return await cli.call_model(
+                    client,
+                    {"model": "m/x", "role": None, "system_prompt": None},
+                    "q?",
+                    api_key,
+                    {},
+                )
+
+        record = asyncio.run(run())
+        assert api_key not in record["error"]
+        assert "[REDACTED: error text contained the API key]" in record["error"]
+
+
+class TestDotenvParserEdgeCases:
+    """Edge cases in _parse_dotenv_line beyond basic quote/export handling."""
+
+    def test_empty_value_is_skipped(self):
+        """A bare KEY= with nothing after the = does not resolve as real data."""
+        assert cli._parse_dotenv_line("OPENROUTER_API_KEY=") is None
+
+    def test_unquoted_trailing_comment_is_stripped(self):
+        """An unquoted value's trailing ' #comment' is not part of the value."""
+        assert cli._parse_dotenv_line("OPENROUTER_API_KEY=abc123 # a comment") == (
+            "OPENROUTER_API_KEY",
+            "abc123",
+        )
+
+    def test_quoted_value_with_trailing_comment_is_stripped(self):
+        """A quoted value with a trailing comment drops both quotes and comment."""
+        raw = 'OPENROUTER_API_KEY="abc 123" # a comment'  # pragma: allowlist secret
+        assert cli._parse_dotenv_line(raw) == ("OPENROUTER_API_KEY", "abc 123")
+
+    def test_export_prefix_accepts_tab_whitespace(self):
+        """export followed by a tab (not just a single literal space) is stripped."""
+        raw = "export\tOPENROUTER_API_KEY=abc123"  # pragma: allowlist secret
+        assert cli._parse_dotenv_line(raw) == (
+            "OPENROUTER_API_KEY",
+            "abc123",
+        )
+
+    def test_export_prefix_accepts_multiple_spaces(self):
+        """export followed by several spaces is stripped."""
+        assert cli._parse_dotenv_line("export   OPENROUTER_API_KEY=abc123") == (
+            "OPENROUTER_API_KEY",
+            "abc123",
+        )
+
+    def test_export_without_trailing_whitespace_is_not_stripped(self):
+        """A key literally named 'exportSOMETHING' is not mistaken for the prefix."""
+        raw = "exportOPENROUTER_API_KEY=abc123"  # pragma: allowlist secret
+        assert cli._parse_dotenv_line(raw) == (
+            "exportOPENROUTER_API_KEY",
+            "abc123",
+        )
+
+
+class TestZdrStaleCacheSurfacing:
+    """A stale (>7 day) ZDR cache used as a fallback is surfaced, not silently trusted."""
+
+    def test_fetch_zdr_ids_or_exit_flags_cache_older_than_seven_days(
+        self, monkeypatch, tmp_path
+    ):
+        """A ZDR cache file older than 7 days is reported as stale."""
+        cache = tmp_path / "zdr.json"
+        cache.write_text(json.dumps(["econ/a"]))
+        eight_days_ago = time.time() - (8 * 24 * 3600)
+        os.utime(cache, (eight_days_ago, eight_days_ago))
+        monkeypatch.setattr(cli, "ZDR_CACHE_PATH", cache)
+        monkeypatch.setattr(cli, "fetch_zdr_model_ids", lambda: {"econ/a"})
+        ids, cache_stale = cli._fetch_zdr_ids_or_exit()
+        assert ids == {"econ/a"}
+        assert cache_stale is True
+
+    def test_fetch_zdr_ids_or_exit_fresh_cache_not_flagged(self, monkeypatch, tmp_path):
+        """A ZDR cache written moments ago is not flagged as stale."""
+        cache = tmp_path / "zdr.json"
+        cache.write_text(json.dumps(["econ/a"]))
+        monkeypatch.setattr(cli, "ZDR_CACHE_PATH", cache)
+        monkeypatch.setattr(cli, "fetch_zdr_model_ids", lambda: {"econ/a"})
+        ids, cache_stale = cli._fetch_zdr_ids_or_exit()
+        assert ids == {"econ/a"}
+        assert cache_stale is False
+
+    def test_fetch_zdr_ids_or_exit_missing_cache_not_flagged(
+        self, monkeypatch, tmp_path
+    ):
+        """No cache file at all (fresh live fetch, first run ever) is not stale."""
+        cache = tmp_path / "does-not-exist.json"
+        monkeypatch.setattr(cli, "ZDR_CACHE_PATH", cache)
+        monkeypatch.setattr(cli, "fetch_zdr_model_ids", lambda: {"econ/a"})
+        ids, cache_stale = cli._fetch_zdr_ids_or_exit()
+        assert ids == {"econ/a"}
+        assert cache_stale is False
+
+    def test_main_select_zdr_surfaces_stale_cache_warning(
+        self, monkeypatch, tmp_path, capsys
+    ):
+        """select --zdr adds zdr_cache_stale + warning when the fallback cache is old."""
+        cache = tmp_path / "zdr.json"
+        cache.write_text(json.dumps(["econ-a", "econ-b", "econ-c"]))
+        eight_days_ago = time.time() - (8 * 24 * 3600)
+        os.utime(cache, (eight_days_ago, eight_days_ago))
+        monkeypatch.setattr(cli, "ZDR_CACHE_PATH", cache)
+        monkeypatch.setattr(
+            cli, "fetch_zdr_model_ids", lambda: {"econ-a", "econ-b", "econ-c"}
+        )
+        rc = cli.main(["select", "--zdr", "--no-validate"])
+        assert rc == 0
+        payload = json.loads(capsys.readouterr().out)
+        assert payload["zdr_cache_stale"] is True
+        assert "warning" in payload
+        assert payload["warning"]
+
+    def test_main_select_zdr_fresh_cache_omits_stale_fields(
+        self, monkeypatch, tmp_path, capsys
+    ):
+        """A fresh ZDR fetch never adds zdr_cache_stale or warning to the payload."""
+        monkeypatch.setattr(cli, "fetch_zdr_model_ids", lambda: {"econ-a"})
+        rc = cli.main(["select", "--zdr", "--no-validate"])
+        assert rc == 0
+        payload = json.loads(capsys.readouterr().out)
+        assert "zdr_cache_stale" not in payload
+        assert "warning" not in payload

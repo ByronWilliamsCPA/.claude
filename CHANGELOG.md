@@ -224,6 +224,36 @@
   as a supplemental secrets gate. Snyk MCP Server remains Tier 2 (not
   always-loaded) per `standards/mcp-minimal-bloat.md`.
 
+* feat(panel): add ZDR (zero-data-retention) mode to the panel skill engine.
+  `consensus_cli.py` gains `--zdr` (and `OPENROUTER_ZDR=1` to force it for
+  every run) on `select`, `estimate`, and `run`; under ZDR the roster is
+  filtered to models with a live ZDR-compliant endpoint (`GET
+  /endpoints/zdr`, 24h disk-cached like the existing live catalog cache),
+  with free models that lack a ZDR endpoint dropping out and the existing
+  free-to-economy fallback filling the gap. A stale (older than 7 days) ZDR
+  cache used as a fetch-failure fallback is surfaced via
+  `zdr_cache_stale: true` plus a `warning` string in the `select`/`estimate`
+  payload rather than silently trusted. Adds a separate, more restrictive
+  `OPENROUTER__ZDR_API_KEY` env var with no fallback to the standard
+  `OPENROUTER_API_KEY` in either direction: a ZDR-mode run that only has the
+  standard key set fails closed (exit 1, naming only the missing variable
+  name, never a key value). Both keys, and `OPENROUTER_ZDR`, can also live in
+  a gitignored `.env` at the repo root that owns this skill; a stdlib-only
+  loader (`_load_dotenv_keys`, no third-party dotenv dependency) reads it
+  once at CLI startup, gated on a `.claude/skills/panel` marker directory so
+  a symlinked or checked-out install is required (an arbitrary `Path.cwd()`
+  is never read, since this is a global skill installable into any project
+  root). `_select_api_key` rejects an empty, whitespace-containing, or
+  non-printable/non-ASCII key value the same way it rejects a missing one;
+  `call_model` redacts any occurrence of the resolved API key from stored
+  error strings as defense in depth. `select`/`estimate --level` now default
+  to 2 instead of requiring an explicit value, matching the skill's own
+  documented ambiguous-request default. Updates `SKILL.md` accordingly:
+  corrects the level-2 cost estimate to about $0.06 per run, corrects the
+  ZDR free-model claim to "models without a ZDR endpoint drop out" rather
+  than "all free models are excluded", and clarifies that `refresh` takes no
+  `--level`.
+
 ### Security
 
 * fix(compliance): validate the master-log renderer CLI `--jsonl`/`--md` overrides
