@@ -717,9 +717,11 @@ async def call_model(
             ) and attempt < MAX_RETRIES:
                 await asyncio.sleep(RETRY_BACKOFF_SECONDS * (2**attempt))
                 continue
-            record["error"] = _redact(
-                f"HTTP {resp.status_code}: {resp.text[:200]}", api_key
-            )
+            # Redact over the whole body before truncating: a key straddling
+            # the 200-character cut would otherwise survive as a prefix that
+            # _redact (which matches the complete key) cannot see.
+            prefix = f"HTTP {resp.status_code}: "
+            record["error"] = _redact(prefix + resp.text, api_key)[: len(prefix) + 200]
             return record
         except httpx.HTTPError as exc:
             if attempt < MAX_RETRIES:
