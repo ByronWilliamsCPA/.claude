@@ -137,9 +137,10 @@
       ]
     },
     {
-      "description": "Python version updates - manual review required",
+      "description": "Python version updates - manual review required. requires-python is the pep621 dep type for the project's supported-version floor; bumping it drops older interpreters, so it is never auto-proposed.",
       "matchDepTypes": [
-        "python"
+        "python",
+        "requires-python"
       ],
       "enabled": false,
       "labels": [
