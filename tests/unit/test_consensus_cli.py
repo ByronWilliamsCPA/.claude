@@ -2429,6 +2429,29 @@ class TestApiKeyHygiene:
         assert api_key not in record["error"]
         assert "[REDACTED: error text contained the API key]" in record["error"]
 
+    def test_call_model_redacts_key_straddling_error_truncation(self):
+        """A key that crosses the 200-character cut is redacted, not leaked as a prefix."""
+        api_key = "sk-or-SECRET789"  # pragma: allowlist secret
+
+        def handler(request):
+            return httpx.Response(400, text="x" * 190 + api_key)
+
+        async def run():
+            async with httpx.AsyncClient(
+                transport=httpx.MockTransport(handler)
+            ) as client:
+                return await cli.call_model(
+                    client,
+                    {"model": "m/x", "role": None, "system_prompt": None},
+                    "q?",
+                    api_key,
+                    {},
+                )
+
+        record = asyncio.run(run())
+        assert api_key[:10] not in record["error"]
+        assert "[REDACTED: error text contained the API key]" in record["error"]
+
     def test_call_model_redacts_api_key_from_exception_message(self, monkeypatch):
         """An exception message that happens to include the key is redacted."""
         monkeypatch.setattr(cli, "RETRY_BACKOFF_SECONDS", 0)
