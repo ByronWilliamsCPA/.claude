@@ -922,11 +922,36 @@ def _read_json_file(path: str, what: str) -> object:
         raise SystemExit(2) from exc
 
 
-def build_entries(args: argparse.Namespace, roles_data: dict) -> list[dict]:
-    """Resolve run arguments into model entries with system prompts."""
+# Sentinel distinguishing "no snapshot supplied" from a roster file whose JSON
+# content is literally null (which parses to None and must not trigger a re-read).
+_NO_SNAPSHOT: object = object()
+
+
+def build_entries(
+    args: argparse.Namespace,
+    roles_data: dict,
+    roster: object = _NO_SNAPSHOT,
+) -> list[dict]:
+    """Resolve run arguments into model entries with system prompts.
+
+    Args:
+        args: Parsed CLI arguments (roster_file, models, roles_file, ...).
+        roles_data: Role definitions used to build system prompts.
+        roster: Already-parsed roster payload for ``args.roster_file``. When
+            supplied (anything but the default sentinel), the file is not read
+            again, so a caller that also needs the payload (fallbacks, "zdr"
+            declaration) works from one snapshot.
+
+    Returns:
+        Model entries, each with model, role, and system_prompt keys.
+
+    Raises:
+        SystemExit: With code 2 when an input file is unreadable or malformed.
+    """
     entries: list[dict] = []
     if args.roster_file:
-        roster = _read_json_file(args.roster_file, "roster file")
+        if roster is _NO_SNAPSHOT:
+            roster = _read_json_file(args.roster_file, "roster file")
         if isinstance(roster, dict):
             items = roster.get("roster")
         elif isinstance(roster, list):
@@ -1419,15 +1444,19 @@ def _cmd_run(
             stream=sys.stderr,
         )
         return 2
-    entries = build_entries(args, roles)
+    # #CRITICAL: the roster file is read exactly once; entries, fallbacks and the
+    # "zdr" declaration all derive from this single snapshot so a file changed
+    # mid-run cannot split the ZDR declaration from the entries executed.
+    # #VERIFY: test_roster_file_read_once_per_run counts reads of the roster path.
+    roster_payload = (
+        _read_json_file(args.roster_file, "roster file") if args.roster_file else None
+    )
+    entries = build_entries(args, roles, roster=roster_payload)
     catalog = {m.name: m for m in models}
     zdr_mode = _zdr_mode_enabled(args)
 
-    # Read fallbacks from the roster file (second read; double-read is acceptable per
-    # spec: simplest route over refactoring build_entries to accept a pre-loaded obj).
     roster_declared_zdr = False
     if args.roster_file:
-        roster_payload = _read_json_file(args.roster_file, "roster file")
         fallbacks: list[str] = (
             roster_payload.get("fallbacks", [])
             if isinstance(roster_payload, dict)
