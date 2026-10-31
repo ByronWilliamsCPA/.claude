@@ -1220,6 +1220,86 @@ class TestCliZdrRun:
         payload = json.loads(capsys.readouterr().out)
         assert payload["zdr"] is True
 
+    def test_roster_file_read_once_per_run(self, monkeypatch, tmp_path, capsys):
+        """run reads the roster file exactly once, however many consumers it has."""
+        monkeypatch.setenv("OPENROUTER_API_KEY", "k")
+        monkeypatch.setenv("OPENROUTER__ZDR_API_KEY", "zdr-k")
+        prompt = tmp_path / "p.txt"
+        prompt.write_text("q?")
+        roster = tmp_path / "roster.json"
+        roster.write_text(
+            json.dumps({"zdr": True, "roster": [{"model": "paid/x", "role": None}]})
+        )
+
+        reads: list[str] = []
+        real_read = cli._read_json_file
+
+        def counting_read(path, what):
+            if path == str(roster):
+                reads.append(path)
+            return real_read(path, what)
+
+        async def fake_run_consensus(
+            entries, prompt_text, api_key, catalog, transport=None, zdr=False
+        ):
+            return {"results": [], "succeeded": 1, "failed": 0, "total_cost_usd": 0.0}
+
+        monkeypatch.setattr(cli, "_read_json_file", counting_read)
+        monkeypatch.setattr(cli, "run_consensus", fake_run_consensus)
+        rc = cli.main(
+            ["run", "--prompt-file", str(prompt), "--roster-file", str(roster)]
+        )
+        assert rc == 0
+        assert len(reads) == 1
+
+    def test_roster_swapped_after_first_read_uses_first_snapshot(
+        self, monkeypatch, tmp_path, capsys
+    ):
+        """A roster changed after the first read cannot split entries from ZDR.
+
+        The wrapper rewrites the file right after the first read. Entries and
+        the "zdr" declaration must both come from the first snapshot, never
+        from the swapped (undeclared, different-model) content.
+        """
+        monkeypatch.setenv("OPENROUTER_API_KEY", "k")
+        monkeypatch.setenv("OPENROUTER__ZDR_API_KEY", "zdr-k")
+        prompt = tmp_path / "p.txt"
+        prompt.write_text("q?")
+        roster = tmp_path / "roster.json"
+        roster.write_text(
+            json.dumps({"zdr": True, "roster": [{"model": "first/x", "role": None}]})
+        )
+
+        real_read = cli._read_json_file
+
+        def swapping_read(path, what):
+            payload = real_read(path, what)
+            if path == str(roster):
+                roster.write_text(
+                    json.dumps({"roster": [{"model": "second/y", "role": None}]})
+                )
+            return payload
+
+        captured = {}
+
+        async def fake_run_consensus(
+            entries, prompt_text, api_key, catalog, transport=None, zdr=False
+        ):
+            captured["models"] = [e["model"] for e in entries]
+            captured["zdr"] = zdr
+            captured["api_key"] = api_key
+            return {"results": [], "succeeded": 1, "failed": 0, "total_cost_usd": 0.0}
+
+        monkeypatch.setattr(cli, "_read_json_file", swapping_read)
+        monkeypatch.setattr(cli, "run_consensus", fake_run_consensus)
+        rc = cli.main(
+            ["run", "--prompt-file", str(prompt), "--roster-file", str(roster)]
+        )
+        assert rc == 0
+        assert captured["models"] == ["first/x"]
+        assert captured["zdr"] is True
+        assert captured["api_key"] == "zdr-k"
+
     def test_undeclared_roster_zdr_flag_warns_and_filters_fallbacks(
         self, monkeypatch, tmp_path, capsys
     ):
