@@ -12,4 +12,3 @@
 # Risk: py.path.svnwc is only reachable when traversing SVN working-copy paths.
 #        This project does not use SVN. The vulnerable code path is never exercised.
 #        Dev-dependency only — not present in production builds.
-CVE-2022-42969
